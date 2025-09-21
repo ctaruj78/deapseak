@@ -23,12 +23,24 @@ class LiftManager {
                 console.error('Leaflet library not loaded');
                 return;
             }
-            
-            this.map = L.map('map').setView([50.4501, 30.5234], 13);
+            const mapContainer = document.getElementById('liftMap');
+            if (!mapContainer) return;
+            mapContainer.style.display = 'block';
+            this.map = L.map('liftMap').setView([50.4501, 30.5234], 13);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors'
             }).addTo(this.map);
-            
+            // Додавання інтерактиву: клік по карті встановлює координати
+            this.map.on('click', (e) => {
+                $('#liftLat').val(e.latlng.lat.toFixed(6));
+                $('#liftLng').val(e.latlng.lng.toFixed(6));
+                if (this.marker) {
+                    this.map.removeLayer(this.marker);
+                }
+                this.marker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(this.map)
+                    .bindPopup('Вибрано координати')
+                    .openPopup();
+            });
             console.log('Map initialized successfully');
         } catch (error) {
             console.error('Map initialization error:', error);
@@ -37,7 +49,7 @@ class LiftManager {
 
     async geocodeAddress() {
         try {
-            const address = $('#liftLocation').val();
+            const address = $('#liftAddress').val();
             if (!address) {
                 showNotification('Введіть адресу для отримання координат', 'error');
                 return;
@@ -47,16 +59,16 @@ class LiftManager {
             if (coords) {
                 $('#liftLat').val(coords.lat);
                 $('#liftLng').val(coords.lng);
-                
                 // Оновлення карти
-                this.map.setView([coords.lat, coords.lng], 15);
-                if (this.marker) {
-                    this.map.removeLayer(this.marker);
+                if (this.map) {
+                    this.map.setView([coords.lat, coords.lng], 15);
+                    if (this.marker) {
+                        this.map.removeLayer(this.marker);
+                    }
+                    this.marker = L.marker([coords.lat, coords.lng]).addTo(this.map)
+                        .bindPopup(address)
+                        .openPopup();
                 }
-                this.marker = L.marker([coords.lat, coords.lng]).addTo(this.map)
-                    .bindPopup(address)
-                    .openPopup();
-                
                 showNotification('Координати отримано успішно', 'success');
             } else {
                 showNotification('Адресу не знайдено', 'error');
@@ -221,7 +233,18 @@ class LiftManager {
 
             requiredFields.forEach(field => {
                 const input = $('#' + field);
-                if (!input.val()) {
+                let value = input.val();
+                if (field === 'liftPostcode' && value) {
+                    // Перевірка формату: 12345 або 1234-567
+                    const ua = /^[0-9]{5}$/;
+                    const pt = /^[0-9]{4}-[0-9]{3}$/;
+                    if (!ua.test(value) && !pt.test(value)) {
+                        input.addClass('is-invalid');
+                        isValid = false;
+                        return;
+                    }
+                }
+                if (!value) {
                     input.addClass('is-invalid');
                     isValid = false;
                 } else {

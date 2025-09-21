@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Мапа ліфтів</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        #liftsMap { height: 80vh; width: 100%; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">Lift Management</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item"><a class="nav-link" href="admin-dashboard.html">Дашборд</a></li>
+                <li class="nav-item"><a class="nav-link" href="lifts.html">Ліфти</a></li>
+                <li class="nav-item"><a class="nav-link" href="maps.html">Мапа ліфтів</a></li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container-fluid mt-3">
+        <h3>Мапа ліфтів</h3>
+        <div id="liftsMap"></div>
+        <div class="mt-3">
+            <label for="routeToLift">Прокласти маршрут до ліфта:</label>
+            <select id="routeToLift" class="form-control" style="max-width:300px;display:inline-block;"></select>
+            <button id="btnRoute" class="btn btn-primary ml-2">Показати маршрут</button>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="/assets/js/maps.js"></script>
+</body>
+</html>
