@@ -307,7 +307,12 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="liftAddress">Адреса *</label>
-                                    <input type="text" id="liftAddress" class="form-control" required>
+                                    <div class="input-group">
+                                        <input type="text" id="liftAddress" class="form-control" required>
+                                        <div class="input-group-append">
+                                            <button type="button" class="btn btn-outline-secondary" id="btnGeocode">Визначити координати</button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-3">
@@ -318,8 +323,8 @@
                             </div>
                             <div class="col-md-3">
                                 <div class="form-group">
-                                    <label for="clientEmail">Email клієнта *</label>
-                                    <input type="email" id="clientEmail" class="form-control" required>
+                                    <label for="clientEmail">Email клієнта</label>
+                                    <input type="email" id="clientEmail" class="form-control">
                                 </div>
                             </div>
                         </div>
@@ -366,14 +371,14 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="lastMaintenance">Останнє ТО *</label>
-                                    <input type="date" id="lastMaintenance" class="form-control" required>
+                                    <label for="lastMaintenance">Останнє ТО</label>
+                                    <input type="date" id="lastMaintenance" class="form-control">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="nextMaintenance">Наступне ТО *</label>
-                                    <input type="date" id="nextMaintenance" class="form-control" required>
+                                    <label for="nextMaintenance">Наступне ТО</label>
+                                    <input type="date" id="nextMaintenance" class="form-control">
                                 </div>
                             </div>
                         </div>
@@ -391,6 +396,10 @@
                         </div>
                     </div>
                     <div class="modal-footer">
+                        <div class="mr-auto" id="qrSection" style="display:none">
+                            <label>QR-код ліфта:</label>
+                            <div id="liftQrCode"></div>
+                        </div>
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
                         <button type="submit" class="btn btn-primary">Зберегти</button>
                     </div>

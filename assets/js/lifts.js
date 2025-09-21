@@ -189,10 +189,34 @@ class LiftManager {
         try {
             // Валідація обов'язкових полів
             const requiredFields = [
-                'liftModel', 'liftType', 'liftAddress', 'liftPostcode', 'clientEmail',
-                'liftCapacity', 'liftSpeed', 'liftLocation', 'liftLat', 'liftLng',
-                'lastMaintenance', 'nextMaintenance', 'liftStatus'
-            ];
+                'liftModel', 'liftType', 'liftAddress', 'liftPostcode',
+                'liftCapacity', 'liftSpeed', 'liftLocation', 'liftLat', 'liftLng', 'liftStatus'
+            ]; // ТО та email необов'язкові
+            // Генерація QR-коду для нового ліфта
+            if (!liftId) {
+                setTimeout(() => {
+                    liftManager.showQrInForm(lift);
+                }, 500);
+            }
+        this.initGeocodeButton = function() {
+            const self = this;
+            $(document).on('click', '#btnGeocode', function() {
+                self.geocodeAddress();
+            });
+        };
+        this.initGeocodeButton();
+    showQrInForm(lift) {
+        const qrContainer = $('#liftQrCode');
+        qrContainer.empty();
+        if (typeof QRCode !== 'undefined') {
+            new QRCode(qrContainer[0], {
+                text: JSON.stringify({ id: lift.id, model: lift.model }),
+                width: 128,
+                height: 128
+            });
+            $('#qrSection').show();
+        }
+    }
             let isValid = true;
 
             requiredFields.forEach(field => {
