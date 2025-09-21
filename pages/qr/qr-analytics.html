@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Аналітика сканувань - LiftMaster Pro</title>
+    
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+    
+    <style>
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        
+        .stats-card {
+            border-left: 4px solid;
+            transition: transform 0.2s ease;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .stats-card.scans { border-left-color: #007bff; }
+        .stats-card.unique { border-left-color: #28a745; }
+        .stats-card.locations { border-left-color: #6f42c1; }
+        .stats-card.devices { border-left-color: #fd7e14; }
+        
+        .progress-group {
+            margin-bottom: 1rem;
+        }
+        
+        .progress-group-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.25rem;
+        }
+        
+        .progress-group-text {
+            font-weight: 600;
+        }
+        
+        .heatmap-day {
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            margin: 2px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        .heatmap-legend {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-right: 15px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            margin-right: 5px;
+        }
+        
+        .analytics-tab-content {
+            padding: 20px 0;
+        }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper">
+
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button">
+                        <i class="fas fa-bars"></i>
+                    </a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="admin-dashboard.html" class="nav-link">Головна</a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="#" class="nav-link">QR-коди</a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Sidebar (аналогічний qr-generator.html) -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <!-- Той самий сайдбар, що й у qr-generator.html -->
+        </aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <section class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1>Аналітика сканувань</h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="admin-dashboard.html">Головна</a></li>
+                                <li class="breadcrumb-item"><a href="#">QR Система</a></li>
+                                <li class="breadcrumb-item active">Аналітика сканувань</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+                    <!-- Фільтри -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Фільтри аналітики</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label>Період аналітики:</label>
+                                                <select id="periodFilter" class="form-control select2">
+                                                    <option value="7">Останні 7 днів</option>
+                                                    <option value="30" selected>Останні 30 днів</option>
+                                                    <option value="90">Останні 90 днів</option>
+                                                    <option value="365">Останні 365 днів</option>
+                                                    <option value="custom">Свій період</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3" id="customPeriodSection" style="display: none;">
+                                            <div class="form-group">
+                                                <label>Власний період:</label>
+                                                <input type="text" id="customPeriod" class="form-control daterangepicker">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label>Тип QR-коду:</label>
+                                                <select id="typeFilter" class="form-control select2">
+                                                    <option value="all">Всі типи</option>
+                                                    <option value="lift">Для ліфтів</option>
+                                                    <option value="technician">Для техніків</option>
+                                                    <option value="location">Для локацій</option>
+                                                    <option value="equipment">Для обладнання</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label>Групування:</label>
+                                                <select id="groupByFilter" class="form-control select2">
+                                                    <option value="day">По днях</option>
+                                                    <option value="week">По тижнях</option>
+                                                    <option value="month">По місяцях</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <button class="btn btn-primary" onclick="scanAnalytics.applyFilters()">
+                                        <i class="fas fa-chart-line"></i> Застосувати фільтри
+                                    </button>
+                                    <button class="btn btn-info ml-2" onclick="scanAnalytics.exportReport()">
+                                        <i class="fas fa-download"></i> Експорт звіту
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Статистика -->
+                    <div class="row mb-4">
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-info stats-card scans">
+                                <div class="inner">
+                                    <h3>1,245</h3>
+                                    <p>Всього сканувань</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-qrcode"></i>
+                                </div>
+                                <a href="#" class="small-box-footer" onclick="scanAnalytics.showTab('daily')">
+                                    Детальніше <i class="fas fa-arrow-circle-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-success stats-card unique">
+                                <div class="inner">
+                                    <h3>324</h3>
+                                    <p>Унікальних користувачів</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <a href="#" class="small-box-footer" onclick="scanAnalytics.showTab('users')">
+                                    Детальніше <i class="fas fa-arrow-circle-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-purple stats-card locations">
+                                <div class="inner">
+                                    <h3>28</h3>
+                                    <p>Локацій</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <a href="#" class="small-box-footer" onclick="scanAnalytics.showTab('locations')">
+                                    Детальніше <i class="fas fa-arrow-circle-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-orange stats-card devices">
+                                <div class="inner">
+                                    <h3>5</h3>
+                                    <p>Типів пристроїв</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-mobile-alt"></i>
+                                </div>
+                                <a href="#" class="small-box-footer" onclick="scanAnalytics.showTab('devices')">
+                                    Детальніше <i class="fas fa-arrow-circle-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Навігація по аналітиці -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header p-0">
+                                    <ul class="nav nav-pills ml-auto p-2">
+                                        <li class="nav-item">
+                                            <a class="nav-link active" href="#daily" data-toggle="tab">
+                                                <i class="fas fa-calendar-day"></i> Щоденна активність
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="#types" data-toggle="tab">
+                                                <i class="fas fa-chart-pie"></i> По типах
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="#users" data-toggle="tab">
+                                                <i class="fas fa-users"></i> Користувачі
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="#locations" data-toggle="tab">
+                                                <i class="fas fa-map-marked-alt"></i> Локації
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="#devices" data-toggle="tab">
+                                                <i class="fas fa-mobile-alt"></i> Пристрої
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="card-body">
+                                    <div class="tab-content">
+                                        <!-- Щоденна активність -->
+                                        <div class="tab-pane active" id="daily">
+                                            <div class="row">
+                                                <div class="col-md-8">
+                                                    <div class="card">
+                                                        <div class="card-header">
+                                                            <h3 class="card-title">Графік сканувань по днях</h3>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div class="chart-container">
+                                                                <canvas id="dailyScansChart"></canvas>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="card">
+                                                        <div class="card-header">
+                                                            <h3 class="card-title">Топ дні за скануваннями</h3>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div class="progress-group">
+                                                                <div class="progress-group-header">
+                                                                    <span>15.03.2024</span>
+                                                                    <span class="ml-auto"><b>45</b>/1245</span>
+                                                                </div>
+                                                                <div class="progress progress-sm">
+                                                                    <div class="progress-bar bg-primary" style="width: 3.6%"></div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="progress-group">
+                                                                <div class="progress-group-header">
+                                                                    <span>14.03.2024</span>
+                                                                    <span class="ml-auto"><b>38</b>/1245</span>
+                                                                </div>
+                                                                <div class="progress progress-sm">
+                                                                    <div class="progress-bar bg-primary" style="width: 3.0%"></div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="progress-group">
+                                                                <div class="progress-group-header">
+                                                                    <span>13.03.2024</span>
+                                                                    <span class="ml-auto"><b>36</b>/1245</span>
+                                                                </div>
+                                                                <div class="progress progress-sm">
+                                                                    <div class="progress-bar bg-primary" style="width: 2.9%"></div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="progress-group">
+                                                                <div class="progress-group-header">
+                                                                    <span>12.03.2024</span>
+                                                                    <span class="ml-auto"><b>34</b>/1245</span>
+                                                                </div>
+                                                                <div class="progress progress-sm">
+                                                                    <div class="progress-bar bg-primary" style="width: 2.7%"></div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="progress-group">
+                                                                <div class="progress-group-header">
+                                                                    <span>11.03.2024</span>
+                                                                    <span class="ml-auto"><b>32</b>/1245</span>
+                                                                </div>
+                                                                <div class="progress progress-sm">
+                                                                    <div class="progress-bar bg-primary" style="width: 2.6%"></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row mt-4">
+                                                <div class="col-12">
+                                                    <div class="card">
+                                                        <div class="card-header">
+                                                            <h3 class="card-title">Теплова карта активності</h3>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div id="heatmapContainer" class="text-center">
+                                                                <p class="text-muted">Теплова карта активності сканувань по днях тижня та годинам</p>
+                                                                <div class="heatmap-legend">
+                                                                    <div class="legend-item">
+                                                                        <div class="legend-color" style="background-color: #ebedf0"></div>
+                                                                        <span>0 сканувань</span>
+                                                                    </div>
+                                                                    <div class="legend-item">
+                                                                        <div class="legend-color" style="background-color: #c6e48b"></div>
+                                                                        <span>1-5 сканувань</span>
+                                                                    </div>
+                                                                    <div class="legend-item">
+                                                                        <div class="legend-color" style="background-color: #7bc96f"></div>
+                                                                        <span>6-10 сканувань</span>
+                                                                    </div>
+                                                                    <div class="legend-item">
+                                                                        <div class="legend-color" style="background-color: #239a3b"></div>
+                                                                        <span>11-20 сканувань</span>
+                                                                    </div>
+                                                                    <div class="legend-item">
+                                                                        <div class="legend-color" style="background-color: #196127"></div>
+                                                                        <span>20+ сканувань</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- По типах -->
+                                        <div class="tab-pane" id="types">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="card">
+                                                        <div class="card-header">
+                                                            <h3 class="card-title">Розподіл по типах QR-кодів</h3>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div class="chart-container">
+                                                                <canvas id="typesChart"></canvas>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="card">
+                                                        <div class="card-header">
+                                                            <h3 class="card-title">Статистика по типах</h3>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div class="progress-group">
+                                                                <div class="progress-group-header">
+                                                                    <span>Ліфти</span>
+                                                                    <span class="ml-auto"><b>645</b>/1245</span>
+                                                                </div>
+                                                                <div class="progress progress-sm">
+                                                                    <div class="progress-bar bg-primary" style="width: 52%"></div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="progress-group">
+                                                                <div class="progress-group-header">
+                                                                    <span>Техніки</span>
+                                                                    <span class="ml-auto"><b>230</b>/1245</span>
+                                                                </div>
+                                                                <div class="progress progress-sm">
+                                                                    <div class="progress-bar bg-success" style="width: 18%"></div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="progress-group">
+                                                                <div class="progress-group-header">
+                                                                    <span>Локації</span>
+                                                                    <span class="ml-auto"><b>187</b>/1245</span>
+                                                                </div>
+                                                                <div class="progress progress-sm">
+                                                                    <div class="progress-bar bg-purple" style="width: 15%"></div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="progress-group">
+                                                                <div class="progress-group-header">
+                                                                    <span>Обладнання</span>
+                                                                    <span class="ml-auto"><b>123</b>/1245</span>
+                                                                </div>
+                                                                <div class="progress progress-sm">
+                                                                    <div class="progress-bar bg-warning" style="width: 10%"></div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="progress-group">
+                                                                <div class="progress-group-header">
+                                                                    <span>ТО</span>
+                                                                    <span class="ml-auto"><b>60</b>/1245</span>
+                                                                </div>
+                                                                <div class="progress progress-sm">
+                                                                    <div class="progress-bar bg-info" style="width: 5%"></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Користувачі -->
+                                        <div class="tab-pane" id="users">
+                                            <div class="row">
+                                                <div class="col-md-8">
+                                                    <div class="card">
+                                                        <div class="card-header">
+                                                            <h3 class="card-title">Активність користувачів</h3>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div class="chart-container">
+                                                                <canvas id="usersActivityChart"></canvas>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="card">
+                                                        <div class="card-header">
+                                                            <h3 class="card-title">Топ користувачі</h3>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div class="progress-group">
+                                                                <div class="progress-group-header">
+                                                                    <span>Олексій Коваленко</span>
+                                                                    <span class="ml-auto"><b>356</b>/1245</span>
+                                                                </div>
+                                                                <div class="progress progress-sm">
+                                                                    <div class="progress-bar bg-primary" style="width: 28.6%"></div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="progress-group">
+                                                                <div class="progress-group-header">
+                                                                    <span>Марія Сидоренко</span>
+                                                                    <span class="ml-auto"><b>289</b>/1245</span>
+                                                                </div>
+                                                                <div class="progress progress-sm">
+                                                                    <div class="progress-bar bg-primary" style="width: 23.2%"></div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="progress-group">
+                                                                <div class="progress-group-header">
+                                                                    <span>Петро Іваненко</span>
+                                                                    <span class="ml-auto"><b>215</b>/1245</span>
+                                                                </div>
+                                                                <div class="progress progress-sm">
+                                                                    <div class="progress-bar bg-primary" style="width: 17.3%"></div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="progress-group">
+                                                                <div class="progress-group-header">
+                                                                    <span>Іван Петренко</span>
+                                                                    <span class="ml-auto"><b>187</b>/1245</span>
+                                                                </div>
+                                                                <div class="progress progress-sm">
+                                                                    <div class="progress-bar bg-primary" style="width: 15.0%"></div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="progress-group">
+                                                                <div class="progress-group-header">
+                                                                    <span>Інші користувачі</span>
+                                                                    <span class="ml-auto"><b>198</b>/1245</span>
+                                                                </div>
+                                                                <div class="progress progress-sm">
+                                                                    <div class="progress-bar bg-secondary" style="width: 15.9%"></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Локації -->
+                                        <div class="tab-pane" id="locations">
+                                            <div class="row">
+                                                <div class="col-md-8">
+                                                    <div class="card">
+                                                        <div class="card-header">
+                                                            <h3 class="card-title">Географія сканувань</h3>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div class="chart-container">
+                                                                <canvas id="locationsMap" style="height: 400px;"></canvas>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="card">
+                                                        <div class="card-header">
+                                                            <h3 class="card-title">Топ локації</h3>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div class="progress-group">
+                                                                <div class="progress-group-header">
+                                                                    <span>ЖК "Центральний"</span>
+                                                                    <span class="ml-auto"><b>345</b>/1245</span>
+                                                                </div>
+                                                                <div class="progress progress-sm">
+                                                                    <div class="progress-bar bg-primary" style="width: 27.7%"></div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="progress-group">
+                                                                <div class="progress-group-header">
+                                                                    <span>ТРЦ "СкайМолл"</span>
+                                                                    <span class="ml-auto"><b>278</b>/1245</span>
+                                                                </div>
+                                                                <div class="progress progress-sm">
+                                                                    <div class="progress-bar bg-primary" style="width: 22.3%"></div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="progress-group">
+                                                                <div class="progress-group-header">
+                                                                    <span>Офіс "Бізнес-Плаза"</span>
+                                                                    <span class="ml-auto"><b>195</b>/1245</span>
+                                                                </div>
+                                                                <div class="progress progress-sm">
+                                                                    <div class="progress-bar bg-primary" style="width: 15.7%"></div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="progress-group">
+                                                                <div class="progress-group-header">
+                                                                    <span>ЖК "Новий"</span>
+                                                                    <span class="ml-auto"><b>167</b>/1245</span>
+                                                                </div>
+                                                                <div class="progress progress-sm">
+                                                                    <div class="progress-bar bg-primary" style="width: 13.4%"></div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="progress-group">
+                                                                <div class="progress-group-header">
+                                                                    <span>Інші локації</span>
+                                                                    <span class="ml-auto"><b>260</b>/1245</span>
+                                                                </div>
+                                                                <div class="progress progress-sm">
+                                                                    <div class="progress-bar bg-secondary" style="width: 20.9%"></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Пристрої -->
+                                        <div class="tab-pane" id="devices">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="card">
+                                                        <div class="card-header">
+                                                            <h3 class="card-title">Розподіл по пристроях</h3>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div class="chart-container">
+                                                                <canvas id="devicesChart"></canvas>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="card">
+                                                        <div class="card-header">
+                                                            <h3 class="card-title">Статистика по пристроях</h3>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div class="progress-group">
+                                                                <div class="progress-group-header">
+                                                                    <span>Android</span>
+                                                                    <span class="ml-auto"><b>645</b>/1245</span>
+                                                                </div>
+                                                                <div class="progress progress-sm">
+                                                                    <div class="progress-bar bg-success" style="width: 51.8%"></div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="progress-group">
+                                                                <div class="progress-group-header">
+                                                                    <span>iOS</span>
+                                                                    <span class="ml-auto"><b>432</b>/1245</span>
+                                                                </div>
+                                                                <div class="progress progress-sm">
+                                                                    <div class="progress-bar bg-info" style="width: 34.7%"></div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="progress-group">
+                                                                <div class="progress-group-header">
+                                                                    <span>Windows</span>
+                                                                    <span class="ml-auto"><b>98</b>/1245</span>
+                                                                </div>
+                                                                <div class="progress progress-sm">
+                                                                    <div class="progress-bar bg-primary" style="width: 7.9%"></div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="progress-group">
+                                                                <div class="progress-group-header">
+                                                                    <span>Інші</span>
+                                                                    <span class="ml-auto"><b>70</b>/1245</span>
+                                                                </div>
+                                                                <div class="progress progress-sm">
+                                                                    <div class="progress-bar bg-secondary" style="width: 5.6%"></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer class="main-footer">
+            <strong>LiftMaster Pro &copy; 2024</strong>
+            <div class="float-right d-none d-sm-inline-block">
+                <b>Версія</b> 2.1.0
+            </div>
+        </footer>
+    </div>
+
+    <!-- Підключення скриптів -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/daterangepicker@3.1/daterangepicker.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script src="assets/js/modules/scan-analytics.js"></script>
+</body>
+</html>

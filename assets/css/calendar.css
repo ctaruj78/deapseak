@@ -1,0 +1,285 @@
+/* Стилі для календаря */
+.calendar-container {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: #3498db;
+    color: white;
+}
+
+.calendar-nav {
+    display: flex;
+    gap: 10px;
+}
+
+.calendar-nav button {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.calendar-title {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.calendar-views {
+    display: flex;
+    gap: 5px;
+}
+
+.view-btn {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.view-btn.active {
+    background: white;
+    color: #3498db;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: #f1f2f6;
+}
+
+.calendar-day-header {
+    background: #f8f9fa;
+    padding: 10px;
+    text-align: center;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.calendar-day {
+    background: white;
+    min-height: 100px;
+    padding: 8px;
+    position: relative;
+    cursor: pointer;
+}
+
+.calendar-day:hover {
+    background: #f8f9fa;
+}
+
+.calendar-day.other-month {
+    background: #fafafa;
+    color: #bdc3c7;
+}
+
+.calendar-day.today {
+    background: #e8f4fd;
+}
+
+.day-number {
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.calendar-events {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.calendar-event {
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.event-maintenance {
+    background: #ffeaa7;
+    color: #d35400;
+}
+
+.event-inspection {
+    background: #d6eaf8;
+    color: #2980b9;
+}
+
+.event-urgent {
+    background: #ff7675;
+    color: white;
+}
+
+.event-completed {
+    background: #55efc4;
+    color: #00b894;
+}
+
+.calendar-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.calendar-modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 20px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+}
+
+.event-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.event-form .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.event-color-picker {
+    display: flex;
+    gap: 5px;
+}
+
+.color-option {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.color-option.selected {
+    border-color: #2c3e50;
+}
+
+.calendar-sidebar {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.upcoming-events {
+    margin-bottom: 30px;
+}
+
+.upcoming-event {
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border-left: 4px solid #3498db;
+}
+
+.event-date {
+    font-size: 12px;
+    color: #7f8c8d;
+    margin-bottom: 5px;
+}
+
+.event-title {
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.calendar-filters {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.filter-group {
+    margin-bottom: 15px;
+}
+
+.filter-group h4 {
+    margin: 0 0 10px 0;
+    color: #2c3e50;
+}
+
+.filter-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.filter-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mini-calendar {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.mini-calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.mini-calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+}
+
+.mini-calendar-day {
+    text-align: center;
+    padding: 5px;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.mini-calendar-day:hover {
+    background: #f1f2f6;
+    border-radius: 3px;
+}
+
+.mini-calendar-day.today {
+    background: #3498db;
+    color: white;
+    border-radius: 3px;
+}
+
+.mini-calendar-day.has-events::after {
+    content: '';
+    display: block;
+    width: 4px;
+    height: 4px;
+    background: #3498db;
+    border-radius: 50%;
+    margin: 2px auto 0;
+}

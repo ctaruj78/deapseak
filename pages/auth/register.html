@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Реєстрація - Lift Management System</title>
+    <link rel="stylesheet" href="../../assets/css/main.css">
+    <link rel="stylesheet" href="../../assets/css/responsive.css">
+</head>
+<body class="auth-page">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <img src="../../assets/img/logo.png" alt="Lift Management System">
+                <h1>Створення акаунта</h1>
+                <p>Заповніть інформацію для реєстрації</p>
+            </div>
+
+            <form id="registerForm" class="auth-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="firstName">Ім'я</label>
+                        <input type="text" id="firstName" name="firstName" required autocomplete="given-name">
+                        <span class="error-message" id="firstNameError"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="lastName">Прізвище</label>
+                        <input type="text" id="lastName" name="lastName" required autocomplete="family-name">
+                        <span class="error-message" id="lastNameError"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Електронна пошта</label>
+                    <input type="email" id="email" name="email" required autocomplete="email">
+                    <span class="error-message" id="emailError"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Телефон</label>
+                    <input type="tel" id="phone" name="phone" autocomplete="tel">
+                    <span class="error-message" id="phoneError"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Пароль</label>
+                    <input type="password" id="password" name="password" required autocomplete="new-password">
+                    <div class="password-strength">
+                        <div class="strength-bar">
+                            <div class="strength-fill" id="passwordStrength"></div>
+                        </div>
+                        <span class="strength-text" id="passwordStrengthText">Надійність пароля: низька</span>
+                    </div>
+                    <span class="error-message" id="passwordError"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">Підтвердження пароля</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required autocomplete="new-password">
+                    <span class="error-message" id="confirmPasswordError"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="userType">Тип акаунта</label>
+                    <select id="userType" name="userType" required>
+                        <option value="">Оберіть тип акаунта</option>
+                        <option value="client">Клієнт</option>
+                        <option value="technician">Технік</option>
+                    </select>
+                    <span class="error-message" id="userTypeError"></span>
+                </div>
+
+                <div class="form-group" id="companyField" style="display: none;">
+                    <label for="company">Компанія</label>
+                    <input type="text" id="company" name="company">
+                    <span class="error-message" id="companyError"></span>
+                </div>
+
+                <div class="form-group terms">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="agreeTerms" name="agreeTerms" required>
+                        <span class="checkmark"></span>
+                        Я погоджуюсь з <a href="#" target="_blank">умовами використання</a> та <a href="#" target="_blank">політикою конфіденційності</a>
+                    </label>
+                    <span class="error-message" id="termsError"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full" id="registerBtn">
+                    <span class="btn-text">Зареєструватися</span>
+                    <span class="btn-loading" style="display: none;">⏳</span>
+                </button>
+            </form>
+
+            <div class="auth-divider">
+                <span>або</span>
+            </div>
+
+            <div class="social-auth">
+                <button class="btn btn-social btn-google">
+                    <img src="../../assets/img/icons/google.png" alt="Google">
+                    Зареєструватися через Google
+                </button>
+                <button class="btn btn-social btn-microsoft">
+                    <img src="../../assets/img/icons/microsoft.png" alt="Microsoft">
+                    Зареєструватися через Microsoft
+                </button>
+            </div>
+
+            <div class="auth-footer">
+                <p>Вже маєте акаунт? <a href="login.html">Увійти</a></p>
+            </div>
+        </div>
+
+        <div class="auth-features">
+            <div class="feature-item">
+                <div class="feature-icon">🏢</div>
+                <h3>Для клієнтів</h3>
+                <p>Контроль стану ваших ліфтів онлайн</p>
+                <ul class="feature-list">
+                    <li>Моніторинг у реальному часі</li>
+                    <li>Історія обслуговування</li>
+                    <li>Онлайн-заявки</li>
+                </ul>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">🔧</div>
+                <h3>Для техніків</h3>
+                <p>Сучасні інструменти для роботи</p>
+                <ul class="feature-list">
+                    <li>AR помічник</li>
+                    <li>Чат з клієнтами</li>
+                    <li>Електронна документація</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../assets/js/auth.js"></script>
+</body>
+</html>

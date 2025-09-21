@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вхід - LiftMaster Pro</title>
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/auth.css">
+</head>
+<body class="auth-page">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <i class="fas fa-elevator"></i>
+                <h1>LiftMaster Pro</h1>
+                <p>Увійдіть до вашего облікового запису</p>
+            </div>
+
+            <form id="login-form" class="auth-form">
+                <div class="form-group">
+                    <label for="username">Логін</label>
+                    <input type="text" id="username" name="username" required>
+                    <i class="fas fa-user"></i>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Пароль</label>
+                    <input type="password" id="password" name="password" required>
+                    <i class="fas fa-lock"></i>
+                </div>
+
+                <div class="form-options">
+                    <label class="checkbox">
+                        <input type="checkbox" name="remember">
+                        <span>Запам'ятати мене</span>
+                    </label>
+                    <a href="forgot-password.html">Забули пароль?</a>
+                </div>
+
+                <button type="submit" class="btn primary full-width">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Увійти
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                <p>Немає облікового запису? <a href="register.html">Зареєструватися</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/common.js"></script>
+</body>
+</html>

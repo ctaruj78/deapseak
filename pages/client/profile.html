@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профіль - Клієнт</title>
+    
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css">
+    
+    <style>
+        .profile-page {
+            background-color: #f8f9fa;
+        }
+        
+        .profile-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+        }
+        
+        .profile-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+        }
+        
+        .profile-header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px 15px 0 0;
+            text-align: center;
+            position: relative;
+        }
+        
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid white;
+            margin: 0 auto 20px;
+            object-fit: cover;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: #6a11cb;
+        }
+        
+        .avatar-upload {
+            position: absolute;
+            bottom: -20px;
+            right: 20px;
+        }
+        
+        .avatar-upload-label {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .avatar-upload-label:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .nav-tabs-profile .nav-link {
+            border: none;
+            border-bottom: 3px solid transparent;
+            padding: 15px 20px;
+            font-weight: 600;
+            color: #495057;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-tabs-profile .nav-link.active {
+            border-bottom-color: #6a11cb;
+            color: #6a11cb;
+            background: transparent;
+        }
+        
+        .nav-tabs-profile .nav-link:hover {
+            border-bottom-color: #6a11cb;
+            color: #6a11cb;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .info-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: #6a11cb;
+        }
+        
+        .info-content {
+            flex: 1;
+        }
+        
+        .info-label {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-bottom: 2px;
+        }
+        
+        .info-value {
+            font-weight: 500;
+            color: #495057;
+        }
+        
+        .security-badge {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .badge-strong {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+        
+        .badge-medium {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+            color: #212529;
+        }
+        
+        .badge-weak {
+            background: linear-gradient(135deg, #dc3545, #e83e8c);
+            color: white;
+        }
+        
+        .activity-timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .activity-timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #e9ecef;
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 25px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -23px;
+            top: 20px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #6a11cb;
+            border: 3px solid white;
+        }
+        
+        .timeline-date {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+        
+        .subscription-card {
+            border: 2px solid;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .subscription-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .subscription-basic {
+            border-color: #17a2b8;
+            background: linear-gradient(135deg, #f8f9fa, #e3f2fd);
+        }
+        
+        .subscription-premium {
+            border-color: #ffc107;
+            background: linear-gradient(135deg, #fff8e1, #fff3cd);
+        }
+        
+        .subscription-enterprise {
+            border-color: #6f42c1;
+            background: linear-gradient(135deg, #f8f9fa, #e8e2f7);
+        }
+        
+        .subscription-price {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #495057;
+            margin: 15px 0;
+        }
+        
+        .subscription-features {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+        
+        .subscription-features li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .subscription-features li:last-child {
+            border-bottom: none;
+        }
+        
+        .dark-mode .profile-card {
+            background-color: #2d3748;
+            color: white;
+        }
+        
+        .dark-mode .info-item {
+            border-bottom-color: #4a5568;
+        }
+        
+        .dark-mode .info-value {
+            color: #e2e8f0;
+        }
+        
+        .dark-mode .info-icon {
+            background: #4a5568;
+            color: #e2e8f0;
+        }
+        
+        .dark-mode .timeline-item {
+            background: #2d3748;
+            color: white;
+        }
+        
+        .dark-mode .subscription-card {
+            background: linear-gradient(135deg, #2d3748, #4a5568);
+        }
+        
+        @media (max-width: 768px) {
+            .profile-header {
+                padding: 20px;
+            }
+            
+            .profile-avatar {
+                width: 100px;
+                height: 100px;
+                font-size: 2.5rem;
+            }
+            
+            .profile-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-tabs-profile .nav-link {
+                padding: 12px 15px;
+                font-size: 0.9rem;
+            }
+        }
+        
+        /* Анімації */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease;
+        }
+        
+        /* Спеціальні стилі для перемикачів */
+        .custom-switch-profile .custom-control-label::before {
+            border-radius: 20px;
+            height: 1.5rem;
+            top: 0.125rem;
+        }
+        
+        .custom-switch-profile .custom-control-label::after {
+            border-radius: 50%;
+            height: calc(1.5rem - 4px);
+            width: calc(1.5rem - 4px);
+            top: calc(0.125rem + 2px);
+        }
+        
+        /* Стилі для прогресу */
+        .progress-profile {
+            height: 8px;
+            border-radius: 4px;
+            background: #e9ecef;
+        }
+        
+        .progress-profile .progress-bar {
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed profile-page">
+    <div class="wrapper">
+
+        <!-- Навігаційна панель -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button">
+                        <i class="fas fa-bars"></i>
+                    </a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="dashboard.html" class="nav-link">Головна</a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="profile.html" class="nav-link active">Профіль</a>
+                </li>
+            </ul>
+
+            <!-- Права частина навігації -->
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link notification-bell" href="notifications.html" title="Сповіщення">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge bg-danger" id="notificationCount">0</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="support.html" title="Підтримка">
+                        <i class="fas fa-headset"></i>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" id="darkModeToggle" title="Темна тема">
+                        <i class="fas fa-moon"></i>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="logout()" title="Вийти">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Бічна панель -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <a href="dashboard.html" class="brand-link text-center">
+                <span class="brand-text font-weight-light">Клієнт</span>
+            </a>
+            
+            <div class="sidebar">
+                <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                    <div class="image">
+                        <img src="../../assets/img/avatars/client.png" class="img-circle elevation-2" alt="Client" id="sidebarAvatar">
+                    </div>
+                    <div class="info">
+                        <a href="#" class="d-block" id="sidebarName">Клієнт</a>
+                        <small class="text-success"><i class="fas fa-circle mr-1"></i> Online</small>
+                    </div>
+                </div>
+                
+                <nav class="mt-2">
+                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                        <li class="nav-item">
+                            <a href="dashboard.html" class="nav-link">
+                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                                <p>Головна</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="my-lifts.html" class="nav-link">
+                                <i class="nav-icon fas fa-elevator"></i>
+                                <p>Мої ліфти</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="requests.html" class="nav-link">
+                                <i class="nav-icon fas fa-tasks"></i>
+                                <p>Мої заявки</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="invoices.html" class="nav-link">
+                                <i class="nav-icon fas fa-file-invoice"></i>
+                                <p>Рахунки</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="history.html" class="nav-link">
+                                <i class="nav-icon fas fa-history"></i>
+                                <p>Історія</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="notifications.html" class="nav-link">
+                                <i class="nav-icon fas fa-bell"></i>
+                                <p>Сповіщення</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="support.html" class="nav-link">
+                                <i class="nav-icon fas fa-headset"></i>
+                                <p>Підтримка</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="profile.html" class="nav-link active">
+                                <i class="nav-icon fas fa-user"></i>
+                                <p>Профіль</p>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <section class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1>Мій профіль</h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="dashboard.html">Головна</a></li>
+                                <li class="breadcrumb-item active">Профіль</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+                    <!-- Заголовок профілю -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="profile-card fade-in-up">
+                                <div class="profile-header">
+                                    <div class="profile-avatar" id="profileAvatar">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <h2 id="profileName">Клієнт</h2>
+                                    <p class="mb-0" id="profileEmail">client@example.com</p>
+                                    
+                                    <div class="avatar-upload">
+                                        <label for="avatarInput" class="avatar-upload-label">
+                                            <i class="fas fa-camera"></i>
+                                            <input type="file" id="avatarInput" accept="image/*" style="display: none;">
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="profile-stats">
+                                        <div class="stat-item">
+                                            <div class="stat-number" id="statsLifts">0</div>
+                                            <div class="stat-label">Ліфтів</div>
+                                        </div>
+                                        <div class="stat-item">
+                                            <div class="stat-number" id="statsRequests">0</div>
+                                            <div class="stat-label">Активних заявок</div>
+                                        </div>
+                                        <div class="stat-item">
+                                            <div class="stat-number" id="statsTickets">0</div>
+                                            <div class="stat-label">Звернень</div>
+                                        </div>
+                                        <div class="stat-item">
+                                            <div class="stat-number" id="statsYears">0</div>
+                                            <div class="stat-label">Років з нами</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Навігація по профілю -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header p-0">
+                                    <ul class="nav nav-tabs nav-tabs-profile" id="profileTabs" role="tablist">
+                                        <li class="nav-item">
+                                            <a class="nav-link active" id="info-tab" data-toggle="pill" href="#info" role="tab">
+                                                <i class="fas fa-info-circle mr-2"></i>Особиста інформація
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" id="security-tab" data-toggle="pill" href="#security" role="tab">
+                                                <i class="fas fa-shield-alt mr-2"></i>Безпека
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" id="subscription-tab" data-toggle="pill" href="#subscription" role="tab">
+                                                <i class="fas fa-crown mr-2"></i>Підписка
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" id="activity-tab" data-toggle="pill" href="#activity" role="tab">
+                                                <i class="fas fa-history mr-2"></i>Активність
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" id="settings-tab" data-toggle="pill" href="#settings" role="tab">
+                                                <i class="fas fa-cog mr-2"></i>Налаштування
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="card-body">
+                                    <div class="tab-content" id="profileTabContent">
+                                        <!-- Особиста інформація -->
+                                        <div class="tab-pane fade show active" id="info" role="tabpanel">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <h4 class="mb-4">Контактна інформація</h4>
+                                                    <div class="info-item">
+                                                        <div class="info-icon">
+                                                            <i class="fas fa-user"></i>
+                                                        </div>
+                                                        <div class="info-content">
+                                                            <div class="info-label">Повне ім'я</div>
+                                                            <div class="info-value" id="infoFullName">Клієнт Клієнтович</div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="info-item">
+                                                        <div class="info-icon">
+                                                            <i class="fas fa-envelope"></i>
+                                                        </div>
+                                                        <div class="info-content">
+                                                            <div class="info-label">Email</div>
+                                                            <div class="info-value" id="infoEmail">client@example.com</div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="info-item">
+                                                        <div class="info-icon">
+                                                            <i class="fas fa-phone"></i>
+                                                        </div>
+                                                        <div class="info-content">
+                                                            <div class="info-label">Телефон</div>
+                                                            <div class="info-value" id="infoPhone">+380 (00) 000-00-00</div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="info-item">
+                                                        <div class="info-icon">
+                                                            <i class="fas fa-building"></i>
+                                                        </div>
+                                                        <div class="info-content">
+                                                            <div class="info-label">Компанія</div>
+                                                            <div class="info-value" id="infoCompany">ТОВ "Приклад"</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <h4 class="mb-4">Адреса</h4>
+                                                    <div class="info-item">
+                                                        <div class="info-icon">
+                                                            <i class="fas fa-map-marker-alt"></i>
+                                                        </div>
+                                                        <div class="info-content">
+                                                            <div class="info-label">Адреса</div>
+                                                            <div class="info-value" id="infoAddress">м. Київ, вул. Прикладна, 123</div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="info-item">
+                                                        <div class="info-icon">
+                                                            <i class="fas fa-city"></i>
+                                                        </div>
+                                                        <div class="info-content">
+                                                            <div class="info-label">Місто</div>
+                                                            <div class="info-value" id="infoCity">Київ</div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="info-item">
+                                                        <div class="info-icon">
+                                                            <i class="fas fa-flag"></i>
+                                                        </div>
+                                                        <div class="info-content">
+                                                            <div class="info-label">Область</div>
+                                                            <div class="info-value" id="infoRegion">Київська область</div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="info-item">
+                                                        <div class="info-icon">
+                                                            <i class="fas fa-mail-bulk"></i>
+                                                        </div>
+                                                        <div class="info-content">
+                                                            <div class="info-label">Поштовий індекс</div>
+                                                            <div class="info-value" id="infoZip">01001</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="text-center mt-4">
+                                                <button class="btn btn-primary" onclick="profileManager.editProfile()">
+                                                    <i class="fas fa-edit mr-2"></i>Редагувати профіль
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Безпека -->
+                                        <div class="tab-pane fade" id="security" role="tabpanel">
+                                            <h4 class="mb-4">Налаштування безпеки</h4>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="card mb-4">
+                                                        <div class="card-header">
+                                                            <h5 class="card-title">Статус безпеки</h5>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div class="text-center mb-4">
+                                                                <span class="security-badge badge-strong" id="securityStatus">Сильний</span>
+                                                            </div>
+                                                            <div class="progress-profile mb-3">
+                                                                <div class="progress-bar bg-success" style="width: 85%"></div>
+                                                            </div>
+                                                            <div class="security-features">
+                                                                <div class="form-group">
+                                                                    <div class="custom-control custom-checkbox">
+                                                                        <input type="checkbox" class="custom-control-input" id="security2FA" checked>
+                                                                        <label class="custom-control-label" for="security2FA">Двофакторна автентифікація</label>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <div class="custom-control custom-checkbox">
+                                                                        <input type="checkbox" class="custom-control-input" id="securityEmail" checked>
+                                                                        <label class="custom-control-label" for="securityEmail">Сповіщення по email</label>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <div class="custom-control custom-checkbox">
+                                                                        <input type="checkbox" class="custom-control-input" id="securitySMS">
+                                                                        <label class="custom-control-label" for="securitySMS">SMS сповіщення</label>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="card">
+                                                        <div class="card-header">
+                                                            <h5 class="card-title">Зміна пароля</h5>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <form id="passwordForm">
+                                                                <div class="form-group">
+                                                                    <label for="currentPassword">Поточний пароль</label>
+                                                                    <input type="password" class="form-control" id="currentPassword" required>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label for="newPassword">Новий пароль</label>
+                                                                    <input type="password" class="form-control" id="newPassword" required>
+                                                                    <small class="form-text text-muted">Мінімум 8 символів, включаючи цифри та літери</small>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label for="confirmPassword">Підтвердження пароля</label>
+                                                                    <input type="password" class="form-control" id="confirmPassword" required>
+                                                                </div>
+                                                                <button type="button" class="btn btn-primary" onclick="profileManager.changePassword()">
+                                                                    <i class="fas fa-key mr-2"></i>Змінити пароль
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="card mt-4">
+                                                <div class="card-header">
+                                                    <h5 class="card-title">Активні сесії</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div id="activeSessions">
+                                                        <!-- Активні сесії будуть тут -->
+                                                    </div>
+                                                    <button class="btn btn-outline-danger mt-3" onclick="profileManager.logoutAllSessions()">
+                                                        <i class="fas fa-sign-out-alt mr-2"></i>Завершити всі сесії
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Підписка -->
+                                        <div class="tab-pane fade" id="subscription" role="tabpanel">
+                                            <h4 class="mb-4">Мій тарифний план</h4>
+                                            <div class="row">
+                                                <div class="col-lg-4 mb-4">
+                                                    <div class="subscription-card subscription-basic">
+                                                        <h5>Базовий</h5>
+                                                        <div class="subscription-price">₴499<span class="text-muted">/міс</span></div>
+                                                        <ul class="subscription-features">
+                                                            <li>До 5 ліфтів</li>
+                                                            <li>Стандартна підтримка</li>
+                                                            <li>Базове моніторинг</li>
+                                                            <li>Щомісячні звіти</li>
+                                                        </ul>
+                                                        <button class="btn btn-outline-primary">Обрати тариф</button>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-4 mb-4">
+                                                    <div class="subscription-card subscription-premium">
+                                                        <h5>Преміум</h5>
+                                                        <div class="subscription-price">₴999<span class="text-muted">/міс</span></div>
+                                                        <ul class="subscription-features">
+                                                            <li>До 15 ліфтів</li>
+                                                            <li>Пріоритетна підтримка</li>
+                                                            <li>Розширений моніторинг</li>
+                                                            <li>Щотижневі звіти</li>
+                                                            <li>Мобільний додаток</li>
+                                                        </ul>
+                                                        <button class="btn btn-warning">Поточний тариф</button>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-4 mb-4">
+                                                    <div class="subscription-card subscription-enterprise">
+                                                        <h5>Корпоративний</h5>
+                                                        <div class="subscription-price">₴1999<span class="text-muted">/міс</span></div>
+                                                        <ul class="subscription-features">
+                                                            <li>Необмежена кількість ліфтів</li>
+                                                            <li>24/7 підтримка</li>
+                                                            <li>Повний моніторинг</li>
+                                                            <li>Щоденні звіти</li>
+                                                            <li>API доступ</li>
+                                                            <li>Індивідуальні рішення</li>
+                                                        </ul>
+                                                        <button class="btn btn-outline-primary">Обрати тариф</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <h5 class="card-title">Деталі підписки</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="info-item">
+                                                                <div class="info-icon">
+                                                                    <i class="fas fa-calendar"></i>
+                                                                </div>
+                                                                <div class="info-content">
+                                                                    <div class="info-label">Дата початку</div>
+                                                                    <div class="info-value">01.01.2024</div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="info-item">
+                                                                <div class="info-icon">
+                                                                    <i class="fas fa-sync"></i>
+                                                                </div>
+                                                                <div class="info-content">
+                                                                    <div class="info-label">Період оплати</div>
+                                                                    <div class="info-value">Щомісяця</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="info-item">
+                                                                <div class="info-icon">
+                                                                    <i class="fas fa-credit-card"></i>
+                                                                </div>
+                                                                <div class="info-content">
+                                                                    <div class="info-label">Спосіб оплати</div>
+                                                                    <div class="info-value">Кредитна картка</div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="info-item">
+                                                                <div class="info-icon">
+                                                                    <i class="fas fa-receipt"></i>
+                                                                </div>
+                                                                <div class="info-content">
+                                                                    <div class="info-label">Наступна оплата</div>
+                                                                    <div class="info-value">01.06.2024</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="text-center mt-4">
+                                                        <button class="btn btn-outline-primary mr-2">
+                                                            <i class="fas fa-download mr-2"></i>Рахунки
+                                                        </button>
+                                                        <button class="btn btn-outline-secondary mr-2">
+                                                            <i class="fas fa-credit-card mr-2"></i>Методи оплати
+                                                        </button>
+                                                        <button class="btn btn-outline-danger">
+                                                            <i class="fas fa-ban mr-2"></i>Скасувати підписку
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Активність -->
+                                        <div class="tab-pane fade" id="activity" role="tabpanel">
+                                            <h4 class="mb-4">Остання активність</h4>
+                                            <div class="activity-timeline" id="activityTimeline">
+                                                <!-- Активність буде тут -->
+                                            </div>
+                                        </div>
+
+                                        <!-- Налаштування -->
+                                        <div class="tab-pane fade" id="settings" role="tabpanel">
+                                            <h4 class="mb-4">Налаштування профілю</h4>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="card mb-4">
+                                                        <div class="card-header">
+                                                            <h5 class="card-title">Сповіщення</h5>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div class="form-group">
+                                                                <div class="custom-control custom-switch custom-switch-profile">
+                                                                    <input type="checkbox" class="custom-control-input" id="notifyEmail" checked>
+                                                                    <label class="custom-control-label" for="notifyEmail">Email сповіщення</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group">
+                                                                <div class="custom-control custom-switch custom-switch-profile">
+                                                                    <input type="checkbox" class="custom-control-input" id="notifyPush" checked>
+                                                                    <label class="custom-control-label" for="notifyPush">Push-сповіщення</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group">
+                                                                <div class="custom-control custom-switch custom-switch-profile">
+                                                                    <input type="checkbox" class="custom-control-input" id="notifySMS">
+                                                                    <label class="custom-control-label" for="notifySMS">SMS сповіщення</label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="card mb-4">
+                                                        <div class="card-header">
+                                                            <h5 class="card-title">Мова та регіон</h5>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div class="form-group">
+                                                                <label for="languageSelect">Мова інтерфейсу</label>
+                                                                <select class="form-control" id="languageSelect">
+                                                                    <option value="uk" selected>Українська</option>
+                                                                    <option value="en">English</option>
+                                                                    <option value="ru">Русский</option>
+                                                                </select>
+                                                            </div>
+                                                            <div class="form-group">
+                                                                <label for="timezoneSelect">Часовий пояс</label>
+                                                                <select class="form-control" id="timezoneSelect">
+                                                                    <option value="Europe/Kiev" selected>Київ (UTC+2)</option>
+                                                                    <option value="Europe/London">Лондон (UTC+1)</option>
+                                                                    <option value="Europe/Berlin">Берлін (UTC+1)</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <h5 class="card-title">Експорт даних</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <p>Ви можете завантажити копію ваших даних у форматі JSON.</p>
+                                                    <button class="btn btn-outline-primary" onclick="profileManager.exportData()">
+                                                        <i class="fas fa-download mr-2"></i>Експорт даних
+                                                    </button>
+                                                    <button class="btn btn-outline-danger ml-2" onclick="profileManager.deleteAccount()">
+                                                        <i class="fas fa-trash mr-2"></i>Видалити акаунт
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer class="main-footer">
+            <strong>Клієнтська панель &copy; 2024</strong>
+            <div class="float-right d-none d-sm-inline-block">
+                <small id="connectionStatus"><i class="fas fa-wifi text-success"></i> Online</small>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Модальне вікно редагування профілю -->
+    <div class="modal fade" id="editProfileModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Редагування профілю</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="editProfileForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="editFirstName">Ім'я *</label>
+                                    <input type="text" class="form-control" id="editFirstName" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="editLastName">Прізвище *</label>
+                                    <input type="text" class="form-control" id="editLastName" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="editEmail">Email *</label>
+                                    <input type="email" class="form-control" id="editEmail" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="editPhone">Телефон</label>
+                                    <input type="tel" class="form-control" id="editPhone">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="editCompany">Компанія</label>
+                            <input type="text" class="form-control" id="editCompany">
+                        </div>
+                        <div class="form-group">
+                            <label for="editAddress">Адреса</label>
+                            <input type="text" class="form-control" id="editAddress">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="editCity">Місто</label>
+                                    <input type="text" class="form-control" id="editCity">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="editZip">Поштовий індекс</label>
+                                    <input type="text" class="form-control" id="editZip">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                    <button type="button" class="btn btn-primary" onclick="profileManager.saveProfile()">
+                        <i class="fas fa-save mr-2"></i>Зберегти зміни
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+
+    <!-- Profile Manager JS -->
+    <script src="../../assets/js/modules/profile-manager.js"></script>
+
+    <script>
+        function logout() {
+            if (confirm('Ви впевнені, що хочете вийти з системи?')) {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userData');
+                window.location.href = 'login.html';
+            }
+        }
+
+        $(document).ready(function() {
+            // Ініціалізація AdminLTE
+            $('[data-widget="pushmenu"]').PushMenu();
+            
+            // Темна тема
+            $('#darkModeToggle').on('click', function() {
+                $('body').toggleClass('dark-mode');
+                $(this).find('i').toggleClass('fa-moon fa-sun');
+            });
+
+            // Перевірка з'єднання
+            setInterval(() => {
+                const online = navigator.onLine;
+                $('#connectionStatus').html(
+                    online ? 
+                    '<i class="fas fa-wifi text-success"></i> Online' : 
+                    '<i class="fas fa-wifi-slash text-danger"></i> Offline'
+                );
+            }, 30000);
+
+            // Завантаження даних користувача
+            const userData = JSON.parse(localStorage.getItem('userData')) || {};
+            if (userData.firstName) {
+                $('#clientName').text(userData.firstName);
+                $('#sidebarName').text(userData.firstName);
+            }
+
+            // Ініціалізація менеджера профілю
+            window.profileManager = new ProfileManager();
+            
+            // Обробка завантаження аватара
+            $('#avatarInput').on('change', function(e) {
+                profileManager.handleAvatarUpload(e.target.files[0]);
+            });
+        });
+    </script>
+</body>
+</html>

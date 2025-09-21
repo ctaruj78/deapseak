@@ -1,0 +1,767 @@
+/* ===== АДАПТИВНІСТЬ LIFTMASTER PRO ===== */
+
+/* Мобільні пристрої (до 576px) */
+@media (max-width: 576px) {
+    /* Загальні стилі */
+    body {
+        font-size: 14px;
+    }
+    
+    .container-fluid {
+        padding: 0 10px;
+    }
+    
+    /* Навігація */
+    .navbar {
+        padding: 0.5rem 0.5rem;
+    }
+    
+    .navbar-brand {
+        font-size: 1rem;
+    }
+    
+    .navbar-nav .nav-link {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.9rem;
+    }
+    
+    /* Бокова панель */
+    .main-sidebar {
+        width: 60px !important;
+    }
+    
+    .brand-text,
+    .nav-link p {
+        display: none;
+    }
+    
+    .nav-link {
+        justify-content: center;
+        padding: 0.8rem !important;
+    }
+    
+    .nav-link i {
+        margin-right: 0 !important;
+        font-size: 1.2rem;
+    }
+    
+    /* Контент */
+    .content-wrapper {
+        margin-left: 60px !important;
+    }
+    
+    .content-header {
+        padding: 15px 10px;
+        margin: -15px -10px 15px -10px;
+    }
+    
+    .content-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .breadcrumb {
+        font-size: 0.8rem;
+    }
+    
+    /* Картки */
+    .card {
+        margin-bottom: 15px;
+    }
+    
+    .card-header {
+        padding: 12px 15px;
+    }
+    
+    .card-title {
+        font-size: 1.1rem;
+    }
+    
+    .card-body {
+        padding: 15px;
+    }
+    
+    /* Кнопки */
+    .btn {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+    }
+    
+    .btn-sm {
+        padding: 5px 10px;
+        font-size: 0.8rem;
+    }
+    
+    /* Таблиці */
+    .table-responsive {
+        margin: 0 -15px;
+        overflow-x: auto;
+    }
+    
+    .table {
+        font-size: 0.8rem;
+        min-width: 600px;
+    }
+    
+    .table th,
+    .table td {
+        padding: 8px 10px;
+        white-space: nowrap;
+    }
+    
+    /* Форми */
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    
+    .form-control {
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+    
+    .input-group {
+        flex-direction: column;
+    }
+    
+    .input-group .form-control {
+        border-radius: var(--border-radius-sm);
+        margin-bottom: 5px;
+    }
+    
+    .input-group-append {
+        width: 100%;
+    }
+    
+    .input-group-append .btn {
+        border-radius: var(--border-radius-sm);
+        width: 100%;
+    }
+    
+    /* Модальні вікна */
+    .modal-dialog {
+        margin: 10px;
+    }
+    
+    .modal-content {
+        border-radius: var(--border-radius);
+    }
+    
+    .modal-header {
+        padding: 15px;
+    }
+    
+    .modal-title {
+        font-size: 1.2rem;
+    }
+    
+    .modal-body {
+        padding: 15px;
+    }
+    
+    .modal-footer {
+        padding: 15px;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .modal-footer .btn {
+        width: 100%;
+        margin: 0;
+    }
+    
+    /* Дії з контентом */
+    .content-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .content-actions .btn {
+        width: 100%;
+        text-align: center;
+    }
+    
+    /* Фільтри */
+    .filters {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .filters .form-control {
+        min-width: auto;
+    }
+    
+    /* Пагінація */
+    .pagination-container {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .pagination {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .page-item {
+        margin: 2px;
+    }
+    
+    .page-link {
+        padding: 6px 12px;
+        font-size: 0.9rem;
+    }
+    
+    /* Статистика */
+    .stats-cards {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .stat-card {
+        padding: 20px;
+    }
+    
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+    }
+    
+    /* Мапа */
+    #liftsMap {
+        height: 300px;
+        margin: 0 -15px;
+        border-radius: 0;
+        border: none;
+    }
+    
+    /* QR-коди */
+    .qr-section {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .qr-code {
+        width: 50px;
+        height: 50px;
+    }
+    
+    /* Кнопки дій */
+    .action-buttons {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .btn-action {
+        width: 30px;
+        height: 30px;
+        font-size: 0.8rem;
+    }
+    
+    /* Статуси */
+    .lift-status {
+        font-size: 0.7rem;
+        padding: 4px 8px;
+    }
+    
+    /* Пустий стан */
+    .empty-state {
+        padding: 40px 15px;
+    }
+    
+    .empty-state i {
+        font-size: 3rem;
+    }
+    
+    .empty-state h4 {
+        font-size: 1.2rem;
+    }
+    
+    /* Хедер */
+    .main-header {
+        padding: 0.5rem;
+    }
+    
+    .navbar-expand .navbar-nav {
+        flex-direction: row;
+    }
+    
+    /* Сайдбар */
+    .sidebar {
+        padding-top: 0;
+    }
+    
+    /* Футер */
+    .main-footer {
+        padding: 15px;
+        text-align: center;
+    }
+}
+
+/* Планшети (577px - 768px) */
+@media (min-width: 577px) and (max-width: 768px) {
+    /* Загальні стилі */
+    body {
+        font-size: 15px;
+    }
+    
+    /* Бокова панель */
+    .main-sidebar {
+        width: 80px !important;
+    }
+    
+    .brand-text {
+        display: none;
+    }
+    
+    .nav-link p {
+        font-size: 0.8rem;
+    }
+    
+    .nav-link {
+        padding: 0.8rem 0.5rem !important;
+        text-align: center;
+    }
+    
+    .nav-link i {
+        margin-right: 0 !important;
+        display: block;
+        font-size: 1.3rem;
+        margin-bottom: 5px;
+    }
+    
+    /* Контент */
+    .content-wrapper {
+        margin-left: 80px !important;
+    }
+    
+    /* Картки */
+    .card-header {
+        padding: 15px 18px;
+    }
+    
+    .card-body {
+        padding: 18px;
+    }
+    
+    /* Таблиці */
+    .table {
+        font-size: 0.9rem;
+    }
+    
+    .table th,
+    .table td {
+        padding: 10px 12px;
+    }
+    
+    /* Дії з контентом */
+    .content-actions {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    /* Фільтри */
+    .filters {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .filters .form-control {
+        min-width: 150px;
+    }
+    
+    /* Статистика */
+    .stats-cards {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+    
+    /* Модальні вікна */
+    .modal-dialog {
+        max-width: 95%;
+        margin: 20px auto;
+    }
+    
+    /* Форми в модальних вікнах */
+    .modal-body .row {
+        margin: 0 -8px;
+    }
+    
+    .modal-body .col-md-6,
+    .modal-body .col-md-4,
+    .modal-body .col-md-8 {
+        padding: 0 8px;
+    }
+    
+    /* Мапа */
+    #liftsMap {
+        height: 400px;
+    }
+    
+    /* Кнопки дій */
+    .action-buttons {
+        gap: 6px;
+    }
+    
+    .btn-action {
+        width: 32px;
+        height: 32px;
+    }
+}
+
+/* Невеликі ноутбуки (769px - 992px) */
+@media (min-width: 769px) and (max-width: 992px) {
+    /* Бокова панель */
+    .main-sidebar {
+        width: 200px !important;
+    }
+    
+    .brand-text {
+        font-size: 0.9rem;
+    }
+    
+    .nav-link {
+        padding: 0.8rem 1rem !important;
+    }
+    
+    .nav-link i {
+        font-size: 1.1rem;
+        margin-right: 8px !important;
+    }
+    
+    .nav-link p {
+        font-size: 0.9rem;
+    }
+    
+    /* Контент */
+    .content-wrapper {
+        margin-left: 200px !important;
+    }
+    
+    /* Таблиці */
+    .table {
+        font-size: 0.9rem;
+    }
+    
+    /* Статистика */
+    .stats-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    /* Модальні вікна */
+    .modal-dialog {
+        max-width: 90%;
+    }
+}
+
+/* Великі екрани (понад 1200px) */
+@media (min-width: 1200px) {
+    /* Контейнери */
+    .container-fluid {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
+    /* Таблиці */
+    .table {
+        font-size: 0.95rem;
+    }
+    
+    /* Статистика */
+    .stats-cards {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    /* Сайдбар */
+    .main-sidebar {
+        width: 250px !important;
+    }
+    
+    /* Контент */
+    .content-wrapper {
+        margin-left: 250px !important;
+    }
+}
+
+/* Висота екрану */
+@media (max-height: 600px) {
+    /* Сайдбар */
+    .sidebar {
+        overflow-y: auto;
+        max-height: 100vh;
+    }
+    
+    /* Контент */
+    .content-wrapper {
+        overflow-y: auto;
+        max-height: 100vh;
+    }
+    
+    /* Таблиці */
+    .table-responsive {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+}
+
+/* Портретна орієнтація */
+@media (orientation: portrait) {
+    .content-actions {
+        flex-direction: column;
+    }
+    
+    .filters {
+        flex-direction: column;
+    }
+}
+
+/* Ландшафтна орієнтація */
+@media (orientation: landscape) and (max-height: 500px) {
+    /* Хедер */
+    .main-header {
+        padding: 0.3rem;
+    }
+    
+    /* Контент */
+    .content-header {
+        padding: 10px;
+        margin: -10px -10px 10px -10px;
+    }
+    
+    .content-header h1 {
+        font-size: 1.3rem;
+    }
+    
+    /* Картки */
+    .card {
+        margin-bottom: 10px;
+    }
+    
+    .card-header {
+        padding: 10px 12px;
+    }
+    
+    .card-body {
+        padding: 12px;
+    }
+    
+    /* Таблиці */
+    .table th,
+    .table td {
+        padding: 6px 8px;
+    }
+}
+
+/* Високо-PPI дисплеї (Retina) */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .brand-image {
+        transform: scale(0.8);
+        transform-origin: center;
+    }
+    
+    .nav-link i {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+}
+
+/* Темна тема + адаптивність */
+@media (prefers-color-scheme: dark) and (max-width: 768px) {
+    .navbar-dark {
+        background: #2d3748 !important;
+    }
+    
+    .sidebar-dark-primary {
+        background: #2d3748 !important;
+    }
+    
+    .content-wrapper {
+        background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+    }
+    
+    .card {
+        background: #4a5568;
+        border-color: #4a5568;
+    }
+    
+    .card-header {
+        background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+    }
+    
+    .table {
+        color: #e2e8f0;
+    }
+    
+    .table th {
+        background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+        color: white;
+    }
+    
+    .table td {
+        border-bottom-color: #4a5568;
+    }
+}
+
+/* Друк */
+@media print {
+    .navbar,
+    .sidebar,
+    .content-actions,
+    .filters,
+    .action-buttons,
+    .main-footer {
+        display: none !important;
+    }
+    
+    .content-wrapper {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+    
+    .card {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+        page-break-inside: avoid;
+    }
+    
+    .table {
+        page-break-inside: avoid;
+    }
+    
+    #liftsMap {
+        display: none !important;
+    }
+    
+    .btn-action {
+        display: none !important;
+    }
+    
+    .qr-code {
+        display: none !important;
+    }
+}
+
+/* Спеціальні адаптації для iOS */
+@supports (-webkit-touch-callout: none) {
+    .modal {
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .table-responsive {
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .sidebar {
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* Спеціальні адаптації для Android */
+@supports (not (-webkit-touch-callout: none)) {
+    .modal {
+        scroll-behavior: smooth;
+    }
+    
+    .table-responsive {
+        scroll-behavior: smooth;
+    }
+}
+
+/* Адаптація для Internet Explorer */
+@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+    .stats-cards {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+    
+    .stat-card {
+        flex: 1 1 200px;
+    }
+    
+    .content-actions {
+        display: flex;
+        flex-wrap: wrap;
+    }
+    
+    .filters {
+        display: flex;
+        flex-wrap: wrap;
+    }
+}
+
+/* Адаптація для Safari */
+@supports (overflow: -webkit-marquee) and (justify-content: inherit) {
+    .table-responsive {
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .modal {
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* Адаптація для Firefox */
+@-moz-document url-prefix() {
+    .table th {
+        position: relative;
+    }
+    
+    .modal {
+        scrollbar-width: thin;
+    }
+}
+
+/* Висока контрастність */
+@media (prefers-contrast: high) {
+    .btn {
+        border: 2px solid;
+    }
+    
+    .form-control {
+        border: 2px solid;
+    }
+    
+    .card {
+        border: 2px solid;
+    }
+    
+    .table th,
+    .table td {
+        border: 1px solid;
+    }
+}
+
+/* Зменшення руху */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+    
+    .btn,
+    .card,
+    .nav-link {
+        transition: none !important;
+    }
+}
+
+/* Великий текст */
+@media (prefers-reduced-data: reduce) {
+    .brand-image {
+        display: none;
+    }
+    
+    .stat-icon {
+        display: none;
+    }
+    
+    .qr-code {
+        display: none;
+    }
+}

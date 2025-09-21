@@ -1,0 +1,600 @@
+class NotificationManager {
+    constructor() {
+        this.notifications = [];
+        this.filteredNotifications = [];
+        this.currentPage = 1;
+        this.itemsPerPage = 10;
+        this.currentFilter = 'all';
+        this.searchTerm = '';
+        this.init();
+    }
+
+    init() {
+        this.loadNotifications();
+        this.loadSettings();
+        this.setupEventListeners();
+        this.updateStats();
+    }
+
+    setupEventListeners() {
+        // Автозбереження налаштувань
+        $('input[type="checkbox"]').on('change', () => {
+            this.saveSettings();
+        });
+    }
+
+    loadNotifications() {
+        try {
+            // Спроба завантажити з API
+            const savedNotifications = localStorage.getItem('clientNotifications');
+            if (savedNotifications) {
+                this.notifications = JSON.parse(savedNotifications);
+            } else {
+                // Демо-дані
+                this.loadDemoNotifications();
+            }
+            
+            this.filteredNotifications = [...this.notifications];
+            this.renderNotifications();
+            this.updateBadges();
+            
+        } catch (error) {
+            console.error('Помилка завантаження сповіщень:', error);
+            this.loadDemoNotifications();
+        }
+    }
+
+    loadDemoNotifications() {
+        const now = new Date();
+        this.notifications = [
+            {
+                id: 1,
+                title: "Заплановане технічне обслуговування",
+                message: "Заплановано технічне обслуговування ліфта №3 у вашому будинку. Дата: 15.05.2024, 10:00-12:00",
+                type: "maintenance",
+                priority: "high",
+                read: false,
+                timestamp: new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString(),
+                relatedTo: "lift-3",
+                actionUrl: "my-lifts.html?id=3"
+            },
+            {
+                id: 2,
+                title: "Нова заявка прийнята",
+                message: "Ваша заявка №2456 прийнята до роботи. Технік буде призначений протягом 24 годин.",
+                type: "info",
+                priority: "medium",
+                read: true,
+                timestamp: new Date(now.getTime() - 5 * 60 * 60 * 1000).toISOString(),
+                relatedTo: "request-2456",
+                actionUrl: "requests.html?id=2456"
+            },
+            {
+                id: 3,
+                title: "Оплата рахунку",
+                message: "Новий рахунок №789 доступний для оплати. Термін оплати: до 20.05.2024",
+                type: "billing",
+                priority: "high",
+                read: false,
+                timestamp: new Date(now.getTime() - 8 * 60 * 60 * 1000).toISOString(),
+                relatedTo: "invoice-789",
+                actionUrl: "invoices.html?id=789"
+            },
+            {
+                id: 4,
+                title: "Попередження про несправність",
+                message: "Ліфт №1 вимагає уваги техніка. Заявка створена автоматично.",
+                type: "alert",
+                priority: "critical",
+                read: false,
+                timestamp: new Date(now.getTime() - 12 * 60 * 60 * 1000).toISOString(),
+                relatedTo: "lift-1",
+                actionUrl: "my-lifts.html?id=1"
+            },
+            {
+                id: 5,
+                title: "Оновлення статусу заявки",
+                message: "Заявка №2456 виконана. Технік: Іван Петренко. Час виконання: 2 години 15 хвилин.",
+                type: "update",
+                priority: "low",
+                read: true,
+                timestamp: new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString(),
+                relatedTo: "request-2456",
+                actionUrl: "requests.html?id=2456"
+            },
+            {
+                id: 6,
+                title: "Щомісячний звіт",
+                message: "Ваш щомісячний звіт про роботу ліфтів готовий. Усього обслуговувань: 12, Аварій: 0",
+                type: "info",
+                priority: "low",
+                read: true,
+                timestamp: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+                relatedTo: "report-may",
+                actionUrl: "reports.html?month=may"
+            },
+            {
+                id: 7,
+                title: "Заміна запчастини",
+                message: "У ліфті №2 замінено трос підйому. Гарантія: 12 місяців.",
+                type: "maintenance",
+                priority: "medium",
+                read: false,
+                timestamp: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+                relatedTo: "lift-2",
+                actionUrl: "my-lifts.html?id=2"
+            }
+        ];
+        
+        this.filteredNotifications = [...this.notifications];
+        this.saveNotifications();
+    }
+
+    loadSettings() {
+        this.settings = JSON.parse(localStorage.getItem('notificationSettings')) || {
+            notifyMaintenance: true,
+            notifyAlerts: true,
+            notifyBilling: true,
+            notifyEmail: true,
+            notifyPush: true,
+            notifySMS: false
+        };
+        
+        this.applySettings();
+    }
+
+    applySettings() {
+        Object.entries(this.settings).forEach(([key, value]) => {
+            const element = document.getElementById(key);
+            if (element) {
+                element.checked = value;
+            }
+        });
+    }
+
+    saveSettings() {
+        this.settings = {
+            notifyMaintenance: document.getElementById('notifyMaintenance').checked,
+            notifyAlerts: document.getElementById('notifyAlerts').checked,
+            notifyBilling: document.getElementById('notifyBilling').checked,
+            notifyEmail: document.getElementById('notifyEmail').checked,
+            notifyPush: document.getElementById('notifyPush').checked,
+            notifySMS: document.getElementById('notifySMS').checked
+        };
+        
+        localStorage.setItem('notificationSettings', JSON.stringify(this.settings));
+        this.showNotification('Налаштування збережено', 'success');
+    }
+
+    saveNotifications() {
+        localStorage.setItem('clientNotifications', JSON.stringify(this.notifications));
+    }
+
+    renderNotifications() {
+        const container = document.getElementById('notificationsContainer');
+        container.innerHTML = '';
+        
+        if (this.filteredNotifications.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-bell-slash"></i>
+                    <h4>Сповіщень не знайдено</h4>
+                    <p>${this.searchTerm ? 'Спробуйте інший запит пошуку' : 'У вас немає сповіщень за обраним фільтром'}</p>
+                </div>
+            `;
+            return;
+        }
+        
+        // Пагінація
+        const totalPages = Math.ceil(this.filteredNotifications.length / this.itemsPerPage);
+        const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+        const endIndex = startIndex + this.itemsPerPage;
+        const paginatedNotifications = this.filteredNotifications.slice(startIndex, endIndex);
+        
+        paginatedNotifications.forEach(notification => {
+            const notificationElement = this.createNotificationElement(notification);
+            container.appendChild(notificationElement);
+        });
+        
+        this.renderPagination(totalPages);
+    }
+
+    createNotificationElement(notification) {
+        const div = document.createElement('div');
+        div.className = `notification-card ${notification.read ? '' : 'unread'} ${notification.priority}`;
+        
+        const typeIcon = this.getTypeIcon(notification.type);
+        const priorityBadge = this.getPriorityBadge(notification.priority);
+        const timeAgo = this.getTimeAgo(notification.timestamp);
+        
+        div.innerHTML = `
+            <div class="card-body">
+                <div class="d-flex align-items-start">
+                    <div class="notification-type-icon ${this.getTypeClass(notification.type)}">
+                        <i class="fas ${typeIcon}"></i>
+                    </div>
+                    <div class="notification-content">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h5 class="notification-title">${notification.title}</h5>
+                            <div class="notification-actions">
+                                <button class="btn btn-sm btn-outline-secondary" onclick="notificationManager.toggleRead(${notification.id})" title="${notification.read ? 'Позначити як непрочитане' : 'Позначити як прочитане'}">
+                                    <i class="fas ${notification.read ? 'fa-envelope' : 'fa-envelope-open'}"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="notificationManager.deleteNotification(${notification.id})" title="Видалити">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <p class="notification-message">${notification.message}</p>
+                        <div class="notification-meta">
+                            ${priorityBadge}
+                            <span class="notification-time">${timeAgo}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent">
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-primary" onclick="notificationManager.viewNotification(${notification.id})">
+                        <i class="fas fa-eye"></i> Переглянути
+                    </button>
+                    ${notification.actionUrl ? `
+                    <button class="btn btn-outline-success" onclick="location.href='${notification.actionUrl}'">
+                        <i class="fas fa-external-link-alt"></i> Деталі
+                    </button>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+        
+        return div;
+    }
+
+    renderPagination(totalPages) {
+        const pagination = document.getElementById('notificationsPagination');
+        pagination.innerHTML = '';
+        
+        if (totalPages <= 1) return;
+        
+        // Попередня сторінка
+        const prevLi = document.createElement('li');
+        prevLi.className = `page-item ${this.currentPage === 1 ? 'disabled' : ''}`;
+        prevLi.innerHTML = `<a class="page-link" href="#" onclick="notificationManager.changePage(${this.currentPage - 1})">‹</a>`;
+        pagination.appendChild(prevLi);
+        
+        // Сторінки
+        for (let i = 1; i <= totalPages; i++) {
+            const pageLi = document.createElement('li');
+            pageLi.className = `page-item ${this.currentPage === i ? 'active' : ''}`;
+            pageLi.innerHTML = `<a class="page-link" href="#" onclick="notificationManager.changePage(${i})">${i}</a>`;
+            pagination.appendChild(pageLi);
+        }
+        
+        // Наступна сторінка
+        const nextLi = document.createElement('li');
+        nextLi.className = `page-item ${this.currentPage === totalPages ? 'disabled' : ''}`;
+        nextLi.innerHTML = `<a class="page-link" href="#" onclick="notificationManager.changePage(${this.currentPage + 1})">›</a>`;
+        pagination.appendChild(nextLi);
+    }
+
+    changePage(page) {
+        this.currentPage = page;
+        this.renderNotifications();
+        window.scrollTo(0, 0);
+    }
+
+    filterNotifications(filter) {
+        this.currentFilter = filter;
+        this.currentPage = 1;
+        this.searchTerm = '';
+        
+        switch (filter) {
+            case 'unread':
+                this.filteredNotifications = this.notifications.filter(n => !n.read);
+                break;
+            case 'important':
+                this.filteredNotifications = this.notifications.filter(n => n.priority === 'high' || n.priority === 'critical');
+                break;
+            case 'maintenance':
+                this.filteredNotifications = this.notifications.filter(n => n.type === 'maintenance');
+                break;
+            default:
+                this.filteredNotifications = [...this.notifications];
+        }
+        
+        this.renderNotifications();
+        this.updateStats();
+    }
+
+    searchNotifications() {
+        const searchTerm = document.getElementById('searchNotifications').value.toLowerCase();
+        this.searchTerm = searchTerm;
+        this.currentPage = 1;
+        
+        if (!searchTerm) {
+            this.filterNotifications(this.currentFilter);
+            return;
+        }
+        
+        this.filteredNotifications = this.notifications.filter(notification => 
+            notification.title.toLowerCase().includes(searchTerm) ||
+            notification.message.toLowerCase().includes(searchTerm) ||
+            notification.type.toLowerCase().includes(searchTerm)
+        );
+        
+        this.renderNotifications();
+        this.updateStats();
+    }
+
+    sortByDate() {
+        this.filteredNotifications.sort((a, b) => 
+            new Date(b.timestamp) - new Date(a.timestamp)
+        );
+        this.renderNotifications();
+        this.showNotification('Відсортовано за датою', 'info');
+    }
+
+    sortByPriority() {
+        const priorityOrder = { critical: 4, high: 3, medium: 2, low: 1 };
+        this.filteredNotifications.sort((a, b) => 
+            priorityOrder[b.priority] - priorityOrder[a.priority]
+        );
+        this.renderNotifications();
+        this.showNotification('Відсортовано за пріоритетом', 'info');
+    }
+
+    viewNotification(id) {
+        const notification = this.notifications.find(n => n.id === id);
+        if (!notification) return;
+        
+        // Позначити як прочитане
+        if (!notification.read) {
+            this.toggleRead(id);
+        }
+        
+        // Заповнити модальне вікно
+        document.getElementById('modalNotificationTitle').textContent = notification.title;
+        document.getElementById('modalNotificationContent').textContent = notification.message;
+        document.getElementById('modalNotificationTime').textContent = this.getTimeAgo(notification.timestamp);
+        
+        // Іконка та пріоритет
+        const iconElement = document.getElementById('modalNotificationIcon');
+        iconElement.className = `notification-type-icon ${this.getTypeClass(notification.type)}`;
+        iconElement.innerHTML = `<i class="fas ${this.getTypeIcon(notification.type)}"></i>`;
+        
+        const priorityElement = document.getElementById('modalNotificationPriority');
+        priorityElement.className = `notification-badge ${this.getPriorityClass(notification.priority)}`;
+        priorityElement.textContent = this.getPriorityText(notification.priority);
+        
+        // Кнопка дії
+        const actionBtn = document.getElementById('modalNotificationActionBtn');
+        if (notification.actionUrl) {
+            actionBtn.style.display = 'block';
+            actionBtn.onclick = () => {
+                $('#viewNotificationModal').modal('hide');
+                setTimeout(() => {
+                    location.href = notification.actionUrl;
+                }, 300);
+            };
+        } else {
+            actionBtn.style.display = 'none';
+        }
+        
+        $('#viewNotificationModal').modal('show');
+    }
+
+    toggleRead(id) {
+        const notification = this.notifications.find(n => n.id === id);
+        if (notification) {
+            notification.read = !notification.read;
+            this.saveNotifications();
+            this.filterNotifications(this.currentFilter);
+            this.updateBadges();
+            this.showNotification(
+                notification.read ? 'Сповіщення прочитано' : 'Сповіщення позначено як непрочитане', 
+                'success'
+            );
+        }
+    }
+
+    markAllAsRead() {
+        this.notifications.forEach(notification => {
+            notification.read = true;
+        });
+        
+        this.saveNotifications();
+        this.filterNotifications(this.currentFilter);
+        this.updateBadges();
+        this.showNotification('Всі сповіщення позначено як прочитані', 'success');
+    }
+
+    deleteNotification(id) {
+        if (confirm('Видалити це сповіщення?')) {
+            this.notifications = this.notifications.filter(n => n.id !== id);
+            this.saveNotifications();
+            this.filterNotifications(this.currentFilter);
+            this.updateBadges();
+            this.showNotification('Сповіщення видалено', 'success');
+        }
+    }
+
+    clearAll() {
+        if (confirm('Видалити всі сповіщення? Цю дію не можна скасувати.')) {
+            this.notifications = [];
+            this.saveNotifications();
+            this.filteredNotifications = [];
+            this.renderNotifications();
+            this.updateBadges();
+            this.showNotification('Всі сповіщення видалено', 'success');
+        }
+    }
+
+    updateStats() {
+        const total = this.notifications.length;
+        const unread = this.notifications.filter(n => !n.read).length;
+        const important = this.notifications.filter(n => n.priority === 'high' || n.priority === 'critical').length;
+        
+        const today = new Date();
+        const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const todayNotifications = this.notifications.filter(n => 
+            new Date(n.timestamp) >= todayStart
+        ).length;
+        
+        document.getElementById('totalNotifications').textContent = total;
+        document.getElementById('unreadNotifications').textContent = unread;
+        document.getElementById('importantNotifications').textContent = important;
+        document.getElementById('todayNotifications').textContent = todayNotifications;
+    }
+
+    updateBadges() {
+        const unreadCount = this.notifications.filter(n => !n.read).length;
+        document.getElementById('notificationCount').textContent = unreadCount;
+        document.getElementById('notificationsBadge').textContent = unreadCount;
+        
+        // Оновлення заголовка вкладки
+        document.title = unreadCount > 0 ? `(${unreadCount}) Сповіщення - Клієнт` : 'Сповіщення - Клієнт';
+    }
+
+    // Допоміжні методи
+    getTypeIcon(type) {
+        const icons = {
+            maintenance: 'fa-tools',
+            alert: 'fa-exclamation-triangle',
+            info: 'fa-info-circle',
+            update: 'fa-sync',
+            billing: 'fa-file-invoice-dollar'
+        };
+        return icons[type] || 'fa-bell';
+    }
+
+    getTypeClass(type) {
+        return `type-${type}`;
+    }
+
+    getPriorityBadge(priority) {
+        const classes = {
+            critical: 'bg-danger',
+            high: 'bg-warning',
+            medium: 'bg-info',
+            low: 'bg-success'
+        };
+        
+        const texts = {
+            critical: 'Критичний',
+            high: 'Високий',
+            medium: 'Середній',
+            low: 'Низький'
+        };
+        
+        return `<span class="notification-badge ${classes[priority]}">${texts[priority]}</span>`;
+    }
+
+    getPriorityClass(priority) {
+        const classes = {
+            critical: 'bg-danger',
+            high: 'bg-warning',
+            medium: 'bg-info',
+            low: 'bg-success'
+        };
+        return classes[priority] || 'bg-secondary';
+    }
+
+    getPriorityText(priority) {
+        const texts = {
+            critical: 'Критичний',
+            high: 'Високий',
+            medium: 'Середній',
+            low: 'Низький'
+        };
+        return texts[priority] || 'Невідомо';
+    }
+
+    getTimeAgo(timestamp) {
+        const now = new Date();
+        const time = new Date(timestamp);
+        const diff = now - time;
+        
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(diff / 3600000);
+        const days = Math.floor(diff / 86400000);
+        
+        if (minutes < 1) return 'щойно';
+        if (minutes < 60) return `${minutes} хв тому`;
+        if (hours < 24) return `${hours} год тому`;
+        if (days < 7) return `${days} дн тому`;
+        
+        return time.toLocaleDateString('uk-UA');
+    }
+
+    showNotification(message, type = 'info') {
+        const toast = $(`<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="mr-auto">Сповіщення</strong>
+                <small class="text-muted">${new Date().toLocaleTimeString('uk-UA')}</small>
+                <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="toast-body">
+                ${message}
+            </div>
+        </div>`);
+
+        const headerClass = {
+            success: 'bg-success',
+            error: 'bg-danger',
+            warning: 'bg-warning',
+            info: 'bg-info'
+        }[type] || 'bg-info';
+
+        toast.find('.toast-header').addClass(`${headerClass} text-white`);
+        
+        if (!document.getElementById('toastContainer')) {
+            const container = document.createElement('div');
+            container.id = 'toastContainer';
+            container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+            container.style.zIndex = '9999';
+            document.body.appendChild(container);
+        }
+        
+        $('#toastContainer').append(toast);
+        toast.toast({ delay: 3000 }).toast('show');
+        toast.on('hidden.bs.toast', function () { $(this).remove(); });
+    }
+
+    // Метод для додавання нового сповіщення (для тестування)
+    addDemoNotification() {
+        const types = ['maintenance', 'alert', 'info', 'update', 'billing'];
+        const priorities = ['low', 'medium', 'high', 'critical'];
+        const messages = [
+            'Нове планове обслуговування заплановано на наступний тиждень.',
+            'Виявлено потенційну несправність у системі безпеки.',
+            'Оновлено графік роботи техніків на цей місяць.',
+            'Ваша остання заявка успішно виконана.',
+            'Новий рахунок доступний для перегляду в особистому кабінеті.'
+        ];
+        
+        const newNotification = {
+            id: Math.max(...this.notifications.map(n => n.id), 0) + 1,
+            title: 'Нове сповіщення',
+            message: messages[Math.floor(Math.random() * messages.length)],
+            type: types[Math.floor(Math.random() * types.length)],
+            priority: priorities[Math.floor(Math.random() * priorities.length)],
+            read: false,
+            timestamp: new Date().toISOString(),
+            relatedTo: 'test',
+            actionUrl: 'dashboard.html'
+        };
+        
+        this.notifications.unshift(newNotification);
+        this.saveNotifications();
+        this.filterNotifications(this.currentFilter);
+        this.updateBadges();
+        this.showNotification('Демо-сповіщення додано', 'success');
+    }
+}
+
+// Ініціалізація
+document.addEventListener('DOMContentLoaded', function() {
+    window.notificationManager = new NotificationManager();
+});

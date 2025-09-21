@@ -1,0 +1,155 @@
+/* Стилі для панелі клієнта */
+.client-dashboard {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f8f9fa;
+}
+
+.client-dashboard .sidebar {
+    background: linear-gradient(180deg, #27ae60 0%, #2ecc71 100%);
+}
+
+.client-dashboard .sidebar-nav a.active {
+    background: #219653;
+    border-left-color: #1e8449;
+}
+
+/* Кастомні стилі для клієнтської панелі */
+.quick-actions .action-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.quick-actions .btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    gap: 10px;
+    text-align: center;
+}
+
+.quick-actions .icon {
+    font-size: 24px;
+}
+
+/* Графік техобслуговування */
+.maintenance-schedule {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-top: 30px;
+}
+
+.schedule-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.schedule-card {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #3498db;
+}
+
+.schedule-card.soon {
+    border-left-color: #f39c12;
+}
+
+.schedule-card.urgent {
+    border-left-color: #e74c3c;
+}
+
+.schedule-card h4 {
+    margin: 0 0 10px 0;
+    color: #2c3e50;
+}
+
+.schedule-info {
+    display: flex;
+    justify-content: space-between;
+    color: #7f8c8d;
+    font-size: 14px;
+}
+
+/* Список активностей */
+.activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.activity-item {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #3498db;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.activity-item.maintenance {
+    border-left-color: #f39c12;
+}
+
+.activity-item.issue {
+    border-left-color: #e74c3c;
+}
+
+.activity-item.resolved {
+    border-left-color: #27ae60;
+}
+
+.activity-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.activity-title {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.activity-time {
+    color: #7f8c8d;
+    font-size: 12px;
+}
+
+.activity-details {
+    color: #7f8c8d;
+    font-size: 14px;
+}
+
+/* Статусні баджи */
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.status-operational {
+    background: #27ae60;
+    color: white;
+}
+
+.status-maintenance {
+    background: #f39c12;
+    color: white;
+}
+
+.status-inactive {
+    background: #95a5a6;
+    color: white;
+}
+
+.status-urgent {
+    background: #e74c3c;
+    color: white;
+}

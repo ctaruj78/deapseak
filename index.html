@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LiftMaster Pro - Панель управління</title>
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .login-logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .login-logo a {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .feature-box {
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            background: #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        .feature-box:hover {
+            transform: translateY(-5px);
+        }
+        .feature-box i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #007bff;
+        }
+        .qr-demo-container {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            margin: 30px 0;
+        }
+        .demo-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #dc3545;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+        .card-header {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+        }
+        .stats-box {
+            text-align: center;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .stats-box i {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        }
+        .bg-gradient-success {
+            background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+        }
+        .bg-gradient-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+        }
+        .bg-gradient-info {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+        }
+    </style>
+</head>
+<body class="hold-transition layout-top-nav">
+    <div class="wrapper">
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand-md navbar-light navbar-white">
+            <div class="container">
+                <a href="index.html" class="navbar-brand">
+                    <i class="fas fa-elevator fa-2x"></i>
+                    <span class="brand-text font-weight-bold ml-2">LiftMaster Pro</span>
+                </a>
+
+                <button class="navbar-toggler order-1" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse order-3" id="navbarCollapse">
+                    <ul class="navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <a href="#features" class="nav-link">Можливості</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#qr-system" class="nav-link">QR Система</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#about" class="nav-link">Про нас</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#contact" class="nav-link">Контакти</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <ul class="order-1 order-md-3 navbar-nav navbar-no-expand ml-auto">
+                    <li class="nav-item">
+                        <a href="login.html" class="nav-link">
+                            <i class="fas fa-sign-in-alt"></i> Вхід
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="register.html" class="nav-link">
+                            <i class="fas fa-user-plus"></i> Реєстрація
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <!-- /.navbar -->
+
+        <!-- Content Wrapper. Contains page content -->
+        <div class="content-wrapper">
+            <!-- Main content -->
+            <div class="content">
+                <div class="container">
+                    <!-- Hero Section -->
+                    <div class="row mt-5">
+                        <div class="col-lg-6">
+                            <div class="card card-primary">
+                                <div class="card-header">
+                                    <h3 class="card-title">Ласкаво просимо до LiftMaster Pro</h3>
+                                </div>
+                                <div class="card-body">
+                                    <h4>Інтелектуальна система управління ліфтами</h4>
+                                    <p class="lead">
+                                        Сучасне рішення для управління, моніторингу та обслуговування ліфтів
+                                    </p>
+                                    <div class="mt-4">
+                                        <a href="login.html" class="btn btn-primary btn-lg mr-2">
+                                            <i class="fas fa-sign-in-alt"></i> Почати роботу
+                                        </a>
+                                        <a href="register.html" class="btn btn-outline-primary btn-lg">
+                                            <i class="fas fa-user-plus"></i> Зареєструватися
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-elevator fa-10x text-primary mb-3"></i>
+                                    <div class="qr-demo-container position-relative">
+                                        <span class="demo-badge">ДЕМО</span>
+                                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=LFT-DEMO-123" alt="QR код демо" class="img-fluid">
+                                        <p class="mt-2">Скануй для демонстрації</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Boxes -->
+                    <div class="row mt-5">
+                        <div class="col-md-3 col-sm-6">
+                            <div class="stats-box bg-gradient-primary text-white">
+                                <i class="fas fa-elevator"></i>
+                                <h3>500+</h3>
+                                <p>Ліфтів в системі</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="stats-box bg-gradient-success text-white">
+                                <i class="fas fa-users"></i>
+                                <h3>150+</h3>
+                                <p>Користувачів</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="stats-box bg-gradient-warning text-white">
+                                <i class="fas fa-tools"></i>
+                                <h3>45+</h3>
+                                <p>Техніків</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="stats-box bg-gradient-info text-white">
+                                <i class="fas fa-qrcode"></i>
+                                <h3>100%</h3>
+                                <p>Ліфтів з QR-кодами</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Features Section -->
+                    <section id="features" class="mt-5">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Розширені можливості</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="feature-box">
+                                            <i class="fas fa-qrcode"></i>
+                                            <h4>QR Система</h4>
+                                            <p>Сканування кодів для швидкого доступу до інформації про ліфти</p>
+                                            <a href="pages/qr/generator.html" class="btn btn-primary btn-sm">Детальніше</a>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="feature-box">
+                                            <i class="fas fa-robot"></i>
+                                            <h4>AI Асистент</h4>
+                                            <p>Голосовий помічник для техніків та адміністраторів</p>
+                                            <a href="pages/ai-assistant/assistant.html" class="btn btn-primary btn-sm">Детальніше</a>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="feature-box">
+                                            <i class="fas fa-vr-cardboard"></i>
+                                            <h4>AR Допомога</h4>
+                                            <p>Допомога з ремонтом через доповнену реальність</p>
+                                            <a href="pages/ar-helper/ar-guide.html" class="btn btn-primary btn-sm">Детальніше</a>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="feature-box">
+                                            <i class="fas fa-chart-line"></i>
+                                            <h4>Аналітика</h4>
+                                            <p>Детальні звіти та прогнози технічного стану</p>
+                                            <a href="pages/admin/analytics.html" class="btn btn-primary btn-sm">Детальніше</a>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="feature-box">
+                                            <i class="fas fa-bell"></i>
+                                            <h4>Сповіщення</h4>
+                                            <p>Персональні сповіщення для кожного типу користувачів</p>
+                                            <a href="pages/notifications.html" class="btn btn-primary btn-sm">Детальніше</a>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="feature-box">
+                                            <i class="fas fa-mobile-alt"></i>
+                                            <h4>Мобільний доступ</h4>
+                                            <p>Повноцінний додаток для iOS та Android</p>
+                                            <a href="pages/mobile-app.html" class="btn btn-primary btn-sm">Детальніше</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- QR System Section -->
+                    <section id="qr-system" class="mt-5">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Як працює QR система</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="feature-box">
+                                            <i class="fas fa-1 fa-2x"></i>
+                                            <h4>Генерація коду</h4>
+                                            <p>Кожен ліфт отримує унікальний QR-код</p>
+                                            <a href="pages/qr/generator.html" class="btn btn-outline-primary btn-sm">Створити QR</a>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="feature-box">
+                                            <i class="fas fa-2 fa-2x"></i>
+                                            <h4>Сканування</h4>
+                                            <p>Технік сканує код на місці роботи</p>
+                                            <a href="pages/qr/scanner.html" class="btn btn-outline-primary btn-sm">Сканувати</a>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="feature-box">
+                                            <i class="fas fa-3 fa-2x"></i>
+                                            <h4>Доступ до інформації</h4>
+                                            <p>Миттєвий доступ до всієї інформації про ліфт</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="feature-box">
+                                            <i class="fas fa-4 fa-2x"></i>
+                                            <h4>Оновлення статусу</h4>
+                                            <p>Автоматичне оновлення статусу робіт</p>
+                                            <a href="pages/qr/history.html" class="btn btn-outline-primary btn-sm">Історія</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Call to Action -->
+                    <section class="mt-5">
+                        <div class="card card-primary">
+                            <div class="card-header">
+                                <h3 class="card-title">Готові почати?</h3>
+                            </div>
+                            <div class="card-body text-center">
+                                <h4>Приєднуйтесь до сучасної системи управління ліфтами вже сьогодні!</h4>
+                                <div class="mt-4">
+                                    <a href="register.html" class="btn btn-success btn-lg mr-3">
+                                        <i class="fas fa-rocket"></i> Безкоштовна реєстрація
+                                    </a>
+                                    <a href="#contact" class="btn btn-outline-light btn-lg">
+                                        <i class="fas fa-info-circle"></i> Демо-доступ
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+            <!-- /.content -->
+        </div>
+        <!-- /.content-wrapper -->
+
+        <!-- Main Footer -->
+        <footer class="main-footer">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Copyright &copy; 2024 <a href="#">LiftMaster Pro</a>.</strong>
+                        Всі права захищені.
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <b>Версія</b> 1.0.0
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+    <!-- ./wrapper -->
+
+    <!-- AdminLTE JS -->
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Bootstrap 4 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            console.log('LiftMaster Pro завантажено успішно!');
+            
+            // Плавна прокрутка
+            $('a[href^="#"]').on('click', function(e) {
+                e.preventDefault();
+                var target = this.hash;
+                var $target = $(target);
+                $('html, body').animate({
+                    'scrollTop': $target.offset().top
+                }, 800, 'swing');
+            });
+
+            // Анімація статистики
+            $('.stats-box').each(function() {
+                $(this).prop('Counter', 0).animate({
+                    Counter: $(this).find('h3').text()
+                }, {
+                    duration: 2000,
+                    easing: 'swing',
+                    step: function(now) {
+                        $(this).find('h3').text(Math.ceil(now));
+                    }
+                });
+            });
+
+            // Демо QR-код
+            $('.qr-demo-container').click(function() {
+                alert('Демо: QR-код успішно відскановано! Система відкриває інформацію про ліфт LFT-DEMO-123');
+            });
+        });
+    </script>
+
+</body>
+</html>
