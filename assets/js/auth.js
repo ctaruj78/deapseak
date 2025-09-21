@@ -90,7 +90,15 @@ class AuthManager {
     }
 
     async authenticate(username, password) {
-        const users = JSON.parse(localStorage.getItem('lm_users') || '[]');
+        // Підтримка різних ключів для користувачів
+        let users = [];
+        if (localStorage.getItem('lm_users')) {
+            users = JSON.parse(localStorage.getItem('lm_users'));
+        } else if (localStorage.getItem('users')) {
+            users = JSON.parse(localStorage.getItem('users'));
+        } else if (localStorage.getItem('userData')) {
+            users = [JSON.parse(localStorage.getItem('userData'))];
+        }
         return users.find(user => 
             user.username === username && 
             user.password === password &&
@@ -114,7 +122,8 @@ class AuthManager {
         };
 
         localStorage.setItem('lm_session', JSON.stringify(session));
-        // Зберігаємо тестовий токен для API
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        localStorage.setItem('userData', JSON.stringify(user));
         localStorage.setItem('auth_token', 'test-token');
         CommonUtils.showNotification(`Вітаємо, ${user.firstName}!`, 'success');
     }
