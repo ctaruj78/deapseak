@@ -1,5 +1,30 @@
 // assets/js/maps.js
 $(document).ready(function() {
+    // Геокодування адреси через Nominatim
+    $('#btnGeocode').click(function() {
+        const address = $('#addressInput').val().trim();
+        if (!address) {
+            alert('Введіть адресу!');
+            return;
+        }
+        $.get('https://nominatim.openstreetmap.org/search', {
+            q: address,
+            format: 'json',
+            addressdetails: 1,
+            limit: 1
+        }, function(data) {
+            if (data && data.length > 0) {
+                const lat = parseFloat(data[0].lat);
+                const lon = parseFloat(data[0].lon);
+                map.setView([lat, lon], 16);
+                L.marker([lat, lon]).addTo(map)
+                    .bindPopup('Координати для: ' + address)
+                    .openPopup();
+            } else {
+                alert('Адресу не знайдено!');
+            }
+        });
+    });
     // Моки для ліфтів (замінити на реальні дані)
     const lifts = window.allLifts || [
         { id: '1', model: 'Otis', lat: 50.4501, lng: 30.5234, address: 'Київ, вул. Хрещатик 1' },
