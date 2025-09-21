@@ -1,7 +1,25 @@
 class StorageManager {
+    // Fallback для Node.js: in-memory storage
+    static getStorage() {
+        if (typeof localStorage !== 'undefined') {
+            return localStorage;
+        }
+        if (!global.memoryStorage) {
+            global.memoryStorage = {};
+        }
+        return {
+            setItem: (key, value) => { global.memoryStorage[key] = value; },
+            getItem: (key) => global.memoryStorage[key] || null,
+            removeItem: (key) => { delete global.memoryStorage[key]; },
+            clear: () => { global.memoryStorage = {}; },
+            hasOwnProperty: (key) => Object.prototype.hasOwnProperty.call(global.memoryStorage, key),
+            keys: () => Object.keys(global.memoryStorage)
+        };
+    }
+
     static save(key, data) {
         try {
-            localStorage.setItem(key, JSON.stringify(data));
+            this.getStorage().setItem(key, JSON.stringify(data));
             return true;
         } catch (error) {
             console.error('Помилка збереження даних:', error);
@@ -12,7 +30,7 @@ class StorageManager {
 
     static load(key) {
         try {
-            const data = localStorage.getItem(key);
+            const data = this.getStorage().getItem(key);
             return data ? JSON.parse(data) : null;
         } catch (error) {
             console.error('Помилка завантаження даних:', error);
@@ -22,7 +40,7 @@ class StorageManager {
 
     static remove(key) {
         try {
-            localStorage.removeItem(key);
+            this.getStorage().removeItem(key);
             return true;
         } catch (error) {
             console.error('Помилка видалення даних:', error);
@@ -32,7 +50,7 @@ class StorageManager {
 
     static clearAll() {
         try {
-            localStorage.clear();
+            this.getStorage().clear();
             return true;
         } catch (error) {
             console.error('Помилка очищення сховища:', error);
@@ -42,7 +60,11 @@ class StorageManager {
 
     static getAllKeys() {
         try {
-            return Object.keys(localStorage);
+            if (typeof localStorage !== 'undefined') {
+                return Object.keys(localStorage);
+            } else {
+                return Object.keys(global.memoryStorage || {});
+            }
         } catch (error) {
             console.error('Помилка отримання ключів:', error);
             return [];
@@ -235,4 +257,9 @@ class StorageManager {
 // Додаємо глобальний об'єкт для відладки
 if (typeof window !== 'undefined') {
     window.StorageManager = StorageManager;
+}
+
+// Додаємо експорти для Node.js (тести)
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { StorageManager };
 }
