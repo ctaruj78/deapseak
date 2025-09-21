@@ -42,6 +42,15 @@ describe('Login simulation for all roles', () => {
         isActive: true,
         firstName: 'Петро',
         email: 'client1@liftmaster.com'
+      },
+      {
+        id: 4,
+        username: 'dispatcher1',
+        password: 'dispatcher123',
+        role: 'dispatcher',
+        isActive: true,
+        firstName: 'Олег',
+        email: 'dispatcher1@liftmaster.com'
       }
     ]));
   });
@@ -75,6 +84,15 @@ describe('Login simulation for all roles', () => {
     expect(user.role).toBe('client');
     await auth.createSession(user, false);
     expect(JSON.parse(localStorage.getItem('currentUser')).role).toBe('client');
+    expect(localStorage.getItem('auth_token')).toBe('test-token');
+  });
+  test('Dispatcher login works', async () => {
+    const auth = new AuthManager({ isTest: true });
+    const user = await auth.authenticate('dispatcher1', 'dispatcher123');
+    expect(user).toBeDefined();
+    expect(user.role).toBe('dispatcher');
+    await auth.createSession(user, false);
+    expect(JSON.parse(localStorage.getItem('currentUser')).role).toBe('dispatcher');
     expect(localStorage.getItem('auth_token')).toBe('test-token');
   });
 

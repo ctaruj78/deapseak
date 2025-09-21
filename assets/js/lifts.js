@@ -147,29 +147,31 @@ class LiftManager {
     }
 
     resetForm() {
-        $('#liftForm')[0].reset();
-        $('#liftId').val('');
-        $('#modalTitle').text('Додати ліфт');
-        $('#liftForm input, #liftForm select').removeClass('is-invalid');
+    $('#liftForm')[0].reset();
+    $('#liftId').val('');
+    $('#modalTitle').text('Додати ліфт');
+    $('#liftForm input, #liftForm select').removeClass('is-invalid');
+    $('#inspectionReport').val('');
+    $('#liftLat').val('');
+    $('#liftLng').val('');
     }
 
     fillForm(lift) {
-        $('#liftId').val(lift.id);
-        $('#liftModel').val(lift.model || '');
-        $('#liftType').val(lift.type || '');
-        $('#liftManufacturer').val(lift.manufacturer || '');
-        $('#liftSerial').val(lift.serial || '');
-        $('#liftStatus').val(lift.status || 'active');
-        $('#liftInstallation').val(lift.installationDate || '');
-        $('#liftLocation').val(lift.address || '');
-        $('#liftPostal').val(lift.postalCode || '');
-        $('#liftLat').val(lift.lat || '');
-        $('#liftLng').val(lift.lng || '');
-        $('#liftClient').val(lift.client || '');
-        $('#liftClientPhone').val(lift.clientPhone || '');
-        $('#lastMaintenance').val(lift.lastMaintenance || '');
-        $('#nextMaintenance').val(lift.nextMaintenance || '');
-        $('#maintenanceFrequency').val(lift.inspectionFrequency || 6);
+    $('#liftId').val(lift.id);
+    $('#liftModel').val(lift.model || '');
+    $('#liftType').val(lift.type || '');
+    $('#liftAddress').val(lift.address || '');
+    $('#liftPostcode').val(lift.postalCode || '');
+    $('#clientEmail').val(lift.clientEmail || '');
+    $('#liftCapacity').val(lift.capacity || '');
+    $('#liftSpeed').val(lift.speed || '');
+    $('#inspectionReport').val(''); // файл не заповнюємо
+    $('#liftLocation').val(lift.location || '');
+    $('#liftLat').val(lift.lat || '');
+    $('#liftLng').val(lift.lng || '');
+    $('#lastMaintenance').val(lift.lastMaintenance || '');
+    $('#nextMaintenance').val(lift.nextMaintenance || '');
+    $('#liftStatus').val(lift.status || 'active');
 
         // Оновлення карти
         if (lift.lat && lift.lng && this.map) {
@@ -186,8 +188,11 @@ class LiftManager {
     saveLift() {
         try {
             // Валідація обов'язкових полів
-            const requiredFields = ['liftModel', 'liftType', 'liftManufacturer', 'liftSerial', 
-                                  'liftLocation', 'liftClient', 'lastMaintenance', 'nextMaintenance'];
+            const requiredFields = [
+                'liftModel', 'liftType', 'liftAddress', 'liftPostcode', 'clientEmail',
+                'liftCapacity', 'liftSpeed', 'liftLocation', 'liftLat', 'liftLng',
+                'lastMaintenance', 'nextMaintenance', 'liftStatus'
+            ];
             let isValid = true;
 
             requiredFields.forEach(field => {
@@ -206,25 +211,26 @@ class LiftManager {
             }
 
             const liftId = $('#liftId').val();
+            const inspectionFile = $('#inspectionReport')[0].files[0] || null;
             const lift = {
                 id: liftId || generateUniqueId(),
                 model: $('#liftModel').val(),
                 type: $('#liftType').val(),
-                manufacturer: $('#liftManufacturer').val(),
-                serial: $('#liftSerial').val(),
-                status: $('#liftStatus').val(),
-                installationDate: $('#liftInstallation').val(),
-                address: $('#liftLocation').val(),
-                postalCode: $('#liftPostal').val(),
+                address: $('#liftAddress').val(),
+                postalCode: $('#liftPostcode').val(),
+                clientEmail: $('#clientEmail').val(),
+                capacity: $('#liftCapacity').val() ? parseInt($('#liftCapacity').val()) : null,
+                speed: $('#liftSpeed').val() ? parseFloat($('#liftSpeed').val()) : null,
+                inspectionReport: inspectionFile ? inspectionFile.name : '',
+                location: $('#liftLocation').val(),
                 lat: $('#liftLat').val() ? parseFloat($('#liftLat').val()) : null,
                 lng: $('#liftLng').val() ? parseFloat($('#liftLng').val()) : null,
-                client: $('#liftClient').val(),
-                clientPhone: $('#liftClientPhone').val(),
                 lastMaintenance: $('#lastMaintenance').val(),
                 nextMaintenance: $('#nextMaintenance').val(),
-                inspectionFrequency: $('#maintenanceFrequency').val() ? parseInt($('#maintenanceFrequency').val()) : 6,
+                status: $('#liftStatus').val(),
                 updatedAt: new Date().toISOString()
             };
+            // Можна додати логіку збереження inspectionFile у API/локально
 
             if (!liftId) {
                 lift.createdAt = new Date().toISOString();
