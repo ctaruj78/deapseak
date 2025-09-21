@@ -1,2 +1,2 @@
 # deapseak
-prolift
+prolift 1
