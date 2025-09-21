@@ -44,15 +44,18 @@ if (!localStorage.getItem('lm_users')) {
 }
 
 class AuthManager {
-    constructor() {
+    constructor(options = {}) {
         this.currentUser = null;
         this.loginAttempts = 0;
+        this.isTest = options.isTest || false;
         this.init();
     }
 
     init() {
         this.loadSession();
-        this.setupEventListeners();
+        if (!this.isTest && typeof document !== 'undefined') {
+            this.setupEventListeners();
+        }
     }
 
     setupEventListeners() {
@@ -125,7 +128,9 @@ class AuthManager {
         localStorage.setItem('currentUser', JSON.stringify(user));
         localStorage.setItem('userData', JSON.stringify(user));
         localStorage.setItem('auth_token', 'test-token');
-        CommonUtils.showNotification(`Вітаємо, ${user.firstName}!`, 'success');
+        if (!this.isTest && typeof CommonUtils !== 'undefined') {
+            CommonUtils.showNotification(`Вітаємо, ${user.firstName}!`, 'success');
+        }
     }
 
     redirectToDashboard(role) {
@@ -191,6 +196,13 @@ class AuthManager {
 }
 
 // Initialize auth manager
-document.addEventListener('DOMContentLoaded', function() {
-    window.authManager = new AuthManager();
-});
+if (typeof document !== 'undefined') {
+    document.addEventListener('DOMContentLoaded', function() {
+        window.authManager = new AuthManager();
+    });
+}
+
+// Експорт для автотестів (Node.js)
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = AuthManager;
+}
