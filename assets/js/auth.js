@@ -39,6 +39,19 @@ if (!localStorage.getItem('lm_users')) {
             avatar: null,
             isActive: true,
             createdAt: new Date().toISOString()
+        },
+        {
+            id: 4,
+            username: 'dispatcher1',
+            password: 'dispatcher123',
+            email: 'dispatcher1@liftmaster.com',
+            role: 'dispatcher',
+            firstName: 'Олег',
+            lastName: 'Диспетчер',
+            phone: '+380441234570',
+            avatar: null,
+            isActive: true,
+            createdAt: new Date().toISOString()
         }
     ]));
 }
