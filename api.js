@@ -3,7 +3,9 @@ let IS_DEVELOPMENT = false;
 if (typeof window !== 'undefined' && window.location) {
     IS_DEVELOPMENT = window.location.hostname === 'localhost' || 
                      window.location.hostname === '127.0.0.1' ||
-                     window.location.hostname === '';
+                     window.location.hostname === '' ||
+                     window.location.hostname.includes('github.dev') ||
+                     window.location.hostname.includes('app.github.dev');
 } else {
     IS_DEVELOPMENT = process.env.NODE_ENV === 'development' || false;
 }

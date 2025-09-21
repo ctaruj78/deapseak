@@ -1,3 +1,48 @@
+// Автоматична ініціалізація тестових користувачів
+if (!localStorage.getItem('lm_users')) {
+    localStorage.setItem('lm_users', JSON.stringify([
+        {
+            id: 1,
+            username: 'admin',
+            password: 'admin123',
+            email: 'admin@liftmaster.com',
+            role: 'admin',
+            firstName: 'Адміністратор',
+            lastName: 'Системи',
+            phone: '+380441234567',
+            avatar: null,
+            isActive: true,
+            createdAt: new Date().toISOString()
+        },
+        {
+            id: 2,
+            username: 'tech1',
+            password: 'tech123',
+            email: 'tech1@liftmaster.com',
+            role: 'tech',
+            firstName: 'Іван',
+            lastName: 'Технік',
+            phone: '+380441234568',
+            avatar: null,
+            isActive: true,
+            createdAt: new Date().toISOString()
+        },
+        {
+            id: 3,
+            username: 'client1',
+            password: 'client123',
+            email: 'client1@liftmaster.com',
+            role: 'client',
+            firstName: 'Петро',
+            lastName: 'Клієнт',
+            phone: '+380441234569',
+            avatar: null,
+            isActive: true,
+            createdAt: new Date().toISOString()
+        }
+    ]));
+}
+
 class AuthManager {
     constructor() {
         this.currentUser = null;
@@ -69,18 +114,20 @@ class AuthManager {
         };
 
         localStorage.setItem('lm_session', JSON.stringify(session));
+        // Зберігаємо тестовий токен для API
+        localStorage.setItem('auth_token', 'test-token');
         CommonUtils.showNotification(`Вітаємо, ${user.firstName}!`, 'success');
     }
 
     redirectToDashboard(role) {
         const dashboards = {
-            admin: 'pages/admin/dashboard.html',
+            admin: 'pages/admin/admin-dashboard.html',
             tech: 'pages/tech/dashboard.html',
             client: 'pages/client/dashboard.html',
             dispatcher: 'pages/dispatcher/dashboard.html'
         };
 
-        window.location.href = dashboards[role] || 'pages/admin/dashboard.html';
+        window.location.href = dashboards[role] || 'pages/admin/admin-dashboard.html';
     }
 
     handleFailedLogin() {
