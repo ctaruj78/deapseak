@@ -374,8 +374,21 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="municipalityCamera">Номер камери муніципалітету</label>
-                                    <input type="text" id="municipalityCamera" class="form-control" placeholder="Номер камери">
+                                    <label for="municipalityId">Ідентифікаційний номер муніципалітету</label>
+                                    <input type="text" id="municipalityId" class="form-control" placeholder="Ідентифікаційний номер">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="liftCount">Кількість ліфтів</label>
+                                    <select id="liftCount" class="form-control">
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -383,6 +396,14 @@
                         <div class="row">
                             <div class="col-md-12">
                                 <button type="button" class="btn btn-secondary" id="addLiftRow">Додати ще ліфт</button>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="liftMap">Мапа локації</label>
+                                    <div id="liftMap" style="height: 300px; border: 1px solid #ddd;"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -562,6 +583,78 @@
                         </div>
                     `);
                     additionalLifts.append(newRow);
+                });
+
+                // Зміна кількості ліфтів
+                $('#liftCount').on('change', function() {
+                    const count = parseInt(this.value);
+                    const additionalLifts = $('#additionalLifts');
+                    additionalLifts.empty();
+                    for (let i = 2; i <= count; i++) {
+                        const newRow = $(`
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Ідентифікаційний номер муніципалітету для ліфта ${i}</label>
+                                        <input type="text" class="form-control" placeholder="Ідентифікаційний номер">
+                                    </div>
+                                </div>
+                            </div>
+                        `);
+                        additionalLifts.append(newRow);
+                    }
+                });
+
+                // Ініціалізація мапи
+                const map = L.map('liftMap').setView([50.4501, 30.5234], 13); // Київ, Україна
+
+                // Додати шар карти OpenStreetMap
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '© OpenStreetMap'
+                }).addTo(map);
+
+                // Додати маркер за замовчуванням
+                let marker = L.marker([50.4501, 30.5234], { draggable: true }).addTo(map);
+
+                // Оновлення координат при перетягуванні маркера
+                marker.on('dragend', function (e) {
+                    const position = marker.getLatLng();
+                    document.getElementById('liftLat').value = position.lat.toFixed(6);
+                    document.getElementById('liftLng').value = position.lng.toFixed(6);
+                });
+
+                // Визначення координат за адресою
+                document.getElementById('btnGeocode').addEventListener('click', function () {
+                    const address = document.getElementById('liftAddress').value;
+                    if (!address) {
+                        alert('Будь ласка, введіть адресу.');
+                        return;
+                    }
+
+                    // Використання Nominatim API для геокодування
+                    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.length > 0) {
+                                const lat = parseFloat(data[0].lat);
+                                const lon = parseFloat(data[0].lon);
+
+                                // Оновити маркер і мапу
+                                marker.setLatLng([lat, lon]);
+                                map.setView([lat, lon], 13);
+
+                                // Оновити поля координат
+                                document.getElementById('liftLat').value = lat.toFixed(6);
+                                document.getElementById('liftLng').value = lon.toFixed(6);
+                            } else {
+                                alert('Координати не знайдено. Спробуйте уточнити адресу.');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Помилка геокодування:', error);
+                            alert('Не вдалося визначити координати.');
+                        });
                 });
             }
 
