@@ -120,36 +120,6 @@
                         <li class="nav-item"><a href="settings.html" class="nav-link"><i class="nav-icon fas fa-cog"></i><p>Налаштування</p></a></li>
                         <li class="nav-item"><a href="profile.html" class="nav-link"><i class="nav-icon fas fa-user"></i><p>Профіль</p></a></li>
                         <li class="nav-item"><a href="#" class="nav-link" onclick="logout()"><i class="nav-icon fas fa-sign-out-alt"></i><p>Вийти</p></a></li>
-                        <li class="nav-item">
-                            <a href="users.html" class="nav-link">
-                                <i class="nav-icon fas fa-users"></i>
-                                <p>Користувачі</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="reports.html" class="nav-link">
-                                <i class="nav-icon fas fa-chart-bar"></i>
-                                <p>Звіти</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="analytics.html" class="nav-link">
-                                <i class="nav-icon fas fa-analytics"></i>
-                                <p>Аналітика</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="settings.html" class="nav-link">
-                                <i class="nav-icon fas fa-cog"></i>
-                                <p>Налаштування</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" onclick="logout()">
-                                <i class="nav-icon fas fa-sign-out-alt"></i>
-                                <p>Вийти</p>
-                            </a>
-                        </li>
                     </ul>
                 </nav>
             </div>
@@ -395,6 +365,26 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="clientName">Клієнт</label>
+                                    <input type="text" id="clientName" class="form-control" placeholder="Ім'я клієнта">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="municipalityCamera">Номер камери муніципалітету</label>
+                                    <input type="text" id="municipalityCamera" class="form-control" placeholder="Номер камери">
+                                </div>
+                            </div>
+                        </div>
+                        <div id="additionalLifts"></div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <button type="button" class="btn btn-secondary" id="addLiftRow">Додати ще ліфт</button>
+                            </div>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <div class="mr-auto" id="qrSection" style="display:none">
@@ -550,6 +540,28 @@
                     if (liftId) {
                         this.editLift(liftId);
                     }
+                });
+
+                // Додавання нових ліфтів
+                $('#addLiftRow').on('click', () => {
+                    const additionalLifts = $('#additionalLifts');
+                    const newRow = $(`
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Клієнт</label>
+                                    <input type="text" class="form-control" placeholder="Ім'я клієнта">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Номер камери муніципалітету</label>
+                                    <input type="text" class="form-control" placeholder="Номер камери">
+                                </div>
+                            </div>
+                        </div>
+                    `);
+                    additionalLifts.append(newRow);
                 });
             }
 
