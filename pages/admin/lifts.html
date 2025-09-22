@@ -322,17 +322,11 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="liftLocation">Локація (опис) *</label>
-                                    <input type="text" id="liftLocation" class="form-control" required>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="form-group">
                                     <label for="liftLat">Широта (latitude)</label>
                                     <input type="number" id="liftLat" class="form-control" step="0.000001" required>
                                 </div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="liftLng">Довгота (longitude)</label>
                                     <input type="number" id="liftLng" class="form-control" step="0.000001" required>
@@ -372,14 +366,6 @@
                                     <input type="text" id="clientName" class="form-control" placeholder="Ім'я клієнта">
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="municipalityId">Ідентифікаційний номер муніципалітету</label>
-                                    <input type="text" id="municipalityId" class="form-control" placeholder="Ідентифікаційний номер">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="liftCount">Кількість ліфтів</label>
@@ -603,25 +589,22 @@
                     document.getElementById('liftLng').value = position.lng.toFixed(6);
                 });
 
-                // Визначення координат за адресою
+                // Визначення координат за адресою та поштовим кодом
                 document.getElementById('btnGeocode').addEventListener('click', function () {
                     const address = document.getElementById('liftAddress').value;
-                    if (!address) {
-                        alert('Будь ласка, введіть адресу.');
+                    const postcode = document.getElementById('liftPostcode').value;
+                    if (!address || !postcode) {
+                        alert('Будь ласка, введіть адресу та поштовий код.');
                         return;
                     }
 
                     // Використання Nominatim API для геокодування
-                    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`)
+                    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address + ' ' + postcode)}`)
                         .then(response => response.json())
                         .then(data => {
                             if (data.length > 0) {
                                 const lat = parseFloat(data[0].lat);
                                 const lon = parseFloat(data[0].lon);
-
-                                // Оновити маркер і мапу
-                                marker.setLatLng([lat, lon]);
-                                map.setView([lat, lon], 13);
 
                                 // Оновити поля координат
                                 document.getElementById('liftLat').value = lat.toFixed(6);
@@ -657,7 +640,6 @@
                 $('#liftId').val(lift.id);
                 $('#liftModel').val(lift.model || '');
                 $('#liftType').val(lift.type || '');
-                $('#liftLocation').val(lift.location || '');
                 $('#liftStatus').val(lift.status || 'active');
                 $('#lastMaintenance').val(lift.lastMaintenance || '');
                 $('#nextMaintenance').val(lift.nextMaintenance || '');
