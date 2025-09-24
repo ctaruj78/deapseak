@@ -780,10 +780,131 @@
                 }
                 
                 $('#liftModal').modal('show');
+
+                // Ініціалізація карти після відкриття модального вікна
+                $('#liftModal').one('shown.bs.modal', () => {
+                    setTimeout(() => {
+                        this.initializeMap();
+                    }, 100);
+                });
             }
 
-            closeModal() {
-                $('#liftModal').modal('hide');
+            initializeMap() {
+                // Перевірити, чи елемент карти існує
+                if (!document.getElementById('liftMap')) {
+                    console.error('Елемент карти не знайдено');
+                    return;
+                }
+
+                // Перевірити, чи карта вже ініціалізована
+                if (window.liftMap) {
+                    // Оновити маркер на основі поточних координат
+                    const lat = parseFloat($('#liftLat').val());
+                    const lng = parseFloat($('#liftLng').val());
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                        window.liftMap.setView([lat, lng], 15);
+                        window.liftMarker.setLatLng([lat, lng]);
+                    }
+                    return;
+                }
+
+                // Отримати поточні координати або за замовчуванням
+                let lat = parseFloat($('#liftLat').val()) || 50.4501;
+                let lng = parseFloat($('#liftLng').val()) || 30.5234;
+
+                try {
+                    // Ініціалізація мапи
+                    const map = L.map('liftMap').setView([lat, lng], 13);
+                    window.liftMap = map;
+
+                    // Додати шар карти OpenStreetMap
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19,
+                        attribution: '© OpenStreetMap'
+                    }).addTo(map);
+
+                    // Додати маркер
+                    let marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+                    window.liftMarker = marker;
+
+                    console.log('Карта ініціалізована успішно');
+                } catch (error) {
+                    console.error('Помилка ініціалізації карти:', error);
+                }
+
+                // Оновлення координат при перетягуванні маркера
+                marker.on('dragend', function (e) {
+                    const position = marker.getLatLng();
+                    document.getElementById('liftLat').value = position.lat.toFixed(6);
+                    document.getElementById('liftLng').value = position.lng.toFixed(6);
+                });
+
+                // Визначення координат за адресою та поштовим кодом
+                document.getElementById('btnGeocode').addEventListener('click', function () {
+                    const address = document.getElementById('liftAddress').value;
+                    const postcode = document.getElementById('liftPostcode').value;
+                    const btn = this;
+                    
+                    if (!address || !postcode) {
+                        liftManager.showNotification('Будь ласка, введіть адресу та поштовий код.', 'error');
+                        return;
+                    }
+
+                    // Показати індикатор завантаження
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Пошук...';
+                    btn.disabled = true;
+
+                    // Використання Nominatim API для геокодування
+                    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address + ' ' + postcode)}&limit=1`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.length > 0) {
+                                const lat = parseFloat(data[0].lat);
+                                const lon = parseFloat(data[0].lon);
+
+                                // Оновити поля координат
+                                document.getElementById('liftLat').value = lat.toFixed(6);
+                                document.getElementById('liftLng').value = lon.toFixed(6);
+                                
+                                // Оновити мапу, якщо вона ініціалізована
+                                if (window.liftMap) {
+                                    window.liftMap.setView([lat, lon], 15);
+                                    if (window.liftMarker) {
+                                        window.liftMarker.setLatLng([lat, lon]);
+                                    } else {
+                                        window.liftMarker = L.marker([lat, lon]).addTo(window.liftMap);
+                                    }
+                                }
+                                
+                                liftManager.showNotification('Координати визначено успішно!', 'success');
+                            } else {
+                                liftManager.showNotification('Координати не знайдено. Спробуйте уточнити адресу або поштовий код.', 'error');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Помилка геокодування:', error);
+                            liftManager.showNotification('Не вдалося визначити координати. Перевірте інтернет-з\'єднання.', 'error');
+                        })
+                        .finally(() => {
+                            // Відновити кнопку
+                            btn.innerHTML = originalText;
+                            btn.disabled = false;
+                        });
+                }.bind(this));
+
+                // Оновлення мапи при зміні координат
+                $('#liftLat, #liftLng').on('input', function() {
+                    const lat = parseFloat($('#liftLat').val());
+                    const lng = parseFloat($('#liftLng').val());
+                    
+                    if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+                        if (window.liftMap && window.liftMarker) {
+                            window.liftMarker.setLatLng([lat, lng]);
+                            window.liftMap.setView([lat, lng], 15);
+                        }
+                    }
+                });
             }
 
             fillForm(lift) {
@@ -809,6 +930,13 @@
                 $('#liftId').val('');
                 $('#modalTitle').text('Додати ліфт');
                 this.setFormReadOnly(false);
+
+                // Очистити карту
+                if (window.liftMap) {
+                    window.liftMap.remove();
+                    window.liftMap = null;
+                    window.liftMarker = null;
+                }
             }
 
             setFormReadOnly(readOnly) {
