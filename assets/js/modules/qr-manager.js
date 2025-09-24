@@ -176,12 +176,60 @@ const qrManager = (function() {
             const defaultExpiry = new Date();
             defaultExpiry.setDate(defaultExpiry.getDate() + 30);
             document.getElementById('qrExpiry').value = formatDate(defaultExpiry, 'YYYY-MM-DD');
+            // Reset dynamic fields
+            $('#dynamicFields').hide();
+            $('.dynamic-section').hide();
+            $('#qrPreview').html(`
+                <div class="text-muted">
+                    <i class="fas fa-qrcode fa-3x mb-2"></i>
+                    <p>QR-код з'явиться після заповнення полів</p>
+                </div>
+            `);
         });
+
+        // Update preview on input change
+        $('#qrType, #qrTarget').on('change input', updateQRPreview);
 
         // Initialize Select2
         $('.select2').select2({
             theme: 'bootstrap4'
         });
+    }
+
+    // Handle type change in generate modal
+    function onTypeChange() {
+        const type = $('#qrType').val();
+        $('#dynamicFields').hide();
+        $('.dynamic-section').hide();
+        
+        if (type) {
+            $('#dynamicFields').show();
+            $(`#${type}Fields`).show();
+            updateQRPreview();
+        }
+    }
+
+    // Update QR preview
+    function updateQRPreview() {
+        const type = $('#qrType').val();
+        const target = $('#qrTarget').val();
+        
+        if (type && target) {
+            // Generate preview QR (using placeholder for now)
+            const previewHtml = `
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=Type:${type},Target:${encodeURIComponent(target)}" 
+                     alt="QR Preview" class="img-fluid">
+                <p class="mt-2 text-muted small">Попередній перегляд</p>
+            `;
+            $('#qrPreview').html(previewHtml);
+        } else {
+            $('#qrPreview').html(`
+                <div class="text-muted">
+                    <i class="fas fa-qrcode fa-3x mb-2"></i>
+                    <p>QR-код з'явиться після заповнення полів</p>
+                </div>
+            `);
+        }
     }
 
     // Setup form handlers
@@ -202,6 +250,17 @@ const qrManager = (function() {
         // Create form submission
         $('#generateQRForm').on('submit', function(e) {
             e.preventDefault();
+            
+            // Validate expiry date
+            const expiryDate = new Date($('#qrExpiry').val());
+            const minDate = new Date();
+            minDate.setDate(minDate.getDate() + 30);
+            
+            if (expiryDate < minDate) {
+                showNotification('Дата закінчення повинна бути мінімум через 30 днів', 'warning');
+                return;
+            }
+            
             const formData = new FormData(this);
             
             createNewQR(formData);
@@ -535,16 +594,50 @@ const qrManager = (function() {
     // Create new QR code
     function createNewQR(formData) {
         const newId = 'QR' + String(currentQRs.length + 1).padStart(4, '0');
+        const type = $('#qrType').val();
+        
+        // Gather metadata from dynamic fields
+        let metadata = {};
+        if (formData.get('metadata')) {
+            try {
+                metadata = JSON.parse(formData.get('metadata'));
+            } catch (e) {
+                metadata = { note: formData.get('metadata') };
+            }
+        }
+        
+        // Add type-specific data
+        if (type === 'lift') {
+            metadata.liftDetails = {
+                number: $('#liftNumber').val(),
+                manufacturer: $('#liftManufacturer').val(),
+                model: $('#liftModel').val(),
+                address: $('#liftAddress').val(),
+                floors: $('#liftFloors').val(),
+                capacity: $('#liftCapacity').val()
+            };
+        } else if (type === 'technician') {
+            metadata.techDetails = {
+                name: $('#techName').val(),
+                specialization: $('#techSpecialization').val()
+            };
+        } else if (type === 'location') {
+            metadata.locationDetails = {
+                address: $('#locationAddress').val(),
+                lat: $('#locationLat').val(),
+                lng: $('#locationLng').val()
+            };
+        }
         
         const newQR = {
             id: newId,
-            type: formData.get('type'),
-            target: formData.get('target'),
-            status: formData.get('status'),
+            type: type,
+            target: $('#qrTarget').val(),
+            status: $('#qrStatus').val(),
             created: new Date(),
-            expiry: new Date(formData.get('expiry')),
+            expiry: new Date($('#qrExpiry').val()),
             scans: 0,
-            metadata: formData.get('metadata') ? JSON.parse(formData.get('metadata')) : {}
+            metadata: metadata
         };
         
         currentQRs.unshift(newQR);
@@ -760,7 +853,9 @@ const qrManager = (function() {
         searchQR: searchQR,
         updateSelectedQRs: updateSelectedQRs,
         showScanHistory: showScanHistory,
-        showTemplate: showTemplate
+        showTemplate: showTemplate,
+        onTypeChange: onTypeChange,
+        updateQRPreview: updateQRPreview
     };
 }
 // Initialize when document is ready

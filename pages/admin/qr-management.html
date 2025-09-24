@@ -664,7 +664,7 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Тип QR-коду *</label>
-                                    <select id="qrType" class="form-control" required>
+                                    <select id="qrType" class="form-control" required onchange="qrManager.onTypeChange()">
                                         <option value="">Оберіть тип...</option>
                                         <option value="lift">Для ліфта</option>
                                         <option value="technician">Для техніка</option>
@@ -678,6 +678,112 @@
                                 <div class="form-group">
                                     <label>Призначення *</label>
                                     <input type="text" id="qrTarget" class="form-control" required placeholder="Наприклад: Ліфт №101">
+                                    <small class="form-text text-muted">Короткий опис призначення QR-коду</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Динамічні поля залежно від типу -->
+                        <div id="dynamicFields" style="display:none;">
+                            <!-- Поля для ліфта -->
+                            <div id="liftFields" class="dynamic-section" style="display:none;">
+                                <h6 class="text-primary"><i class="fas fa-elevator"></i> Деталі ліфта</h6>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>Номер ліфта</label>
+                                            <input type="text" id="liftNumber" class="form-control" placeholder="Наприклад: 101">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>Виробник</label>
+                                            <select id="liftManufacturer" class="form-control">
+                                                <option value="">Оберіть...</option>
+                                                <option value="Schindler">Schindler</option>
+                                                <option value="Otis">Otis</option>
+                                                <option value="Kone">Kone</option>
+                                                <option value="ThyssenKrupp">ThyssenKrupp</option>
+                                                <option value="Інший">Інший</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>Модель</label>
+                                            <input type="text" id="liftModel" class="form-control" placeholder="Наприклад: SX-500">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>Адреса установки</label>
+                                            <input type="text" id="liftAddress" class="form-control" placeholder="Вулиця, будинок">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label>Поверхи</label>
+                                            <input type="number" id="liftFloors" class="form-control" min="2" placeholder="5">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label>Вантажопідйомність (кг)</label>
+                                            <input type="number" id="liftCapacity" class="form-control" min="100" placeholder="630">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Поля для техніка -->
+                            <div id="technicianFields" class="dynamic-section" style="display:none;">
+                                <h6 class="text-success"><i class="fas fa-user-cog"></i> Деталі техніка</h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>Ім'я техніка</label>
+                                            <input type="text" id="techName" class="form-control" placeholder="ПІБ">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>Спеціалізація</label>
+                                            <select id="techSpecialization" class="form-control">
+                                                <option value="">Оберіть...</option>
+                                                <option value="електрик">Електрик</option>
+                                                <option value="механік">Механік</option>
+                                                <option value="інженер">Інженер</option>
+                                                <option value="універсал">Універсал</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Поля для локації -->
+                            <div id="locationFields" class="dynamic-section" style="display:none;">
+                                <h6 class="text-info"><i class="fas fa-map-marker-alt"></i> Деталі локації</h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>Адреса</label>
+                                            <input type="text" id="locationAddress" class="form-control" placeholder="Повна адреса">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label>Широта</label>
+                                            <input type="number" id="locationLat" class="form-control" step="0.000001" placeholder="50.4501">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label>Довгота</label>
+                                            <input type="number" id="locationLng" class="form-control" step="0.000001" placeholder="30.5234">
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -696,6 +802,18 @@
                                 <div class="form-group">
                                     <label>Дійсний до *</label>
                                     <input type="date" id="qrExpiry" class="form-control" required>
+                                    <small class="form-text text-muted">Мінімум 30 днів від сьогодні</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Попередній перегляд QR -->
+                        <div class="form-group">
+                            <label>Попередній перегляд QR-коду</label>
+                            <div class="text-center p-3 border rounded" id="qrPreview">
+                                <div class="text-muted">
+                                    <i class="fas fa-qrcode fa-3x mb-2"></i>
+                                    <p>QR-код з'явиться після заповнення полів</p>
                                 </div>
                             </div>
                         </div>
