@@ -638,6 +638,16 @@
                     }
                 });
 
+                // Очистити форму після закриття модального вікна
+                $('#liftModal').on('hidden.bs.modal', () => {
+                    this.resetForm();
+                });
+
+                // Кнопка скасувати
+                $('#liftModal .close, #liftModal .btn-secondary').on('click', () => {
+                    this.resetForm();
+                });
+
                 // Зміна кількості ліфтів
                 $('#liftCount').on('change', function() {
                     const count = parseInt(this.value);
@@ -780,9 +790,18 @@
                 $('#liftId').val(lift.id);
                 $('#liftModel').val(lift.model || '');
                 $('#liftType').val(lift.type || '');
-                $('#liftStatus').val(lift.status || 'active');
+                $('#liftAddress').val(lift.address || '');
+                $('#liftPostcode').val(lift.postcode || '');
+                $('#clientEmail').val(lift.clientEmail || '');
+                $('#liftCapacity').val(lift.capacity || '');
+                $('#liftSpeed').val(lift.speed || '');
+                $('#liftLat').val(lift.lat || '');
+                $('#liftLng').val(lift.lng || '');
                 $('#lastMaintenance').val(lift.lastMaintenance || '');
                 $('#nextMaintenance').val(lift.nextMaintenance || '');
+                $('#liftStatus').val(lift.status || 'active');
+                $('#clientName').val(lift.clientName || '');
+                $('#liftCount').val(lift.liftCount || '1');
             }
 
             resetForm() {
@@ -885,7 +904,7 @@
                     nextMaintenance: nextMaintenance,
                     clientName: $('#clientName').val().trim(),
                     clientEmail: clientEmail,
-                    manufacturer: $('#liftManufacturer').val(),
+                    liftCount: $('#liftCount').val(),
                     updatedAt: new Date().toISOString()
                 };
 
