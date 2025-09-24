@@ -4,6 +4,30 @@
  */
 
 const qrManager = (function() {
+    // Audit log (заглушка)
+    let auditLog = [];
+
+    function addAuditLogEntry(action, details) {
+        const entry = {
+            time: new Date(),
+            action,
+            details
+        };
+        auditLog.unshift(entry);
+        renderAuditLog();
+    }
+
+    function renderAuditLog() {
+        const list = $('#auditLogList');
+        if (!auditLog.length) {
+            list.html('<li class="text-muted">Журнал дій порожній (заглушка)</li>');
+            return;
+        }
+        list.empty();
+        auditLog.forEach(entry => {
+            list.append(`<li><span class="text-secondary small">${formatDate(entry.time, 'YYYY-MM-DD HH:mm')}</span> — <b>${entry.action}</b>: ${entry.details}</li>`);
+        });
+    }
     // Current state
     let currentQRs = [];
     let currentPage = 1;
@@ -11,9 +35,12 @@ const qrManager = (function() {
     let currentFilters = {
         status: 'all',
         type: 'all',
+        group: 'all',
+        location: 'all',
         dateRange: null,
         search: ''
     };
+});
     let selectedQRs = [];
     let currentViewingQR = null;
 
@@ -23,10 +50,12 @@ const qrManager = (function() {
         pagination: '#pagination',
         totalCount: '#totalCount',
         showingCount: '#showingCount',
-        statusFilter: '#statusFilter',
-        typeFilter: '#typeFilter',
-        dateRangeFilter: '#dateRangeFilter',
-        searchInput: '#searchInput'
+    statusFilter: '#statusFilter',
+    typeFilter: '#typeFilter',
+    groupFilter: '#groupFilter',
+    locationFilter: '#locationFilter',
+    dateRangeFilter: '#dateRangeFilter',
+    searchInput: '#searchInput'
     };
 
     // Initialize the module
@@ -82,10 +111,26 @@ const qrManager = (function() {
 
     // Set up all event listeners
     function setupEventListeners() {
+        // Заглушки для експорту PDF/XLSX/JSON
+        $('#exportPDFBtn').on('click', function() {
+            showNotification('Експорт у PDF (заглушка)', 'info');
+        });
+        $('#exportXLSXBtn').on('click', function() {
+            showNotification('Експорт у XLSX (заглушка)', 'info');
+        });
+        $('#exportJSONBtn').on('click', function() {
+            showNotification('Експорт у JSON (заглушка)', 'info');
+        });
         // Filter changes
         $(elements.statusFilter).on('change', applyFilters);
         $(elements.typeFilter).on('change', applyFilters);
+        $(elements.groupFilter).on('change', applyFilters);
+        $(elements.locationFilter).on('change', applyFilters);
         $(elements.searchInput).on('keyup', debounce(applyFilters, 300));
+        // Заглушка для кнопки "Зберегти фільтр"
+        $('#saveFilterBtn').on('click', function() {
+            showNotification('Збереження фільтра (заглушка)', 'info');
+        });
         
         // Date range filter
         $(elements.dateRangeFilter).daterangepicker({
@@ -177,13 +222,14 @@ const qrManager = (function() {
 
     // Apply all current filters
     function applyFilters() {
-        currentFilters.status = $(elements.statusFilter).val();
-        currentFilters.type = $(elements.typeFilter).val();
-        currentFilters.search = $(elements.searchInput).val();
-        
-        currentPage = 1; // Reset to first page when filters change
-        renderQRTable();
-        updateStatistics();
+    currentFilters.status = $(elements.statusFilter).val();
+    currentFilters.type = $(elements.typeFilter).val();
+    currentFilters.group = $(elements.groupFilter).val();
+    currentFilters.location = $(elements.locationFilter).val();
+    currentFilters.search = $(elements.searchInput).val();
+    currentPage = 1; // Reset to first page when filters change
+    renderQRTable();
+    updateStatistics();
     }
 
     // Filter by status
@@ -195,16 +241,18 @@ const qrManager = (function() {
     function resetFilters() {
         $(elements.statusFilter).val('all').trigger('change');
         $(elements.typeFilter).val('all').trigger('change');
+        $(elements.groupFilter).val('all').trigger('change');
+        $(elements.locationFilter).val('all').trigger('change');
         $(elements.dateRangeFilter).val('');
         $(elements.searchInput).val('');
-        
         currentFilters = {
             status: 'all',
             type: 'all',
+            group: 'all',
+            location: 'all',
             dateRange: null,
             search: ''
         };
-        
         applyFilters();
     }
 
@@ -231,8 +279,11 @@ const qrManager = (function() {
         $(elements.totalCount).text(filteredData.length);
         
         // Render table rows
-        const tbody = $(elements.tableBody);
-        tbody.empty();
+    const tbody = $(elements.tableBody);
+    // Додаємо a11y-атрибути для таблиці та tbody
+    $(elements.tableBody).closest('table').attr({'role':'table','aria-label':'Список QR-кодів'});
+    $(elements.tableBody).attr('aria-live','polite');
+    tbody.empty();
         
         if (pageData.length === 0) {
             tbody.append(`
@@ -252,12 +303,108 @@ const qrManager = (function() {
             const statusClass = `badge-${getStatusClass(qr.status)}`;
             const statusText = getStatusText(qr.status);
             const typeText = getTypeText(qr.type);
-            
+            tbody.append('<tr data-qr-id="' + qr.id + '">' +
+                '<td>' +
+                    '<input type="checkbox" class="qr-checkbox" value="' + qr.id + '" onchange="qrManager.updateSelectedQRs()" aria-label="Вибрати QR-код ' + qr.id + '" tabindex="0">' +
+                '</td>' +
+                '<td>' +
+                    '<div class="qr-image">' +
+                        '<img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=' + qr.id + '" alt="QR Code" class="img-fluid">' +
+                    '</div>' +
+                '</td>' +
+                '<td>' + qr.id + '</td>' +
+                '<td><span class="badge qr-type-badge ' + typeClass + '">' + typeText + '</span></td>' +
+                '<td>' + qr.target + '</td>' +
+                '<td><span class="badge ' + statusClass + '">' + statusText + '</span></td>' +
+                '<td>' + formatDate(qr.created) + '</td>' +
+                '<td>' + formatDate(qr.expiry) + '</td>' +
+                '<td>' + qr.scans + '</td>' +
+                '<td>' +
+                    '<div class="action-buttons">' +
+                        '<button class="btn btn-info btn-xs" onclick="qrManager.viewQR(\'' + qr.id + '\')" title="Перегляд" data-toggle="tooltip" data-placement="top" aria-label="Перегляд QR-коду" tabindex="0"><i class="fas fa-eye"></i></button>' +
+                        '<button class="btn btn-primary btn-xs" onclick="qrManager.editQR(\'' + qr.id + '\')" title="Редагувати" data-toggle="tooltip" data-placement="top" aria-label="Редагувати QR-код" tabindex="0"><i class="fas fa-edit"></i></button>' +
+                        '<button class="btn btn-secondary btn-xs" onclick="qrManager.showScanHistory(\'' + qr.id + '\')" title="Історія сканувань" data-toggle="tooltip" data-placement="top" aria-label="Історія сканувань QR-коду" tabindex="0"><i class="fas fa-history"></i></button>' +
+                        '<button class="btn btn-warning btn-xs" onclick="qrManager.showTemplate(\'' + qr.id + '\')" title="Шаблон QR" data-toggle="tooltip" data-placement="top" aria-label="Шаблон QR-коду" tabindex="0"><i class="fas fa-file-alt"></i></button>' +
+                        '<button class="btn btn-danger btn-xs" onclick="qrManager.deleteQR(\'' + qr.id + '\')" title="Видалити" data-toggle="tooltip" data-placement="top" aria-label="Видалити QR-код" tabindex="0"><i class="fas fa-trash"></i></button>' +
+                    '</div>' +
+                '</td>' +
+            '</tr>');
+        });
+        // ініціалізація tooltips після рендеру
+        $('[data-toggle="tooltip"]').tooltip();
+        
+        updateSelectedQRs();
+    }
+
+    // Filter data based on current filters
+    function filterQRData() {
+        return currentQRs.filter(qr => {
+            // Status filter
+            if (currentFilters.status !== 'all' && qr.status !== currentFilters.status) {
+                return false;
+            }
+            // Type filter
+            if (currentFilters.type !== 'all' && qr.type !== currentFilters.type) {
+                return false;
+            }
+            // Group filter (заглушка: по metadata.group)
+            if (currentFilters.group !== 'all') {
+                if (!qr.metadata || qr.metadata.group !== currentFilters.group) {
+                    return false;
+                }
+            }
+            // Location filter (по metadata.location)
+            if (currentFilters.location !== 'all') {
+                if (!qr.metadata || qr.metadata.location !== currentFilters.location) {
+                    return false;
+                }
+            }
+            // Date range filter
+            if (currentFilters.dateRange) {
+                const created = new Date(qr.created);
+                if (created < currentFilters.dateRange.start || 
+                    created > currentFilters.dateRange.end) {
+                    return false;
+                }
+            }
+            // Search filter
+            if (currentFilters.search) {
+                const searchTerm = currentFilters.search.toLowerCase();
+                const searchableText = [
+                    qr.id,
+                    qr.type,
+                    qr.target,
+                    qr.status,
+                    formatDate(qr.created),
+                    formatDate(qr.expiry)
+                ].join(' ').toLowerCase();
+                if (!searchableText.includes(searchTerm)) {
+                    return false;
+                }
+            }
+            return true;
+        });
+    }
+
+    // Render pagination controls
+    function renderPagination(totalPages) {
+        const pagination = $(elements.pagination);
+        pagination.empty();
+        
+        if (totalPages <= 1) return;
+        
+        // Previous button
+        const prevDisabled = currentPage === 1 ? 'disabled' : '';
+        pageData.forEach(qr => {
+            const typeClass = `type-${qr.type}`;
+            const statusClass = `badge-${getStatusClass(qr.status)}`;
+            const statusText = getStatusText(qr.status);
+            const typeText = getTypeText(qr.type);
             tbody.append(`
                 <tr data-qr-id="${qr.id}">
                     <td>
                         <input type="checkbox" class="qr-checkbox" value="${qr.id}" 
-                               onchange="qrManager.updateSelectedQRs()">
+                               onchange="qrManager.updateSelectedQRs()" aria-label="Вибрати QR-код ${qr.id}" tabindex="0">
                     </td>
                     <td>
                         <div class="qr-image">
@@ -275,15 +422,23 @@ const qrManager = (function() {
                     <td>
                         <div class="action-buttons">
                             <button class="btn btn-info btn-xs" onclick="qrManager.viewQR('${qr.id}')" 
-                                    title="Перегляд">
+                                    title="Перегляд" data-toggle="tooltip" data-placement="top" aria-label="Перегляд QR-коду" tabindex="0">
                                 <i class="fas fa-eye"></i>
                             </button>
                             <button class="btn btn-primary btn-xs" onclick="qrManager.editQR('${qr.id}')" 
-                                    title="Редагувати">
+                                    title="Редагувати" data-toggle="tooltip" data-placement="top" aria-label="Редагувати QR-код" tabindex="0">
                                 <i class="fas fa-edit"></i>
                             </button>
+                            <button class="btn btn-secondary btn-xs" onclick="qrManager.showScanHistory('${qr.id}')" 
+                                    title="Історія сканувань" data-toggle="tooltip" data-placement="top" aria-label="Історія сканувань QR-коду" tabindex="0">
+                                <i class="fas fa-history"></i>
+                            </button>
+                            <button class="btn btn-warning btn-xs" onclick="qrManager.showTemplate('${qr.id}')" 
+                                    title="Шаблон QR" data-toggle="tooltip" data-placement="top" aria-label="Шаблон QR-коду" tabindex="0">
+                                <i class="fas fa-file-alt"></i>
+                            </button>
                             <button class="btn btn-danger btn-xs" onclick="qrManager.deleteQR('${qr.id}')" 
-                                    title="Видалити">
+                                    title="Видалити" data-toggle="tooltip" data-placement="top" aria-label="Видалити QR-код" tabindex="0">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -291,113 +446,6 @@ const qrManager = (function() {
                 </tr>
             `);
         });
-        
-        updateSelectedQRs();
-    }
-
-    // Filter data based on current filters
-    function filterQRData() {
-        return currentQRs.filter(qr => {
-            // Status filter
-            if (currentFilters.status !== 'all' && qr.status !== currentFilters.status) {
-                return false;
-            }
-            
-            // Type filter
-            if (currentFilters.type !== 'all' && qr.type !== currentFilters.type) {
-                return false;
-            }
-            
-            // Date range filter
-            if (currentFilters.dateRange) {
-                const created = new Date(qr.created);
-                if (created < currentFilters.dateRange.start || 
-                    created > currentFilters.dateRange.end) {
-                    return false;
-                }
-            }
-            
-            // Search filter
-            if (currentFilters.search) {
-                const searchTerm = currentFilters.search.toLowerCase();
-                const searchableText = [
-                    qr.id,
-                    qr.type,
-                    qr.target,
-                    qr.status,
-                    formatDate(qr.created),
-                    formatDate(qr.expiry)
-                ].join(' ').toLowerCase();
-                
-                if (!searchableText.includes(searchTerm)) {
-                    return false;
-                }
-            }
-            
-            return true;
-        });
-    }
-
-    // Render pagination controls
-    function renderPagination(totalPages) {
-        const pagination = $(elements.pagination);
-        pagination.empty();
-        
-        if (totalPages <= 1) return;
-        
-        // Previous button
-        const prevDisabled = currentPage === 1 ? 'disabled' : '';
-        pagination.append(`
-            <li class="page-item ${prevDisabled}">
-                <a class="page-link" href="#" onclick="qrManager.changePage(${currentPage - 1}); return false;">
-                    &laquo;
-                </a>
-            </li>
-        `);
-        
-        // Page numbers
-        const maxVisiblePages = 5;
-        let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-        
-        if (endPage - startPage + 1 < maxVisiblePages) {
-            startPage = Math.max(1, endPage - maxVisiblePages + 1);
-        }
-        
-        for (let i = startPage; i <= endPage; i++) {
-            const active = i === currentPage ? 'active' : '';
-            pagination.append(`
-                <li class="page-item ${active}">
-                    <a class="page-link" href="#" onclick="qrManager.changePage(${i}); return false;">
-                        ${i}
-                    </a>
-                </li>
-            `);
-        }
-        
-        // Next button
-        const nextDisabled = currentPage === totalPages ? 'disabled' : '';
-        pagination.append(`
-            <li class="page-item ${nextDisabled}">
-                <a class="page-link" href="#" onclick="qrManager.changePage(${currentPage + 1}); return false;">
-                    &raquo;
-                </a>
-            </li>
-        `);
-    }
-
-    // Change page function
-    function changePage(page) {
-        const filteredData = filterQRData();
-        const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-        
-        if (page < 1 || page > totalPages) return;
-        
-        currentPage = page;
-        renderQRTable();
-    }
-
-    // Update statistics counters
     function updateStatistics() {
         const filteredData = filterQRData();
         
@@ -408,12 +456,43 @@ const qrManager = (function() {
     }
 
     // View QR details
+    // View QR details (modal)
     function viewQR(id) {
         const qr = currentQRs.find(q => q.id === id);
         if (!qr) return;
-        
-        // For now, just show an alert with basic info
-        alert(`Інформація про QR-код:\n\nID: ${qr.id}\nТип: ${getTypeText(qr.type)}\nПризначення: ${qr.target}\nСтатус: ${getStatusText(qr.status)}\nСтворено: ${formatDate(qr.created)}\nДійсний до: ${formatDate(qr.expiry)}\nСканувань: ${qr.scans}`);
+
+        // Формуємо HTML для модального вікна (деталі)
+        const html = `
+            <div class=\"row\">
+                <div class=\"col-md-6\">
+                    <div class=\"mb-3 text-center\">
+                        <img src=\"https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${qr.id}\" alt=\"QR Code\" class=\"img-fluid mb-2\">
+                        <div><span class=\"badge badge-info\">${qr.id}</span></div>
+                    </div>
+                </div>
+                <div class=\"col-md-6\">
+                    <ul class=\"list-group list-group-flush\">
+                        <li class=\"list-group-item\"><b>Тип:</b> ${getTypeText(qr.type)}</li>
+                        <li class=\"list-group-item\"><b>Призначення:</b> ${qr.target}</li>
+                        <li class=\"list-group-item\"><b>Статус:</b> ${getStatusText(qr.status)}</li>
+                        <li class=\"list-group-item\"><b>Створено:</b> ${formatDate(qr.created)}</li>
+                        <li class=\"list-group-item\"><b>Дійсний до:</b> ${formatDate(qr.expiry)}</li>
+                        <li class=\"list-group-item\"><b>Сканувань:</b> ${qr.scans}</li>
+                        <li class=\"list-group-item\"><b>Додатково:</b> <pre style=\"white-space:pre-wrap;word-break:break-all;\">${qr.metadata ? JSON.stringify(qr.metadata, null, 2) : '-'}</pre></li>
+                    </ul>
+                </div>
+            </div>
+        `;
+        $('#viewQRContent').html(html);
+        // Активувати таб "Деталі" при відкритті
+        $('#qrViewTabs a[href=\"#qrDetailsTab\"]').tab('show');
+        $('#viewQRModal').modal('show');
+        // Друк по кнопці
+        setTimeout(() => {
+            $('#printQRBtn').off('click').on('click', function() {
+                window.print();
+            });
+        }, 200);
     }
 
     // Edit QR code - populate form
@@ -497,44 +576,91 @@ const qrManager = (function() {
         $('.qr-checkbox:checked').each(function() {
             selectedQRs.push($(this).val());
         });
-        
         // Update select all checkbox
         const totalCheckboxes = $('.qr-checkbox').length;
         const checkedCheckboxes = $('.qr-checkbox:checked').length;
         $('#selectAll').prop('checked', totalCheckboxes > 0 && totalCheckboxes === checkedCheckboxes);
+        // Масова панель
+        if (selectedQRs.length > 0) {
+            $('#bulkActionsPanel').show();
+            $('#bulkSelectedCount').text(selectedQRs.length);
+        } else {
+            $('#bulkActionsPanel').hide();
+        }
     }
 
+    // Масові дії (заглушки)
+    $(document).on('click', '#bulkDeleteBtn', function() {
+        if (selectedQRs.length === 0) return;
+        $('#bulkDeleteCount').text(selectedQRs.length);
+        $('#bulkDeleteModal').modal('show');
+    });
+
+    // Підтвердження масового видалення
+    $(document).on('click', '#confirmBulkDeleteBtn', function() {
+        if (selectedQRs.length === 0) return;
+        // Видаляємо вибрані QR-коди
+        currentQRs = currentQRs.filter(qr => !selectedQRs.includes(qr.id));
+        selectedQRs = [];
+        renderQRTable();
+        updateStatistics();
+        $('#bulkDeleteModal').modal('hide');
+        showNotification('Вибрані QR-коди видалено', 'success');
+        addAuditLogEntry('Масове видалення', 'Видалено QR-кодів: ' + selectedQRs.length);
+    });
+    $(document).on('click', '#bulkStatusBtn', function() {
+        if (selectedQRs.length === 0) return;
+        $('#bulkStatusCount').text(selectedQRs.length);
+        $('#bulkStatusModal').modal('show');
+    });
+
+    // Підтвердження масової зміни статусу
+    $(document).on('click', '#confirmBulkStatusBtn', function() {
+        if (selectedQRs.length === 0) return;
+        const newStatus = $('#bulkStatusSelect').val();
+        currentQRs.forEach(qr => {
+            if (selectedQRs.includes(qr.id)) {
+                qr.status = newStatus;
+            }
+        });
+        renderQRTable();
+        updateStatistics();
+        $('#bulkStatusModal').modal('hide');
+        showNotification('Статус вибраних QR-кодів змінено', 'success');
+        addAuditLogEntry('Масова зміна статусу', `QR-кодів: ${selectedQRs.length}, новий статус: ${newStatus}`);
+    });
+    $(document).on('click', '#bulkExportBtn', function() {
+        if (selectedQRs.length === 0) {
+            showNotification('Виберіть QR-коди для експорту', 'warning');
+            return;
+        }
+        exportToCSV(true);
+    });
+
     // Export to CSV
-    function exportToCSV() {
-        const filteredData = filterQRData();
-        
-        if (filteredData.length === 0) {
+    function exportToCSV(onlySelected = false) {
+        let data = onlySelected ? currentQRs.filter(qr => selectedQRs.includes(qr.id)) : filterQRData();
+        if (data.length === 0) {
             showNotification('Немає даних для експорту', 'warning');
             return;
         }
-        
         // CSV header
         let csv = 'ID,Тип,Призначення,Статус,Створено,Дійсний до,Сканувань\n';
-        
         // CSV data
-        filteredData.forEach(qr => {
+        data.forEach(qr => {
             csv += `"${qr.id}","${getTypeText(qr.type)}","${qr.target}","${getStatusText(qr.status)}",`
                  + `"${formatDate(qr.created)}","${formatDate(qr.expiry)}","${qr.scans}"\n`;
         });
-        
         // Create download link
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
-        
         link.setAttribute('href', url);
         link.setAttribute('download', `qr_codes_export_${formatDate(new Date(), 'YYYY-MM-DD')}.csv`);
         link.style.visibility = 'hidden';
-        
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        
         showNotification('Дані експортовано в CSV', 'success');
     }
 
@@ -632,10 +758,11 @@ const qrManager = (function() {
         filterByStatus: filterByStatus,
         resetFilters: resetFilters,
         searchQR: searchQR,
-        updateSelectedQRs: updateSelectedQRs
+        updateSelectedQRs: updateSelectedQRs,
+        showScanHistory: showScanHistory,
+        showTemplate: showTemplate
     };
-})();
-
+}
 // Initialize when document is ready
 $(document).ready(function() {
     qrManager.init();
