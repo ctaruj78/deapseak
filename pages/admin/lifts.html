@@ -195,6 +195,19 @@
                                                 </select>
                                             </div>
                                         </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label>Пошук:</label>
+                                                <div class="input-group">
+                                                    <input type="text" id="searchInput" class="form-control" placeholder="Пошук по моделі, адресі, ID...">
+                                                    <div class="input-group-append">
+                                                        <button class="btn btn-primary" id="searchBtn">
+                                                            <i class="fas fa-search"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <div class="table-responsive">
@@ -219,6 +232,14 @@
                                 </div>
 
                                 <div class="card-footer clearfix">
+                                    <div class="float-left">
+                                        <button class="btn btn-success btn-sm" id="exportCSVBtn">
+                                            <i class="fas fa-download"></i> Експорт CSV
+                                        </button>
+                                        <button class="btn btn-info btn-sm ml-2" id="exportPDFBtn">
+                                            <i class="fas fa-file-pdf"></i> Експорт PDF
+                                        </button>
+                                    </div>
                                     <div class="pagination-container d-flex justify-content-between align-items-center">
                                         <div class="pagination-info">
                                             Показано <span id="showingCount">0</span> з <span id="totalCount">0</span> записів
@@ -278,10 +299,12 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="liftAddress">Адреса *</label>
-                                    <div class="input-group">
+                                        <div class="input-group">
                                         <input type="text" id="liftAddress" class="form-control" required>
                                         <div class="input-group-append">
-                                            <button type="button" class="btn btn-outline-secondary" id="btnGeocode">Визначити координати</button>
+                                            <button type="button" class="btn btn-outline-secondary" id="btnGeocode">
+                                                <i class="fas fa-search-location"></i> Визначити координати
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -501,10 +524,19 @@
                                     <button class="btn btn-sm btn-primary btn-action" 
                                             data-toggle="modal" 
                                             data-target="#liftModal"
-                                            data-lift-id="${lift.id}">
+                                            data-lift-id="${lift.id}"
+                                            data-toggle="popover"
+                                            data-placement="left"
+                                            data-html="true"
+                                            data-content="<strong>Модель:</strong> ${lift.model}<br><strong>Тип:</strong> ${this.getLiftTypeLabel(lift.type)}<br><strong>Адреса:</strong> ${lift.location}<br><strong>Клієнт:</strong> ${lift.clientName || 'Невідомий'}<br><strong>Статус:</strong> ${this.getStatusLabel(lift.status)}">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-danger btn-action" onclick="liftManager.deleteLift('${lift.id}')">
+                                    <button class="btn btn-sm btn-danger btn-action" 
+                                            onclick="liftManager.deleteLift('${lift.id}')"
+                                            data-toggle="popover"
+                                            data-placement="left"
+                                            data-html="true"
+                                            data-content="<strong>Модель:</strong> ${lift.model}<br><strong>Адреса:</strong> ${lift.location}<br><strong>Увага:</strong> Цю дію не можна скасувати!">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
@@ -512,6 +544,12 @@
                         </tr>
                     `;
                     tbody.append(row);
+                });
+                
+                // Ініціалізувати popovers після додавання рядків
+                $('[data-toggle="popover"]').popover({
+                    trigger: 'hover focus',
+                    container: 'body'
                 });
                 
                 this.updateCounters();
@@ -540,6 +578,10 @@
 
                 // Пошук
                 $('#searchInput').on('input', (e) => this.searchLifts(e.target.value));
+
+                // Експорт
+                $('#exportCSVBtn').on('click', () => this.exportToCSV());
+                $('#exportPDFBtn').on('click', () => this.exportToPDF());
 
                 // Модальне вікно
                 $('#liftModal').on('show.bs.modal', (e) => {
@@ -593,13 +635,20 @@
                 document.getElementById('btnGeocode').addEventListener('click', function () {
                     const address = document.getElementById('liftAddress').value;
                     const postcode = document.getElementById('liftPostcode').value;
+                    const btn = this;
+                    
                     if (!address || !postcode) {
-                        alert('Будь ласка, введіть адресу та поштовий код.');
+                        this.showNotification('Будь ласка, введіть адресу та поштовий код.', 'error');
                         return;
                     }
 
+                    // Показати індикатор завантаження
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Пошук...';
+                    btn.disabled = true;
+
                     // Використання Nominatim API для геокодування
-                    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address + ' ' + postcode)}`)
+                    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address + ' ' + postcode)}&limit=1`)
                         .then(response => response.json())
                         .then(data => {
                             if (data.length > 0) {
@@ -609,14 +658,44 @@
                                 // Оновити поля координат
                                 document.getElementById('liftLat').value = lat.toFixed(6);
                                 document.getElementById('liftLng').value = lon.toFixed(6);
+                                
+                                // Оновити мапу, якщо вона ініціалізована
+                                if (window.liftMap) {
+                                    window.liftMap.setView([lat, lon], 15);
+                                    if (window.liftMarker) {
+                                        window.liftMarker.setLatLng([lat, lon]);
+                                    } else {
+                                        window.liftMarker = L.marker([lat, lon]).addTo(window.liftMap);
+                                    }
+                                }
+                                
+                                this.showNotification('Координати визначено успішно!', 'success');
                             } else {
-                                alert('Координати не знайдено. Спробуйте уточнити адресу.');
+                                this.showNotification('Координати не знайдено. Спробуйте уточнити адресу або поштовий код.', 'error');
                             }
                         })
                         .catch(error => {
                             console.error('Помилка геокодування:', error);
-                            alert('Не вдалося визначити координати.');
+                            this.showNotification('Не вдалося визначити координати. Перевірте інтернет-з\'єднання.', 'error');
+                        })
+                        .finally(() => {
+                            // Відновити кнопку
+                            btn.innerHTML = originalText;
+                            btn.disabled = false;
                         });
+                }.bind(this));
+
+                // Оновлення мапи при зміні координат
+                $('#liftLat, #liftLng').on('input', function() {
+                    const lat = parseFloat($('#liftLat').val());
+                    const lng = parseFloat($('#liftLng').val());
+                    
+                    if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+                        if (window.liftMap && window.liftMarker) {
+                            window.liftMarker.setLatLng([lat, lng]);
+                            window.liftMap.setView([lat, lng], 15);
+                        }
+                    }
                 });
             }
 
@@ -652,15 +731,67 @@
             }
 
             saveLift() {
+                // Валідація форми
+                const model = $('#liftModel').val().trim();
+                const type = $('#liftType').val();
+                const address = $('#liftAddress').val().trim();
+                const postcode = $('#liftPostcode').val().trim();
+                const lat = parseFloat($('#liftLat').val());
+                const lng = parseFloat($('#liftLng').val());
+                const capacity = parseInt($('#liftCapacity').val());
+                const speed = parseFloat($('#liftSpeed').val());
+                const lastMaintenance = $('#lastMaintenance').val();
+                const nextMaintenance = $('#nextMaintenance').val();
+                const clientEmail = $('#clientEmail').val().trim();
+
+                // Перевірка обов'язкових полів
+                if (!model || !type || !address || !postcode) {
+                    this.showNotification('Будь ласка, заповніть всі обов\'язкові поля (модель, тип, адреса, поштовий код).', 'error');
+                    return;
+                }
+
+                // Перевірка email
+                if (clientEmail && !this.isValidEmail(clientEmail)) {
+                    this.showNotification('Некоректний email клієнта.', 'error');
+                    return;
+                }
+
+                // Перевірка координат
+                if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+                    this.showNotification('Некоректні координати. Перевірте широту (-90 до 90) та довготу (-180 до 180).', 'error');
+                    return;
+                }
+
+                // Перевірка дат ТО
+                if (lastMaintenance && nextMaintenance && new Date(lastMaintenance) >= new Date(nextMaintenance)) {
+                    this.showNotification('Дата наступного ТО повинна бути пізніше за дату останнього ТО.', 'error');
+                    return;
+                }
+
+                // Перевірка позитивних значень
+                if (capacity <= 0 || speed <= 0) {
+                    this.showNotification('Пасажиромісткість та швидкість повинні бути позитивними числами.', 'error');
+                    return;
+                }
+
                 const liftId = $('#liftId').val();
                 const lift = {
                     id: liftId || this.generateId(),
-                    model: $('#liftModel').val(),
-                    type: $('#liftType').val(),
-                    location: $('#liftLocation').val(),
+                    model: model,
+                    type: type,
+                    location: address + ', ' + postcode,
+                    address: address,
+                    postcode: postcode,
+                    lat: lat,
+                    lng: lng,
+                    capacity: capacity,
+                    speed: speed,
                     status: $('#liftStatus').val(),
-                    lastMaintenance: $('#lastMaintenance').val(),
-                    nextMaintenance: $('#nextMaintenance').val(),
+                    lastMaintenance: lastMaintenance,
+                    nextMaintenance: nextMaintenance,
+                    clientName: $('#clientName').val().trim(),
+                    clientEmail: clientEmail,
+                    manufacturer: $('#liftManufacturer').val(),
                     updatedAt: new Date().toISOString()
                 };
 
@@ -719,11 +850,41 @@
                 const filteredLifts = this.allLifts.filter(lift => {
                     const statusMatch = statusFilter === 'all' || lift.status === statusFilter;
                     const typeMatch = typeFilter === 'all' || lift.type === typeFilter;
-                    return statusMatch && typeMatch;
                 });
 
                 this.renderLiftsTable(filteredLifts);
                 this.renderPagination(filteredLifts.length);
+            }
+
+            exportToCSV() {
+                const lifts = this.allLifts;
+                if (lifts.length === 0) {
+                    this.showNotification('Немає даних для експорту', 'warning');
+                    return;
+                }
+
+                let csv = 'ID,Модель,Тип,Адреса,Поштовий код,Широта,Довгота,Пасажиромісткість,Швидкість,Статус,Останнє ТО,Наступне ТО,Клієнт,Email\n';
+                
+                lifts.forEach(lift => {
+                    csv += `"${lift.id}","${lift.model}","${this.getLiftTypeLabel(lift.type)}","${lift.address || ''}","${lift.postcode || ''}","${lift.lat || ''}","${lift.lng || ''}","${lift.capacity || ''}","${lift.speed || ''}","${this.getStatusLabel(lift.status)}","${this.formatDate(lift.lastMaintenance)}","${this.formatDate(lift.nextMaintenance)}","${lift.clientName || ''}","${lift.clientEmail || ''}"\n`;
+                });
+
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', `lifts_export_${new Date().toISOString().split('T')[0]}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                this.showNotification('Дані експортовано в CSV', 'success');
+            }
+
+            exportToPDF() {
+                // Заглушка для PDF експорту
+                this.showNotification('Експорт у PDF (заглушка - потрібна бібліотека jsPDF)', 'info');
             }
 
             getLiftTypeLabel(type) {
@@ -846,6 +1007,11 @@
                 toast.on('hidden.bs.toast', function () {
                     $(this).remove();
                 });
+            }
+
+            isValidEmail(email) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return emailRegex.test(email);
             }
         }
 
