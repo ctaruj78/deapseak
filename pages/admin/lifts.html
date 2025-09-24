@@ -423,6 +423,7 @@
                             <div id="liftQrCode"></div>
                         </div>
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                        <button type="button" class="btn btn-info" id="generateQrBtn" style="display:none">Створити QR код</button>
                         <button type="submit" class="btn btn-primary">Зберегти</button>
                     </div>
                 </form>
@@ -439,6 +440,8 @@
     <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- QR Code library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 
     <script>
         // Функція виходу
@@ -521,6 +524,14 @@
                             <td>${this.formatDate(lift.nextMaintenance)}</td>
                             <td>
                                 <div class="btn-group">
+                                    <button class="btn btn-sm btn-info btn-action" 
+                                            onclick="liftManager.viewLiftDetails('${lift.id}')"
+                                            data-toggle="popover"
+                                            data-placement="left"
+                                            data-html="true"
+                                            data-content="<strong>Переглянути деталі ліфта</strong><br>Модель: ${lift.model}<br>Адреса: ${lift.location}">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
                                     <button class="btn btn-sm btn-primary btn-action" 
                                             data-toggle="modal" 
                                             data-target="#liftModal"
@@ -583,6 +594,41 @@
                 $('#exportCSVBtn').on('click', () => this.exportToCSV());
                 $('#exportPDFBtn').on('click', () => this.exportToPDF());
 
+                // Генерація QR коду
+                $('#generateQrBtn').on('click', () => {
+                    const liftId = $('#liftId').val();
+                    if (liftId) {
+                        const lifts = JSON.parse(localStorage.getItem('lifts')) || [];
+                        const lift = lifts.find(l => l.id === liftId);
+                        if (lift) {
+                            this.generateLiftQR(lift);
+                            // Друк QR коду
+                            setTimeout(() => {
+                                const qrCanvas = document.querySelector('#liftQrCode canvas');
+                                if (qrCanvas) {
+                                    const printWindow = window.open('', '_blank');
+                                    printWindow.document.write(`
+                                        <html>
+                                        <head><title>QR код ліфта ${lift.model}</title></head>
+                                        <body style="text-align:center; font-family:Arial;">
+                                        <h2>QR код для ліфта</h2>
+                                        <p><strong>Модель:</strong> ${lift.model}</p>
+                                        <p><strong>Адреса:</strong> ${lift.location}</p>
+                                        <p><strong>ID:</strong> ${lift.id}</p>
+                                        <br>
+                                        <img src="${qrCanvas.toDataURL()}" style="max-width:300px;">
+                                        <br><br>
+                                        <button onclick="window.print()">Друкувати</button>
+                                        </body>
+                                        </html>
+                                    `);
+                                    printWindow.document.close();
+                                }
+                            }, 100);
+                        }
+                    }
+                });
+
                 // Модальне вікно
                 $('#liftModal').on('show.bs.modal', (e) => {
                     const button = $(e.relatedTarget);
@@ -614,6 +660,7 @@
 
                 // Ініціалізація мапи
                 const map = L.map('liftMap').setView([50.4501, 30.5234], 13); // Київ, Україна
+                window.liftMap = map;
 
                 // Додати шар карти OpenStreetMap
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -623,6 +670,7 @@
 
                 // Додати маркер за замовчуванням
                 let marker = L.marker([50.4501, 30.5234], { draggable: true }).addTo(map);
+                window.liftMarker = marker;
 
                 // Оновлення координат при перетягуванні маркера
                 marker.on('dragend', function (e) {
@@ -638,7 +686,7 @@
                     const btn = this;
                     
                     if (!address || !postcode) {
-                        this.showNotification('Будь ласка, введіть адресу та поштовий код.', 'error');
+                        liftManager.showNotification('Будь ласка, введіть адресу та поштовий код.', 'error');
                         return;
                     }
 
@@ -669,14 +717,14 @@
                                     }
                                 }
                                 
-                                this.showNotification('Координати визначено успішно!', 'success');
+                                liftManager.showNotification('Координати визначено успішно!', 'success');
                             } else {
-                                this.showNotification('Координати не знайдено. Спробуйте уточнити адресу або поштовий код.', 'error');
+                                liftManager.showNotification('Координати не знайдено. Спробуйте уточнити адресу або поштовий код.', 'error');
                             }
                         })
                         .catch(error => {
                             console.error('Помилка геокодування:', error);
-                            this.showNotification('Не вдалося визначити координати. Перевірте інтернет-з\'єднання.', 'error');
+                            liftManager.showNotification('Не вдалося визначити координати. Перевірте інтернет-з\'єднання.', 'error');
                         })
                         .finally(() => {
                             // Відновити кнопку
@@ -699,13 +747,26 @@
                 });
             }
 
-            openModal(lift = null) {
+            openModal(lift = null, readOnly = false) {
                 if (lift) {
                     this.fillForm(lift);
-                    $('#modalTitle').text('Редагувати ліфт');
+                    if (readOnly) {
+                        $('#modalTitle').text('Деталі ліфта');
+                        this.setFormReadOnly(true);
+                        $('#generateQrBtn').show();
+                        this.generateLiftQR(lift);
+                    } else {
+                        $('#modalTitle').text('Редагувати ліфт');
+                        this.setFormReadOnly(false);
+                        $('#generateQrBtn').hide();
+                        $('#qrSection').hide();
+                    }
                 } else {
                     this.resetForm();
                     $('#modalTitle').text('Додати ліфт');
+                    this.setFormReadOnly(false);
+                    $('#generateQrBtn').hide();
+                    $('#qrSection').hide();
                 }
                 
                 $('#liftModal').modal('show');
@@ -728,6 +789,39 @@
                 $('#liftForm')[0].reset();
                 $('#liftId').val('');
                 $('#modalTitle').text('Додати ліфт');
+                this.setFormReadOnly(false);
+            }
+
+            setFormReadOnly(readOnly) {
+                const inputs = $('#liftForm input, #liftForm select, #liftForm textarea');
+                inputs.prop('disabled', readOnly);
+                if (readOnly) {
+                    $('#liftForm .btn-primary').hide(); // Приховати кнопку збереження
+                } else {
+                    $('#liftForm .btn-primary').show();
+                }
+            }
+
+            generateLiftQR(lift) {
+                const qrData = {
+                    type: 'lift',
+                    id: lift.id,
+                    model: lift.model,
+                    location: lift.location,
+                    client: lift.clientName || 'Невідомий',
+                    status: lift.status,
+                    lastMaintenance: lift.lastMaintenance,
+                    nextMaintenance: lift.nextMaintenance
+                };
+                
+                const qrString = JSON.stringify(qrData);
+                
+                $('#liftQrCode').empty();
+                QRCode.toCanvas(document.getElementById('liftQrCode'), qrString, { width: 150 }, function (error) {
+                    if (error) console.error(error);
+                });
+                
+                $('#qrSection').show();
             }
 
             saveLift() {
@@ -820,6 +914,14 @@
                 const lift = lifts.find(l => l.id === id);
                 if (lift) {
                     this.openModal(lift);
+                }
+            }
+
+            viewLiftDetails(id) {
+                const lifts = JSON.parse(localStorage.getItem('lifts')) || [];
+                const lift = lifts.find(l => l.id === id);
+                if (lift) {
+                    this.openModal(lift, true); // true для режиму тільки читання
                 }
             }
 
