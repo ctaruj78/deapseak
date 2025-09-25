@@ -843,9 +843,6 @@
             }
 
             setupEventListeners() {
-                // Кнопка додавання ліфта
-                $('#addLiftBtn').on('click', () => this.resetForm());
-
                 // Форма збереження ліфта
                 $('#liftForm').on('submit', (e) => {
                     e.preventDefault();
@@ -1341,6 +1338,11 @@
                 this.showNotification('Ліфт успішно збережено', 'success');
             }
 
+            closeModal() {
+                $('#liftModal').modal('hide');
+                this.resetForm();
+            }
+
             editLift(id) {
                 const lifts = JSON.parse(localStorage.getItem('lifts')) || [];
                 const lift = lifts.find(l => l.id === id);
@@ -1464,6 +1466,7 @@
                 const filteredLifts = this.allLifts.filter(lift => {
                     const statusMatch = statusFilter === 'all' || lift.status === statusFilter;
                     const typeMatch = typeFilter === 'all' || lift.type === typeFilter;
+                    return statusMatch && typeMatch;
                 });
 
                 this.renderLiftsTable(filteredLifts);

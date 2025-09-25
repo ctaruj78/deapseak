@@ -422,7 +422,7 @@ class AnalyticsDashboard {
     formatCurrency(amount) {
         return new Intl.NumberFormat('uk-UA', { 
             style: 'currency', 
-            currency: 'UAH',
+            currency: 'EUR',
             minimumFractionDigits: 0 
         }).format(amount);
     }

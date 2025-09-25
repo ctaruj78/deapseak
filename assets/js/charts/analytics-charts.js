@@ -350,7 +350,7 @@ class AnalyticsCharts {
             case 'currency':
                 return new Intl.NumberFormat('uk-UA', {
                     style: 'currency',
-                    currency: 'UAH'
+                    currency: 'EUR'
                 }).format(value);
             case 'percent':
                 return `${value.toFixed(1)}%`;

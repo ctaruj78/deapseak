@@ -335,7 +335,7 @@ class FinancialCharts {
                             callback: (value) => {
                                 return new Intl.NumberFormat('uk-UA', {
                                     style: 'currency',
-                                    currency: 'UAH'
+                                    currency: 'EUR'
                                 }).format(value);
                             }
                         }
@@ -366,7 +366,7 @@ class FinancialCharts {
             case 'currency':
                 return new Intl.NumberFormat('uk-UA', {
                     style: 'currency',
-                    currency: 'UAH',
+                    currency: 'EUR',
                     minimumFractionDigits: 0,
                     maximumFractionDigits: 0
                 }).format(value);

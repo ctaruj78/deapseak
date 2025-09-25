@@ -686,7 +686,7 @@ class ReportManager {
     formatCurrency(amount) {
         return new Intl.NumberFormat('uk-UA', {
             style: 'currency',
-            currency: 'UAH'
+            currency: 'EUR'
         }).format(amount);
     }
 
