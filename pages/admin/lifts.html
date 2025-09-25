@@ -948,80 +948,8 @@
                     }
                 });
 
-                // Ініціалізація мапи
-                const map = L.map('liftMap').setView([50.4501, 30.5234], 13); // Київ, Україна
-                window.liftMap = map;
-
-                // Додати шар карти OpenStreetMap
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 19,
-                    attribution: '© OpenStreetMap'
-                }).addTo(map);
-
-                // Додати маркер за замовчуванням
-                let marker = L.marker([50.4501, 30.5234], { draggable: true }).addTo(map);
-                window.liftMarker = marker;
-
-                // Оновлення координат при перетягуванні маркера
-                marker.on('dragend', function (e) {
-                    const position = marker.getLatLng();
-                    document.getElementById('liftLat').value = position.lat.toFixed(6);
-                    document.getElementById('liftLng').value = position.lng.toFixed(6);
-                });
-
                 // Визначення координат за адресою та поштовим кодом
-                document.getElementById('btnGeocode').addEventListener('click', function () {
-                    const address = document.getElementById('liftAddress').value;
-                    const postcode = document.getElementById('liftPostcode').value;
-                    const btn = this;
-                    
-                    if (!address || !postcode) {
-                        liftManager.showNotification('Будь ласка, введіть адресу та поштовий код.', 'error');
-                        return;
-                    }
-
-                    // Показати індикатор завантаження
-                    const originalText = btn.innerHTML;
-                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Пошук...';
-                    btn.disabled = true;
-
-                    // Використання Nominatim API для геокодування
-                    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address + ' ' + postcode)}&limit=1`)
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.length > 0) {
-                                const lat = parseFloat(data[0].lat);
-                                const lon = parseFloat(data[0].lon);
-
-                                // Оновити поля координат
-                                document.getElementById('liftLat').value = lat.toFixed(6);
-                                document.getElementById('liftLng').value = lon.toFixed(6);
-                                
-                                // Оновити мапу, якщо вона ініціалізована
-                                if (window.liftMap) {
-                                    window.liftMap.setView([lat, lon], 15);
-                                    if (window.liftMarker) {
-                                        window.liftMarker.setLatLng([lat, lon]);
-                                    } else {
-                                        window.liftMarker = L.marker([lat, lon]).addTo(window.liftMap);
-                                    }
-                                }
-                                
-                                liftManager.showNotification('Координати визначено успішно!', 'success');
-                            } else {
-                                liftManager.showNotification('Координати не знайдено. Спробуйте уточнити адресу або поштовий код.', 'error');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Помилка геокодування:', error);
-                            liftManager.showNotification('Не вдалося визначити координати. Перевірте інтернет-з\'єднання.', 'error');
-                        })
-                        .finally(() => {
-                            // Відновити кнопку
-                            btn.innerHTML = originalText;
-                            btn.disabled = false;
-                        });
-                }.bind(this));
+                $('#btnGeocode').on('click', () => this.geocodeAddress());
 
                 // Оновлення мапи при зміні координат
                 $('#liftLat, #liftLng').on('input', function() {
@@ -1107,84 +1035,17 @@
                     let marker = L.marker([lat, lng], { draggable: true }).addTo(map);
                     window.liftMarker = marker;
 
+                    // Оновлення координат при перетягуванні маркера
+                    marker.on('dragend', function (e) {
+                        const position = marker.getLatLng();
+                        document.getElementById('liftLat').value = position.lat.toFixed(6);
+                        document.getElementById('liftLng').value = position.lng.toFixed(6);
+                    });
+
                     console.log('Карта ініціалізована успішно');
                 } catch (error) {
                     console.error('Помилка ініціалізації карти:', error);
                 }
-
-                // Оновлення координат при перетягуванні маркера
-                marker.on('dragend', function (e) {
-                    const position = marker.getLatLng();
-                    document.getElementById('liftLat').value = position.lat.toFixed(6);
-                    document.getElementById('liftLng').value = position.lng.toFixed(6);
-                });
-
-                // Визначення координат за адресою та поштовим кодом
-                document.getElementById('btnGeocode').addEventListener('click', function () {
-                    const address = document.getElementById('liftAddress').value;
-                    const postcode = document.getElementById('liftPostcode').value;
-                    const btn = this;
-                    
-                    if (!address || !postcode) {
-                        liftManager.showNotification('Будь ласка, введіть адресу та поштовий код.', 'error');
-                        return;
-                    }
-
-                    // Показати індикатор завантаження
-                    const originalText = btn.innerHTML;
-                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Пошук...';
-                    btn.disabled = true;
-
-                    // Використання Nominatim API для геокодування
-                    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address + ' ' + postcode)}&limit=1`)
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.length > 0) {
-                                const lat = parseFloat(data[0].lat);
-                                const lon = parseFloat(data[0].lon);
-
-                                // Оновити поля координат
-                                document.getElementById('liftLat').value = lat.toFixed(6);
-                                document.getElementById('liftLng').value = lon.toFixed(6);
-                                
-                                // Оновити мапу, якщо вона ініціалізована
-                                if (window.liftMap) {
-                                    window.liftMap.setView([lat, lon], 15);
-                                    if (window.liftMarker) {
-                                        window.liftMarker.setLatLng([lat, lon]);
-                                    } else {
-                                        window.liftMarker = L.marker([lat, lon]).addTo(window.liftMap);
-                                    }
-                                }
-                                
-                                liftManager.showNotification('Координати визначено успішно!', 'success');
-                            } else {
-                                liftManager.showNotification('Координати не знайдено. Спробуйте уточнити адресу або поштовий код.', 'error');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Помилка геокодування:', error);
-                            liftManager.showNotification('Не вдалося визначити координати. Перевірте інтернет-з\'єднання.', 'error');
-                        })
-                        .finally(() => {
-                            // Відновити кнопку
-                            btn.innerHTML = originalText;
-                            btn.disabled = false;
-                        });
-                }.bind(this));
-
-                // Оновлення мапи при зміні координат
-                $('#liftLat, #liftLng').on('input', function() {
-                    const lat = parseFloat($('#liftLat').val());
-                    const lng = parseFloat($('#liftLng').val());
-                    
-                    if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
-                        if (window.liftMap && window.liftMarker) {
-                            window.liftMarker.setLatLng([lat, lng]);
-                            window.liftMap.setView([lat, lng], 15);
-                        }
-                    }
-                });
             }
 
             fillForm(lift) {
@@ -1253,6 +1114,8 @@
             }
 
             saveLift() {
+                console.log('saveLift called');
+                
                 // Валідація форми
                 const model = $('#liftModel').val().trim();
                 const type = $('#liftType').val();
@@ -1266,9 +1129,29 @@
                 const nextMaintenance = $('#nextMaintenance').val();
                 const clientEmail = $('#clientEmail').val().trim();
 
+                console.log('Form values:', { model, type, address, postcode, lat, lng, capacity, speed });
+
                 // Перевірка обов'язкових полів
                 if (!model || !type || !address || !postcode) {
                     this.showNotification('Будь ласка, заповніть всі обов\'язкові поля (модель, тип, адреса, поштовий код).', 'error');
+                    return;
+                }
+
+                // Перевірка координат - якщо не вказані, встановити за замовчуванням
+                let finalLat = lat;
+                let finalLng = lng;
+                
+                if (isNaN(finalLat) || isNaN(finalLng)) {
+                    // Встановити координати Києва за замовчуванням
+                    finalLat = 50.4501;
+                    finalLng = 30.5234;
+                    $('#liftLat').val(finalLat.toFixed(6));
+                    $('#liftLng').val(finalLng.toFixed(6));
+                }
+
+                // Перевірка координат
+                if (finalLat < -90 || finalLat > 90 || finalLng < -180 || finalLng > 180) {
+                    this.showNotification('Некоректні координати. Перевірте широту (-90 до 90) та довготу (-180 до 180).', 'error');
                     return;
                 }
 
@@ -1278,22 +1161,24 @@
                     return;
                 }
 
-                // Перевірка координат
-                if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-                    this.showNotification('Некоректні координати. Перевірте широту (-90 до 90) та довготу (-180 до 180).', 'error');
-                    return;
-                }
-
                 // Перевірка дат ТО
                 if (lastMaintenance && nextMaintenance && new Date(lastMaintenance) >= new Date(nextMaintenance)) {
                     this.showNotification('Дата наступного ТО повинна бути пізніше за дату останнього ТО.', 'error');
                     return;
                 }
 
-                // Перевірка позитивних значень
-                if (capacity <= 0 || speed <= 0) {
-                    this.showNotification('Пасажиромісткість та швидкість повинні бути позитивними числами.', 'error');
-                    return;
+                // Перевірка позитивних значень - встановити за замовчуванням якщо не вказано
+                let finalCapacity = capacity;
+                let finalSpeed = speed;
+                
+                if (isNaN(finalCapacity) || finalCapacity <= 0) {
+                    finalCapacity = 8; // за замовчуванням
+                    $('#liftCapacity').val(finalCapacity);
+                }
+                
+                if (isNaN(finalSpeed) || finalSpeed <= 0) {
+                    finalSpeed = 1.0; // за замовчуванням
+                    $('#liftSpeed').val(finalSpeed);
                 }
 
                 const liftId = $('#liftId').val();
@@ -1304,10 +1189,10 @@
                     location: address + ', ' + postcode,
                     address: address,
                     postcode: postcode,
-                    lat: lat,
-                    lng: lng,
-                    capacity: capacity,
-                    speed: speed,
+                    lat: finalLat,
+                    lng: finalLng,
+                    capacity: finalCapacity,
+                    speed: finalSpeed,
                     status: $('#liftStatus').val(),
                     lastMaintenance: lastMaintenance,
                     nextMaintenance: nextMaintenance,
@@ -1321,6 +1206,8 @@
                 if (!liftId) {
                     lift.createdAt = new Date().toISOString();
                 }
+
+                console.log('Saving lift:', lift);
 
                 const lifts = JSON.parse(localStorage.getItem('lifts')) || [];
                 const existingIndex = lifts.findIndex(l => l.id === lift.id);
@@ -1538,8 +1425,55 @@
                 return new Date(dateString).toLocaleDateString('uk-UA');
             }
 
-            generateId() {
-                return 'LFT-' + Date.now();
+            geocodeAddress() {
+                const address = $('#liftAddress').val().trim();
+                const postcode = $('#liftPostcode').val().trim();
+                const btn = $('#btnGeocode');
+                
+                if (!address || !postcode) {
+                    this.showNotification('Будь ласка, введіть адресу та поштовий код.', 'error');
+                    return;
+                }
+
+                // Показати індикатор завантаження
+                const originalText = btn.html();
+                btn.html('<i class="fas fa-spinner fa-spin"></i> Пошук...').prop('disabled', true);
+
+                // Використання Nominatim API для геокодування
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address + ' ' + postcode)}&limit=1`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.length > 0) {
+                            const lat = parseFloat(data[0].lat);
+                            const lon = parseFloat(data[0].lon);
+
+                            // Оновити поля координат
+                            $('#liftLat').val(lat.toFixed(6));
+                            $('#liftLng').val(lon.toFixed(6));
+                            
+                            // Оновити мапу, якщо вона ініціалізована
+                            if (window.liftMap) {
+                                window.liftMap.setView([lat, lon], 15);
+                                if (window.liftMarker) {
+                                    window.liftMarker.setLatLng([lat, lon]);
+                                } else {
+                                    window.liftMarker = L.marker([lat, lon]).addTo(window.liftMap);
+                                }
+                            }
+                            
+                            this.showNotification('Координати визначено успішно!', 'success');
+                        } else {
+                            this.showNotification('Координати не знайдено. Спробуйте уточнити адресу або поштовий код.', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Помилка геокодування:', error);
+                        this.showNotification('Не вдалося визначити координати. Перевірте інтернет-з\'єднання.', 'error');
+                    })
+                    .finally(() => {
+                        // Відновити кнопку
+                        btn.html(originalText).prop('disabled', false);
+                    });
             }
 
             renderPagination(totalItems) {

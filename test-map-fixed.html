@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест карти ліфтів</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        #testMap { height: 400px; width: 100%; border: 1px solid #ddd; }
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .controls { margin: 20px 0; }
+        button { margin: 5px; padding: 10px 15px; }
+    </style>
+</head>
+<body>
+    <h1>Тест карти ліфтів</h1>
+    <div class="controls">
+        <button onclick="loadTestData()">Завантажити тестові дані</button>
+        <button onclick="clearLifts()">Очистити всі ліфти</button>
+        <button onclick="showLiftsData()">Показати дані ліфтів</button>
+        <button onclick="updateMap()">Оновити карту</button>
+    </div>
+    <div id="testMap"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Ініціалізація карти
+        const map = L.map('testMap').setView([50.4501, 30.5234], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        let markers = [];
+
+        // Завантаження тестових даних
+        async function loadTestData() {
+            try {
+                const response = await fetch('test-lifts-data.json');
+                const testLifts = await response.json();
+
+                // Зберегти в localStorage
+                localStorage.setItem('lifts', JSON.stringify(testLifts));
+                alert(`Завантажено ${testLifts.length} тестових ліфтів`);
+                updateMap();
+            } catch (error) {
+                console.error('Помилка завантаження тестових даних:', error);
+                alert('Помилка завантаження тестових даних');
+            }
+        }
+
+        // Очищення всіх ліфтів
+        function clearLifts() {
+            if (confirm('Видалити всі ліфти?')) {
+                localStorage.removeItem('lifts');
+                updateMap();
+                alert('Всі ліфти видалено!');
+            }
+        }
+
+        // Показати дані ліфтів
+        function showLiftsData() {
+            const lifts = JSON.parse(localStorage.getItem('lifts')) || [];
+            console.log('Дані ліфтів:', lifts);
+            alert(`Знайдено ${lifts.length} ліфтів у localStorage`);
+        }
+
+        // Оновлення маркерів на карті
+        function updateMap() {
+            // Очищення існуючих маркерів
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+
+            // Завантаження ліфтів з localStorage
+            const lifts = JSON.parse(localStorage.getItem('lifts')) || [];
+
+            lifts.forEach(lift => {
+                if (lift.lat && lift.lng) {
+                    const statusColor = getStatusColor(lift.status);
+                    const marker = L.marker([lift.lat, lift.lng]).addTo(map)
+                        .bindPopup(`
+                            <div class="lift-popup">
+                                <h6><i class="fas fa-elevator"></i> ${lift.model}</h6>
+                                <p><strong>ID:</strong> ${lift.id}</p>
+                                <p><strong>Адреса:</strong> ${lift.location || lift.address || 'Невідомо'}</p>
+                                <p><strong>Статус:</strong> <span style="color: ${statusColor}">${getStatusLabel(lift.status)}</span></p>
+                                <p><strong>Клієнт:</strong> ${lift.clientName || 'Невідомий'}</p>
+                            </div>
+                        `, {
+                            maxWidth: 300
+                        });
+
+                    markers.push(marker);
+                }
+            });
+
+            // Підгонка карти до всіх маркерів
+            if (markers.length > 1) {
+                const group = new L.featureGroup(markers);
+                map.fitBounds(group.getBounds().pad(0.1));
+            } else if (markers.length === 1) {
+                map.setView([lifts[0].lat, lifts[0].lng], 15);
+            }
+
+            console.log(`Відображено ${markers.length} маркерів на карті`);
+        }
+
+        // Функція для отримання кольору статусу
+        function getStatusColor(status) {
+            switch (status) {
+                case 'active': return 'green';
+                case 'maintenance': return 'orange';
+                case 'inactive': return 'red';
+                case 'operational': return 'blue';
+                default: return 'gray';
+            }
+        }
+
+        // Функція для отримання мітки статусу
+        function getStatusLabel(status) {
+            const labels = {
+                'active': 'Активний',
+                'maintenance': 'Обслуговування',
+                'inactive': 'Неактивний',
+                'operational': 'Працює'
+            };
+            return labels[status] || status;
+        }
+
+        // Початкове завантаження
+        updateMap();
+    </script>
+</body>
+</html>
