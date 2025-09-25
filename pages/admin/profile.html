@@ -314,8 +314,117 @@
         }
     </style>
 </head>
-<body class="profile-page">
-    <div class="container-fluid py-4">
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <!-- Left navbar links -->
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <!-- Brand Logo -->
+        <a href="admin-dashboard.html" class="brand-link">
+            <img src="../../assets/img/logo.png" alt="Lift Management Logo" class="brand-image img-circle elevation-3">
+            <span class="brand-text font-weight-light">Lift Management</span>
+        </a>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Sidebar user panel -->
+            <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                <div class="image">
+                    <img src="../../assets/img/avatars/admin.png" class="img-circle elevation-2" alt="Admin Avatar">
+                </div>
+                <div class="info">
+                    <a href="profile.html" class="d-block">Адміністратор</a>
+                </div>
+            </div>
+
+            <!-- Sidebar Menu -->
+            <nav class="mt-2">
+                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                    <li class="nav-item">
+                        <a href="admin-dashboard.html" class="nav-link">
+                            <i class="nav-icon fas fa-tachometer-alt"></i>
+                            <p>Головна</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="lifts.html" class="nav-link">
+                            <i class="nav-icon fas fa-elevator"></i>
+                            <p>Ліфти</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="users.html" class="nav-link">
+                            <i class="nav-icon fas fa-users"></i>
+                            <p>Користувачі</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="reports.html" class="nav-link">
+                            <i class="nav-icon fas fa-chart-bar"></i>
+                            <p>Звіти</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="analytics.html" class="nav-link">
+                            <i class="nav-icon fas fa-analytics"></i>
+                            <p>Аналітика</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="../ai-assistant/ai-assistant.html" class="nav-link">
+                            <i class="nav-icon fas fa-robot"></i>
+                            <p>AI Асистент</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="settings.html" class="nav-link">
+                            <i class="nav-icon fas fa-cog"></i>
+                            <p>Налаштування</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="../../login.html" class="nav-link">
+                            <i class="nav-icon fas fa-sign-out-alt"></i>
+                            <p>Вийти</p>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Content Wrapper -->
+    <div class="content-wrapper">
+        <!-- Content Header -->
+        <section class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1>Профіль адміністратора</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="admin-dashboard.html">Головна</a></li>
+                            <li class="breadcrumb-item active">Профіль</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main content -->
+        <section class="content">
+            <div class="container-fluid">
         <!-- Profile Header -->
         <div class="profile-card fade-in-up">
             <div class="profile-header">
@@ -727,15 +836,28 @@
                 </div>
             </div>
         </div>
+            </div>
+        </section>
     </div>
 
-    <!-- Scripts -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-    
-    <!-- AI Assistant JS -->
-    <script src="/assets/js/modules/ai-assistant.js"></script>
+    <!-- Footer -->
+    <footer class="main-footer">
+        <strong>Copyright &copy; 2024 <a href="#">Lift Management System</a>.</strong>
+        Всі права захищені.
+    </footer>
+</div>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+
+<!-- AI Assistant JS -->
+<script src="/assets/js/modules/ai-assistant.js"></script>
     
     <script>
         // Initialize activity chart
