@@ -2,34 +2,584 @@
 <html lang="uk">
 <head>
   <meta charset="UTF-8">
-  <title>Chat System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Чат система - LiftMaster Pro</title>
   <link rel="stylesheet" href="../../assets/css/main.css">
   <link rel="stylesheet" href="../../assets/plugins/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="../../assets/plugins/fontawesome-free/css/all.min.css">
+  <link rel="stylesheet" href="../../assets/plugins/toastr/toastr.min.css">
+  <link rel="stylesheet" href="../../assets/css/chat-system.css">
 </head>
-<body>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
-    <a class="navbar-brand" href="../admin/admin-dashboard.html">LiftMaster Pro</a>
-    <div class="collapse navbar-collapse">
-      <ul class="navbar-nav mr-auto">
-        <li class="nav-item"><a class="nav-link" href="../ar-helper/index.html">AR Helper</a></li>
-        <li class="nav-item"><a class="nav-link" href="../assignment-manager/index.html">Assignment Manager</a></li>
-        <li class="nav-item"><a class="nav-link" href="../batch-manager/index.html">Batch Manager</a></li>
-        <li class="nav-item"><a class="nav-link" href="../chat-system/index.html">Chat System</a></li>
-        <li class="nav-item"><a class="nav-link" href="../knowledge-manager/index.html">Knowledge Manager</a></li>
-        <li class="nav-item"><a class="nav-link" href="../monitoring-manager/index.html">Monitoring Manager</a></li>
-        <li class="nav-item"><a class="nav-link" href="../profile-manager/index.html">Profile Manager</a></li>
-        <li class="nav-item"><a class="nav-link" href="../support-manager/index.html">Support Manager</a></li>
-        <li class="nav-item"><a class="nav-link" href="../tool-manager/index.html">Tool Manager</a></li>
-        <li class="nav-item"><a class="nav-link" href="../voice-control/index.html">Voice Control</a></li>
+<body class="hold-transition sidebar-mini layout-fixed">
+  <div class="wrapper">
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+        </li>
+        <li class="nav-item d-none d-sm-inline-block">
+          <a href="../admin/admin-dashboard.html" class="nav-link">Головна</a>
+        </li>
       </ul>
+
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item">
+          <span class="nav-link">
+            <i class="fas fa-user"></i> <span id="userName">Користувач</span>
+          </span>
+        </li>
+        <li class="nav-item">
+          <span class="nav-link" id="onlineStatus">
+            <i class="fas fa-circle text-success"></i> В мережі
+          </span>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Main Sidebar Container -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+      <a href="../admin/admin-dashboard.html" class="brand-link">
+        <img src="../../assets/img/logo.png" alt="LiftMaster Pro" class="brand-image img-circle elevation-3" style="opacity: .8">
+        <span class="brand-text font-weight-light">LiftMaster Pro</span>
+      </a>
+
+      <div class="sidebar">
+        <nav class="mt-2">
+          <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+            <li class="nav-item">
+              <a href="../admin/admin-dashboard.html" class="nav-link">
+                <i class="nav-icon fas fa-tachometer-alt"></i>
+                <p>Dashboard</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="../admin/lifts.html" class="nav-link">
+                <i class="nav-icon fas fa-elevator"></i>
+                <p>Ліфти</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="../ar-helper/index.html" class="nav-link">
+                <i class="nav-icon fas fa-vr-cardboard"></i>
+                <p>AR Helper</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="../knowledge-manager/index.html" class="nav-link">
+                <i class="nav-icon fas fa-book"></i>
+                <p>База знань</p>
+              </a>
+            </li>
+            <li class="nav-item menu-open">
+              <a href="#" class="nav-link active">
+                <i class="nav-icon fas fa-comments"></i>
+                <p>Чат система</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="../tech/dashboard.html" class="nav-link">
+                <i class="nav-icon fas fa-tools"></i>
+                <p>Технік</p>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </aside>
+
+    <!-- Content Wrapper -->
+    <div class="content-wrapper">
+      <div class="content-header">
+        <div class="container-fluid">
+          <div class="row mb-2">
+            <div class="col-sm-6">
+              <h1 class="m-0">Чат система</h1>
+            </div>
+            <div class="col-sm-6">
+              <ol class="breadcrumb float-sm-right">
+                <li class="breadcrumb-item"><a href="../admin/admin-dashboard.html">Головна</a></li>
+                <li class="breadcrumb-item active">Чат система</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <section class="content">
+        <div class="container-fluid">
+          <div class="row">
+            <!-- Contacts Sidebar -->
+            <div class="col-md-4" id="contactsSection">
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title">
+                    <i class="fas fa-users"></i> Контакти
+                  </h3>
+                  <div class="card-tools">
+                    <div class="input-group input-group-sm">
+                      <input type="text" class="form-control" id="contactSearch" placeholder="Пошук...">
+                      <div class="input-group-append">
+                        <button class="btn btn-default" type="button">
+                          <i class="fas fa-search"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-body p-0">
+                  <div id="contactsList" class="contacts-list">
+                    <!-- Contacts will be loaded here -->
+                  </div>
+                </div>
+                <div class="card-footer">
+                  <div class="row">
+                    <div class="col-4 text-center">
+                      <button class="btn btn-sm btn-outline-primary btn-block" onclick="chatSystem.filterContacts('all')">
+                        <i class="fas fa-users"></i><br>Всі
+                      </button>
+                    </div>
+                    <div class="col-4 text-center">
+                      <button class="btn btn-sm btn-outline-success btn-block" onclick="chatSystem.filterContacts('online')">
+                        <i class="fas fa-circle text-success"></i><br>Онлайн
+                      </button>
+                    </div>
+                    <div class="col-4 text-center">
+                      <button class="btn btn-sm btn-outline-warning btn-block" onclick="chatSystem.filterContacts('technicians')">
+                        <i class="fas fa-tools"></i><br>Техніки
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Chat Area -->
+            <div class="col-md-8" id="chatSection" style="display: none;">
+              <div class="card card-primary card-outline direct-chat direct-chat-primary">
+                <!-- Chat Header -->
+                <div class="card-header" id="chatHeader">
+                  <h3 class="card-title">
+                    <i class="fas fa-comments"></i> Чат
+                  </h3>
+                  <div class="card-tools">
+                    <button class="btn btn-tool" onclick="chatSystem.showContacts()">
+                      <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <button class="btn btn-tool" onclick="chatSystem.startVideoCall()">
+                      <i class="fas fa-video"></i>
+                    </button>
+                    <button class="btn btn-tool" onclick="chatSystem.startVoiceCall()">
+                      <i class="fas fa-phone"></i>
+                    </button>
+                    <button class="btn btn-tool" data-card-widget="collapse">
+                      <i class="fas fa-minus"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Chat Messages -->
+                <div class="card-body">
+                  <div class="direct-chat-messages" id="chatMessages" style="height: 400px;">
+                    <!-- Messages will be loaded here -->
+                  </div>
+                </div>
+
+                <!-- Chat Footer -->
+                <div class="card-footer">
+                  <form action="#" method="post">
+                    <div class="input-group">
+                      <input type="text" id="messageInput" placeholder="Введіть повідомлення..." class="form-control">
+                      <span class="input-group-append">
+                        <button type="button" class="btn btn-primary" id="attachBtn">
+                          <i class="fas fa-paperclip"></i>
+                        </button>
+                        <button type="button" class="btn btn-primary" id="sendMessage">
+                          <i class="fas fa-send"></i>
+                        </button>
+                      </span>
+                    </div>
+                  </form>
+                  <input type="file" id="fileInput" style="display: none;" accept="image/*,application/*">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="row mt-4">
+            <div class="col-12">
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title">
+                    <i class="fas fa-bolt"></i> Швидкі дії
+                  </h3>
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-md-3">
+                      <button class="btn btn-outline-primary btn-block btn-action" onclick="chatSystem.createGroupChat()">
+                        <i class="fas fa-users"></i><br>
+                        Груповий чат
+                      </button>
+                    </div>
+                    <div class="col-md-3">
+                      <button class="btn btn-outline-success btn-block btn-action" onclick="chatSystem.sendBroadcast()">
+                        <i class="fas fa-bullhorn"></i><br>
+                        Оголошення
+                      </button>
+                    </div>
+                    <div class="col-md-3">
+                      <button class="btn btn-outline-info btn-block btn-action" onclick="chatSystem.showChatHistory()">
+                        <i class="fas fa-history"></i><br>
+                        Історія
+                      </button>
+                    </div>
+                    <div class="col-md-3">
+                      <button class="btn btn-outline-warning btn-block btn-action" onclick="chatSystem.showSettings()">
+                        <i class="fas fa-cog"></i><br>
+                        Налаштування
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Statistics -->
+          <div class="row">
+            <div class="col-12">
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title">
+                    <i class="fas fa-chart-bar"></i> Статистика чату
+                  </h3>
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-md-3">
+                      <div class="info-box">
+                        <span class="info-box-icon bg-info"><i class="fas fa-users"></i></span>
+                        <div class="info-box-content">
+                          <span class="info-box-text">Всього контактів</span>
+                          <span class="info-box-number" id="totalContacts">0</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="info-box">
+                        <span class="info-box-icon bg-success"><i class="fas fa-circle text-success"></i></span>
+                        <div class="info-box-content">
+                          <span class="info-box-text">Онлайн зараз</span>
+                          <span class="info-box-number" id="onlineContacts">0</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="info-box">
+                        <span class="info-box-icon bg-warning"><i class="fas fa-comments"></i></span>
+                        <div class="info-box-content">
+                          <span class="info-box-text">Повідомлень сьогодні</span>
+                          <span class="info-box-number" id="todayMessages">0</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="info-box">
+                        <span class="info-box-icon bg-danger"><i class="fas fa-clock"></i></span>
+                        <div class="info-box-content">
+                          <span class="info-box-text">Час відповіді</span>
+                          <span class="info-box-number" id="avgResponseTime">0 хв</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
-  </nav>
-  <div class="container">
-    <h1 class="mb-3">Chat System</h1>
-    <p>Модуль для внутрішнього чату між користувачами, техніками, адміністраторами. Тут буде реалізовано обмін повідомленнями, групові чати, push-нотифікації.</p>
-    <div class="alert alert-info">Функціонал у розробці. Можна тестувати дизайн та інтеграцію JS-модуля.</div>
-    <div id="chat-system-content"></div>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+      <div class="float-right d-none d-sm-block">
+        <b>Версія</b> 1.0.0
+      </div>
+      <strong>&copy; 2024 LiftMaster Pro.</strong> Всі права захищені.
+    </footer>
   </div>
+
+  <!-- Scripts -->
+  <script src="../../assets/plugins/jquery/jquery.min.js"></script>
+  <script src="../../assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="../../assets/plugins/toastr/toastr.min.js"></script>
+  <script src="../../assets/js/adminlte.min.js"></script>
   <script src="../../assets/js/modules/chat-system.js"></script>
+
+  <!-- Custom Chat System Styles -->
+  <style>
+    .contacts-list {
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    .contact-item {
+      display: flex;
+      align-items: center;
+      padding: 15px;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .contact-item:hover {
+      background-color: #f8f9fa;
+    }
+
+    .contact-item.active {
+      background-color: #e3f2fd;
+      border-left: 4px solid #2196f3;
+    }
+
+    .contact-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      margin-right: 15px;
+      object-fit: cover;
+    }
+
+    .contact-info h4 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .contact-role {
+      margin: 2px 0;
+      font-size: 12px;
+      color: #666;
+    }
+
+    .contact-status {
+      font-size: 11px;
+      margin: 0;
+    }
+
+    .contact-status.online {
+      color: #28a745;
+    }
+
+    .contact-status.offline {
+      color: #6c757d;
+    }
+
+    .contact-status.busy {
+      color: #dc3545;
+    }
+
+    .unread-count {
+      background: #dc3545;
+      color: white;
+      border-radius: 50%;
+      padding: 2px 6px;
+      font-size: 11px;
+      font-weight: bold;
+      margin-left: auto;
+    }
+
+    .direct-chat-messages {
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    .message {
+      margin-bottom: 15px;
+      display: flex;
+      align-items: flex-start;
+    }
+
+    .message.incoming {
+      justify-content: flex-start;
+    }
+
+    .message.outgoing {
+      justify-content: flex-end;
+    }
+
+    .message-avatar {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+
+    .message.outgoing .message-avatar {
+      margin-left: 10px;
+      margin-right: 0;
+    }
+
+    .message-content {
+      max-width: 70%;
+      position: relative;
+    }
+
+    .message.incoming .message-content {
+      background: #f8f9fa;
+      border-radius: 15px 15px 15px 0;
+      padding: 10px 15px;
+    }
+
+    .message.outgoing .message-content {
+      background: #007bff;
+      color: white;
+      border-radius: 15px 15px 0 15px;
+      padding: 10px 15px;
+    }
+
+    .message-time {
+      font-size: 11px;
+      color: #666;
+      margin-top: 5px;
+      display: block;
+    }
+
+    .message.outgoing .message-time {
+      color: rgba(255,255,255,0.7);
+      text-align: right;
+    }
+
+    .file-message {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      background: rgba(0,0,0,0.05);
+      border-radius: 8px;
+    }
+
+    .file-icon {
+      font-size: 24px;
+      margin-right: 10px;
+    }
+
+    .file-info {
+      flex-grow: 1;
+    }
+
+    .file-name {
+      margin: 0;
+      font-weight: 500;
+    }
+
+    .file-size {
+      margin: 0;
+      font-size: 12px;
+      color: #666;
+    }
+
+    .download-btn {
+      color: #007bff;
+      text-decoration: none;
+      font-size: 18px;
+    }
+
+    .btn-action {
+      height: 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+
+    .btn-action i {
+      font-size: 24px;
+      margin-bottom: 5px;
+    }
+
+    .info-box {
+      box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
+      border-radius: .25rem;
+      margin-bottom: 1rem;
+      background-color: #fff;
+      display: flex;
+      align-items: center;
+      padding: .5rem;
+    }
+
+    .info-box-icon {
+      border-top-left-radius: .25rem;
+      border-bottom-left-radius: .25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 1.875rem;
+      width: 70px;
+      text-align: center;
+    }
+
+    .info-box-content {
+      padding: 5px 10px;
+      margin-left: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .info-box-text {
+      text-transform: uppercase;
+      font-weight: 700;
+      font-size: .6875rem;
+      color: #6c757d;
+    }
+
+    .info-box-number {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: #495057;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .contacts-list {
+        max-height: 300px;
+      }
+
+      .direct-chat-messages {
+        height: 300px;
+      }
+
+      .btn-action {
+        height: 60px;
+        font-size: 12px;
+      }
+
+      .btn-action i {
+        font-size: 18px;
+      }
+    }
+
+    /* Typing indicator */
+    .typing-indicator {
+      display: none;
+      font-style: italic;
+      color: #666;
+      padding: 10px 15px;
+    }
+
+    /* Online status */
+    #onlineStatus .text-success {
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+  </style>
 </body>
 </html>

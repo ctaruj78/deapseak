@@ -1,0 +1,294 @@
+/* Tool Manager Styles */
+.tool-card {
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+
+.tool-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.tool-status {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.status-available {
+  background-color: #28a745;
+  color: white;
+}
+
+.status-in-use {
+  background-color: #ffc107;
+  color: black;
+}
+
+.status-maintenance {
+  background-color: #dc3545;
+  color: white;
+}
+
+.status-broken {
+  background-color: #6c757d;
+  color: white;
+}
+
+.tool-image {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid #dee2e6;
+}
+
+.low-stock-alert {
+  background-color: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.low-stock-alert .tool-name {
+  font-weight: bold;
+  color: #856404;
+}
+
+.low-stock-alert .stock-info {
+  color: #856404;
+  font-size: 0.9em;
+}
+
+.qr-scanner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+#qrVideo {
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.checkout-form .form-group {
+  margin-bottom: 15px;
+}
+
+.checkout-form label {
+  font-weight: 600;
+  color: #495057;
+}
+
+.tool-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.detail-section {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  border-left: 4px solid #007bff;
+}
+
+.detail-section h5 {
+  margin-bottom: 10px;
+  color: #495057;
+  font-weight: 600;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.detail-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.detail-label {
+  font-weight: 500;
+  color: #6c757d;
+}
+
+.detail-value {
+  font-weight: 600;
+  color: #495057;
+}
+
+.maintenance-history {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.maintenance-item {
+  padding: 10px;
+  border-left: 3px solid #ffc107;
+  background-color: #fff3cd;
+  margin-bottom: 8px;
+  border-radius: 4px;
+}
+
+.maintenance-item.completed {
+  border-left-color: #28a745;
+  background-color: #d4edda;
+}
+
+.maintenance-item .date {
+  font-size: 0.8em;
+  color: #6c757d;
+  margin-bottom: 4px;
+}
+
+.maintenance-item .description {
+  font-weight: 500;
+}
+
+.checkout-history {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.checkout-item {
+  padding: 10px;
+  border-left: 3px solid #17a2b8;
+  background-color: #d1ecf1;
+  margin-bottom: 8px;
+  border-radius: 4px;
+}
+
+.checkout-item.returned {
+  border-left-color: #28a745;
+  background-color: #d4edda;
+}
+
+.checkout-item .technician {
+  font-weight: 600;
+  color: #495057;
+}
+
+.checkout-item .dates {
+  font-size: 0.9em;
+  color: #6c757d;
+}
+
+.checkout-item .status {
+  font-size: 0.8em;
+  padding: 2px 6px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.checkout-item .status.active {
+  background-color: #ffc107;
+  color: black;
+}
+
+.checkout-item .status.returned {
+  background-color: #28a745;
+  color: white;
+}
+
+.filter-section {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.filter-row {
+  display: flex;
+  gap: 15px;
+  align-items: end;
+}
+
+.filter-row .form-group {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+  .filter-row {
+    flex-direction: column;
+  }
+
+  .tool-details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .qr-scanner-container video {
+    width: 250px;
+    height: 250px;
+  }
+}
+
+.table-responsive {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.table th {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+  font-weight: 600;
+  color: #495057;
+}
+
+.table td {
+  vertical-align: middle;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 5px;
+}
+
+.btn-action {
+  padding: 4px 8px;
+  font-size: 0.8em;
+}
+
+.stats-card {
+  transition: transform 0.2s;
+}
+
+.stats-card:hover {
+  transform: translateY(-2px);
+}
+
+.pagination {
+  margin-bottom: 0;
+}
+
+.card-tools .btn {
+  margin-left: 5px;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .card {
+    border: 1px solid #000 !important;
+    box-shadow: none !important;
+  }
+
+  .table {
+    font-size: 12px;
+  }
+}

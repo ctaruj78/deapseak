@@ -14,8 +14,9 @@ class ToolManager {
 
     init() {
         this.loadTools();
+        this.loadUserInfo();
         this.setupEventListeners();
-        this.updateStats();
+        this.updateStatistics();
         this.checkLowStock();
     }
 
@@ -189,6 +190,19 @@ class ToolManager {
         $('#searchInput').on('input', (e) => {
             this.searchTools(e.target.value);
         });
+
+        // Події для модальних вікон
+        $('#viewToolModal').on('show.bs.modal', (event) => {
+            const button = $(event.relatedTarget);
+            const toolId = button.data('tool-id');
+            this.showToolDetails(toolId);
+        });
+
+        $('#checkoutToolModal').on('show.bs.modal', (event) => {
+            const button = $(event.relatedTarget);
+            const toolId = button.data('tool-id');
+            this.prepareCheckoutForm(toolId);
+        });
     }
 
     applyFilters() {
@@ -215,17 +229,30 @@ class ToolManager {
             );
         }
 
+        const searchTerm = $('#searchInput').val().toLowerCase();
+        filteredTools = filteredTools.filter(tool => {
+            const matchesStatus = this.filters.status === 'all' || tool.status === this.filters.status;
+            const matchesCategory = this.filters.category === 'all' || tool.category === this.filters.category;
+            const matchesLocation = this.filters.location === 'all' || tool.location === this.filters.location;
+            const matchesSearch = !searchTerm ||
+                tool.name.toLowerCase().includes(searchTerm) ||
+                tool.id.toLowerCase().includes(searchTerm) ||
+                (tool.manufacturer && tool.manufacturer.toLowerCase().includes(searchTerm));
+
+            return matchesStatus && matchesCategory && matchesLocation && matchesSearch;
+        });
+
         this.renderTools(filteredTools);
         this.updateStats(filteredTools);
         this.updatePagination(filteredTools);
     }
 
     resetFilters() {
+        this.filters = { status: 'all', category: 'all', location: 'all' };
         $('#statusFilter').val('all');
         $('#categoryFilter').val('all');
         $('#locationFilter').val('all');
         $('#searchInput').val('');
-        this.filters = { status: 'all', category: 'all', location: 'all' };
         this.currentPage = 1;
         this.applyFilters();
     }
@@ -273,6 +300,9 @@ class ToolManager {
             const row = this.createToolRow(tool);
             tbody.append(row);
         });
+
+        $('#itemsShown').text(paginatedTools.length);
+        $('#totalItems').text(tools.length);
     }
 
     createToolRow(tool) {
@@ -370,8 +400,17 @@ class ToolManager {
 
     updatePagination(tools) {
         const totalPages = Math.ceil(tools.length / this.itemsPerPage);
+        $('#totalPages').text(totalPages);
         $('#currentPage').text(this.currentPage);
-        $('#totalPages').text(totalPages || 1);
+
+        // Оновлення стану кнопок пагінації
+        $('.page-item').removeClass('disabled');
+        if (this.currentPage === 1) {
+            $('.page-item:first-child').addClass('disabled');
+        }
+        if (this.currentPage === totalPages) {
+            $('.page-item:last-child').addClass('disabled');
+        }
     }
 
     previousPage() {
@@ -410,360 +449,499 @@ class ToolManager {
             );
         }
 
+        const searchTerm = $('#searchInput').val().toLowerCase();
+        filteredTools = filteredTools.filter(tool => {
+            const matchesStatus = this.filters.status === 'all' || tool.status === this.filters.status;
+            const matchesCategory = this.filters.category === 'all' || tool.category === this.filters.category;
+            const matchesLocation = this.filters.location === 'all' || tool.location === this.filters.location;
+            const matchesSearch = !searchTerm ||
+                tool.name.toLowerCase().includes(searchTerm) ||
+                tool.id.toLowerCase().includes(searchTerm) ||
+                (tool.manufacturer && tool.manufacturer.toLowerCase().includes(searchTerm));
+
+            return matchesStatus && matchesCategory && matchesLocation && matchesSearch;
+        });
+
         return filteredTools;
     }
 
     checkLowStock() {
-        const lowStockTools = this.tools.filter(tool => 
-            tool.quantity <= tool.minQuantity
-        );
+        const lowStockTools = this.tools.filter(tool => tool.quantity <= tool.minQuantity);
 
-        const lowStockContainer = $('#lowStockTools');
-        lowStockContainer.empty();
+        const container = $('#lowStockTools');
+        container.empty();
 
         if (lowStockTools.length === 0) {
-            lowStockContainer.html(`
-                <div class="col-12 text-center py-4">
-                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
-                    <h5>Всі інструменти в наявності</h5>
-                    <p class="text-muted">Немає інструментів, які потребують негайного поповнення</p>
-                </div>
-            `);
+            container.html('<p class="text-muted text-center">Всі інструменти в достатній кількості</p>');
             return;
         }
 
         lowStockTools.forEach(tool => {
-            lowStockContainer.append(`
-                <div class="col-md-6 col-lg-4 mb-3">
-                    <div class="card border-warning">
-                        <div class="card-body">
-                            <h6 class="card-title text-warning">
-                                <i class="fas fa-exclamation-triangle"></i> ${tool.name}
-                            </h6>
-                            <p class="card-text mb-1">
-                                <small>В наявності: ${tool.quantity} од.</small>
-                            </p>
-                            <p class="card-text mb-1">
-                                <small>Мінімум: ${tool.minQuantity} од.</small>
-                            </p>
-                            <button class="btn btn-sm btn-outline-warning" onclick="toolManager.orderTool('${tool.id}')">
-                                <i class="fas fa-shopping-cart"></i> Замовити
+            const alertHtml = `
+                <div class="col-md-6">
+                    <div class="low-stock-alert">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="tool-name">${tool.name}</div>
+                                <div class="stock-info">
+                                    В наявності: ${tool.quantity} од. | Мінімум: ${tool.minQuantity} од.
+                                </div>
+                            </div>
+                            <button class="btn btn-sm btn-primary" onclick="toolManager.orderTool('${tool.id}')">
+                                <i class="fas fa-plus"></i> Замовити
                             </button>
                         </div>
                     </div>
                 </div>
-            `);
+            `;
+            container.append(alertHtml);
         });
     }
 
     scanTool() {
         $('#scanToolModal').modal('show');
+        // Тут буде реалізація QR сканування
+        this.showNotification('Функція QR сканування в розробці', 'info');
     }
 
-    checkoutTool(toolId) {
+    saveTools() {
+        localStorage.setItem('tools', JSON.stringify(this.tools));
+    }
+
+    // Нові методи для HTML інтерфейсу
+    loadUserInfo() {
+        const user = JSON.parse(localStorage.getItem('currentUser')) || { name: 'Технік' };
+        $('#userName').text(user.name || 'Технік');
+    }
+
+    updateStatistics() {
+        const stats = this.getStats();
+        $('#totalTools').text(stats.total);
+        $('#availableTools').text(stats.available);
+        $('#inUseTools').text(stats.inUse);
+        $('#maintenanceTools').text(stats.maintenance);
+    }
+
+    getStats() {
+        const total = this.tools.length;
+        const available = this.tools.filter(t => t.status === 'available').length;
+        const inUse = this.tools.filter(t => t.status === 'in-use').length;
+        const maintenance = this.tools.filter(t => t.status === 'maintenance' || t.status === 'broken').length;
+
+        return { total, available, inUse, maintenance };
+    }
+
+    setupEventListeners() {
+        // Фільтри
+        $('#statusFilter').on('change', () => {
+            this.filters.status = $('#statusFilter').val();
+            this.applyFilters();
+        });
+
+        $('#categoryFilter').on('change', () => {
+            this.filters.category = $('#categoryFilter').val();
+            this.applyFilters();
+        });
+
+        $('#locationFilter').on('change', () => {
+            this.filters.location = $('#locationFilter').val();
+            this.applyFilters();
+        });
+
+        $('#searchInput').on('input', () => {
+            this.applyFilters();
+        });
+
+        // Події для модальних вікон
+        $('#viewToolModal').on('show.bs.modal', (event) => {
+            const button = $(event.relatedTarget);
+            const toolId = button.data('tool-id');
+            this.showToolDetails(toolId);
+        });
+
+        $('#checkoutToolModal').on('show.bs.modal', (event) => {
+            const button = $(event.relatedTarget);
+            const toolId = button.data('tool-id');
+            this.prepareCheckoutForm(toolId);
+        });
+    }
+
+    applyFilters() {
+        const searchTerm = $('#searchInput').val().toLowerCase();
+        const filteredTools = this.tools.filter(tool => {
+            const matchesStatus = this.filters.status === 'all' || tool.status === this.filters.status;
+            const matchesCategory = this.filters.category === 'all' || tool.category === this.filters.category;
+            const matchesLocation = this.filters.location === 'all' || tool.location === this.filters.location;
+            const matchesSearch = !searchTerm ||
+                tool.name.toLowerCase().includes(searchTerm) ||
+                tool.id.toLowerCase().includes(searchTerm) ||
+                (tool.manufacturer && tool.manufacturer.toLowerCase().includes(searchTerm));
+
+            return matchesStatus && matchesCategory && matchesLocation && matchesSearch;
+        });
+
+        this.renderToolsTable(filteredTools);
+        this.updatePagination(filteredTools.length);
+    }
+
+    renderToolsTable(tools) {
+        const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+        const endIndex = startIndex + this.itemsPerPage;
+        const pageTools = tools.slice(startIndex, endIndex);
+
+        const tbody = $('#toolsTableBody');
+        tbody.empty();
+
+        pageTools.forEach(tool => {
+            const row = `
+                <tr>
+                    <td>
+                        <img src="../../assets/img/tools/${tool.image || 'default-tool.png'}"
+                             alt="${tool.name}" class="tool-image" onerror="this.src='../../assets/img/tools/default-tool.png'">
+                    </td>
+                    <td>
+                        <strong>${tool.name}</strong><br>
+                        <small class="text-muted">${tool.id}</small>
+                    </td>
+                    <td>${this.getCategoryText(tool.category)}</td>
+                    <td>
+                        <span class="tool-status status-${tool.status}">${this.getStatusText(tool.status)}</span>
+                    </td>
+                    <td>${this.getLocationText(tool.location)}</td>
+                    <td>${this.formatDate(tool.lastInspection)}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-sm btn-info btn-action" onclick="toolManager.viewTool('${tool.id}')" title="Переглянути">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-warning btn-action" onclick="toolManager.checkoutTool('${tool.id}')" title="Видати">
+                                <i class="fas fa-sign-out-alt"></i>
+                            </button>
+                            <button class="btn btn-sm btn-success btn-action" onclick="toolManager.returnTool('${tool.id}')" title="Повернути">
+                                <i class="fas fa-sign-in-alt"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            tbody.append(row);
+        });
+
+        $('#itemsShown').text(pageTools.length);
+        $('#totalItems').text(tools.length);
+    }
+
+    updatePagination(totalItems) {
+        const totalPages = Math.ceil(totalItems / this.itemsPerPage);
+        $('#totalPages').text(totalPages);
+        $('#currentPage').text(this.currentPage);
+
+        // Оновлення стану кнопок пагінації
+        $('.page-item').removeClass('disabled');
+        if (this.currentPage === 1) {
+            $('.page-item:first-child').addClass('disabled');
+        }
+        if (this.currentPage === totalPages) {
+            $('.page-item:last-child').addClass('disabled');
+        }
+    }
+
+    nextPage() {
+        const totalPages = Math.ceil(this.getFilteredTools().length / this.itemsPerPage);
+        if (this.currentPage < totalPages) {
+            this.currentPage++;
+            this.applyFilters();
+        }
+    }
+
+    previousPage() {
+        if (this.currentPage > 1) {
+            this.currentPage--;
+            this.applyFilters();
+        }
+    }
+
+    getFilteredTools() {
+        const searchTerm = $('#searchInput').val().toLowerCase();
+        return this.tools.filter(tool => {
+            const matchesStatus = this.filters.status === 'all' || tool.status === this.filters.status;
+            const matchesCategory = this.filters.category === 'all' || tool.category === this.filters.category;
+            const matchesLocation = this.filters.location === 'all' || tool.location === this.filters.location;
+            const matchesSearch = !searchTerm ||
+                tool.name.toLowerCase().includes(searchTerm) ||
+                tool.id.toLowerCase().includes(searchTerm) ||
+                (tool.manufacturer && tool.manufacturer.toLowerCase().includes(searchTerm));
+
+            return matchesStatus && matchesCategory && matchesLocation && matchesSearch;
+        });
+    }
+
+    resetFilters() {
+        this.filters = { status: 'all', category: 'all', location: 'all' };
+        $('#statusFilter').val('all');
+        $('#categoryFilter').val('all');
+        $('#locationFilter').val('all');
+        $('#searchInput').val('');
+        this.currentPage = 1;
+        this.applyFilters();
+    }
+
+    viewTool(toolId) {
+        currentToolId = toolId;
+        $('#viewToolModal').modal('show');
+    }
+
+    showToolDetails(toolId) {
         const tool = this.tools.find(t => t.id === toolId);
         if (!tool) return;
 
-        // Заповнення форми видачі
-        $('#toolSelect').val(toolId);
-        $('#checkoutToolModal').modal('show');
+        const detailsHtml = `
+            <div class="tool-details-grid">
+                <div class="detail-section">
+                    <h5><i class="fas fa-info-circle"></i> Основна інформація</h5>
+                    <div class="detail-item">
+                        <span class="detail-label">ID:</span>
+                        <span class="detail-value">${tool.id}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Назва:</span>
+                        <span class="detail-value">${tool.name}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Категорія:</span>
+                        <span class="detail-value">${this.getCategoryText(tool.category)}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Виробник:</span>
+                        <span class="detail-value">${tool.manufacturer || 'Невідомий'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Модель:</span>
+                        <span class="detail-value">${tool.model || 'Невідома'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Серійний номер:</span>
+                        <span class="detail-value">${tool.serialNumber || 'Немає'}</span>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h5><i class="fas fa-cogs"></i> Стан та локація</h5>
+                    <div class="detail-item">
+                        <span class="detail-label">Статус:</span>
+                        <span class="detail-value">
+                            <span class="tool-status status-${tool.status}">${this.getStatusText(tool.status)}</span>
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Локація:</span>
+                        <span class="detail-value">${this.getLocationText(tool.location)}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Стан:</span>
+                        <span class="detail-value">${this.getConditionText(tool.condition)}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Кількість:</span>
+                        <span class="detail-value">${tool.quantity} од.</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Мінімум:</span>
+                        <span class="detail-value">${tool.minQuantity} од.</span>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h5><i class="fas fa-calendar-alt"></i> Дати</h5>
+                    <div class="detail-item">
+                        <span class="detail-label">Дата покупки:</span>
+                        <span class="detail-value">${this.formatDate(tool.purchaseDate)}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Остання перевірка:</span>
+                        <span class="detail-value">${this.formatDate(tool.lastInspection)}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Наступна перевірка:</span>
+                        <span class="detail-value">${this.formatDate(tool.nextInspection)}</span>
+                    </div>
+                </div>
+            </div>
+
+            ${tool.notes ? `
+                <div class="detail-section">
+                    <h5><i class="fas fa-sticky-note"></i> Примітки</h5>
+                    <p>${tool.notes}</p>
+                </div>
+            ` : ''}
+
+            ${tool.maintenanceHistory && tool.maintenanceHistory.length > 0 ? `
+                <div class="detail-section">
+                    <h5><i class="fas fa-tools"></i> Історія обслуговування</h5>
+                    <div class="maintenance-history">
+                        ${tool.maintenanceHistory.map(item => `
+                            <div class="maintenance-item ${item.type === 'completed' ? 'completed' : ''}">
+                                <div class="date">${this.formatDate(item.date)}</div>
+                                <div class="description">${item.notes}</div>
+                                <small>Технік: ${item.technician}</small>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            ` : ''}
+
+            ${tool.checkoutHistory && tool.checkoutHistory.length > 0 ? `
+                <div class="detail-section">
+                    <h5><i class="fas fa-exchange-alt"></i> Історія видач</h5>
+                    <div class="checkout-history">
+                        ${tool.checkoutHistory.map(item => `
+                            <div class="checkout-item ${item.returned ? 'returned' : ''}">
+                                <div class="technician">${item.technician}</div>
+                                <div class="dates">
+                                    Видано: ${this.formatDate(item.checkoutDate)}
+                                    ${item.returnDate ? `Повернено: ${this.formatDate(item.returnDate)}` : `Очікується: ${this.formatDate(item.expectedReturn)}`}
+                                </div>
+                                <span class="status ${item.returned ? 'returned' : 'active'}">${item.returned ? 'Повернено' : 'Активно'}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            ` : ''}
+        `;
+
+        $('#toolDetailsContent').html(detailsHtml);
+
+        // Оновлення кнопок в залежності від статусу
+        const checkoutBtn = $('#checkoutBtn');
+        const maintenanceBtn = $('#maintenanceBtn');
+
+        if (tool.status === 'available') {
+            checkoutBtn.show();
+            maintenanceBtn.show();
+        } else if (tool.status === 'in-use') {
+            checkoutBtn.hide();
+            maintenanceBtn.show();
+        } else {
+            checkoutBtn.hide();
+            maintenanceBtn.hide();
+        }
+    }
+
+    prepareCheckoutForm(toolId) {
+        const tool = this.tools.find(t => t.id === toolId);
+        if (!tool) return;
+
+        $('#toolSelect').html(`<option value="${tool.id}">${tool.name} (${tool.id})</option>`);
+        $('#technicianName').val('');
+        $('#expectedReturnDate').val('');
+        $('#checkoutNotes').val('');
+    }
+
+    confirmCheckout() {
+        const toolId = $('#toolSelect').val();
+        const technicianName = $('#technicianName').val().trim();
+        const expectedReturnDate = $('#expectedReturnDate').val();
+        const notes = $('#checkoutNotes').val().trim();
+
+        if (!technicianName || !expectedReturnDate) {
+            this.showNotification('Будь ласка, заповніть всі обов\'язкові поля', 'error');
+            return;
+        }
+
+        const tool = this.tools.find(t => t.id === toolId);
+        if (!tool) return;
+
+        // Оновлення статусу інструменту
+        tool.status = 'in-use';
+        tool.currentUser = technicianName;
+        tool.checkoutDate = new Date().toISOString().split('T')[0];
+        tool.expectedReturn = expectedReturnDate;
+
+        if (!tool.checkoutHistory) tool.checkoutHistory = [];
+        tool.checkoutHistory.push({
+            technician: technicianName,
+            checkoutDate: tool.checkoutDate,
+            expectedReturn: expectedReturnDate,
+            notes: notes,
+            returned: false
+        });
+
+        this.saveTools();
+        this.applyFilters();
+        this.updateStatistics();
+
+        $('#checkoutToolModal').modal('hide');
+        this.showNotification(`Інструмент "${tool.name}" видано техніку ${technicianName}`, 'success');
     }
 
     returnTool(toolId) {
         const tool = this.tools.find(t => t.id === toolId);
-        if (!tool) return;
-
-        if (confirm(`Підтвердити повернення інструменту ${tool.name}?`)) {
-            tool.status = 'available';
-            delete tool.currentUser;
-            delete tool.checkoutDate;
-            delete tool.expectedReturn;
-            
-            localStorage.setItem('tools', JSON.stringify(this.tools));
-            this.applyFilters();
-            
-            this.showNotification('Інструмент успішно повернено!', 'success');
-        }
-    }
-
-    viewTool(toolId) {
-        const tool = this.tools.find(t => t.id === toolId);
-        if (!tool) return;
-
-        currentToolId = toolId;
-        const modalContent = this.createToolDetails(tool);
-        $('#toolDetailsContent').html(modalContent);
-        
-        // Оновлення видимості кнопок
-        this.updateToolButtons(tool);
-        
-        $('#viewToolModal').modal('show');
-    }
-
-    createToolDetails(tool) {
-        const statusClass = `status-${tool.status}`;
-        const categoryClass = `category-${tool.category}`;
-        const statusText = this.getStatusText(tool.status);
-        const categoryText = this.getCategoryText(tool.category);
-        const locationText = this.getLocationText(tool.location);
-        
-        return `
-            <div class="tool-details">
-                <div class="row mb-4">
-                    <div class="col-md-8">
-                        <h4>${tool.id}</h4>
-                        <h5>${tool.name}</h5>
-                    </div>
-                    <div class="col-md-4 text-right">
-                        <span class="category-badge ${categoryClass}">${categoryText}</span>
-                        <span class="status-badge ${statusClass}">${statusText}</span>
-                    </div>
-                </div>
-
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <img src="../assets/img/tools/${tool.image}" 
-                             class="img-fluid rounded" 
-                             alt="${tool.name}"
-                             onerror="this.src='../assets/img/tools/default.jpg'"
-                             style="max-height: 200px;">
-                    </div>
-                    <div class="col-md-6">
-                        <div class="qr-code bg-light text-center">
-                            <i class="fas fa-qrcode fa-4x text-muted"></i>
-                            <div class="mt-2">
-                                <small>${tool.id}</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <div class="info-item">
-                            <strong><i class="fas fa-industry"></i> Виробник:</strong> ${tool.manufacturer}
-                        </div>
-                        <div class="info-item">
-                            <strong><i class="fas fa-cube"></i> Модель:</strong> ${tool.model}
-                        </div>
-                        <div class="info-item">
-                            <strong><i class="fas fa-barcode"></i> Серійний номер:</strong> ${tool.serialNumber || 'Н/Д'}
-                        </div>
-                        <div class="info-item">
-                            <strong><i class="fas fa-shopping-cart"></i> Дата покупки:</strong> ${this.formatDate(tool.purchaseDate)}
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-item">
-                            <strong><i class="fas fa-map-marker-alt"></i> Локація:</strong> ${locationText}
-                        </div>
-                        <div class="info-item">
-                            <strong><i class="fas fa-boxes"></i> Кількість:</strong> ${tool.quantity} од.
-                            ${tool.quantity <= tool.minQuantity ? 
-                                '<span class="badge badge-warning ml-2">Потребує поповнення</span>' : ''}
-                        </div>
-                        <div class="info-item">
-                            <strong><i class="fas fa-tachometer-alt"></i> Стан:</strong> ${this.getConditionText(tool.condition)}
-                        </div>
-                        ${tool.currentUser ? `
-                            <div class="info-item">
-                                <strong><i class="fas fa-user"></i> Використовує:</strong> ${tool.currentUser}
-                            </div>
-                            <div class="info-item">
-                                <strong><i class="fas fa-calendar"></i> Видано:</strong> ${this.formatDate(tool.checkoutDate)}
-                            </div>
-                            <div class="info-item">
-                                <strong><i class="fas fa-undo"></i> Очікується повернення:</strong> ${this.formatDate(tool.expectedReturn)}
-                            </div>
-                        ` : ''}
-                    </div>
-                </div>
-
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-header">
-                                <h6 class="card-title"><i class="fas fa-calendar-check"></i> Перевірки</h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="info-item">
-                                    <strong>Остання перевірка:</strong> ${this.formatDate(tool.lastInspection)}
-                                </div>
-                                <div class="info-item">
-                                    <strong>Наступна перевірка:</strong> ${this.formatDate(tool.nextInspection)}
-                                </div>
-                                ${this.getInspectionStatus(tool.nextInspection)}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-header">
-                                <h6 class="card-title"><i class="fas fa-info-circle"></i> Додаткова інформація</h6>
-                            </div>
-                            <div class="card-body">
-                                ${tool.notes ? `
-                                    <p class="card-text">${tool.notes}</p>
-                                ` : '<p class="card-text text-muted">Немає додаткової інформації</p>'}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                ${tool.maintenanceHistory && tool.maintenanceHistory.length > 0 ? `
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <h6 class="card-title"><i class="fas fa-history"></i> Історія обслуговування</h6>
-                        </div>
-                        <div class="card-body maintenance-history">
-                            ${tool.maintenanceHistory.map(record => `
-                                <div class="timeline-item mb-3">
-                                    <div class="d-flex justify-content-between">
-                                        <strong>${this.formatDate(record.date)}</strong>
-                                        <span class="badge ${record.type === 'regular' ? 'badge-info' : record.type === 'repair' ? 'badge-warning' : 'badge-secondary'}">
-                                            ${record.type === 'regular' ? 'Профілактика' : record.type === 'repair' ? 'Ремонт' : 'Діагностика'}
-                                        </span>
-                                    </div>
-                                    <div class="text-muted">Технік: ${record.technician}</div>
-                                    <div>${record.notes}</div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                ` : ''}
-            </div>
-        `;
-    }
-
-    getConditionText(condition) {
-        const conditions = {
-            'excellent': 'Відмінний',
-            'good': 'Хороший',
-            'fair': 'Задовільний',
-            'poor': 'Поганий',
-            'broken': 'Несправний',
-            'maintenance': 'На обслуговуванні'
-        };
-        return conditions[condition] || condition;
-    }
-
-    getInspectionStatus(nextInspection) {
-        if (!nextInspection) return '';
-        
-        const now = new Date();
-        const inspectionDate = new Date(nextInspection);
-        const timeDiff = inspectionDate - now;
-        const daysDiff = timeDiff / (1000 * 60 * 60 * 24);
-        
-        if (daysDiff < 0) {
-            return '<div class="alert alert-danger mt-2 py-1"><small>Перевірка протермінована!</small></div>';
-        } else if (daysDiff < 30) {
-            return '<div class="alert alert-warning mt-2 py-1"><small>Необхідна перевірка найближчим часом</small></div>';
-        }
-        return '<div class="alert alert-success mt-2 py-1"><small>Перевірка вчасно</small></div>';
-    }
-
-    updateToolButtons(tool) {
-        if (tool.status === 'available') {
-            $('#checkoutBtn').show();
-            $('#maintenanceBtn').show();
-        } else if (tool.status === 'in-use') {
-            $('#checkoutBtn').hide();
-            $('#maintenanceBtn').hide();
-        } else {
-            $('#checkoutBtn').hide();
-            $('#maintenanceBtn').show();
-        }
-    }
-
-    requestMaintenance(toolId) {
-        const tool = this.tools.find(t => t.id === toolId);
-        if (!tool) return;
-
-        const notes = prompt('Введіть причину обслуговування:');
-        if (notes) {
-            tool.status = 'maintenance';
-            tool.maintenanceHistory = tool.maintenanceHistory || [];
-            tool.maintenanceHistory.unshift({
-                date: new Date().toISOString().split('T')[0],
-                type: 'repair',
-                technician: $('#techName').text(),
-                notes: notes
-            });
-            
-            localStorage.setItem('tools', JSON.stringify(this.tools));
-            this.applyFilters();
-            
-            this.showNotification('Запит на обслуговування відправлено!', 'success');
-        }
-    }
-
-    printToolLabel(toolId) {
-        const tool = this.tools.find(t => t.id === toolId);
-        if (!tool) return;
-
-        this.showNotification(`Підготовка ярлика для ${tool.name}...`, 'info');
-        
-        // Імітація друку
-        setTimeout(() => {
-            this.showNotification('Ярлик готовий до друку', 'success');
-        }, 1000);
-    }
-
-    orderTool(toolId) {
-        const tool = this.tools.find(t => t.id === toolId);
-        if (!tool) return;
-
-        const quantity = prompt(`Скільки одиниць ${tool.name} замовити?`, tool.minQuantity - tool.quantity + 1);
-        if (quantity && !isNaN(quantity)) {
-            this.showNotification(`Замовлення на ${quantity} од. ${tool.name} відправлено!`, 'success');
-        }
-    }
-
-    exportTools() {
-        const filteredTools = this.getFilteredTools();
-        
-        if (filteredTools.length === 0) {
-            this.showNotification('Немає інструментів для експорту', 'warning');
+        if (!tool || tool.status !== 'in-use') {
+            this.showNotification('Інструмент не знаходиться в використанні', 'warning');
             return;
         }
 
-        this.showNotification('Підготовка експорту...', 'info');
-        
-        // Створення CSV
-        const csvContent = this.convertToCSV(filteredTools);
-        this.downloadCSV(csvContent, `інструменти_${new Date().toISOString().split('T')[0]}.csv`);
+        const returnDate = new Date().toISOString().split('T')[0];
+        const lastCheckout = tool.checkoutHistory[tool.checkoutHistory.length - 1];
+
+        if (lastCheckout) {
+            lastCheckout.returnDate = returnDate;
+            lastCheckout.returned = true;
+        }
+
+        tool.status = 'available';
+        delete tool.currentUser;
+        delete tool.checkoutDate;
+        delete tool.expectedReturn;
+
+        this.saveTools();
+        this.applyFilters();
+        this.updateStatistics();
+
+        this.showNotification(`Інструмент "${tool.name}" повернено`, 'success');
     }
 
-    convertToCSV(tools) {
-        const headers = ['ID', 'Назва', 'Категорія', 'Статус', 'Локація', 'Кількість', 'Остання перевірка'];
-        const rows = tools.map(tool => [
-            tool.id,
-            tool.name,
-            this.getCategoryText(tool.category),
-            this.getStatusText(tool.status),
-            this.getLocationText(tool.location),
-            tool.quantity,
-            this.formatDate(tool.lastInspection)
-        ]);
-        
-        return [headers, ...rows].map(row => row.join(',')).join('\n');
+    checkLowStock() {
+        const lowStockTools = this.tools.filter(tool => tool.quantity <= tool.minQuantity);
+
+        const container = $('#lowStockTools');
+        container.empty();
+
+        if (lowStockTools.length === 0) {
+            container.html('<p class="text-muted text-center">Всі інструменти в достатній кількості</p>');
+            return;
+        }
+
+        lowStockTools.forEach(tool => {
+            const alertHtml = `
+                <div class="col-md-6">
+                    <div class="low-stock-alert">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="tool-name">${tool.name}</div>
+                                <div class="stock-info">
+                                    В наявності: ${tool.quantity} од. | Мінімум: ${tool.minQuantity} од.
+                                </div>
+                            </div>
+                            <button class="btn btn-sm btn-primary" onclick="toolManager.orderTool('${tool.id}')">
+                                <i class="fas fa-plus"></i> Замовити
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.append(alertHtml);
+        });
     }
 
-    downloadCSV(content, filename) {
-        const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = filename;
-        link.click();
-        
-        this.showNotification('Експорт успішно завершено', 'success');
+    scanTool() {
+        $('#scanToolModal').modal('show');
+        // Тут буде реалізація QR сканування
+        this.showNotification('Функція QR сканування в розробці', 'info');
     }
 
-    printTools() {
-        window.print();
+    saveTools() {
+        localStorage.setItem('tools', JSON.stringify(this.tools));
     }
 
     showNotification(message, type = 'info') {
@@ -773,6 +951,52 @@ class ToolManager {
             position: 'bottom right',
             autoHideDelay: 3000
         });
+    }
+
+    // Допоміжні методи
+    getCategoryText(category) {
+        const categories = {
+            mechanical: 'Механічний',
+            electrical: 'Електричний',
+            safety: 'Безпека',
+            measuring: 'Вимірювальний'
+        };
+        return categories[category] || category;
+    }
+
+    getStatusText(status) {
+        const statuses = {
+            available: 'Доступний',
+            'in-use': 'Використовується',
+            maintenance: 'Обслуговування',
+            broken: 'Несправний'
+        };
+        return statuses[status] || status;
+    }
+
+    getLocationText(location) {
+        const locations = {
+            van: 'Автомобіль',
+            warehouse: 'Склад',
+            site: 'На об\'єкті'
+        };
+        return locations[location] || location;
+    }
+
+    getConditionText(condition) {
+        const conditions = {
+            excellent: 'Відмінний',
+            good: 'Добрий',
+            fair: 'Задовільний',
+            poor: 'Поганий'
+        };
+        return conditions[condition] || condition;
+    }
+
+    formatDate(dateString) {
+        if (!dateString) return 'Невідомо';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('uk-UA');
     }
 }
 
