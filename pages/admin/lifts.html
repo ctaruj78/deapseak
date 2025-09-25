@@ -303,6 +303,58 @@
             <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
+                    <!-- Statistics Row -->
+                    <div class="row mb-4">
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-info">
+                                <div class="inner">
+                                    <h3 id="totalLifts">0</h3>
+                                    <p>Загальна кількість ліфтів</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-elevator"></i>
+                                </div>
+                                <a href="#" class="small-box-footer">Детальніше <i class="fas fa-arrow-circle-right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-success">
+                                <div class="inner">
+                                    <h3 id="activeLifts">0</h3>
+                                    <p>Активних ліфтів</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <a href="#" class="small-box-footer">Детальніше <i class="fas fa-arrow-circle-right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-warning">
+                                <div class="inner">
+                                    <h3 id="maintenanceLifts">0</h3>
+                                    <p>В обслуговуванні</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-tools"></i>
+                                </div>
+                                <a href="#" class="small-box-footer">Детальніше <i class="fas fa-arrow-circle-right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-danger">
+                                <div class="inner">
+                                    <h3 id="inactiveLifts">0</h3>
+                                    <p>Неактивних ліфтів</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-times-circle"></i>
+                                </div>
+                                <a href="#" class="small-box-footer">Детальніше <i class="fas fa-arrow-circle-right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="row">
                         <div class="col-12">
                             <div class="card card-primary">
@@ -528,7 +580,13 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-4">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="inspectionFrequency">Частота інспекцій (місяці)</label>
+                                    <input type="number" id="inspectionFrequency" class="form-control" min="1" max="24" value="6">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="liftStatus">Статус *</label>
                                     <select id="liftStatus" class="form-control" required>
@@ -591,6 +649,37 @@
     <!-- Toast Container -->
     <div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
 
+    <!-- Chat Modal -->
+    <div class="modal fade" id="chatModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-info">
+                    <h5 class="modal-title" id="chatModalTitle">Чат з ліфтом</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="chatLiftId">
+                    <div id="chatMessages" class="mb-3" style="height: 300px; overflow-y: auto; border: 1px solid #dee2e6; padding: 10px; border-radius: 5px;">
+                        <!-- Повідомлення будуть додані динамічно -->
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="chatInput" class="form-control" placeholder="Введіть повідомлення...">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" id="sendChatBtn">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -639,6 +728,7 @@
                 this.allLifts = JSON.parse(localStorage.getItem('lifts')) || [];
                 this.renderLiftsTable(this.allLifts);
                 this.renderPagination(this.allLifts.length);
+                this.updateStatistics();
             }
 
             renderLiftsTable(lifts) {
@@ -699,6 +789,14 @@
                                             data-content="<strong>Модель:</strong> ${lift.model}<br><strong>Тип:</strong> ${this.getLiftTypeLabel(lift.type)}<br><strong>Адреса:</strong> ${lift.location}<br><strong>Клієнт:</strong> ${lift.clientName || 'Невідомий'}<br><strong>Статус:</strong> ${this.getStatusLabel(lift.status)}">
                                         <i class="fas fa-edit"></i>
                                     </button>
+                                    <button class="btn btn-sm btn-success btn-action" 
+                                            onclick="liftManager.openChatModal('${lift.id}')"
+                                            data-toggle="popover"
+                                            data-placement="left"
+                                            data-html="true"
+                                            data-content="<strong>Чат з ліфтом</strong><br>Модель: ${lift.model}<br>Адреса: ${lift.location}">
+                                        <i class="fas fa-comments"></i>
+                                    </button>
                                     <button class="btn btn-sm btn-danger btn-action" 
                                             onclick="liftManager.deleteLift('${lift.id}')"
                                             data-toggle="popover"
@@ -729,6 +827,18 @@
                 
                 $('#showingCount').text(`${start}-${end}`);
                 $('#totalCount').text(this.allLifts.length);
+            }
+
+            updateStatistics() {
+                const total = this.allLifts.length;
+                const active = this.allLifts.filter(lift => lift.status === 'active').length;
+                const maintenance = this.allLifts.filter(lift => lift.status === 'maintenance').length;
+                const inactive = this.allLifts.filter(lift => lift.status === 'inactive').length;
+
+                $('#totalLifts').text(total);
+                $('#activeLifts').text(active);
+                $('#maintenanceLifts').text(maintenance);
+                $('#inactiveLifts').text(inactive);
             }
 
             setupEventListeners() {
@@ -822,6 +932,21 @@
                             </div>
                         `);
                         additionalLifts.append(newRow);
+                    }
+                });
+
+                // Автоматичне обчислення наступного ТО
+                $('#lastMaintenance, #inspectionFrequency').on('change', function() {
+                    const lastMaintenance = $('#lastMaintenance').val();
+                    const frequency = parseInt($('#inspectionFrequency').val()) || 6;
+                    
+                    if (lastMaintenance) {
+                        const lastDate = new Date(lastMaintenance);
+                        const nextDate = new Date(lastDate);
+                        nextDate.setMonth(nextDate.getMonth() + frequency);
+                        
+                        const nextDateString = nextDate.toISOString().split('T')[0];
+                        $('#nextMaintenance').val(nextDateString);
                     }
                 });
 
@@ -1077,6 +1202,7 @@
                 $('#liftLng').val(lift.lng || '');
                 $('#lastMaintenance').val(lift.lastMaintenance || '');
                 $('#nextMaintenance').val(lift.nextMaintenance || '');
+                $('#inspectionFrequency').val(lift.inspectionFrequency || '6');
                 $('#liftStatus').val(lift.status || 'active');
                 $('#clientName').val(lift.clientName || '');
                 $('#liftCount').val(lift.liftCount || '1');
@@ -1187,6 +1313,7 @@
                     status: $('#liftStatus').val(),
                     lastMaintenance: lastMaintenance,
                     nextMaintenance: nextMaintenance,
+                    inspectionFrequency: parseInt($('#inspectionFrequency').val()) || 6,
                     clientName: $('#clientName').val().trim(),
                     clientEmail: clientEmail,
                     liftCount: $('#liftCount').val(),
@@ -1237,6 +1364,86 @@
                     this.loadLifts();
                     this.showNotification('Ліфт успішно видалено', 'success');
                 }
+            }
+
+            openChatModal(liftId) {
+                const lifts = JSON.parse(localStorage.getItem('lifts')) || [];
+                const lift = lifts.find(l => l.id === liftId);
+                if (lift) {
+                    $('#chatLiftId').val(liftId);
+                    $('#chatModalTitle').text(`Чат з ліфтом ${lift.model} (${lift.location})`);
+                    this.loadChatMessages(liftId);
+                    $('#chatModal').modal('show');
+                }
+            }
+
+            loadChatMessages(liftId) {
+                const messages = JSON.parse(localStorage.getItem(`chat_${liftId}`)) || [];
+                const chatMessages = $('#chatMessages');
+                chatMessages.empty();
+
+                if (messages.length === 0) {
+                    chatMessages.html('<p class="text-muted text-center">Немає повідомлень. Почніть розмову!</p>');
+                    return;
+                }
+
+                messages.forEach(message => {
+                    const messageDiv = $(`
+                        <div class="message mb-2 ${message.sender === 'user' ? 'text-right' : ''}">
+                            <div class="d-inline-block p-2 rounded ${message.sender === 'user' ? 'bg-primary text-white' : 'bg-light'}">
+                                <small class="d-block">${message.timestamp}</small>
+                                ${message.text}
+                            </div>
+                        </div>
+                    `);
+                    chatMessages.append(messageDiv);
+                });
+
+                chatMessages.scrollTop(chatMessages[0].scrollHeight);
+            }
+
+            sendChatMessage() {
+                const liftId = $('#chatLiftId').val();
+                const messageText = $('#chatInput').val().trim();
+
+                if (!messageText) return;
+
+                const message = {
+                    sender: 'user',
+                    text: messageText,
+                    timestamp: new Date().toLocaleString('uk-UA')
+                };
+
+                // Зберегти повідомлення
+                const messages = JSON.parse(localStorage.getItem(`chat_${liftId}`)) || [];
+                messages.push(message);
+                localStorage.setItem(`chat_${liftId}`, JSON.stringify(messages));
+
+                // Очистити поле вводу
+                $('#chatInput').val('');
+
+                // Перезавантажити повідомлення
+                this.loadChatMessages(liftId);
+
+                // Симулювати відповідь системи через 1-2 секунди
+                setTimeout(() => {
+                    const responses = [
+                        'Повідомлення отримано. Технік буде направлений найближчим часом.',
+                        'Дякуємо за інформацію. Ми перевіримо стан ліфта.',
+                        'Ваше повідомлення передано відповідальному техніку.',
+                        'Ми отримали ваше повідомлення та розпочнемо роботу над проблемою.'
+                    ];
+                    
+                    const systemMessage = {
+                        sender: 'system',
+                        text: responses[Math.floor(Math.random() * responses.length)],
+                        timestamp: new Date().toLocaleString('uk-UA')
+                    };
+
+                    messages.push(systemMessage);
+                    localStorage.setItem(`chat_${liftId}`, JSON.stringify(messages));
+                    this.loadChatMessages(liftId);
+                }, 1000 + Math.random() * 1000);
             }
 
             searchLifts(query) {
