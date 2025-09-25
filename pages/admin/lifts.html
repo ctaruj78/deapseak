@@ -359,7 +359,7 @@
                         <div class="col-12">
                             <div class="card card-primary">
                                 <div class="card-header">
-                                    <h3 class="card-title">Список ліфтів</h3>
+                                    <h3 class="card-title">Список ліфтів <span id="lift-count">(0)</span></h3>
                                     <div class="card-tools">
                                         <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#liftModal">
                                             <i class="fas fa-plus"></i> Додати ліфт
@@ -433,7 +433,7 @@
                                                     <th>Дії</th>
                                                 </tr>
                                             </thead>
-                                            <tbody>
+                                            <tbody id="lifts-table-body">
                                                 <!-- Дані будуть додані через JavaScript -->
                                             </tbody>
                                         </table>
@@ -827,6 +827,7 @@
                 
                 $('#showingCount').text(`${start}-${end}`);
                 $('#totalCount').text(this.allLifts.length);
+                $('#lift-count').text(`(${this.allLifts.length})`);
             }
 
             updateStatistics() {

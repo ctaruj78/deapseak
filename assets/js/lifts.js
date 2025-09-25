@@ -14,7 +14,254 @@ class LiftManager {
     init() {
         this.loadLifts();
         this.initMap();
+        this.initEventListeners();
         console.log('LiftManager initialized successfully');
+    }
+
+    initEventListeners() {
+        // Додавання ліфта
+        $('#add-lift-button').on('click', () => {
+            console.log('Add lift button clicked');
+            $('#liftModalTitle').text('Додати ліфт(и)');
+            $('#lift-id').val('');
+            $('#lift-address').val('');
+            $('#lift-postal-code').val('');
+            $('#lift-lift-count').val('1');
+            $('#lift-serial-inputs').html('<div class="input-group mb-2"><input type="text" class="form-control lift-serial" placeholder="Серійний номер ліфта 1" required></div>');
+            $('#lift-brand').val('');
+            $('#lift-client').val('');
+            $('#lift-client-email').val('');
+            $('#lift-lat').val('');
+            $('#lift-lng').val('');
+            $('#liftModal').modal('show');
+        });
+
+        // Оновлення кількості серійних номерів
+        $('#lift-lift-count').on('change', function () {
+            const count = $(this).val();
+            const serialInputs = $('#lift-serial-inputs');
+            serialInputs.empty();
+            for (let i = 0; i < count; i++) {
+                serialInputs.append(`
+                    <div class="input-group mb-2">
+                        <input type="text" class="form-control lift-serial" placeholder="Серійний номер ліфта ${i + 1}" required>
+                    </div>
+                `);
+            }
+        });
+
+        // Геокодування
+        $('#geocode-button').on('click', () => {
+            console.log('Geocode button clicked');
+            const address = $('#lift-address').val();
+            if (address) {
+                this.geocodeAddress(address).then(coords => {
+                    $('#lift-lat').val(coords.lat);
+                    $('#lift-lng').val(coords.lng);
+                    if (typeof toastr !== 'undefined') toastr.success('Координати отримані.');
+                }).catch(() => {
+                    if (typeof toastr !== 'undefined') toastr.error('Не вдалося отримати координати.');
+                });
+            } else {
+                if (typeof toastr !== 'undefined') toastr.error('Введіть адресу.');
+            }
+        });
+
+        // Збереження нового ліфта
+        $('#save-lift-button').on('click', () => {
+            console.log('Save lift button clicked - Validating inputs...');
+            const address = $('#lift-address').val().trim();
+            const postalCode = $('#lift-postal-code').val().trim();
+            const liftCount = parseInt($('#lift-lift-count').val());
+            const serials = $('.lift-serial').map((i, el) => $(el).val().trim()).get();
+            const brand = $('#lift-brand').val().trim();
+            const client = $('#lift-client').val().trim();
+            const clientEmail = $('#lift-client-email').val().trim();
+            const lat = $('#lift-lat').val().trim();
+            const lng = $('#lift-lng').val().trim();
+
+            console.log('Input values:', { address, postalCode, liftCount, serials, brand, client, clientEmail, lat, lng });
+
+            if (!address || !postalCode || !liftCount || serials.some(s => !s) || !client || !clientEmail) {
+                console.log('Validation failed - Required fields missing');
+                if (typeof toastr !== 'undefined') toastr.error('Заповніть усі обов’язкові поля.');
+                return;
+            }
+
+            for (let i = 0; i < liftCount; i++) {
+                const newLift = {
+                    id: generateUniqueId(),
+                    address,
+                    postalCode,
+                    serial: serials[i] || `Serial_${i + 1}`,
+                    brand,
+                    status: 'active',
+                    client,
+                    clientEmail,
+                    tech: null,
+                    lastInspection: null,
+                    inspectionFrequency: null,
+                    capacity: null,
+                    speed: null,
+                    interventionHistory: [],
+                    photos: [],
+                    inspectionHistory: [],
+                    chat: [],
+                    lat: lat ? parseFloat(lat) : null,
+                    lng: lng ? parseFloat(lng) : null
+                };
+                allLifts.push(newLift);
+                console.log('Added lift:', newLift);
+            }
+
+            saveDataToLocalStorage();
+            $('#liftModal').modal('hide');
+            this.updateLiftTable();
+            if (typeof toastr !== 'undefined') toastr.success('Ліфт(и) додано.');
+            console.log('Lift saved successfully - Total lifts:', allLifts.length);
+        });
+
+        // Редагування ліфта
+        $('#lifts-table-body').on('click', '.edit-btn', function () {
+            console.log('Edit button clicked for lift:', $(this).data('id'));
+            const liftId = $(this).data('id');
+            const lift = allLifts.find(l => l.id === liftId);
+            if (lift) {
+                $('#edit-lift-id').val(lift.id);
+                $('#edit-lift-address').val(lift.address);
+                $('#edit-lift-postal-code').val(lift.postalCode);
+                $('#edit-lift-serial').val(lift.serial);
+                $('#edit-lift-brand').val(lift.brand);
+                $('#edit-lift-client').val(lift.client);
+                $('#edit-lift-client-email').val(lift.clientEmail);
+                $('#edit-lift-capacity').val(lift.capacity);
+                $('#edit-lift-speed').val(lift.speed);
+                $('#edit-lift-last-inspection').val(lift.lastInspection);
+                $('#edit-lift-inspection-frequency').val(lift.inspectionFrequency);
+                $('#edit-report-status').text(lift.report ? 'Звіт завантажено' : 'Звіт відсутній');
+                $('#editLiftModal').modal('show');
+            }
+        });
+
+        $('#save-edit-lift-button').on('click', () => {
+            console.log('Save edit lift button clicked');
+            const liftId = $('#edit-lift-id').val();
+            const lift = allLifts.find(l => l.id === liftId);
+            if (lift) {
+                lift.client = $('#edit-lift-client').val();
+                lift.clientEmail = $('#edit-lift-client-email').val();
+                lift.capacity = $('#edit-lift-capacity').val();
+                lift.speed = $('#edit-lift-speed').val();
+                lift.lastInspection = $('#edit-lift-last-inspection').val();
+                lift.inspectionFrequency = $('#edit-lift-inspection-frequency').val();
+                const fileInput = $('#edit-lift-report')[0].files[0];
+                if (fileInput) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        lift.report = e.target.result;
+                        saveDataToLocalStorage();
+                        $('#edit-report-status').text('Звіт завантажено');
+                        if (typeof toastr !== 'undefined') toastr.success('Звіт оновлено.');
+                    };
+                    reader.readAsDataURL(fileInput);
+                }
+                saveDataToLocalStorage();
+                $('#editLiftModal').modal('hide');
+                this.updateLiftTable();
+                if (typeof toastr !== 'undefined') toastr.success('Ліфт оновлено.');
+            }
+        });
+
+        // Призначення техніка
+        $('#lifts-table-body').on('click', '.assign-tech-btn', function () {
+            console.log('Assign tech button clicked for lift:', $(this).data('id'));
+            const liftId = $(this).data('id');
+            $('#assign-lift-id').val(liftId);
+            const techSelect = $('#assign-tech');
+            techSelect.empty();
+            allUsers.filter(u => u.role === 'tech').forEach(user => {
+                techSelect.append(`<option value="${user.username}">${user.username}</option>`);
+            });
+            $('#assignTechModal').modal('show');
+        });
+
+        $('#save-assign-tech-button').on('click', () => {
+            console.log('Save assign tech button clicked');
+            const liftId = $('#assign-lift-id').val();
+            const tech = $('#assign-tech').val();
+            const lift = allLifts.find(l => l.id === liftId);
+            if (lift) {
+                lift.tech = tech;
+                saveDataToLocalStorage();
+                $('#assignTechModal').modal('hide');
+                this.updateLiftTable();
+                if (typeof toastr !== 'undefined') toastr.success('Технік призначено.');
+            }
+        });
+
+        // Створення заявки
+        $('#lifts-table-body').on('click', '.request-btn', function () {
+            console.log('Request button clicked for lift:', $(this).data('id'));
+            const liftId = $(this).data('id');
+            const lift = allLifts.find(l => l.id === liftId);
+            if (lift) {
+                const description = prompt('Введіть опис заявки:');
+                if (description) {
+                    this.autoCreateRequest(liftId, lift.status);
+                    const request = allServiceRequests.find(r => r.liftId === liftId && r.status === 'pending');
+                    if (request) {
+                        this.sendEmail(lift.clientEmail, `Нова заявка для ліфта ${liftId}`, description, true);
+                        if (typeof toastr !== 'undefined') toastr.success(`Заявка створена для ліфта ${liftId}`);
+                    }
+                }
+            }
+        });
+
+        // Генерація QR-коду
+        $('#lifts-table-body').on('click', '.qrcode-btn', function () {
+            console.log('QR code button clicked for lift:', $(this).data('id'));
+            const liftId = $(this).data('id');
+            $('#qr-lift-id').val(liftId);
+            $('#qrModal').modal('show');
+            this.generateQRCode(liftId);
+        });
+
+        $('#save-qr-button').on('click', () => {
+            console.log('Save QR button clicked');
+            const liftId = $('#qr-lift-id').val();
+            const qrCodeUrl = $('#qrcode').find('img').attr('src');
+            if (qrCodeUrl) {
+                allQRCodes.push({ liftId, qrCodeUrl, timestamp: new Date().toISOString() });
+                saveDataToLocalStorage();
+                $('#qrModal').modal('hide');
+                if (typeof toastr !== 'undefined') toastr.success('QR-код збережено.');
+            }
+        });
+
+        $('#clear-qr-button').on('click', () => {
+            console.log('Clear QR button clicked');
+            $('#qrcode').empty();
+            if (typeof toastr !== 'undefined') toastr.info('QR-код очищено.');
+        });
+
+        // Чат
+        $('#send-chat-button').on('click', () => {
+            console.log('Send chat button clicked');
+            const liftId = $('#chat-lift-id').val();
+            const lift = allLifts.find(l => l.id === liftId);
+            const message = $('#chat-input').val().trim();
+            if (lift && message) {
+                const newMessage = this.addChatMessage(currentUser.username, message);
+                lift.chat.push(newMessage);
+                saveDataToLocalStorage();
+                $('#chat-input').val('');
+                this.renderChat(lift);
+                if (typeof toastr !== 'undefined') toastr.success('Повідомлення відправлено.');
+            }
+        });
+
+        // Функція оновлення таблиці
+        this.updateLiftTable();
     }
 
     initMap() {
@@ -204,31 +451,7 @@ class LiftManager {
                 'liftModel', 'liftType', 'liftAddress', 'liftPostcode',
                 'liftCapacity', 'liftSpeed', 'liftLocation', 'liftLat', 'liftLng', 'liftStatus'
             ]; // ТО та email необов'язкові
-            // Генерація QR-коду для нового ліфта
-            if (!liftId) {
-                setTimeout(() => {
-                    liftManager.showQrInForm(lift);
-                }, 500);
-            }
-        this.initGeocodeButton = function() {
-            const self = this;
-            $(document).on('click', '#btnGeocode', function() {
-                self.geocodeAddress();
-            });
-        };
-        this.initGeocodeButton();
-    showQrInForm(lift) {
-        const qrContainer = $('#liftQrCode');
-        qrContainer.empty();
-        if (typeof QRCode !== 'undefined') {
-            new QRCode(qrContainer[0], {
-                text: JSON.stringify({ id: lift.id, model: lift.model }),
-                width: 128,
-                height: 128
-            });
-            $('#qrSection').show();
-        }
-    }
+            
             let isValid = true;
 
             requiredFields.forEach(field => {
@@ -281,6 +504,10 @@ class LiftManager {
 
             if (!liftId) {
                 lift.createdAt = new Date().toISOString();
+                // Генерація QR-коду для нового ліфта
+                setTimeout(() => {
+                    this.showQrInForm(lift);
+                }, 500);
             }
 
             const existingIndex = allLifts.findIndex(l => l.id === lift.id);
@@ -299,6 +526,19 @@ class LiftManager {
         } catch (error) {
             console.error('Error saving lift:', error);
             showNotification('Помилка збереження ліфта', 'error');
+        }
+    }
+
+    showQrInForm(lift) {
+        const qrContainer = $('#liftQrCode');
+        qrContainer.empty();
+        if (typeof QRCode !== 'undefined') {
+            new QRCode(qrContainer[0], {
+                text: JSON.stringify({ id: lift.id, model: lift.model }),
+                width: 128,
+                height: 128
+            });
+            $('#qrSection').show();
         }
     }
 
@@ -554,6 +794,196 @@ class LiftManager {
     changePage(page) {
         this.currentPage = page;
         this.renderLiftsTable();
+    }
+
+    // Нові функції з інтегрованого коду
+    renderRepairHistory(lift) {
+        const repairList = $('#repair-list');
+        if (!repairList.length) return;
+        
+        repairList.empty();
+        if (!lift.interventionHistory || lift.interventionHistory.length === 0) {
+            repairList.append('<li class="list-group-item text-center">Історія поломок і ремонтів відсутня</li>');
+            return;
+        }
+        const repairEntries = lift.interventionHistory.filter(entry =>
+            ['status_update', 'photo_upload'].includes(entry.type) &&
+            ['out_of_service', 'maintenance', 'completed'].includes(entry.status)
+        );
+        if (repairEntries.length === 0) {
+            repairList.append('<li class="list-group-item text-center">Історія поломок і ремонтів відсутня</li>');
+            return;
+        }
+        repairEntries.forEach(entry => {
+            const item = `
+                <li class="list-group-item">
+                    <strong>Дата:</strong> ${entry.date || 'Невідомо'}<br>
+                    <strong>Тип:</strong> ${entry.type === 'status_update' ? 'Зміна статусу' : 'Завантаження фото'}<br>
+                    <strong>Статус:</strong> ${this.getStatusText(entry.status)}<br>
+                    <strong>Технік:</strong> ${entry.tech || 'Невідомо'}<br>
+                    <strong>Тривалість:</strong> ${entry.duration || 'N/A'} хв<br>
+                    ${entry.data ? `<a href="${entry.data}" download="repair_photo_${entry.date}.jpg">Завантажити фото</a>` : ''}
+                </li>
+            `;
+            repairList.append(item);
+        });
+    }
+
+    renderInspectionHistory(lift) {
+        const inspectionList = $('#inspection-list');
+        if (!inspectionList.length) return;
+        
+        inspectionList.empty();
+        if (!lift.inspectionHistory || lift.inspectionHistory.length === 0) {
+            inspectionList.append('<li class="list-group-item text-center">Історія інспекцій відсутня</li>');
+            return;
+        }
+        lift.inspectionHistory.forEach(entry => {
+            const item = `
+                <li class="list-group-item">
+                    <strong>Дата:</strong> ${entry.date || 'Невідомо'}<br>
+                    <strong>Технік:</strong> ${entry.tech || 'Невідомо'}<br>
+                    <strong>Коментар:</strong> ${entry.comment || 'Без коментаря'}<br>
+                    ${entry.report ? `<a href="${entry.report}" download="inspection_${lift.id}_${entry.date}.pdf">Завантажити звіт</a>` : 'Звіт відсутній'}
+                </li>
+            `;
+            inspectionList.append(item);
+        });
+    }
+
+    renderChat(lift) {
+        const chatList = $('#chat-list');
+        if (!chatList.length) return;
+        
+        chatList.empty();
+        const liftChat = lift.chat || [];
+        if (liftChat.length === 0) {
+            chatList.append('<li class="list-group-item text-center">Чат порожній</li>');
+            return;
+        }
+        liftChat.forEach(message => {
+            chatList.append(`
+                <li class="list-group-item">
+                    <strong>${message.sender}:</strong> ${message.message} <br>
+                    <small>${new Date(message.timestamp).toLocaleString()}</small>
+                </li>
+            `);
+        });
+    }
+
+    generateQRCode(liftId) {
+        const qrCodeDiv = $('#qrcode');
+        if (!qrCodeDiv.length) return;
+        
+        qrCodeDiv.empty();
+        const lift = allLifts.find(l => l.id === liftId);
+        if (!lift) return;
+
+        new QRCode(qrCodeDiv[0], {
+            text: `https://yourdomain.com/lift/${liftId}`,
+            width: 128,
+            height: 128,
+            colorDark: '#000000',
+            colorLight: '#ffffff'
+        });
+    }
+
+    getStatusText(status) {
+        const statuses = {
+            'active': 'Активний',
+            'maintenance': 'Обслуговування',
+            'inactive': 'Неактивний',
+            'out_of_service': 'Поза обслуговуванням',
+            'completed': 'Завершено'
+        };
+        return statuses[status] || status;
+    }
+
+    // Оновлені методи для роботи з новими функціями
+    updateLiftTable() {
+        console.log('Updating lift table...');
+        const liftsTableBody = $('#lifts-table-body');
+        if (!liftsTableBody.length) {
+            this.renderLiftsTable();
+            return;
+        }
+        
+        liftsTableBody.empty();
+        const searchTerm = $('#lift-search').val().toLowerCase();
+        const filteredLifts = allLifts.filter(lift =>
+            (lift.id && lift.id.toString().includes(searchTerm)) ||
+            (lift.address && lift.address.toLowerCase().includes(searchTerm)) ||
+            (lift.serial && lift.serial.toLowerCase().includes(searchTerm)) ||
+            (lift.brand && lift.brand.toLowerCase().includes(searchTerm)) ||
+            (lift.status && lift.status.toLowerCase().includes(searchTerm)) ||
+            (lift.client && lift.client.toLowerCase().includes(searchTerm))
+        );
+
+        $('#lift-count').text(`Загальна кількість ліфтів: ${allLifts.length}, знайдено: ${filteredLifts.length}`);
+        if (filteredLifts.length === 0) {
+            $('#no-lifts-message').show();
+            $('#lifts-table').hide();
+        } else {
+            $('#no-lifts-message').hide();
+            $('#lifts-table').show();
+            filteredLifts.forEach(lift => {
+                liftsTableBody.append(`
+                    <tr>
+                        <td>${lift.id}</td>
+                        <td>${this.sanitizeHTML(lift.address || '-')}</td>
+                        <td>${this.sanitizeHTML(lift.serial || '-')}</td>
+                        <td>${this.sanitizeHTML(lift.brand || '-')}</td>
+                        <td><span class="badge ${this.getStatusBadgeClass(lift.status)}">${this.getStatusText(lift.status)}</span></td>
+                        <td>${this.sanitizeHTML(lift.client || '-')}</td>
+                        <td>
+                            <button class="btn btn-info btn-sm details-btn" data-id="${lift.id}">Деталі</button>
+                            <button class="btn btn-warning btn-sm edit-btn" data-id="${lift.id}">Редагувати</button>
+                            <button class="btn btn-success btn-sm assign-tech-btn" data-id="${lift.id}">Призначити техніка</button>
+                            <button class="btn btn-primary btn-sm request-btn" data-id="${lift.id}">Заявка</button>
+                            <button class="btn btn-secondary btn-sm qrcode-btn" data-id="${lift.id}">QR-код</button>
+                            <button class="btn btn-danger btn-sm delete-btn" data-id="${lift.id}">Видалити</button>
+                        </td>
+                    </tr>
+                `);
+            });
+        }
+    }
+
+    sanitizeHTML(str) {
+        if (!str) return '';
+        return str.replace(/&/g, '&amp;')
+                  .replace(/</g, '&lt;')
+                  .replace(/>/g, '&gt;')
+                  .replace(/"/g, '&quot;')
+                  .replace(/'/g, '&#39;');
+    }
+
+    // Допоміжні методи з інтегрованого коду
+    autoCreateRequest(liftId, status) {
+        const request = {
+            id: generateUniqueId(),
+            liftId: liftId,
+            status: 'pending',
+            description: `Автоматична заявка для ліфта ${liftId} зі статусом ${status}`,
+            createdAt: new Date().toISOString(),
+            priority: 'medium'
+        };
+        allServiceRequests.push(request);
+        saveDataToLocalStorage();
+    }
+
+    sendEmail(to, subject, body, isHtml = false) {
+        // Заглушка для відправки email
+        console.log('Email sent:', { to, subject, body, isHtml });
+        // Тут можна додати реальну логіку відправки email через API
+    }
+
+    addChatMessage(sender, message) {
+        return {
+            sender: sender,
+            message: message,
+            timestamp: new Date().toISOString()
+        };
     }
 }
 
