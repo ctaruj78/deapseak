@@ -10,7 +10,7 @@ class CommonUtils {
         return format.replace('dd', day).replace('MM', month).replace('yyyy', year);
     }
 
-    static formatCurrency(amount, currency = 'UAH') {
+    static formatCurrency(amount, currency = 'EUR') {
         return new Intl.NumberFormat('uk-UA', {
             style: 'currency',
             currency: currency

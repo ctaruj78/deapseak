@@ -289,7 +289,7 @@ class MaintenanceCharts {
                             callback: (value) => {
                                 return new Intl.NumberFormat('uk-UA', {
                                     style: 'currency',
-                                    currency: 'UAH',
+                                    currency: 'EUR',
                                     minimumFractionDigits: 0
                                 }).format(value);
                             }

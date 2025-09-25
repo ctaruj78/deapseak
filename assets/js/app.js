@@ -11,7 +11,7 @@ window.LiftMaster = {
         mapZoom: 12,
         itemsPerPage: 10,
         dateFormat: 'uk-UA',
-        currency: 'UAH'
+        currency: 'EUR'
     },
     
     // Стан додатку

@@ -159,13 +159,13 @@ class LiftManager {
                     const reader = new FileReader();
                     reader.onload = function (e) {
                         lift.report = e.target.result;
-                        saveDataToLocalStorage();
+                        CommonUtils.saveLifts(allLifts);
                         $('#edit-report-status').text('Звіт завантажено');
                         if (typeof toastr !== 'undefined') toastr.success('Звіт оновлено.');
                     };
                     reader.readAsDataURL(fileInput);
                 }
-                saveDataToLocalStorage();
+                CommonUtils.saveLifts(allLifts);
                 $('#editLiftModal').modal('hide');
                 this.updateLiftTable();
                 if (typeof toastr !== 'undefined') toastr.success('Ліфт оновлено.');
@@ -192,7 +192,7 @@ class LiftManager {
             const lift = allLifts.find(l => l.id === liftId);
             if (lift) {
                 lift.tech = tech;
-                saveDataToLocalStorage();
+                CommonUtils.saveLifts(allLifts);
                 $('#assignTechModal').modal('hide');
                 this.updateLiftTable();
                 if (typeof toastr !== 'undefined') toastr.success('Технік призначено.');
@@ -232,7 +232,7 @@ class LiftManager {
             const qrCodeUrl = $('#qrcode').find('img').attr('src');
             if (qrCodeUrl) {
                 allQRCodes.push({ liftId, qrCodeUrl, timestamp: new Date().toISOString() });
-                saveDataToLocalStorage();
+                CommonUtils.saveLifts(allLifts);
                 $('#qrModal').modal('hide');
                 if (typeof toastr !== 'undefined') toastr.success('QR-код збережено.');
             }
@@ -253,7 +253,7 @@ class LiftManager {
             if (lift && message) {
                 const newMessage = this.addChatMessage(currentUser.username, message);
                 lift.chat.push(newMessage);
-                saveDataToLocalStorage();
+                CommonUtils.saveLifts(allLifts);
                 $('#chat-input').val('');
                 this.renderChat(lift);
                 if (typeof toastr !== 'undefined') toastr.success('Повідомлення відправлено.');
@@ -298,7 +298,7 @@ class LiftManager {
         try {
             const address = $('#liftAddress').val();
             if (!address) {
-                showNotification('Введіть адресу для отримання координат', 'error');
+                CommonUtils.showNotification('Введіть адресу для отримання координат', 'error');
                 return;
             }
 
@@ -316,13 +316,13 @@ class LiftManager {
                         .bindPopup(address)
                         .openPopup();
                 }
-                showNotification('Координати отримано успішно', 'success');
+                CommonUtils.showNotification('Координати отримано успішно', 'success');
             } else {
-                showNotification('Адресу не знайдено', 'error');
+                CommonUtils.showNotification('Адресу не знайдено', 'error');
             }
         } catch (error) {
             console.error('Geocoding error:', error);
-            showNotification('Помилка отримання координат', 'error');
+            CommonUtils.showNotification('Помилка отримання координат', 'error');
         }
     }
 
@@ -476,14 +476,14 @@ class LiftManager {
             });
 
             if (!isValid) {
-                showNotification('Заповніть всі обов\'язкові поля', 'error');
+                CommonUtils.showNotification('Заповніть всі обов\'язкові поля', 'error');
                 return;
             }
 
             const liftId = $('#liftId').val();
             const inspectionFile = $('#inspectionReport')[0].files[0] || null;
             const lift = {
-                id: liftId || generateUniqueId(),
+                id: liftId || CommonUtils.generateLiftId(),
                 model: $('#liftModel').val(),
                 type: $('#liftType').val(),
                 address: $('#liftAddress').val(),
@@ -518,14 +518,14 @@ class LiftManager {
                 allLifts.push(lift);
             }
 
-            saveDataToLocalStorage();
+            CommonUtils.saveLifts(allLifts);
             $('#liftModal').modal('hide');
             this.loadLifts();
-            showNotification('Ліфт успішно збережено', 'success');
+            CommonUtils.showNotification('Ліфт успішно збережено', 'success');
 
         } catch (error) {
             console.error('Error saving lift:', error);
-            showNotification('Помилка збереження ліфта', 'error');
+            CommonUtils.showNotification('Помилка збереження ліфта', 'error');
         }
     }
 
@@ -553,9 +553,9 @@ class LiftManager {
     deleteLift(id) {
         if (confirm('Ви впевнені, що хочете видалити цей ліфт?')) {
             allLifts = allLifts.filter(lift => lift.id !== id);
-            saveDataToLocalStorage();
+            CommonUtils.saveLifts(allLifts);
             this.loadLifts();
-            showNotification('Ліфт успішно видалено', 'success');
+            CommonUtils.showNotification('Ліфт успішно видалено', 'success');
         }
     }
 
@@ -617,11 +617,11 @@ class LiftManager {
                 const model = $('#liftModel').val();
                 const serial = $('#liftSerial').val();
                 if (!model || !serial) {
-                    showNotification('Заповніть модель та серійний номер', 'error');
+                    CommonUtils.showNotification('Заповніть модель та серійний номер', 'error');
                     return;
                 }
                 lift = {
-                    id: generateUniqueId(),
+                    id: CommonUtils.generateLiftId(),
                     model: model,
                     serial: serial,
                     address: $('#liftLocation').val() || 'Нова адреса'
@@ -655,7 +655,7 @@ class LiftManager {
 
         } catch (error) {
             console.error('QR generation error:', error);
-            showNotification('Помилка генерації QR коду', 'error');
+            CommonUtils.showNotification('Помилка генерації QR коду', 'error');
         }
     }
 
@@ -673,11 +673,11 @@ class LiftManager {
                     document.body.removeChild(a);
                     URL.revokeObjectURL(url);
                 });
-                showNotification('QR код завантажено', 'success');
+                CommonUtils.showNotification('QR код завантажено', 'success');
             }
         } catch (error) {
             console.error('QR download error:', error);
-            showNotification('Помилка завантаження QR коду', 'error');
+            CommonUtils.showNotification('Помилка завантаження QR коду', 'error');
         }
     }
 
@@ -703,11 +703,11 @@ class LiftManager {
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, 'Ліфти');
             XLSX.writeFile(workbook, 'lifts_export.xlsx');
-            showNotification('Дані експортовано в Excel', 'success');
+            CommonUtils.showNotification('Дані експортовано в Excel', 'success');
 
         } catch (error) {
             console.error('Excel export error:', error);
-            showNotification('Помилка експорту в Excel', 'error');
+            CommonUtils.showNotification('Помилка експорту в Excel', 'error');
         }
     }
 
@@ -961,7 +961,7 @@ class LiftManager {
     // Допоміжні методи з інтегрованого коду
     autoCreateRequest(liftId, status) {
         const request = {
-            id: generateUniqueId(),
+            id: CommonUtils.generateLiftId(),
             liftId: liftId,
             status: 'pending',
             description: `Автоматична заявка для ліфта ${liftId} зі статусом ${status}`,
@@ -969,7 +969,7 @@ class LiftManager {
             priority: 'medium'
         };
         allServiceRequests.push(request);
-        saveDataToLocalStorage();
+        CommonUtils.saveServiceRequests(allServiceRequests);
     }
 
     sendEmail(to, subject, body, isHtml = false) {
