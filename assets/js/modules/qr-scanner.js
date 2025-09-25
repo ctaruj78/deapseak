@@ -22,4 +22,26 @@ const qrScanner = (function() {
 // Initialize when document is ready
 $(document).ready(function() {
     qrScanner.init();
+    
+    // Ініціалізація AdminLTE
+    $('[data-widget="pushmenu"]').PushMenu();
+    $('[data-widget="treeview"]').Treeview('init');
+    
+    // Проста навігація як резервний варіант
+    $('.nav-link:not([href="#"])').on('click', function(e) {
+        e.preventDefault();
+        const href = $(this).attr('href');
+        if (href && href !== '#') {
+            window.location.href = href;
+        }
+    });
+
+    // Обробка деревовидного меню
+    $('.nav-treeview .nav-link').on('click', function(e) {
+        e.preventDefault();
+        const href = $(this).attr('href');
+        if (href && href !== '#') {
+            window.location.href = href;
+        }
+    });
 });
