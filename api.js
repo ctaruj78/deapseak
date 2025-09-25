@@ -100,6 +100,30 @@ class LiftAPI {
                 case '/repairs':
                     response = await this.mockRepairs(method, data);
                     break;
+                case '/dashboard/stats':
+                    response = await this.mockDashboardStats(method, data);
+                    break;
+                case '/reports':
+                    response = await this.mockReports(method, data);
+                    break;
+                case '/settings':
+                    response = await this.mockSettings(method, data);
+                    break;
+                case '/inventory':
+                    response = await this.mockInventory(method, data);
+                    break;
+                case '/payments':
+                    response = await this.mockPayments(method, data);
+                    break;
+                case '/assignments':
+                    response = await this.mockAssignments(method, data);
+                    break;
+                case '/analytics':
+                    response = await this.mockAnalytics(method, data);
+                    break;
+                case '/analytics/heatmap':
+                    response = await this.mockHeatmapData(method, data);
+                    break;
                 default:
                     // Автоматична обробка динамічних endpoint'ів
                     if (endpoint.startsWith('/users/')) {
@@ -108,6 +132,10 @@ class LiftAPI {
                         response = await this.mockLiftDetail(endpoint, method, data);
                     } else if (endpoint.startsWith('/repairs/')) {
                         response = await this.mockRepairDetail(endpoint, method, data);
+                    } else if (endpoint.startsWith('/assignments/')) {
+                        response = await this.mockAssignmentDetail(endpoint, method, data);
+                    } else if (endpoint.startsWith('/inventory/')) {
+                        response = await this.mockInventoryDetail(endpoint, method, data);
                     } else {
                         response = { success: true, message: 'Mock request successful' };
                     }
@@ -249,29 +277,197 @@ class LiftAPI {
         }
     }
 
-    static async mockRepairDetail(endpoint, method, data) {
-        const repairs = StorageManager.load('mock_repairs') || [];
-        const repairId = parseInt(endpoint.split('/')[2]);
-        const repair = repairs.find(r => r.id === repairId);
+    // Mock методи для нових API
+    static async mockDashboardStats(method, data) {
+        return {
+            totalLifts: 156,
+            activeLifts: 142,
+            maintenanceLifts: 12,
+            offlineLifts: 2,
+            todayScans: 45,
+            todayRepairs: 23,
+            pendingAssignments: 8,
+            totalTechnicians: 15,
+            activeTechnicians: 12,
+            totalRevenue: 12500,
+            monthlyRevenue: 8500
+        };
+    }
 
-        if (!repair) {
-            throw new Error('Repair not found');
+    static async mockReports(method, data) {
+        const reports = StorageManager.load('mock_reports') || [
+            {
+                id: 1,
+                type: 'daily',
+                title: 'Щоденний звіт',
+                date: '2024-09-25',
+                data: { scans: 45, repairs: 23, revenue: 1250 }
+            },
+            {
+                id: 2,
+                type: 'weekly',
+                title: 'Тижневий звіт',
+                date: '2024-09-23',
+                data: { scans: 312, repairs: 156, revenue: 8750 }
+            }
+        ];
+
+        if (method === 'GET') {
+            return reports;
+        }
+
+        return { success: true, message: 'Report generated' };
+    }
+
+    static async mockSettings(method, data) {
+        const settings = StorageManager.load('mock_settings') || {
+            companyName: 'LiftMaster Pro',
+            logo: '/assets/img/logo.png',
+            theme: 'light',
+            language: 'uk',
+            notifications: {
+                email: true,
+                push: true,
+                sms: false
+            },
+            maintenance: {
+                autoSchedule: true,
+                reminderDays: 7
+            }
+        };
+
+        if (method === 'GET') {
+            return settings;
+        }
+
+        if (method === 'PUT') {
+            const updated = { ...settings, ...data };
+            StorageManager.save('mock_settings', updated);
+            return updated;
+        }
+
+        return settings;
+    }
+
+    static async mockInventory(method, data) {
+        const inventory = StorageManager.load('mock_inventory') || [
+            { id: 1, name: 'Ліфтовий трос', quantity: 25, minQuantity: 10, unit: 'м' },
+            { id: 2, name: 'Реле керування', quantity: 50, minQuantity: 15, unit: 'шт' },
+            { id: 3, name: 'Датчик ваги', quantity: 8, minQuantity: 20, unit: 'шт' }
+        ];
+
+        if (method === 'GET') {
+            return inventory;
+        }
+
+        return inventory;
+    }
+
+    static async mockPayments(method, data) {
+        const payments = StorageManager.load('mock_payments') || [
+            { id: 1, amount: 500, description: 'Ремонт ліфта №15', date: '2024-09-25', status: 'completed' },
+            { id: 2, amount: 750, description: 'Обслуговування ліфта №8', date: '2024-09-24', status: 'pending' }
+        ];
+
+        if (method === 'GET') {
+            return payments;
+        }
+
+        if (method === 'POST') {
+            const newPayment = { id: Date.now(), ...data, status: 'pending' };
+            payments.push(newPayment);
+            StorageManager.save('mock_payments', payments);
+            return newPayment;
+        }
+
+        return payments;
+    }
+
+    static async mockAssignments(method, data) {
+        const assignments = StorageManager.load('mock_assignments') || [
+            { id: 1, technicianId: 2, liftId: 3, description: 'Перевірка тросів', priority: 'high', status: 'in_progress', dueDate: '2024-09-26' },
+            { id: 2, technicianId: 1, liftId: 5, description: 'Заміна реле', priority: 'medium', status: 'pending', dueDate: '2024-09-27' }
+        ];
+
+        if (method === 'GET') {
+            return assignments;
+        }
+
+        if (method === 'POST') {
+            const newAssignment = { id: Date.now(), ...data, status: 'pending' };
+            assignments.push(newAssignment);
+            StorageManager.save('mock_assignments', assignments);
+            return newAssignment;
+        }
+
+        return assignments;
+    }
+
+    static async mockAnalytics(method, data) {
+        return {
+            period: 'month',
+            totalScans: 1250,
+            totalRepairs: 89,
+            averageRepairTime: 45, // хвилин
+            technicianEfficiency: 85, // %
+            liftUptime: 96.5, // %
+            revenue: 45200,
+            trends: {
+                scans: [120, 135, 142, 158, 145, 167, 189, 201, 195, 210, 225, 240],
+                repairs: [8, 9, 7, 12, 10, 11, 13, 15, 12, 14, 16, 18]
+            }
+        };
+    }
+
+    static async mockAssignmentDetail(endpoint, method, data) {
+        const assignments = StorageManager.load('mock_assignments') || [];
+        const assignmentId = parseInt(endpoint.split('/')[2]);
+        const assignment = assignments.find(a => a.id === assignmentId);
+
+        if (!assignment) {
+            throw new Error('Assignment not found');
         }
 
         switch (method) {
             case 'GET':
-                return repair;
+                return assignment;
             case 'PUT':
-                Object.assign(repair, data);
-                StorageManager.save('mock_repairs', repairs);
-                return repair;
+                Object.assign(assignment, data);
+                StorageManager.save('mock_assignments', assignments);
+                return assignment;
             case 'DELETE':
-                const index = repairs.findIndex(r => r.id === repairId);
-                repairs.splice(index, 1);
-                StorageManager.save('mock_repairs', repairs);
+                const index = assignments.findIndex(a => a.id === assignmentId);
+                assignments.splice(index, 1);
+                StorageManager.save('mock_assignments', assignments);
                 return { success: true };
             default:
-                return repair;
+                return assignment;
+        }
+    }
+
+    static async mockInventoryDetail(endpoint, method, data) {
+        const inventory = StorageManager.load('mock_inventory') || [];
+        const itemId = parseInt(endpoint.split('/')[2]);
+        const item = inventory.find(i => i.id === itemId);
+
+        if (!item) {
+            throw new Error('Inventory item not found');
+        }
+
+        switch (method) {
+            case 'GET':
+                return item;
+            case 'PUT':
+                Object.assign(item, data);
+                StorageManager.save('mock_inventory', inventory);
+                return item;
+            case 'DELETE':
+                const index = inventory.findIndex(i => i.id === itemId);
+                inventory.splice(index, 1);
+                StorageManager.save('mock_inventory', inventory);
+                return { success: true };
+            default:
+                return item;
         }
     }
 
@@ -294,6 +490,164 @@ class LiftAPI {
 
     static async markNotificationRead(notificationId) {
         return this.request(`/notifications/${notificationId}/read`, 'PATCH');
+    }
+
+    // Нові API методи для покращених функцій
+    static async getDashboardStats() {
+        return this.request('/dashboard/stats', 'GET', null, true);
+    }
+
+    static async getReports(filters = {}) {
+        const queryString = new URLSearchParams(filters).toString();
+        return this.request(`/reports?${queryString}`, 'GET', null, true);
+    }
+
+    static async generateReport(type, filters = {}) {
+        return this.request('/reports/generate', 'POST', { type, filters });
+    }
+
+    static async exportData(format, data) {
+        return this.request('/export', 'POST', { format, data });
+    }
+
+    static async getSettings() {
+        return this.request('/settings', 'GET', null, true);
+    }
+
+    static async updateSettings(settings) {
+        return this.request('/settings', 'PUT', settings);
+    }
+
+    static async getInventory() {
+        return this.request('/inventory', 'GET', null, true);
+    }
+
+    static async updateInventoryItem(itemId, data) {
+        return this.request(`/inventory/${itemId}`, 'PUT', data);
+    }
+
+    static async getPayments(filters = {}) {
+        const queryString = new URLSearchParams(filters).toString();
+        return this.request(`/payments?${queryString}`, 'GET', null, true);
+    }
+
+    static async processPayment(paymentData) {
+        return this.request('/payments', 'POST', paymentData);
+    }
+
+    static async getAssignments(filters = {}) {
+        const queryString = new URLSearchParams(filters).toString();
+        return this.request(`/assignments?${queryString}`, 'GET', null, true);
+    }
+
+    static async createAssignment(assignmentData) {
+        return this.request('/assignments', 'POST', assignmentData);
+    }
+
+    static async updateAssignment(assignmentId, data) {
+        return this.request(`/assignments/${assignmentId}`, 'PUT', data);
+    }
+
+    static async getMaintenanceSchedule() {
+        return this.request('/maintenance/schedule', 'GET', null, true);
+    }
+
+    static async scheduleMaintenance(scheduleData) {
+        return this.request('/maintenance/schedule', 'POST', scheduleData);
+    }
+
+    static async getAnalytics(period = 'month') {
+        return this.request(`/analytics?period=${period}`, 'GET', null, true);
+    }
+
+    static async getHeatmapData() {
+        return this.request('/analytics/heatmap', 'GET', null, true);
+    }
+
+    static async getUserActivity(userId, period = 'month') {
+        return this.request(`/users/${userId}/activity?period=${period}`, 'GET', null, true);
+    }
+
+    static async sendMessage(recipientId, message) {
+        return this.request('/messages', 'POST', { recipientId, message });
+    }
+
+    static async getMessages(filters = {}) {
+        const queryString = new URLSearchParams(filters).toString();
+        return this.request(`/messages?${queryString}`, 'GET', null, true);
+    }
+
+    static async uploadFile(file, type = 'general') {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('type', type);
+
+        if (IS_DEVELOPMENT && !this.useRealAPI()) {
+            await this.delay(1000);
+            return {
+                success: true,
+                filename: file.name,
+                size: file.size,
+                url: URL.createObjectURL(file),
+                type: type
+            };
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/upload`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${AuthManager.getAuthToken()}`
+                },
+                body: formData
+            });
+
+            return await response.json();
+        } catch (error) {
+            console.error('Помилка завантаження файлу:', error);
+            throw error;
+        }
+    }
+
+    static async getLogs(filters = {}) {
+        const queryString = new URLSearchParams(filters).toString();
+        return this.request(`/logs?${queryString}`, 'GET', null, true);
+    }
+
+    static async createBackup() {
+        return this.request('/backup', 'POST');
+    }
+
+    static async getBackups() {
+        return this.request('/backups', 'GET', null, true);
+    }
+
+    static async restoreBackup(backupId) {
+        return this.request(`/backups/${backupId}/restore`, 'POST');
+    }
+
+    static async getSystemHealth() {
+        return this.request('/health', 'GET', null, true);
+    }
+
+    static async clearCache() {
+        return this.request('/cache/clear', 'POST');
+    }
+
+    static async getRoles() {
+        return this.request('/roles', 'GET', null, true);
+    }
+
+    static async assignRole(userId, roleId) {
+        return this.request(`/users/${userId}/role`, 'PUT', { roleId });
+    }
+
+    static async getPermissions() {
+        return this.request('/permissions', 'GET', null, true);
+    }
+
+    static async updatePermissions(roleId, permissions) {
+        return this.request(`/roles/${roleId}/permissions`, 'PUT', { permissions });
     }
 
     // Офлайн функціонал

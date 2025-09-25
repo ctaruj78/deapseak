@@ -4,10 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Адмін-панель - LiftMaster Pro</title>
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Toastr CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <!-- Chart.js for graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
 
         /* Стилі залишаються незмінними */
@@ -69,6 +75,70 @@
         .nav-link.disabled:hover {
             background-color: transparent !important;
         }
+
+        /* Стилі для нотифікацій */
+        .dropdown-item.unread {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .dropdown-item.unread:hover {
+            background-color: #e9ecef;
+        }
+        .navbar-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            font-size: 0.6rem;
+            padding: 2px 4px;
+        }
+
+        /* PWA та мобільність */
+        @media (max-width: 768px) {
+            .stats-box {
+                margin-bottom: 15px;
+                padding: 10px;
+            }
+            .stats-box h3 {
+                font-size: 1.5rem;
+            }
+            .quick-actions {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 10px;
+            }
+            .navbar-nav.ml-auto {
+                flex-direction: row;
+                align-items: center;
+            }
+            .navbar-nav.ml-auto .nav-item {
+                margin-left: 5px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .stats-box h3 {
+                font-size: 1.2rem;
+            }
+            .quick-action-btn {
+                padding: 15px;
+                font-size: 0.9rem;
+            }
+            .quick-action-btn i {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* PWA install button */
+        #pwa-install-btn {
+            white-space: nowrap;
+        }
+
+        /* Touch-friendly elements */
+        @media (pointer: coarse) {
+            .nav-link, .btn, .dropdown-item {
+                min-height: 44px;
+                min-width: 44px;
+            }
+        }
     </style>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -89,10 +159,34 @@
 
             <!-- Права частина навігації -->
             <ul class="navbar-nav ml-auto">
+                <!-- Notifications Dropdown Menu -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link" data-toggle="dropdown" href="#" id="notifications-dropdown">
+                        <i class="far fa-bell"></i>
+                        <span class="badge badge-warning navbar-badge" id="notification-count">0</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right" id="notifications-menu">
+                        <span class="dropdown-item dropdown-header" id="notification-header">0 сповіщень</span>
+                        <div class="dropdown-divider"></div>
+                        <div id="notifications-list">
+                            <!-- Нотифікації будуть додані динамічно -->
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a href="#" class="dropdown-item dropdown-footer" id="view-all-notifications">Переглянути всі сповіщення</a>
+                    </div>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link" href="../login.html" role="button">
-                        <i class="fas fa-sign-out-alt"></i> Вийти
+                        <i class="fas fa-sign-out-alt"></i> <span data-i18n="logout">Вийти</span>
                     </a>
+                </li>
+                <!-- Language Switcher -->
+                <li class="nav-item">
+                    <div id="language-switcher" class="d-flex"></div>
+                </li>
+                <!-- Theme Switcher -->
+                <li class="nav-item">
+                    <div id="theme-switcher" class="theme-switcher"></div>
                 </li>
             </ul>
         </nav>
@@ -311,32 +405,32 @@
             <section class="content">
                 <div class="container-fluid">
                     <!-- Small boxes (Stat box) -->
-                    <div class="row">
+                    <div class="row" id="stats-row">
                         <div class="col-lg-3 col-6">
                             <div class="stats-box bg-gradient-primary">
                                 <i class="fas fa-elevator"></i>
-                                <h3>156</h3>
+                                <h3 id="total-lifts">156</h3>
                                 <p>Активних ліфтів</p>
                             </div>
                         </div>
                         <div class="col-lg-3 col-6">
                             <div class="stats-box bg-gradient-success">
                                 <i class="fas fa-check-circle"></i>
-                                <h3>128</h3>
+                                <h3 id="today-repairs">128</h3>
                                 <p>Обслугованих сьогодні</p>
                             </div>
                         </div>
                         <div class="col-lg-3 col-6">
                             <div class="stats-box bg-gradient-warning">
                                 <i class="fas fa-exclamation-triangle"></i>
-                                <h3>12</h3>
+                                <h3 id="maintenance-lifts">12</h3>
                                 <p>Проблемних ліфтів</p>
                             </div>
                         </div>
                         <div class="col-lg-3 col-6">
                             <div class="stats-box bg-gradient-info">
                                 <i class="fas fa-qrcode"></i>
-                                <h3>45</h3>
+                                <h3 id="today-scans">45</h3>
                                 <p>Нових сканувань</p>
                             </div>
                         </div>
@@ -373,6 +467,35 @@
                                             <small>Сформувати звіт</small>
                                         </a>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Section -->
+                    <div class="row mt-4">
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Аналітика за місяць</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-success btn-sm" onclick="exportDashboard()">
+                                            <i class="fas fa-download"></i> Експорт звіту
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="analyticsChart" style="height: 300px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Розподіл за статусом</h3>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="statusChart" style="height: 300px;"></canvas>
                                 </div>
                             </div>
                         </div>
@@ -500,11 +623,379 @@
                     }
                 });
             });
+
+            // Завантаження даних з API
+            loadDashboardData();
         });
+
+        // Функція завантаження даних дашборду
+        async function loadDashboardData() {
+            try {
+                // Завантаження статистики
+                const stats = await LiftAPI.getDashboardStats();
+                updateStatsDisplay(stats);
+
+                // Завантаження аналітики для графіків
+                const analytics = await LiftAPI.getAnalytics('month');
+                createCharts(analytics);
+
+            } catch (error) {
+                console.error('Помилка завантаження даних дашборду:', error);
+                // Fallback до статичних даних
+                animateStats();
+            }
+        }
+
+        // Оновлення відображення статистики
+        function updateStatsDisplay(stats) {
+            document.getElementById('total-lifts').textContent = stats.activeLifts || 156;
+            document.getElementById('today-repairs').textContent = stats.todayRepairs || 128;
+            document.getElementById('maintenance-lifts').textContent = stats.maintenanceLifts || 12;
+            document.getElementById('today-scans').textContent = stats.todayScans || 45;
+
+            // Анімація після оновлення
+            animateStats();
+        }
+
+        // Анімація статистики
+        function animateStats() {
+            $('.stats-box h3').each(function() {
+                $(this).prop('Counter', 0).animate({
+                    Counter: $(this).text()
+                }, {
+                    duration: 2000,
+                    easing: 'swing',
+                    step: function(now) {
+                        $(this).text(Math.ceil(now));
+                    }
+                });
+            });
+        }
+
+        // Створення графіків
+        function createCharts(analytics) {
+            // Лінійний графік аналітики
+            const analyticsCtx = document.getElementById('analyticsChart').getContext('2d');
+            new Chart(analyticsCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Січ', 'Лют', 'Бер', 'Кві', 'Тра', 'Чер', 'Лип', 'Сер', 'Вер', 'Жов', 'Лис', 'Гру'],
+                    datasets: [{
+                        label: 'Сканування',
+                        data: analytics.trends?.scans || [120, 135, 142, 158, 145, 167, 189, 201, 195, 210, 225, 240],
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        tension: 0.1
+                    }, {
+                        label: 'Ремонти',
+                        data: analytics.trends?.repairs || [8, 9, 7, 12, 10, 11, 13, 15, 12, 14, 16, 18],
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Кругова діаграма статусів
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Активні', 'Обслуговування', 'Неактивні'],
+                    datasets: [{
+                        data: [
+                            analytics.totalScans * 0.85 || 142,
+                            analytics.totalRepairs * 0.1 || 12,
+                            analytics.totalScans * 0.05 || 2
+                        ],
+                        backgroundColor: [
+                            'rgb(40, 167, 69)',
+                            'rgb(255, 193, 7)',
+                            'rgb(220, 53, 69)'
+                        ],
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
 
         // Резервна функція навігації
         function navigateTo(page) {
             window.location.href = page;
+        }
+    </script>
+
+    <!-- Toastr JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <!-- EmailJS -->
+    <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+    <!-- Notifications Module -->
+    <script src="../../../assets/js/modules/notifications.js"></script>
+    <!-- I18n Module -->
+    <script src="../../../assets/js/modules/i18n.js"></script>
+    <!-- Export Module -->
+    <script src="../../../assets/js/modules/export.js"></script>
+    <!-- Theme Module -->
+    <script src="../../../assets/js/modules/theme.js"></script>
+
+    <script>
+        // Ініціалізація нотифікацій
+        document.addEventListener('DOMContentLoaded', function() {
+            // Реєстрація Service Worker
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('Service Worker registered:', registration);
+                    })
+                    .catch(error => {
+                        console.error('Service Worker registration failed:', error);
+                    });
+            }
+
+            // Налаштування Toastr
+            toastr.options = {
+                "closeButton": true,
+                "debug": false,
+                "newestOnTop": true,
+                "progressBar": true,
+                "positionClass": "toast-top-right",
+                "preventDuplicates": false,
+                "onclick": null,
+                "showDuration": "300",
+                "hideDuration": "1000",
+                "timeOut": "5000",
+                "extendedTimeOut": "1000",
+                "showEasing": "swing",
+                "hideEasing": "linear",
+                "showMethod": "fadeIn",
+                "hideMethod": "fadeOut"
+            };
+
+            // Додавання тестових нотифікацій
+            setTimeout(() => {
+                NotificationManager.success('Система завантажена', 'Вітаємо в LiftManager!');
+            }, 1000);
+
+            // Симуляція нових нотифікацій
+            setInterval(() => {
+                if (Math.random() > 0.8) { // 20% шанс
+                    const messages = [
+                        { type: 'maintenance', title: 'Обслуговування', message: 'Ліфт №5 потребує перевірки' },
+                        { type: 'assignment', title: 'Нове завдання', message: 'Призначено ремонт ліфта №3' },
+                        { type: 'payment', title: 'Оплата', message: 'Отримано оплату за послуги' }
+                    ];
+                    const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+                    notificationManager.add(randomMsg);
+                }
+            }, 30000); // Кожні 30 секунд
+
+            // Оновлення UI нотифікацій
+            updateNotificationsUI();
+
+            // Слухач для оновлення UI
+            notificationManager.addListener((event, data) => {
+                if (event === 'new' || event === 'read' || event === 'all_read') {
+                    updateNotificationsUI();
+                }
+            });
+        });
+
+        // Функція для оновлення UI нотифікацій
+        function updateNotificationsUI() {
+            const unreadCount = notificationManager.unreadCount;
+            const notifications = notificationManager.getNotifications({ limit: 5 });
+
+            // Оновлення лічильника
+            const countElement = document.getElementById('notification-count');
+            const headerElement = document.getElementById('notification-header');
+
+            if (unreadCount > 0) {
+                countElement.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                countElement.style.display = 'inline';
+                headerElement.textContent = `${unreadCount} нових сповіщень`;
+            } else {
+                countElement.style.display = 'none';
+                headerElement.textContent = 'Немає нових сповіщень';
+            }
+
+            // Оновлення списку нотифікацій
+            const listElement = document.getElementById('notifications-list');
+            listElement.innerHTML = '';
+
+            if (notifications.length === 0) {
+                listElement.innerHTML = '<a href="#" class="dropdown-item">Немає сповіщень</a>';
+            } else {
+                notifications.forEach(notification => {
+                    const item = document.createElement('a');
+                    item.href = '#';
+                    item.className = `dropdown-item ${!notification.read ? 'unread' : ''}`;
+                    item.onclick = () => markAsRead(notification.id);
+
+                    const iconClass = getNotificationIcon(notification.type);
+                    const timeAgo = getTimeAgo(notification.createdAt);
+
+                    item.innerHTML = `
+                        <i class="${iconClass} mr-2"></i> ${notification.title}
+                        <span class="float-right text-muted text-sm">${timeAgo}</span>
+                        <p class="text-sm mb-0">${notification.message}</p>
+                    `;
+
+                    listElement.appendChild(item);
+                });
+            }
+        }
+
+        // Функція для позначення як прочитане
+        function markAsRead(notificationId) {
+            notificationManager.markAsRead(notificationId);
+        }
+
+        // Функція для отримання іконки за типом
+        function getNotificationIcon(type) {
+            switch (type) {
+                case 'success': return 'fas fa-check-circle text-success';
+                case 'error': return 'fas fa-exclamation-triangle text-danger';
+                case 'warning': return 'fas fa-exclamation-circle text-warning';
+                case 'info': return 'fas fa-info-circle text-info';
+                case 'maintenance': return 'fas fa-wrench text-warning';
+                case 'assignment': return 'fas fa-user-check text-primary';
+                case 'payment': return 'fas fa-dollar-sign text-success';
+                default: return 'fas fa-bell text-secondary';
+            }
+        }
+
+        // Функція для форматування часу
+        function getTimeAgo(dateString) {
+            const now = new Date();
+            const date = new Date(dateString);
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMins / 60);
+            const diffDays = Math.floor(diffHours / 24);
+
+            if (diffMins < 1) return 'щойно';
+            if (diffMins < 60) return `${diffMins} хв тому`;
+            if (diffHours < 24) return `${diffHours} год тому`;
+            return `${diffDays} дн тому`;
+        }
+
+        // Обробка "Переглянути всі"
+        document.getElementById('view-all-notifications').addEventListener('click', function(e) {
+            e.preventDefault();
+            // Тут можна відкрити сторінку всіх нотифікацій
+            alert(__('view_all_notifications', 'Перегляд всіх сповіщень (поки що не реалізований)'));
+        });
+
+        // Ініціалізація перемикача мов
+        i18nManager.initLanguageSwitcher('language-switcher');
+
+        // Ініціалізація перемикача тем
+        themeManager.initThemeSwitcher('theme-switcher');
+
+            // Ініціалізація PWA install prompt
+            initPWAInstall();        // Оновлення міток графіків при зміні мови
+        function updateChartLabels() {
+            // Тут можна оновити мітки графіків при зміні мови
+            const months = [
+                __('jan', 'Січ'), __('feb', 'Лют'), __('mar', 'Бер'), __('apr', 'Кві'),
+                __('may', 'Тра'), __('jun', 'Чер'), __('jul', 'Лип'), __('aug', 'Сер'),
+                __('sep', 'Вер'), __('oct', 'Жов'), __('nov', 'Лис'), __('dec', 'Гру')
+            ];
+
+            // Оновлення міток місяців у графіку
+            if (window.analyticsChart) {
+                window.analyticsChart.data.labels = months;
+                window.analyticsChart.update();
+            }
+        }
+
+        // PWA install prompt
+        let deferredPrompt;
+        function initPWAInstall() {
+            window.addEventListener('beforeinstallprompt', (e) => {
+                // Запобігає автоматичному показу prompt
+                e.preventDefault();
+                deferredPrompt = e;
+
+                // Показуємо кнопку встановлення
+                showInstallButton();
+            });
+
+            window.addEventListener('appinstalled', (evt) => {
+                console.log('PWA was installed successfully');
+                hideInstallButton();
+            });
+        }
+
+        function showInstallButton() {
+            // Створюємо кнопку встановлення
+            const installButton = document.createElement('button');
+            installButton.id = 'pwa-install-btn';
+            installButton.className = 'btn btn-success btn-sm ml-2';
+            installButton.innerHTML = '<i class="fas fa-download"></i> Встановити додаток';
+            installButton.onclick = installPWA;
+
+            // Додаємо до navbar
+            const navbar = document.querySelector('.navbar-nav.ml-auto');
+            if (navbar) {
+                const li = document.createElement('li');
+                li.className = 'nav-item';
+                li.appendChild(installButton);
+                navbar.appendChild(li);
+            }
+        }
+
+        function hideInstallButton() {
+            const installButton = document.getElementById('pwa-install-btn');
+            if (installButton) {
+                installButton.parentElement.remove();
+            }
+        }
+
+        async function installPWA() {
+            if (!deferredPrompt) return;
+
+            // Показуємо prompt
+            deferredPrompt.prompt();
+
+            // Чекаємо на відповідь користувача
+            const { outcome } = await deferredPrompt.userChoice;
+
+            console.log(`User response to install prompt: ${outcome}`);
+
+            // Очищуємо deferredPrompt
+            deferredPrompt = null;
+
+            // Приховуємо кнопку
+            hideInstallButton();
+        }
+
+        // Функція експорту дашборду
+        async function exportDashboard() {
+            try {
+                await ExportManager.exportDashboard();
+            } catch (error) {
+                console.error('Export failed:', error);
+                NotificationManager.error('Помилка експорту', 'Не вдалося експортувати звіт');
+            }
         }
     </script>
 </body>
