@@ -12,6 +12,8 @@ class ChatSystem {
         this.setupEventListeners();
         this.setupSocketConnection();
         this.loadChatHistory();
+        this.loadUserInfo();
+        this.updateStatistics();
     }
 
     setupSocketConnection() {
@@ -48,11 +50,12 @@ class ChatSystem {
     createContactElement(contact) {
         const div = document.createElement('div');
         div.className = 'contact-item';
+        div.setAttribute('data-contact-id', contact.id);
         div.innerHTML = `
-            <img src="../../assets/img/avatars/${contact.role || 'default'}.png" 
-                 alt="${contact.firstName}" class="contact-avatar">
+            <img src="../../assets/img/avatars/${contact.role || 'default'}.png"
+                 alt="${contact.firstName}" class="contact-avatar" onerror="this.src='../../assets/img/avatars/default.png'">
             <div class="contact-info">
-                <h4>${contact.firstName} ${contact.lastName}</h4>
+                <h4>${contact.firstName} ${contact.lastName || ''}</h4>
                 <p class="contact-role">${this.getRoleLabel(contact.role)}</p>
                 <p class="contact-status ${contact.status || 'online'}">● ${this.getStatusLabel(contact.status)}</p>
             </div>
@@ -306,6 +309,7 @@ class ChatSystem {
         const messageInput = document.getElementById('messageInput');
         const sendButton = document.getElementById('sendMessage');
         const fileInput = document.getElementById('fileInput');
+        const contactSearch = document.getElementById('contactSearch');
 
         messageInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
@@ -324,6 +328,11 @@ class ChatSystem {
                 this.sendFile(e.target.files[0]);
                 e.target.value = '';
             }
+        });
+
+        // Пошук контактів
+        contactSearch.addEventListener('input', (e) => {
+            this.searchContacts(e.target.value);
         });
     }
 
@@ -369,6 +378,25 @@ class ChatSystem {
         this.renderFilteredContacts(filteredContacts);
     }
 
+    filterContacts(filterType) {
+        let filteredContacts = [...this.contacts];
+
+        switch (filterType) {
+            case 'online':
+                filteredContacts = this.contacts.filter(c => c.status === 'online');
+                break;
+            case 'technicians':
+                filteredContacts = this.contacts.filter(c => c.role === 'technician');
+                break;
+            case 'all':
+            default:
+                filteredContacts = [...this.contacts];
+                break;
+        }
+
+        this.renderFilteredContacts(filteredContacts);
+    }
+
     renderFilteredContacts(contacts) {
         const container = document.getElementById('contactsList');
         container.innerHTML = '';
@@ -377,6 +405,45 @@ class ChatSystem {
             const contactElement = this.createContactElement(contact);
             container.appendChild(contactElement);
         });
+    }
+
+    createGroupChat() {
+        alert('Функціонал групових чатів буде реалізовано в наступних версіях');
+    }
+
+    sendBroadcast() {
+        alert('Функціонал оголошень буде реалізовано в наступних версіях');
+    }
+
+    showChatHistory() {
+        alert('Історія чатів буде доступна в наступних версіях');
+    }
+
+    showSettings() {
+        alert('Налаштування чату будуть доступні в наступних версіях');
+    }
+
+    loadUserInfo() {
+        try {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {
+                firstName: 'Користувач'
+            };
+            $('#userName').text(currentUser.firstName);
+        } catch (error) {
+            console.error('Помилка завантаження даних користувача:', error);
+        }
+    }
+
+    updateStatistics() {
+        const totalContacts = this.contacts.length;
+        const onlineContacts = this.contacts.filter(c => c.status === 'online').length;
+        const todayMessages = Math.floor(Math.random() * 50) + 10; // Імітація
+        const avgResponseTime = Math.floor(Math.random() * 30) + 5; // Імітація
+
+        $('#totalContacts').text(totalContacts);
+        $('#onlineContacts').text(onlineContacts);
+        $('#todayMessages').text(todayMessages);
+        $('#avgResponseTime').text(avgResponseTime + ' хв');
     }
 }
 
