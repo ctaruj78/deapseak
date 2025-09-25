@@ -1,0 +1,54 @@
+{
+  "name": "LiftManager Pro",
+  "short_name": "LiftManager",
+  "description": "Система управління ліфтами з QR-кодами",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#007bff",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/assets/img/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/img/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "lang": "uk-UA",
+  "dir": "ltr",
+  "shortcuts": [
+    {
+      "name": "QR Scanner",
+      "short_name": "Scanner",
+      "description": "Швидкий доступ до QR сканера",
+      "url": "/pages/qr/qr-scanner.html",
+      "icons": [
+        {
+          "src": "/assets/img/logo.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Перегляд статистики",
+      "url": "/pages/admin/admin-dashboard.html",
+      "icons": [
+        {
+          "src": "/assets/img/logo.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}
