@@ -1,0 +1,194 @@
+/* AR Helper Styles */
+.ar-placeholder {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 10px;
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.component-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.component-item {
+  padding: 10px;
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.component-item:hover {
+  background-color: #f8f9fa;
+  border-color: #007bff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.component-item.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #0056b3;
+}
+
+.component-status {
+  font-size: 0.8em;
+}
+
+.screenshots-gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.screenshot-item {
+  border-radius: 5px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease;
+}
+
+.screenshot-item:hover {
+  transform: scale(1.05);
+}
+
+.screenshot-item img {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+}
+
+.tool-active {
+  background-color: #007bff !important;
+  color: white !important;
+  border-color: #0056b3 !important;
+}
+
+.ar-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: white;
+  border-radius: 5px;
+  padding: 15px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  z-index: 9999;
+  animation: slideIn 0.3s ease;
+  min-width: 300px;
+}
+
+.ar-notification.success { border-left: 4px solid #28a745; }
+.ar-notification.error { border-left: 4px solid #dc3545; }
+.ar-notification.warning { border-left: 4px solid #ffc107; }
+.ar-notification.info { border-left: 4px solid #17a2b8; }
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* AR Scene Styles */
+#arScene {
+  position: relative;
+}
+
+#arScene a-scene {
+  width: 100%;
+  height: 100%;
+}
+
+/* Component Info Styles */
+.component-details {
+  margin-top: 10px;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  padding: 5px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.detail-label {
+  font-weight: bold;
+  color: #666;
+}
+
+.detail-value {
+  color: #333;
+}
+
+/* Manuals Section */
+.btn-manual {
+  height: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.btn-manual i {
+  font-size: 24px;
+  margin-bottom: 5px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .screenshots-gallery {
+    justify-content: center;
+  }
+
+  .component-list {
+    max-height: 200px;
+  }
+
+  .ar-notification {
+    left: 10px;
+    right: 10px;
+    min-width: auto;
+  }
+}
+
+/* Loading States */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Custom Scrollbar */
+.component-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.component-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.component-list::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.component-list::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}

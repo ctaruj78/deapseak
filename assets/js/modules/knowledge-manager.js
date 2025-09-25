@@ -14,6 +14,8 @@ class KnowledgeManager {
         this.renderPopularArticles();
         this.renderRecentArticles();
         this.renderRecommendedArticles();
+        this.updateStatistics();
+        this.loadUserInfo();
     }
 
     async loadArticles() {
@@ -327,8 +329,28 @@ class KnowledgeManager {
     }
 
     renderFilteredArticles() {
-        // Можна реалізувати відображення у модальному вікні або окремому розділі
-        console.log('Filtered articles:', this.filteredArticles);
+        const container = $('#searchResults');
+        container.empty();
+
+        if (this.filteredArticles.length === 0) {
+            container.html(`
+                <div class="col-12">
+                    <div class="text-center py-5">
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <h4>Нічого не знайдено</h4>
+                        <p class="text-muted">Спробуйте змінити критерії пошуку</p>
+                    </div>
+                </div>
+            `);
+        } else {
+            this.filteredArticles.forEach(article => {
+                const card = this.createArticleCard(article);
+                container.append(card);
+            });
+        }
+
+        $('#searchResultsSection').show();
+        this.showNotification(`Відображено ${this.filteredArticles.length} статей`, 'info');
     }
 
     renderPopularArticles() {
@@ -377,40 +399,40 @@ class KnowledgeManager {
     createArticleCard(article) {
         const difficultyClass = `tag-${article.difficulty}`;
         const difficultyText = this.getDifficultyText(article.difficulty);
-        
+
         return $(`
             <div class="col-md-6 col-lg-3 mb-4">
                 <div class="card article-card ${article.featured ? 'featured' : ''} h-100">
-                    <div class="card-body">
+                    <div class="card-body d-flex flex-column">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <span class="${difficultyClass} tag">${difficultyText}</span>
                             ${article.featured ? '<span class="badge badge-warning"><i class="fas fa-star"></i></span>' : ''}
                         </div>
-                        
-                        <h6 class="card-title">${article.title}</h6>
-                        
+
+                        <h6 class="card-title flex-grow-1">${article.title}</h6>
+
                         <div class="mb-2">
-                            ${article.tags.map(tag => 
+                            ${article.tags.slice(0, 3).map(tag =>
                                 `<span class="badge badge-secondary badge-sm mr-1">#${tag}</span>`
                             ).join('')}
                         </div>
-                        
-                        <div class="d-flex justify-content-between align-items-center">
+
+                        <div class="d-flex justify-content-between align-items-center mt-auto">
                             <small class="text-muted">
-                                <i class="fas fa-eye"></i> ${article.views}
+                                <i class="fas fa-eye"></i> ${article.views || 0}
                             </small>
                             <div class="rating-stars">
                                 ${this.renderStars(article.rating)}
                             </div>
                         </div>
-                        
+
                         <div class="mt-3">
                             <button class="btn btn-sm btn-primary btn-block" onclick="knowledgeManager.viewArticle('${article.id}')">
                                 <i class="fas fa-book-open"></i> Читати
                             </button>
                         </div>
                     </div>
-                    <div class="card-footer">
+                    <div class="card-footer bg-transparent">
                         <small class="text-muted">
                             Оновлено: ${this.formatDate(article.updatedDate)}
                         </small>
@@ -702,6 +724,29 @@ class KnowledgeManager {
             position: 'bottom right',
             autoHideDelay: 3000
         });
+    }
+
+    loadUserInfo() {
+        try {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {
+                firstName: 'Користувач'
+            };
+            $('#userName').text(currentUser.firstName);
+        } catch (error) {
+            console.error('Помилка завантаження даних користувача:', error);
+        }
+    }
+
+    updateStatistics() {
+        const totalArticles = this.articles.length;
+        const totalViews = this.articles.reduce((sum, article) => sum + (article.views || 0), 0);
+        const totalRating = this.articles.reduce((sum, article) => sum + (article.rating || 0), 0);
+        const avgRating = totalArticles > 0 ? (totalRating / totalArticles).toFixed(1) : 0;
+
+        $('#totalArticles').text(totalArticles);
+        $('#todayViews').text(totalViews);
+        $('#avgRating').text(avgRating);
+        $('#activeUsers').text(Math.floor(Math.random() * 50) + 10); // Імітація активних користувачів
     }
 }
 
