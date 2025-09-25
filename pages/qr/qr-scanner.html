@@ -119,7 +119,7 @@
                     </a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="admin-dashboard.html" class="nav-link">Головна</a>
+                    <a href="../admin/admin-dashboard.html" class="nav-link">Головна</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
                     <a href="#" class="nav-link">QR-коди</a>
@@ -137,9 +137,187 @@
             </ul>
         </nav>
 
-        <!-- Sidebar (аналогічний qr-generator.html) -->
+        <!-- Sidebar -->
         <aside class="main-sidebar sidebar-dark-primary elevation-4">
-            <!-- Той самий сайдбар, що й у qr-generator.html -->
+            <a href="../admin/admin-dashboard.html" class="brand-link text-center">
+                <i class="brand-image fas fa-qrcode fa-2x"></i>
+                <span class="brand-text font-weight-light">LiftMaster Pro</span>
+            </a>
+
+            <div class="sidebar">
+                <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                    <div class="image">
+                        <img src="../../assets/img/user-avatar.png" class="img-circle elevation-2" alt="User Image" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiMwMDc0YzYiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJDNi40OCAyIDIgNi40OCAyIDEyczQuNDggMTAgMTAgMTAgMTAtNC40OCAxMC0xMFMxNy41MiAyIDEyIDJ6bTAgM2MyLjIxIDAgNCAxLjc5IDQgNHMtMS43OSA0LTQgNC00LTEuNzktNC00IDEuNzktNCA0LTR6bTAgMTcuMDJjLTMuMzMgMC02LjI4LTEuNzEtOC02LjAyIDIuMDUtMy4xNiA1LjI2LTUgOC41LTUgMy4yNCAwIDYuNDUgMS44NCA4LjUgNSAwdCA4LTYuMDJjLTMuMzIgMC02LjI3IDEuNzEtOCA2LjAyeiIgZmlsbD0id2hpdGUiLz4KPC9zdmc+Cg=='">
+                    </div>
+                    <div class="info">
+                        <a href="../admin/profile.html" class="d-block">Іван Петренко</a>
+                        <small class="text-success">Адміністратор</small>
+                    </div>
+                </div>
+
+                <nav class="mt-2">
+                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                        <li class="nav-item">
+                            <a href="../admin/admin-dashboard.html" class="nav-link">
+                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                                <p>Дашборд</p>
+                            </a>
+                        </li>
+                        
+                        <!-- QR System Menu -->
+                        <li class="nav-item menu-open">
+                            <a href="#" class="nav-link active">
+                                <i class="nav-icon fas fa-qrcode"></i>
+                                <p>
+                                    QR Система
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="../admin/qr-generator.html" class="nav-link">
+                                        <i class="fas fa-plus-circle nav-icon"></i>
+                                        <p>Генератор QR-кодів</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="../admin/qr-management.html" class="nav-link">
+                                        <i class="fas fa-cog nav-icon"></i>
+                                        <p>Керування QR-кодами</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="../admin/qr-history.html" class="nav-link">
+                                        <i class="fas fa-history nav-icon"></i>
+                                        <p>Історія сканувань</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="../admin/qr-analytics.html" class="nav-link">
+                                        <i class="fas fa-chart-line nav-icon"></i>
+                                        <p>Аналітика сканувань</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="../admin/qr-batch.html" class="nav-link">
+                                        <i class="fas fa-layer-group nav-icon"></i>
+                                        <p>Пакетне керування</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="qr-scanner.html" class="nav-link active">
+                                        <i class="fas fa-camera nav-icon"></i>
+                                        <p>Сканер QR-кодів</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- Lifts Menu -->
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-elevator"></i>
+                                <p>
+                                    Ліфти
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="../admin/lifts.html" class="nav-link">
+                                        <i class="fas fa-list nav-icon"></i>
+                                        <p>Управління ліфтами</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="../admin/maps.html" class="nav-link">
+                                        <i class="fas fa-map-marked-alt nav-icon"></i>
+                                        <p>Мапа ліфтів</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="../admin/users.html" class="nav-link">
+                                <i class="nav-icon fas fa-users"></i>
+                                <p>Користувачі</p>
+                            </a>
+                        </li>
+
+                        <!-- Reports & Analytics Menu -->
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-chart-bar"></i>
+                                <p>
+                                    Звіти та Аналітика
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="../admin/reports.html" class="nav-link">
+                                        <i class="fas fa-file-alt nav-icon"></i>
+                                        <p>Звіти</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="../admin/analytics.html" class="nav-link">
+                                        <i class="fas fa-chart-line nav-icon"></i>
+                                        <p>Аналітика</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- Support Menu -->
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-headset"></i>
+                                <p>
+                                    Підтримка
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="../admin/support.html" class="nav-link">
+                                        <i class="fas fa-ticket-alt nav-icon"></i>
+                                        <p>Технічна підтримка</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="../admin/notifications.html" class="nav-link">
+                                        <i class="fas fa-bell nav-icon"></i>
+                                        <p>Сповіщення</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="../admin/settings.html" class="nav-link">
+                                <i class="nav-icon fas fa-cog"></i>
+                                <p>Налаштування</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="../admin/profile.html" class="nav-link">
+                                <i class="nav-icon fas fa-user"></i>
+                                <p>Профіль</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" onclick="logout()">
+                                <i class="nav-icon fas fa-sign-out-alt"></i>
+                                <p>Вийти</p>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
         </aside>
 
         <!-- Content Wrapper -->
@@ -152,7 +330,7 @@
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="admin-dashboard.html">Головна</a></li>
+                                <li class="breadcrumb-item"><a href="../admin/admin-dashboard.html">Головна</a></li>
                                 <li class="breadcrumb-item"><a href="#">QR Система</a></li>
                                 <li class="breadcrumb-item active">Сканер QR-кодів</li>
                             </ol>
@@ -372,6 +550,6 @@
     <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 
-    <script src="assets/js/modules/qr-scanner.js"></script>
+    <script src="../../assets/js/modules/qr-scanner.js"></script>
 </body>
 </html>
