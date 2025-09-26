@@ -361,7 +361,7 @@
                                 <div class="card-header">
                                     <h3 class="card-title">Список ліфтів <span id="lift-count">(0)</span></h3>
                                     <div class="card-tools">
-                                        <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#liftModal">
+                                        <button id="add-lift-button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#liftModal">
                                             <i class="fas fa-plus"></i> Додати ліфт
                                         </button>
                                     </div>
@@ -485,9 +485,17 @@
                     </button>
                 </div>
                 <form id="liftForm">
-                    <div class="modal-body">
+                    <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
                         <input type="hidden" id="liftId">
-                        <div class="row">
+
+                        <!-- Основна інформація -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary mb-3"><i class="fas fa-info-circle mr-2"></i>Основна інформація</h5>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="municipalNumber">Муніципальний № *</label>
@@ -497,10 +505,12 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="liftModel">Модель ліфта *</label>
-                                    <input type="text" id="liftModel" class="form-control" required>
+                                    <input type="text" id="liftModel" class="form-control" required placeholder="Наприклад: Otis Gen2">
                                 </div>
                             </div>
                         </div>
+
+                        <div class="row mb-3">
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="liftType">Тип ліфта *</label>
@@ -512,141 +522,146 @@
                                     </select>
                                 </div>
                             </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="liftCapacity">Пасажиромісткість *</label>
+                                    <input type="number" id="liftCapacity" class="form-control" min="1" required placeholder="осіб">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="liftSpeed">Швидкість *</label>
+                                    <input type="number" id="liftSpeed" class="form-control" min="0.1" step="0.1" required placeholder="м/с">
+                                </div>
+                            </div>
                         </div>
-                        <div class="row">
-                            <div class="col-md-6">
+
+                        <!-- Розташування -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary mb-3"><i class="fas fa-map-marker-alt mr-2"></i>Розташування</h5>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-8">
                                 <div class="form-group">
                                     <label for="liftAddress">Адреса *</label>
-                                        <div class="input-group">
-                                        <input type="text" id="liftAddress" class="form-control" required>
+                                    <div class="input-group">
+                                        <input type="text" id="liftAddress" class="form-control" required placeholder="Введіть повну адресу">
                                         <div class="input-group-append">
-                                            <button type="button" class="btn btn-outline-secondary" id="btnGeocode">
-                                                <i class="fas fa-search-location"></i> Визначити координати
+                                            <button type="button" class="btn btn-outline-secondary" id="btnGeocode" title="Визначити координати">
+                                                <i class="fas fa-search-location"></i>
                                             </button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="liftPostcode">Поштовий код *</label>
-                                    <input type="text" id="liftPostcode" class="form-control" required pattern="([0-9]{5}|[0-9]{4}-[0-9]{3})" title="Формат: 12345 або 1234-567">
+                                    <input type="text" id="liftPostcode" class="form-control" required pattern="([0-9]{5}|[0-9]{4}-[0-9]{3})" placeholder="12345 або 1234-567">
                                 </div>
                             </div>
-                            <div class="col-md-3">
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="liftLat">Широта *</label>
+                                    <input type="number" id="liftLat" class="form-control" step="0.000001" required placeholder="50.4501">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="liftLng">Довгота *</label>
+                                    <input type="number" id="liftLng" class="form-control" step="0.000001" required placeholder="30.5234">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Клієнт та обслуговування -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary mb-3"><i class="fas fa-user mr-2"></i>Клієнт та обслуговування</h5>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="clientName">Ім'я клієнта</label>
+                                    <input type="text" id="clientName" class="form-control" placeholder="ПІБ клієнта">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="clientEmail">Email клієнта</label>
-                                    <input type="email" id="clientEmail" class="form-control">
+                                    <input type="email" id="clientEmail" class="form-control" placeholder="client@example.com">
                                 </div>
                             </div>
                         </div>
-                        <div class="row">
+
+                        <div class="row mb-3">
                             <div class="col-md-4">
-                                <div class="form-group">
-                                    <label for="liftCapacity">Пасажиромісткість (осіб)</label>
-                                    <input type="number" id="liftCapacity" class="form-control" min="1" required>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label for="liftSpeed">Швидкість (м/с)</label>
-                                    <input type="number" id="liftSpeed" class="form-control" min="0.1" step="0.1" required>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label for="inspectionReport">Звіт інспекції (PDF)</label>
-                                    <input type="file" id="inspectionReport" class="form-control-file" accept="application/pdf">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="liftLat">Широта (latitude)</label>
-                                    <input type="number" id="liftLat" class="form-control" step="0.000001" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="liftLng">Довгота (longitude)</label>
-                                    <input type="number" id="liftLng" class="form-control" step="0.000001" required>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="lastMaintenance">Останнє ТО</label>
                                     <input type="date" id="lastMaintenance" class="form-control">
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="nextMaintenance">Наступне ТО</label>
                                     <input type="date" id="nextMaintenance" class="form-control">
                                 </div>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="form-group">
-                                    <label for="inspectionFrequency">Частота інспекцій (місяці)</label>
-                                    <input type="number" id="inspectionFrequency" class="form-control" min="1" max="24" value="6">
+                                    <label for="inspectionFrequency">Частота інспекцій</label>
+                                    <input type="number" id="inspectionFrequency" class="form-control" min="1" max="24" value="6" placeholder="місяці">
                                 </div>
                             </div>
+                        </div>
+
+                        <div class="row mb-3">
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="liftStatus">Статус *</label>
                                     <select id="liftStatus" class="form-control" required>
+                                        <option value="">Оберіть статус...</option>
                                         <option value="active">Активний</option>
                                         <option value="maintenance">Обслуговування</option>
                                         <option value="inactive">Неактивний</option>
                                     </select>
                                 </div>
                             </div>
-                        </div>
-                        <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="clientName">Клієнт</label>
-                                    <input type="text" id="clientName" class="form-control" placeholder="Ім'я клієнта">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="liftCount">Кількість ліфтів</label>
-                                    <select id="liftCount" class="form-control">
-                                        <option value="1">1</option>
-                                        <option value="2">2</option>
-                                        <option value="3">3</option>
-                                        <option value="4">4</option>
-                                        <option value="5">5</option>
-                                        <option value="6">6</option>
-                                        <option value="7">7</option>
-                                        <option value="8">8</option>
-                                        <option value="9">9</option>
-                                        <option value="10">10</option>
-                                    </select>
+                                    <label for="inspectionReport">Звіт інспекції</label>
+                                    <input type="file" id="inspectionReport" class="form-control-file" accept="application/pdf">
                                 </div>
                             </div>
                         </div>
-                        <!-- Ідентифікаційні номери муніципалітету -->
+
+                        <!-- Мапа локації -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary mb-3"><i class="fas fa-map mr-2"></i>Мапа локації</h5>
+                            </div>
+                        </div>
+
                         <div class="row mb-3">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="municipalId1">Ідентифікаційний номер муніципалітету для ліфта 1</label>
-                                    <input type="text" id="municipalId1" class="form-control municipal-id" placeholder="Ідентифікаційний номер">
-                                </div>
-                            </div>
-                        </div>
-                        <div id="additionalLifts"></div>
-                        <div class="row">
                             <div class="col-md-12">
                                 <div class="form-group">
-                                    <label for="liftMap">Мапа локації</label>
-                                    <div id="liftMap" style="height: 300px; border: 1px solid #ddd;"></div>
+                                    <label for="liftLocation">Місце розташування</label>
+                                    <input type="text" id="liftLocation" class="form-control" placeholder="Опис місця розташування ліфта">
                                 </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <div id="liftMap" style="height: 300px; border: 1px solid #ddd; border-radius: 4px;"></div>
                             </div>
                         </div>
                     </div>
@@ -829,6 +844,9 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <!-- QR Code library -->
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <!-- Custom scripts -->
+    <script src="/assets/js/common.js"></script>
+    <script src="/assets/js/lifts.js"></script>
 
     <script>
         // Функція виходу
@@ -840,932 +858,21 @@
             }
         }
 
-        class LiftManager {
-            constructor() {
-                this.currentPage = 1;
-                this.itemsPerPage = 10;
-                this.allLifts = [];
-                this.init();
-            }
 
-            init() {
-                this.loadLifts();
-                this.setupEventListeners();
-                this.preventFormSubmitOnEnter();
-                
-                // Ініціалізація AdminLTE компонентів
-                $('[data-widget="pushmenu"]').PushMenu();
-            }
+    </script>
 
-            preventFormSubmitOnEnter() {
-                $('#liftForm').on('keydown', (e) => {
-                    if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
-                        e.preventDefault();
-                    }
-                });
-            }
-
-            loadLifts() {
-                this.allLifts = JSON.parse(localStorage.getItem('lifts')) || [];
-                this.renderLiftsTable(this.allLifts);
-                this.renderPagination(this.allLifts.length);
-                this.updateStatistics();
-            }
-
-            renderLiftsTable(lifts) {
-                const tbody = $('#liftsTable tbody');
-                tbody.empty();
-
-                const start = (this.currentPage - 1) * this.itemsPerPage;
-                const end = start + this.itemsPerPage;
-                const paginatedLifts = lifts.slice(start, end);
-
-                if (paginatedLifts.length === 0) {
-                    tbody.html(`
-                        <tr>
-                            <td colspan="8" class="text-center py-4 empty-state">
-                                <i class="fas fa-elevator fa-3x mb-3 text-muted"></i>
-                                <h5>Ліфтів не знайдено</h5>
-                                <p class="mb-3">Додайте перший ліфт до системи</p>
-                                <button class="btn btn-primary" data-toggle="modal" data-target="#liftModal">
-                                    <i class="fas fa-plus"></i> Додати ліфт
-                                </button>
-                            </td>
-                        </tr>
-                    `);
-                    return;
-                }
-
-                paginatedLifts.forEach(lift => {
-                    const row = `
-                        <tr>
-                            <td>${lift.id}</td>
-                            <td>${lift.model}</td>
-                            <td>${this.getLiftTypeLabel(lift.type)}</td>
-                            <td>${lift.location}</td>
-                            <td>
-                                <span class="badge ${this.getStatusBadgeClass(lift.status)}">
-                                    ${this.getStatusLabel(lift.status)}
-                                </span>
-                            </td>
-                            <td>${this.formatDate(lift.lastMaintenance)}</td>
-                            <td>${this.formatDate(lift.nextMaintenance)}</td>
-                            <td>
-                                <div class="btn-group">
-                                    <button class="btn btn-sm btn-info btn-action" 
-                                            onclick="liftManager.viewLiftDetails('${lift.id}')"
-                                            data-toggle="popover"
-                                            data-placement="left"
-                                            data-html="true"
-                                            data-content="<strong>Переглянути деталі ліфта</strong><br>Модель: ${lift.model}<br>Адреса: ${lift.location}">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-primary btn-action" 
-                                            data-toggle="modal" 
-                                            data-target="#liftModal"
-                                            data-lift-id="${lift.id}"
-                                            data-toggle="popover"
-                                            data-placement="left"
-                                            data-html="true"
-                                            data-content="<strong>Модель:</strong> ${lift.model}<br><strong>Тип:</strong> ${this.getLiftTypeLabel(lift.type)}<br><strong>Адреса:</strong> ${lift.location}<br><strong>Клієнт:</strong> ${lift.clientName || 'Невідомий'}<br><strong>Статус:</strong> ${this.getStatusLabel(lift.status)}">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-success btn-action" 
-                                            onclick="liftManager.openChatModal('${lift.id}')"
-                                            data-toggle="popover"
-                                            data-placement="left"
-                                            data-html="true"
-                                            data-content="<strong>Чат з ліфтом</strong><br>Модель: ${lift.model}<br>Адреса: ${lift.location}">
-                                        <i class="fas fa-comments"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-danger btn-action" 
-                                            onclick="liftManager.deleteLift('${lift.id}')"
-                                            data-toggle="popover"
-                                            data-placement="left"
-                                            data-html="true"
-                                            data-content="<strong>Модель:</strong> ${lift.model}<br><strong>Адреса:</strong> ${lift.location}<br><strong>Увага:</strong> Цю дію не можна скасувати!">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                    tbody.append(row);
-                });
-                
-                // Ініціалізувати popovers після додавання рядків
-                $('[data-toggle="popover"]').popover({
-                    trigger: 'hover focus',
-                    container: 'body'
-                });
-                
-                this.updateCounters();
-            }
-
-            updateCounters() {
-                const start = (this.currentPage - 1) * this.itemsPerPage + 1;
-                const end = Math.min(this.currentPage * this.itemsPerPage, this.allLifts.length);
-                
-                $('#showingCount').text(`${start}-${end}`);
-                $('#totalCount').text(this.allLifts.length);
-                $('#lift-count').text(`(${this.allLifts.length})`);
-            }
-
-            updateStatistics() {
-                const total = this.allLifts.length;
-                const active = this.allLifts.filter(lift => lift.status === 'active').length;
-                const maintenance = this.allLifts.filter(lift => lift.status === 'maintenance').length;
-                const inactive = this.allLifts.filter(lift => lift.status === 'inactive').length;
-
-                $('#totalLifts').text(total);
-                $('#activeLifts').text(active);
-                $('#maintenanceLifts').text(maintenance);
-                $('#inactiveLifts').text(inactive);
-            }
-
-            setupEventListeners() {
-                // Форма збереження ліфта
-                $('#liftForm').on('submit', (e) => {
-                    e.preventDefault();
-                    this.saveLift();
-                });
-
-                // Фільтри
-                $('#statusFilter, #typeFilter').on('change', () => this.applyFilters());
-
-                // Пошук
-                $('#searchInput').on('input', (e) => this.searchLifts(e.target.value));
-
-                // Експорт
-                $('#exportCSVBtn').on('click', () => this.exportToCSV());
-                $('#exportPDFBtn').on('click', () => this.exportToPDF());
-
-                // Генерація QR коду
-                $('#generateQrBtn').on('click', () => {
-                    const liftId = $('#liftId').val();
-                    if (liftId) {
-                        const lifts = JSON.parse(localStorage.getItem('lifts')) || [];
-                        const lift = lifts.find(l => l.id === liftId);
-                        if (lift) {
-                            this.generateLiftQR(lift);
-                            // Друк QR коду
-                            setTimeout(() => {
-                                const qrCanvas = document.querySelector('#liftQrCode canvas');
-                                if (qrCanvas) {
-                                    const printWindow = window.open('', '_blank');
-                                    printWindow.document.write(`
-                                        <html>
-                                        <head><title>QR код ліфта ${lift.model}</title></head>
-                                        <body style="text-align:center; font-family:Arial;">
-                                        <h2>QR код для ліфта</h2>
-                                        <p><strong>Модель:</strong> ${lift.model}</p>
-                                        <p><strong>Адреса:</strong> ${lift.location}</p>
-                                        <p><strong>ID:</strong> ${lift.id}</p>
-                                        <br>
-                                        <img src="${qrCanvas.toDataURL()}" style="max-width:300px;">
-                                        <br><br>
-                                        <button onclick="window.print()">Друкувати</button>
-                                        </body>
-                                        </html>
-                                    `);
-                                    printWindow.document.close();
-                                }
-                            }, 100);
-                        }
-                    }
-                });
-
-                // Модальне вікно
-                $('#liftModal').on('show.bs.modal', (e) => {
-                    const button = $(e.relatedTarget);
-                    const liftId = button.data('lift-id');
-                    if (liftId) {
-                        this.editLift(liftId);
-                    }
-                });
-
-                // Очистити форму після закриття модального вікна
-                $('#liftModal').on('hidden.bs.modal', () => {
-                    this.resetForm();
-                });
-
-                // Кнопка скасувати
-                $('#liftModal .close, #liftModal .btn-secondary').on('click', () => {
-                    this.resetForm();
-                });
-
-                // Зміна кількості ліфтів
-                $('#liftCount').on('change', function() {
-                    const count = parseInt(this.value);
-                    const additionalLifts = $('#additionalLifts');
-                    additionalLifts.empty();
-                    
-                    // Показати/сховати перше поле в залежності від кількості
-                    if (count >= 1) {
-                        $('#municipalId1').closest('.row').show();
-                    } else {
-                        $('#municipalId1').closest('.row').hide();
-                    }
-                    
-                    // Додати поля для додаткових ліфтів
-                    for (let i = 2; i <= count; i++) {
-                        const newRow = $(`
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="municipalId${i}">Ідентифікаційний номер муніципалітету для ліфта ${i}</label>
-                                        <input type="text" id="municipalId${i}" class="form-control municipal-id" placeholder="Ідентифікаційний номер">
-                                    </div>
-                                </div>
-                            </div>
-                        `);
-                        additionalLifts.append(newRow);
-                    }
-                });
-
-                // Ініціалізувати поля при відкритті модального вікна
-                $('#liftModal').on('show.bs.modal', function() {
-                    // Показати поле для першого ліфта по замовчуванню
-                    $('#municipalId1').closest('.row').show();
-                });
-
-                // Автоматичне обчислення наступного ТО
-                $('#lastMaintenance, #inspectionFrequency').on('change', function() {
-                    const lastMaintenance = $('#lastMaintenance').val();
-                    const frequency = parseInt($('#inspectionFrequency').val()) || 6;
-                    
-                    if (lastMaintenance) {
-                        const lastDate = new Date(lastMaintenance);
-                        const nextDate = new Date(lastDate);
-                        nextDate.setMonth(nextDate.getMonth() + frequency);
-                        
-                        const nextDateString = nextDate.toISOString().split('T')[0];
-                        $('#nextMaintenance').val(nextDateString);
-                    }
-                });
-
-                // Визначення координат за адресою та поштовим кодом
-                $('#btnGeocode').on('click', () => this.geocodeAddress());
-
-                // Оновлення мапи при зміні координат
-                $('#liftLat, #liftLng').on('input', function() {
-                    const lat = parseFloat($('#liftLat').val());
-                    const lng = parseFloat($('#liftLng').val());
-                    
-                    if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
-                        if (window.liftMap && window.liftMarker) {
-                            window.liftMarker.setLatLng([lat, lng]);
-                            window.liftMap.setView([lat, lng], 15);
-                        }
-                    }
-                });
-            }
-
-            openModal(lift = null, readOnly = false) {
-                if (lift) {
-                    this.fillForm(lift);
-                    if (readOnly) {
-                        $('#modalTitle').text('Деталі ліфта');
-                        this.setFormReadOnly(true);
-                        $('#generateQrBtn').show();
-                        this.generateLiftQR(lift);
-                    } else {
-                        $('#modalTitle').text('Редагувати ліфт');
-                        this.setFormReadOnly(false);
-                        $('#generateQrBtn').hide();
-                        $('#qrSection').hide();
-                    }
-                } else {
-                    this.resetForm();
-                    $('#modalTitle').text('Додати ліфт');
-                    this.setFormReadOnly(false);
-                    $('#generateQrBtn').hide();
-                    $('#qrSection').hide();
-                }
-                
-                $('#liftModal').modal('show');
-
-                // Ініціалізація карти після відкриття модального вікна
-                $('#liftModal').one('shown.bs.modal', () => {
-                    setTimeout(() => {
-                        this.initializeMap();
-                    }, 100);
-                });
-            }
-
-            initializeMap() {
-                // Перевірити, чи елемент карти існує
-                if (!document.getElementById('liftMap')) {
-                    console.error('Елемент карти не знайдено');
-                    return;
-                }
-
-                // Перевірити, чи карта вже ініціалізована
-                if (window.liftMap) {
-                    // Оновити маркер на основі поточних координат
-                    const lat = parseFloat($('#liftLat').val());
-                    const lng = parseFloat($('#liftLng').val());
-                    if (!isNaN(lat) && !isNaN(lng)) {
-                        window.liftMap.setView([lat, lng], 15);
-                        window.liftMarker.setLatLng([lat, lng]);
-                    }
-                    return;
-                }
-
-                // Отримати поточні координати або за замовчуванням
-                let lat = parseFloat($('#liftLat').val()) || 50.4501;
-                let lng = parseFloat($('#liftLng').val()) || 30.5234;
-
-                try {
-                    // Ініціалізація мапи
-                    const map = L.map('liftMap').setView([lat, lng], 13);
-                    window.liftMap = map;
-
-                    // Додати шар карти OpenStreetMap
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        maxZoom: 19,
-                        attribution: '© OpenStreetMap'
-                    }).addTo(map);
-
-                    // Додати маркер
-                    let marker = L.marker([lat, lng], { draggable: true }).addTo(map);
-                    window.liftMarker = marker;
-
-                    // Оновлення координат при перетягуванні маркера
-                    marker.on('dragend', function (e) {
-                        const position = marker.getLatLng();
-                        document.getElementById('liftLat').value = position.lat.toFixed(6);
-                        document.getElementById('liftLng').value = position.lng.toFixed(6);
-                    });
-
-                    console.log('Карта ініціалізована успішно');
-                } catch (error) {
-                    console.error('Помилка ініціалізації карти:', error);
-                }
-            }
-
-            fillForm(lift) {
-                $('#liftId').val(lift.id);
-                $('#liftModel').val(lift.model || '');
-                $('#liftType').val(lift.type || '');
-                $('#liftAddress').val(lift.address || '');
-                $('#liftPostcode').val(lift.postcode || '');
-                $('#clientEmail').val(lift.clientEmail || '');
-                $('#liftCapacity').val(lift.capacity || '');
-                $('#liftSpeed').val(lift.speed || '');
-                $('#liftLat').val(lift.lat || '');
-                $('#liftLng').val(lift.lng || '');
-                $('#lastMaintenance').val(lift.lastMaintenance || '');
-                $('#nextMaintenance').val(lift.nextMaintenance || '');
-                $('#inspectionFrequency').val(lift.inspectionFrequency || '6');
-                $('#liftStatus').val(lift.status || 'active');
-                $('#clientName').val(lift.clientName || '');
-                $('#liftCount').val(lift.liftCount || '1');
-                
-                // Заповнити ідентифікаційні номери
-                if (lift.municipalIds && lift.municipalIds.length > 0) {
-                    $('.municipal-id').each(function(index) {
-                        if (index < lift.municipalIds.length) {
-                            $(this).val(lift.municipalIds[index]);
-                        }
-                    });
-                    
-                    // Якщо більше одного ідентифікаційного номера, налаштувати додаткові поля
-                    if (lift.municipalIds.length > 1) {
-                        $('#liftCount').val(lift.municipalIds.length).trigger('change');
-                    }
-                }
-            }
-
-            resetForm() {
-                $('#liftForm')[0].reset();
-                $('#liftId').val('');
-                $('#modalTitle').text('Додати ліфт');
-                this.setFormReadOnly(false);
-
-                // Очистити ідентифікаційні номери
-                $('.municipal-id').val('');
-                
-                // Показати тільки перше поле
-                $('#municipalId1').closest('.row').show();
-                $('#additionalLifts').empty();
-
-                // Очистити карту
-                if (window.liftMap) {
-                    window.liftMap.remove();
-                    window.liftMap = null;
-                    window.liftMarker = null;
-                }
-            }
-
-            setFormReadOnly(readOnly) {
-                const inputs = $('#liftForm input, #liftForm select, #liftForm textarea');
-                inputs.prop('disabled', readOnly);
-                if (readOnly) {
-                    $('#liftForm .btn-primary').hide(); // Приховати кнопку збереження
-                } else {
-                    $('#liftForm .btn-primary').show();
-                }
-            }
-
-            generateLiftQR(lift) {
-                const qrData = {
-                    type: 'lift',
-                    id: lift.id,
-                    model: lift.model,
-                    location: lift.location,
-                    client: lift.clientName || 'Невідомий',
-                    status: lift.status,
-                    lastMaintenance: lift.lastMaintenance,
-                    nextMaintenance: lift.nextMaintenance
-                };
-                
-                const qrString = JSON.stringify(qrData);
-                
-                $('#liftQrCode').empty();
-                QRCode.toCanvas(document.getElementById('liftQrCode'), qrString, { width: 150 }, function (error) {
-                    if (error) console.error(error);
-                });
-                
-                $('#qrSection').show();
-            }
-
-            saveLift() {
-                console.log('saveLift called');
-                
-                // Валідація форми
-                const model = $('#liftModel').val().trim();
-                const type = $('#liftType').val();
-                const address = $('#liftAddress').val().trim();
-                const postcode = $('#liftPostcode').val().trim();
-                const lat = parseFloat($('#liftLat').val());
-                const lng = parseFloat($('#liftLng').val());
-                const capacity = parseInt($('#liftCapacity').val());
-                const speed = parseFloat($('#liftSpeed').val());
-                const lastMaintenance = $('#lastMaintenance').val();
-                const nextMaintenance = $('#nextMaintenance').val();
-                const clientEmail = $('#clientEmail').val().trim();
-
-                console.log('Form values:', { model, type, address, postcode, lat, lng, capacity, speed });
-
-                // Перевірка обов'язкових полів
-                if (!model || !type || !address || !postcode) {
-                    this.showNotification('Будь ласка, заповніть всі обов\'язкові поля (модель, тип, адреса, поштовий код).', 'error');
-                    return;
-                }
-
-                // Перевірка координат - якщо не вказані, встановити за замовчуванням
-                let finalLat = lat;
-                let finalLng = lng;
-                
-                if (isNaN(finalLat) || isNaN(finalLng)) {
-                    // Встановити координати Києва за замовчуванням
-                    finalLat = 50.4501;
-                    finalLng = 30.5234;
-                    $('#liftLat').val(finalLat.toFixed(6));
-                    $('#liftLng').val(finalLng.toFixed(6));
-                }
-
-                // Перевірка координат
-                if (finalLat < -90 || finalLat > 90 || finalLng < -180 || finalLng > 180) {
-                    this.showNotification('Некоректні координати. Перевірте широту (-90 до 90) та довготу (-180 до 180).', 'error');
-                    return;
-                }
-
-                // Перевірка email
-                if (clientEmail && !this.isValidEmail(clientEmail)) {
-                    this.showNotification('Некоректний email клієнта.', 'error');
-                    return;
-                }
-
-                // Перевірка дат ТО
-                if (lastMaintenance && nextMaintenance && new Date(lastMaintenance) >= new Date(nextMaintenance)) {
-                    this.showNotification('Дата наступного ТО повинна бути пізніше за дату останнього ТО.', 'error');
-                    return;
-                }
-
-                // Перевірка позитивних значень - встановити за замовчуванням якщо не вказано
-                let finalCapacity = capacity;
-                let finalSpeed = speed;
-                
-                if (isNaN(finalCapacity) || finalCapacity <= 0) {
-                    finalCapacity = 8; // за замовчуванням
-                    $('#liftCapacity').val(finalCapacity);
-                }
-                
-                if (isNaN(finalSpeed) || finalSpeed <= 0) {
-                    finalSpeed = 1.0; // за замовчуванням
-                    $('#liftSpeed').val(finalSpeed);
-                }
-
-                const liftId = $('#liftId').val();
-                
-                // Зібрати ідентифікаційні номери муніципалітету
-                const municipalIds = [];
-                $('.municipal-id').each(function() {
-                    const value = $(this).val().trim();
-                    if (value) {
-                        municipalIds.push(value);
-                    }
-                });
-                
-                const lift = {
-                    id: liftId || this.generateId(),
-                    model: model,
-                    type: type,
-                    location: address + ', ' + postcode,
-                    address: address,
-                    postcode: postcode,
-                    lat: finalLat,
-                    lng: finalLng,
-                    capacity: finalCapacity,
-                    speed: finalSpeed,
-                    status: $('#liftStatus').val(),
-                    lastMaintenance: lastMaintenance,
-                    nextMaintenance: nextMaintenance,
-                    inspectionFrequency: parseInt($('#inspectionFrequency').val()) || 6,
-                    clientName: $('#clientName').val().trim(),
-                    clientEmail: clientEmail,
-                    municipalIds: municipalIds, // Додати ідентифікаційні номери
-                    liftCount: $('#liftCount').val(),
-                    updatedAt: new Date().toISOString()
-                };
-
-                if (!liftId) {
-                    lift.createdAt = new Date().toISOString();
-                }
-
-                console.log('Saving lift:', lift);
-
-                const lifts = JSON.parse(localStorage.getItem('lifts')) || [];
-                const existingIndex = lifts.findIndex(l => l.id === lift.id);
-
-                if (existingIndex >= 0) {
-                    lifts[existingIndex] = { ...lifts[existingIndex], ...lift };
-                } else {
-                    lifts.push(lift);
-                }
-
-                localStorage.setItem('lifts', JSON.stringify(lifts));
-                
-                // Оновити таблицю негайно
-                this.allLifts = lifts;
-                this.renderLiftsTable(this.allLifts);
-                this.renderPagination(this.allLifts.length);
-                this.updateStatistics();
-                
-                this.closeModal();
-                this.showNotification('Ліфт успішно збережено', 'success');
-            }
-
-            closeModal() {
-                $('#liftModal').modal('hide');
-                this.resetForm();
-            }
-
-            editLift(id) {
-                const lifts = JSON.parse(localStorage.getItem('lifts')) || [];
-                const lift = lifts.find(l => l.id === id);
-                if (lift) {
-                    this.openModal(lift);
-                }
-            }
-
-            viewLiftDetails(id) {
-                const lifts = JSON.parse(localStorage.getItem('lifts')) || [];
-                const lift = lifts.find(l => l.id === id);
-                if (lift) {
-                    this.openModal(lift, true); // true для режиму тільки читання
-                }
-            }
-
-            deleteLift(id) {
-                if (confirm('Ви впевнені, що хочете видалити цей ліфт?')) {
-                    const lifts = JSON.parse(localStorage.getItem('lifts')) || [];
-                    const filteredLifts = lifts.filter(lift => lift.id !== id);
-                    localStorage.setItem('lifts', JSON.stringify(filteredLifts));
-                    this.loadLifts();
-                    this.showNotification('Ліфт успішно видалено', 'success');
-                }
-            }
-
-            openChatModal(liftId) {
-                const lifts = JSON.parse(localStorage.getItem('lifts')) || [];
-                const lift = lifts.find(l => l.id === liftId);
-                if (lift) {
-                    $('#chatLiftId').val(liftId);
-                    $('#chatModalTitle').text(`Чат з ліфтом ${lift.model} (${lift.location})`);
-                    this.loadChatMessages(liftId);
-                    $('#chatModal').modal('show');
-                }
-            }
-
-            loadChatMessages(liftId) {
-                const messages = JSON.parse(localStorage.getItem(`chat_${liftId}`)) || [];
-                const chatMessages = $('#chatMessages');
-                chatMessages.empty();
-
-                if (messages.length === 0) {
-                    chatMessages.html('<p class="text-muted text-center">Немає повідомлень. Почніть розмову!</p>');
-                    return;
-                }
-
-                messages.forEach(message => {
-                    const messageDiv = $(`
-                        <div class="message mb-2 ${message.sender === 'user' ? 'text-right' : ''}">
-                            <div class="d-inline-block p-2 rounded ${message.sender === 'user' ? 'bg-primary text-white' : 'bg-light'}">
-                                <small class="d-block">${message.timestamp}</small>
-                                ${message.text}
-                            </div>
-                        </div>
-                    `);
-                    chatMessages.append(messageDiv);
-                });
-
-                chatMessages.scrollTop(chatMessages[0].scrollHeight);
-            }
-
-            sendChatMessage() {
-                const liftId = $('#chatLiftId').val();
-                const messageText = $('#chatInput').val().trim();
-
-                if (!messageText) return;
-
-                const message = {
-                    sender: 'user',
-                    text: messageText,
-                    timestamp: new Date().toLocaleString('uk-UA')
-                };
-
-                // Зберегти повідомлення
-                const messages = JSON.parse(localStorage.getItem(`chat_${liftId}`)) || [];
-                messages.push(message);
-                localStorage.setItem(`chat_${liftId}`, JSON.stringify(messages));
-
-                // Очистити поле вводу
-                $('#chatInput').val('');
-
-                // Перезавантажити повідомлення
-                this.loadChatMessages(liftId);
-
-                // Симулювати відповідь системи через 1-2 секунди
-                setTimeout(() => {
-                    const responses = [
-                        'Повідомлення отримано. Технік буде направлений найближчим часом.',
-                        'Дякуємо за інформацію. Ми перевіримо стан ліфта.',
-                        'Ваше повідомлення передано відповідальному техніку.',
-                        'Ми отримали ваше повідомлення та розпочнемо роботу над проблемою.'
-                    ];
-                    
-                    const systemMessage = {
-                        sender: 'system',
-                        text: responses[Math.floor(Math.random() * responses.length)],
-                        timestamp: new Date().toLocaleString('uk-UA')
-                    };
-
-                    messages.push(systemMessage);
-                    localStorage.setItem(`chat_${liftId}`, JSON.stringify(messages));
-                    this.loadChatMessages(liftId);
-                }, 1000 + Math.random() * 1000);
-            }
-
-            searchLifts(query) {
-                const filteredLifts = this.allLifts.filter(lift => 
-                    lift.model.toLowerCase().includes(query.toLowerCase()) ||
-                    lift.location.toLowerCase().includes(query.toLowerCase()) ||
-                    lift.id.toLowerCase().includes(query.toLowerCase())
-                );
-                this.renderLiftsTable(filteredLifts);
-                this.renderPagination(filteredLifts.length);
-            }
-
-            applyFilters() {
-                const statusFilter = $('#statusFilter').val();
-                const typeFilter = $('#typeFilter').val();
-
-                const filteredLifts = this.allLifts.filter(lift => {
-                    const statusMatch = statusFilter === 'all' || lift.status === statusFilter;
-                    const typeMatch = typeFilter === 'all' || lift.type === typeFilter;
-                    return statusMatch && typeMatch;
-                });
-
-                this.renderLiftsTable(filteredLifts);
-                this.renderPagination(filteredLifts.length);
-            }
-
-            exportToCSV() {
-                const lifts = this.allLifts;
-                if (lifts.length === 0) {
-                    this.showNotification('Немає даних для експорту', 'warning');
-                    return;
-                }
-
-                let csv = 'ID,Модель,Тип,Адреса,Поштовий код,Широта,Довгота,Пасажиромісткість,Швидкість,Статус,Останнє ТО,Наступне ТО,Клієнт,Email\n';
-                
-                lifts.forEach(lift => {
-                    csv += `"${lift.id}","${lift.model}","${this.getLiftTypeLabel(lift.type)}","${lift.address || ''}","${lift.postcode || ''}","${lift.lat || ''}","${lift.lng || ''}","${lift.capacity || ''}","${lift.speed || ''}","${this.getStatusLabel(lift.status)}","${this.formatDate(lift.lastMaintenance)}","${this.formatDate(lift.nextMaintenance)}","${lift.clientName || ''}","${lift.clientEmail || ''}"\n`;
-                });
-
-                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                const link = document.createElement('a');
-                const url = URL.createObjectURL(blob);
-                link.setAttribute('href', url);
-                link.setAttribute('download', `lifts_export_${new Date().toISOString().split('T')[0]}.csv`);
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                this.showNotification('Дані експортовано в CSV', 'success');
-            }
-
-            exportToPDF() {
-                // Заглушка для PDF експорту
-                this.showNotification('Експорт у PDF (заглушка - потрібна бібліотека jsPDF)', 'info');
-            }
-
-            getLiftTypeLabel(type) {
-                const types = {
-                    'passenger': 'Пасажирський',
-                    'cargo': 'Вантажний',
-                    'hospital': 'Лікарняний'
-                };
-                return types[type] || type;
-            }
-
-            getStatusLabel(status) {
-                const statuses = {
-                    'active': 'Активний',
-                    'maintenance': 'Обслуговування',
-                    'inactive': 'Неактивний',
-                    'operational': 'Працює'
-                };
-                return statuses[status] || status;
-            }
-
-            getStatusBadgeClass(status) {
-                const classes = {
-                    'active': 'badge-success',
-                    'maintenance': 'badge-warning',
-                    'inactive': 'badge-danger',
-                    'operational': 'badge-success'
-                };
-                return classes[status] || 'badge-secondary';
-            }
-
-            formatDate(dateString) {
-                if (!dateString) return '-';
-                return new Date(dateString).toLocaleDateString('uk-UA');
-            }
-
-            geocodeAddress() {
-                const address = $('#liftAddress').val().trim();
-                const postcode = $('#liftPostcode').val().trim();
-                const btn = $('#btnGeocode');
-                
-                if (!address || !postcode) {
-                    this.showNotification('Будь ласка, введіть адресу та поштовий код.', 'error');
-                    return;
-                }
-
-                // Показати індикатор завантаження
-                const originalText = btn.html();
-                btn.html('<i class="fas fa-spinner fa-spin"></i> Пошук...').prop('disabled', true);
-
-                // Використання Nominatim API для геокодування
-                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address + ' ' + postcode)}&limit=1`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.length > 0) {
-                            const lat = parseFloat(data[0].lat);
-                            const lon = parseFloat(data[0].lon);
-
-                            // Оновити поля координат
-                            $('#liftLat').val(lat.toFixed(6));
-                            $('#liftLng').val(lon.toFixed(6));
-                            
-                            // Оновити мапу, якщо вона ініціалізована
-                            if (window.liftMap) {
-                                window.liftMap.setView([lat, lon], 15);
-                                if (window.liftMarker) {
-                                    window.liftMarker.setLatLng([lat, lon]);
-                                } else {
-                                    window.liftMarker = L.marker([lat, lon]).addTo(window.liftMap);
-                                }
-                            }
-                            
-                            this.showNotification('Координати визначено успішно!', 'success');
-                        } else {
-                            this.showNotification('Координати не знайдено. Спробуйте уточнити адресу або поштовий код.', 'error');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Помилка геокодування:', error);
-                        this.showNotification('Не вдалося визначити координати. Перевірте інтернет-з\'єднання.', 'error');
-                    })
-                    .finally(() => {
-                        // Відновити кнопку
-                        btn.html(originalText).prop('disabled', false);
-                    });
-            }
-
-            renderPagination(totalItems) {
-                const pagination = $('#pagination');
-                pagination.empty();
-
-                const totalPages = Math.ceil(totalItems / this.itemsPerPage);
-                
-                if (totalPages <= 1) {
-                    pagination.html('');
-                    return;
-                }
-
-                let html = '';
-                
-                if (this.currentPage > 1) {
-                    html += `
-                        <li class="page-item">
-                            <a class="page-link" href="#" data-page="${this.currentPage - 1}">
-                                <i class="fas fa-chevron-left"></i>
-                            </a>
-                        </li>
-                    `;
-                }
-                
-                for (let i = 1; i <= totalPages; i++) {
-                    html += `
-                        <li class="page-item ${this.currentPage === i ? 'active' : ''}">
-                            <a class="page-link" href="#" data-page="${i}">${i}</a>
-                        </li>
-                    `;
-                }
-                
-                if (this.currentPage < totalPages) {
-                    html += `
-                        <li class="page-item">
-                            <a class="page-link" href="#" data-page="${this.currentPage + 1}">
-                                <i class="fas fa-chevron-right"></i>
-                            </a>
-                        </li>
-                    `;
-                }
-                
-                pagination.html(html);
-
-                // Обробник кліків по пагінації
-                pagination.find('.page-link').on('click', (e) => {
-                    e.preventDefault();
-                    const page = parseInt($(e.target).closest('.page-link').data('page'));
-                    if (page >= 1 && page <= totalPages) {
-                        this.currentPage = page;
-                        this.renderLiftsTable(this.allLifts);
-                    }
-                });
-            }
-
-            showNotification(message, type = 'success') {
-                const toast = $(`
-                    <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-                        <div class="toast-header">
-                            <strong class="mr-auto">Система</strong>
-                            <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="toast-body">
-                            ${message}
-                        </div>
-                    </div>
-                `);
-
-                if (type === 'success') {
-                    toast.find('.toast-header').addClass('bg-success text-white');
-                } else {
-                    toast.find('.toast-header').addClass('bg-danger text-white');
-                }
-
-                $('#toastContainer').append(toast);
-                toast.toast({ delay: 3000 });
-                toast.toast('show');
-
-                toast.on('hidden.bs.toast', function () {
-                    $(this).remove();
-                });
-            }
-
-            isValidEmail(email) {
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                return emailRegex.test(email);
-            }
-
-            generateId() {
-                return 'lift_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            }
-        }
-
+    <script>
         // Ініціалізація після завантаження сторінки
         $(document).ready(function() {
-            window.liftManager = new LiftManager();
+            // Ініціалізуємо LiftManager з assets/js/lifts.js
+            console.log('Document ready, initializing LiftManager...');
+            if (typeof LiftManager !== 'undefined') {
+                console.log('LiftManager class found, creating instance...');
+                window.liftManager = new LiftManager();
+                console.log('LiftManager instance created successfully');
+            } else {
+                console.error('LiftManager class not found');
+            }
         });
     </script>
 
