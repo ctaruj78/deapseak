@@ -3,6 +3,7 @@
 // Клас для управління ліфтами
 class LiftManager {
     constructor() {
+        console.log('LiftManager constructor called');
         this.currentPage = 1;
         this.itemsPerPage = 10;
         this.filteredLifts = [];
@@ -12,6 +13,7 @@ class LiftManager {
     }
 
     init() {
+        console.log('LiftManager init() called');
         this.loadLifts();
         this.initMap();
         this.initEventListeners();
@@ -288,6 +290,13 @@ class LiftManager {
             }
         });
 
+        // Обробник submit для форми liftForm
+        $('#liftForm').on('submit', (e) => {
+            console.log('Form submit event triggered');
+            e.preventDefault();
+            this.saveLift();
+        });
+
         // Функція оновлення таблиці
         this.updateLiftTable();
     }
@@ -352,13 +361,6 @@ class LiftManager {
             console.error('Geocoding error:', error);
             CommonUtils.showNotification('Помилка отримання координат', 'error');
         }
-    }
-
-    // Обробник submit для форми liftForm
-    $('#liftForm').on('submit', (e) => {
-        e.preventDefault();
-        this.saveLift();
-    });
     }
 
     loadLifts() {
@@ -477,6 +479,7 @@ class LiftManager {
     }
 
     saveLift() {
+        console.log('saveLift() called');
         try {
             // Валідація обов'язкових полів
             const requiredFields = [
