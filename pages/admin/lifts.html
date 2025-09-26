@@ -657,6 +657,129 @@
         </div>
     </div>
 
+    <!-- Lift Details Modal -->
+    <div class="modal fade" id="liftDetailsModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-info">
+                    <h5 class="modal-title">Деталі ліфта</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Основна інформація</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Муніципальний №:</strong></td>
+                                    <td id="detail-municipal-number">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>ID:</strong></td>
+                                    <td id="detail-id">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Модель:</strong></td>
+                                    <td id="detail-model">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Тип:</strong></td>
+                                    <td id="detail-type">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Статус:</strong></td>
+                                    <td id="detail-status">-</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Технічні характеристики</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Місткість:</strong></td>
+                                    <td id="detail-capacity">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Швидкість:</strong></td>
+                                    <td id="detail-speed">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Серійний номер:</strong></td>
+                                    <td id="detail-serial">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Частота інспекцій:</strong></td>
+                                    <td id="detail-frequency">-</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Розташування</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Адреса:</strong></td>
+                                    <td id="detail-address">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Поштовий індекс:</strong></td>
+                                    <td id="detail-postcode">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Координати:</strong></td>
+                                    <td id="detail-coordinates">-</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Клієнт та обслуговування</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Клієнт:</strong></td>
+                                    <td id="detail-client">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Email:</strong></td>
+                                    <td id="detail-email">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Останнє ТО:</strong></td>
+                                    <td id="detail-last-maintenance">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Наступне ТО:</strong></td>
+                                    <td id="detail-next-maintenance">-</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <h6>Додаткова інформація</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Створено:</strong></td>
+                                    <td id="detail-created">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Оновлено:</strong></td>
+                                    <td id="detail-updated">-</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                    <button type="button" class="btn btn-primary" id="edit-lift-from-details">Редагувати</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Container -->
     <div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
 
