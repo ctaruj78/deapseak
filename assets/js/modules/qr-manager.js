@@ -208,7 +208,10 @@ const qrManager = (function() {
 
     // Handle type change in generate modal
     function onTypeChange() {
+        console.log('onTypeChange called');
         const type = $('#qrType').val();
+        console.log('Selected type:', type);
+
         $('#dynamicFields').hide();
         $('.dynamic-section').hide();
 
@@ -218,6 +221,7 @@ const qrManager = (function() {
         targetSelect.append('<option value="">Оберіть призначення...</option>');
 
         if (type) {
+            console.log('Showing dynamic fields for type:', type);
             $('#dynamicFields').show();
             $(`#${type}Fields`).show();
 
@@ -227,18 +231,24 @@ const qrManager = (function() {
 
             // Додати обробник події для оновлення preview при виборі призначення
             $('#qrTarget').off('change').on('change', updateQRPreview);
+        } else {
+            console.log('No type selected, hiding fields');
         }
     }
 
     // Заповнення списку призначень залежно від типу
     function populateTargetOptions(type) {
+        console.log('populateTargetOptions called with type:', type);
         const targetSelect = $('#qrTarget');
         let options = [];
 
         switch (type) {
             case 'lift':
+                console.log('Processing lift type');
                 // Отримати список ліфтів з localStorage
                 const lifts = JSON.parse(localStorage.getItem('lifts')) || [];
+                console.log('Found lifts:', lifts.length);
+
                 if (lifts.length > 0) {
                     lifts.forEach(lift => {
                         const displayName = lift.model || lift.name || `Ліфт ${lift.id}`;
@@ -249,6 +259,7 @@ const qrManager = (function() {
                         });
                     });
                 } else {
+                    console.log('No lifts found, using samples');
                     // Додати приклад, якщо немає ліфтів
                     options.push({ value: 'lift_sample_1', text: 'Ліфт №101 - вул. Шевченка, 10' });
                     options.push({ value: 'lift_sample_2', text: 'Ліфт №102 - вул. Франка, 25' });
@@ -292,9 +303,11 @@ const qrManager = (function() {
         }
 
         // Додати опції до селекта
+        console.log('Adding options to select:', options.length);
         options.forEach(option => {
             targetSelect.append(`<option value="${option.value}">${option.text}</option>`);
         });
+        console.log('Options added successfully');
     }
 
     // Update QR preview
@@ -338,25 +351,27 @@ const qrManager = (function() {
         // Create form submission
         $('#generateQRForm').on('submit', function(e) {
             e.preventDefault();
-            
+            console.log('Generate QR form submitted');
+
             // Validate expiry date
             const expiryDate = new Date($('#qrExpiry').val());
             const minDate = new Date();
             minDate.setDate(minDate.getDate() + 30);
-            
+
             if (expiryDate < minDate) {
                 showNotification('Дата закінчення повинна бути мінімум через 30 днів', 'warning');
                 return;
             }
-            
+
             const formData = new FormData(this);
-            
+            console.log('Form data collected, calling createNewQR');
+
             createNewQR(formData);
             $('#generateQRModal').modal('hide');
             renderQRTable();
             updateStatistics();
             showNotification('Новий QR-код успішно створено', 'success');
-            
+
             // Reset form
             this.reset();
             
@@ -681,8 +696,18 @@ const qrManager = (function() {
 
     // Create new QR code
     function createNewQR(formData) {
+        console.log('createNewQR called');
         const newId = 'QR' + String(currentQRs.length + 1).padStart(4, '0');
         const type = $('#qrType').val();
+        const target = $('#qrTarget').val();
+
+        console.log('Creating QR with:', { newId, type, target });
+
+        if (!type || !target) {
+            console.error('Missing required fields:', { type, target });
+            showNotification('Заповніть всі обов\'язкові поля', 'error');
+            return;
+        }
         
         // Gather metadata from dynamic fields
         let metadata = {};
@@ -1124,7 +1149,4 @@ $(document).ready(function() {
     if (typeof qrManager !== 'undefined') {
         qrManager.init();
     }
-});
-$(document).ready(function() {
-    qrManager.init();
 });
