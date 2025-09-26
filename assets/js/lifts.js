@@ -121,6 +121,43 @@ class LiftManager {
             console.log('Lift saved successfully - Total lifts:', allLifts.length);
         });
 
+        // Перегляд деталей ліфта
+        $('#lifts-table-body').on('click', '.details-btn', function () {
+            console.log('Details button clicked for lift:', $(this).data('id'));
+            const liftId = $(this).data('id');
+            const lift = allLifts.find(l => l.id === liftId);
+            if (lift) {
+                // Заповнюємо модальне вікно деталями
+                $('#detail-municipal-number').text(lift.municipalNumber || lift.id);
+                $('#detail-id').text(lift.id);
+                $('#detail-model').text(lift.model || '-');
+                $('#detail-type').text(lift.type || '-');
+                $('#detail-status').html(`<span class="badge ${this.getStatusBadgeClass(lift.status)}">${this.getStatusText(lift.status)}</span>`);
+                $('#detail-capacity').text(lift.capacity ? lift.capacity + ' осіб' : '-');
+                $('#detail-speed').text(lift.speed ? lift.speed + ' м/с' : '-');
+                $('#detail-serial').text(lift.serial || '-');
+                $('#detail-frequency').text(lift.inspectionFrequency ? lift.inspectionFrequency + ' місяців' : '-');
+                $('#detail-address').text(lift.address || '-');
+                $('#detail-postcode').text(lift.postcode || '-');
+                $('#detail-coordinates').text(lift.lat && lift.lng ? `${lift.lat}, ${lift.lng}` : '-');
+                $('#detail-client').text(lift.clientName || '-');
+                $('#detail-email').text(lift.clientEmail || '-');
+                $('#detail-last-maintenance').text(lift.lastMaintenance || '-');
+                $('#detail-next-maintenance').text(lift.nextMaintenance || '-');
+                $('#detail-created').text(lift.createdAt ? new Date(lift.createdAt).toLocaleString('uk-UA') : '-');
+                $('#detail-updated').text(lift.updatedAt ? new Date(lift.updatedAt).toLocaleString('uk-UA') : '-');
+                
+                $('#liftDetailsModal').modal('show');
+            }
+        });
+
+        // Редагування з деталей
+        $('#edit-lift-from-details').on('click', function() {
+            $('#liftDetailsModal').modal('hide');
+            // Тут можна додати логіку для відкриття модального вікна редагування
+            // або викликати існуючий обробник
+        });
+
         // Редагування ліфта
         $('#lifts-table-body').on('click', '.edit-btn', function () {
             console.log('Edit button clicked for lift:', $(this).data('id'));
