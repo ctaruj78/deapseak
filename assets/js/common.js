@@ -214,9 +214,94 @@ class CommonUtils {
     // Методи для роботи з localStorage
     static getLifts() {
         try {
-            return JSON.parse(localStorage.getItem('lifts')) || [];
+            let lifts = JSON.parse(localStorage.getItem('lifts'));
+            if (!lifts || lifts.length === 0) {
+                // Завантажуємо тестові дані, якщо localStorage порожній
+                lifts = this.loadTestLiftsData();
+                this.saveLifts(lifts);
+            }
+            return lifts;
         } catch (error) {
             console.error('Помилка читання ліфтів з localStorage:', error);
+            return this.loadTestLiftsData();
+        }
+    }
+
+    static loadTestLiftsData() {
+        // Завантажуємо тестові дані з файлу
+        try {
+            // Спробуємо завантажити з локального файлу (якщо можливо)
+            const testData = [
+                {
+                    "id": "LFT-001",
+                    "municipalNumber": "МН-001",
+                    "model": "Otis Gen2",
+                    "type": "passenger",
+                    "location": "Київ, вул. Хрещатик 1, 01001",
+                    "address": "вул. Хрещатик 1",
+                    "postcode": "01001",
+                    "lat": 50.4501,
+                    "lng": 30.5234,
+                    "capacity": 8,
+                    "speed": 1.0,
+                    "status": "active",
+                    "lastMaintenance": "2024-01-15",
+                    "nextMaintenance": "2024-07-15",
+                    "inspectionFrequency": 6,
+                    "clientName": "Тестовий клієнт 1",
+                    "clientEmail": "client1@example.com",
+                    "liftCount": "1",
+                    "createdAt": "2024-01-01T00:00:00.000Z",
+                    "updatedAt": "2024-01-01T00:00:00.000Z"
+                },
+                {
+                    "id": "LFT-002",
+                    "municipalNumber": "МН-002",
+                    "model": "Schindler 7000",
+                    "type": "passenger",
+                    "location": "Київ, вул. Лесі Українки 5, 01133",
+                    "address": "вул. Лесі Українки 5",
+                    "postcode": "01133",
+                    "lat": 50.4547,
+                    "lng": 30.5238,
+                    "capacity": 10,
+                    "speed": 1.5,
+                    "status": "maintenance",
+                    "lastMaintenance": "2024-02-01",
+                    "nextMaintenance": "2024-08-01",
+                    "inspectionFrequency": 6,
+                    "clientName": "Тестовий клієнт 2",
+                    "clientEmail": "client2@example.com",
+                    "liftCount": "1",
+                    "createdAt": "2024-02-01T00:00:00.000Z",
+                    "updatedAt": "2024-02-01T00:00:00.000Z"
+                },
+                {
+                    "id": "LFT-003",
+                    "municipalNumber": "МН-003",
+                    "model": "Kone EcoDisc",
+                    "type": "cargo",
+                    "location": "Київ, вул. Басейна 3, 01004",
+                    "address": "вул. Басейна 3",
+                    "postcode": "01004",
+                    "lat": 50.4489,
+                    "lng": 30.5187,
+                    "capacity": 1000,
+                    "speed": 0.5,
+                    "status": "active",
+                    "lastMaintenance": "2024-03-01",
+                    "nextMaintenance": "2024-09-01",
+                    "inspectionFrequency": 6,
+                    "clientName": "Тестовий клієнт 3",
+                    "clientEmail": "client3@example.com",
+                    "liftCount": "1",
+                    "createdAt": "2024-03-01T00:00:00.000Z",
+                    "updatedAt": "2024-03-01T00:00:00.000Z"
+                }
+            ];
+            return testData;
+        } catch (error) {
+            console.error('Помилка завантаження тестових даних:', error);
             return [];
         }
     }

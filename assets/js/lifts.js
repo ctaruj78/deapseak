@@ -911,12 +911,15 @@ class LiftManager {
         liftsTableBody.empty();
         const searchTerm = $('#lift-search').val().toLowerCase();
         const filteredLifts = allLifts.filter(lift =>
+            (lift.municipalNumber && lift.municipalNumber.toLowerCase().includes(searchTerm)) ||
             (lift.id && lift.id.toString().includes(searchTerm)) ||
+            (lift.model && lift.model.toLowerCase().includes(searchTerm)) ||
+            (lift.type && lift.type.toLowerCase().includes(searchTerm)) ||
             (lift.address && lift.address.toLowerCase().includes(searchTerm)) ||
-            (lift.serial && lift.serial.toLowerCase().includes(searchTerm)) ||
-            (lift.brand && lift.brand.toLowerCase().includes(searchTerm)) ||
-            (lift.status && lift.status.toLowerCase().includes(searchTerm)) ||
-            (lift.client && lift.client.toLowerCase().includes(searchTerm))
+            (lift.location && lift.location.toLowerCase().includes(searchTerm)) ||
+            (lift.clientName && lift.clientName.toLowerCase().includes(searchTerm)) ||
+            (lift.clientEmail && lift.clientEmail.toLowerCase().includes(searchTerm)) ||
+            (lift.status && lift.status.toLowerCase().includes(searchTerm))
         );
 
         $('#lift-count').text(`Загальна кількість ліфтів: ${allLifts.length}, знайдено: ${filteredLifts.length}`);
@@ -929,12 +932,15 @@ class LiftManager {
             filteredLifts.forEach(lift => {
                 liftsTableBody.append(`
                     <tr>
-                        <td>${lift.id}</td>
-                        <td>${this.sanitizeHTML(lift.address || '-')}</td>
-                        <td>${this.sanitizeHTML(lift.serial || '-')}</td>
-                        <td>${this.sanitizeHTML(lift.brand || '-')}</td>
+                        <td>${this.sanitizeHTML(lift.municipalNumber || lift.id)}</td>
+                        <td>${this.sanitizeHTML(lift.model || '-')}</td>
+                        <td>${this.sanitizeHTML(lift.type || '-')}</td>
+                        <td>${this.sanitizeHTML(lift.address || lift.location || '-')}</td>
+                        <td>${this.sanitizeHTML(lift.clientName || '-')}</td>
+                        <td>${this.sanitizeHTML(lift.clientEmail || '-')}</td>
                         <td><span class="badge ${this.getStatusBadgeClass(lift.status)}">${this.getStatusText(lift.status)}</span></td>
-                        <td>${this.sanitizeHTML(lift.client || '-')}</td>
+                        <td>${this.sanitizeHTML(lift.lastMaintenance || '-')}</td>
+                        <td>${this.sanitizeHTML(lift.nextMaintenance || '-')}</td>
                         <td>
                             <button class="btn btn-info btn-sm details-btn" data-id="${lift.id}">Деталі</button>
                             <button class="btn btn-warning btn-sm edit-btn" data-id="${lift.id}">Редагувати</button>
