@@ -22,17 +22,8 @@ class LiftManager {
         // Додавання ліфта
         $('#add-lift-button').on('click', () => {
             console.log('Add lift button clicked');
-            $('#liftModalTitle').text('Додати ліфт(и)');
-            $('#lift-id').val('');
-            $('#lift-address').val('');
-            $('#lift-postal-code').val('');
-            $('#lift-lift-count').val('1');
-            $('#lift-serial-inputs').html('<div class="input-group mb-2"><input type="text" class="form-control lift-serial" placeholder="Серійний номер ліфта 1" required></div>');
-            $('#lift-brand').val('');
-            $('#lift-client').val('');
-            $('#lift-client-email').val('');
-            $('#lift-lat').val('');
-            $('#lift-lng').val('');
+            this.resetForm();
+            $('#modalTitle').text('Додати ліфт');
             $('#liftModal').modal('show');
         });
 
