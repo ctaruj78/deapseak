@@ -473,7 +473,7 @@
     </div>
 
     <!-- Lift Modal -->
-    <div class="modal fade" id="liftModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal fade" id="liftModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="false">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header bg-primary">
@@ -619,6 +619,15 @@
                                         <option value="9">9</option>
                                         <option value="10">10</option>
                                     </select>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Ідентифікаційні номери муніципалітету -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="municipalId1">Ідентифікаційний номер муніципалітету для ліфта 1</label>
+                                    <input type="text" id="municipalId1" class="form-control municipal-id" placeholder="Ідентифікаційний номер">
                                 </div>
                             </div>
                         </div>
@@ -918,19 +927,34 @@
                     const count = parseInt(this.value);
                     const additionalLifts = $('#additionalLifts');
                     additionalLifts.empty();
-                    for (let i = 1; i <= count; i++) {
+                    
+                    // Показати/сховати перше поле в залежності від кількості
+                    if (count >= 1) {
+                        $('#municipalId1').closest('.row').show();
+                    } else {
+                        $('#municipalId1').closest('.row').hide();
+                    }
+                    
+                    // Додати поля для додаткових ліфтів
+                    for (let i = 2; i <= count; i++) {
                         const newRow = $(`
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label>Ідентифікаційний номер муніципалітету для ліфта ${i}</label>
-                                        <input type="text" class="form-control" placeholder="Ідентифікаційний номер">
+                                        <label for="municipalId${i}">Ідентифікаційний номер муніципалітету для ліфта ${i}</label>
+                                        <input type="text" id="municipalId${i}" class="form-control municipal-id" placeholder="Ідентифікаційний номер">
                                     </div>
                                 </div>
                             </div>
                         `);
                         additionalLifts.append(newRow);
                     }
+                });
+
+                // Ініціалізувати поля при відкритті модального вікна
+                $('#liftModal').on('show.bs.modal', function() {
+                    // Показати поле для першого ліфта по замовчуванню
+                    $('#municipalId1').closest('.row').show();
                 });
 
                 // Автоматичне обчислення наступного ТО
@@ -1065,6 +1089,20 @@
                 $('#liftStatus').val(lift.status || 'active');
                 $('#clientName').val(lift.clientName || '');
                 $('#liftCount').val(lift.liftCount || '1');
+                
+                // Заповнити ідентифікаційні номери
+                if (lift.municipalIds && lift.municipalIds.length > 0) {
+                    $('.municipal-id').each(function(index) {
+                        if (index < lift.municipalIds.length) {
+                            $(this).val(lift.municipalIds[index]);
+                        }
+                    });
+                    
+                    // Якщо більше одного ідентифікаційного номера, налаштувати додаткові поля
+                    if (lift.municipalIds.length > 1) {
+                        $('#liftCount').val(lift.municipalIds.length).trigger('change');
+                    }
+                }
             }
 
             resetForm() {
@@ -1072,6 +1110,13 @@
                 $('#liftId').val('');
                 $('#modalTitle').text('Додати ліфт');
                 this.setFormReadOnly(false);
+
+                // Очистити ідентифікаційні номери
+                $('.municipal-id').val('');
+                
+                // Показати тільки перше поле
+                $('#municipalId1').closest('.row').show();
+                $('#additionalLifts').empty();
 
                 // Очистити карту
                 if (window.liftMap) {
@@ -1182,6 +1227,16 @@
                 }
 
                 const liftId = $('#liftId').val();
+                
+                // Зібрати ідентифікаційні номери муніципалітету
+                const municipalIds = [];
+                $('.municipal-id').each(function() {
+                    const value = $(this).val().trim();
+                    if (value) {
+                        municipalIds.push(value);
+                    }
+                });
+                
                 const lift = {
                     id: liftId || this.generateId(),
                     model: model,
@@ -1199,6 +1254,7 @@
                     inspectionFrequency: parseInt($('#inspectionFrequency').val()) || 6,
                     clientName: $('#clientName').val().trim(),
                     clientEmail: clientEmail,
+                    municipalIds: municipalIds, // Додати ідентифікаційні номери
                     liftCount: $('#liftCount').val(),
                     updatedAt: new Date().toISOString()
                 };
@@ -1220,9 +1276,12 @@
 
                 localStorage.setItem('lifts', JSON.stringify(lifts));
                 
-                this.closeModal();
-                this.loadLifts();
-                this.showNotification('Ліфт успішно збережено', 'success');
+                // Невелика затримка для гарантії збереження
+                setTimeout(() => {
+                    this.closeModal();
+                    this.loadLifts();
+                    this.showNotification('Ліфт успішно збережено', 'success');
+                }, 100);
             }
 
             closeModal() {
