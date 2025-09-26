@@ -1,7 +1,7 @@
 [
   {
     "id": "LFT-001",
-    "municipalNumber": "МН-001",
+    "municipalNumber": "МН-2024-001",
     "model": "Otis Gen2",
     "type": "passenger",
     "location": "Київ, вул. Хрещатик 1, 01001",
@@ -23,7 +23,7 @@
   },
   {
     "id": "LFT-002",
-    "municipalNumber": "МН-002",
+    "municipalNumber": "МН-2024-002",
     "model": "Schindler 7000",
     "type": "passenger",
     "location": "Київ, вул. Лесі Українки 5, 01133",
@@ -45,7 +45,7 @@
   },
   {
     "id": "LFT-003",
-    "municipalNumber": "МН-003",
+    "municipalNumber": "МН-2024-003",
     "model": "Kone EcoDisc",
     "type": "cargo",
     "location": "Київ, вул. Басейна 3, 01004",
