@@ -7,7 +7,25 @@
 
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.clou        function createLiftPopup(lift) {
+            const statusClass = `status-${lift.status}`;
+            const statusText = getStatusText(lift.status);
+            const displayName = lift.model || lift.name || `Ліфт ${lift.id}`;
+            const displayAddress = lift.location || lift.address || 'Адреса не вказана';
+            const lastService = lift.lastMaintenance || lift.lastService || 'Невідомо';
+
+            return `
+                <div class="lift-popup">
+                    <h6>${displayName}</h6>
+                    <p><strong>Адреса:</strong> ${displayAddress}</p>
+                    <p><strong>Статус:</strong> <span class="lift-status ${statusClass}">${statusText}</span></p>
+                    <p><strong>Останнє ТО:</strong> ${lastService}</p>
+                    <div class="text-center mt-2">
+                        <a href="lifts.html" class="btn btn-sm btn-primary">Переглянути деталі</a>
+                    </div>
+                </div>
+            `;
+        }libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
@@ -317,13 +335,13 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        // Sample lift data
-        const lifts = [
-            { id: 1, name: "Ліфт №1", address: "вул. Шевченка, 10", lat: 50.4501, lng: 30.5234, status: "active", lastService: "2024-01-10" },
-            { id: 2, name: "Ліфт №2", address: "вул. Франка, 25", lat: 50.4542, lng: 30.5167, status: "active", lastService: "2024-01-08" },
-            { id: 3, name: "Ліфт №3", address: "пр. Перемоги, 50", lat: 50.4478, lng: 30.5103, status: "maintenance", lastService: "2024-01-12" },
-            { id: 4, name: "Ліфт №4", address: "вул. Лесі Українки, 15", lat: 50.4421, lng: 30.5189, status: "error", lastService: "2024-01-05" },
-            { id: 5, name: "Ліфт №5", address: "вул. Сагайдачного, 8", lat: 50.4489, lng: 30.5256, status: "active", lastService: "2024-01-09" }
+        // Load lift data from localStorage or use sample data
+        let lifts = JSON.parse(localStorage.getItem('lifts')) || [
+            { id: 'sample_1', model: 'Ліфт №1', address: 'вул. Шевченка, 10', lat: 50.4501, lng: 30.5234, status: 'active', lastMaintenance: '2024-01-10', location: 'вул. Шевченка, 10' },
+            { id: 'sample_2', model: 'Ліфт №2', address: 'вул. Франка, 25', lat: 50.4542, lng: 30.5167, status: 'active', lastMaintenance: '2024-01-08', location: 'вул. Франка, 25' },
+            { id: 'sample_3', model: 'Ліфт №3', address: 'пр. Перемоги, 50', lat: 50.4478, lng: 30.5103, status: 'maintenance', lastMaintenance: '2024-01-12', location: 'пр. Перемоги, 50' },
+            { id: 'sample_4', model: 'Ліфт №4', address: 'вул. Лесі Українки, 15', lat: 50.4421, lng: 30.5189, status: 'inactive', lastMaintenance: '2024-01-05', location: 'вул. Лесі Українки, 15' },
+            { id: 'sample_5', model: 'Ліфт №5', address: 'вул. Сагайдачного, 8', lat: 50.4489, lng: 30.5256, status: 'active', lastMaintenance: '2024-01-09', location: 'вул. Сагайдачного, 8' }
         ];
 
         let map;
@@ -407,8 +425,12 @@
 
         function populateLiftSelector() {
             const selector = $('#routeToLift');
+            selector.empty(); // Очистити попередні опції
+            selector.append('<option value="">Оберіть ліфт</option>');
             lifts.forEach(lift => {
-                selector.append(`<option value="${lift.id}">${lift.name} - ${lift.address}</option>`);
+                const displayName = lift.model || lift.name || `Ліфт ${lift.id}`;
+                const displayAddress = lift.location || lift.address || 'Адреса не вказана';
+                selector.append(`<option value="${lift.id}">${displayName} - ${displayAddress}</option>`);
             });
         }
 
@@ -448,16 +470,36 @@
             // For demo purposes, we'll just zoom to the lift location
             // In a real application, you'd integrate with a routing service
             map.setView([lift.lat, lift.lng], 16);
-            alert(`Маршрут до ${lift.name} (${lift.address}) буде показано тут.`);
+            const displayName = lift.model || lift.name || `Ліфт ${lift.id}`;
+            alert(`Маршрут до ${displayName} (${lift.location || lift.address}) буде показано тут.`);
         }
 
         function refreshMap() {
-            // Simulate refreshing data
+            // Оновити дані з localStorage
+            lifts = JSON.parse(localStorage.getItem('lifts')) || lifts;
+            
+            // Очистити існуючі маркери
+            markers.forEach(({ marker }) => {
+                map.removeLayer(marker);
+            });
+            markers = [];
+
+            // Додати маркери знову
+            lifts.forEach(lift => {
+                addLiftMarker(lift);
+            });
+
+            // Оновити селектор маршрутів
+            populateLiftSelector();
+            
+            // Оновити статистику
+            updateStats();
+
+            // Показати індикатор завантаження
             $('#refreshMap i').addClass('fa-spin');
             setTimeout(() => {
                 $('#refreshMap i').removeClass('fa-spin');
-                // In a real application, you'd fetch updated data from server
-                console.log('Map refreshed');
+                console.log('Карту оновлено');
             }, 1000);
         }
 

@@ -1564,6 +1564,10 @@
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 return emailRegex.test(email);
             }
+
+            generateId() {
+                return 'lift_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            }
         }
 
         // Ініціалізація після завантаження сторінки
