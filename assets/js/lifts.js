@@ -363,6 +363,13 @@ class LiftManager {
         }
     }
 
+    // Обробник submit для форми liftForm
+    $('#liftForm').on('submit', (e) => {
+        e.preventDefault();
+        this.saveLift();
+    });
+    }
+
     loadLifts() {
         this.filteredLifts = [...allLifts];
         this.renderLiftsTable();
