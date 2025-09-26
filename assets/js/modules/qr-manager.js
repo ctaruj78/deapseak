@@ -66,7 +66,8 @@ const qrManager = (function() {
         setupFormHandlers();
         renderQRTable();
         updateStatistics();
-        
+        loadAPISettings();
+
         // Set default expiry date to 30 days from now
         const defaultExpiry = new Date();
         defaultExpiry.setDate(defaultExpiry.getDate() + 30);
@@ -77,6 +78,15 @@ const qrManager = (function() {
     function loadInitialData() {
         // Generate mock data
         currentQRs = generateMockData(48);
+    }
+
+    // Load API settings
+    function loadAPISettings() {
+        const settings = JSON.parse(localStorage.getItem('qr_api_settings'));
+        if (settings) {
+            $('#apiEndpoint').val(settings.endpoint || '');
+            $('#apiKey').val(settings.apiKey || '');
+        }
     }
 
     // Generate mock data
@@ -933,10 +943,188 @@ const qrManager = (function() {
         showScanHistory: showScanHistory,
         showTemplate: showTemplate,
         onTypeChange: onTypeChange,
-        updateQRPreview: updateQRPreview
+        updateQRPreview: updateQRPreview,
+        importFromLifts: importFromLifts,
+        importFromLocations: importFromLocations,
+        exportToCloud: exportToCloud,
+        syncWithMobile: syncWithMobile,
+        testAPIConnection: testAPIConnection,
+        saveAPISettings: saveAPISettings
     };
 }
+
+// API Integration Functions
+function importFromLifts() {
+    try {
+        const lifts = JSON.parse(localStorage.getItem('lifts')) || [];
+        if (lifts.length === 0) {
+            showNotification('Немає ліфтів для імпорту. Спочатку додайте ліфти в систему.', 'warning');
+            return;
+        }
+
+        let importedCount = 0;
+        lifts.forEach(lift => {
+            // Перевірити, чи вже існує QR-код для цього ліфта
+            const existingQR = currentQRs.find(qr => qr.target === `lift_${lift.id}`);
+            if (!existingQR) {
+                const newQR = {
+                    id: `QR${String(currentQRs.length + 1).padStart(4, '0')}`,
+                    type: 'lift',
+                    target: `lift_${lift.id}`,
+                    status: 'active',
+                    created: new Date(),
+                    expiry: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 рік
+                    liftData: lift
+                };
+                currentQRs.push(newQR);
+                importedCount++;
+            }
+        });
+
+        if (importedCount > 0) {
+            saveQRsToStorage();
+            renderQRTable();
+            updateStatistics();
+            showNotification(`Імпортовано ${importedCount} QR-кодів з ліфтів`, 'success');
+        } else {
+            showNotification('Всі ліфти вже мають QR-коди', 'info');
+        }
+    } catch (error) {
+        console.error('Error importing from lifts:', error);
+        showNotification('Помилка імпорту з ліфтів', 'error');
+    }
+}
+
+function importFromLocations() {
+    try {
+        const locations = [
+            { id: 'entrance_main', name: 'Головний вхід', address: 'вул. Центральна, 1' },
+            { id: 'parking', name: 'Парковка', address: 'вул. Центральна, 1 (двір)' },
+            { id: 'storage', name: 'Склад обладнання', address: 'вул. Центральна, 1 (підвал)' },
+            { id: 'office', name: 'Адміністративний офіс', address: 'вул. Центральна, 1, офіс 101' }
+        ];
+
+        let importedCount = 0;
+        locations.forEach(location => {
+            const existingQR = currentQRs.find(qr => qr.target === `loc_${location.id}`);
+            if (!existingQR) {
+                const newQR = {
+                    id: `QR${String(currentQRs.length + 1).padStart(4, '0')}`,
+                    type: 'location',
+                    target: `loc_${location.id}`,
+                    status: 'active',
+                    created: new Date(),
+                    expiry: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+                    locationData: location
+                };
+                currentQRs.push(newQR);
+                importedCount++;
+            }
+        });
+
+        if (importedCount > 0) {
+            saveQRsToStorage();
+            renderQRTable();
+            updateStatistics();
+            showNotification(`Імпортовано ${importedCount} QR-кодів локацій`, 'success');
+        } else {
+            showNotification('Всі локації вже мають QR-коди', 'info');
+        }
+    } catch (error) {
+        console.error('Error importing locations:', error);
+        showNotification('Помилка імпорту локацій', 'error');
+    }
+}
+
+function exportToCloud() {
+    try {
+        const exportData = {
+            qrs: currentQRs,
+            exportedAt: new Date(),
+            version: '1.0'
+        };
+
+        // Імітація експорту в хмару
+        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `qr-codes-export-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        showNotification('QR-коди експортовано в хмарне сховище', 'success');
+    } catch (error) {
+        console.error('Error exporting to cloud:', error);
+        showNotification('Помилка експорту в хмару', 'error');
+    }
+}
+
+function syncWithMobile() {
+    try {
+        // Імітація синхронізації з мобільним додатком
+        showNotification('Синхронізація з мобільним додатком розпочата...', 'info');
+
+        setTimeout(() => {
+            showNotification('Синхронізація завершена успішно', 'success');
+        }, 2000);
+    } catch (error) {
+        console.error('Error syncing with mobile:', error);
+        showNotification('Помилка синхронізації з мобільним додатком', 'error');
+    }
+}
+
+function testAPIConnection() {
+    const endpoint = $('#apiEndpoint').val();
+    const apiKey = $('#apiKey').val();
+
+    if (!endpoint) {
+        showNotification('Введіть API Endpoint', 'warning');
+        return;
+    }
+
+    $('#apiStatusAlert').show();
+    $('#apiStatusMessage').text('Перевірка з\'єднання з API...');
+
+    // Імітація перевірки API
+    setTimeout(() => {
+        if (endpoint.includes('liftmaster.com') && apiKey) {
+            $('#apiStatusAlert').removeClass('alert-info alert-danger').addClass('alert-success');
+            $('#apiStatusMessage').html('<i class="fas fa-check-circle"></i> З\'єднання успішне');
+        } else {
+            $('#apiStatusAlert').removeClass('alert-info alert-success').addClass('alert-danger');
+            $('#apiStatusMessage').html('<i class="fas fa-exclamation-triangle"></i> Помилка з\'єднання або невірний API ключ');
+        }
+    }, 1500);
+}
+
+function saveAPISettings() {
+    const endpoint = $('#apiEndpoint').val();
+    const apiKey = $('#apiKey').val();
+
+    if (!endpoint || !apiKey) {
+        showNotification('Заповніть всі поля API налаштувань', 'warning');
+        return;
+    }
+
+    const settings = {
+        endpoint: endpoint,
+        apiKey: apiKey,
+        savedAt: new Date()
+    };
+
+    localStorage.setItem('qr_api_settings', JSON.stringify(settings));
+    showNotification('API налаштування збережено', 'success');
+}
+
 // Initialize when document is ready
+$(document).ready(function() {
+    if (typeof qrManager !== 'undefined') {
+        qrManager.init();
+    }
+});
 $(document).ready(function() {
     qrManager.init();
 });

@@ -837,7 +837,7 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Тип QR-коду *</label>
-                                    <select id="qrType" class="form-control" required onchange="qrManager.onTypeChange()">
+                                    <select id="qrType" class="form-control" required onchange="if(typeof qrManager !== 'undefined') qrManager.onTypeChange(); else console.log('QR Manager not ready')">
                                         <option value="">Оберіть тип...</option>
                                         <option value="lift">Для ліфта</option>
                                         <option value="technician">Для техніка</option>
@@ -1221,11 +1221,17 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <script src="/assets/js/modules/ai-assistant.js"></script>
     <script>
-    // Ініціалізація QR Manager
-    $(document).ready(function() {
-        qrManager.init();
+    // Ініціалізація після завантаження всіх скриптів
+    $(window).on('load', function() {
+        // Перевірити, чи завантажений qrManager
+        if (typeof qrManager !== 'undefined' && qrManager.init) {
+            qrManager.init();
+            console.log('QR Manager initialized successfully');
+        } else {
+            console.error('QR Manager not loaded');
+        }
     });
-    
+
     // Відкриття/закриття модального вікна
     const fabBtn = document.getElementById('ai-assistant-fab');
     const modal = document.getElementById('ai-assistant-modal');
