@@ -201,12 +201,90 @@ const qrManager = (function() {
         const type = $('#qrType').val();
         $('#dynamicFields').hide();
         $('.dynamic-section').hide();
-        
+
+        // Очистити список призначень
+        const targetSelect = $('#qrTarget');
+        targetSelect.empty();
+        targetSelect.append('<option value="">Оберіть призначення...</option>');
+
         if (type) {
             $('#dynamicFields').show();
             $(`#${type}Fields`).show();
+
+            // Заповнити список призначень залежно від типу
+            populateTargetOptions(type);
             updateQRPreview();
+
+            // Додати обробник події для оновлення preview при виборі призначення
+            $('#qrTarget').off('change').on('change', updateQRPreview);
         }
+    }
+
+    // Заповнення списку призначень залежно від типу
+    function populateTargetOptions(type) {
+        const targetSelect = $('#qrTarget');
+        let options = [];
+
+        switch (type) {
+            case 'lift':
+                // Отримати список ліфтів з localStorage
+                const lifts = JSON.parse(localStorage.getItem('lifts')) || [];
+                if (lifts.length > 0) {
+                    lifts.forEach(lift => {
+                        const displayName = lift.model || lift.name || `Ліфт ${lift.id}`;
+                        const displayAddress = lift.location || lift.address || '';
+                        options.push({
+                            value: `lift_${lift.id}`,
+                            text: `${displayName} - ${displayAddress}`
+                        });
+                    });
+                } else {
+                    // Додати приклад, якщо немає ліфтів
+                    options.push({ value: 'lift_sample_1', text: 'Ліфт №101 - вул. Шевченка, 10' });
+                    options.push({ value: 'lift_sample_2', text: 'Ліфт №102 - вул. Франка, 25' });
+                }
+                break;
+
+            case 'technician':
+                options = [
+                    { value: 'tech_ivanov', text: 'Іванов Іван - Електрик' },
+                    { value: 'tech_petrov', text: 'Петров Петро - Механік' },
+                    { value: 'tech_sidorov', text: 'Сидоров Олександр - Інженер' }
+                ];
+                break;
+
+            case 'location':
+                options = [
+                    { value: 'loc_entrance', text: 'Вхід в будівлю' },
+                    { value: 'loc_parking', text: 'Парковка' },
+                    { value: 'loc_storage', text: 'Склад обладнання' },
+                    { value: 'loc_office', text: 'Офіс адміністрації' }
+                ];
+                break;
+
+            case 'equipment':
+                options = [
+                    { value: 'equip_generator', text: 'Генератор резервного живлення' },
+                    { value: 'equip_pump', text: 'Насосна станція' },
+                    { value: 'equip_ventilation', text: 'Система вентиляції' },
+                    { value: 'equip_electrical', text: 'Електрощитова' }
+                ];
+                break;
+
+            case 'maintenance':
+                options = [
+                    { value: 'maint_monthly', text: 'Щомісячне ТО' },
+                    { value: 'maint_quarterly', text: 'Щоквартальне ТО' },
+                    { value: 'maint_yearly', text: 'Щорічне ТО' },
+                    { value: 'maint_emergency', text: 'Аварійне обслуговування' }
+                ];
+                break;
+        }
+
+        // Додати опції до селекта
+        options.forEach(option => {
+            targetSelect.append(`<option value="${option.value}">${option.text}</option>`);
+        });
     }
 
     // Update QR preview

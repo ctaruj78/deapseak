@@ -612,13 +612,89 @@
                                     <button class="btn btn-secondary ml-2" id="exportJSONBtn" title="Експорт у JSON" aria-label="Експорт у JSON">
                                         <i class="fas fa-file-code"></i> JSON
                                     </button>
-<!-- Секція для майбутньої інтеграції з API -->
+<!-- Секція інтеграції з API -->
 <div class="card mt-4" id="apiIntegrationCard">
     <div class="card-header bg-light">
-        <h5 class="card-title mb-0"><i class="fas fa-plug"></i> Інтеграції/API (заглушка)</h5>
+        <h5 class="card-title mb-0"><i class="fas fa-plug"></i> Інтеграції та API</h5>
     </div>
-    <div class="card-body p-3">
-        <p class="text-muted mb-0">Тут буде інтеграція з API для імпорту/експорту QR-кодів, підключення зовнішніх сервісів тощо.</p>
+    <div class="card-body">
+        <div class="row">
+            <!-- Імпорт з зовнішніх джерел -->
+            <div class="col-md-6">
+                <h6 class="text-primary"><i class="fas fa-download"></i> Імпорт даних</h6>
+                <div class="mb-3">
+                    <button class="btn btn-outline-primary btn-sm" onclick="qrManager.importFromLifts()">
+                        <i class="fas fa-elevator"></i> Імпорт з ліфтів
+                    </button>
+                    <small class="form-text text-muted d-block">Створити QR-коди для всіх ліфтів з системи</small>
+                </div>
+                <div class="mb-3">
+                    <button class="btn btn-outline-info btn-sm" onclick="qrManager.importFromLocations()">
+                        <i class="fas fa-map-marker-alt"></i> Імпорт локацій
+                    </button>
+                    <small class="form-text text-muted d-block">Створити QR-коди для ключових локацій</small>
+                </div>
+            </div>
+
+            <!-- Експорт та синхронізація -->
+            <div class="col-md-6">
+                <h6 class="text-success"><i class="fas fa-upload"></i> Експорт та синхронізація</h6>
+                <div class="mb-3">
+                    <button class="btn btn-outline-success btn-sm" onclick="qrManager.exportToCloud()">
+                        <i class="fas fa-cloud"></i> Синхронізувати з хмарою
+                    </button>
+                    <small class="form-text text-muted d-block">Зберегти QR-коди в хмарному сховищі</small>
+                </div>
+                <div class="mb-3">
+                    <button class="btn btn-outline-warning btn-sm" onclick="qrManager.syncWithMobile()">
+                        <i class="fas fa-mobile-alt"></i> Синхр. з мобільним додатком
+                    </button>
+                    <small class="form-text text-muted d-block">Оновити дані в мобільному додатку техніків</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- API налаштування -->
+        <div class="mt-4">
+            <h6 class="text-info"><i class="fas fa-cogs"></i> API Налаштування</h6>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="form-label">API Endpoint</label>
+                        <input type="url" class="form-control form-control-sm" id="apiEndpoint"
+                               placeholder="https://api.liftmaster.com/qr" value="https://api.liftmaster.com/qr">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="form-label">API Key</label>
+                        <input type="password" class="form-control form-control-sm" id="apiKey"
+                               placeholder="Введіть API ключ">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="form-label">&nbsp;</label>
+                        <div>
+                            <button class="btn btn-primary btn-sm" onclick="qrManager.testAPIConnection()">
+                                <i class="fas fa-plug"></i> Перевірити з'єднання
+                            </button>
+                            <button class="btn btn-secondary btn-sm ml-1" onclick="qrManager.saveAPISettings()">
+                                <i class="fas fa-save"></i> Зберегти
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Статус API -->
+        <div class="mt-3">
+            <div class="alert alert-info" id="apiStatusAlert" style="display: none;">
+                <i class="fas fa-info-circle"></i>
+                <span id="apiStatusMessage">Перевірка з'єднання з API...</span>
+            </div>
+        </div>
     </div>
 </div>
                                     <button class="btn btn-success ml-2" data-toggle="modal" data-target="#generateQRModal">
@@ -774,8 +850,10 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Призначення *</label>
-                                    <input type="text" id="qrTarget" class="form-control" required placeholder="Наприклад: Ліфт №101">
-                                    <small class="form-text text-muted">Короткий опис призначення QR-коду</small>
+                                    <select id="qrTarget" class="form-control" required>
+                                        <option value="">Спочатку оберіть тип QR-коду...</option>
+                                    </select>
+                                    <small class="form-text text-muted">Оберіть конкретне призначення залежно від типу</small>
                                 </div>
                             </div>
                         </div>
@@ -1143,6 +1221,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <script src="/assets/js/modules/ai-assistant.js"></script>
     <script>
+    // Ініціалізація QR Manager
+    $(document).ready(function() {
+        qrManager.init();
+    });
+    
     // Відкриття/закриття модального вікна
     const fabBtn = document.getElementById('ai-assistant-fab');
     const modal = document.getElementById('ai-assistant-modal');
