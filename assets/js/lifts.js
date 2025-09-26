@@ -381,7 +381,7 @@ class LiftManager {
         if (paginatedLifts.length === 0) {
             tbody.html(`
                 <tr>
-                    <td colspan="9" class="text-center py-4 empty-state">
+                    <td colspan="10" class="text-center py-4 empty-state">
                         <i class="fas fa-elevator fa-3x mb-3 text-muted"></i>
                         <h5>Ліфтів не знайдено</h5>
                         <p class="mb-3">Додайте перший ліфт до системи</p>
@@ -397,32 +397,27 @@ class LiftManager {
         paginatedLifts.forEach(lift => {
             const row = `
                 <tr>
-                    <td>${lift.id}</td>
-                    <td>${lift.model || '-'}</td>
-                    <td>${this.getLiftTypeLabel(lift.type)}</td>
-                    <td>${lift.location || '-'}</td>
+                    <td>${this.sanitizeHTML(lift.municipalNumber || lift.id)}</td>
+                    <td>${this.sanitizeHTML(lift.model || '-')}</td>
+                    <td>${this.sanitizeHTML(lift.type || '-')}</td>
+                    <td>${this.sanitizeHTML(lift.address || lift.location || '-')}</td>
+                    <td>${this.sanitizeHTML(lift.clientName || '-')}</td>
+                    <td>${this.sanitizeHTML(lift.clientEmail || '-')}</td>
                     <td>
                         <span class="badge ${this.getStatusBadgeClass(lift.status)}">
-                            ${this.getStatusLabel(lift.status)}
+                            ${this.getStatusText(lift.status)}
                         </span>
                     </td>
-                    <td>${lift.client || '-'}</td>
-                    <td>${this.formatDate(lift.lastMaintenance)}</td>
-                    <td>${this.formatDate(lift.nextMaintenance)}</td>
+                    <td>${this.sanitizeHTML(lift.lastMaintenance || '-')}</td>
+                    <td>${this.sanitizeHTML(lift.nextMaintenance || '-')}</td>
                     <td>
                         <div class="btn-group">
-                            <button class="btn btn-sm btn-primary btn-action" 
-                                    data-toggle="modal" 
-                                    data-target="#liftModal"
-                                    data-lift-id="${lift.id}">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn btn-sm btn-warning btn-action" onclick="liftManager.generateQR('${lift.id}')">
-                                <i class="fas fa-qrcode"></i>
-                            </button>
-                            <button class="btn btn-sm btn-danger btn-action" onclick="liftManager.deleteLift('${lift.id}')">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                            <button class="btn btn-info btn-sm details-btn" data-id="${lift.id}">Деталі</button>
+                            <button class="btn btn-warning btn-sm edit-btn" data-id="${lift.id}">Редагувати</button>
+                            <button class="btn btn-success btn-sm assign-tech-btn" data-id="${lift.id}">Призначити техніка</button>
+                            <button class="btn btn-primary btn-sm request-btn" data-id="${lift.id}">Заявка</button>
+                            <button class="btn btn-secondary btn-sm qrcode-btn" data-id="${lift.id}">QR-код</button>
+                            <button class="btn btn-danger btn-sm delete-btn" data-id="${lift.id}">Видалити</button>
                         </div>
                     </td>
                 </tr>
@@ -445,6 +440,7 @@ class LiftManager {
     resetForm() {
     $('#liftForm')[0].reset();
     $('#liftId').val('');
+    $('#municipalNumber').val('');
     $('#modalTitle').text('Додати ліфт');
     $('#liftForm input, #liftForm select').removeClass('is-invalid');
     $('#inspectionReport').val('');
@@ -454,6 +450,7 @@ class LiftManager {
 
     fillForm(lift) {
     $('#liftId').val(lift.id);
+    $('#municipalNumber').val(lift.municipalNumber || '');
     $('#liftModel').val(lift.model || '');
     $('#liftType').val(lift.type || '');
     $('#liftAddress').val(lift.address || '');
@@ -485,7 +482,7 @@ class LiftManager {
         try {
             // Валідація обов'язкових полів
             const requiredFields = [
-                'liftModel', 'liftType', 'liftAddress', 'liftPostcode',
+                'municipalNumber', 'liftModel', 'liftType', 'liftAddress', 'liftPostcode',
                 'liftCapacity', 'liftSpeed', 'liftLocation', 'liftLat', 'liftLng', 'liftStatus'
             ]; // ТО та email необов'язкові
             
@@ -521,6 +518,7 @@ class LiftManager {
             const inspectionFile = $('#inspectionReport')[0].files[0] || null;
             const lift = {
                 id: liftId || CommonUtils.generateLiftId(),
+                municipalNumber: $('#municipalNumber').val(),
                 model: $('#liftModel').val(),
                 type: $('#liftType').val(),
                 address: $('#liftAddress').val(),
