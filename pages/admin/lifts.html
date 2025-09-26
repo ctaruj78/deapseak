@@ -1276,12 +1276,14 @@
 
                 localStorage.setItem('lifts', JSON.stringify(lifts));
                 
-                // Невелика затримка для гарантії збереження
-                setTimeout(() => {
-                    this.closeModal();
-                    this.loadLifts();
-                    this.showNotification('Ліфт успішно збережено', 'success');
-                }, 100);
+                // Оновити таблицю негайно
+                this.allLifts = lifts;
+                this.renderLiftsTable(this.allLifts);
+                this.renderPagination(this.allLifts.length);
+                this.updateStatistics();
+                
+                this.closeModal();
+                this.showNotification('Ліфт успішно збережено', 'success');
             }
 
             closeModal() {
