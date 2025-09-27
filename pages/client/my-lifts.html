@@ -8,6 +8,7 @@
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <!-- Додаткові стилі -->
     <style>
@@ -158,6 +159,18 @@
             }
         }
     </style>
+    <link rel="manifest" href="/pages/client/manifest.json">
+    <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/pages/client/service-worker-client.js').then(function(registration) {
+          console.log('ServiceWorker (client) зареєстровано:', registration);
+        }, function(err) {
+          console.log('ServiceWorker помилка:', err);
+        });
+      });
+    }
+    </script>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
     <div class="wrapper">
@@ -453,6 +466,30 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Карта ліфтів -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h3 class="card-title">Карта ліфтів</h3>
+                        </div>
+                        <div class="card-body">
+                            <div id="liftsMap" style="height:400px;width:100%;border-radius:12px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Документація та інструкції -->
+                    <div class="card mt-4">
+                      <div class="card-header">
+                        <h3 class="card-title">Документація та інструкції</h3>
+                      </div>
+                      <div class="card-body">
+                        <ul>
+                          <li><a href="../../docs/user-manual.pdf" target="_blank"><i class="fas fa-file-pdf text-danger mr-2"></i>Керівництво користувача (PDF)</a></li>
+                          <li><a href="../../docs/technical-guide.md" target="_blank"><i class="fas fa-book text-info mr-2"></i>Технічний гайд</a></li>
+                          <li><a href="../../docs/api-documentation.md" target="_blank"><i class="fas fa-code text-success mr-2"></i>API документація</a></li>
+                        </ul>
+                      </div>
+                    </div>
                 </div>
             </section>
         </div>
@@ -493,9 +530,14 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <!-- Lifts Manager JS -->
     <script src="../../assets/js/modules/lifts-manager.js"></script>
+    <script src="../../assets/js/modules/push-notifications-client.js"></script>
+    <script src="../../assets/js/modules/messenger-client.js"></script>
+    <script src="../../assets/js/modules/voice-assistant-client.js"></script>
+    <script src="../../assets/js/modules/language-switcher.js"></script>
 
     <script>
         let currentLiftId = null;
@@ -506,6 +548,34 @@
                 localStorage.removeItem('userData');
                 window.location.href = '../../login.html';
             }
+        }
+
+        function getCoordsFromAddress(address) {
+          // DEMO: повертає координати для кількох адрес, для реального проекту потрібен geocoding API
+          if (address.includes('Центральна')) return [50.4501, 30.5234];
+          if (address.includes('Перемоги')) return [50.4547, 30.5238];
+          return [50.4501, 30.5234];
+        }
+
+        function renderLiftsMap(lifts) {
+          const map = L.map('liftsMap').setView([50.4501, 30.5234], 12);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: 'Map data © OpenStreetMap contributors'
+          }).addTo(map);
+          lifts.forEach(lift => {
+            const coords = getCoordsFromAddress(lift.location);
+            const statusColor = lift.status === 'operational' ? 'green' : lift.status === 'maintenance' ? 'orange' : 'red';
+            const marker = L.circleMarker(coords, {
+              color: statusColor,
+              radius: 12,
+              fillOpacity: 0.7
+            }).addTo(map);
+            let popupHtml = `<b>${lift.model}</b><br><b>Статус:</b> ${lift.status}<br><b>Адреса:</b> ${lift.location}`;
+            if (lift.maintenanceHistory && lift.maintenanceHistory.length) {
+              popupHtml += '<br><b>Історія ТО:</b><ul>' + lift.maintenanceHistory.map(h => `<li>${h.date}: ${h.type} (${h.technician})</li>`).join('') + '</ul>';
+            }
+            marker.bindPopup(popupHtml);
+          });
         }
 
         $(document).ready(function() {
@@ -536,6 +606,39 @@
 
             // Ініціалізація менеджера ліфтів
             window.liftsManager = new LiftsManager();
+
+            // Після завантаження ліфтів
+            setTimeout(() => {
+              if (window.liftsManager && window.liftsManager.lifts) {
+                renderLiftsMap(window.liftsManager.lifts);
+              }
+            }, 1500);
+
+            // Ініціалізація push-нотифікацій
+            window.pushNotificationsClient.init();
+            const pushBtn = document.createElement('button');
+            pushBtn.className = 'btn btn-danger mb-2';
+            pushBtn.innerHTML = '<i class="fas fa-bell"></i> Тест push-нотифікації';
+            pushBtn.onclick = () => window.pushNotificationsClient.notifyNewRequest({id: 101});
+            document.querySelector('.content-wrapper')?.prepend(pushBtn);
+
+            // Messenger Client
+            setTimeout(() => {
+              window.messengerClient.render('.content-wrapper');
+            }, 1200);
+
+            // Voice Assistant Client
+            window.voiceAssistantClient.init();
+            const voiceBtn = document.createElement('button');
+            voiceBtn.className = 'btn btn-warning mb-2';
+            voiceBtn.innerHTML = '<i class="fas fa-microphone"></i> Голосовий асистент';
+            voiceBtn.onclick = () => window.voiceAssistantClient.start();
+            document.querySelector('.content-wrapper')?.prepend(voiceBtn);
+
+            // Language Switcher
+            setTimeout(() => {
+              window.languageSwitcher.render('.content-wrapper');
+            }, 500);
         });
     </script>
 </body>
