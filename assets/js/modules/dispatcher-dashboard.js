@@ -4,6 +4,7 @@ class DispatcherDashboard {
         this.technicians = [];
         this.activities = [];
         this.notifications = [];
+        this.selectedRequests = new Set(); // Масове управління заявками
         this.init();
     }
 
@@ -15,14 +16,15 @@ class DispatcherDashboard {
         this.setupRealTimeUpdates();
         this.updateStats();
         this.setupEventListeners();
+            this.setupFilters();
     }
 
     // Налаштування обробників подій
     setupEventListeners() {
-        // Фільтрація заявок
-        $('#priorityFilter, #statusFilter').on('change', () => {
-            this.renderRequests();
-        });
+            // Фільтрація та сортування заявок
+            $('#priorityFilter, #statusFilter, #technicianFilter, #dateFilter, #sortSelect').on('change', () => {
+                this.renderRequests();
+            });
 
         // Оновлення даних
         $('#refreshBtn').on('click', () => {
@@ -161,21 +163,46 @@ class DispatcherDashboard {
     renderRequests() {
         const tbody = document.getElementById('requestsTableBody');
         tbody.innerHTML = '';
-        
+        // Отримання фільтрів
         const priorityFilter = document.getElementById('priorityFilter').value;
         const statusFilter = document.getElementById('statusFilter').value;
-        
-        const filteredRequests = this.requests.filter(request => {
+        const technicianFilter = document.getElementById('technicianFilter').value;
+        const dateFilter = document.getElementById('dateFilter').value;
+        const sortSelect = document.getElementById('sortSelect').value;
+
+        let filteredRequests = this.requests.filter(request => {
             let priorityMatch = priorityFilter === 'all' || request.priority === priorityFilter;
             let statusMatch = statusFilter === 'all' || request.status === statusFilter;
-            
-            return priorityMatch && statusMatch;
+            let techMatch = technicianFilter === 'all' || (request.assignedTo && request.assignedTo === technicianFilter);
+            let dateMatch = true;
+            if (dateFilter) {
+                // Порівнюємо тільки дату (без часу)
+                let reqDate = request.date.split(' ')[0];
+                dateMatch = reqDate === dateFilter;
+            }
+            return priorityMatch && statusMatch && techMatch && dateMatch;
         });
-        
+
+        // Сортування
+        if (sortSelect === 'date-desc') {
+            filteredRequests.sort((a, b) => new Date(b.date) - new Date(a.date));
+        } else if (sortSelect === 'date-asc') {
+            filteredRequests.sort((a, b) => new Date(a.date) - new Date(b.date));
+        } else if (sortSelect === 'priority-desc') {
+            const prio = { 'high': 3, 'medium': 2, 'low': 1 };
+            filteredRequests.sort((a, b) => prio[b.priority] - prio[a.priority]);
+        } else if (sortSelect === 'priority-asc') {
+            const prio = { 'high': 3, 'medium': 2, 'low': 1 };
+            filteredRequests.sort((a, b) => prio[a.priority] - prio[b.priority]);
+        } else if (sortSelect === 'status') {
+            const statusOrder = { 'new': 1, 'assigned': 2, 'in-progress': 3, 'completed': 4 };
+            filteredRequests.sort((a, b) => statusOrder[a.status] - statusOrder[b.status]);
+        }
+
         if (filteredRequests.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="6" class="text-center py-4">
+                    <td colspan="7" class="text-center py-4">
                         <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
                         <p class="text-muted">Заявки не знайдені</p>
                         <button class="btn btn-sm btn-primary" onclick="dispatcherDashboard.loadRequests()">
@@ -184,58 +211,30 @@ class DispatcherDashboard {
                     </td>
                 </tr>
             `;
+            this.renderBulkActions();
             return;
         }
-        
-        // Сортування за датою (новіші зверху)
-        filteredRequests.sort((a, b) => new Date(b.date) - new Date(a.date));
-        
         filteredRequests.forEach(request => {
-            const tr = document.createElement('tr');
-            
+            var tr = document.createElement('tr');
             // Визначення класу пріоритету
-            let priorityClass = '';
-            let priorityText = '';
-            
+            var priorityClass = '';
+            var priorityText = '';
             switch (request.priority) {
-                case 'high':
-                    priorityClass = 'priority-high';
-                    priorityText = 'Високий';
-                    break;
-                case 'medium':
-                    priorityClass = 'priority-medium';
-                    priorityText = 'Середній';
-                    break;
-                case 'low':
-                    priorityClass = 'priority-low';
-                    priorityText = 'Низький';
-                    break;
+                case 'high': priorityClass = 'priority-high'; priorityText = 'Високий'; break;
+                case 'medium': priorityClass = 'priority-medium'; priorityText = 'Середній'; break;
+                case 'low': priorityClass = 'priority-low'; priorityText = 'Низький'; break;
             }
-            
             // Визначення статусу
-            let statusText = '';
-            let statusClass = '';
-            
+            var statusText = '';
+            var statusClass = '';
             switch (request.status) {
-                case 'new':
-                    statusText = 'Нова';
-                    statusClass = 'badge badge-danger';
-                    break;
-                case 'assigned':
-                    statusText = 'Призначена';
-                    statusClass = 'badge badge-warning';
-                    break;
-                case 'in-progress':
-                    statusText = 'В роботі';
-                    statusClass = 'badge badge-info';
-                    break;
-                case 'completed':
-                    statusText = 'Завершена';
-                    statusClass = 'badge badge-success';
-                    break;
+                case 'new': statusText = 'Нова'; statusClass = 'badge badge-danger'; break;
+                case 'assigned': statusText = 'Призначена'; statusClass = 'badge badge-warning'; break;
+                case 'in-progress': statusText = 'В роботі'; statusClass = 'badge badge-info'; break;
+                case 'completed': statusText = 'Завершена'; statusClass = 'badge badge-success'; break;
             }
-            
             tr.innerHTML = `
+                <td><input type="checkbox" class="request-select" data-id="${request.id}"></td>
                 <td><span class="font-weight-bold">#${request.id}</span></td>
                 <td>
                     <div class="font-weight-bold">${request.title}</div>
@@ -258,16 +257,37 @@ class DispatcherDashboard {
                     </div>
                 </td>
             `;
-            
-            // Додавання класу для рядка залежно від пріоритету
             if (request.priority === 'high') {
                 tr.classList.add('table-danger');
             } else if (request.priority === 'medium') {
                 tr.classList.add('table-warning');
             }
-            
             tbody.appendChild(tr);
         });
+        this.renderBulkActions();
+        tbody.querySelectorAll('.request-select').forEach(function(cb) {
+            cb.onchange = function(e) {
+                var id = parseInt(cb.dataset.id);
+                if (cb.checked) dispatcherDashboard.selectedRequests.add(id);
+                else dispatcherDashboard.selectedRequests.delete(id);
+            };
+        });
+    }
+
+    renderBulkActions() {
+        const bulkPanel = document.getElementById('bulkActionsPanel');
+        if (!bulkPanel) return;
+        bulkPanel.innerHTML = `
+            <button class="btn btn-danger btn-sm mr-2" onclick="dispatcherDashboard.bulkDelete()" ${this.selectedRequests.size === 0 ? 'disabled' : ''}>
+                <i class="fas fa-trash"></i> Видалити
+            </button>
+            <button class="btn btn-warning btn-sm mr-2" onclick="dispatcherDashboard.bulkAssign()" ${this.selectedRequests.size === 0 ? 'disabled' : ''}>
+                <i class="fas fa-user-check"></i> Призначити техніка
+            </button>
+            <button class="btn btn-success btn-sm" onclick="dispatcherDashboard.bulkComplete()" ${this.selectedRequests.size === 0 ? 'disabled' : ''}>
+                <i class="fas fa-check"></i> Завершити
+            </button>
+        `;
     }
 
     // Завантаження техніків
@@ -284,6 +304,7 @@ class DispatcherDashboard {
                 this.technicians = await response.json();
                 this.renderTechnicians();
                 this.updateStats();
+                this.setupFilters();
             } else {
                 // Запасний варіант - демо-дані
                 this.loadDemoTechnicians();
@@ -359,8 +380,9 @@ class DispatcherDashboard {
             }
         ];
         
-        this.renderTechnicians();
-        this.updateStats();
+    this.renderTechnicians();
+    this.updateStats();
+    this.setupFilters();
     }
 
     // Відображення техніків
@@ -1308,6 +1330,41 @@ class DispatcherDashboard {
         }
         
         $(modal).modal('show');
+    }
+
+    // Масове управління заявками
+    bulkDelete() {
+        this.requests = this.requests.filter(r => !this.selectedRequests.has(r.id));
+        this.selectedRequests.clear();
+        this.renderRequests();
+        this.updateStats();
+        this.showNotification('Вибрані заявки видалено', 'success');
+    }
+
+    bulkAssign() {
+        // Для прикладу: призначити техніка "Автоматично"
+        this.requests.forEach(r => {
+            if (this.selectedRequests.has(r.id)) {
+                r.assignedTo = 'Автоматично';
+                r.status = 'assigned';
+            }
+        });
+        this.selectedRequests.clear();
+        this.renderRequests();
+        this.updateStats();
+        this.showNotification('Техніка призначено для вибраних заявок', 'info');
+    }
+
+    bulkComplete() {
+        this.requests.forEach(r => {
+            if (this.selectedRequests.has(r.id)) {
+                r.status = 'completed';
+            }
+        });
+        this.selectedRequests.clear();
+        this.renderRequests();
+        this.updateStats();
+        this.showNotification('Вибрані заявки завершено', 'success');
     }
 }
 
