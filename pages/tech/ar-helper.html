@@ -569,6 +569,28 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- WebXR Overlay Section -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-vr-cardboard"></i> WebXR Overlay (3D)</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="ar-webxr-overlay mt-3">
+                                      <a-scene embedded arjs>
+                                        <a-marker preset="hiro">
+                                          <a-box position="0 0.5 0" material="color: #4CAF50; opacity: 0.7;"></a-box>
+                                          <a-text value="Ліфт" position="0 1.2 0" color="#fff"></a-text>
+                                        </a-marker>
+                                        <a-entity camera></a-entity>
+                                      </a-scene>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
         </div>
@@ -590,7 +612,11 @@
 
     <!-- AR Helper JS -->
     <script src="../../assets/js/modules/ar-helper.js"></script>
-
+    <script src="../../assets/js/modules/voice-ar.js"></script>
+    <script src="../../assets/js/modules/ar-checklist.js"></script>
+    <script src="../../assets/js/modules/photo-video-capture.js"></script>
+    <script src="../../assets/js/modules/push-notifications.js"></script>
+    <script src="../../assets/js/modules/messenger.js"></script>
     <script>
         // Функція виходу
         function logout() {
@@ -635,7 +661,50 @@
                 $('body').toggleClass('dark-mode');
                 $(this).find('i').toggleClass('fa-moon fa-sun');
             });
+
+            // Голосове керування
+            let voiceAR;
+            if (typeof ARHelper !== 'undefined') {
+                voiceAR = new VoiceAR(window.arHelper || new ARHelper());
+                voiceAR.init();
+                const voiceBtn = document.createElement('button');
+                voiceBtn.className = 'btn btn-warning mb-2';
+                voiceBtn.innerHTML = '<i class="fas fa-microphone"></i> Голосове керування';
+                voiceBtn.onclick = () => voiceAR.start();
+                document.querySelector('.ar-control-panel')?.appendChild(voiceBtn);
+            }
+
+            // Ініціалізація push-нотифікацій
+            window.pushNotifications.init();
+            const pushBtn = document.createElement('button');
+            pushBtn.className = 'btn btn-danger mb-2';
+            pushBtn.innerHTML = '<i class="fas fa-bell"></i> Тест push-нотифікації';
+            pushBtn.onclick = () => window.pushNotifications.notifyNewTask('Перевірити ліфт №5');
+            document.querySelector('.ar-control-panel')?.appendChild(pushBtn);
+
+            setTimeout(() => {
+                window.arChecklist.render('.ar-control-panel');
+            }, 500);
+
+            setTimeout(() => {
+                window.photoVideoCapture.init('.ar-control-panel');
+            }, 1000);
+
+            setTimeout(() => {
+                window.messenger.render('.ar-control-panel');
+            }, 1500);
         });
+
+        // Реєстрація service worker
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', function() {
+            navigator.serviceWorker.register('/service-worker.js').then(function(registration) {
+              console.log('ServiceWorker зареєстровано:', registration);
+            }, function(err) {
+              console.log('ServiceWorker помилка:', err);
+            });
+          });
+        }
     </script>
 </body>
 </html>
