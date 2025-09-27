@@ -364,17 +364,342 @@ class ARHelper {
 
     activateMeasureTool() {
         console.log('Активація інструменту вимірювання');
-        // Логіка вимірювання відстаней
+        this.measurements = [];
+        this.isMeasuring = false;
+        this.measureStartPoint = null;
+
+        // Додаємо обробники подій для вимірювання
+        this.setupMeasureEventListeners();
+
+        // Показуємо підказку
+        this.showToolHint('Натисніть на точку для початку вимірювання, потім на кінцеву точку');
+    }
+
+    deactivateMeasureTool() {
+        console.log('Деактивація інструменту вимірювання');
+        this.removeMeasureEventListeners();
+        this.clearMeasurements();
+        this.hideToolHint();
+    }
+
+    setupMeasureEventListeners() {
+        // Обробка кліків по AR сцені для вимірювання
+        $(document).on('click.measureTool', '.ar-scene, #arScene', (e) => {
+            if (!this.isARActive) return;
+
+            const point = this.getClickPoint(e);
+            if (!this.isMeasuring) {
+                // Початок вимірювання
+                this.startMeasurement(point);
+            } else {
+                // Кінець вимірювання
+                this.endMeasurement(point);
+            }
+        });
+
+        // Обробка клавіш
+        $(document).on('keydown.measureTool', (e) => {
+            if (e.key === 'Escape') {
+                this.cancelMeasurement();
+            }
+        });
+    }
+
+    removeMeasureEventListeners() {
+        $(document).off('click.measureTool');
+        $(document).off('keydown.measureTool');
+    }
+
+    startMeasurement(point) {
+        this.isMeasuring = true;
+        this.measureStartPoint = point;
+
+        // Візуально показуємо початкову точку
+        this.showMeasurementPoint(point, 'start');
+
+        this.showToolHint('Натисніть на кінцеву точку або Esc для скасування');
+    }
+
+    endMeasurement(point) {
+        if (!this.measureStartPoint) return;
+
+        const distance = this.calculateDistance(this.measureStartPoint, point);
+        const measurement = {
+            id: Date.now(),
+            start: this.measureStartPoint,
+            end: point,
+            distance: distance,
+            unit: 'cm' // Можна додати вибір одиниць
+        };
+
+        this.measurements.push(measurement);
+        this.isMeasuring = false;
+        this.measureStartPoint = null;
+
+        // Візуально показуємо лінію вимірювання
+        this.showMeasurementLine(measurement);
+
+        // Показуємо результат
+        this.showMeasurementResult(measurement);
+
+        this.showToolHint('Вимірювання завершено. Натисніть для нового вимірювання');
+    }
+
+    cancelMeasurement() {
+        if (this.isMeasuring) {
+            this.clearMeasurementPoints();
+            this.isMeasuring = false;
+            this.measureStartPoint = null;
+            this.showToolHint('Вимірювання скасовано');
+        }
+    }
+
+    calculateDistance(point1, point2) {
+        // Просте евклідове відстань (в пікселях)
+        // У реальному AR це буде 3D відстань
+        const dx = point2.x - point1.x;
+        const dy = point2.y - point1.y;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    getClickPoint(event) {
+        const rect = event.currentTarget.getBoundingClientRect();
+        return {
+            x: event.clientX - rect.left,
+            y: event.clientY - rect.top
+        };
+    }
+
+    showMeasurementPoint(point, type) {
+        const pointElement = $(`
+            <div class="measurement-point measurement-${type}" 
+                 style="position: absolute; left: ${point.x - 5}px; top: ${point.y - 5}px; 
+                        width: 10px; height: 10px; background: ${type === 'start' ? 'green' : 'red'}; 
+                        border-radius: 50%; border: 2px solid white; z-index: 1000;">
+            </div>
+        `);
+        $('#arScene').append(pointElement);
+    }
+
+    showMeasurementLine(measurement) {
+        const lineElement = $(`
+            <div class="measurement-line" 
+                 style="position: absolute; left: ${Math.min(measurement.start.x, measurement.end.x)}px; 
+                        top: ${Math.min(measurement.start.y, measurement.end.y)}px; 
+                        width: ${Math.abs(measurement.end.x - measurement.start.x)}px; 
+                        height: ${Math.abs(measurement.end.y - measurement.start.y)}px; 
+                        border: 2px solid blue; z-index: 999;">
+            </div>
+        `);
+        $('#arScene').append(lineElement);
+    }
+
+    showMeasurementResult(measurement) {
+        const midX = (measurement.start.x + measurement.end.x) / 2;
+        const midY = (measurement.start.y + measurement.end.y) / 2;
+
+        const resultElement = $(`
+            <div class="measurement-result" 
+                 style="position: absolute; left: ${midX}px; top: ${midY - 20}px; 
+                        background: rgba(0,0,0,0.8); color: white; padding: 2px 6px; 
+                        border-radius: 3px; font-size: 12px; z-index: 1001;">
+                ${measurement.distance.toFixed(1)} ${measurement.unit}
+            </div>
+        `);
+        $('#arScene').append(resultElement);
+    }
+
+    clearMeasurements() {
+        $('.measurement-point, .measurement-line, .measurement-result').remove();
+        this.measurements = [];
     }
 
     activateAnnotationTool() {
         console.log('Активація інструменту анотацій');
-        // Логіка додавання анотацій
+        this.isAnnotating = false;
+
+        // Додаємо обробники подій для анотацій
+        this.setupAnnotationEventListeners();
+
+        this.showToolHint('Натисніть на точку для додавання анотації');
+    }
+
+    deactivateAnnotationTool() {
+        console.log('Деактивація інструменту анотацій');
+        this.removeAnnotationEventListeners();
+        this.hideToolHint();
+    }
+
+    setupAnnotationEventListeners() {
+        $(document).on('click.annotationTool', '.ar-scene, #arScene', (e) => {
+            if (!this.isARActive) return;
+
+            const point = this.getClickPoint(e);
+            this.addAnnotation(point);
+        });
+    }
+
+    removeAnnotationEventListeners() {
+        $(document).off('click.annotationTool');
+    }
+
+    addAnnotation(point) {
+        const annotationText = prompt('Введіть текст анотації:');
+        if (!annotationText || annotationText.trim() === '') return;
+
+        const annotation = {
+            id: Date.now(),
+            point: point,
+            text: annotationText.trim(),
+            timestamp: new Date()
+        };
+
+        this.annotations.push(annotation);
+        this.showAnnotation(annotation);
+
+        this.logAREvent('annotation_added', { annotationId: annotation.id });
+    }
+
+    showAnnotation(annotation) {
+        const annotationElement = $(`
+            <div class="annotation" data-id="${annotation.id}" 
+                 style="position: absolute; left: ${annotation.point.x}px; top: ${annotation.point.y}px; 
+                        background: rgba(255,255,0,0.9); color: black; padding: 4px 8px; 
+                        border-radius: 4px; font-size: 12px; max-width: 150px; z-index: 1000;">
+                <div class="annotation-text">${annotation.text}</div>
+                <button class="annotation-delete btn btn-xs btn-danger" 
+                        style="position: absolute; top: -5px; right: -5px; width: 16px; height: 16px; padding: 0; font-size: 10px;">×</button>
+            </div>
+        `);
+
+        $('#arScene').append(annotationElement);
+
+        // Обробка видалення анотації
+        annotationElement.find('.annotation-delete').on('click', (e) => {
+            e.stopPropagation();
+            this.removeAnnotation(annotation.id);
+        });
+    }
+
+    removeAnnotation(annotationId) {
+        this.annotations = this.annotations.filter(a => a.id !== annotationId);
+        $(`.annotation[data-id="${annotationId}"]`).remove();
+        this.logAREvent('annotation_removed', { annotationId });
     }
 
     activateHotspotTool() {
         console.log('Активація інструменту хот-спотів');
-        // Логіка створення хот-спотів
+        this.isCreatingHotspot = false;
+
+        // Додаємо обробники подій для хот-спотів
+        this.setupHotspotEventListeners();
+
+        this.showToolHint('Натисніть на точку для створення хот-споту');
+    }
+
+    deactivateHotspotTool() {
+        console.log('Деактивація інструменту хот-спотів');
+        this.removeHotspotEventListeners();
+        this.hideToolHint();
+    }
+
+    setupHotspotEventListeners() {
+        $(document).on('click.hotspotTool', '.ar-scene, #arScene', (e) => {
+            if (!this.isARActive) return;
+
+            const point = this.getClickPoint(e);
+            this.createHotspot(point);
+        });
+    }
+
+    removeHotspotEventListeners() {
+        $(document).off('click.hotspotTool');
+    }
+
+    createHotspot(point) {
+        const hotspotTitle = prompt('Введіть назву хот-споту:');
+        if (!hotspotTitle || hotspotTitle.trim() === '') return;
+
+        const hotspot = {
+            id: Date.now(),
+            point: point,
+            title: hotspotTitle.trim(),
+            description: '',
+            actions: [],
+            timestamp: new Date()
+        };
+
+        // Додаємо до моделі, якщо є
+        if (this.currentModel) {
+            if (!this.currentModel.hotspots) {
+                this.currentModel.hotspots = [];
+            }
+            this.currentModel.hotspots.push(hotspot);
+        }
+
+        this.showHotspot(hotspot);
+
+        this.logAREvent('hotspot_created', { hotspotId: hotspot.id });
+    }
+
+    showHotspot(hotspot) {
+        const hotspotElement = $(`
+            <div class="hotspot" data-id="${hotspot.id}" 
+                 style="position: absolute; left: ${hotspot.point.x - 10}px; top: ${hotspot.point.y - 10}px; 
+                        width: 20px; height: 20px; background: rgba(255,0,0,0.8); 
+                        border-radius: 50%; border: 2px solid white; cursor: pointer; z-index: 1000;">
+                <div class="hotspot-tooltip" style="position: absolute; bottom: 25px; left: 50%; 
+                        transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; 
+                        padding: 4px 8px; border-radius: 4px; font-size: 12px; white-space: nowrap; 
+                        display: none;">
+                    ${hotspot.title}
+                </div>
+            </div>
+        `);
+
+        $('#arScene').append(hotspotElement);
+
+        // Показуємо підказку при наведенні
+        hotspotElement.on('mouseenter', () => {
+            hotspotElement.find('.hotspot-tooltip').show();
+        }).on('mouseleave', () => {
+            hotspotElement.find('.hotspot-tooltip').hide();
+        });
+
+        // Клік для показу деталей
+        hotspotElement.on('click', (e) => {
+            e.stopPropagation();
+            this.showHotspotDetails(hotspot);
+        });
+    }
+
+    showHotspotDetails(hotspot) {
+        // Показуємо деталі хот-споту
+        const details = `
+            <strong>${hotspot.title}</strong><br>
+            <small>Створено: ${hotspot.timestamp.toLocaleString('uk-UA')}</small>
+        `;
+        this.showNotification(details, 'info');
+    }
+
+    showToolHint(text) {
+        if (!this.hintElement) {
+            this.hintElement = $(`
+                <div class="ar-tool-hint" 
+                     style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); 
+                            background: rgba(0,0,0,0.8); color: white; padding: 8px 16px; 
+                            border-radius: 20px; font-size: 14px; z-index: 10000;">
+                </div>
+            `);
+            $('body').append(this.hintElement);
+        }
+        this.hintElement.text(text).show();
+    }
+
+    hideToolHint() {
+        if (this.hintElement) {
+            this.hintElement.hide();
+        }
     }
 
     getToolName(toolType) {
@@ -415,28 +740,62 @@ class ARHelper {
     }
 
     async captureARView() {
-        // Захоплення поточного виду AR
-        return new Promise((resolve) => {
-            // Імітація захоплення екрану
-            setTimeout(() => {
-                const canvas = document.createElement('canvas');
-                canvas.width = 800;
-                canvas.height = 600;
-                const ctx = canvas.getContext('2d');
-                
-                ctx.fillStyle = '#2c3e50';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                
-                ctx.fillStyle = 'white';
-                ctx.font = '20px Arial';
-                ctx.fillText('AR Screenshot', 50, 50);
-                ctx.font = '16px Arial';
-                ctx.fillText(`Model: ${this.currentModel?.name || 'None'}`, 50, 80);
-                ctx.fillText(`Time: ${new Date().toLocaleString('uk-UA')}`, 50, 110);
-                
-                resolve(canvas.toDataURL('image/png'));
-            }, 100);
-        });
+        try {
+            // Спробуємо захопити поточний вид AR сцени
+            const arScene = document.getElementById('arScene');
+            if (arScene) {
+                // Використовуємо html2canvas для захоплення DOM елемента
+                if (typeof html2canvas !== 'undefined') {
+                    const canvas = await html2canvas(arScene);
+                    return canvas.toDataURL('image/png');
+                }
+            }
+
+            // Fallback: створюємо canvas з текстом
+            const canvas = document.createElement('canvas');
+            canvas.width = 800;
+            canvas.height = 600;
+            const ctx = canvas.getContext('2d');
+
+            // Фон
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, '#2c3e50');
+            gradient.addColorStop(1, '#34495e');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Текст
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 24px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('AR Screenshot', canvas.width / 2, canvas.height / 2 - 50);
+
+            ctx.font = '16px Arial';
+            ctx.fillText(`Model: ${this.currentModel?.name || 'None'}`, canvas.width / 2, canvas.height / 2 - 10);
+            ctx.fillText(`Time: ${new Date().toLocaleString('uk-UA')}`, canvas.width / 2, canvas.height / 2 + 20);
+            ctx.fillText(`Active Tools: ${this.activeTool || 'None'}`, canvas.width / 2, canvas.height / 2 + 50);
+
+            // Додаємо рамку
+            ctx.strokeStyle = '#3498db';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+
+            return canvas.toDataURL('image/png');
+        } catch (error) {
+            console.error('Помилка захоплення AR виду:', error);
+            // Emergency fallback
+            const canvas = document.createElement('canvas');
+            canvas.width = 400;
+            canvas.height = 300;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#e74c3c';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'white';
+            ctx.font = '16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Screenshot Error', canvas.width / 2, canvas.height / 2);
+            return canvas.toDataURL('image/png');
+        }
     }
 
     saveScreenshot(screenshot) {

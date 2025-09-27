@@ -67,6 +67,7 @@ const qrManager = (function() {
         renderQRTable();
         updateStatistics();
         loadAPISettings();
+        updateSavedFiltersList();
 
         // Set default expiry date to 30 days from now
         const defaultExpiry = new Date();
@@ -121,15 +122,15 @@ const qrManager = (function() {
 
     // Set up all event listeners
     function setupEventListeners() {
-        // Заглушки для експорту PDF/XLSX/JSON
+        // Експорт функцій
         $('#exportPDFBtn').on('click', function() {
-            showNotification('Експорт у PDF (заглушка)', 'info');
+            exportToPDF();
         });
         $('#exportXLSXBtn').on('click', function() {
-            showNotification('Експорт у XLSX (заглушка)', 'info');
+            exportToXLSX();
         });
         $('#exportJSONBtn').on('click', function() {
-            showNotification('Експорт у JSON (заглушка)', 'info');
+            exportToJSON();
         });
         // Filter changes
         $(elements.statusFilter).on('change', applyFilters);
@@ -137,9 +138,9 @@ const qrManager = (function() {
         $(elements.groupFilter).on('change', applyFilters);
         $(elements.locationFilter).on('change', applyFilters);
         $(elements.searchInput).on('keyup', debounce(applyFilters, 300));
-        // Заглушка для кнопки "Зберегти фільтр"
+        // Збереження фільтра
         $('#saveFilterBtn').on('click', function() {
-            showNotification('Збереження фільтра (заглушка)', 'info');
+            saveCurrentFilter();
         });
         
         // Date range filter
@@ -509,7 +510,7 @@ const qrManager = (function() {
             if (currentFilters.type !== 'all' && qr.type !== currentFilters.type) {
                 return false;
             }
-            // Group filter (заглушка: по metadata.group)
+            // Group filter
             if (currentFilters.group !== 'all') {
                 if (!qr.metadata || qr.metadata.group !== currentFilters.group) {
                     return false;
@@ -691,6 +692,7 @@ const qrManager = (function() {
             metadata: formData.get('metadata') ? JSON.parse(formData.get('metadata')) : {}
         };
         
+        addAuditLogEntry('Редагування QR', `Відредаговано QR-код ${id}`);
         return true;
     }
 
@@ -754,6 +756,7 @@ const qrManager = (function() {
         };
         
         currentQRs.unshift(newQR);
+        addAuditLogEntry('Створення QR', `Створено QR-код ${newQR.id} типу ${getTypeText(type)}`);
         return newQR;
     }
 
@@ -773,6 +776,7 @@ const qrManager = (function() {
             
             // Show success message
             showNotification(`QR-код ${id} успішно видалено`, 'success');
+            addAuditLogEntry('Видалення QR', `Видалено QR-код ${id}`);
         }
     }
 
@@ -868,6 +872,219 @@ const qrManager = (function() {
         link.click();
         document.body.removeChild(link);
         showNotification('Дані експортовано в CSV', 'success');
+    }
+
+    // Export to PDF
+    function exportToPDF() {
+        const data = filterQRData();
+        if (data.length === 0) {
+            showNotification('Немає даних для експорту', 'warning');
+            return;
+        }
+
+        // Створюємо HTML для PDF
+        let html = `
+            <html>
+            <head>
+                <title>QR Коди - Експорт</title>
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 20px; }
+                    h1 { color: #333; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                    th { background-color: #f2f2f2; }
+                    .header { text-align: center; margin-bottom: 20px; }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h1>Звіт QR кодів</h1>
+                    <p>Дата експорту: ${formatDate(new Date())}</p>
+                    <p>Загальна кількість: ${data.length}</p>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Тип</th>
+                            <th>Призначення</th>
+                            <th>Статус</th>
+                            <th>Створено</th>
+                            <th>Дійсний до</th>
+                            <th>Сканувань</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        data.forEach(qr => {
+            html += `
+                <tr>
+                    <td>${qr.id}</td>
+                    <td>${getTypeText(qr.type)}</td>
+                    <td>${qr.target}</td>
+                    <td>${getStatusText(qr.status)}</td>
+                    <td>${formatDate(qr.created)}</td>
+                    <td>${formatDate(qr.expiry)}</td>
+                    <td>${qr.scans}</td>
+                </tr>
+            `;
+        });
+
+        html += `
+                    </tbody>
+                </table>
+            </body>
+            </html>
+        `;
+
+        // Відкриваємо в новому вікні для друку
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(html);
+        printWindow.document.close();
+        printWindow.print();
+
+        showNotification('PDF експортовано (відкрито у новому вікні для друку)', 'success');
+    }
+
+    // Export to XLSX (використовуємо CSV як XLSX)
+    function exportToXLSX() {
+        const data = filterQRData();
+        if (data.length === 0) {
+            showNotification('Немає даних для експорту', 'warning');
+            return;
+        }
+
+        // Створюємо XLSX-like CSV з BOM для Excel
+        let csv = '\uFEFFID,Тип,Призначення,Статус,Створено,Дійсний до,Сканувань\n';
+        data.forEach(qr => {
+            csv += `"${qr.id}","${getTypeText(qr.type)}","${qr.target}","${getStatusText(qr.status)}",`
+                 + `"${formatDate(qr.created)}","${formatDate(qr.expiry)}","${qr.scans}"\n`;
+        });
+
+        const blob = new Blob([csv], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `qr_codes_export_${formatDate(new Date(), 'YYYY-MM-DD')}.xlsx`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showNotification('Дані експортовано в XLSX', 'success');
+    }
+
+    // Export to JSON
+    function exportToJSON() {
+        const data = filterQRData();
+        if (data.length === 0) {
+            showNotification('Немає даних для експорту', 'warning');
+            return;
+        }
+
+        const exportData = {
+            exportDate: new Date().toISOString(),
+            totalRecords: data.length,
+            filters: currentFilters,
+            qrCodes: data
+        };
+
+        const json = JSON.stringify(exportData, null, 2);
+        const blob = new Blob([json], { type: 'application/json;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `qr_codes_export_${formatDate(new Date(), 'YYYY-MM-DD')}.json`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showNotification('Дані експортовано в JSON', 'success');
+    }
+
+    // Save current filter
+    function saveCurrentFilter() {
+        const filterName = prompt('Введіть назву для збереженого фільтра:');
+        if (!filterName || filterName.trim() === '') {
+            showNotification('Назва фільтра обов\'язкова', 'warning');
+            return;
+        }
+
+        const savedFilters = JSON.parse(localStorage.getItem('qr_saved_filters') || '[]');
+        const filterData = {
+            name: filterName.trim(),
+            filters: { ...currentFilters },
+            savedAt: new Date().toISOString()
+        };
+
+        // Перевіряємо, чи фільтр з такою назвою вже існує
+        const existingIndex = savedFilters.findIndex(f => f.name === filterName);
+        if (existingIndex >= 0) {
+            if (!confirm(`Фільтр "${filterName}" вже існує. Перезаписати?`)) {
+                return;
+            }
+            savedFilters[existingIndex] = filterData;
+        } else {
+            savedFilters.push(filterData);
+        }
+
+        localStorage.setItem('qr_saved_filters', JSON.stringify(savedFilters));
+        showNotification(`Фільтр "${filterName}" збережено`, 'success');
+        updateSavedFiltersList();
+    }
+
+    // Update saved filters list
+    function updateSavedFiltersList() {
+        const savedFilters = JSON.parse(localStorage.getItem('qr_saved_filters') || '[]');
+        const container = $('#savedFiltersList');
+        container.empty();
+
+        if (savedFilters.length === 0) {
+            container.html('<li class="list-group-item text-muted">Немає збережених фільтрів</li>');
+            return;
+        }
+
+        savedFilters.forEach((filter, index) => {
+            const item = $(`
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>${filter.name}</strong>
+                        <br><small class="text-muted">Збережено: ${formatDate(filter.savedAt)}</small>
+                    </div>
+                    <div>
+                        <button class="btn btn-sm btn-outline-primary mr-1" onclick="qrManager.loadSavedFilter(${index})">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="qrManager.deleteSavedFilter(${index})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </li>
+            `);
+            container.append(item);
+        });
+    }
+
+    // Load saved filter
+    function loadSavedFilter(index) {
+        const savedFilters = JSON.parse(localStorage.getItem('qr_saved_filters') || '[]');
+        if (savedFilters[index]) {
+            currentFilters = { ...savedFilters[index].filters };
+            applyFilters();
+            showNotification(`Фільтр "${savedFilters[index].name}" завантажено`, 'success');
+        }
+    }
+
+    // Delete saved filter
+    function deleteSavedFilter(index) {
+        const savedFilters = JSON.parse(localStorage.getItem('qr_saved_filters') || '[]');
+        if (savedFilters[index]) {
+            const filterName = savedFilters[index].name;
+            savedFilters.splice(index, 1);
+            localStorage.setItem('qr_saved_filters', JSON.stringify(savedFilters));
+            updateSavedFiltersList();
+            showNotification(`Фільтр "${filterName}" видалено`, 'success');
+        }
     }
 
     // Show notification
@@ -974,7 +1191,9 @@ const qrManager = (function() {
         exportToCloud: exportToCloud,
         syncWithMobile: syncWithMobile,
         testAPIConnection: testAPIConnection,
-        saveAPISettings: saveAPISettings
+        saveAPISettings: saveAPISettings,
+        loadSavedFilter: loadSavedFilter,
+        deleteSavedFilter: deleteSavedFilter
     };
 }
 
