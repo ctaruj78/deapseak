@@ -756,6 +756,16 @@
             // Ініціалізація менеджера інструментів
             window.toolManager = new ToolManager();
         });
+
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', function() {
+            navigator.serviceWorker.register('/service-worker.js').then(function(registration) {
+              console.log('ServiceWorker зареєстровано:', registration);
+            }, function(err) {
+              console.log('ServiceWorker помилка:', err);
+            });
+          });
+        }
     </script>
 </body>
 </html>
