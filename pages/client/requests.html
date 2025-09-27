@@ -709,7 +709,8 @@
 
     <!-- Requests Manager JS -->
     <script src="../../assets/js/modules/requests-manager.js"></script>
-
+    <script src="../../assets/js/modules/request-tracking.js"></script>
+    <script src="../../assets/js/modules/feedback-request.js"></script>
     <script>
         let currentRequestId = null;
         
@@ -749,6 +750,16 @@
 
             // Ініціалізація менеджера заявок
             window.requestsManager = new RequestsManager();
+
+            setTimeout(() => {
+                window.requestTracking.render('.content-wrapper');
+            }, 1200);
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+          setTimeout(() => {
+            window.feedbackRequest.render('.content-wrapper');
+          }, 1800);
         });
     </script>
             <!-- AI Assistant Floating Button & Modal -->
