@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Карта завдання</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../../assets/plugins/leaflet/leaflet.css">
+    <style>
+        #map { height: 70vh; width: 100%; margin: 0 auto; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.12); }
+        .info-panel { background: #fff; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; box-shadow: 0 1px 6px rgba(0,0,0,0.08); }
+    </style>
+</head>
+<body>
+    <div class="info-panel" id="taskInfo"></div>
+    <div id="map"></div>
+    <script src="../../assets/plugins/leaflet/leaflet.js"></script>
+    <script>
+    // Отримати ID завдання з URL
+    function getTaskId() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('id');
+    }
+    // Завантажити дані завдання
+    function loadTaskData(taskId) {
+        const requests = JSON.parse(localStorage.getItem('maintenanceRequests')) || [];
+        return requests.find(r => r.id === taskId);
+    }
+    // Відобразити інформацію про завдання
+    function renderTaskInfo(task) {
+        if (!task) return;
+        document.getElementById('taskInfo').innerHTML = `
+            <h3>${task.title}</h3>
+            <p><strong>Опис:</strong> ${task.description || '—'}</p>
+            <p><strong>Місце роботи:</strong> ${task.location || '—'}</p>
+            <p><strong>Статус:</strong> ${task.status}</p>
+            <p><strong>Початок:</strong> ${task.startedAt ? new Date(task.startedAt).toLocaleString('uk-UA') : '—'}</p>
+            <p><strong>Завершення:</strong> ${task.completedAt ? new Date(task.completedAt).toLocaleString('uk-UA') : '—'}</p>
+        `;
+    }
+    // Відобразити карту
+    function renderMap(task) {
+        const map = L.map('map').setView([48.3794, 31.1656], 6); // Центр України
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+        // Маркер місця роботи (якщо є координати)
+        if (task.geoStart) {
+            L.marker([task.geoStart.latitude, task.geoStart.longitude], {title: 'Початок робіт'}).addTo(map)
+                .bindPopup('Початок робіт').openPopup();
+            map.setView([task.geoStart.latitude, task.geoStart.longitude], 14);
+        }
+        // Маркер завершення (якщо є)
+        if (task.geoEnd) {
+            L.marker([task.geoEnd.latitude, task.geoEnd.longitude], {title: 'Завершення'}).addTo(map)
+                .bindPopup('Завершення робіт');
+        }
+        // Маркер місця роботи (якщо є координати у task.location)
+        if (task.location && typeof task.location === 'object' && task.location.latitude && task.location.longitude) {
+            L.marker([task.location.latitude, task.location.longitude], {title: 'Місце роботи', icon: L.icon({iconUrl: '../../assets/plugins/leaflet/images/marker-icon.png'})}).addTo(map)
+                .bindPopup('Місце роботи');
+        }
+    }
+    // ініціалізація
+    const taskId = getTaskId();
+    const task = loadTaskData(taskId);
+    renderTaskInfo(task);
+    renderMap(task);
+    </script>
+</body>
+</html>

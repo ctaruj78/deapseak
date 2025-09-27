@@ -1,4 +1,35 @@
 class DispatcherDashboard {
+    // Звіт по роботі техніків
+    showTechReport() {
+        // Формуємо дані по техніках
+        let html = `<table class="table table-bordered table-striped"><thead><tr><th>Технік</th><th>Статус</th><th>Завдань</th><th>Рейтинг</th><th>Останнє призначення</th></tr></thead><tbody>`;
+        this.technicians.forEach(tech => {
+            // Знаходимо останню заявку для техніка
+            const lastReq = this.requests.filter(r => r.assignedTo === `${tech.firstName} ${tech.lastName}`).sort((a,b) => new Date(b.date)-new Date(a.date))[0];
+            html += `<tr><td>${tech.firstName} ${tech.lastName}</td><td>${tech.status}</td><td>${tech.currentAssignments}</td><td>${tech.rating}</td><td>${lastReq ? lastReq.date : '-'}</td></tr>`;
+        });
+        html += '</tbody></table>';
+        document.getElementById('techReportContent').innerHTML = html;
+        $('#techReportModal').modal('show');
+    }
+
+    exportTechReport() {
+        // Експорт у CSV
+        let csv = 'Технік,Статус,Завдань,Рейтинг,Останнє призначення\n';
+        this.technicians.forEach(tech => {
+            const lastReq = this.requests.filter(r => r.assignedTo === `${tech.firstName} ${tech.lastName}`).sort((a,b) => new Date(b.date)-new Date(a.date))[0];
+            csv += `${tech.firstName} ${tech.lastName},${tech.status},${tech.currentAssignments},${tech.rating},${lastReq ? lastReq.date : '-'}\n`;
+        });
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'tech-report.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
     constructor() {
         this.requests = [];
         this.technicians = [];
