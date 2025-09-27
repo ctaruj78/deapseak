@@ -507,11 +507,11 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="action-buttons">
-                                        <button class="btn btn-action btn-primary" onclick="dispatcherDashboard.createNewAssignment()">
-                                            <span class="icon">➕</span>
-                                            <span>Нове призначення</span>
-                                            <small>Створити нове завдання</small>
-                                        </button>
+                                        <a class="btn btn-action btn-info" href="calendar.html">
+                                            <span class="icon">📅</span>
+                                            <span>Календар</span>
+                                            <small>Перегляд заявок</small>
+                                        </a>
                                         <button class="btn btn-action btn-success" onclick="dispatcherDashboard.openMonitoring()">
                                             <span class="icon">📊</span>
                                             <span>Моніторинг</span>
@@ -532,11 +532,36 @@
                                             <span>Статистика</span>
                                             <small>Швидкий огляд</small>
                                         </button>
+                                        <button class="btn btn-action btn-info" onclick="dispatcherDashboard.showTechReport()">
+                                            <span class="icon">📝</span>
+                                            <span>Звіт по техніках</span>
+                                            <small>Експорт/перегляд</small>
+                                        </button>
                                         <button class="btn btn-action btn-danger" onclick="dispatcherDashboard.emergencyProtocol()">
                                             <span class="icon">🚨</span>
                                             <span>Аварійний</span>
                                             <small>Протокол</small>
                                         </button>
+    <!-- Модальне вікно звіту по техніках -->
+    <div class="modal fade" id="techReportModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Звіт по роботі техніків</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="techReportContent">
+                    <!-- Звіт буде згенеровано JS -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                    <button type="button" class="btn btn-primary" onclick="dispatcherDashboard.exportTechReport()">Експортувати в CSV</button>
+                </div>
+            </div>
+        </div>
+    </div>
                                     </div>
                                 </div>
                             </div>

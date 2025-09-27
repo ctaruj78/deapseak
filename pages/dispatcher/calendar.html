@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Календар заявок</title>
+    <link rel="stylesheet" href="../../assets/plugins/fullcalendar/main.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <style>
+        body { background: #f4f6f9; }
+        #calendar { background: #fff; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); padding: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h2 class="mb-4">Календар заявок</h2>
+        <div id="calendar"></div>
+        <a href="dashboard.html" class="btn btn-secondary mt-4">← Назад до панелі</a>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../assets/plugins/fullcalendar/main.min.js"></script>
+    <script src="../../assets/plugins/fullcalendar/locales-all.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var calendarEl = document.getElementById('calendar');
+      var calendar = new FullCalendar.Calendar(calendarEl, {
+        locale: 'uk',
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        events: async function(fetchInfo, successCallback, failureCallback) {
+          try {
+            const res = await fetch('/api/requests', {
+              headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+            });
+            let data = res.ok ? await res.json() : [];
+            // Фіктивні дані, якщо API недоступне
+            if (!data.length) {
+              data = [
+                { id: 1, title: "Заміна жорсткого диска", date: "2025-09-28", status: "assigned" },
+                { id: 2, title: "Встановлення оновлення ПЗ", date: "2025-09-29", status: "in-progress" },
+                { id: 3, title: "Діагностика сервера", date: "2025-09-30", status: "completed" }
+              ];
+            }
+            const events = data.map(r => ({
+              id: r.id,
+              title: r.title + (r.status ? ` (${r.status})` : ''),
+              start: r.date.split(' ')[0],
+              color: r.status === 'completed' ? '#28a745' : (r.status === 'in-progress' ? '#ffc107' : '#007bff')
+            }));
+            successCallback(events);
+          } catch (e) {
+            failureCallback(e);
+          }
+        },
+        eventClick: function(info) {
+          alert('Заявка #' + info.event.id + '\n' + info.event.title);
+        }
+      });
+      calendar.render();
+    });
+    </script>
+</body>
+</html>

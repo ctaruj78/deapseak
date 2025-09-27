@@ -139,11 +139,76 @@ class TechDashboard {
                         <button class="btn btn-sm btn-primary" onclick="techDashboard.startTask('${task.id}')">
                             <i class="fas fa-play"></i> Почати
                         </button>
+                        <button class="btn btn-sm btn-success ml-2" onclick="techDashboard.completeTask('${task.id}')">
+                            <i class="fas fa-check"></i> Завершити
+                        </button>
+                        <a href="task-map.html?id=${task.id}" class="btn btn-sm btn-info ml-2" target="_blank">
+                            <i class="fas fa-map-marker-alt"></i> Карта
+                        </a>
                     </td>
                 </tr>
             `;
             container.append(row);
-        });
+    // Завершення завдання з автозаповненням звіту
+    completeTask(taskId) {
+        try {
+            const requests = JSON.parse(localStorage.getItem('maintenanceRequests')) || [];
+            const taskIndex = requests.findIndex(req => req.id === taskId);
+            if (taskIndex >= 0) {
+                // Автоматичне формування звіту
+                const report = this.generateAutoReport(requests[taskIndex]);
+                requests[taskIndex].status = 'completed';
+                requests[taskIndex].completedAt = new Date().toISOString();
+                requests[taskIndex].autoReport = report;
+                // Геолокація завершення
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        position => {
+                            const { latitude, longitude } = position.coords;
+                            requests[taskIndex].geoEnd = { latitude, longitude, timestamp: new Date().toISOString() };
+                            this._completeTaskFinalize(requests, taskIndex, taskId);
+                        },
+                        error => {
+                            console.warn('Геолокація завершення недоступна:', error);
+                            this._completeTaskFinalize(requests, taskIndex, taskId);
+                        },
+                        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                    );
+                } else {
+                    this._completeTaskFinalize(requests, taskIndex, taskId);
+                }
+            }
+        } catch (error) {
+            console.error('Помилка завершення завдання:', error);
+            this.showNotification('Помилка при завершенні завдання', 'error');
+        }
+    }
+
+    // Допоміжний метод для завершення завдання
+    _completeTaskFinalize(requests, taskIndex, taskId) {
+        localStorage.setItem('maintenanceRequests', JSON.stringify(requests));
+        this.loadTodayTasks();
+        this.showNotification('Завдання завершено, звіт сформовано', 'success');
+        // Перенаправлення на сторінку звіту
+        setTimeout(() => {
+            window.location.href = `task-report.html?id=${taskId}`;
+        }, 1000);
+    }
+
+    // Генерація автозвіту
+    generateAutoReport(task) {
+        return {
+            taskId: task.id,
+            title: task.title,
+            description: task.description,
+            technician: this.currentUser?.firstName || 'Технік',
+            startedAt: task.startedAt,
+            completedAt: new Date().toISOString(),
+            geoStart: task.geoStart || null,
+            geoEnd: task.geoEnd || null,
+            status: 'completed',
+            notes: 'Автоматичний звіт сформовано системою',
+        };
     }
 
     renderUpcomingMaintenance(lifts) {
@@ -297,24 +362,46 @@ class TechDashboard {
         try {
             const requests = JSON.parse(localStorage.getItem('maintenanceRequests')) || [];
             const taskIndex = requests.findIndex(req => req.id === taskId);
-            
+
             if (taskIndex >= 0) {
-                requests[taskIndex].status = 'in-progress';
-                requests[taskIndex].startedAt = new Date().toISOString();
-                localStorage.setItem('maintenanceRequests', JSON.stringify(requests));
-                
-                this.loadTodayTasks();
-                this.showNotification('Роботу над завданням розпочато', 'success');
-                
-                // Перенаправлення на сторінку завдання
-                setTimeout(() => {
-                    window.location.href = `task-detail.html?id=${taskId}`;
-                }, 1000);
+                // Отримання геолокації
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        position => {
+                            const { latitude, longitude } = position.coords;
+                            requests[taskIndex].geoStart = { latitude, longitude, timestamp: new Date().toISOString() };
+                            this._startTaskFinalize(requests, taskIndex, taskId);
+                        },
+                        error => {
+                            console.warn('Геолокація недоступна:', error);
+                            this._startTaskFinalize(requests, taskIndex, taskId);
+                        },
+                        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                    );
+                } else {
+                    this._startTaskFinalize(requests, taskIndex, taskId);
+                }
             }
         } catch (error) {
             console.error('Помилка старту завдання:', error);
             this.showNotification('Помилка при старті завдання', 'error');
         }
+
+    }
+
+    // Допоміжний метод для завершення старту завдання
+    _startTaskFinalize(requests, taskIndex, taskId) {
+        requests[taskIndex].status = 'in-progress';
+        requests[taskIndex].startedAt = new Date().toISOString();
+        localStorage.setItem('maintenanceRequests', JSON.stringify(requests));
+
+        this.loadTodayTasks();
+        this.showNotification('Роботу над завданням розпочато', 'success');
+
+        // Перенаправлення на сторінку завдання
+        setTimeout(() => {
+            window.location.href = `task-detail.html?id=${taskId}`;
+        }, 1000);
     }
 
     showNotification(message, type = 'info') {

@@ -558,6 +558,9 @@
     <!-- Tech Dashboard JS -->
     <script src="../../assets/js/modules/tech-dashboard.js"></script>
 
+        <!-- Push Notifications for Technician -->
+        <script src="../../assets/js/modules/push-notifications-tech.js"></script>
+
     <script>
         // Функція виходу
         function logout() {
@@ -572,24 +575,30 @@
         $(document).ready(function() {
             // Ініціалізація AdminLTE
             $('[data-widget="pushmenu"]').PushMenu();
-            
+
             // Перевірка чи завантажено tech-dashboard.js
             if (typeof TechDashboard === 'undefined') {
                 console.error('TechDashboard клас не завантажено! Перевірте шлях до tech-dashboard.js');
-                
+
                 // Резервна ініціалізація
                 const currentUser = JSON.parse(localStorage.getItem('currentUser')) || { 
                     firstName: 'Технік' 
                 };
                 $('#techName').text(currentUser.firstName);
                 $('#userName').text(currentUser.firstName);
-                
+
                 // Оновлення часу
                 setInterval(() => {
                     $('#currentTime').text(new Date().toLocaleTimeString('uk-UA'));
                 }, 1000);
             } else {
                 window.techDashboard = new TechDashboard();
+            }
+
+            // Ініціалізація push-сповіщень для техніка
+            const techUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (techUser && techUser.id) {
+                window.initTechPushNotifications(techUser.id);
             }
         });
     </script>
