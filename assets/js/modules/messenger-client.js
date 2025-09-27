@@ -5,6 +5,9 @@ class MessengerClient {
   constructor() {
     this.messages = [];
     this.container = null;
+    this.sender = localStorage.getItem('userName') || 'Клієнт';
+    this.role = localStorage.getItem('userRole') || 'client';
+    this.apiUrl = 'http://localhost:3001/api/chat';
   }
 
   render(containerSelector) {
@@ -17,29 +20,46 @@ class MessengerClient {
       <button class="btn btn-primary btn-sm" id="clientSendMsgBtn">Відправити</button>
     `;
     document.getElementById('clientSendMsgBtn').onclick = () => this.sendMessage();
+    this.fetchMessages();
+    this.pollInterval = setInterval(() => this.fetchMessages(), 3000);
   }
 
   sendMessage() {
     const input = document.getElementById('clientChatInput');
     const text = input.value.trim();
     if (!text) return;
-    this.addMessage('Клієнт', text);
-    input.value = '';
-    // Тут можна додати інтеграцію з сервером/техніком/диспетчером
-    setTimeout(() => this.addMessage('Диспетчер', 'Ваше повідомлення отримано!'), 1000);
+    fetch(this.apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sender: this.sender, text, role: this.role })
+    })
+      .then(res => res.json())
+      .then(() => {
+        input.value = '';
+        this.fetchMessages();
+      });
   }
 
   addMessage(sender, text) {
-    this.messages.push({ sender, text });
-    this.updateChat();
+  this.messages.push({ sender, text });
+  this.updateChat();
   }
 
   updateChat() {
-    const chatWindow = document.getElementById('clientChatWindow');
-    if (!chatWindow) return;
-    chatWindow.innerHTML = this.messages.map(m => `<b>${m.sender}:</b> ${m.text}<br>`).join('');
+  const chatWindow = document.getElementById('clientChatWindow');
+  if (!chatWindow) return;
+  chatWindow.innerHTML = this.messages.map(m => `<b>${m.sender} (${m.role}):</b> ${m.text}<br>`).join('');
     chatWindow.scrollTop = chatWindow.scrollHeight;
   }
 }
+
+  fetchMessages() {
+    fetch(this.apiUrl)
+      .then(res => res.json())
+      .then(msgs => {
+        this.messages = msgs;
+        this.updateChat();
+      });
+  };
 
 window.messengerClient = new MessengerClient();

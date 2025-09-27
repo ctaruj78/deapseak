@@ -399,7 +399,7 @@ class RequestsManager {
         });
     }
 
-    submitNewRequest() {
+    async submitNewRequest() {
         const formData = {
             type: $('#requestType').val(),
             liftId: $('#requestLift').val(),
@@ -414,31 +414,44 @@ class RequestsManager {
             return;
         }
 
+        let photoUrls = [];
+        const photoFiles = $('#requestPhotos')[0].files;
+        if (photoFiles.length > 0) {
+            const data = new FormData();
+            Array.from(photoFiles).slice(0, 5).forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    data.append('files', file);
+                }
+            });
+            try {
+                const res = await fetch('http://localhost:3002/api/upload', {
+                    method: 'POST',
+                    body: data
+                });
+                const result = await res.json();
+                photoUrls = result.files.map(f => f.url);
+            } catch (err) {
+                this.showNotification('Помилка завантаження фото', 'error');
+            }
+        }
+
         const newRequest = {
             id: Date.now().toString(),
             ...formData,
             status: 'pending',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            photos: []
+            photos: photoUrls,
+            history: [{
+                action: 'Створено заявку',
+                timestamp: new Date().toISOString()
+            }]
         };
-
-        // Додавання фото (іммітація)
-        const photoFiles = $('#requestPhotos')[0].files;
-        if (photoFiles.length > 0) {
-            Array.from(photoFiles).slice(0, 5).forEach(file => {
-                if (file.type.startsWith('image/')) {
-                    newRequest.photos.push(file.name);
-                }
-            });
-        }
 
         this.requests.unshift(newRequest);
         localStorage.setItem('maintenanceRequests', JSON.stringify(this.requests));
-        
         $('#newRequestModal').modal('hide');
         this.applyFilters();
-        
         this.showNotification('Заявку успішно створено!', 'success');
     }
 
@@ -571,6 +584,19 @@ class RequestsManager {
                         </div>
                     </div>
                 ` : ''}
+
+                ${request.history && request.history.length > 0 ? `
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title"><i class="fas fa-history"></i> Історія дій</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group">
+                            ${request.history.map(h => `<li class="list-group-item"><b>${h.action}</b> <span class="text-muted float-right">${new Date(h.timestamp).toLocaleString('uk-UA')}</span></li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+                ` : ''}
             </div>
         `;
     }
@@ -649,17 +675,50 @@ class RequestsManager {
         }, 1000);
     }
 
+    setRequestStatus(request, newStatus) {
+        const oldStatus = request.status;
+        request.status = newStatus;
+        request.updatedAt = new Date().toISOString();
+        // Логування дії
+        if (!request.history) request.history = [];
+        request.history.push({
+            action: `Статус змінено: ${oldStatus} → ${newStatus}`,
+            timestamp: request.updatedAt
+        });
+        localStorage.setItem('maintenanceRequests', JSON.stringify(this.requests));
+        this.applyFilters();
+        // Push-сповіщення
+        if (window.pushNotificationsClient) {
+            if (newStatus === 'completed') {
+                window.pushNotificationsClient.notifyRequestCompleted(request);
+            } else if (newStatus === 'cancelled') {
+                window.pushNotificationsClient.send('Заявку скасовано', `Заявка №${request.id} була скасована.`);
+            } else if (newStatus === 'in-progress') {
+                window.pushNotificationsClient.send('Заявка в роботі', `Заявка №${request.id} взята в роботу.`);
+            }
+        }
+    }
+
+    // Приклад використання централізованої зміни статусу
+    startRequest(requestId) {
+        const request = this.requests.find(req => req.id === requestId);
+        if (!request) return;
+        this.setRequestStatus(request, 'in-progress');
+        this.showNotification('Заявка взята в роботу', 'info');
+    }
+    completeRequest(requestId) {
+        const request = this.requests.find(req => req.id === requestId);
+        if (!request) return;
+        this.setRequestStatus(request, 'completed');
+        this.showNotification('Заявку виконано!', 'success');
+    }
+
     cancelRequest(requestId) {
         const request = this.requests.find(req => req.id === requestId);
         if (!request) return;
 
         if (confirm('Ви впевнені, що хочете скасувати цю заявку?')) {
-            request.status = 'cancelled';
-            request.updatedAt = new Date().toISOString();
-            
-            localStorage.setItem('maintenanceRequests', JSON.stringify(this.requests));
-            this.applyFilters();
-            
+            this.setRequestStatus(request, 'cancelled');
             this.showNotification('Заявку скасовано', 'success');
         }
     }

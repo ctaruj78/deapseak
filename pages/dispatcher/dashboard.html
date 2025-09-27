@@ -428,6 +428,17 @@
                                                 <option value="in-progress">В роботі</option>
                                                 <option value="completed">Завершені</option>
                                             </select>
+                                               <select id="technicianFilter" class="form-control form-control-sm ml-2">
+                                                   <option value="all">Всі техніки</option>
+                                               </select>
+                                               <input type="date" id="dateFilter" class="form-control form-control-sm ml-2" placeholder="Дата">
+                                               <select id="sortSelect" class="form-control form-control-sm ml-2">
+                                                   <option value="date-desc">Сортувати: Нові спочатку</option>
+                                                   <option value="date-asc">Сортувати: Старі спочатку</option>
+                                                   <option value="priority-desc">Сортувати: Високий пріоритет</option>
+                                                   <option value="priority-asc">Сортувати: Низький пріоритет</option>
+                                                   <option value="status">Сортувати: Статус</option>
+                                               </select>
                                         </div>
                                     </div>
                                 </div>
@@ -446,6 +457,9 @@
                                             </thead>
                                             <tbody id="requestsTableBody">
                                                 <!-- Заявки будуть завантажені тут -->
+                                                </tbody>
+                                            </table>
+                                            <div id="bulkActionsPanel" class="mt-2"></div>
                                             </tbody>
                                         </table>
                                     </div>
