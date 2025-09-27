@@ -622,10 +622,12 @@
             pushBtn.onclick = () => window.pushNotificationsClient.notifyNewRequest({id: 101});
             document.querySelector('.content-wrapper')?.prepend(pushBtn);
 
-            // Messenger Client
-            setTimeout(() => {
-              window.messengerClient.render('.content-wrapper');
-            }, 1200);
+                        // Кнопка для відкриття чату
+                        const chatBtn = document.createElement('button');
+                        chatBtn.className = 'btn btn-info mb-2';
+                        chatBtn.innerHTML = '<i class="fas fa-comments"></i> Відкрити чат';
+                        chatBtn.onclick = () => window.messengerClient.render('.content-wrapper');
+                        document.querySelector('.content-wrapper')?.prepend(chatBtn);
 
             // Voice Assistant Client
             window.voiceAssistantClient.init();
