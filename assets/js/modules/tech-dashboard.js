@@ -149,6 +149,8 @@ class TechDashboard {
                 </tr>
             `;
             container.append(row);
+        });
+    }
     // Завершення завдання з автозаповненням звіту
     completeTask(taskId) {
         try {
