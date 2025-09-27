@@ -40,9 +40,9 @@ class MessengerClient {
       });
   }
 
-  addMessage(sender, text) {
-  this.messages.push({ sender, text });
-  this.updateChat();
+  addMessage(sender, text, role = 'client') {
+    this.messages.push({ sender, text, role });
+    this.updateChat();
   }
 
   updateChat() {
@@ -51,15 +51,21 @@ class MessengerClient {
   chatWindow.innerHTML = this.messages.map(m => `<b>${m.sender} (${m.role}):</b> ${m.text}<br>`).join('');
     chatWindow.scrollTop = chatWindow.scrollHeight;
   }
-}
-
   fetchMessages() {
     fetch(this.apiUrl)
       .then(res => res.json())
       .then(msgs => {
-        this.messages = msgs;
+        // Якщо роль не передана — визначаємо за поточним користувачем
+        this.messages = msgs.map(m => {
+          if (!m.role) {
+            if (m.sender === this.sender) return { ...m, role: this.role };
+            return { ...m, role: m.sender === 'Диспетчер' ? 'dispatcher' : 'technician' };
+          }
+          return m;
+        });
         this.updateChat();
       });
-  };
+  }
+}
 
 window.messengerClient = new MessengerClient();
