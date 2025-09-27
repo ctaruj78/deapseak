@@ -751,15 +751,21 @@
             // Ініціалізація менеджера заявок
             window.requestsManager = new RequestsManager();
 
-            setTimeout(() => {
-                window.requestTracking.render('.content-wrapper');
-            }, 1200);
+            // Кнопка для відкриття трекінгу заявки
+            const trackingBtn = document.createElement('button');
+            trackingBtn.className = 'btn btn-info mb-2';
+            trackingBtn.innerHTML = '<i class="fas fa-tasks"></i> Відстежити заявку';
+            trackingBtn.onclick = () => window.requestTracking.render('.content-wrapper');
+            document.querySelector('.content-wrapper')?.prepend(trackingBtn);
         });
 
         document.addEventListener('DOMContentLoaded', function() {
-          setTimeout(() => {
-            window.feedbackRequest.render('.content-wrapper');
-          }, 1800);
+                    // Кнопка для відкриття фідбеку
+                    const feedbackBtn = document.createElement('button');
+                    feedbackBtn.className = 'btn btn-success mb-2';
+                    feedbackBtn.innerHTML = '<i class="fas fa-star"></i> Оцінити техніка';
+                    feedbackBtn.onclick = () => window.feedbackRequest.render('.content-wrapper');
+                    document.querySelector('.content-wrapper')?.prepend(feedbackBtn);
         });
     </script>
             <!-- AI Assistant Floating Button & Modal -->
