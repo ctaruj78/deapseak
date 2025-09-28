@@ -8,6 +8,7 @@
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     
     <!-- Додаткові стилі -->
     <style>
@@ -103,21 +104,54 @@
         
         .map-container {
             height: 400px;
-            background: #f8f9fa;
+            width: 100%;
             border-radius: 12px;
-            overflow: hidden;
+            border: 1px solid #dee2e6;
             position: relative;
         }
         
         .map-placeholder {
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100%;
-            flex-direction: column;
+            background: #f8f9fa;
+            border-radius: 12px;
         }
         
-        .timeline {
+        .tech-marker {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .tech-marker:hover {
+            transform: scale(1.2);
+            z-index: 1000;
+        }
+        
+        .tech-marker.online {
+            background: #28a745;
+        }
+        
+        .tech-marker.busy {
+            background: #ffc107;
+        }
+        
+        .tech-marker.offline {
+            background: #6c757d;
+        }
+        
+        .tech-marker.emergency {
+            background: #dc3545;
+            animation: pulse 1s infinite;
+        }        .timeline {
             position: relative;
             padding-left: 30px;
             margin: 20px 0;
@@ -697,6 +731,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <!-- Monitoring Manager JS -->
     <script src="../../assets/js/modules/monitoring-manager.js"></script>

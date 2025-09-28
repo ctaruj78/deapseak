@@ -62,7 +62,7 @@ class MonitoringManager {
     }
 
     createSampleData() {
-        // Приклад даних для демонстрації
+        // Приклад даних для демонстрації з реалістичними координатами Києва
         this.technicians = [
             {
                 id: 'TECH-001',
@@ -74,8 +74,8 @@ class MonitoringManager {
                 signal: 4,
                 lastUpdate: new Date().toISOString(),
                 currentAssignment: 'ASSIGN-001',
-                speed: 45,
-                direction: 120
+                speed: 0,
+                direction: 0
             },
             {
                 id: 'TECH-002',
@@ -87,6 +87,45 @@ class MonitoringManager {
                 signal: 3,
                 lastUpdate: new Date(Date.now() - 5 * 60000).toISOString(),
                 currentAssignment: 'ASSIGN-002',
+                speed: 0,
+                direction: 0
+            },
+            {
+                id: 'TECH-003',
+                firstName: 'Олександр',
+                lastName: 'Шевченко',
+                status: 'online',
+                location: { lat: 50.4490, lng: 30.5220 },
+                battery: 92,
+                signal: 4,
+                lastUpdate: new Date(Date.now() - 2 * 60000).toISOString(),
+                currentAssignment: null,
+                speed: 45,
+                direction: 120
+            },
+            {
+                id: 'TECH-004',
+                firstName: 'Анна',
+                lastName: 'Бондаренко',
+                status: 'offline',
+                location: { lat: 50.4525, lng: 30.5258 },
+                battery: 15,
+                signal: 1,
+                lastUpdate: new Date(Date.now() - 30 * 60000).toISOString(),
+                currentAssignment: null,
+                speed: 0,
+                direction: 0
+            },
+            {
+                id: 'TECH-005',
+                firstName: 'Дмитро',
+                lastName: 'Мельник',
+                status: 'emergency',
+                location: { lat: 50.4485, lng: 30.5210 },
+                battery: 25,
+                signal: 2,
+                lastUpdate: new Date(Date.now() - 1 * 60000).toISOString(),
+                currentAssignment: 'ASSIGN-003',
                 speed: 0,
                 direction: 0
             }
@@ -101,6 +140,24 @@ class MonitoringManager {
                 technicianId: 'TECH-001',
                 progress: 65,
                 estimatedCompletion: new Date(Date.now() + 2 * 3600000).toISOString()
+            },
+            {
+                id: 'ASSIGN-002',
+                title: 'Технічне обслуговування житлового будинку',
+                priority: 'medium',
+                status: 'in-progress',
+                technicianId: 'TECH-002',
+                progress: 30,
+                estimatedCompletion: new Date(Date.now() + 4 * 3600000).toISOString()
+            },
+            {
+                id: 'ASSIGN-003',
+                title: 'Аварійний ремонт ліфта в лікарні',
+                priority: 'high',
+                status: 'assigned',
+                technicianId: 'TECH-005',
+                progress: 0,
+                estimatedCompletion: new Date(Date.now() + 1 * 3600000).toISOString()
             }
         ];
 
@@ -111,6 +168,22 @@ class MonitoringManager {
                 message: 'Низький заряд батареї у TECH-002',
                 priority: 'warning',
                 timestamp: new Date().toISOString(),
+                resolved: false
+            },
+            {
+                id: 'ALERT-002',
+                type: 'signal_lost',
+                message: 'Втрата зв\'язку з TECH-004',
+                priority: 'warning',
+                timestamp: new Date(Date.now() - 10 * 60000).toISOString(),
+                resolved: false
+            },
+            {
+                id: 'ALERT-003',
+                type: 'emergency',
+                message: 'Аварійна ситуація: TECH-005 потребує негайної допомоги',
+                priority: 'critical',
+                timestamp: new Date(Date.now() - 5 * 60000).toISOString(),
                 resolved: false
             }
         ];
@@ -369,28 +442,81 @@ class MonitoringManager {
         const mapContainer = $('#techMap');
         mapContainer.empty();
         
-        // Створення імітації карти з маркерами
-        const mapContent = `
-            <div class="map-placeholder">
-                <div style="position: relative; width: 100%; height: 100%;">
-                    ${this.technicians.map(tech => `
-                        <div class="tech-marker ${tech.status}" 
-                             style="left: ${50 + Math.random() * 30}%; top: ${50 + Math.random() * 30}%;"
-                             title="${tech.firstName} ${tech.lastName} - ${this.getStatusText(tech.status)}"
-                             onclick="monitoringManager.showTechDetails('${tech.id}')">
-                        </div>
-                    `).join('')}
-                    <div class="text-center" style="position: absolute; bottom: 10px; left: 0; right: 0;">
-                        <small class="text-muted">
-                            <i class="fas fa-map-marker-alt"></i> 
-                            ${this.technicians.length} техніків на карті
-                        </small>
-                    </div>
-                </div>
-            </div>
-        `;
+        // Створення справжньої Leaflet карти
+        const mapDiv = document.createElement('div');
+        mapDiv.id = 'techMapLeaflet';
+        mapDiv.style.height = '100%';
+        mapDiv.style.width = '100%';
+        mapContainer.append(mapDiv);
         
-        mapContainer.html(mapContent);
+        // Ініціалізація карти
+        this.map = L.map('techMapLeaflet').setView([50.4501, 30.5234], 12);
+        
+        // Додавання тайлів
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(this.map);
+        
+        // Додавання маркерів для техніків
+        this.technicians.forEach(tech => {
+            if (tech.location && tech.location.lat && tech.location.lng) {
+                const markerColor = this.getMarkerColor(tech.status);
+                const marker = L.marker([tech.location.lat, tech.location.lng], {
+                    icon: this.createTechIcon(markerColor)
+                }).addTo(this.map);
+                
+                // Popup з інформацією про техніка
+                const popupContent = `
+                    <div class="tech-popup">
+                        <h6><i class="fas fa-user"></i> ${tech.firstName} ${tech.lastName}</h6>
+                        <p><strong>ID:</strong> ${tech.id}</p>
+                        <p><strong>Статус:</strong> <span style="color: ${markerColor}">${this.getStatusText(tech.status)}</span></p>
+                        <p><strong>Батарея:</strong> ${tech.battery}%</p>
+                        <p><strong>Сигнал:</strong> ${this.renderSignalBars(tech.signal)}</p>
+                        <p><strong>Останнє оновлення:</strong> ${this.formatDateTime(tech.lastUpdate)}</p>
+                        ${tech.currentAssignment ? `<p><strong>Завдання:</strong> ${this.getAssignmentTitle(tech.currentAssignment)}</p>` : ''}
+                        <button class="btn btn-primary btn-sm" onclick="monitoringManager.showTechDetails('${tech.id}')">
+                            <i class="fas fa-info-circle"></i> Деталі
+                        </button>
+                    </div>
+                `;
+                
+                marker.bindPopup(popupContent);
+            }
+        });
+        
+        // Підгонка карти до всіх маркерів
+        if (this.technicians.length > 0) {
+            const validLocations = this.technicians
+                .filter(tech => tech.location && tech.location.lat && tech.location.lng)
+                .map(tech => [tech.location.lat, tech.location.lng]);
+            
+            if (validLocations.length > 0) {
+                this.map.fitBounds(validLocations, { padding: [20, 20] });
+            }
+        }
+        
+        console.log(`Карта ініціалізована з ${this.technicians.length} техніками`);
+    }
+    
+    createTechIcon(color) {
+        return L.divIcon({
+            html: `<i class="fas fa-user" style="color: ${color}; font-size: 16px;"></i>`,
+            className: 'tech-map-marker',
+            iconSize: [30, 30],
+            iconAnchor: [15, 30]
+        });
+    }
+    
+    getMarkerColor(status) {
+        switch (status) {
+            case 'online': return '#28a745';
+            case 'busy': return '#ffc107';
+            case 'offline': return '#6c757d';
+            case 'emergency': return '#dc3545';
+            default: return '#007bff';
+        }
     }
 
     updateBadges() {
@@ -807,13 +933,31 @@ class MonitoringManager {
     }
 
     centerMap() {
-        this.showToast('Карта центрована', 'info');
-        // Логіка центрування карти
+        if (this.map && this.technicians.length > 0) {
+            const validLocations = this.technicians
+                .filter(tech => tech.location && tech.location.lat && tech.location.lng)
+                .map(tech => [tech.location.lat, tech.location.lng]);
+            
+            if (validLocations.length > 0) {
+                this.map.fitBounds(validLocations, { padding: [20, 20] });
+                this.showToast('Карта центрована', 'info');
+            }
+        }
     }
 
     toggleHeatmap() {
-        this.showToast('Теплова карта переключена', 'info');
-        // Логіка теплової карти
+        // Теплова карта - простий toggle видимості маркерів
+        if (this.map) {
+            const markers = this.map.getLayers().filter(layer => layer instanceof L.Marker);
+            markers.forEach(marker => {
+                if (marker.getOpacity() === 1) {
+                    marker.setOpacity(0.3);
+                } else {
+                    marker.setOpacity(1);
+                }
+            });
+            this.showToast('Теплова карта переключена', 'info');
+        }
     }
 
     initializeCharts() {
@@ -902,8 +1046,9 @@ class MonitoringManager {
         return `${hours} год ${minutes} хв`;
     }
 
-    getRefreshRate() {
-        return Math.floor(Math.random() * 500) + 100; // Імітація
+    getAssignmentTitle(assignmentId) {
+        const assignment = this.assignments.find(a => a.id === assignmentId);
+        return assignment ? assignment.title : 'Невідоме завдання';
     }
 
     showToast(message, type = 'info') {
