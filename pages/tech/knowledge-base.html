@@ -207,7 +207,7 @@
                     </a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="index.html" class="nav-link">Головна</a>
+                    <a href="dashboard.html" class="nav-link">Головна</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
                     <a href="tasks.html" class="nav-link">Завдання</a>
@@ -244,7 +244,7 @@
 
         <!-- Бічна панель -->
         <aside class="main-sidebar sidebar-dark-primary elevation-4">
-            <a href="index.html" class="brand-link text-center">
+            <a href="dashboard.html" class="brand-link text-center">
                 <span class="brand-text font-weight-light">Технік</span>
             </a>
             
@@ -262,7 +262,7 @@
                 <nav class="mt-2">
                     <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                         <li class="nav-item">
-                            <a href="index.html" class="nav-link">
+                            <a href="dashboard.html" class="nav-link">
                                 <i class="nav-icon fas fa-tachometer-alt"></i>
                                 <p>Головна</p>
                             </a>
@@ -327,7 +327,7 @@
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="index.html">Головна</a></li>
+                                <li class="breadcrumb-item"><a href="dashboard.html">Головна</a></li>
                                 <li class="breadcrumb-item active">База знань</li>
                             </ol>
                         </div>
@@ -504,9 +504,31 @@
                                         <div class="col-md-3 mb-3">
                                             <div class="card bg-light">
                                                 <div class="card-body text-center">
+                                                    <i class="fas fa-calendar-alt fa-2x text-info mb-2"></i>
+                                                    <h6>Розклад</h6>
+                                                    <button class="btn btn-sm btn-outline-info" onclick="window.location.href='schedule.html'">
+                                                        <i class="fas fa-calendar"></i> Переглянути
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <div class="card bg-light">
+                                                <div class="card-body text-center">
+                                                    <i class="fas fa-chart-bar fa-2x text-warning mb-2"></i>
+                                                    <h6>Звіти</h6>
+                                                    <button class="btn btn-sm btn-outline-warning" onclick="window.location.href='reports.html'">
+                                                        <i class="fas fa-chart-bar"></i> Переглянути
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <div class="card bg-light">
+                                                <div class="card-body text-center">
                                                     <i class="fas fa-file-pdf fa-2x text-danger mb-2"></i>
                                                     <h6>Технічні мануали</h6>
-                                                    <button class="btn btn-sm btn-outline-danger">
+                                                    <button class="btn btn-sm btn-outline-danger" onclick="window.location.href='manuals.html'">
                                                         <i class="fas fa-download"></i> Завантажити
                                                     </button>
                                                 </div>
@@ -517,7 +539,7 @@
                                                 <div class="card-body text-center">
                                                     <i class="fas fa-video fa-2x text-primary mb-2"></i>
                                                     <h6>Відеоінструкції</h6>
-                                                    <button class="btn btn-sm btn-outline-primary">
+                                                    <button class="btn btn-sm btn-outline-primary" onclick="window.location.href='videos.html'">
                                                         <i class="fas fa-play"></i> Переглянути
                                                     </button>
                                                 </div>
@@ -528,7 +550,7 @@
                                                 <div class="card-body text-center">
                                                     <i class="fas fa-list-check fa-2x text-success mb-2"></i>
                                                     <h6>Чек-листи</h6>
-                                                    <button class="btn btn-sm btn-outline-success">
+                                                    <button class="btn btn-sm btn-outline-success" onclick="window.location.href='checklists.html'">
                                                         <i class="fas fa-download"></i> Отримати
                                                     </button>
                                                 </div>
@@ -539,7 +561,7 @@
                                                 <div class="card-body text-center">
                                                     <i class="fas fa-phone-alt fa-2x text-warning mb-2"></i>
                                                     <h6>Підтримка</h6>
-                                                    <button class="btn btn-sm btn-outline-warning">
+                                                    <button class="btn btn-sm btn-outline-warning" onclick="window.location.href='support.html'">
                                                         <i class="fas fa-phone"></i> Зателефонувати
                                                     </button>
                                                 </div>
