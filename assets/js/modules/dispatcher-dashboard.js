@@ -33,7 +33,7 @@ class DispatcherDashboard {
     constructor() {
         console.log('DispatcherDashboard constructor called');
         console.log('jQuery available:', typeof $ !== 'undefined');
-        console.log('jQuery version:', $.fn.jquery);
+        console.log('jQuery version:', $.fn ? $.fn.jquery : 'unknown');
         this.requests = [];
         this.technicians = [];
         this.activities = [];
@@ -44,14 +44,19 @@ class DispatcherDashboard {
 
     init() {
         console.log('DispatcherDashboard init called');
-        this.loadRequests();
-        this.loadTechnicians();
-        this.loadActivities();
-        this.loadNotifications();
-        this.setupRealTimeUpdates();
-        this.updateStats();
-        this.setupEventListeners();
+        try {
+            this.loadRequests();
+            this.loadTechnicians();
+            this.loadActivities();
+            this.loadNotifications();
+            this.setupRealTimeUpdates();
+            this.updateStats();
+            this.setupEventListeners();
             this.setupFilters();
+            console.log('DispatcherDashboard init completed');
+        } catch (error) {
+            console.error('Error in DispatcherDashboard init:', error);
+        }
     }
 
     // Налаштування обробників подій
@@ -61,6 +66,8 @@ class DispatcherDashboard {
                 console.error('jQuery not available for event listeners');
                 return;
             }
+
+            try {
             // Фільтрація та сортування заявок
             $('#priorityFilter, #statusFilter, #technicianFilter, #dateFilter, #sortSelect').on('change', () => {
                 this.renderRequests();
@@ -129,6 +136,9 @@ class DispatcherDashboard {
         $('#quickEmergency').on('click', () => {
             this.emergencyProtocol();
         });
+        } catch (error) {
+            console.error('Error setting up event listeners:', error);
+        }
     }
 
     // Завантаження заявок
@@ -233,39 +243,54 @@ class DispatcherDashboard {
     // Відображення заявок у таблиці
     renderRequests() {
         const tbody = document.getElementById('requestsTableBody');
+        if (!tbody) {
+            console.error('requestsTableBody element not found');
+            return;
+        }
         tbody.innerHTML = '';
         // Отримання фільтрів
-        const priorityFilter = document.getElementById('priorityFilter').value;
-        const statusFilter = document.getElementById('statusFilter').value;
-        const technicianFilter = document.getElementById('technicianFilter').value;
-        const dateFilter = document.getElementById('dateFilter').value;
-        const sortSelect = document.getElementById('sortSelect').value;
+        const priorityFilter = document.getElementById('priorityFilter');
+        const statusFilter = document.getElementById('statusFilter');
+        const technicianFilter = document.getElementById('technicianFilter');
+        const dateFilter = document.getElementById('dateFilter');
+        const sortSelect = document.getElementById('sortSelect');
+
+        if (!priorityFilter || !statusFilter || !technicianFilter || !dateFilter || !sortSelect) {
+            console.error('Filter elements not found');
+            return;
+        }
+
+        const priorityFilterValue = priorityFilter.value;
+        const statusFilterValue = statusFilter.value;
+        const technicianFilterValue = technicianFilter.value;
+        const dateFilterValue = dateFilter.value;
+        const sortSelectValue = sortSelect.value;
 
         let filteredRequests = this.requests.filter(request => {
-            let priorityMatch = priorityFilter === 'all' || request.priority === priorityFilter;
-            let statusMatch = statusFilter === 'all' || request.status === statusFilter;
-            let techMatch = technicianFilter === 'all' || (request.assignedTo && request.assignedTo === technicianFilter);
+            let priorityMatch = priorityFilterValue === 'all' || request.priority === priorityFilterValue;
+            let statusMatch = statusFilterValue === 'all' || request.status === statusFilterValue;
+            let techMatch = technicianFilterValue === 'all' || (request.assignedTo && request.assignedTo === technicianFilterValue);
             let dateMatch = true;
-            if (dateFilter) {
+            if (dateFilterValue) {
                 // Порівнюємо тільки дату (без часу)
                 let reqDate = request.date.split(' ')[0];
-                dateMatch = reqDate === dateFilter;
+                dateMatch = reqDate === dateFilterValue;
             }
             return priorityMatch && statusMatch && techMatch && dateMatch;
         });
 
         // Сортування
-        if (sortSelect === 'date-desc') {
+        if (sortSelectValue === 'date-desc') {
             filteredRequests.sort((a, b) => new Date(b.date) - new Date(a.date));
-        } else if (sortSelect === 'date-asc') {
+        } else if (sortSelectValue === 'date-asc') {
             filteredRequests.sort((a, b) => new Date(a.date) - new Date(b.date));
-        } else if (sortSelect === 'priority-desc') {
+        } else if (sortSelectValue === 'priority-desc') {
             const prio = { 'high': 3, 'medium': 2, 'low': 1 };
             filteredRequests.sort((a, b) => prio[b.priority] - prio[a.priority]);
-        } else if (sortSelect === 'priority-asc') {
+        } else if (sortSelectValue === 'priority-asc') {
             const prio = { 'high': 3, 'medium': 2, 'low': 1 };
             filteredRequests.sort((a, b) => prio[a.priority] - prio[b.priority]);
-        } else if (sortSelect === 'status') {
+        } else if (sortSelectValue === 'status') {
             const statusOrder = { 'new': 1, 'assigned': 2, 'in-progress': 3, 'completed': 4 };
             filteredRequests.sort((a, b) => statusOrder[a.status] - statusOrder[b.status]);
         }
@@ -463,10 +488,17 @@ class DispatcherDashboard {
     // Відображення техніків
     renderTechnicians() {
         const techList = document.getElementById('techList');
+        if (!techList) {
+            console.error('techList element not found');
+            return;
+        }
         techList.innerHTML = '';
         
         const onlineTechs = this.technicians.filter(t => t.status === 'online').length;
-        document.getElementById('onlineTechs').textContent = `${onlineTechs} онлайн`;
+        const onlineTechsElement = document.getElementById('onlineTechs');
+        if (onlineTechsElement) {
+            onlineTechsElement.textContent = `${onlineTechs} онлайн`;
+        }
         
         // Сортування: спочатку онлайн, потім зайняті, потім офлайн
         const sortedTechs = [...this.technicians].sort((a, b) => {
@@ -752,16 +784,26 @@ class DispatcherDashboard {
         const availableTechs = this.technicians.filter(t => t.status === 'online').length;
         const urgentRequests = this.requests.filter(r => r.priority === 'high' && r.status !== 'completed').length;
         
-        document.getElementById('totalRequests').textContent = totalRequests;
-        document.getElementById('pendingRequests').textContent = pendingRequests;
-        document.getElementById('availableTechs').textContent = availableTechs;
-        document.getElementById('urgentRequests').textContent = urgentRequests;
+        const totalRequestsElement = document.getElementById('totalRequests');
+        const pendingRequestsElement = document.getElementById('pendingRequests');
+        const availableTechsElement = document.getElementById('availableTechs');
+        const urgentRequestsElement = document.getElementById('urgentRequests');
+        
+        if (totalRequestsElement) totalRequestsElement.textContent = totalRequests;
+        if (pendingRequestsElement) pendingRequestsElement.textContent = pendingRequests;
+        if (availableTechsElement) availableTechsElement.textContent = availableTechs;
+        if (urgentRequestsElement) urgentRequestsElement.textContent = urgentRequests;
         
         // Оновлення бейджів
-        document.getElementById('statsBadge').textContent = totalRequests;
-        document.getElementById('assignmentsBadge').textContent = pendingRequests;
-        document.getElementById('monitoringBadge').textContent = availableTechs;
-        document.getElementById('techsBadge').textContent = availableTechs;
+        const statsBadge = document.getElementById('statsBadge');
+        const assignmentsBadge = document.getElementById('assignmentsBadge');
+        const monitoringBadge = document.getElementById('monitoringBadge');
+        const techsBadge = document.getElementById('techsBadge');
+        
+        if (statsBadge) statsBadge.textContent = totalRequests;
+        if (assignmentsBadge) assignmentsBadge.textContent = pendingRequests;
+        if (monitoringBadge) monitoringBadge.textContent = availableTechs;
+        if (techsBadge) techsBadge.textContent = availableTechs;
     }
 
     // Налаштування реальних оновлень
