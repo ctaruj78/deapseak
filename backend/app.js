@@ -1,0 +1,38 @@
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+
+const mongoConnect = require('./config/mongo');
+const pgConnect = require('./config/postgres');
+
+const technicianRoutes = require('./routes/technician');
+const assignmentRoutes = require('./routes/assignment');
+const liftRoutes = require('./routes/lift');
+const notificationRoutes = require('./routes/notification');
+
+const app = express();
+const PORT = process.env.PORT || 3001;
+
+app.use(cors());
+app.use(bodyParser.json());
+
+app.use('/api/technicians', technicianRoutes);
+app.use('/api/assignments', assignmentRoutes);
+app.use('/api/lifts', liftRoutes);
+app.use('/api/notifications', notificationRoutes);
+
+app.get('/', (req, res) => {
+  res.send('Deapseak backend API is running');
+});
+
+Promise.all([mongoConnect(), pgConnect()])
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Backend server running on http://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('DB connection error:', err);
+    process.exit(1);
+  });
