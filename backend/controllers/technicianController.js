@@ -10,7 +10,13 @@ exports.getAllTechniciansMongo = async (req, res) => {
   }
 };
 
+const { validationResult } = require('express-validator');
+
 exports.createTechnicianMongo = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
   try {
     const technician = new TechnicianMongo(req.body);
     await technician.save();
@@ -21,6 +27,10 @@ exports.createTechnicianMongo = async (req, res) => {
 };
 
 exports.updateTechnicianMongo = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
   try {
     const technician = await TechnicianMongo.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.json(technician);
@@ -49,6 +59,10 @@ exports.getAllTechniciansSQL = async (req, res) => {
 };
 
 exports.createTechnicianSQL = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
   try {
     const technician = await TechnicianSQL.create(req.body);
     res.status(201).json(technician);
@@ -58,6 +72,10 @@ exports.createTechnicianSQL = async (req, res) => {
 };
 
 exports.updateTechnicianSQL = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
   try {
     const technician = await TechnicianSQL.update(req.body, { where: { id: req.params.id } });
     res.json(technician);
