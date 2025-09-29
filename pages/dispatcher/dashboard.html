@@ -363,6 +363,12 @@
                 </div>
             </section>
 
+            <!-- Debug info -->
+            <div id="debugInfo" style="background: #f8f9fa; padding: 10px; margin: 10px; border: 1px solid #dee2e6; display: none;">
+                <strong>Debug Info:</strong>
+                <div id="debugContent"></div>
+            </div>
+
             <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
@@ -725,7 +731,35 @@
             }
         }
 
+        // Глобальні функції для кнопок (fallback)
+        function viewRequest(id) {
+            if (window.dispatcherDashboard) {
+                window.dispatcherDashboard.viewRequest(id);
+            }
+        }
+
+        function assignRequest(id) {
+            if (window.dispatcherDashboard) {
+                window.dispatcherDashboard.assignRequest(id);
+            }
+        }
+
+        function editRequest(id) {
+            if (window.dispatcherDashboard) {
+                window.dispatcherDashboard.editRequest(id);
+            }
+        }
+
+        function updateDebugInfo(message) {
+            const debugDiv = document.getElementById('debugInfo');
+            const debugContent = document.getElementById('debugContent');
+            debugDiv.style.display = 'block';
+            debugContent.innerHTML += `<div>${new Date().toLocaleTimeString()}: ${message}</div>`;
+        }
+
         $(document).ready(function() {
+            updateDebugInfo('jQuery ready, version: ' + $.fn.jquery);
+            
             // Ініціалізація AdminLTE
             $('[data-widget="pushmenu"]').PushMenu();
             
@@ -752,14 +786,22 @@
             }
 
             // Ініціалізація панелі диспетчера
-            window.dispatcherDashboard = new DispatcherDashboard();
+            if (typeof $ !== 'undefined') {
+                window.dispatcherDashboard = new DispatcherDashboard();
+                updateDebugInfo('DispatcherDashboard initialized');
+            } else {
+                console.error('jQuery not loaded');
+                updateDebugInfo('jQuery not loaded');
+            }
             
             // Фільтрація подій
             $('[data-type]').on('click', function() {
                 const type = $(this).data('type');
                 $('[data-type]').removeClass('active');
                 $(this).addClass('active');
-                dispatcherDashboard.filterActivities(type);
+                if (window.dispatcherDashboard) {
+                    window.dispatcherDashboard.filterActivities(type);
+                }
             });
         });
     </script>

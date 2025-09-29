@@ -31,6 +31,9 @@ class DispatcherDashboard {
         URL.revokeObjectURL(url);
     }
     constructor() {
+        console.log('DispatcherDashboard constructor called');
+        console.log('jQuery available:', typeof $ !== 'undefined');
+        console.log('jQuery version:', $.fn.jquery);
         this.requests = [];
         this.technicians = [];
         this.activities = [];
@@ -40,6 +43,7 @@ class DispatcherDashboard {
     }
 
     init() {
+        console.log('DispatcherDashboard init called');
         this.loadRequests();
         this.loadTechnicians();
         this.loadActivities();
@@ -52,6 +56,11 @@ class DispatcherDashboard {
 
     // Налаштування обробників подій
     setupEventListeners() {
+            console.log('Setting up event listeners, jQuery available:', typeof $ !== 'undefined');
+            if (typeof $ === 'undefined') {
+                console.error('jQuery not available for event listeners');
+                return;
+            }
             // Фільтрація та сортування заявок
             $('#priorityFilter, #statusFilter, #technicianFilter, #dateFilter, #sortSelect').on('change', () => {
                 this.renderRequests();
@@ -66,6 +75,22 @@ class DispatcherDashboard {
                     this.requests.forEach(r => this.selectedRequests.add(r.id));
                 }
                 this.renderBulkActions();
+            });
+
+            // Обробники для кнопок дій (делегування подій)
+            $(document).on('click', '.btn-action', (e) => {
+                e.preventDefault();
+                const action = $(e.target).closest('.btn-action').data('action');
+                const id = parseInt($(e.target).closest('.btn-action').data('id'));
+                console.log('Button action clicked:', action, 'id:', id);
+                
+                if (action === 'view') {
+                    this.viewRequest(id);
+                } else if (action === 'assign') {
+                    this.assignRequest(id);
+                } else if (action === 'edit') {
+                    this.editRequest(id);
+                }
             });
 
         // Оновлення даних
@@ -287,13 +312,13 @@ class DispatcherDashboard {
                 <td>${request.date}</td>
                 <td>
                     <div class="btn-group btn-group-sm">
-                        <button class="btn btn-info" onclick="dispatcherDashboard.viewRequest(${request.id})" title="Перегляд">
+                        <button class="btn btn-info btn-action" data-action="view" data-id="${request.id}" title="Перегляд">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="btn btn-primary" onclick="dispatcherDashboard.assignRequest(${request.id})" title="Призначити">
+                        <button class="btn btn-primary btn-action" data-action="assign" data-id="${request.id}" title="Призначити">
                             <i class="fas fa-user-check"></i>
                         </button>
-                        <button class="btn btn-success" onclick="dispatcherDashboard.editRequest(${request.id})" title="Редагувати">
+                        <button class="btn btn-success btn-action" data-action="edit" data-id="${request.id}" title="Редагувати">
                             <i class="fas fa-edit"></i>
                         </button>
                     </div>
@@ -862,6 +887,7 @@ class DispatcherDashboard {
 
     // Перегляд заявки
     viewRequest(requestId) {
+        console.log('viewRequest called with id:', requestId);
         const request = this.requests.find(r => r.id === requestId);
         if (request) {
             const modalContent = `
@@ -929,6 +955,7 @@ class DispatcherDashboard {
 
     // Призначення заявки
     assignRequest(requestId) {
+        console.log('assignRequest called with id:', requestId);
         const request = this.requests.find(r => r.id === requestId);
         if (request) {
             // Заповнення випадаючих списків
@@ -1412,6 +1439,9 @@ class DispatcherDashboard {
 }
 
 // Ініціалізація при завантаженні сторінки
-document.addEventListener('DOMContentLoaded', function() {
-    window.dispatcherDashboard = new DispatcherDashboard();
-});
+// document.addEventListener('DOMContentLoaded', function() {
+//     // Перевірка, чи вже ініціалізовано
+//     if (!window.dispatcherDashboard) {
+//         window.dispatcherDashboard = new DispatcherDashboard();
+//     }
+// });
