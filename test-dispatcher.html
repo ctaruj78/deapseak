@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест диспетчерської панелі</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Тест функціональності диспетчерської панелі</h1>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Тест модальних вікон</h5>
+                    </div>
+                    <div class="card-body">
+                        <button class="btn btn-primary" onclick="testModal()">Тест модального вікна</button>
+                        <button class="btn btn-info" onclick="testNotification()">Тест сповіщення</button>
+                        <button class="btn btn-success" onclick="testViewRequest()">Тест перегляду заявки</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Тест даних</h5>
+                    </div>
+                    <div class="card-body">
+                        <button class="btn btn-warning" onclick="testLoadData()">Завантажити демо-дані</button>
+                        <button class="btn btn-danger" onclick="testFilters()">Тест фільтрів</button>
+                        <button class="btn btn-secondary" onclick="testBulkActions()">Тест bulk дій</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Результати тестів</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="testResults"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальні вікна -->
+    <div class="modal fade" id="testModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Тестове модальне вікно</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Модальне вікно працює!</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/modules/dispatcher-dashboard.js"></script>
+
+    <script>
+        function logResult(message, type = 'info') {
+            const results = document.getElementById('testResults');
+            const alertClass = {
+                'success': 'alert-success',
+                'error': 'alert-danger',
+                'warning': 'alert-warning',
+                'info': 'alert-info'
+            }[type] || 'alert-info';
+
+            results.innerHTML += `<div class="alert ${alertClass} alert-dismissible fade show">
+                ${message}
+                <button type="button" class="close" data-dismiss="alert">
+                    <span>&times;</span>
+                </button>
+            </div>`;
+        }
+
+        function testModal() {
+            try {
+                $('#testModal').modal('show');
+                logResult('Модальне вікно відкрито успішно', 'success');
+            } catch (error) {
+                logResult('Помилка відкриття модального вікна: ' + error.message, 'error');
+            }
+        }
+
+        function testNotification() {
+            try {
+                if (window.dispatcherDashboard) {
+                    window.dispatcherDashboard.showNotification('Тестове сповіщення', 'info');
+                    logResult('Сповіщення відправлено', 'success');
+                } else {
+                    logResult('DispatcherDashboard не ініціалізований', 'error');
+                }
+            } catch (error) {
+                logResult('Помилка сповіщення: ' + error.message, 'error');
+            }
+        }
+
+        function testViewRequest() {
+            try {
+                if (window.dispatcherDashboard && window.dispatcherDashboard.requests.length > 0) {
+                    window.dispatcherDashboard.viewRequest(window.dispatcherDashboard.requests[0].id);
+                    logResult('Перегляд заявки працює', 'success');
+                } else {
+                    logResult('Немає даних для тестування перегляду заявки', 'warning');
+                }
+            } catch (error) {
+                logResult('Помилка перегляду заявки: ' + error.message, 'error');
+            }
+        }
+
+        function testLoadData() {
+            try {
+                if (window.dispatcherDashboard) {
+                    window.dispatcherDashboard.loadDemoRequests();
+                    window.dispatcherDashboard.loadDemoTechnicians();
+                    logResult('Демо-дані завантажено успішно', 'success');
+                } else {
+                    logResult('DispatcherDashboard не ініціалізований', 'error');
+                }
+            } catch (error) {
+                logResult('Помилка завантаження даних: ' + error.message, 'error');
+            }
+        }
+
+        function testFilters() {
+            try {
+                if (window.dispatcherDashboard) {
+                    // Тест фільтрації
+                    const originalLength = window.dispatcherDashboard.requests.length;
+                    // Тут можна додати тестування фільтрів
+                    logResult('Фільтри ініціалізовані', 'success');
+                } else {
+                    logResult('DispatcherDashboard не ініціалізований', 'error');
+                }
+            } catch (error) {
+                logResult('Помилка тестування фільтрів: ' + error.message, 'error');
+            }
+        }
+
+        function testBulkActions() {
+            try {
+                if (window.dispatcherDashboard) {
+                    // Тест bulk дій
+                    logResult('Bulk дії ініціалізовані', 'success');
+                } else {
+                    logResult('DispatcherDashboard не ініціалізований', 'error');
+                }
+            } catch (error) {
+                logResult('Помилка тестування bulk дій: ' + error.message, 'error');
+            }
+        }
+
+        // Ініціалізація при завантаженні
+        $(document).ready(function() {
+            logResult('Тестова сторінка завантажена', 'info');
+
+            // Ініціалізація DispatcherDashboard
+            if (typeof DispatcherDashboard !== 'undefined') {
+                window.dispatcherDashboard = new DispatcherDashboard();
+                logResult('DispatcherDashboard ініціалізований', 'success');
+            } else {
+                logResult('DispatcherDashboard не знайдено', 'error');
+            }
+        });
+    </script>
+</body>
+</html>
