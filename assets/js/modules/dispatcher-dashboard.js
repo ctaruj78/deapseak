@@ -84,12 +84,16 @@ class DispatcherDashboard {
                 const id = parseInt($(e.target).closest('.btn-action').data('id'));
                 console.log('Button action clicked:', action, 'id:', id);
                 
-                if (action === 'view') {
-                    this.viewRequest(id);
-                } else if (action === 'assign') {
-                    this.assignRequest(id);
-                } else if (action === 'edit') {
-                    this.editRequest(id);
+                if (window.dispatcherDashboard) {
+                    if (action === 'view') {
+                        window.dispatcherDashboard.viewRequest(id);
+                    } else if (action === 'assign') {
+                        window.dispatcherDashboard.assignRequest(id);
+                    } else if (action === 'edit') {
+                        window.dispatcherDashboard.editRequest(id);
+                    }
+                } else {
+                    console.error('dispatcherDashboard not available');
                 }
             });
 
@@ -312,13 +316,13 @@ class DispatcherDashboard {
                 <td>${request.date}</td>
                 <td>
                     <div class="btn-group btn-group-sm">
-                        <button class="btn btn-info btn-action" data-action="view" data-id="${request.id}" title="Перегляд">
+                        <button class="btn btn-info btn-action" data-action="view" data-id="${request.id}" onclick="window.dispatcherDashboard.viewRequest(${request.id})" title="Перегляд">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="btn btn-primary btn-action" data-action="assign" data-id="${request.id}" title="Призначити">
+                        <button class="btn btn-primary btn-action" data-action="assign" data-id="${request.id}" onclick="window.dispatcherDashboard.assignRequest(${request.id})" title="Призначити">
                             <i class="fas fa-user-check"></i>
                         </button>
-                        <button class="btn btn-success btn-action" data-action="edit" data-id="${request.id}" title="Редагувати">
+                        <button class="btn btn-success btn-action" data-action="edit" data-id="${request.id}" onclick="window.dispatcherDashboard.editRequest(${request.id})" title="Редагувати">
                             <i class="fas fa-edit"></i>
                         </button>
                     </div>
@@ -335,9 +339,12 @@ class DispatcherDashboard {
         tbody.querySelectorAll('.request-select').forEach(function(cb) {
             cb.onchange = function(e) {
                 var id = parseInt(cb.dataset.id);
-                if (cb.checked) dispatcherDashboard.selectedRequests.add(id);
-                else dispatcherDashboard.selectedRequests.delete(id);
-                dispatcherDashboard.renderBulkActions();
+                if (cb.checked) {
+                    window.dispatcherDashboard.selectedRequests.add(id);
+                } else {
+                    window.dispatcherDashboard.selectedRequests.delete(id);
+                }
+                window.dispatcherDashboard.renderBulkActions();
             };
         });
     }
@@ -887,9 +894,10 @@ class DispatcherDashboard {
 
     // Перегляд заявки
     viewRequest(requestId) {
-        console.log('viewRequest called with id:', requestId);
+        console.log('viewRequest called with id:', requestId, 'Available requests:', this.requests.length);
         const request = this.requests.find(r => r.id === requestId);
         if (request) {
+            console.log('Found request:', request.title);
             const modalContent = `
                 <div class="modal-header">
                     <h5 class="modal-title">Заявка #${request.id}</h5>
@@ -924,11 +932,13 @@ class DispatcherDashboard {
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
-                    <button type="button" class="btn btn-primary" onclick="dispatcherDashboard.assignRequest(${request.id})">Призначити</button>
+                    <button type="button" class="btn btn-primary" onclick="window.dispatcherDashboard.assignRequest(${request.id})">Призначити</button>
                 </div>
             `;
             
             this.showCustomModal(modalContent);
+        } else {
+            console.error('Request not found with id:', requestId);
         }
     }
 
@@ -955,9 +965,10 @@ class DispatcherDashboard {
 
     // Призначення заявки
     assignRequest(requestId) {
-        console.log('assignRequest called with id:', requestId);
+        console.log('assignRequest called with id:', requestId, 'Available requests:', this.requests.length, 'Available technicians:', this.technicians.length);
         const request = this.requests.find(r => r.id === requestId);
         if (request) {
+            console.log('Found request for assignment:', request.title);
             // Заповнення випадаючих списків
             const requestSelect = document.getElementById('requestSelect');
             const techSelect = document.getElementById('techSelect');
@@ -975,6 +986,7 @@ class DispatcherDashboard {
             
             // Додавання доступних техніків
             const availableTechs = this.technicians.filter(t => t.status === 'online' && t.workload !== 'high');
+            console.log('Available technicians for assignment:', availableTechs.length);
             availableTechs.forEach(tech => {
                 const techOption = document.createElement('option');
                 techOption.value = tech.id;
@@ -988,6 +1000,9 @@ class DispatcherDashboard {
             document.getElementById('deadline').value = deadline.toISOString().slice(0, 16);
             
             $('#assignmentModal').modal('show');
+            console.log('Assignment modal shown');
+        } else {
+            console.error('Request not found for assignment with id:', requestId);
         }
     }
 
@@ -1005,9 +1020,12 @@ class DispatcherDashboard {
 
     // Редагування заявки
     editRequest(requestId) {
+        console.log('editRequest called with id:', requestId);
         const request = this.requests.find(r => r.id === requestId);
         if (request) {
             alert(`Редагування заявки #${request.id}\n\nЦя функція буде реалізована в наступній версії.`);
+        } else {
+            console.error('Request not found for editing with id:', requestId);
         }
     }
 
