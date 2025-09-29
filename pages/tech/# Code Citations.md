@@ -1,126 +1,97 @@
 # Code Citations
 
-## License: GPL-3.0
-https://github.com/bdamedia/lotresult/blob/0f75e8126dd87f6298d6aa26f513aec9dae49940/public/page-cache/admin/news/5e216979e8a53824d4401fd5/edit.html
+## License: unknown
+https://github.com/tontonsevilla/tontonsevilla.github.io/blob/c46e1b9e8d2e5990716ba4960ecdabc9b6bd4c5c/index.html
 
 ```
-span>
-            </a>
-
-            <div class="sidebar">
-                <nav class="mt-2">
-                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
-                        <li class="nav-item"><a href="dashboard.html" class="nav-link"><i class="nav-icon fas fa-tachometer-alt"></i><p>Головна</p></a></li>
-                        <li class="nav-item"><a href=
+- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 ```
 
 
 ## License: unknown
-https://github.com/jjarj83/BudgetApp/blob/b39afddf132a67de66b9a154f374225d38e973d1/Layouts/sidebar.html
+https://github.com/kimchikimchi/FakeNewsAnalyzer/blob/89c7964a8f5514c5506f426f9cc39d61bc8961c7/app/templates/index.html
 
 ```
-span>
-            </a>
-
-            <div class="sidebar">
-                <nav class="mt-2">
-                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
-                        <li class="nav-item"><a href="dashboard.html" class="nav-link"><i class="nav-icon fas fa-tachometer-alt"></i><p>Головна</p></a></li>
-                        <li class="nav-item"><a href=
+- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 ```
 
 
 ## License: unknown
-https://github.com/Kiznaver/blog_test/blob/b085b0ec02da822465b85796bb5cad9c0ca8b052/resources/views/layouts/admin_layout.blade.php
+https://github.com/fahsaaulanh/System-Management-Hotel/blob/130cad865545a65c65642defc6e06585696cf1cc/resources/views/layouts/appasli.blade.php
 
 ```
-span>
-            </a>
-
-            <div class="sidebar">
-                <nav class="mt-2">
-                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
-                        <li class="nav-item"><a href="dashboard.html" class="nav-link"><i class="nav-icon fas fa-tachometer-alt"></i><p>Головна</p></a></li>
-                        <li class="nav-item"><a href=
+- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 ```
 
 
 ## License: unknown
-https://github.com/Mailu/Mailu/blob/efb3892b09655ee8890571ba828ad51fa16f04be/core/admin/mailu/sso/templates/base_sso.html
+https://github.com/diegoortizmatajira/AML-3406/blob/39a9324144607db6053d4e09f9bac742d0b61b89/facetracker/detection/templates/home.html
 
 ```
-="main-header navbar navbar-expand navbar-white navbar-light">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" data-widget="pushmenu" href="#" role="button">
-                        <i class="fas fa-bars"></i>
-                    </a>
-                </li>
-                <li class="nav-item d-none d-sm-inline-block">
-                    <a href="dashboard.html" class="nav
+- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 ```
 
 
 ## License: unknown
-https://github.com/aobregonr/ProyectoPatrones/blob/b5d9934c594c8f29e0a3397c8906c29453cbb640/WebContent/views/proyect.jsp
+https://github.com/bishal-tech/school-site-2/blob/e6104c7d975b8ba76cbd0d835fc1d5f87595f7f1/admin/pages/5th-class-student.html
 
 ```
-="main-header navbar navbar-expand navbar-white navbar-light">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" data-widget="pushmenu" href="#" role="button">
-                        <i class="fas fa-bars"></i>
-                    </a>
-                </li>
-                <li class="nav-item d-none d-sm-inline-block">
-                    <a href="dashboard.html" class="nav
+- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+```
+
+
+## License: unknown
+https://github.com/ivantelix/technical-test/blob/a712186dab120352e1e02087e39273937013109e/resources/views/home.blade.php
+
+```
+- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 ```
 
 
 ## License: MIT
-https://github.com/langsari/ftu-mooc/blob/52379e2be3fc07670563108ca56751a502b366fc/resources/ui-templates/dashboard.html
+https://github.com/wenzhixin/bootstrap-table-examples/blob/cd65290b660e3f20e18c1489c6865cd42a4d58b7/for-test-bootstrap4.html
 
 ```
-="main-header navbar navbar-expand navbar-white navbar-light">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" data-widget="pushmenu" href="#" role="button">
-                        <i class="fas fa-bars"></i>
-                    </a>
-                </li>
-                <li class="nav-item d-none d-sm-inline-block">
-                    <a href="dashboard.html" class="nav
+- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 ```
 
 
 ## License: unknown
-https://github.com/seungbeomi/development/blob/11c1c6c9f2ec522ce9e90808e1b0876eff5039df/javascript/AdminLTE/3.2.0/iframe-dark.html
+https://github.com/isuams/isuams/blob/253b4c7da0c0e33cb1cfeeb5e8bf395776be3f41/TTC/verification.html
 
 ```
-="main-header navbar navbar-expand navbar-white navbar-light">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" data-widget="pushmenu" href="#" role="button">
-                        <i class="fas fa-bars"></i>
-                    </a>
-                </li>
-                <li class="nav-item d-none d-sm-inline-block">
-                    <a href="dashboard.html" class="nav
-```
-
-
-## License: unknown
-https://github.com/phalcon/phalcon-devtools/blob/e3f1aeb6614b095afae854dc5b1b9a99ae886174/src/Web/Tools/Views/partials/header.volt
-
-```
-="main-header navbar navbar-expand navbar-white navbar-light">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" data-widget="pushmenu" href="#" role="button">
-                        <i class="fas fa-bars"></i>
-                    </a>
-                </li>
-                <li class="nav-item d-none d-sm-inline-block">
-                    <a href="dashboard.html" class="nav
+- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 ```
 
