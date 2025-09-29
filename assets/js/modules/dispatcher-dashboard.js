@@ -57,6 +57,17 @@ class DispatcherDashboard {
                 this.renderRequests();
             });
 
+            // Вибір всіх чекбоксів
+            $('#selectAllRequests').on('change', (e) => {
+                const checked = e.target.checked;
+                $('.request-select').prop('checked', checked);
+                this.selectedRequests.clear();
+                if (checked) {
+                    this.requests.forEach(r => this.selectedRequests.add(r.id));
+                }
+                this.renderBulkActions();
+            });
+
         // Оновлення даних
         $('#refreshBtn').on('click', () => {
             this.loadRequests();
@@ -301,6 +312,7 @@ class DispatcherDashboard {
                 var id = parseInt(cb.dataset.id);
                 if (cb.checked) dispatcherDashboard.selectedRequests.add(id);
                 else dispatcherDashboard.selectedRequests.delete(id);
+                dispatcherDashboard.renderBulkActions();
             };
         });
     }
