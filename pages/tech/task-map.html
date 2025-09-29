@@ -14,29 +14,44 @@
     <div class="info-panel" id="taskInfo"></div>
     <div id="map"></div>
     <script src="../../assets/plugins/leaflet/leaflet.js"></script>
+    <script src="../../assets/js/api.js"></script>
     <script>
     // Отримати ID завдання з URL
     function getTaskId() {
         const params = new URLSearchParams(window.location.search);
         return params.get('id');
     }
-    // Завантажити дані завдання
-    function loadTaskData(taskId) {
-        const requests = JSON.parse(localStorage.getItem('maintenanceRequests')) || [];
-        return requests.find(r => r.id === taskId);
+
+    // Завантажити дані завдання з бекенду
+    async function loadTaskData(taskId) {
+        try {
+            const result = await LiftAPI.getAssignments({ id: taskId });
+            if (Array.isArray(result) && result.length > 0) return result[0];
+            if (result && result.id) return result;
+        } catch (e) {
+            // fallback на localStorage
+            const requests = JSON.parse(localStorage.getItem('maintenanceRequests')) || [];
+            return requests.find(r => r.id == taskId);
+        }
+        return null;
     }
+
     // Відобразити інформацію про завдання
     function renderTaskInfo(task) {
-        if (!task) return;
+        if (!task) {
+            document.getElementById('taskInfo').innerHTML = '<p class="text-danger">Дані завдання не знайдено</p>';
+            return;
+        }
         document.getElementById('taskInfo').innerHTML = `
             <h3>${task.title}</h3>
             <p><strong>Опис:</strong> ${task.description || '—'}</p>
-            <p><strong>Місце роботи:</strong> ${task.location || '—'}</p>
+            <p><strong>Місце роботи:</strong> ${task.location ? (typeof task.location === 'object' ? `${task.location.latitude}, ${task.location.longitude}` : task.location) : '—'}</p>
             <p><strong>Статус:</strong> ${task.status}</p>
             <p><strong>Початок:</strong> ${task.startedAt ? new Date(task.startedAt).toLocaleString('uk-UA') : '—'}</p>
             <p><strong>Завершення:</strong> ${task.completedAt ? new Date(task.completedAt).toLocaleString('uk-UA') : '—'}</p>
         `;
     }
+
     // Відобразити карту
     function renderMap(task) {
         const map = L.map('map').setView([48.3794, 31.1656], 6); // Центр України
@@ -44,28 +59,39 @@
             maxZoom: 19,
             attribution: '© OpenStreetMap'
         }).addTo(map);
-        // Маркер місця роботи (якщо є координати)
-        if (task.geoStart) {
+        let hasMarker = false;
+        // Маркер початку робіт
+        if (task && task.geoStart) {
             L.marker([task.geoStart.latitude, task.geoStart.longitude], {title: 'Початок робіт'}).addTo(map)
                 .bindPopup('Початок робіт').openPopup();
             map.setView([task.geoStart.latitude, task.geoStart.longitude], 14);
+            hasMarker = true;
         }
-        // Маркер завершення (якщо є)
-        if (task.geoEnd) {
+        // Маркер завершення
+        if (task && task.geoEnd) {
             L.marker([task.geoEnd.latitude, task.geoEnd.longitude], {title: 'Завершення'}).addTo(map)
                 .bindPopup('Завершення робіт');
+            hasMarker = true;
         }
-        // Маркер місця роботи (якщо є координати у task.location)
-        if (task.location && typeof task.location === 'object' && task.location.latitude && task.location.longitude) {
+        // Маркер місця роботи
+        if (task && task.location && typeof task.location === 'object' && task.location.latitude && task.location.longitude) {
             L.marker([task.location.latitude, task.location.longitude], {title: 'Місце роботи', icon: L.icon({iconUrl: '../../assets/plugins/leaflet/images/marker-icon.png'})}).addTo(map)
                 .bindPopup('Місце роботи');
+            hasMarker = true;
+        }
+        if (!hasMarker) {
+            map.setView([48.3794, 31.1656], 6);
+            L.popup().setLatLng([48.3794, 31.1656]).setContent('Координати для завдання не знайдено').openOn(map);
         }
     }
+
     // ініціалізація
-    const taskId = getTaskId();
-    const task = loadTaskData(taskId);
-    renderTaskInfo(task);
-    renderMap(task);
+    (async function(){
+        const taskId = getTaskId();
+        const task = await loadTaskData(taskId);
+        renderTaskInfo(task);
+        renderMap(task);
+    })();
     </script>
 </body>
 </html>
