@@ -323,14 +323,14 @@ class DispatcherDashboard {
                 <td>${request.date}</td>
                 <td>
                     <div class="btn-group btn-group-sm">
-                        <button class="btn btn-info btn-sm btn-action" data-action="view" data-id="${request.id}" onclick="window.dispatcherDashboard.viewRequest(${request.id})" title="Перегляд">
-                            👁️ Перегляд
+                        <button class="btn btn-info btn-xs" data-action="view" data-id="${request.id}" onclick="window.dispatcherDashboard.viewRequest(${request.id})" title="Перегляд">
+                            <i class="fas fa-eye"></i>
                         </button>
-                        <button class="btn btn-warning btn-sm btn-action" data-action="assign" data-id="${request.id}" onclick="window.dispatcherDashboard.assignRequest(${request.id})" title="Призначити">
-                            👥 Призначити
+                        <button class="btn btn-warning btn-xs" data-action="assign" data-id="${request.id}" onclick="window.dispatcherDashboard.assignRequest(${request.id})" title="Призначити">
+                            <i class="fas fa-user-plus"></i>
                         </button>
-                        <button class="btn btn-success btn-sm btn-action" data-action="edit" data-id="${request.id}" onclick="window.dispatcherDashboard.editRequest(${request.id})" title="Редагувати">
-                            ✏️ Редагувати
+                        <button class="btn btn-success btn-xs" data-action="edit" data-id="${request.id}" onclick="window.dispatcherDashboard.editRequest(${request.id})" title="Редагувати">
+                            <i class="fas fa-edit"></i>
                         </button>
                     </div>
                 </td>
