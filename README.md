@@ -1,32 +1,216 @@
-# LiftMaster Pro
+# DeapSeaK - Система управління ліфтами
 
-## Опис
+## Опис проекту
 
-Це багатопанельний веб-додаток для управління ліфтами, користувачами, інспекціями, рахунками, звітами та іншими процесами. Використовується AdminLTE, Bootstrap, jQuery, модульна структура JS.
+DeapSeaK - це повнофункціональна система управління ліфтами з багаторольовим доступом, QR-кодуванням, MongoDB інтеграцією та сучасним веб-інтерфейсом. Система включає панелі для адміністраторів, диспетчерів, техніків і клієнтів.
+
+## Основні функції
+
+- 🏢 **Багаторольова система** - адмін, диспетчер, технік, клієнт
+- 📱 **QR-система** - генерація, сканування та управління QR-кодами
+- 🗄️ **MongoDB інтеграція** - централізоване зберігання даних
+- 🔐 **JWT авторизація** - безпечна система входу
+- 📊 **Аналітика та звітність** - статистика використання
+- 🎨 **AdminLTE інтерфейс** - сучасний адаптивний дизайн
 
 ## Структура проекту
-- `pages/` — основні сторінки для admin, client, tech, dispatcher, ai-assistant
-- `templates/` — шаблони email, інспекцій, рахунків, звітів
-- `assets/js/` — основні JS-модулі
-- `assets/css/` — стилі
 
-## Запуск локально
+```
+📁 /workspaces/deapseak/
+├── 📄 index.html              # Головна сторінка
+├── 📄 login.html              # Сторінка входу
+├── 🔧 api-server.js           # Backend API сервер
+├── 🗄️ db.js                  # MongoDB підключення
+├── 📋 start-servers.sh        # Скрипт автозапуску серверів
+├── 📁 pages/                  # Сторінки за ролями
+│   ├── admin/                 # Панель адміністратора
+│   ├── dispatcher/            # Панель диспетчера
+│   ├── tech/                  # Панель техніка
+│   └── client/                # Панель клієнта
+├── 📁 assets/                 # Статичні ресурси
+│   ├── css/                   # Стилі
+│   ├── js/                    # JavaScript модулі
+│   └── img/                   # Зображення
+├── 📁 models/                 # MongoDB схеми
+├── 📁 plugins/                # Бібліотеки (AdminLTE, Bootstrap)
+└── 📁 templates/              # Шаблони документів
+```
 
-1. Відкрийте термінал у корені проекту
-2. Запустіть локальний сервер:
-	- Python: `python3 -m http.server 8080`
-	- Node.js: `npx live-server`
-3. Відкрийте браузер і перейдіть на `http://localhost:8080/pages/admin/admin-dashboard.html` (або іншу потрібну сторінку)
+## Швидкий старт
+
+### Автоматичний запуск (рекомендується)
+
+```bash
+# Зробіть скрипт виконуваним (тільки один раз)
+chmod +x start-servers.sh
+
+# Запустіть всі сервери
+./start-servers.sh
+```
+
+### Ручний запуск
+
+#### 1. Запуск MongoDB
+```bash
+# Створіть директорії для MongoDB
+sudo mkdir -p /data/db && sudo chown -R $USER:$USER /data/db
+
+# Запустіть MongoDB
+mongod --dbpath /data/db --logpath /data/db/mongod.log --fork
+```
+
+#### 2. Запуск API сервера
+```bash
+cd /workspaces/deapseak
+node api-server.js
+# Або у фоновому режимі:
+nohup node api-server.js > api-server.log 2>&1 &
+```
+
+#### 3. Запуск веб-сервера
+```bash
+cd /workspaces/deapseak
+python3 -m http.server 8080
+# Або у фоновому режимі:
+nohup python3 -m http.server 8080 > web-server.log 2>&1 &
+```
+
+## Доступ до системи
+
+### Основні URL
+
+- 🏠 **Головна сторінка**: http://localhost:8080/index.html
+- 🔑 **Сторінка входу**: http://localhost:8080/login.html
+- 🎛️ **QR інтерфейс**: http://localhost:8080/qr-interface.html
+- 🔍 **Тестування API**: http://localhost:8080/test-qr-api.html
+
+### Тестові користувачі
+
+| Роль | Логін | Пароль |
+|------|-------|--------|
+| Адміністратор | `admin` | `admin123` |
+| Диспетчер | `dispatcher1` | `dispatcher123` |
+| Технік | `tech1` | `tech123` |
+| Клієнт | `client1` | `client123` |
+
+### Порти серверів
+
+- 📊 **MongoDB**: localhost:27017
+- 🔗 **API сервер**: http://localhost:3001
+- 🌐 **Веб-сайт**: http://localhost:8080
+
+## API Endpoints
+
+### Авторизація
+- `POST /api/login` - Вхід в систему
+- `POST /api/register` - Реєстрація користувача
+
+### QR-система
+- `GET /api/qr/codes` - Отримання QR-кодів
+- `POST /api/qr/codes` - Створення QR-коду
+- `DELETE /api/qr/codes/:id` - Видалення QR-коду
+- `POST /api/qr/scan` - Сканування QR-коду
+- `GET /api/qr/stats` - Статистика QR-системи
+- `GET /api/qr/scans` - Історія сканувань
+
+### Службові
+- `GET /api/health` - Статус API сервера
 
 ## Тестування
-- Всі зміни можна протестувати локально через браузер
-- Для інтеграційних тестів рекомендується Cypress
-- Для юніт-тестів JS — Jest
 
-## Додатково
+### QR API тестування
+1. Відкрийте http://localhost:8080/test-qr-api.html
+2. Натисніть **"Перевірити API"** - має показати статус OK
+3. Натисніть **"Ініціалізувати тестові дані"** для створення демо QR-кодів
+4. Тестуйте всі QR операції через кнопки на сторінці
 
+### Перевірка статусу серверів
+```bash
+# Перевірити MongoDB
+ps aux | grep mongod
 
-## TODO (автоматично)
+# Перевірити API сервер
+ps aux | grep "node api-server.js"
+curl http://localhost:3001/api/health
 
-## Модулі-чернетки
-В проекті є JS-модулі, для яких ще не створено сторінки/шаблони, але вони можуть знадобитися для майбутніх фіч. Їх список та статус див. у файлі [TODO.md](./TODO.md).
+# Перевірити веб-сервер
+ps aux | grep "http.server"
+curl -I http://localhost:8080
+```
+
+## Керування проектом
+
+### Збереження змін у Git
+```bash
+git add .
+git commit -m "Опис ваших змін"
+git push origin main
+```
+
+### Зупинка серверів
+```bash
+# Зупинити всі процеси
+pkill -f 'mongod|api-server|http.server'
+
+# Або окремо
+pkill -f mongod           # MongoDB
+pkill -f api-server       # API сервер
+pkill -f http.server      # Веб-сервер
+```
+
+## Технології
+
+- **Frontend**: HTML5, CSS3, JavaScript ES6+, AdminLTE, Bootstrap 4
+- **Backend**: Node.js, Express.js
+- **База даних**: MongoDB
+- **Авторизація**: JWT (JSON Web Tokens)
+- **QR-коди**: Html5-qrcode, QRCode.js
+- **Іконки**: Font Awesome
+- **Графіки**: Chart.js
+
+## Розробка
+
+### Додавання нового функціоналу
+1. Створіть відповідні API endpoints в `api-server.js`
+2. Додайте MongoDB схеми в папку `models/`
+3. Створіть frontend інтерфейс в відповідній папці `pages/`
+4. Додайте утилітні функції в `assets/js/`
+5. Протестуйте через тестові сторінки
+
+### Структура API відповідей
+```javascript
+// Успішна відповідь
+{
+  "success": true,
+  "data": {...},
+  "message": "Операція виконана успішно"
+}
+
+// Помилка
+{
+  "success": false,
+  "error": "Опис помилки",
+  "code": 400
+}
+```
+
+## Документація
+
+- 📋 [План розвитку](TODO.md)
+- 📊 [Звіт про QR-інтеграцію](QR-SYSTEM-INTEGRATION-REPORT.md)
+- 🔗 [API документація](docs/api-documentation.md)
+- 📖 [Технічний посібник](docs/technical-guide.md)
+
+## Підтримка
+
+Для вирішення проблем:
+1. Перевірте статус серверів командами вище
+2. Перегляньте логи: `api-server.log`, `web-server.log`, `/data/db/mongod.log`
+3. Переконайтеся що всі порти доступні
+4. Використайте тестову сторінку для діагностики API
+
+---
+
+**Проект DeapSeaK - Система управління ліфтами**  
+*Версія 1.0 - MongoDB & QR інтеграція завершена*  
+*Дата оновлення: 30 вересня 2025*
