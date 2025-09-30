@@ -522,6 +522,579 @@ app.get("/api/health", (req, res) => {
     });
 });
 
+// QR-код API endpoints
+app.get("/api/qr/codes", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        
+        // Фільтрація за параметрами запиту
+        const filter = {};
+        
+        // Фільтрація за типом QR-коду
+        if (req.query.type) {
+            filter.type = req.query.type;
+        }
+        
+        // Фільтрація за статусом
+        if (req.query.status) {
+            filter.status = req.query.status;
+        }
+        
+        // Фільтрація за датою створення
+        if (req.query.createdFrom && req.query.createdTo) {
+            filter.createdAt = {
+                $gte: req.query.createdFrom,
+                $lte: req.query.createdTo
+            };
+        }
+        
+        // Пагінація
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const skip = (page - 1) * limit;
+        
+        // Отримання даних з бази
+        const qrCodes = await db.collection("qrcodes")
+            .find(filter)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .toArray();
+        
+        // Загальна кількість записів для пагінації
+        const total = await db.collection("qrcodes").countDocuments(filter);
+        
+        res.json({
+            success: true,
+            data: qrCodes,
+            pagination: {
+                total,
+                page,
+                limit,
+                pages: Math.ceil(total / limit)
+            }
+        });
+    } catch (error) {
+        console.error("Помилка отримання QR-кодів:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося завантажити QR-коди" 
+        });
+    }
+});
+
+// Отримання конкретного QR-коду за ID
+app.get("/api/qr/codes/:id", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        
+        const qrCode = await db.collection("qrcodes").findOne({ 
+            _id: new ObjectId(req.params.id) 
+        });
+        
+        if (!qrCode) {
+            return res.status(404).json({ 
+                success: false, 
+                message: "QR-код не знайдено" 
+            });
+        }
+        
+        res.json({
+            success: true,
+            data: qrCode
+        });
+    } catch (error) {
+        console.error("Помилка отримання QR-коду:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося отримати QR-код" 
+        });
+    }
+});
+
+// Створення або оновлення QR-коду
+app.post("/api/qr/codes", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        const qrCode = req.body;
+        
+        // Валідація даних
+        if (!qrCode.type || !qrCode.data) {
+            return res.status(400).json({
+                success: false,
+                message: "Тип та дані QR-коду обов'язкові"
+            });
+        }
+        
+        if (qrCode._id) {
+            // Оновлення існуючого QR-коду
+            const { _id, ...update } = qrCode;
+            const objectId = new ObjectId(_id);
+            
+            // Додаємо інформацію про останнє оновлення
+            update.updatedAt = new Date().toISOString();
+            update.updatedBy = req.user.username;
+            
+            await db.collection("qrcodes").updateOne(
+                { _id: objectId }, 
+                { $set: update }
+            );
+            
+            res.json({ 
+                success: true, 
+                message: "QR-код успішно оновлено",
+                id: _id 
+            });
+        } else {
+            // Створення нового QR-коду
+            const newQRCode = {
+                ...qrCode,
+                status: qrCode.status || "active",
+                createdAt: new Date().toISOString(),
+                createdBy: req.user.username,
+                scans: 0  // Лічильник сканувань
+            };
+            
+            const result = await db.collection("qrcodes").insertOne(newQRCode);
+            
+            res.status(201).json({ 
+                success: true, 
+                message: "QR-код успішно створено",
+                id: result.insertedId 
+            });
+        }
+    } catch (error) {
+        console.error("Помилка збереження QR-коду:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося зберегти QR-код" 
+        });
+    }
+});
+
+// Видалення QR-коду
+app.delete("/api/qr/codes/:id", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        
+        // Перевіряємо права користувача (тільки адміни можуть видаляти)
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: "Недостатньо прав для видалення QR-кодів"
+            });
+        }
+        
+        const result = await db.collection("qrcodes").deleteOne({ 
+            _id: new ObjectId(req.params.id) 
+        });
+        
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ 
+                success: false, 
+                message: "QR-код не знайдено" 
+            });
+        }
+        
+        res.json({ 
+            success: true, 
+            message: "QR-код успішно видалено" 
+        });
+    } catch (error) {
+        console.error("Помилка видалення QR-коду:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося видалити QR-код" 
+        });
+    }
+});
+
+// Масове створення QR-кодів для ліфтів
+app.post("/api/qr/bulk-create-lift-codes", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        
+        // Перевірка прав доступу (адміни та диспетчери)
+        if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
+            return res.status(403).json({
+                success: false,
+                message: "Недостатньо прав для масового створення QR-кодів"
+            });
+        }
+        
+        // Отримати всі ліфти без QR-кодів або за фільтром
+        let filter = {};
+        if (req.body.filter) {
+            filter = req.body.filter;
+        }
+        
+        const lifts = await db.collection("lifts").find(filter).toArray();
+        
+        if (!lifts.length) {
+            return res.status(404).json({
+                success: false,
+                message: "Ліфти не знайдено"
+            });
+        }
+        
+        // Створення QR-кодів для кожного ліфта
+        const qrCodes = lifts.map(lift => ({
+            type: "lift",
+            reference: lift._id.toString(),
+            name: `Ліфт - ${lift.address || 'Адреса не вказана'}`,
+            data: {
+                liftId: lift._id.toString(),
+                address: lift.address,
+                model: lift.model,
+                type: lift.type
+            },
+            status: "active",
+            expiryDate: req.body.expiryDate || new Date(Date.now() + 31536000000).toISOString(), // За замовчуванням 1 рік
+            createdAt: new Date().toISOString(),
+            createdBy: req.user.username,
+            scans: 0
+        }));
+        
+        // Масове додавання QR-кодів
+        const result = await db.collection("qrcodes").insertMany(qrCodes);
+        
+        // Оновлення ліфтів з посиланнями на їхні QR-коди
+        const bulkUpdateOps = [];
+        Object.entries(result.insertedIds).forEach(([index, id]) => {
+            bulkUpdateOps.push({
+                updateOne: {
+                    filter: { _id: new ObjectId(qrCodes[index].reference) },
+                    update: { $set: { qrCodeId: id.toString() } }
+                }
+            });
+        });
+        
+        if (bulkUpdateOps.length) {
+            await db.collection("lifts").bulkWrite(bulkUpdateOps);
+        }
+        
+        res.status(201).json({
+            success: true,
+            message: `Створено ${result.insertedCount} QR-кодів для ліфтів`,
+            ids: result.insertedIds
+        });
+    } catch (error) {
+        console.error("Помилка масового створення QR-кодів:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося створити QR-коди" 
+        });
+    }
+});
+
+// Реєстрація сканування QR-коду
+app.post("/api/qr/scan", async (req, res) => {
+    try {
+        const db = getDB();
+        const { qrData, scannedBy, deviceInfo } = req.body;
+        
+        // Валідація
+        if (!qrData) {
+            return res.status(400).json({
+                success: false,
+                message: "Дані QR-коду обов'язкові"
+            });
+        }
+        
+        // Розпарсити дані QR
+        let qrContent;
+        try {
+            // Перевірка, чи це JSON
+            if (typeof qrData === 'string' && (qrData.startsWith('{') || qrData.startsWith('['))) {
+                qrContent = JSON.parse(qrData);
+            } else {
+                qrContent = { rawData: qrData };
+            }
+        } catch (parseError) {
+            qrContent = { rawData: qrData };
+        }
+        
+        // Пошук QR-коду за референсом (якщо це об'єкт з liftId, requestId тощо)
+        let qrCode = null;
+        let referenceType = null;
+        let referenceId = null;
+        
+        if (qrContent.liftId) {
+            qrCode = await db.collection("qrcodes").findOne({ 
+                "data.liftId": qrContent.liftId 
+            });
+            referenceType = "lift";
+            referenceId = qrContent.liftId;
+        } else if (qrContent.requestId) {
+            qrCode = await db.collection("qrcodes").findOne({ 
+                "data.requestId": qrContent.requestId 
+            });
+            referenceType = "request";
+            referenceId = qrContent.requestId;
+        } else if (qrContent.type && qrContent.id) {
+            // Універсальний формат { type: '...', id: '...' }
+            qrCode = await db.collection("qrcodes").findOne({ 
+                "data.id": qrContent.id,
+                "type": qrContent.type
+            });
+            referenceType = qrContent.type;
+            referenceId = qrContent.id;
+        }
+        
+        // Створюємо запис про сканування
+        const scanRecord = {
+            qrCodeId: qrCode ? qrCode._id : null,
+            referenceType,
+            referenceId,
+            data: qrContent,
+            scannedAt: new Date().toISOString(),
+            scannedBy: scannedBy || "anonymous",
+            deviceInfo: deviceInfo || {},
+            status: qrCode ? "success" : "unknown"
+        };
+        
+        // Зберігаємо запис про сканування
+        await db.collection("qrscans").insertOne(scanRecord);
+        
+        // Якщо знайдено QR-код, інкрементуємо кількість сканувань
+        if (qrCode) {
+            await db.collection("qrcodes").updateOne(
+                { _id: qrCode._id },
+                { 
+                    $inc: { scans: 1 },
+                    $set: { lastScan: scanRecord.scannedAt }
+                }
+            );
+            
+            // Перевіряємо, чи QR-код активний
+            if (qrCode.status !== "active") {
+                return res.json({
+                    success: true,
+                    valid: false,
+                    message: "QR-код неактивний",
+                    data: null
+                });
+            }
+            
+            // Перевіряємо термін дії
+            if (qrCode.expiryDate && new Date(qrCode.expiryDate) < new Date()) {
+                // Автоматично позначаємо як протермінований
+                await db.collection("qrcodes").updateOne(
+                    { _id: qrCode._id },
+                    { $set: { status: "expired" } }
+                );
+                
+                return res.json({
+                    success: true,
+                    valid: false,
+                    message: "QR-код протерміновано",
+                    data: null
+                });
+            }
+            
+            // Повертаємо дані відповідно до типу QR-коду
+            let responseData = null;
+            
+            switch (qrCode.type) {
+                case "lift":
+                    // Отримуємо деталі ліфта
+                    const lift = await db.collection("lifts").findOne({ 
+                        _id: new ObjectId(qrCode.reference) 
+                    });
+                    responseData = {
+                        type: "lift",
+                        lift: lift || qrCode.data
+                    };
+                    break;
+                case "request":
+                    // Отримуємо деталі заявки
+                    const request = await db.collection("requests").findOne({ 
+                        _id: new ObjectId(qrCode.reference)
+                    });
+                    responseData = {
+                        type: "request",
+                        request: request || qrCode.data
+                    };
+                    break;
+                case "technician":
+                    // Для QR-кодів техніків
+                    responseData = {
+                        type: "technician",
+                        ...qrCode.data
+                    };
+                    break;
+                default:
+                    responseData = {
+                        type: qrCode.type,
+                        data: qrCode.data
+                    };
+            }
+            
+            return res.json({
+                success: true,
+                valid: true,
+                message: "QR-код успішно відскановано",
+                data: responseData
+            });
+        } else {
+            // QR-код не знайдено в системі
+            return res.json({
+                success: true,
+                valid: false,
+                message: "QR-код невідомий системі",
+                data: null
+            });
+        }
+    } catch (error) {
+        console.error("Помилка обробки сканування QR-коду:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося обробити сканування QR-коду" 
+        });
+    }
+});
+
+// Отримання статистики по QR-кодам
+app.get("/api/qr/stats", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        
+        // Загальна кількість QR-кодів
+        const totalQR = await db.collection("qrcodes").countDocuments();
+        
+        // QR-коди за статусами
+        const activeQR = await db.collection("qrcodes").countDocuments({ status: "active" });
+        const inactiveQR = await db.collection("qrcodes").countDocuments({ status: "inactive" });
+        const expiredQR = await db.collection("qrcodes").countDocuments({ status: "expired" });
+        
+        // QR-коди за типами
+        const liftQR = await db.collection("qrcodes").countDocuments({ type: "lift" });
+        const requestQR = await db.collection("qrcodes").countDocuments({ type: "request" });
+        const technicianQR = await db.collection("qrcodes").countDocuments({ type: "technician" });
+        const otherQR = totalQR - liftQR - requestQR - technicianQR;
+        
+        // Загальна кількість сканувань
+        const scansPipeline = [
+            { $group: { _id: null, total: { $sum: "$scans" } } }
+        ];
+        const scansResult = await db.collection("qrcodes").aggregate(scansPipeline).toArray();
+        const totalScans = scansResult.length > 0 ? scansResult[0].total : 0;
+        
+        // Статистика сканувань за останній місяць
+        const lastMonthDate = new Date();
+        lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
+        
+        const lastMonthScans = await db.collection("qrscans").countDocuments({
+            scannedAt: { $gte: lastMonthDate.toISOString() }
+        });
+        
+        // Топ-5 найчастіше сканованих QR-кодів
+        const topQrCodesPipeline = [
+            { $match: { scans: { $gt: 0 } } },
+            { $sort: { scans: -1 } },
+            { $limit: 5 },
+            { $project: { _id: 1, type: 1, name: 1, scans: 1, lastScan: 1 } }
+        ];
+        const topQrCodes = await db.collection("qrcodes").aggregate(topQrCodesPipeline).toArray();
+        
+        res.json({
+            success: true,
+            stats: {
+                total: totalQR,
+                status: {
+                    active: activeQR,
+                    inactive: inactiveQR,
+                    expired: expiredQR
+                },
+                types: {
+                    lift: liftQR,
+                    request: requestQR,
+                    technician: technicianQR,
+                    other: otherQR
+                },
+                scans: {
+                    total: totalScans,
+                    lastMonth: lastMonthScans
+                },
+                topScanned: topQrCodes
+            }
+        });
+    } catch (error) {
+        console.error("Помилка отримання статистики QR-кодів:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося отримати статистику QR-кодів" 
+        });
+    }
+});
+
+// Історія сканувань QR-кодів
+app.get("/api/qr/scans", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        
+        // Фільтри
+        const filter = {};
+        
+        if (req.query.qrCodeId) {
+            filter.qrCodeId = new ObjectId(req.query.qrCodeId);
+        }
+        
+        if (req.query.referenceType) {
+            filter.referenceType = req.query.referenceType;
+        }
+        
+        if (req.query.referenceId) {
+            filter.referenceId = req.query.referenceId;
+        }
+        
+        if (req.query.scannedBy) {
+            filter.scannedBy = req.query.scannedBy;
+        }
+        
+        // Фільтр за датами
+        if (req.query.fromDate && req.query.toDate) {
+            filter.scannedAt = {
+                $gte: req.query.fromDate,
+                $lte: req.query.toDate
+            };
+        }
+        
+        // Пагінація
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const skip = (page - 1) * limit;
+        
+        // Отримання історії сканувань
+        const scans = await db.collection("qrscans")
+            .find(filter)
+            .sort({ scannedAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .toArray();
+        
+        // Загальна кількість для пагінації
+        const total = await db.collection("qrscans").countDocuments(filter);
+        
+        res.json({
+            success: true,
+            data: scans,
+            pagination: {
+                total,
+                page,
+                limit,
+                pages: Math.ceil(total / limit)
+            }
+        });
+    } catch (error) {
+        console.error("Помилка отримання історії сканувань:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося отримати історію сканувань" 
+        });
+    }
+});
+
 // Обробник для ініціалізації тестових даних
 app.post("/api/init-test-data", async (req, res) => {
     try {
