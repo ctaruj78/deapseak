@@ -144,23 +144,25 @@ class DispatcherDashboard {
     // Завантаження заявок
     async loadRequests() {
         try {
-            // Симуляція завантаження з API
             const response = await fetch('/api/requests', {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                 }
             });
-            
             if (response.ok) {
                 this.requests = await response.json();
                 this.renderRequests();
                 this.updateStats();
             } else {
-                // Запасний варіант - демо-дані
+                let errorText = '';
+                try {
+                    errorText = await response.text();
+                } catch (e) {}
+                this.showNotification('Помилка завантаження заявок: ' + (errorText || response.statusText), 'error');
                 this.loadDemoRequests();
             }
         } catch (error) {
-            console.error('Помилка завантаження заявок:', error);
+            this.showNotification('Помилка завантаження заявок: ' + error.message, 'error');
             this.loadDemoRequests();
         }
     }
@@ -393,24 +395,26 @@ class DispatcherDashboard {
     // Завантаження техніків
     async loadTechnicians() {
         try {
-            // Симуляція завантаження з API
             const response = await fetch('/api/technicians', {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                 }
             });
-            
             if (response.ok) {
                 this.technicians = await response.json();
                 this.renderTechnicians();
                 this.updateStats();
                 this.setupFilters();
             } else {
-                // Запасний варіант - демо-дані
+                let errorText = '';
+                try {
+                    errorText = await response.text();
+                } catch (e) {}
+                this.showNotification('Помилка завантаження техніків: ' + (errorText || response.statusText), 'error');
                 this.loadDemoTechnicians();
             }
         } catch (error) {
-            console.error('Помилка завантаження техніків:', error);
+            this.showNotification('Помилка завантаження техніків: ' + error.message, 'error');
             this.loadDemoTechnicians();
         }
     }
@@ -573,22 +577,24 @@ class DispatcherDashboard {
     // Завантаження активностей
     async loadActivities() {
         try {
-            // Симуляція завантаження з API
             const response = await fetch('/api/activities', {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                 }
             });
-            
             if (response.ok) {
                 this.activities = await response.json();
                 this.renderActivities();
             } else {
-                // Запасний варіант - демо-дані
+                let errorText = '';
+                try {
+                    errorText = await response.text();
+                } catch (e) {}
+                this.showNotification('Помилка завантаження активностей: ' + (errorText || response.statusText), 'error');
                 this.loadDemoActivities();
             }
         } catch (error) {
-            console.error('Помилка завантаження активностей:', error);
+            this.showNotification('Помилка завантаження активностей: ' + error.message, 'error');
             this.loadDemoActivities();
         }
     }
@@ -686,15 +692,19 @@ class DispatcherDashboard {
                     'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                 }
             });
-            
             if (response.ok) {
                 this.notifications = await response.json();
                 this.updateNotificationBadge();
             } else {
+                let errorText = '';
+                try {
+                    errorText = await response.text();
+                } catch (e) {}
+                this.showNotification('Помилка завантаження сповіщень: ' + (errorText || response.statusText), 'error');
                 this.loadDemoNotifications();
             }
         } catch (error) {
-            console.error('Помилка завантаження сповіщень:', error);
+            this.showNotification('Помилка завантаження сповіщень: ' + error.message, 'error');
             this.loadDemoNotifications();
         }
     }
@@ -1130,7 +1140,6 @@ class DispatcherDashboard {
         const notifyClient = document.getElementById('notifyClient').checked;
         
         try {
-            // Симуляція відправки на сервер
             const response = await fetch('/api/assignments', {
                 method: 'POST',
                 headers: {
@@ -1146,19 +1155,15 @@ class DispatcherDashboard {
                     notifyClient
                 })
             });
-            
             if (response.ok) {
-                // Оновлення локальних даних
+                const result = await response.json();
                 const request = this.requests.find(r => r.id == requestId);
                 const tech = this.technicians.find(t => t.id == techId);
-                
                 if (request && tech) {
                     request.status = 'assigned';
                     request.assignedTo = `${tech.firstName} ${tech.lastName}`;
                     tech.currentAssignments++;
                     tech.workload = this.calculateWorkload(tech.currentAssignments);
-                    
-                    // Додавання активності
                     const activity = {
                         id: this.activities.length + 1,
                         type: "assignment",
@@ -1168,22 +1173,22 @@ class DispatcherDashboard {
                         color: "text-success"
                     };
                     this.activities.unshift(activity);
-                    
                     this.renderRequests();
                     this.renderTechnicians();
                     this.renderActivities();
                     this.updateStats();
-                    
                     this.showNotification('Заявку успішно призначено', 'success');
                 }
-                
                 $('#assignmentModal').modal('hide');
             } else {
-                throw new Error('Помилка сервера');
+                let errorText = '';
+                try {
+                    errorText = await response.text();
+                } catch (e) {}
+                this.showNotification('Помилка призначення заявки: ' + (errorText || response.statusText), 'error');
             }
         } catch (error) {
-            console.error('Помилка призначення заявки:', error);
-            this.showNotification('Помилка призначення заявки', 'error');
+            this.showNotification('Помилка призначення заявки: ' + error.message, 'error');
         }
     }
 

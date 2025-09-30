@@ -66,5 +66,113 @@
     <script src="assets/js/config.js"></script>
     <script src="assets/js/auth.js"></script>
     <script src="assets/js/common.js"></script>
+    
+    <script>
+        $(document).ready(function() {
+            // Проверяем, авторизован ли пользователь
+            if (localStorage.getItem('authToken')) {
+                const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+                if (userData.role === 'dispatcher') {
+                    window.location.href = 'pages/dispatcher/dashboard.html';
+                } else if (userData.role === 'technician') {
+                    window.location.href = 'pages/tech/dashboard.html';
+                } else if (userData.role === 'admin') {
+                    window.location.href = 'pages/admin/dashboard.html';
+                } else {
+                    window.location.href = 'pages/client/dashboard.html';
+                }
+                return;
+            }
+            
+            // Обработка формы входа
+            $('#login-form').on('submit', function(e) {
+                e.preventDefault();
+                
+                const username = $('#username').val();
+                const password = $('#password').val();
+                const rememberMe = $('#remember').is(':checked');
+                
+                // Добавляем элемент для сообщений об ошибках
+                if ($('#login-error').length === 0) {
+                    $(this).prepend('<div class="alert alert-danger" id="login-error" style="display: none;"></div>');
+                }
+                
+                // Если мы в режиме разработки, используем локальное хранилище
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    // Простая симуляция входа
+                    const users = JSON.parse(localStorage.getItem('users') || '[]');
+                    const user = users.find(u => u.username === username && u.password === password);
+                    
+                    if (!user) {
+                        $('#login-error').text('Неправильний логін або пароль').show();
+                        return;
+                    }
+                    
+                    // Создаем токен авторизации (в реальном приложении это должен делать сервер)
+                    const authToken = btoa(username + ':' + Date.now());
+                    localStorage.setItem('authToken', authToken);
+                    
+                    // Сохраняем данные пользователя
+                    const userData = {
+                        id: user.id,
+                        firstName: user.firstName,
+                        lastName: user.lastName,
+                        email: user.email,
+                        username: user.username,
+                        role: user.role
+                    };
+                    localStorage.setItem('userData', JSON.stringify(userData));
+                    
+                    // Перенаправляем пользователя в зависимости от роли
+                    if (user.role === 'dispatcher') {
+                        window.location.href = 'pages/dispatcher/dashboard.html';
+                    } else if (user.role === 'technician') {
+                        window.location.href = 'pages/tech/dashboard.html';
+                    } else if (user.role === 'admin') {
+                        window.location.href = 'pages/admin/dashboard.html';
+                    } else {
+                        window.location.href = 'pages/client/dashboard.html';
+                    }
+                } else {
+                    // Реальный API запрос для входа
+                    $.ajax({
+                        url: '/api/login',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({
+                            username: username,
+                            password: password,
+                            remember: rememberMe
+                        }),
+                        success: function(response) {
+                            if (response.success && response.token) {
+                                localStorage.setItem('authToken', response.token);
+                                localStorage.setItem('userData', JSON.stringify(response.user));
+                                
+                                // Перенаправляем пользователя в зависимости от роли
+                                if (response.user.role === 'dispatcher') {
+                                    window.location.href = 'pages/dispatcher/dashboard.html';
+                                } else if (response.user.role === 'technician') {
+                                    window.location.href = 'pages/tech/dashboard.html';
+                                } else if (response.user.role === 'admin') {
+                                    window.location.href = 'pages/admin/dashboard.html';
+                                } else {
+                                    window.location.href = 'pages/client/dashboard.html';
+                                }
+                            } else {
+                                $('#login-error').text(response.message || 'Помилка входу').show();
+                            }
+                        },
+                        error: function(xhr) {
+                            const message = xhr.responseJSON && xhr.responseJSON.message 
+                                ? xhr.responseJSON.message 
+                                : 'Сталася помилка під час входу. Спробуйте пізніше.';
+                            $('#login-error').text(message).show();
+                        }
+                    });
+                }
+            });
+        });
+    </script>
 </body>
 </html>
