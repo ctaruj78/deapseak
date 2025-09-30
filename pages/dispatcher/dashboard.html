@@ -144,16 +144,42 @@
             transition: all 0.3s ease;
             text-align: center;
             min-height: 120px;
+            color: #333;
+            text-decoration: none;
         }
         
         .btn-action:hover {
             transform: translateY(-3px);
             box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            text-decoration: none;
+            color: #333;
+        }
+        
+        .btn-action:focus,
+        .btn-action:active {
+            text-decoration: none;
+            color: #333;
+            outline: none;
         }
         
         .btn-action .icon {
             font-size: 2rem;
             margin-bottom: 10px;
+            display: block;
+        }
+        
+        .btn-action span {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        
+        .btn-action small {
+            display: block;
+            color: #666;
+            font-size: 0.85rem;
+            opacity: 1;
         }
         
         .real-time-badge {
@@ -543,26 +569,6 @@
                                             <span>Аварійний</span>
                                             <small>Протокол</small>
                                         </button>
-    <!-- Модальне вікно звіту по техніках -->
-    <div class="modal fade" id="techReportModal" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Звіт по роботі техніків</h5>
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span>&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body" id="techReportContent">
-                    <!-- Звіт буде згенеровано JS -->
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
-                    <button type="button" class="btn btn-primary" onclick="window.dispatcherDashboard.exportTechReport()">Експортувати в CSV</button>
-                </div>
-            </div>
-        </div>
-    </div>
                                     </div>
                                 </div>
                             </div>
@@ -797,5 +803,26 @@
             });
         });
     </script>
+
+    <!-- Модальне вікно звіту по техніках -->
+    <div class="modal fade" id="techReportModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Звіт по роботі техніків</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="techReportContent">
+                    <!-- Звіт буде згенеровано JS -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                    <button type="button" class="btn btn-primary" onclick="window.dispatcherDashboard.exportTechReport()">Експортувати в CSV</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
