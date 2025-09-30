@@ -343,14 +343,14 @@ class DispatcherDashboard {
                 <td>${request.date}</td>
                 <td>
                     <div class="btn-group btn-group-sm">
-                        <button class="btn btn-info btn-action" data-action="view" data-id="${request.id}" onclick="window.dispatcherDashboard.viewRequest(${request.id})" title="Перегляд">
-                            <i class="fas fa-eye"></i>
+                        <button class="btn btn-info btn-sm btn-action" data-action="view" data-id="${request.id}" onclick="window.dispatcherDashboard.viewRequest(${request.id})" title="Перегляд">
+                            👁️ Перегляд
                         </button>
-                        <button class="btn btn-primary btn-action" data-action="assign" data-id="${request.id}" onclick="window.dispatcherDashboard.assignRequest(${request.id})" title="Призначити">
-                            <i class="fas fa-user-check"></i>
+                        <button class="btn btn-warning btn-sm btn-action" data-action="assign" data-id="${request.id}" onclick="window.dispatcherDashboard.assignRequest(${request.id})" title="Призначити">
+                            👥 Призначити
                         </button>
-                        <button class="btn btn-success btn-action" data-action="edit" data-id="${request.id}" onclick="window.dispatcherDashboard.editRequest(${request.id})" title="Редагувати">
-                            <i class="fas fa-edit"></i>
+                        <button class="btn btn-success btn-sm btn-action" data-action="edit" data-id="${request.id}" onclick="window.dispatcherDashboard.editRequest(${request.id})" title="Редагувати">
+                            ✏️ Редагувати
                         </button>
                     </div>
                 </td>
@@ -379,16 +379,28 @@ class DispatcherDashboard {
     renderBulkActions() {
         const bulkPanel = document.getElementById('bulkActionsPanel');
         if (!bulkPanel) return;
+        
+        if (this.selectedRequests.size === 0) {
+            bulkPanel.style.display = 'none';
+            return;
+        }
+        
+        bulkPanel.style.display = 'block';
         bulkPanel.innerHTML = `
-            <button class="btn btn-danger btn-sm mr-2" onclick="dispatcherDashboard.bulkDelete()" ${this.selectedRequests.size === 0 ? 'disabled' : ''}>
-                <i class="fas fa-trash"></i> Видалити
-            </button>
-            <button class="btn btn-warning btn-sm mr-2" onclick="dispatcherDashboard.bulkAssign()" ${this.selectedRequests.size === 0 ? 'disabled' : ''}>
-                <i class="fas fa-user-check"></i> Призначити техніка
-            </button>
-            <button class="btn btn-success btn-sm" onclick="dispatcherDashboard.bulkComplete()" ${this.selectedRequests.size === 0 ? 'disabled' : ''}>
-                <i class="fas fa-check"></i> Завершити
-            </button>
+            <div class="alert alert-info py-2 px-3 mb-2">
+                <strong>Вибрано заявок: ${this.selectedRequests.size}</strong>
+                <div class="btn-group float-right" role="group">
+                    <button class="btn btn-danger btn-sm" onclick="window.dispatcherDashboard.bulkDelete()" title="Видалити вибрані">
+                        🗑️ Видалити
+                    </button>
+                    <button class="btn btn-warning btn-sm" onclick="window.dispatcherDashboard.bulkAssign()" title="Призначити техніка">
+                        👥 Призначити
+                    </button>
+                    <button class="btn btn-success btn-sm" onclick="window.dispatcherDashboard.bulkComplete()" title="Завершити вибрані">
+                        ✅ Завершити
+                    </button>
+                </div>
+            </div>
         `;
     }
 
