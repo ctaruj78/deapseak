@@ -143,28 +143,8 @@ class DispatcherDashboard {
 
     // Завантаження заявок
     async loadRequests() {
-        try {
-            const response = await fetch('/api/requests', {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                }
-            });
-            if (response.ok) {
-                this.requests = await response.json();
-                this.renderRequests();
-                this.updateStats();
-            } else {
-                let errorText = '';
-                try {
-                    errorText = await response.text();
-                } catch (e) {}
-                this.showNotification('Помилка завантаження заявок: ' + (errorText || response.statusText), 'error');
-                this.loadDemoRequests();
-            }
-        } catch (error) {
-            this.showNotification('Помилка завантаження заявок: ' + error.message, 'error');
-            this.loadDemoRequests();
-        }
+        // Використовуємо демо-дані для дашборду
+        this.loadDemoRequests();
     }
 
     // Демо-дані для тестування
@@ -406,29 +386,8 @@ class DispatcherDashboard {
 
     // Завантаження техніків
     async loadTechnicians() {
-        try {
-            const response = await fetch('/api/technicians', {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                }
-            });
-            if (response.ok) {
-                this.technicians = await response.json();
-                this.renderTechnicians();
-                this.updateStats();
-                this.setupFilters();
-            } else {
-                let errorText = '';
-                try {
-                    errorText = await response.text();
-                } catch (e) {}
-                this.showNotification('Помилка завантаження техніків: ' + (errorText || response.statusText), 'error');
-                this.loadDemoTechnicians();
-            }
-        } catch (error) {
-            this.showNotification('Помилка завантаження техніків: ' + error.message, 'error');
-            this.loadDemoTechnicians();
-        }
+        // Використовуємо демо-дані для дашборду
+        this.loadDemoTechnicians();
     }
 
     // Демо-дані техніків
@@ -588,27 +547,8 @@ class DispatcherDashboard {
 
     // Завантаження активностей
     async loadActivities() {
-        try {
-            const response = await fetch('/api/activities', {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                }
-            });
-            if (response.ok) {
-                this.activities = await response.json();
-                this.renderActivities();
-            } else {
-                let errorText = '';
-                try {
-                    errorText = await response.text();
-                } catch (e) {}
-                this.showNotification('Помилка завантаження активностей: ' + (errorText || response.statusText), 'error');
-                this.loadDemoActivities();
-            }
-        } catch (error) {
-            this.showNotification('Помилка завантаження активностей: ' + error.message, 'error');
-            this.loadDemoActivities();
-        }
+        // Використовуємо демо-дані для дашборду
+        this.loadDemoActivities();
     }
 
     // Демо-дані активностей
@@ -698,27 +638,8 @@ class DispatcherDashboard {
 
     // Завантаження сповіщень
     async loadNotifications() {
-        try {
-            const response = await fetch('/api/notifications', {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                }
-            });
-            if (response.ok) {
-                this.notifications = await response.json();
-                this.updateNotificationBadge();
-            } else {
-                let errorText = '';
-                try {
-                    errorText = await response.text();
-                } catch (e) {}
-                this.showNotification('Помилка завантаження сповіщень: ' + (errorText || response.statusText), 'error');
-                this.loadDemoNotifications();
-            }
-        } catch (error) {
-            this.showNotification('Помилка завантаження сповіщень: ' + error.message, 'error');
-            this.loadDemoNotifications();
-        }
+        // Використовуємо демо-дані для дашборду
+        this.loadDemoNotifications();
     }
 
     // Демо-сповіщення
