@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление QR-кодами | DeapSeak LiftMaster</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="../../plugins/fontawesome-free/css/all.min.css">
+    <!-- AdminLTE стиль -->
+    <link rel="stylesheet" href="../../plugins/adminlte/css/adminlte.min.css">
+    <!-- Toastr -->
+    <link rel="stylesheet" href="../../plugins/toastr/toastr.min.css">
+    <style>
+        .qr-cards-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .qr-card {
+            width: 300px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .qr-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+        }
+        
+        .camera-container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+        
+        #qrVideo {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .scan-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 2px solid #28a745;
+            border-radius: 8px;
+            box-sizing: border-box;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background-color: #28a745;
+            top: 50%;
+            animation: scanAnimation 2s infinite;
+        }
+        
+        @keyframes scanAnimation {
+            0% {
+                top: 20%;
+            }
+            50% {
+                top: 80%;
+            }
+            100% {
+                top: 20%;
+            }
+        }
+        
+        .result-box {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+            border-left: 5px solid #28a745;
+        }
+        
+        .qr-actions {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <!-- Левое меню -->
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+            </li>
+        </ul>
+
+        <!-- Правое меню -->
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item dropdown">
+                <a class="nav-link" data-toggle="dropdown" href="#">
+                    <i class="far fa-bell"></i>
+                    <span class="badge badge-warning navbar-badge">3</span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+                    <span class="dropdown-item dropdown-header">3 Уведомления</span>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item">
+                        <i class="fas fa-file mr-2"></i> 3 новых отчета
+                        <span class="float-right text-muted text-sm">2 дня</span>
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item dropdown-footer">Все уведомления</a>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" role="button">
+                    <i class="fas fa-user-circle"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <!-- /.navbar -->
+
+    <!-- Main Sidebar Container -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <!-- Brand Logo -->
+        <a href="/index.html" class="brand-link">
+            <img src="../../assets/img/logo.png" alt="DeapSeak Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
+            <span class="brand-text font-weight-light">LiftMaster</span>
+        </a>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Меню -->
+            <nav class="mt-2">
+                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                    <li class="nav-item">
+                        <a href="/index.html" class="nav-link">
+                            <i class="nav-icon fas fa-tachometer-alt"></i>
+                            <p>Панель управления</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="nav-icon fas fa-building"></i>
+                            <p>
+                                Лифты
+                                <i class="fas fa-angle-left right"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="../lifts/list.html" class="nav-link">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Список лифтов</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../lifts/map.html" class="nav-link">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Карта лифтов</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../lifts/status.html" class="nav-link">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Статусы лифтов</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="nav-item menu-open">
+                        <a href="#" class="nav-link active">
+                            <i class="nav-icon fas fa-qrcode"></i>
+                            <p>
+                                QR коды
+                                <i class="fas fa-angle-left right"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="generator.html" class="nav-link active">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Генератор QR</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="scanner.html" class="nav-link">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Сканер QR</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a href="../tech/requests.html" class="nav-link">
+                            <i class="nav-icon fas fa-clipboard-list"></i>
+                            <p>Заявки</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="../reports/index.html" class="nav-link">
+                            <i class="nav-icon fas fa-chart-bar"></i>
+                            <p>Отчеты</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="../settings/index.html" class="nav-link">
+                            <i class="nav-icon fas fa-cog"></i>
+                            <p>Настройки</p>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <!-- /.sidebar-menu -->
+        </div>
+        <!-- /.sidebar -->
+    </aside>
+
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1>Генератор QR-кодов</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="/index.html">Главная</a></li>
+                            <li class="breadcrumb-item active">Генератор QR</li>
+                        </ol>
+                    </div>
+                </div>
+            </div><!-- /.container-fluid -->
+        </section>
+
+        <!-- Main content -->
+        <section class="content">
+            <div class="container-fluid">
+                <div class="row">
+                    <!-- Генерация QR-кодов для лифтов -->
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">QR-коды для лифтов</h3>
+                                <div class="card-tools">
+                                    <button type="button" class="btn btn-success btn-sm" id="generateAllQR">
+                                        <i class="fas fa-sync"></i> Сгенерировать все
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle mr-1"></i> QR-коды для лифтов содержат уникальные идентификаторы и могут быть использованы для быстрого доступа к информации о лифте через мобильное приложение.
+                                </div>
+                                
+                                <div class="qr-cards-container" id="qrcodes-container">
+                                    <div class="text-center w-100 py-5">
+                                        <button class="btn btn-primary" id="loadLiftsForQR">
+                                            <i class="fas fa-sync"></i> Загрузить лифты
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Создание пользовательского QR-кода -->
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Создать произвольный QR-код</h3>
+                            </div>
+                            <div class="card-body">
+                                <form id="createQRForm">
+                                    <div class="form-group">
+                                        <label for="qrText">Текст или URL</label>
+                                        <input type="text" class="form-control" id="qrText" placeholder="Введите текст или ссылку">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label>Настройки QR-кода</label>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label for="qrWidth">Ширина (px)</label>
+                                                <input type="number" class="form-control" id="qrWidth" value="200" min="100" max="600">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="qrHeight">Высота (px)</label>
+                                                <input type="number" class="form-control" id="qrHeight" value="200" min="100" max="600">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="qrColorDark">Цвет QR-кода</label>
+                                        <input type="color" class="form-control" id="qrColorDark" value="#000000">
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-primary">Создать QR-код</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Предпросмотр QR-кода -->
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Предпросмотр QR-кода</h3>
+                            </div>
+                            <div class="card-body text-center">
+                                <div id="qrPreviewContainer" class="py-3">
+                                    <div class="text-muted">
+                                        <i class="fas fa-qrcode fa-5x mb-3"></i>
+                                        <p>QR-код будет отображен здесь</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Сканер QR-кодов -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Сканирование QR-кода</h3>
+                            </div>
+                            <div class="card-body">
+                                <button type="button" class="btn btn-info btn-block" id="startScanner">
+                                    <i class="fas fa-camera"></i> Начать сканирование
+                                </button>
+                                
+                                <div id="qrScannerContainer" class="my-3 d-none">
+                                    <div class="camera-container">
+                                        <video id="qrVideo"></video>
+                                        <div class="scan-overlay">
+                                            <div class="scan-line"></div>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-danger btn-block mt-3" id="stopScanner">
+                                        <i class="fas fa-stop"></i> Остановить сканирование
+                                    </button>
+                                </div>
+                                
+                                <div id="qrResult" class="result-box d-none">
+                                    <h5>Результат сканирования:</h5>
+                                    <div id="qrResultContent"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- /.content -->
+    </div>
+    <!-- /.content-wrapper -->
+
+    <footer class="main-footer">
+        <div class="float-right d-none d-sm-block">
+            <b>Версия</b> 1.0.0
+        </div>
+        <strong>Copyright &copy; 2024 <a href="/">DeapSeak LiftMaster</a>.</strong> Все права защищены.
+    </footer>
+</div>
+<!-- ./wrapper -->
+
+<!-- jQuery -->
+<script src="../../plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="../../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="../../plugins/adminlte/js/adminlte.min.js"></script>
+<!-- Toastr -->
+<script src="../../plugins/toastr/toastr.min.js"></script>
+<!-- QRCode -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+<!-- jsQR -->
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<!-- Наши скрипты -->
+<script src="../../api.js"></script>
+<script src="../../qr.js"></script>
+<script>
+    $(document).ready(function() {
+        // Настройка toastr
+        toastr.options = {
+            closeButton: true,
+            progressBar: true,
+            positionClass: "toast-top-right",
+            timeOut: 3000
+        };
+        
+        // Проверяем доступность API
+        async function checkApiAvailability() {
+            try {
+                if (typeof LiftAPI !== 'undefined' && typeof LiftAPI.getLifts === 'function') {
+                    return true;
+                } else {
+                    toastr.warning('API лифтов недоступно. Загружены тестовые данные.');
+                    return false;
+                }
+            } catch (error) {
+                console.error('Ошибка проверки API:', error);
+                toastr.error('Не удалось подключиться к API');
+                return false;
+            }
+        }
+        
+        // Загружаем тестовые данные если API недоступно
+        const testLiftsData = [
+            { id: "lift-001", serialNumber: "SN001", address: "ул. Ленина, 10", status: "active" },
+            { id: "lift-002", serialNumber: "SN002", address: "пр. Победы, 25", status: "maintenance" },
+            { id: "lift-003", serialNumber: "SN003", address: "ул. Гагарина, 5", status: "active" },
+            { id: "lift-004", serialNumber: "SN004", address: "пр. Мира, 42", status: "inactive" }
+        ];
+        
+        // Загрузка данных о лифтах и генерация QR-кодов
+        $('#loadLiftsForQR').on('click', async function() {
+            let lifts = [];
+            const apiAvailable = await checkApiAvailability();
+            
+            if (apiAvailable && typeof LiftAPI !== 'undefined') {
+                lifts = LiftAPI.getLifts();
+            } else {
+                lifts = testLiftsData;
+            }
+            
+            if (lifts && lifts.length > 0) {
+                QRManager.generateAllQRCodes(lifts, 'qrcodes-container');
+                toastr.success('QR-коды успешно созданы');
+            } else {
+                toastr.error('Не удалось получить данные о лифтах');
+            }
+        });
+        
+        // Обработка формы создания QR-кода
+        $('#createQRForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            const qrText = $('#qrText').val();
+            if (!qrText) {
+                toastr.error('Введите текст или URL для QR-кода');
+                return;
+            }
+            
+            const options = {
+                width: parseInt($('#qrWidth').val()),
+                height: parseInt($('#qrHeight').val()),
+                colorDark: $('#qrColorDark').val(),
+                colorLight: "#ffffff"
+            };
+            
+            // Очищаем контейнер
+            $('#qrPreviewContainer').empty();
+            
+            // Создаем QR-код
+            QRManager.generateQRCode('qrPreviewContainer', qrText, options);
+            
+            // Добавляем кнопки для скачивания и печати
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'qr-actions mt-3';
+            actionsDiv.innerHTML = `
+                <button class="btn btn-sm btn-outline-primary mr-2" id="downloadCustomQR">
+                    <i class="fas fa-download"></i> Скачать QR-код
+                </button>
+                <button class="btn btn-sm btn-outline-info" id="printCustomQR">
+                    <i class="fas fa-print"></i> Распечатать
+                </button>
+            `;
+            $('#qrPreviewContainer').append(actionsDiv);
+            
+            // Добавляем обработчики событий
+            $('#downloadCustomQR').on('click', function() {
+                QRManager.downloadQRCode('qrPreviewContainer');
+            });
+            
+            $('#printCustomQR').on('click', function() {
+                QRManager.printQRCode('qrPreviewContainer');
+            });
+            
+            toastr.success('QR-код создан');
+        });
+        
+        // Запуск сканера QR-кодов
+        $('#startScanner').on('click', function() {
+            $('#qrScannerContainer').removeClass('d-none');
+            $('#qrResult').addClass('d-none');
+            $(this).prop('disabled', true);
+            
+            window.qrManager.startScanner('qrVideo', function(data) {
+                // Обработка результата сканирования
+                $('#qrResult').removeClass('d-none');
+                
+                try {
+                    const result = QRManager.processQRData(data);
+                    
+                    let resultHTML = '';
+                    switch(result.type) {
+                        case 'lift':
+                            resultHTML = `
+                                <div class="alert alert-success">
+                                    <strong>QR-код лифта</strong>
+                                    <p>ID: ${result.data.liftId || result.data.id}</p>
+                                    <p>Серийный номер: ${result.data.serial || 'Не указан'}</p>
+                                    <button class="btn btn-sm btn-primary viewLiftDetails" data-id="${result.data.liftId || result.data.id}">
+                                        Просмотреть детали
+                                    </button>
+                                </div>
+                            `;
+                            break;
+                        case 'request':
+                            resultHTML = `
+                                <div class="alert alert-info">
+                                    <strong>QR-код заявки</strong>
+                                    <p>ID: ${result.data.id}</p>
+                                    <button class="btn btn-sm btn-primary viewRequestDetails" data-id="${result.data.id}">
+                                        Просмотреть заявку
+                                    </button>
+                                </div>
+                            `;
+                            break;
+                        case 'text':
+                            resultHTML = `
+                                <div class="alert alert-secondary">
+                                    <strong>Текстовый QR-код</strong>
+                                    <p>${result.data}</p>
+                                    ${result.data.startsWith('http') ? `<a href="${result.data}" target="_blank" class="btn btn-sm btn-info">Открыть ссылку</a>` : ''}
+                                </div>
+                            `;
+                            break;
+                        default:
+                            resultHTML = `
+                                <div class="alert alert-warning">
+                                    <strong>QR-код неизвестного формата</strong>
+                                    <pre>${JSON.stringify(result.data, null, 2)}</pre>
+                                </div>
+                            `;
+                    }
+                    
+                    $('#qrResultContent').html(resultHTML);
+                    
+                    // Добавляем обработчики для кнопок
+                    $('.viewLiftDetails').on('click', function() {
+                        const liftId = $(this).data('id');
+                        // Перенаправление на страницу с деталями лифта
+                        alert(`Переход на страницу лифта ${liftId}`);
+                        // window.location.href = `/pages/lifts/details.html?id=${liftId}`;
+                    });
+                    
+                    $('.viewRequestDetails').on('click', function() {
+                        const requestId = $(this).data('id');
+                        // Перенаправление на страницу с деталями заявки
+                        alert(`Переход на страницу заявки ${requestId}`);
+                        // window.location.href = `/pages/requests/details.html?id=${requestId}`;
+                    });
+                    
+                } catch (error) {
+                    console.error('Ошибка обработки QR-кода:', error);
+                    $('#qrResultContent').html(`
+                        <div class="alert alert-danger">
+                            <strong>Ошибка!</strong>
+                            <p>Не удалось обработать QR-код: ${error.message}</p>
+                        </div>
+                    `);
+                }
+                
+                $('#startScanner').prop('disabled', false);
+            });
+        });
+        
+        // Остановка сканера QR-кодов
+        $('#stopScanner').on('click', function() {
+            window.qrManager.stopScanner();
+            $('#qrScannerContainer').addClass('d-none');
+            $('#startScanner').prop('disabled', false);
+        });
+        
+        // Автоматическая генерация всех QR-кодов при загрузке страницы
+        $('#generateAllQR').on('click', function() {
+            $('#loadLiftsForQR').click();
+        });
+    });
+</script>
+</body>
+</html>

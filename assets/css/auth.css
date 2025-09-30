@@ -1,5 +1,5 @@
-.auth-page {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+.auth-page, .login-page, .register-page {
+    background: linear-gradient(135deg, var(--primary-color, #007bff) 0%, var(--secondary-color, #6610f2) 100%);
     min-height: 100vh;
     display: flex;
     align-items: center;
