@@ -10,71 +10,56 @@ if (typeof window !== 'undefined' && window.location) {
     IS_DEVELOPMENT = process.env.NODE_ENV === 'development' || false;
 }
 
+const isNode = typeof window === 'undefined';
+let mongoCollections = {};
+if (isNode) {
+    const { connectDB, getDB } = require('./db');
+    (async () => {
+        await connectDB();
+        const db = getDB();
+        mongoCollections.lifts = db.collection('lifts');
+        mongoCollections.technicians = db.collection('technicians');
+        mongoCollections.repairs = db.collection('repairs');
+        mongoCollections.activities = db.collection('activities');
+        mongoCollections.notifications = db.collection('notifications');
+    })();
+}
+
 class LiftAPI {
     static async request(endpoint, method = 'GET', data = null, useCache = false) {
-        // Примусово використовуємо mockRequest у Node.js (тести)
-        if (typeof window === 'undefined') {
-            return this.mockRequest(endpoint, method, data);
-        }
-        // Перевірка локального режиму
-        if (IS_DEVELOPMENT && !this.useRealAPI()) {
-            return this.mockRequest(endpoint, method, data);
-        }
-
-        const url = `${API_BASE_URL}${endpoint}`;
-        const headers = {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${AuthManager.getAuthToken()}`
-        };
-
-        // Перевірка кешу для GET запитів
-        if (method === 'GET' && useCache) {
-            const cached = StorageManager.getCache(`api_${endpoint}`);
-            if (cached) {
-                console.log('Використано кеш для:', endpoint);
-                return cached;
-            }
-        }
-
-        const config = {
-            method,
-            headers,
-            credentials: 'include'
-        };
-
-        if (data) {
-            config.body = JSON.stringify(data);
-        }
-
-        try {
-            const response = await fetch(url, config);
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-
-            const result = await response.json();
-
-            // Збереження в кеш для GET запитів
-            if (method === 'GET' && useCache) {
-                StorageManager.setCache(`api_${endpoint}`, result, 2 * 60 * 1000); // 2 хвилини
-            }
-
-            return result;
-        } catch (error) {
-            console.error('API Error:', error);
-            
-            // Спроба отримати дані з локального сховища при помилці
-            if (method === 'GET') {
-                const fallback = StorageManager.load(`fallback_${endpoint}`);
-                if (fallback) {
-                    console.warn('Використано резервні дані для:', endpoint);
-                    return fallback;
+        if (isNode) {
+            // Реальні CRUD через MongoDB
+            const colMap = {
+                '/lifts': 'lifts',
+                '/technicians': 'technicians',
+                '/repairs': 'repairs',
+                '/activities': 'activities',
+                '/notifications': 'notifications'
+            };
+            const col = colMap[endpoint];
+            if (col && mongoCollections[col]) {
+                switch (method) {
+                    case 'GET':
+                        return await mongoCollections[col].find({}).toArray();
+                    case 'POST':
+                        const result = await mongoCollections[col].insertOne(data);
+                        return { success: true, id: result.insertedId };
+                    case 'PUT':
+                        if (!data._id) throw new Error('PUT requires _id');
+                        await mongoCollections[col].updateOne({ _id: data._id }, { $set: data });
+                        return { success: true };
+                    case 'DELETE':
+                        if (!data._id) throw new Error('DELETE requires _id');
+                        await mongoCollections[col].deleteOne({ _id: data._id });
+                        return { success: true };
+                    default:
+                        return { success: false, message: 'Unknown method' };
                 }
             }
-            
-            throw error;
+            // Якщо endpoint не знайдено, повертаємо заглушку
+            return { success: false, message: 'Unknown endpoint' };
         }
+        // ...existing code...
     }
 
     static useRealAPI() {

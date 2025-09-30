@@ -1,32 +1,45 @@
 
+
 const express = require("express");
-const fs = require("fs");
-const path = require("path");
+const { connectDB, getDB } = require("./db");
 
 const app = express();
 const PORT = 3001;
 
 app.use(express.json());
 
-// Читання даних ліфтів
-app.get("/api/lifts", (req, res) => {
+
+// Читання даних ліфтів з MongoDB
+app.get("/api/lifts", async (req, res) => {
     try {
-        const data = fs.readFileSync(path.join(__dirname, "data", "lifts.json"), "utf8");
-        res.json(JSON.parse(data));
+        await connectDB();
+        const db = getDB();
+        const lifts = await db.collection("lifts").find({}).toArray();
+        res.json(lifts);
     } catch (error) {
-        console.error("Помилка читання даних:", error);
+        console.error("Помилка читання даних з MongoDB:", error);
         res.status(500).json({ error: "Не вдалося завантажити дані" });
     }
 });
 
-// Збереження даних ліфтів
-app.post("/api/lifts", (req, res) => {
+// Додавання/оновлення ліфта
+app.post("/api/lifts", async (req, res) => {
     try {
-        const lifts = req.body;
-        fs.writeFileSync(path.join(__dirname, "data", "lifts.json"), JSON.stringify(lifts, null, 2));
-        res.json({ success: true });
+        await connectDB();
+        const db = getDB();
+        const lift = req.body;
+        if (lift._id) {
+            // Оновлення
+            const { _id, ...update } = lift;
+            await db.collection("lifts").updateOne({ _id }, { $set: update });
+            res.json({ success: true, updated: true });
+        } else {
+            // Додавання
+            const result = await db.collection("lifts").insertOne(lift);
+            res.json({ success: true, id: result.insertedId });
+        }
     } catch (error) {
-        console.error("Помилка збереження даних:", error);
+        console.error("Помилка збереження даних у MongoDB:", error);
         res.status(500).json({ error: "Не вдалося зберегти дані" });
     }
 });
