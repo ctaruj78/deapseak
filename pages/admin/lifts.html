@@ -366,6 +366,9 @@
                                         <button id="qr-system-button" class="btn btn-info btn-sm mr-2" onclick="window.open('/qr-interface.html', '_blank')">
                                             <i class="fas fa-qrcode"></i> QR Система
                                         </button>
+                                        <button id="test-saving-button" class="btn btn-warning btn-sm mr-2" onclick="testLiftSaving()" style="display: none;">
+                                            <i class="fas fa-bug"></i> Тест збереження
+                                        </button>
                                         <button id="add-lift-button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#liftModal">
                                             <i class="fas fa-plus"></i> Додати ліфт
                                         </button>
@@ -1258,6 +1261,7 @@
     <script src="/assets/js/lift-utils.js"></script>
     <script src="/assets/js/lifts.js"></script>
     <script src="/assets/js/enhanced-lift-modal.js"></script>
+    <script src="/assets/js/test-lift-saving.js"></script>
 
     <script>
         // Функція виходу
@@ -1275,6 +1279,11 @@
     <script>
         // Ініціалізація після завантаження сторінки
         $(document).ready(function() {
+            // Показуємо тестову кнопку в режимі розробки
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                $('#test-saving-button').show();
+            }
+            
             // Ініціалізуємо LiftManager з assets/js/lifts.js
             console.log('Document ready, initializing LiftManager...');
             if (typeof LiftManager !== 'undefined') {
@@ -1294,17 +1303,37 @@
                     $('#liftModal').modal('show');
                 } else {
                     console.error('Enhanced Lift Modal not available');
+                    // Fallback до старого методу
+                    $('#modalTitle').text('Додати ліфт');
+                    $('#liftModal').modal('show');
                 }
             });
 
-            // Обробник редагування ліфта
-            $(document).on('click', '.edit-lift', function() {
-                const liftId = $(this).data('lift-id');
+            // Обробник редагування ліфта з таблиці
+            $(document).on('click', '.edit-lift, .edit-btn', function() {
+                const liftId = $(this).data('lift-id') || $(this).data('id');
                 console.log('Edit lift clicked for ID:', liftId);
                 if (window.enhancedLiftModal && liftId) {
                     window.enhancedLiftModal.loadLiftData(liftId);
                     $('#modalTitle').text('Редагувати ліфт');
                     $('#liftModal').modal('show');
+                } else {
+                    console.error('Enhanced Lift Modal not available or no lift ID');
+                }
+            });
+
+            // Обробник редагування з деталей
+            $('#edit-lift-from-details').on('click', function() {
+                const detailsModal = $('#liftDetailsModal');
+                const liftId = detailsModal.data('current-lift-id'); // Потрібно встановлювати це при відкритті деталей
+                
+                if (liftId && window.enhancedLiftModal) {
+                    detailsModal.modal('hide');
+                    setTimeout(() => {
+                        window.enhancedLiftModal.loadLiftData(liftId);
+                        $('#modalTitle').text('Редагувати ліфт');
+                        $('#liftModal').modal('show');
+                    }, 300);
                 }
             });
         });
