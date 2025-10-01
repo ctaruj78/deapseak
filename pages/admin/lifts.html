@@ -6,6 +6,8 @@
     <title>Адмін панель - Управління ліфтами</title>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Enhanced Lift Modal CSS -->
+    <link rel="stylesheet" href="/assets/css/enhanced-lift-modal.css">
     
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
@@ -361,6 +363,9 @@
                                 <div class="card-header">
                                     <h3 class="card-title">Список ліфтів <span id="lift-count">(0)</span></h3>
                                     <div class="card-tools">
+                                        <button id="qr-system-button" class="btn btn-info btn-sm mr-2" onclick="window.open('/qr-interface.html', '_blank')">
+                                            <i class="fas fa-qrcode"></i> QR Система
+                                        </button>
                                         <button id="add-lift-button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#liftModal">
                                             <i class="fas fa-plus"></i> Додати ліфт
                                         </button>
@@ -485,194 +490,457 @@
                     </button>
                 </div>
                 <form id="liftForm">
-                    <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                    <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
                         <input type="hidden" id="liftId">
-
+                        
                         <!-- Основна інформація -->
-                        <div class="row mb-4">
-                            <div class="col-12">
-                                <h5 class="text-primary mb-3"><i class="fas fa-info-circle mr-2"></i>Основна інформація</h5>
+                        <div class="card card-outline card-primary mb-3">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-info-circle mr-2"></i>Основна інформація</h3>
                             </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="municipalNumber">Муніципальний № *</label>
-                                    <input type="text" id="municipalNumber" class="form-control" required placeholder="Введіть муніципальний номер ліфта">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="municipalNumber">Муніципальний № *</label>
+                                            <div class="input-group">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text"><i class="fas fa-barcode"></i></span>
+                                                </div>
+                                                <input type="text" id="municipalNumber" class="form-control" required placeholder="Муніципальний номер ліфта">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="serialNumber">Серійний номер *</label>
+                                            <div class="input-group">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
+                                                </div>
+                                                <input type="text" id="serialNumber" class="form-control" required placeholder="Серійний номер ліфта">
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="liftModel">Модель ліфта *</label>
-                                    <input type="text" id="liftModel" class="form-control" required placeholder="Наприклад: Otis Gen2">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="liftBrand">Бренд *</label>
+                                            <select id="liftBrand" class="form-control" required>
+                                                <option value="">Оберіть бренд...</option>
+                                                <option value="otis">Otis</option>
+                                                <option value="kone">KONE</option>
+                                                <option value="schindler">Schindler</option>
+                                                <option value="thyssen">ThyssenKrupp</option>
+                                                <option value="mitsubishi">Mitsubishi Electric</option>
+                                                <option value="fujitec">Fujitec</option>
+                                                <option value="other">Інший</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="liftModel">Модель ліфта *</label>
+                                            <input type="text" id="liftModel" class="form-control" required placeholder="Наприклад: Otis Gen2, KONE MonoSpace">
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="liftType">Тип ліфта *</label>
-                                    <select id="liftType" class="form-control" required>
-                                        <option value="">Оберіть тип...</option>
-                                        <option value="passenger">Пасажирський</option>
-                                        <option value="cargo">Вантажний</option>
-                                        <option value="hospital">Лікарняний</option>
-                                    </select>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="liftType">Тип ліфта *</label>
+                                            <select id="liftType" class="form-control" required>
+                                                <option value="">Оберіть тип...</option>
+                                                <option value="passenger">Пасажирський</option>
+                                                <option value="cargo">Вантажний</option>
+                                                <option value="hospital">Лікарняний</option>
+                                                <option value="panoramic">Панорамний</option>
+                                                <option value="machine-room-less">Безмашинний</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="liftCapacity">Пасажиромісткість *</label>
+                                            <div class="input-group">
+                                                <input type="number" id="liftCapacity" class="form-control" min="4" max="50" required placeholder="осіб">
+                                                <div class="input-group-append">
+                                                    <span class="input-group-text">осіб</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="liftSpeed">Швидкість *</label>
+                                            <div class="input-group">
+                                                <input type="number" id="liftSpeed" class="form-control" min="0.5" max="10" step="0.1" required placeholder="м/с">
+                                                <div class="input-group-append">
+                                                    <span class="input-group-text">м/с</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="form-group">
-                                    <label for="liftCapacity">Пасажиромісткість *</label>
-                                    <input type="number" id="liftCapacity" class="form-control" min="1" required placeholder="осіб">
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="form-group">
-                                    <label for="liftSpeed">Швидкість *</label>
-                                    <input type="number" id="liftSpeed" class="form-control" min="0.1" step="0.1" required placeholder="м/с">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Розташування -->
-                        <div class="row mb-4">
-                            <div class="col-12">
-                                <h5 class="text-primary mb-3"><i class="fas fa-map-marker-alt mr-2"></i>Розташування</h5>
-                            </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-8">
-                                <div class="form-group">
-                                    <label for="liftAddress">Адреса *</label>
-                                    <div class="input-group">
-                                        <input type="text" id="liftAddress" class="form-control" required placeholder="Введіть повну адресу">
-                                        <div class="input-group-append">
-                                            <button type="button" class="btn btn-outline-secondary" id="btnGeocode" title="Визначити координати">
-                                                <i class="fas fa-search-location"></i>
-                                            </button>
+                                
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="floorsCount">Кількість поверхів</label>
+                                            <input type="number" id="floorsCount" class="form-control" min="2" max="100" placeholder="поверхів">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="doorsCount">Кількість дверей</label>
+                                            <input type="number" id="doorsCount" class="form-control" min="1" max="6" value="2" placeholder="дверей">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="installationYear">Рік встановлення</label>
+                                            <input type="number" id="installationYear" class="form-control" min="1950" max="2030" placeholder="YYYY">
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label for="liftPostcode">Поштовий код *</label>
-                                    <input type="text" id="liftPostcode" class="form-control" required pattern="([0-9]{5}|[0-9]{4}-[0-9]{3})" placeholder="12345 або 1234-567">
+                        </div>
+
+                        <!-- Розташування та адреса -->
+                        <div class="card card-outline card-success mb-3">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-map-marker-alt mr-2"></i>Розташування</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="form-group">
+                                            <label for="liftAddress">Повна адреса *</label>
+                                            <div class="input-group">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text"><i class="fas fa-home"></i></span>
+                                                </div>
+                                                <input type="text" id="liftAddress" class="form-control" required placeholder="вул. Хрещатик, 1, Київ">
+                                                <div class="input-group-append">
+                                                    <button type="button" class="btn btn-outline-info" id="btnGeocode" title="Визначити координати">
+                                                        <i class="fas fa-search-location"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="liftPostcode">Поштовий код *</label>
+                                            <div class="input-group">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text"><i class="fas fa-mail-bulk"></i></span>
+                                                </div>
+                                                <input type="text" id="liftPostcode" class="form-control" required pattern="([0-9]{5}|[0-9]{4}-[0-9]{3})" placeholder="01001">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="buildingName">Назва будівлі</label>
+                                            <input type="text" id="buildingName" class="form-control" placeholder="Торговий центр, житловий комплекс">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="floorLocation">Розташування на поверсі</label>
+                                            <input type="text" id="floorLocation" class="form-control" placeholder="ліворуч, центр">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="accessCode">Код доступу</label>
+                                            <input type="text" id="accessCode" class="form-control" placeholder="код домофону">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="liftLat">Широта *</label>
+                                            <div class="input-group">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text"><i class="fas fa-globe"></i></span>
+                                                </div>
+                                                <input type="number" id="liftLat" class="form-control" step="0.000001" required placeholder="50.4501" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="liftLng">Довгота *</label>
+                                            <div class="input-group">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text"><i class="fas fa-globe"></i></span>
+                                                </div>
+                                                <input type="number" id="liftLng" class="form-control" step="0.000001" required placeholder="30.5234" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Інтерактивна мапа -->
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <label>Інтерактивна мапа</label>
+                                            <div id="liftMap" style="height: 300px; border: 1px solid #ddd; border-radius: 4px; position: relative;">
+                                                <div class="map-loading" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000;">
+                                                    <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+                                                    <p class="mt-2">Завантаження карти...</p>
+                                                </div>
+                                            </div>
+                                            <small class="text-muted">Клікніть на карті для вибору точної локації</small>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="liftLat">Широта *</label>
-                                    <input type="number" id="liftLat" class="form-control" step="0.000001" required placeholder="50.4501">
+                        <!-- Клієнт та контакти -->
+                        <div class="card card-outline card-warning mb-3">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-user mr-2"></i>Клієнт та контакти</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="clientName">Ім'я клієнта *</label>
+                                            <div class="input-group">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                                </div>
+                                                <input type="text" id="clientName" class="form-control" required placeholder="ПІБ або назва організації">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="clientEmail">Email клієнта *</label>
+                                            <div class="input-group">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                                </div>
+                                                <input type="email" id="clientEmail" class="form-control" required placeholder="client@example.com">
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="liftLng">Довгота *</label>
-                                    <input type="number" id="liftLng" class="form-control" step="0.000001" required placeholder="30.5234">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="clientPhone">Телефон клієнта</label>
+                                            <div class="input-group">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                                </div>
+                                                <input type="tel" id="clientPhone" class="form-control" placeholder="+380XXXXXXXXX">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="contactPerson">Контактна особа</label>
+                                            <input type="text" id="contactPerson" class="form-control" placeholder="ПІБ відповідальної особи">
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- Клієнт та обслуговування -->
-                        <div class="row mb-4">
-                            <div class="col-12">
-                                <h5 class="text-primary mb-3"><i class="fas fa-user mr-2"></i>Клієнт та обслуговування</h5>
-                            </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="clientName">Ім'я клієнта</label>
-                                    <input type="text" id="clientName" class="form-control" placeholder="ПІБ клієнта">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="clientEmail">Email клієнта</label>
-                                    <input type="email" id="clientEmail" class="form-control" placeholder="client@example.com">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label for="lastMaintenance">Останнє ТО</label>
-                                    <input type="date" id="lastMaintenance" class="form-control">
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label for="nextMaintenance">Наступне ТО</label>
-                                    <input type="date" id="nextMaintenance" class="form-control">
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label for="inspectionFrequency">Частота інспекцій</label>
-                                    <input type="number" id="inspectionFrequency" class="form-control" min="1" max="24" value="6" placeholder="місяці">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="liftStatus">Статус *</label>
-                                    <select id="liftStatus" class="form-control" required>
-                                        <option value="">Оберіть статус...</option>
-                                        <option value="active">Активний</option>
-                                        <option value="maintenance">Обслуговування</option>
-                                        <option value="inactive">Неактивний</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="inspectionReport">Звіт інспекції</label>
-                                    <input type="file" id="inspectionReport" class="form-control-file" accept="application/pdf">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="clientNotes">Додаткові нотатки про клієнта</label>
+                                            <textarea id="clientNotes" class="form-control" rows="2" placeholder="Додаткова інформація про клієнта..."></textarea>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Мапа локації -->
-                        <div class="row mb-4">
-                            <div class="col-12">
-                                <h5 class="text-primary mb-3"><i class="fas fa-map mr-2"></i>Мапа локації</h5>
+                        <!-- Технічне обслуговування -->
+                        <div class="card card-outline card-info mb-3">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-wrench mr-2"></i>Технічне обслуговування</h3>
                             </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="liftLocation">Місце розташування</label>
-                                    <input type="text" id="liftLocation" class="form-control" placeholder="Опис місця розташування ліфта">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="assignedTechnician">Призначений технік</label>
+                                            <select id="assignedTechnician" class="form-control">
+                                                <option value="">Не призначено</option>
+                                                <option value="tech1">Іван Петренко</option>
+                                                <option value="tech2">Олег Коваленко</option>
+                                                <option value="tech3">Андрій Сидоренко</option>
+                                                <option value="tech4">Василь Шевченко</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="liftStatus">Статус ліфта *</label>
+                                            <select id="liftStatus" class="form-control" required>
+                                                <option value="">Оберіть статус...</option>
+                                                <option value="active">Активний</option>
+                                                <option value="maintenance">Обслуговування</option>
+                                                <option value="repair">Ремонт</option>
+                                                <option value="emergency">Аварійний</option>  
+                                                <option value="inactive">Неактивний</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="lastMaintenance">Останнє ТО</label>
+                                            <input type="date" id="lastMaintenance" class="form-control">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="nextMaintenance">Наступне ТО</label>
+                                            <input type="date" id="nextMaintenance" class="form-control">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="inspectionFrequency">Частота інспекцій</label>
+                                            <div class="input-group">
+                                                <input type="number" id="inspectionFrequency" class="form-control" min="1" max="24" value="6" placeholder="місяці">
+                                                <div class="input-group-append">
+                                                    <span class="input-group-text">міс.</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="maintenanceNotes">Нотатки з обслуговування</label>
+                                            <textarea id="maintenanceNotes" class="form-control" rows="3" placeholder="Нотатки технічного обслуговування..."></textarea>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="row mb-3">
-                            <div class="col-md-12">
-                                <div id="liftMap" style="height: 300px; border: 1px solid #ddd; border-radius: 4px;"></div>
+                        <!-- Фотографії та документи -->
+                        <div class="card card-outline card-secondary mb-3">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-camera mr-2"></i>Фотографії та документи</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="liftPhotos">Фотографії ліфта</label>
+                                            <input type="file" id="liftPhotos" class="form-control-file" multiple accept="image/*">
+                                            <small class="text-muted">Максимум 10 фотографій, до 5MB кожна</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="inspectionReport">Звіт інспекції</label>
+                                            <input type="file" id="inspectionReport" class="form-control-file" accept="application/pdf">
+                                            <small class="text-muted">Тільки PDF файли, до 10MB</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Попередній перегляд фотографій -->
+                                <div class="row" id="photoPreview" style="display: none;">
+                                    <div class="col-12">
+                                        <label>Попередній перегляд фотографій:</label>
+                                        <div id="photoGallery" class="d-flex flex-wrap"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Історія втручань -->
+                        <div class="card card-outline card-danger mb-3" id="interventionCard" style="display: none;">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-history mr-2"></i>Історія втручань</h3>
+                                <div class="card-tools">
+                                    <button type="button" class="btn btn-sm btn-success" id="addInterventionBtn">
+                                        <i class="fas fa-plus"></i> Додати втручання
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div id="interventionHistory">
+                                    <!-- Історія втручань буде додана динамічно -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- QR код та доступ -->
+                        <div class="card card-outline card-dark mb-3">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-qrcode mr-2"></i>QR код та доступ</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle mr-2"></i>
+                                            QR код буде автоматично створений після збереження ліфта. 
+                                            Він дозволить швидкий доступ до інформації про ліфт.
+                                        </div>
+                                        <div id="qrSection" style="display:none">
+                                            <label>QR-код ліфта:</label>
+                                            <div id="liftQrCode" class="text-center"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="qrAccessLevel">Рівень доступу QR</label>
+                                            <select id="qrAccessLevel" class="form-control">
+                                                <option value="public">Публічний</option>
+                                                <option value="restricted">Обмежений</option>
+                                                <option value="private">Приватний</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" id="enableQrTracking" checked>
+                                                <label class="form-check-label" for="enableQrTracking">
+                                                    Відстежувати доступ через QR
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <div class="mr-auto" id="qrSection" style="display:none">
-                            <label>QR-код ліфта:</label>
-                            <div id="liftQrCode"></div>
+                    
+                    <!-- Модальний футер -->
+                    <div class="modal-footer bg-light">
+                        <div class="mr-auto">
+                            <button type="button" class="btn btn-outline-info" id="previewDataBtn">
+                                <i class="fas fa-eye"></i> Попередній перегляд
+                            </button>
                         </div>
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
-                        <button type="button" class="btn btn-info" id="generateQrBtn" style="display:none">Створити QR код</button>
-                        <button type="submit" class="btn btn-primary">Зберегти</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                            <i class="fas fa-times"></i> Скасувати
+                        </button>
+                        <button type="button" class="btn btn-info" id="generateQrBtn" style="display:none">
+                            <i class="fas fa-qrcode"></i> Створити QR код
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Зберегти ліфт
+                        </button>
                     </div>
                 </form>
             </div>
@@ -805,6 +1073,117 @@
     <!-- Toast Container -->
     <div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
 
+    <!-- Intervention Modal -->
+    <div class="modal fade" id="interventionModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-danger">
+                    <h5 class="modal-title">Додати втручання</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="interventionForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="intDate">Дата втручання *</label>
+                                    <input type="date" id="intDate" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="intType">Тип втручання *</label>
+                                    <select id="intType" class="form-control" required>
+                                        <option value="">Оберіть тип...</option>
+                                        <option value="maintenance">Планове ТО</option>
+                                        <option value="repair">Ремонт</option>
+                                        <option value="emergency">Аварійний виклик</option>
+                                        <option value="inspection">Інспекція</option>
+                                        <option value="modernization">Модернізація</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="intTechnician">Технік</label>
+                                    <select id="intTechnician" class="form-control">
+                                        <option value="">Не вказано</option>
+                                        <option value="tech1">Іван Петренко</option>
+                                        <option value="tech2">Олег Коваленко</option>
+                                        <option value="tech3">Андрій Сидоренко</option>
+                                        <option value="tech4">Василь Шевченко</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="intStatus">Статус *</label>
+                                    <select id="intStatus" class="form-control" required>
+                                        <option value="completed">Завершено</option>
+                                        <option value="in-progress">В процесі</option>
+                                        <option value="scheduled">Заплановано</option>
+                                        <option value="cancelled">Скасовано</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="form-group">
+                                    <label for="intDescription">Опис втручання *</label>
+                                    <textarea id="intDescription" class="form-control" rows="3" required placeholder="Детальний опис виконаних робіт..."></textarea>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="intCost">Вартість</label>
+                                    <div class="input-group">
+                                        <input type="number" id="intCost" class="form-control" min="0" step="0.01" placeholder="0.00">
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">₴</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="intDuration">Тривалість</label>
+                                    <div class="input-group">
+                                        <input type="number" id="intDuration" class="form-control" min="0.5" step="0.5" placeholder="годин">
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">год</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="intPriority">Пріоритет</label>
+                                    <select id="intPriority" class="form-control">
+                                        <option value="low">Низький</option>
+                                        <option value="medium" selected>Середній</option>
+                                        <option value="high">Високий</option>
+                                        <option value="critical">Критичний</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                    <button type="button" class="btn btn-danger" id="saveInterventionBtn">Зберегти втручання</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Chat Modal -->
     <div class="modal fade" id="chatModal" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -846,7 +1225,9 @@
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <!-- Custom scripts -->
     <script src="/assets/js/common.js"></script>
+    <script src="/assets/js/lift-utils.js"></script>
     <script src="/assets/js/lifts.js"></script>
+    <script src="/assets/js/enhanced-lift-modal.js"></script>
 
     <script>
         // Функція виходу
@@ -873,6 +1254,29 @@
             } else {
                 console.error('LiftManager class not found');
             }
+
+            // Інтеграція з покращеним модальним вікном
+            $('#add-lift-button').off('click').on('click', function() {
+                console.log('Add lift button clicked - using enhanced modal');
+                if (window.enhancedLiftModal) {
+                    window.enhancedLiftModal.resetForm();
+                    $('#modalTitle').text('Додати новий ліфт');
+                    $('#liftModal').modal('show');
+                } else {
+                    console.error('Enhanced Lift Modal not available');
+                }
+            });
+
+            // Обробник редагування ліфта
+            $(document).on('click', '.edit-lift', function() {
+                const liftId = $(this).data('lift-id');
+                console.log('Edit lift clicked for ID:', liftId);
+                if (window.enhancedLiftModal && liftId) {
+                    window.enhancedLiftModal.loadLiftData(liftId);
+                    $('#modalTitle').text('Редагувати ліфт');
+                    $('#liftModal').modal('show');
+                }
+            });
         });
     </script>
 

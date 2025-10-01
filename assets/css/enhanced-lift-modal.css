@@ -1,0 +1,320 @@
+/* Enhanced Lift Modal Styles */
+
+.modal-xl {
+    max-width: 95% !important;
+}
+
+/* Photo preview styles */
+.photo-preview-item {
+    position: relative;
+    display: inline-block;
+}
+
+.photo-preview-item img {
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.photo-preview-item:hover img {
+    border-color: #007bff;
+    transform: scale(1.05);
+}
+
+.photo-remove {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #dc3545;
+    color: white;
+    border: 2px solid white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+
+.photo-remove:hover {
+    background: #c82333;
+    transform: scale(1.1);
+}
+
+/* Map loading indicator */
+.map-loading {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+}
+
+/* Intervention history styles */
+.intervention-item {
+    background: #f8f9fa;
+    border-left: 4px solid #dc3545;
+    transition: all 0.3s ease;
+}
+
+.intervention-item:hover {
+    background: #e9ecef;
+    border-left-color: #007bff;
+}
+
+/* Card improvements */
+.card-outline.card-primary {
+    border-color: #007bff;
+    border-width: 2px;
+}
+
+.card-outline.card-success {
+    border-color: #28a745;
+    border-width: 2px;
+}
+
+.card-outline.card-warning {
+    border-color: #ffc107;
+    border-width: 2px;
+}
+
+.card-outline.card-info {
+    border-color: #17a2b8;
+    border-width: 2px;
+}
+
+.card-outline.card-secondary {
+    border-color: #6c757d;
+    border-width: 2px;
+}
+
+.card-outline.card-danger {
+    border-color: #dc3545;
+    border-width: 2px;
+}
+
+.card-outline.card-dark {
+    border-color: #343a40;
+    border-width: 2px;
+}
+
+/* Input group improvements */
+.input-group-text {
+    background: #f8f9fa;
+    border-color: #ced4da;
+    color: #6c757d;
+}
+
+.form-control:focus + .input-group-append .input-group-text,
+.input-group-prepend .input-group-text + .form-control:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Toast container positioning */
+.toast-container {
+    z-index: 1060;
+}
+
+.toast {
+    min-width: 300px;
+}
+
+/* QR Code container */
+#liftQrCode {
+    padding: 20px;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    display: inline-block;
+}
+
+#liftQrCode img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Form validation improvements */
+.is-invalid {
+    border-color: #dc3545 !important;
+}
+
+.invalid-feedback {
+    display: block !important;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875em;
+    color: #dc3545;
+}
+
+.is-valid {
+    border-color: #28a745 !important;
+}
+
+/* Button improvements */
+.btn {
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+/* Modal improvements */
+.modal-content {
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    border-radius: 12px 12px 0 0;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-footer {
+    border-radius: 0 0 12px 12px;
+    border-top: 1px solid #dee2e6;
+}
+
+/* Leaflet map container improvements */
+#liftMap {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Progress indicators */
+.progress-indicator {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .modal-xl {
+        max-width: 98% !important;
+        margin: 10px;
+    }
+    
+    .modal-body {
+        max-height: 60vh !important;
+    }
+    
+    .photo-preview-item img {
+        width: 80px !important;
+        height: 80px !important;
+    }
+    
+    #liftMap {
+        height: 200px !important;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .intervention-item {
+        background: #2d3748;
+        color: #e2e8f0;
+    }
+    
+    .card {
+        background: #2d3748;
+        color: #e2e8f0;
+    }
+    
+    .input-group-text {
+        background: #4a5568;
+        color: #e2e8f0;
+        border-color: #4a5568;
+    }
+}
+
+/* Animation improvements */
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.slide-in {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+}
+
+/* Loading states */
+.loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    z-index: 1000;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Hover effects */
+.card:hover {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+    transition: all 0.3s ease;
+}
+
+/* Focus improvements */
+.form-control:focus,
+.form-select:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Status indicators */
+.status-active { color: #28a745; }
+.status-maintenance { color: #ffc107; }
+.status-repair { color: #fd7e14; }
+.status-emergency { color: #dc3545; }
+.status-inactive { color: #6c757d; }
+
+/* Priority indicators */
+.priority-low { border-left-color: #28a745; }
+.priority-medium { border-left-color: #ffc107; }
+.priority-high { border-left-color: #fd7e14; }
+.priority-critical { border-left-color: #dc3545; }
