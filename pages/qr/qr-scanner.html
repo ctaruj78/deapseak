@@ -10,6 +10,58 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
+        /* Modern animations for header */
+        @keyframes backgroundMove {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Glass morphism effects */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Button hover effects */
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2) !important;
+        }
+        
+        /* History item styling */
+        .history-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .history-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+        
         .scanner-container {
             position: relative;
             width: 100%;
@@ -107,7 +159,7 @@
         }
     </style>
 </head>
-<body class="hold-transition sidebar-mini layout-fixed">
+<body class="hold-transition sidebar-mini layout-fixed" style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); min-height: 100vh;">
     <div class="wrapper">
 
         <!-- Navbar -->
@@ -322,21 +374,41 @@
 
         <!-- Content Wrapper -->
         <div class="content-wrapper">
-            <section class="content-header">
-                <div class="container-fluid">
-                    <div class="row mb-2">
+            <!-- Content Header with gradient background -->
+            <section class="content-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 2rem 0; margin-bottom: 2rem; border-radius: 0 0 20px 20px; position: relative; overflow: hidden;">
+                <!-- Animated background elements -->
+                <div style="position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: url('data:image/svg+xml,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 100 100&quot;><defs><pattern id=&quot;grain&quot; width=&quot;100&quot; height=&quot;100&quot; patternUnits=&quot;userSpaceOnUse&quot;><circle cx=&quot;50&quot; cy=&quot;50&quot; r=&quot;1&quot; fill=&quot;%23ffffff&quot; opacity=&quot;0.1&quot;/></pattern></defs><rect width=&quot;100&quot; height=&quot;100&quot; fill=&quot;url(%23grain)&quot;/></svg>'); animation: backgroundMove 20s linear infinite;"></div>
+                
+                <div class="container-fluid position-relative" style="z-index: 2;">
+                    <div class="row mb-2 align-items-center">
                         <div class="col-sm-6">
-                            <h1>Сканер QR-кодів</h1>
+                            <h1 style="color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.3); font-weight: 600; margin: 0; display: flex; align-items: center;">
+                                <i class="fas fa-qrcode mr-3" style="font-size: 2.5rem; color: rgba(255,255,255,0.9);"></i>
+                                <span>Сканер QR-кодів</span>
+                            </h1>
+                            <p style="color: rgba(255,255,255,0.8); margin: 0.5rem 0 0 0; font-size: 1.1rem;">Швидке та точне сканування QR-кодів</p>
                         </div>
                         <div class="col-sm-6">
-                            <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="../admin/admin-dashboard.html">Головна</a></li>
-                                <li class="breadcrumb-item"><a href="#">QR Система</a></li>
-                                <li class="breadcrumb-item active">Сканер QR-кодів</li>
+                            <ol class="breadcrumb float-sm-right" style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 25px; padding: 0.5rem 1rem; margin: 0;">
+                                <li class="breadcrumb-item">
+                                    <a href="../admin/admin-dashboard.html" style="color: rgba(255,255,255,0.9); text-decoration: none;">
+                                        <i class="fas fa-home mr-1"></i>Головна
+                                    </a>
+                                </li>
+                                <li class="breadcrumb-item">
+                                    <a href="../../qr-interface.html" style="color: rgba(255,255,255,0.9); text-decoration: none;">
+                                        <i class="fas fa-qrcode mr-1"></i>QR Система
+                                    </a>
+                                </li>
+                                <li class="breadcrumb-item active" style="color: white; font-weight: 500;">Сканер QR-кодів</li>
                             </ol>
                         </div>
                     </div>
                 </div>
+                
+                <!-- Floating elements for visual interest -->
+                <div style="position: absolute; top: 10%; right: 10%; width: 100px; height: 100px; background: rgba(255,255,255,0.1); border-radius: 50%; animation: float 6s ease-in-out infinite;"></div>
+                <div style="position: absolute; bottom: 10%; left: 10%; width: 60px; height: 60px; background: rgba(255,255,255,0.1); border-radius: 50%; animation: float 8s ease-in-out infinite reverse;"></div>
             </section>
 
             <!-- Main content -->
@@ -345,11 +417,14 @@
                     <div class="row">
                         <div class="col-md-8">
                             <!-- Сканер -->
-                            <div class="card">
-                                <div class="card-header">
-                                    <h3 class="card-title">Сканування QR-коду</h3>
+                            <div class="card glass-card" style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); animation: fadeInUp 0.6s ease-out;">
+                                <div class="card-header" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.8) 0%, rgba(118, 75, 162, 0.8) 100%); border-radius: 20px 20px 0 0; border: none; color: white;">
+                                    <h3 class="card-title" style="color: white; font-weight: 600; display: flex; align-items: center;">
+                                        <i class="fas fa-camera mr-2" style="color: rgba(255,255,255,0.9);"></i>
+                                        Сканування QR-коду
+                                    </h3>
                                     <div class="card-tools">
-                                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" style="color: white;">
                                             <i class="fas fa-minus"></i>
                                         </button>
                                     </div>
@@ -362,25 +437,28 @@
                                         </div>
                                     </div>
                                     
-                                    <div class="scanner-controls">
-                                        <button class="btn btn-primary btn-lg" id="startScanner">
-                                            <i class="fas fa-camera"></i> Увімкнути камеру
+                                    <div class="scanner-controls mt-3">
+                                        <button class="btn btn-lg" id="startScanner" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 25px; padding: 12px 24px; font-weight: 600; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); transition: all 0.3s ease;">
+                                            <i class="fas fa-camera mr-2"></i> Увімкнути камеру
                                         </button>
-                                        <button class="btn btn-secondary btn-lg ml-2" id="stopScanner" style="display: none;">
-                                            <i class="fas fa-stop"></i> Вимкнути камеру
+                                        <button class="btn btn-lg ml-2" id="stopScanner" style="display: none; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; border-radius: 25px; padding: 12px 24px; font-weight: 600; box-shadow: 0 4px 15px rgba(245, 87, 108, 0.3); transition: all 0.3s ease;">
+                                            <i class="fas fa-stop mr-2"></i> Вимкнути камеру
                                         </button>
-                                        <button class="btn btn-info btn-lg ml-2" id="toggleFlash" style="display: none;">
-                                            <i class="fas fa-lightbulb"></i> Спалах
+                                        <button class="btn btn-lg ml-2" id="toggleFlash" style="display: none; background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); color: #333; border: none; border-radius: 25px; padding: 12px 24px; font-weight: 600; box-shadow: 0 4px 15px rgba(252, 182, 159, 0.3); transition: all 0.3s ease;">
+                                            <i class="fas fa-lightbulb mr-2"></i> Спалах
                                         </button>
                                     </div>
                                     
-                                    <div class="manual-input mt-4">
-                                        <h5>Або введіть код вручну</h5>
+                                    <div class="manual-input mt-4" style="background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1);">
+                                        <h5 style="color: #333; margin-bottom: 15px; font-weight: 600;">
+                                            <i class="fas fa-keyboard mr-2" style="color: #667eea;"></i>
+                                            Або введіть код вручну
+                                        </h5>
                                         <div class="input-group">
-                                            <input type="text" id="manualCodeInput" class="form-control" placeholder="Введіть код QR-коду">
+                                            <input type="text" id="manualCodeInput" class="form-control" placeholder="Введіть код QR-коду" style="border-radius: 25px 0 0 25px; border: 2px solid rgba(102, 126, 234, 0.2); padding: 12px 20px; font-size: 1rem;">
                                             <div class="input-group-append">
-                                                <button class="btn btn-success" id="submitManualCode">
-                                                    <i class="fas fa-check"></i> Перевірити
+                                                <button class="btn" id="submitManualCode" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; border: none; border-radius: 0 25px 25px 0; padding: 12px 24px; font-weight: 600; box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);">
+                                                    <i class="fas fa-check mr-2"></i> Перевірити
                                                 </button>
                                             </div>
                                         </div>
@@ -389,11 +467,14 @@
                             </div>
                             
                             <!-- Результат сканування -->
-                            <div class="card scan-result" id="scanResultCard" style="display: none;">
-                                <div class="card-header">
-                                    <h3 class="card-title">Результат сканування</h3>
+                            <div class="card scan-result glass-card" id="scanResultCard" style="display: none; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); animation: fadeInUp 0.6s ease-out;">
+                                <div class="card-header" style="background: linear-gradient(135deg, rgba(79, 172, 254, 0.8) 0%, rgba(0, 242, 254, 0.8) 100%); border-radius: 20px 20px 0 0; border: none; color: white;">
+                                    <h3 class="card-title" style="color: white; font-weight: 600; display: flex; align-items: center;">
+                                        <i class="fas fa-check-circle mr-2" style="color: rgba(255,255,255,0.9);"></i>
+                                        Результат сканування
+                                    </h3>
                                     <div class="card-tools">
-                                        <button type="button" class="btn btn-tool" onclick="$('#scanResultCard').hide()">
+                                        <button type="button" class="btn btn-tool" onclick="$('#scanResultCard').hide()" style="color: white;">
                                             <i class="fas fa-times"></i>
                                         </button>
                                     </div>
@@ -406,11 +487,14 @@
                         
                         <div class="col-md-4">
                             <!-- Історія сканувань -->
-                            <div class="card">
-                                <div class="card-header">
-                                    <h3 class="card-title">Останні сканування</h3>
+                            <div class="card glass-card" style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); animation: fadeInUp 0.8s ease-out;">
+                                <div class="card-header" style="background: linear-gradient(135deg, rgba(240, 147, 251, 0.8) 0%, rgba(245, 87, 108, 0.8) 100%); border-radius: 20px 20px 0 0; border: none; color: white;">
+                                    <h3 class="card-title" style="color: white; font-weight: 600; display: flex; align-items: center;">
+                                        <i class="fas fa-history mr-2" style="color: rgba(255,255,255,0.9);"></i>
+                                        Останні сканування
+                                    </h3>
                                     <div class="card-tools">
-                                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse" style="color: white;">
                                             <i class="fas fa-minus"></i>
                                         </button>
                                     </div>
