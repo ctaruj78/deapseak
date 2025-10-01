@@ -917,8 +917,11 @@ class EnhancedLiftModal {
         try {
             submitBtn.html('<i class="fas fa-spinner fa-spin"></i> Збереження...').prop('disabled', true);
             
-            // Симуляція збереження (тут би мав бути реальний API запит)
-            await this.simulateSave(formData);
+            // Конвертуємо дані в формат, сумісний з існуючою системою
+            const liftData = this.convertToLiftFormat(formData);
+            
+            // Зберігаємо через існуючу систему
+            await this.saveLiftData(liftData);
             
             this.showToast('Ліфт успішно збережено', 'success');
             $('#liftModal').modal('hide');
@@ -934,6 +937,97 @@ class EnhancedLiftModal {
         } finally {
             submitBtn.html('<i class="fas fa-save"></i> Зберегти ліфт').prop('disabled', false);
         }
+    }
+
+    convertToLiftFormat(formData) {
+        // Конвертуємо дані в формат, сумісний з існуючою системою
+        const now = new Date().toISOString();
+        
+        return {
+            id: formData.id || this.generateUniqueId(),
+            municipalNumber: formData.municipalNumber,
+            serial: formData.serialNumber,
+            brand: formData.brand,
+            model: formData.model,
+            type: formData.type,
+            capacity: parseInt(formData.capacity) || null,
+            speed: parseFloat(formData.speed) || null,
+            floorsCount: parseInt(formData.floorsCount) || null,
+            doorsCount: parseInt(formData.doorsCount) || 2,
+            installationYear: parseInt(formData.installationYear) || null,
+            address: formData.address,
+            postcode: formData.postcode || formData.postCode,
+            buildingName: formData.buildingName,
+            floorLocation: formData.floorLocation,
+            accessCode: formData.accessCode,
+            lat: parseFloat(formData.lat) || null,
+            lng: parseFloat(formData.lng) || null,
+            clientName: formData.clientName,
+            clientEmail: formData.clientEmail,
+            clientPhone: formData.clientPhone,
+            contactPerson: formData.contactPerson,
+            clientNotes: formData.clientNotes,
+            tech: formData.assignedTechnician,
+            status: formData.status,
+            lastInspection: formData.lastMaintenance,
+            nextInspection: formData.nextMaintenance,
+            inspectionFrequency: parseInt(formData.inspectionFrequency) || 6,
+            maintenanceNotes: formData.maintenanceNotes,
+            qrAccessLevel: formData.qrAccessLevel || 'public',
+            enableQrTracking: formData.enableQrTracking !== false,
+            interventionHistory: formData.interventions || [],
+            photos: this.photos || [],
+            inspectionHistory: [],
+            chat: [],
+            createdAt: formData.id ? undefined : now, // Не змінюємо дату створення для існуючих
+            updatedAt: now
+        };
+    }
+
+    async saveLiftData(liftData) {
+        try {
+            console.log('Saving lift data:', liftData);
+            
+            // Використовуємо глобальну змінну allLifts
+            if (typeof allLifts === 'undefined') {
+                throw new Error('allLifts не визначено');
+            }
+            
+            // Перевіряємо, чи це редагування існуючого ліфта
+            const existingIndex = allLifts.findIndex(l => l.id === liftData.id);
+            
+            if (existingIndex !== -1) {
+                // Оновлюємо існуючий ліфт
+                allLifts[existingIndex] = { ...allLifts[existingIndex], ...liftData };
+                console.log('Updated existing lift at index:', existingIndex);
+            } else {
+                // Додаємо новий ліфт
+                allLifts.push(liftData);
+                console.log('Added new lift. Total lifts:', allLifts.length);
+            }
+            
+            // Зберігаємо в localStorage через CommonUtils
+            if (typeof CommonUtils !== 'undefined' && CommonUtils.saveLifts) {
+                const saved = CommonUtils.saveLifts(allLifts);
+                if (!saved) {
+                    throw new Error('Помилка збереження в localStorage');
+                }
+            } else {
+                // Fallback - пряме збереження в localStorage
+                localStorage.setItem('lifts', JSON.stringify(allLifts));
+            }
+            
+            console.log('Lift saved successfully');
+            return true;
+            
+        } catch (error) {
+            console.error('Error in saveLiftData:', error);
+            throw error;
+        }
+    }
+
+    generateUniqueId() {
+        return 'lift_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     }
 
     validateForm() {
@@ -1000,15 +1094,7 @@ class EnhancedLiftModal {
         return emailRegex.test(email);
     }
 
-    async simulateSave(formData) {
-        // Симуляція API запиту
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                console.log('Saving lift data:', formData);
-                resolve();
-            }, 2000);
-        });
-    }
+
 
     async loadTechniciansData() {
         // Тут би мав бути запит до API для завантаження списку техніків
@@ -1031,48 +1117,63 @@ class EnhancedLiftModal {
             this.currentLiftId = liftId;
             $('#liftId').val(liftId);
             
-            // Тут би мав бути реальний запит до API
-            // Поки що використовуємо приклад даних
-            const sampleLiftData = {
-                id: liftId,
-                municipalNumber: 'МН-001',
-                serialNumber: 'SN-123456',
-                brand: 'otis',
-                model: 'Otis Gen2',
-                type: 'passenger',
-                capacity: 8,
-                speed: 1.0,
-                floorsCount: 10,
-                doorsCount: 2,
-                installationYear: 2020,
-                address: 'вул. Хрещатик, 1, Київ',
-                postcode: '01001',
-                buildingName: 'Торговий центр "Глобус"',
-                floorLocation: 'центральний холл',
-                accessCode: '1234',
-                lat: 50.4501,
-                lng: 30.5234,
-                clientName: 'ТОВ "Глобус Київ"',
-                clientEmail: 'info@globus.kiev.ua',
-                clientPhone: '+380441234567',
-                contactPerson: 'Іван Петренко',
-                clientNotes: 'Великий торговий центр, високий трафік',
-                assignedTechnician: 'tech1',
-                status: 'active',
-                lastMaintenance: '2024-01-15',
-                nextMaintenance: '2024-07-15',
-                inspectionFrequency: 6,
-                maintenanceNotes: 'Ліфт в хорошому стані, регулярне обслуговування',
-                qrAccessLevel: 'public',
-                enableQrTracking: true
-            };
+            // Завантажуємо реальні дані з allLifts
+            let liftData = null;
             
-            this.populateForm(sampleLiftData);
+            if (typeof allLifts !== 'undefined') {
+                liftData = allLifts.find(lift => lift.id === liftId);
+            }
+            
+            if (!liftData) {
+                throw new Error(`Ліфт з ID ${liftId} не знайдено`);
+            }
+            
+            // Конвертуємо дані в формат форми
+            const formData = this.convertFromLiftFormat(liftData);
+            this.populateForm(formData);
             
         } catch (error) {
             console.error('Error loading lift data:', error);
             this.showToast('Помилка завантаження даних ліфта', 'error');
         }
+    }
+
+    convertFromLiftFormat(liftData) {
+        // Конвертуємо дані з формату allLifts в формат форми
+        return {
+            id: liftData.id,
+            municipalNumber: liftData.municipalNumber || liftData.municipal_number || '',
+            serialNumber: liftData.serial || '',
+            brand: liftData.brand || '',
+            model: liftData.model || '',
+            type: liftData.type || '',
+            capacity: liftData.capacity || '',
+            speed: liftData.speed || '',
+            floorsCount: liftData.floorsCount || '',
+            doorsCount: liftData.doorsCount || 2,
+            installationYear: liftData.installationYear || '',
+            address: liftData.address || '',
+            postcode: liftData.postcode || liftData.postCode || '',
+            buildingName: liftData.buildingName || '',
+            floorLocation: liftData.floorLocation || '',
+            accessCode: liftData.accessCode || '',
+            lat: liftData.lat || '',
+            lng: liftData.lng || '',
+            clientName: liftData.clientName || liftData.client || '',
+            clientEmail: liftData.clientEmail || '',
+            clientPhone: liftData.clientPhone || '',
+            contactPerson: liftData.contactPerson || '',
+            clientNotes: liftData.clientNotes || '',
+            assignedTechnician: liftData.tech || liftData.assignedTechnician || '',
+            status: liftData.status || 'active',
+            lastMaintenance: liftData.lastInspection || liftData.lastMaintenance || '',
+            nextMaintenance: liftData.nextInspection || liftData.nextMaintenance || '',
+            inspectionFrequency: liftData.inspectionFrequency || 6,
+            maintenanceNotes: liftData.maintenanceNotes || '',
+            qrAccessLevel: liftData.qrAccessLevel || 'public',
+            enableQrTracking: liftData.enableQrTracking !== false,
+            interventions: liftData.interventionHistory || []
+        };
     }
 
     populateForm(data) {
@@ -1099,22 +1200,38 @@ class EnhancedLiftModal {
     }
 
     resetForm() {
+        console.log('Resetting form for new lift');
+        
+        // Очищуємо форму
         $('#liftForm')[0].reset();
         $('#liftId').val('');
         $('#photoPreview').hide();
         $('#qrSection').hide();
         $('#generateQrBtn').show();
         $('#interventionHistory').empty();
+        $('#interventionCard').hide(); // Ховаємо для нових ліфтів
+        
+        // Очищуємо валідацію
         $('.is-invalid').removeClass('is-invalid');
         $('.invalid-feedback').remove();
         
-        if (this.marker) {
+        // Очищуємо карту
+        if (this.map && this.marker) {
             this.map.removeLayer(this.marker);
             this.marker = null;
         }
         
+        // Встановлюємо значення за замовчуванням
+        $('#doorsCount').val(2);
+        $('#inspectionFrequency').val(6);
+        $('#qrAccessLevel').val('public');
+        $('#enableQrTracking').prop('checked', true);
+        
+        // Очищуємо фотографії
         this.photos = [];
         this.currentLiftId = null;
+        
+        console.log('Form reset completed');
     }
 
     showToast(message, type = 'info') {

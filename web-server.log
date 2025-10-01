@@ -31779,3 +31779,77 @@
 127.0.0.1 - - [01/Oct/2025 20:19:09] "GET /assets/js/qr-utils.js HTTP/1.1" 200 -
 127.0.0.1 - - [01/Oct/2025 20:19:10] code 404, message File not found
 127.0.0.1 - - [01/Oct/2025 20:19:10] "GET /assets/js/adminlte.min.js HTTP/1.1" 404 -
+127.0.0.1 - - [01/Oct/2025 20:31:44] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [01/Oct/2025 20:31:49] "GET /qr-interface.html HTTP/1.1" 200 -
+127.0.0.1 - - [01/Oct/2025 20:31:49] code 404, message File not found
+127.0.0.1 - - [01/Oct/2025 20:31:49] "GET /assets/js/adminlte.min.js HTTP/1.1" 404 -
+127.0.0.1 - - [01/Oct/2025 20:31:50] code 404, message File not found
+127.0.0.1 - - [01/Oct/2025 20:31:50] "GET /assets/img/AdminLTELogo.png HTTP/1.1" 404 -
+127.0.0.1 - - [01/Oct/2025 20:31:50] "GET /assets/js/auth.js HTTP/1.1" 200 -
+127.0.0.1 - - [01/Oct/2025 20:31:50] "GET /assets/js/qr-utils.js HTTP/1.1" 200 -
+127.0.0.1 - - [01/Oct/2025 20:31:50] code 404, message File not found
+127.0.0.1 - - [01/Oct/2025 20:31:50] "GET /assets/img/user2-160x160.jpg HTTP/1.1" 404 -
+127.0.0.1 - - [01/Oct/2025 20:31:50] "GET /plugins/fontawesome-free/css/all.min.css HTTP/1.1" 200 -
+127.0.0.1 - - [01/Oct/2025 20:31:50] code 404, message File not found
+127.0.0.1 - - [01/Oct/2025 20:31:50] "GET /assets/css/adminlte.min.css HTTP/1.1" 404 -
+127.0.0.1 - - [01/Oct/2025 20:31:50] "GET /plugins/sweetalert2/sweetalert2.min.js HTTP/1.1" 200 -
+127.0.0.1 - - [01/Oct/2025 20:31:50] "GET /plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css HTTP/1.1" 200 -
+127.0.0.1 - - [01/Oct/2025 20:31:50] "GET /plugins/jquery/jquery.min.js HTTP/1.1" 200 -
+127.0.0.1 - - [01/Oct/2025 20:31:51] "GET /plugins/bootstrap/js/bootstrap.bundle.min.js HTTP/1.1" 200 -
+127.0.0.1 - - [01/Oct/2025 20:31:52] "GET /plugins/fontawesome-free/webfonts/fa-solid-900.woff2 HTTP/1.1" 200 -
+127.0.0.1 - - [01/Oct/2025 20:31:56] "GET /login.html HTTP/1.1" 200 -
+127.0.0.1 - - [01/Oct/2025 20:31:56] "GET /assets/js/common.js HTTP/1.1" 200 -
+127.0.0.1 - - [01/Oct/2025 20:31:56] "GET /assets/css/auth.css HTTP/1.1" 200 -
+127.0.0.1 - - [01/Oct/2025 20:31:56] "GET /assets/css/main.css HTTP/1.1" 200 -
+127.0.0.1 - - [01/Oct/2025 20:31:56] "GET /assets/js/config.js HTTP/1.1" 200 -
+127.0.0.1 - - [01/Oct/2025 20:31:58] code 501, message Unsupported method ('POST')
+127.0.0.1 - - [01/Oct/2025 20:31:58] "POST /api/login HTTP/1.1" 501 -
+127.0.0.1 - - [01/Oct/2025 20:31:58] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [01/Oct/2025 20:31:58] "GET /assets/js/modules/navigation-manager.js HTTP/1.1" 200 -
+127.0.0.1 - - [01/Oct/2025 20:31:58] "GET /assets/js/modules/i18n.js HTTP/1.1" 200 -
+127.0.0.1 - - [01/Oct/2025 20:31:58] "GET /assets/js/modules/notifications.js HTTP/1.1" 200 -
+127.0.0.1 - - [01/Oct/2025 20:31:58] "GET /assets/js/modules/export.js HTTP/1.1" 200 -
+127.0.0.1 - - [01/Oct/2025 20:31:58] "GET /assets/js/modules/theme.js HTTP/1.1" 200 -
+127.0.0.1 - - [01/Oct/2025 20:32:04] "GET /pages/admin/qr-generator.html HTTP/1.1" 200 -
+127.0.0.1 - - [01/Oct/2025 20:32:04] code 404, message File not found
+127.0.0.1 - - [01/Oct/2025 20:32:04] "GET /pages/admin/assets/img/user-avatar.png HTTP/1.1" 404 -
+127.0.0.1 - - [01/Oct/2025 20:32:04] code 404, message File not found
+127.0.0.1 - - [01/Oct/2025 20:32:04] "GET /pages/admin/assets/js/modules/qr-generator.js HTTP/1.1" 404 -
+127.0.0.1 - - [01/Oct/2025 20:32:09] "GET /pages/admin/qr-management.html HTTP/1.1" 200 -
+127.0.0.1 - - [01/Oct/2025 20:32:09] code 404, message File not found
+127.0.0.1 - - [01/Oct/2025 20:32:09] "GET /pages/admin/assets/js/modules/qr-manager.js HTTP/1.1" 404 -
+127.0.0.1 - - [01/Oct/2025 20:32:09] "GET /assets/css/ai-assistant.css HTTP/1.1" 200 -
+127.0.0.1 - - [01/Oct/2025 20:32:09] "GET /assets/js/modules/ai-assistant.js HTTP/1.1" 200 -
+127.0.0.1 - - [01/Oct/2025 20:32:09] code 404, message File not found
+127.0.0.1 - - [01/Oct/2025 20:32:09] "GET /pages/admin/assets/img/user-avatar.png HTTP/1.1" 404 -
+127.0.0.1 - - [01/Oct/2025 20:32:13] "GET /pages/qr/qr-scanner.html HTTP/1.1" 200 -
+127.0.0.1 - - [01/Oct/2025 20:32:13] code 404, message File not found
+127.0.0.1 - - [01/Oct/2025 20:32:13] "GET /assets/img/user-avatar.png HTTP/1.1" 404 -
+127.0.0.1 - - [01/Oct/2025 20:32:14] "GET /assets/js/modules/qr-scanner.js HTTP/1.1" 200 -
+127.0.0.1 - - [01/Oct/2025 20:32:16] code 404, message File not found
+127.0.0.1 - - [01/Oct/2025 20:32:16] "GET /pages/admin/assets/js/modules/qr-generator.js HTTP/1.1" 404 -
+127.0.0.1 - - [01/Oct/2025 20:32:17] code 404, message File not found
+127.0.0.1 - - [01/Oct/2025 20:32:17] "GET /pages/admin/assets/img/user-avatar.png HTTP/1.1" 404 -
+127.0.0.1 - - [01/Oct/2025 20:32:23] code 404, message File not found
+127.0.0.1 - - [01/Oct/2025 20:32:23] "GET /assets/css/adminlte.min.css HTTP/1.1" 404 -
+127.0.0.1 - - [01/Oct/2025 20:32:23] code 404, message File not found
+127.0.0.1 - - [01/Oct/2025 20:32:23] "GET /assets/img/user2-160x160.jpg HTTP/1.1" 404 -
+127.0.0.1 - - [01/Oct/2025 20:32:23] code 404, message File not found
+127.0.0.1 - - [01/Oct/2025 20:32:23] "GET /assets/img/AdminLTELogo.png HTTP/1.1" 404 -
+127.0.0.1 - - [01/Oct/2025 20:32:23] code 404, message File not found
+127.0.0.1 - - [01/Oct/2025 20:32:23] "GET /assets/js/adminlte.min.js HTTP/1.1" 404 -
+127.0.0.1 - - [01/Oct/2025 20:32:35] code 404, message File not found
+127.0.0.1 - - [01/Oct/2025 20:32:35] "GET /assets/img/AdminLTELogo.png HTTP/1.1" 404 -
+127.0.0.1 - - [01/Oct/2025 20:32:35] code 404, message File not found
+127.0.0.1 - - [01/Oct/2025 20:32:35] "GET /assets/img/user2-160x160.jpg HTTP/1.1" 404 -
+127.0.0.1 - - [01/Oct/2025 20:32:35] code 404, message File not found
+127.0.0.1 - - [01/Oct/2025 20:32:35] "GET /assets/css/adminlte.min.css HTTP/1.1" 404 -
+127.0.0.1 - - [01/Oct/2025 20:32:35] code 404, message File not found
+127.0.0.1 - - [01/Oct/2025 20:32:35] "GET /assets/js/adminlte.min.js HTTP/1.1" 404 -
+127.0.0.1 - - [01/Oct/2025 20:32:45] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
+127.0.0.1 - - [01/Oct/2025 20:32:45] "GET /assets/css/enhanced-lift-modal.css HTTP/1.1" 200 -
+127.0.0.1 - - [01/Oct/2025 20:32:45] "GET /assets/js/enhanced-lift-modal.js HTTP/1.1" 200 -
+127.0.0.1 - - [01/Oct/2025 20:32:45] "GET /assets/js/lift-utils.js HTTP/1.1" 200 -
+127.0.0.1 - - [01/Oct/2025 20:32:45] "GET /assets/js/lifts.js HTTP/1.1" 200 -
+127.0.0.1 - - [01/Oct/2025 20:34:15] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
+127.0.0.1 - - [01/Oct/2025 20:34:16] "GET /assets/js/enhanced-lift-modal.js HTTP/1.1" 304 -
