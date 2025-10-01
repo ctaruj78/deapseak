@@ -614,7 +614,7 @@
                             </div>
                             <div class="card-body">
                                 <div class="row">
-                                    <div class="col-md-8">
+                                    <div class="col-md-6">
                                         <div class="form-group">
                                             <label for="liftAddress">Повна адреса *</label>
                                             <div class="input-group">
@@ -623,14 +623,14 @@
                                                 </div>
                                                 <input type="text" id="liftAddress" class="form-control" required placeholder="вул. Хрещатик, 1, Київ">
                                                 <div class="input-group-append">
-                                                    <button type="button" class="btn btn-outline-info" id="btnGeocode" title="Визначити координати">
+                                                    <button type="button" class="btn btn-outline-info" id="btnGeocode" title="Визначити координати за адресою">
                                                         <i class="fas fa-search-location"></i>
                                                     </button>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <div class="form-group">
                                             <label for="liftPostcode">Поштовий код *</label>
                                             <div class="input-group">
@@ -638,6 +638,16 @@
                                                     <span class="input-group-text"><i class="fas fa-mail-bulk"></i></span>
                                                 </div>
                                                 <input type="text" id="liftPostcode" class="form-control" required pattern="([0-9]{5}|[0-9]{4}-[0-9]{3})" placeholder="01001">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label>&nbsp;</label>
+                                            <div class="d-block">
+                                                <button type="button" class="btn btn-outline-success btn-block" id="btnCurrentLocation" title="Використати мою поточну локацію">
+                                                    <i class="fas fa-crosshairs"></i> Моя локація
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -663,25 +673,45 @@
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <div class="col-md-6">
+                                    <div class="col-md-5">
                                         <div class="form-group">
                                             <label for="liftLat">Широта *</label>
                                             <div class="input-group">
                                                 <div class="input-group-prepend">
                                                     <span class="input-group-text"><i class="fas fa-globe"></i></span>
                                                 </div>
-                                                <input type="number" id="liftLat" class="form-control" step="0.000001" required placeholder="50.4501" readonly>
+                                                <input type="number" id="liftLat" class="form-control" step="0.000001" required placeholder="50.4501">
+                                                <div class="input-group-append">
+                                                    <button type="button" class="btn btn-outline-secondary" id="btnCopyLat" title="Копіювати широту">
+                                                        <i class="fas fa-copy"></i>
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-5">
                                         <div class="form-group">
                                             <label for="liftLng">Довгота *</label>
                                             <div class="input-group">
                                                 <div class="input-group-prepend">
                                                     <span class="input-group-text"><i class="fas fa-globe"></i></span>
                                                 </div>
-                                                <input type="number" id="liftLng" class="form-control" step="0.000001" required placeholder="30.5234" readonly>
+                                                <input type="number" id="liftLng" class="form-control" step="0.000001" required placeholder="30.5234">
+                                                <div class="input-group-append">
+                                                    <button type="button" class="btn btn-outline-secondary" id="btnCopyLng" title="Копіювати довготу">
+                                                        <i class="fas fa-copy"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="form-group">
+                                            <label>&nbsp;</label>
+                                            <div class="d-block">
+                                                <button type="button" class="btn btn-outline-primary btn-block" id="btnCopyCoords" title="Копіювати координати">
+                                                    <i class="fas fa-map-pin"></i>
+                                                </button>
                                             </div>
                                         </div>
                                     </div>

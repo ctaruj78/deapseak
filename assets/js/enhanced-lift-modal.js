@@ -20,6 +20,36 @@ class EnhancedLiftModal {
         // Геокодування адреси
         $('#btnGeocode').on('click', () => this.geocodeAddress());
         
+        // Поточна локація користувача
+        $('#btnCurrentLocation').on('click', () => this.getCurrentLocation());
+        
+        // Копіювання координат
+        $('#btnCopyLat').on('click', () => this.copyToClipboard($('#liftLat').val(), 'Широту скопійовано'));
+        $('#btnCopyLng').on('click', () => this.copyToClipboard($('#liftLng').val(), 'Довготу скопійовано'));
+        $('#btnCopyCoords').on('click', () => {
+            const lat = $('#liftLat').val();
+            const lng = $('#liftLng').val();
+            if (lat && lng) {
+                this.copyToClipboard(`${lat}, ${lng}`, 'Координати скопійовано');
+            }
+        });
+        
+        // Автоматичне геокодування при зміні адреси або поштового коду
+        $('#liftAddress').on('blur', () => this.autoGeocodeAddress());
+        $('#liftPostcode').on('blur', () => this.autoGeocodeAddress());
+        
+        // Оновлення карти при зміні координат
+        $('#liftLat, #liftLng').on('change', () => {
+            const lat = parseFloat($('#liftLat').val());
+            const lng = parseFloat($('#liftLng').val());
+            
+            if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+                this.setMapLocation(lat, lng);
+                // Спробуємо отримати адресу для нових координат
+                this.reverseGeocode(lat, lng);
+            }
+        });
+        
         // Обробка завантаження фотографій
         $('#liftPhotos').on('change', (e) => this.handlePhotoUpload(e));
         
@@ -53,30 +83,79 @@ class EnhancedLiftModal {
 
     async initMap() {
         try {
-            // Ініціалізація Leaflet карти
-            this.map = L.map('liftMap').setView([50.4501, 30.5234], 10);
-            
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(this.map);
-            
-            // Обробник кліку на карту
-            this.map.on('click', (e) => {
-                this.setMapLocation(e.latlng.lat, e.latlng.lng);
+            // Чекаємо, поки модальне вікно буде показано, щоб карта правильно ініціалізувалася
+            $('#liftModal').on('shown.bs.modal', () => {
+                if (!this.map) {
+                    this.createMap();
+                } else {
+                    // Перерахуємо розмір карти, якщо вона вже існує
+                    setTimeout(() => {
+                        this.map.invalidateSize();
+                    }, 100);
+                }
             });
             
-            $('.map-loading').hide();
-            console.log('Map initialized successfully');
+            console.log('Map initialization prepared');
         } catch (error) {
-            console.error('Error initializing map:', error);
-            $('#liftMap').html('<div class="alert alert-warning">Помилка завантаження карти</div>');
+            console.error('Error preparing map initialization:', error);
+        }
+    }
+
+    createMap() {
+        try {
+            console.log('Creating Leaflet map...');
+            
+            // Ініціалізація Leaflet карти з Києвом як центром за замовчуванням
+            this.map = L.map('liftMap', {
+                center: [50.4501, 30.5234],
+                zoom: 10,
+                zoomControl: true,
+                attributionControl: true
+            });
+            
+            // Додаємо тайли OpenStreetMap
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 19
+            }).addTo(this.map);
+            
+            // Обробник кліку на карту для вибору локації
+            this.map.on('click', (e) => {
+                console.log('Map clicked at:', e.latlng);
+                this.setMapLocation(e.latlng.lat, e.latlng.lng);
+                // Автоматично отримуємо адресу за координатами
+                this.reverseGeocode(e.latlng.lat, e.latlng.lng);
+            });
+            
+            // Ховаємо індикатор завантаження
+            $('.map-loading').hide();
+            
+            console.log('Map created successfully');
+            
+            // Якщо є збережені координати, показуємо їх на карті
+            const lat = $('#liftLat').val();
+            const lng = $('#liftLng').val();
+            if (lat && lng) {
+                this.setMapLocation(parseFloat(lat), parseFloat(lng));
+            }
+            
+        } catch (error) {
+            console.error('Error creating map:', error);
+            $('#liftMap').html(`
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    Помилка завантаження карти. Можете вручну ввести координати.
+                </div>
+            `);
         }
     }
 
     async geocodeAddress() {
         const address = $('#liftAddress').val().trim();
-        if (!address) {
-            this.showToast('Введіть адресу для геокодування', 'warning');
+        const postcode = $('#liftPostcode').val().trim();
+        
+        if (!address && !postcode) {
+            this.showToast('Введіть адресу або поштовий код для геокодування', 'warning');
             return;
         }
 
@@ -84,30 +163,24 @@ class EnhancedLiftModal {
             // Показуємо індикатор завантаження
             $('#btnGeocode').html('<i class="fas fa-spinner fa-spin"></i>').prop('disabled', true);
             
-            // Використовуємо Nominatim API для геокодування
-            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`);
-            const data = await response.json();
+            const result = await this.performGeocode(address, postcode);
             
-            if (data && data.length > 0) {
-                const result = data[0];
-                const lat = parseFloat(result.lat);
-                const lng = parseFloat(result.lon);
+            if (result) {
+                $('#liftLat').val(result.lat);
+                $('#liftLng').val(result.lng);
                 
-                $('#liftLat').val(lat);
-                $('#liftLng').val(lng);
-                
-                this.setMapLocation(lat, lng);
+                this.setMapLocation(result.lat, result.lng);
                 this.showToast('Координати успішно отримані', 'success');
                 
-                // Спробуємо витягти поштовий код з результату
-                if (result.display_name && !$('#liftPostcode').val()) {
-                    const postcodeMatch = result.display_name.match(/\b\d{5}\b/);
-                    if (postcodeMatch) {
-                        $('#liftPostcode').val(postcodeMatch[0]);
-                    }
+                // Автоматично заповнюємо недостаючі поля
+                if (result.address && !address) {
+                    $('#liftAddress').val(result.address);
+                }
+                if (result.postcode && !postcode) {
+                    $('#liftPostcode').val(result.postcode);
                 }
             } else {
-                this.showToast('Адресу не знайдено', 'error');
+                this.showToast('Не вдалося знайти координати для вказаної адреси', 'error');
             }
         } catch (error) {
             console.error('Geocoding error:', error);
@@ -117,16 +190,305 @@ class EnhancedLiftModal {
         }
     }
 
-    setMapLocation(lat, lng) {
-        if (this.map) {
-            this.map.setView([lat, lng], 15);
+    async autoGeocodeAddress() {
+        const address = $('#liftAddress').val().trim();
+        const postcode = $('#liftPostcode').val().trim();
+        const currentLat = $('#liftLat').val();
+        const currentLng = $('#liftLng').val();
+        
+        // Автоматично геокодуємо тільки якщо немає координат і є адреса або поштовий код
+        if ((address || postcode) && (!currentLat || !currentLng)) {
+            console.log('Auto-geocoding address...');
             
+            try {
+                const result = await this.performGeocode(address, postcode, true);
+                
+                if (result) {
+                    $('#liftLat').val(result.lat);
+                    $('#liftLng').val(result.lng);
+                    
+                    if (this.map) {
+                        this.setMapLocation(result.lat, result.lng);
+                    }
+                    
+                    // Заповнюємо недостаючі поля без повідомлень
+                    if (result.postcode && !postcode) {
+                        $('#liftPostcode').val(result.postcode);
+                    }
+                }
+            } catch (error) {
+                console.log('Auto-geocoding failed:', error);
+                // Тихо ігноруємо помилки автоматичного геокодування
+            }
+        }
+    }
+
+    async performGeocode(address, postcode, silent = false) {
+        // Будуємо запит для геокодування
+        let query = '';
+        if (address && postcode) {
+            query = `${address}, ${postcode}`;
+        } else if (address) {
+            query = address;
+        } else if (postcode) {
+            query = postcode;
+        }
+        
+        if (!query) return null;
+        
+        // Додаємо Україну для кращої точності
+        query += ', Ukraine';
+        
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=3&countrycodes=ua&addressdetails=1`;
+        
+        if (!silent) {
+            console.log('Geocoding URL:', url);
+        }
+        
+        const response = await fetch(url, {
+            headers: {
+                'User-Agent': 'DeepSpeak Lift Management System'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data && data.length > 0) {
+            const bestResult = data[0];
+            const lat = parseFloat(bestResult.lat);
+            const lng = parseFloat(bestResult.lon);
+            
+            // Витягуємо додаткову інформацію з адреси
+            let extractedAddress = bestResult.display_name;
+            let extractedPostcode = null;
+            
+            if (bestResult.address) {
+                // Формуємо адресу з компонентів
+                const addr = bestResult.address;
+                const addressParts = [];
+                
+                if (addr.road) addressParts.push(addr.road);
+                if (addr.house_number) addressParts.push(addr.house_number);
+                if (addr.city || addr.town || addr.village) {
+                    addressParts.push(addr.city || addr.town || addr.village);
+                }
+                
+                if (addressParts.length > 0) {
+                    extractedAddress = addressParts.join(', ');
+                }
+                
+                extractedPostcode = addr.postcode;
+            }
+            
+            if (!silent) {
+                console.log('Geocoding result:', { lat, lng, address: extractedAddress, postcode: extractedPostcode });
+            }
+            
+            return {
+                lat: lat,
+                lng: lng,
+                address: extractedAddress,
+                postcode: extractedPostcode,
+                raw: bestResult
+            };
+        }
+        
+        return null;
+    }
+
+    async reverseGeocode(lat, lng) {
+        try {
+            const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`;
+            
+            const response = await fetch(url, {
+                headers: {
+                    'User-Agent': 'DeepSpeak Lift Management System'
+                }
+            });
+            
+            if (!response.ok) return;
+            
+            const data = await response.json();
+            
+            if (data && data.address) {
+                const addr = data.address;
+                const addressParts = [];
+                
+                if (addr.road) addressParts.push(addr.road);
+                if (addr.house_number) addressParts.push(addr.house_number);
+                if (addr.city || addr.town || addr.village) {
+                    addressParts.push(addr.city || addr.town || addr.village);
+                }
+                
+                const fullAddress = addressParts.join(', ');
+                
+                // Заповнюємо поля тільки якщо вони порожні
+                if (!$('#liftAddress').val() && fullAddress) {
+                    $('#liftAddress').val(fullAddress);
+                }
+                
+                if (!$('#liftPostcode').val() && addr.postcode) {
+                    $('#liftPostcode').val(addr.postcode);
+                }
+                
+                console.log('Reverse geocoding result:', fullAddress, addr.postcode);
+            }
+        } catch (error) {
+            console.log('Reverse geocoding failed:', error);
+            // Тихо ігноруємо помилки зворотного геокодування
+        }
+    }
+
+    async getCurrentLocation() {
+        if (!navigator.geolocation) {
+            this.showToast('Геолокація не підтримується вашим браузером', 'error');
+            return;
+        }
+
+        const btn = $('#btnCurrentLocation');
+        btn.html('<i class="fas fa-spinner fa-spin"></i> Визначення...').prop('disabled', true);
+
+        try {
+            const position = await new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 60000
+                });
+            });
+
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            const accuracy = position.coords.accuracy;
+
+            console.log('Current location:', lat, lng, 'accuracy:', accuracy);
+
+            // Встановлюємо координати
+            this.setMapLocation(lat, lng);
+            
+            // Отримуємо адресу за координатами
+            await this.reverseGeocode(lat, lng);
+
+            this.showToast(`Локація визначена (точність: ${Math.round(accuracy)}м)`, 'success');
+
+        } catch (error) {
+            console.error('Geolocation error:', error);
+            
+            let message = 'Не вдалося визначити поточну локацію';
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    message = 'Доступ до геолокації відхилено. Дозвольте доступ у налаштуваннях браузера.';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    message = 'Інформація про локацію недоступна.';
+                    break;
+                case error.TIMEOUT:
+                    message = 'Час очікування визначення локації вичерпано.';
+                    break;
+            }
+            
+            this.showToast(message, 'error');
+        } finally {
+            btn.html('<i class="fas fa-crosshairs"></i> Моя локація').prop('disabled', false);
+        }
+    }
+
+    async copyToClipboard(text, successMessage = 'Скопійовано') {
+        if (!text) {
+            this.showToast('Немає даних для копіювання', 'warning');
+            return;
+        }
+
+        try {
+            await navigator.clipboard.writeText(text);
+            this.showToast(successMessage, 'success');
+        } catch (error) {
+            console.error('Clipboard error:', error);
+            
+            // Fallback для старих браузерів
+            try {
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                textArea.style.position = 'fixed';
+                textArea.style.left = '-999999px';
+                textArea.style.top = '-999999px';
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                this.showToast(successMessage, 'success');
+            } catch (fallbackError) {
+                console.error('Fallback clipboard error:', fallbackError);
+                this.showToast('Не вдалося скопіювати в буфер обміну', 'error');
+            }
+        }
+    }
+
+    setMapLocation(lat, lng) {
+        if (!this.map) {
+            console.log('Map not initialized, coordinates saved for later use');
+            $('#liftLat').val(lat);
+            $('#liftLng').val(lng);
+            return;
+        }
+
+        try {
+            // Встановлюємо центр карти на нові координати
+            this.map.setView([lat, lng], 16);
+            
+            // Видаляємо попередній маркер
             if (this.marker) {
                 this.map.removeLayer(this.marker);
             }
             
-            this.marker = L.marker([lat, lng]).addTo(this.map);
+            // Додаємо новий маркер з кастомним popup
+            this.marker = L.marker([lat, lng], {
+                draggable: true
+            }).addTo(this.map);
             
+            // Додаємо popup з інформацією
+            this.marker.bindPopup(`
+                <div class="text-center">
+                    <strong>Локація ліфта</strong><br>
+                    <small>Широта: ${lat.toFixed(6)}</small><br>
+                    <small>Довгота: ${lng.toFixed(6)}</small><br>
+                    <em>Перетягніть маркер для зміни позиції</em>
+                </div>
+            `).openPopup();
+            
+            // Обробник перетягування маркера
+            this.marker.on('dragend', (e) => {
+                const newPos = e.target.getLatLng();
+                $('#liftLat').val(newPos.lat.toFixed(6));
+                $('#liftLng').val(newPos.lng.toFixed(6));
+                
+                // Оновлюємо popup з новими координатами
+                this.marker.setPopupContent(`
+                    <div class="text-center">
+                        <strong>Локація ліфта</strong><br>
+                        <small>Широта: ${newPos.lat.toFixed(6)}</small><br>
+                        <small>Довгота: ${newPos.lng.toFixed(6)}</small><br>
+                        <em>Позицію змінено</em>
+                    </div>
+                `);
+                
+                // Спробуємо отримати адресу для нових координат
+                this.reverseGeocode(newPos.lat, newPos.lng);
+            });
+            
+            // Оновлюємо поля координат
+            $('#liftLat').val(lat.toFixed(6));
+            $('#liftLng').val(lng.toFixed(6));
+            
+            console.log('Map location set:', lat, lng);
+            
+        } catch (error) {
+            console.error('Error setting map location:', error);
+            // Зберігаємо координати навіть якщо карта не працює
             $('#liftLat').val(lat);
             $('#liftLng').val(lng);
         }
