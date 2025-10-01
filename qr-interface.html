@@ -7,68 +7,144 @@
 
   <!-- CSS Dependencies -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-  <link rel="stylesheet" href="../plugins/fontawesome-free/css/all.min.css">
-  <link rel="stylesheet" href="../plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
-  <link rel="stylesheet" href="../assets/css/adminlte.min.css">
+  <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
+  <link rel="stylesheet" href="plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
+  <link rel="stylesheet" href="assets/css/adminlte.min.css">
   
   <style>
+    /* AdminLTE Integration Styles */
+    .content-wrapper {
+      background-color: #f4f4f4;
+    }
+    
     .qr-interface-card {
       transition: all 0.3s ease;
-      border: 2px solid #e9ecef;
+      border: none;
+      box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
+      border-radius: 0.25rem;
     }
     .qr-interface-card:hover {
-      border-color: #007bff;
+      box-shadow: 0 2px 6px rgba(0,0,0,.15), 0 4px 12px rgba(0,0,0,.15);
       transform: translateY(-2px);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     }
+    
     .role-section {
       margin-bottom: 30px;
     }
+    
     .role-header {
-      background: linear-gradient(135deg, #007bff, #0056b3);
+      background: linear-gradient(90deg, #343a40 0%, #495057 100%);
       color: white;
-      padding: 15px;
-      border-radius: 10px 10px 0 0;
+      padding: 15px 20px;
+      border-radius: 0.25rem 0.25rem 0 0;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
     }
+    .role-header h4 {
+      margin: 0;
+      font-weight: 600;
+      font-size: 1.2rem;
+    }
+    .role-header small {
+      color: rgba(255,255,255,0.8);
+      font-size: 0.9rem;
+    }
+    
+    .stats-overview {
+      background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
+      color: white;
+      padding: 30px;
+      border-radius: 0.5rem;
+      margin-bottom: 30px;
+      box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
+    }
+    
+    .stat-item {
+      text-align: center;
+      padding: 20px 0;
+    }
+    .stat-number {
+      display: block;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1;
+    }
+    .stat-label {
+      display: block;
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.8);
+      margin-top: 5px;
+    }
+    
     .qr-action-btn {
-      width: 100%;
-      height: 150px;
-      font-size: 18px;
-      font-weight: bold;
-      border-radius: 10px;
-      margin-bottom: 15px;
+      height: 120px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      font-size: 1.1rem;
+      border-radius: 0.5rem;
       transition: all 0.3s ease;
-    }
-    .qr-action-btn i {
-      font-size: 48px;
-      margin-bottom: 10px;
+      font-weight: 500;
+      border: 1px solid #dee2e6;
+      text-decoration: none;
     }
     .qr-action-btn:hover {
-      transform: scale(1.05);
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+      text-decoration: none;
     }
-    .stats-overview {
-      background: linear-gradient(135deg, #17a2b8, #138496);
-      color: white;
-      border-radius: 10px;
-      padding: 20px;
-      margin-bottom: 30px;
+    .qr-action-btn i {
+      font-size: 2rem;
+      margin-bottom: 10px;
     }
-    .stat-item {
-      text-align: center;
-      padding: 15px;
+    
+    /* AdminLTE Button Overrides */
+    .btn-outline-primary:hover {
+      background-color: #007bff;
+      border-color: #007bff;
+      color: #fff;
     }
-    .stat-number {
-      font-size: 2.5em;
-      font-weight: bold;
-      display: block;
+    .btn-outline-success:hover {
+      background-color: #28a745;
+      border-color: #28a745;
+      color: #fff;
     }
-    .stat-label {
-      font-size: 0.9em;
-      opacity: 0.9;
+    .btn-outline-info:hover {
+      background-color: #17a2b8;
+      border-color: #17a2b8;
+      color: #fff;
+    }
+    .btn-outline-warning:hover {
+      background-color: #ffc107;
+      border-color: #ffc107;
+      color: #212529;
+    }
+    
+    /* Card improvements */
+    .card {
+      box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
+      border: none;
+      border-radius: 0.25rem;
+    }
+    .card-header {
+      background-color: rgba(0,0,0,.03);
+      border-bottom: 1px solid rgba(0,0,0,.125);
+      border-radius: 0.25rem 0.25rem 0 0;
+    }
+    .card-title {
+      font-weight: 600;
+      color: #495057;
+    }
+    
+    /* Sidebar improvements */
+    .main-sidebar {
+      box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+    }
+    
+    /* Navbar improvements */
+    .main-header {
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04), 0 1px 10px rgba(0,0,0,0.06);
     }
   </style>
 </head>
@@ -96,15 +172,15 @@
 
   <!-- Main Sidebar Container -->
   <aside class="main-sidebar sidebar-dark-primary elevation-4">
-    <a href="../index.html" class="brand-link">
-      <img src="../assets/img/AdminLTELogo.png" alt="Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
+    <a href="index.html" class="brand-link">
+      <img src="assets/img/AdminLTELogo.png" alt="Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
       <span class="brand-text font-weight-light">DeapSeaK QR</span>
     </a>
 
     <div class="sidebar">
       <div class="user-panel mt-3 pb-3 mb-3 d-flex">
         <div class="image">
-          <img src="../assets/img/user2-160x160.jpg" class="img-circle elevation-2" alt="User Image" id="user-avatar">
+          <img src="assets/img/user2-160x160.jpg" class="img-circle elevation-2" alt="User Image" id="user-avatar">
         </div>
         <div class="info">
           <a href="#" class="d-block" id="username">Користувач</a>
@@ -114,7 +190,7 @@
       <nav class="mt-2">
         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
           <li class="nav-item">
-            <a href="../index.html" class="nav-link">
+            <a href="index.html" class="nav-link">
               <i class="nav-icon fas fa-home"></i>
               <p>Головна</p>
             </a>
@@ -353,12 +429,12 @@
 </div>
 
 <!-- JavaScript Dependencies -->
-<script src="../plugins/jquery/jquery.min.js"></script>
-<script src="../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-<script src="../assets/js/adminlte.min.js"></script>
-<script src="../plugins/sweetalert2/sweetalert2.min.js"></script>
-<script src="../assets/js/auth.js"></script>
-<script src="../assets/js/qr-utils.js"></script>
+<script src="plugins/jquery/jquery.min.js"></script>
+<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="assets/js/adminlte.min.js"></script>
+<script src="plugins/sweetalert2/sweetalert2.min.js"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/qr-utils.js"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
