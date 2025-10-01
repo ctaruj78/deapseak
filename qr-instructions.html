@@ -11,19 +11,30 @@
     <link rel="stylesheet" href="assets/css/adminlte.min.css">
     
     <style>
+        /* AdminLTE Integration Styles */
+        .content-wrapper {
+            background-color: #f4f4f4;
+        }
+        
         .instruction-card {
             transition: all 0.3s ease;
+            border: none;
             border-left: 4px solid #007bff;
+            box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
+            border-radius: 0.25rem;
         }
         .instruction-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 6px rgba(0,0,0,.15), 0 4px 12px rgba(0,0,0,.15);
         }
+        
         .role-badge {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             padding: 4px 8px;
             border-radius: 12px;
+            font-weight: 600;
         }
+        
         .step-number {
             display: inline-flex;
             align-items: center;
@@ -33,15 +44,46 @@
             background: #007bff;
             color: white;
             border-radius: 50%;
-            font-weight: bold;
+            font-weight: 700;
             margin-right: 10px;
+            font-size: 0.9rem;
         }
+        
         .feature-highlight {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
             color: white;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 20px 0;
+            border-radius: 0.5rem;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
+        }
+        
+        /* Card improvements */
+        .card {
+            box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
+            border: none;
+            border-radius: 0.25rem;
+        }
+        .card-header {
+            background-color: rgba(0,0,0,.03);
+            border-bottom: 1px solid rgba(0,0,0,.125);
+            border-radius: 0.25rem 0.25rem 0 0;
+        }
+        .card-title {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        /* Alert improvements */
+        .alert {
+            border: none;
+            border-radius: 0.5rem;
+        }
+        
+        /* Button improvements */
+        .btn {
+            border-radius: 0.5rem;
+            font-weight: 500;
         }
     </style>
 </head>
