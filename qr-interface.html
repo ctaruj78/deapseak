@@ -645,11 +645,11 @@ document.addEventListener("DOMContentLoaded", function() {
 // Функції для кнопок швидких дій
 
 function openScanner() {
-    window.location.href = 'pages/qr/scanner.html';
+    window.location.href = 'pages/qr/qr-scanner.html';
 }
 
 function openGenerator() {
-    window.location.href = 'pages/qr/generator.html';
+    window.location.href = 'pages/qr/qr-generator.html';
 }
 
 function openHistory() {
@@ -661,7 +661,7 @@ function openAnalytics() {
     if (user && user.role === 'admin') {
         window.location.href = 'pages/admin/qr-analytics.html';
     } else {
-        window.location.href = 'pages/qr/history.html';
+        window.location.href = 'pages/qr/qr-analytics.html';
     }
 }
 
