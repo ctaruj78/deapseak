@@ -373,6 +373,29 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-qrcode"></i>
+                                <p>
+                                    QR Система
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="../../qr-interface.html" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Загальний інтерфейс</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="qr-management.html" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Управління QR-кодами</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
                             <a href="settings.html" class="nav-link">
                                 <i class="nav-icon fas fa-cog"></i>
                                 <p>Налаштування</p>
@@ -561,11 +584,11 @@
                                             <span>Розсилка повідомлень</span>
                                             <small>Надіслати всім техникам</small>
                                         </button>
-                                        <button class="btn btn-action btn-info" onclick="window.dispatcherDashboard.generateReport()">
-                                            <span class="icon">📈</span>
-                                            <span>Звіт</span>
-                                            <small>Сформувати звіт</small>
-                                        </button>
+                                        <a class="btn btn-action btn-primary" href="../../qr-interface.html">
+                                            <span class="icon">�</span>
+                                            <span>QR Система</span>
+                                            <small>Управління кодами</small>
+                                        </a>
                                         <button class="btn btn-action btn-secondary" onclick="window.dispatcherDashboard.quickStats()">
                                             <span class="icon">📋</span>
                                             <span>Статистика</span>

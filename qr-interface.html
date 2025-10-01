@@ -126,6 +126,12 @@
             </a>
           </li>
           <li class="nav-item">
+            <a href="qr-instructions.html" class="nav-link">
+              <i class="nav-icon fas fa-question-circle"></i>
+              <p>Інструкції</p>
+            </a>
+          </li>
+          <li class="nav-item">
             <a href="#" class="nav-link" id="logout-button">
               <i class="nav-icon fas fa-sign-out-alt"></i>
               <p>Вихід</p>
@@ -382,7 +388,13 @@ document.addEventListener("DOMContentLoaded", function() {
         });
         
         // Показуємо відповідну секцію
-        const sectionId = role + '-section';
+        let sectionId = role + '-section';
+        
+        // Виправляємо назву ролі технік
+        if (role === 'tech') {
+            sectionId = 'technician-section';
+        }
+        
         const section = document.getElementById(sectionId);
         if (section) {
             section.style.display = 'block';
