@@ -14,9 +14,35 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
     
     <style>
+        /* Modern animations for header */
+        @keyframes backgroundMove {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
         .scan-card {
             border-left: 4px solid;
             transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
         
         .scan-card.success { border-left-color: #28a745; }
@@ -95,27 +121,55 @@
         </aside>
 
         <!-- Content Wrapper -->
-        <div class="content-wrapper">
-            <section class="content-header">
-                <div class="container-fluid">
-                    <div class="row mb-2">
+        <div class="content-wrapper" style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); min-height: 100vh;">
+            <!-- Content Header with gradient background -->
+            <section class="content-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 2rem 0; margin-bottom: 2rem; border-radius: 0 0 20px 20px; position: relative; overflow: hidden;">
+                <!-- Animated background elements -->
+                <div style="position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: url('data:image/svg+xml,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 100 100&quot;><defs><pattern id=&quot;grain&quot; width=&quot;100&quot; height=&quot;100&quot; patternUnits=&quot;userSpaceOnUse&quot;><circle cx=&quot;50&quot; cy=&quot;50&quot; r=&quot;1&quot; fill=&quot;%23ffffff&quot; opacity=&quot;0.1&quot;/></pattern></defs><rect width=&quot;100&quot; height=&quot;100&quot; fill=&quot;url(%23grain)&quot;/></svg>'); animation: backgroundMove 20s linear infinite;"></div>
+                
+                <div class="container-fluid position-relative" style="z-index: 2;">
+                    <div class="row mb-2 align-items-center">
                         <div class="col-sm-6">
-                            <h1>Історія сканувань</h1>
+                            <h1 style="color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.3); font-weight: 600; margin: 0; display: flex; align-items: center;">
+                                <i class="fas fa-history mr-3" style="font-size: 2.5rem; color: rgba(255,255,255,0.9);"></i>
+                                <span>Історія сканувань</span>
+                            </h1>
+                            <p style="color: rgba(255,255,255,0.8); margin: 0.5rem 0 0 0; font-size: 1.1rem;">Звіти та аналітика QR-сканувань</p>
                         </div>
                         <div class="col-sm-6">
-                            <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="admin-dashboard.html">Головна</a></li>
-                                <li class="breadcrumb-item"><a href="#">QR Система</a></li>
-                                <li class="breadcrumb-item active">Історія сканувань</li>
+                            <ol class="breadcrumb float-sm-right" style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 25px; padding: 0.5rem 1rem; margin: 0;">
+                                <li class="breadcrumb-item">
+                                    <a href="../admin/admin-dashboard.html" style="color: rgba(255,255,255,0.9); text-decoration: none;">
+                                        <i class="fas fa-home mr-1"></i>Головна
+                                    </a>
+                                </li>
+                                <li class="breadcrumb-item">
+                                    <a href="../../qr-interface.html" style="color: rgba(255,255,255,0.9); text-decoration: none;">
+                                        <i class="fas fa-qrcode mr-1"></i>QR Система
+                                    </a>
+                                </li>
+                                <li class="breadcrumb-item active" style="color: white; font-weight: 500;">Історія сканувань</li>
                             </ol>
                         </div>
                     </div>
                 </div>
+                
+                <!-- Floating elements for visual interest -->
+                <div style="position: absolute; top: 10%; right: 10%; width: 100px; height: 100px; background: rgba(255,255,255,0.1); border-radius: 50%; animation: float 6s ease-in-out infinite;"></div>
+                <div style="position: absolute; bottom: 10%; left: 10%; width: 60px; height: 60px; background: rgba(255,255,255,0.1); border-radius: 50%; animation: float 8s ease-in-out infinite reverse;"></div>
             </section>
 
             <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
+                    <!-- Back button -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <a href="../../qr-interface.html" class="btn btn-default">
+                                <i class="fas fa-arrow-left mr-2"></i>Повернутися до QR системи
+                            </a>
+                        </div>
+                    </div>
                     <!-- Статистика -->
                     <div class="row mb-4">
                         <div class="col-lg-3 col-6">
