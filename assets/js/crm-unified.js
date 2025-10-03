@@ -10,26 +10,44 @@ class CRMUnified {
         this.permissions = {};
         this.availableModules = [];
         
+        console.log('CRMUnified constructor викликано');
+        
         // Ініціалізація після завантаження DOM
         this.init();
     }
     
     async init() {
-        console.log('Ініціалізація CRM системи...');
-        
-        // Завантаження даних користувача
-        await this.loadUserData();
-        
-        // Налаштування рольового доступу
-        this.setupRoleAccess();
-        
-        // Генерація навігації
-        this.renderNavigation();
-        
-        // Завантаження дашборду
-        this.loadDashboard();
-        
-        console.log(`CRM ініціалізовано для ролі: ${this.userRole}`);
+        try {
+            console.log('Ініціалізація CRM системи...');
+            
+            // Перевіряємо, чи DOM готовий
+            if (document.readyState !== 'complete') {
+                await new Promise(resolve => {
+                    if (document.readyState === 'loading') {
+                        document.addEventListener('DOMContentLoaded', resolve);
+                    } else {
+                        resolve();
+                    }
+                });
+            }
+            
+            // Завантаження даних користувача
+            await this.loadUserData();
+            
+            // Налаштування рольового доступу
+            this.setupRoleAccess();
+            
+            // Генерація навігації
+            this.renderNavigation();
+            
+            // Завантаження дашборду
+            this.loadDashboard();
+            
+            console.log(`CRM ініціалізовано для ролі: ${this.userRole}`);
+        } catch (error) {
+            console.error('Критична помилка ініціалізації CRM:', error);
+            this.handleCriticalError(error);
+        }
     }
     
     async loadUserData() {
@@ -46,6 +64,37 @@ class CRMUnified {
         } catch (error) {
             console.error('Помилка завантаження даних користувача:', error);
             this.handleAuthError();
+        }
+    }
+    
+    handleAuthError() {
+        console.warn('Помилка автентифікації, перенаправлення на логін');
+        window.location.href = '/login.html';
+    }
+    
+    handleCriticalError(error) {
+        console.error('Критична помилка CRM системи:', error);
+        
+        const errorContainer = document.body;
+        if (errorContainer) {
+            errorContainer.innerHTML = `
+                <div style="display: flex; justify-content: center; align-items: center; height: 100vh; background: #f8f9fa;">
+                    <div style="text-align: center; padding: 40px; background: white; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 4rem; color: #dc3545; margin-bottom: 20px;"></i>
+                        <h2>Помилка завантаження системи</h2>
+                        <p>Сталася критична помилка під час ініціалізації CRM системи.</p>
+                        <div style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 5px; font-family: monospace; text-align: left;">
+                            ${error.message || 'Невідома помилка'}
+                        </div>
+                        <button onclick="location.reload()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                            Перезавантажити
+                        </button>
+                        <a href="/login.html" style="display: block; margin-top: 10px; color: #6c757d; text-decoration: none;">
+                            Повернутися до логіну
+                        </a>
+                    </div>
+                </div>
+            `;
         }
     }
     
@@ -92,14 +141,31 @@ class CRMUnified {
             tech: 'Технік'
         };
         
-        // Оновлення елементів інтерфейсу
-        document.getElementById('current-username').textContent = this.currentUser.name;
-        document.getElementById('sidebar-username').textContent = this.currentUser.name;
-        document.getElementById('sidebar-role').textContent = roleLabels[this.userRole];
-        document.getElementById('current-role-badge').textContent = roleLabels[this.userRole];
-        document.getElementById('current-role-badge').className = `role-badge ${this.userRole}`;
-        document.getElementById('user-avatar').src = this.currentUser.avatar;
-        document.getElementById('user-info').textContent = `${this.currentUser.name} (${roleLabels[this.userRole]})`;
+        // Оновлення елементів інтерфейсу з перевіркою існування
+        const elements = {
+            'current-username': this.currentUser.name,
+            'sidebar-username': this.currentUser.name,
+            'sidebar-role': roleLabels[this.userRole],
+            'current-role-badge': roleLabels[this.userRole],
+            'user-avatar': this.currentUser.avatar,
+            'user-info': `${this.currentUser.name} (${roleLabels[this.userRole]})`
+        };
+        
+        Object.entries(elements).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) {
+                if (id === 'user-avatar') {
+                    element.src = value;
+                } else if (id === 'current-role-badge') {
+                    element.textContent = value;
+                    element.className = `role-badge ${this.userRole}`;
+                } else {
+                    element.textContent = value;
+                }
+            } else {
+                console.warn(`Елемент з ID "${id}" не знайдено`);
+            }
+        });
     }
     
     setupRoleAccess() {
@@ -1068,9 +1134,22 @@ function logout() {
 }
 
 // Ініціалізація системи після завантаження сторінки
-document.addEventListener('DOMContentLoaded', function() {
-    window.crmSystem = new CRMUnified();
-});
+function initializeCRM() {
+    try {
+        console.log('Початок ініціалізації CRM...');
+        window.crmSystem = new CRMUnified();
+    } catch (error) {
+        console.error('Помилка при створенні CRM системи:', error);
+    }
+}
+
+// Перевіряємо стан DOM та ініціалізуємо
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeCRM);
+} else {
+    // DOM вже готовий
+    initializeCRM();
+}
 
 // Експорт для використання в інших модулях
 if (typeof module !== 'undefined' && module.exports) {
