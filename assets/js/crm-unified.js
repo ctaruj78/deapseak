@@ -849,8 +849,18 @@ class CRMUnified {
             'qr-management': ['qr-full', 'qr-basic'],
             'qr-generator': ['qr-full', 'qr-management'], 
             'qr-scanner': ['qr-full'],
+            'qr-full': ['qr-management', 'qr-generator'],
             'lift-management': ['lifts'],
-            'analytics': ['analytics-full', 'analytics-basic']
+            'analytics': ['analytics-full', 'analytics-basic'],
+            'analytics-full': ['analytics'],
+            'analytics-basic': ['analytics'],
+            'lifts': ['lift-management'],
+            
+            // Додаткові псевдоніми для техніків
+            'schedule': ['dashboard'],
+            'checklists': ['dashboard'], 
+            'knowledge-base': ['dashboard'],
+            'tools': ['dashboard']
         };
         
         if (moduleAliases[moduleId]) {
@@ -922,6 +932,7 @@ class CRMUnified {
             'qr-generator': 'assets/modules/qr-generator.html',
             'qr-scanner': 'assets/modules/qr-scanner.html',
             'qr-management': 'assets/modules/qr-generator.html',  // Для всіх ролей використовуємо генератор
+            'qr-full': 'assets/modules/qr-generator.html',        // Повна QR система для адмінів
             'qr-history': 'pages/admin/qr-history.html',
             'qr-analytics': 'pages/admin/qr-analytics.html',
             'qr-batch': 'pages/admin/qr-batch.html',
@@ -951,7 +962,10 @@ class CRMUnified {
             'schedule': 'pages/tech/schedule.html',
             'checklists': 'pages/tech/checklists.html',
             'knowledge-base': 'pages/tech/knowledge-base.html',
-            'tools': 'pages/tech/tools.html'
+            'tools': 'pages/tech/tools.html',
+            
+            // Загальні модулі
+            'support': 'pages/support.html'
         };
         
         return modulePaths[moduleId];
