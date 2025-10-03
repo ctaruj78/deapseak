@@ -743,7 +743,7 @@ class CRMUnified {
         }, 500);
     }
     
-    loadModule(moduleId) {
+    async loadModule(moduleId) {
         console.log(`Завантаження модуля: ${moduleId}`);
         
         // Перевірка доступу до модуля
@@ -752,12 +752,82 @@ class CRMUnified {
             return;
         }
         
-        // Завантаження модуля
-        const content = this.getModuleContent(moduleId);
-        document.getElementById('main-content').innerHTML = content;
+        // Показуємо лоадер
+        document.getElementById('main-content').innerHTML = `
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">Завантаження...</h1>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <section class="content">
+                <div class="container-fluid">
+                    <div class="text-center" style="padding: 50px;">
+                        <i class="fas fa-spinner fa-spin fa-3x text-primary"></i>
+                        <p class="mt-3">Завантаження модуля ${moduleId}...</p>
+                    </div>
+                </div>
+            </section>
+        `;
+        
+        try {
+            // Асинхронне завантаження модуля
+            const content = await this.getModuleContent(moduleId);
+            document.getElementById('main-content').innerHTML = content;
+            
+            // Ініціалізація модуля після завантаження
+            this.initModuleAfterLoad(moduleId);
+            
+        } catch (error) {
+            console.error(`Помилка завантаження модуля ${moduleId}:`, error);
+            document.getElementById('main-content').innerHTML = this.getDefaultModuleContent(moduleId);
+        }
         
         // Активація пункту меню
         this.setActiveMenuItem(moduleId);
+    }
+    
+    initModuleAfterLoad(moduleId) {
+        // Ініціалізація специфічних компонентів модуля після завантаження
+        switch (moduleId) {
+            case 'qr-generator':
+                this.initQRGenerator();
+                break;
+            case 'qr-scanner':
+                this.initQRScanner();
+                break;
+            case 'qr-analytics':
+                this.initQRAnalytics();
+                break;
+            case 'tasks':
+                this.initTasks();
+                break;
+            // Додати інші модулі за потребою
+        }
+    }
+    
+    // Методи ініціалізації для специфічних модулів
+    initQRGenerator() {
+        console.log('Ініціалізація генератора QR кодів');
+        // Тут може бути додаткова логіка
+    }
+    
+    initQRScanner() {
+        console.log('Ініціалізація QR сканера');
+        // Тут може бути додаткова логіка
+    }
+    
+    initQRAnalytics() {
+        console.log('Ініціалізація аналітики QR');
+        // Тут може бути додаткова логіка
+    }
+    
+    initTasks() {
+        console.log('Ініціалізація модуля завдань');
+        // Тут може бути додаткова логіка
     }
     
     hasAccessToModule(moduleId) {
@@ -780,8 +850,111 @@ class CRMUnified {
         document.getElementById('main-content').innerHTML = content;
     }
     
-    getModuleContent(moduleId) {
-        // В реальному додатку тут буде завантаження з сервера
+    async getModuleContent(moduleId) {
+        // Показуємо лоадер під час завантаження
+        const loadingHtml = `
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">Завантаження...</h1>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <section class="content">
+                <div class="container-fluid">
+                    <div class="text-center" style="padding: 50px;">
+                        <i class="fas fa-spinner fa-spin fa-3x text-primary"></i>
+                        <p class="mt-3">Завантаження модуля ${moduleId}...</p>
+                    </div>
+                </div>
+            </section>
+        `;
+        
+        try {
+            // Визначаємо шлях до файлу залежно від модуля та ролі
+            const modulePath = this.getModulePath(moduleId);
+            
+            if (modulePath) {
+                const response = await fetch(modulePath);
+                if (response.ok) {
+                    const htmlContent = await response.text();
+                    return this.extractContentFromHtml(htmlContent);
+                }
+            }
+        } catch (error) {
+            console.error(`Помилка завантаження модуля ${moduleId}:`, error);
+        }
+        
+        // Якщо не вдалося завантажити - показуємо заглушку
+        return this.getDefaultModuleContent(moduleId);
+    }
+    
+    getModulePath(moduleId) {
+        // Визначаємо шлях до файлу залежно від модуля та ролі користувача
+        const modulePaths = {
+            // QR модулі - використовуємо нові модулі
+            'qr-generator': 'assets/modules/qr-generator.html',
+            'qr-scanner': 'assets/modules/qr-scanner.html',
+            'qr-management': this.userRole === 'admin' ? 'assets/modules/qr-generator.html' : 'assets/modules/qr-generator.html',
+            'qr-history': 'pages/admin/qr-history.html',
+            'qr-analytics': 'pages/admin/qr-analytics.html',
+            'qr-batch': 'pages/admin/qr-batch.html',
+            
+            // Нові функціональні модулі
+            'lift-management': 'assets/modules/lift-management.html',
+            'tasks': 'assets/modules/tasks.html',
+            'analytics': 'assets/modules/analytics.html',    // Новий модуль аналітики
+            
+            // Інші модулі
+            'lifts': 'assets/modules/lift-management.html',  // Перенаправляємо на новий модуль
+            'users': 'pages/admin/users.html',
+            'reports': this.userRole === 'admin' ? 'pages/admin/reports.html' : 
+                      this.userRole === 'dispatcher' ? 'pages/dispatcher/reports.html' : 'pages/tech/reports.html',
+            'settings': 'pages/admin/settings.html',
+            
+            // Модулі диспетчера
+            'assignments': 'pages/dispatcher/assignments.html',
+            'technicians': 'pages/dispatcher/technicians.html',
+            'clients': 'pages/dispatcher/clients.html',
+            'monitoring': 'pages/dispatcher/monitoring.html',
+            
+            // Модулі техніка
+            'tasks': 'assets/modules/tasks.html',
+            'schedule': 'pages/tech/schedule.html',
+            'checklists': 'pages/tech/checklists.html',
+            'knowledge-base': 'pages/tech/knowledge-base.html',
+            'tools': 'pages/tech/tools.html'
+        };
+        
+        return modulePaths[moduleId];
+    }
+    
+    extractContentFromHtml(htmlContent) {
+        // Створюємо тимчасовий DOM парсер
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlContent, 'text/html');
+        
+        // Витягуємо основний контент (все що в body, але без навігації)
+        const body = doc.querySelector('body');
+        
+        // Знаходимо content-wrapper або main content
+        let mainContent = body.querySelector('.content-wrapper') || 
+                         body.querySelector('main') || 
+                         body.querySelector('.container-fluid');
+        
+        if (!mainContent) {
+            // Якщо нема спеціального контейнера, берємо все з body крім навігації
+            const elementsToRemove = body.querySelectorAll('nav, .navbar, .sidebar, aside, .main-sidebar, .main-header');
+            elementsToRemove.forEach(el => el.remove());
+            mainContent = body;
+        }
+        
+        return mainContent ? mainContent.innerHTML : this.getDefaultModuleContent(moduleId);
+    }
+    
+    getDefaultModuleContent(moduleId) {
         return `
             <div class="content-header">
                 <div class="container-fluid">
@@ -803,7 +976,10 @@ class CRMUnified {
                 <div class="container-fluid">
                     <div class="card">
                         <div class="card-body">
-                            <p>Контент модуля <strong>${moduleId}</strong> буде завантажено тут.</p>
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <strong>Увага!</strong> Модуль "${moduleId}" ще не реалізований або недоступний для вашої ролі.
+                            </div>
                             <p>Поточна роль: <span class="badge badge-info">${this.userRole}</span></p>
                             <p>Доступні права:</p>
                             <ul>

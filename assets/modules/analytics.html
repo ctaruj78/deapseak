@@ -1,0 +1,709 @@
+<!-- Analytics Module для Адміністраторів -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Аналітика та звіти</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#" onclick="window.crmSystem.loadDashboard()">Головна</a></li>
+                    <li class="breadcrumb-item active">Аналітика</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <!-- Фільтри та налаштування -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card card-outline card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-filter mr-2"></i>
+                            Фільтри звітів
+                        </h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-sm btn-primary" onclick="updateAnalytics()">
+                                <i class="fas fa-sync-alt"></i> Оновити
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Період</label>
+                                    <select id="period-filter" class="form-control">
+                                        <option value="7">Останні 7 днів</option>
+                                        <option value="30" selected>Останні 30 днів</option>
+                                        <option value="90">Останні 3 місяці</option>
+                                        <option value="365">Останній рік</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Тип ліфта</label>
+                                    <select id="type-filter" class="form-control">
+                                        <option value="all">Всі типи</option>
+                                        <option value="passenger">Пасажирські</option>
+                                        <option value="cargo">Вантажні</option>
+                                        <option value="hospital">Лікарняні</option>
+                                        <option value="service">Службові</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Статус</label>
+                                    <select id="status-filter" class="form-control">
+                                        <option value="all">Всі статуси</option>
+                                        <option value="active">Активні</option>
+                                        <option value="maintenance">На ТО</option>
+                                        <option value="inactive">Неактивні</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Клієнт</label>
+                                    <select id="client-filter" class="form-control">
+                                        <option value="all">Всі клієнти</option>
+                                        <option value="client1">ЖК Центральний</option>
+                                        <option value="client2">ЖК Франківський</option>
+                                        <option value="client3">ТЦ Перемога</option>
+                                        <option value="client4">Лікарня №1</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Основна статистика -->
+        <div class="row mb-4">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3 id="total-maintenance">24</h3>
+                        <p>ТО за період</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-tools"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3 id="avg-uptime">96.5%</h3>
+                        <p>Середній uptime</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3 id="qr-scans">1,247</h3>
+                        <p>QR сканувань</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-qrcode"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3 id="emergency-calls">3</h3>
+                        <p>Аварійні виклики</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Графік роботи ліфтів -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-chart-area mr-2"></i>
+                            Статистика роботи ліфтів
+                        </h3>
+                        <div class="card-tools">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-sm btn-outline-primary active" data-chart="uptime">
+                                    Uptime
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-success" data-chart="maintenance">
+                                    ТО
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-warning" data-chart="qr">
+                                    QR активність
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="main-chart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Розподіл по типах та статистика -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-chart-pie mr-2"></i>
+                            Розподіл ліфтів
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="pie-chart" style="height: 200px;"></canvas>
+                        <div class="mt-3">
+                            <div class="progress-group">
+                                Пасажирські
+                                <span class="float-right"><b>60%</b></span>
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-primary" style="width: 60%"></div>
+                                </div>
+                            </div>
+                            <div class="progress-group">
+                                Вантажні
+                                <span class="float-right"><b>25%</b></span>
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-success" style="width: 25%"></div>
+                                </div>
+                            </div>
+                            <div class="progress-group">
+                                Лікарняні
+                                <span class="float-right"><b>10%</b></span>
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-warning" style="width: 10%"></div>
+                                </div>
+                            </div>
+                            <div class="progress-group">
+                                Службові
+                                <span class="float-right"><b>5%</b></span>
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-info" style="width: 5%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <!-- Топ клієнтів -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-trophy mr-2"></i>
+                            Топ клієнтів за кількістю ліфтів
+                        </h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Клієнт</th>
+                                    <th>Кількість ліфтів</th>
+                                    <th>Uptime</th>
+                                    <th>Рейтинг</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>ЖК Центральний</td>
+                                    <td><span class="badge badge-info">8</span></td>
+                                    <td><span class="text-success">98.5%</span></td>
+                                    <td><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>ТЦ Перемога</td>
+                                    <td><span class="badge badge-info">6</span></td>
+                                    <td><span class="text-success">97.2%</span></td>
+                                    <td><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i class="far fa-star text-warning"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>ЖК Франківський</td>
+                                    <td><span class="badge badge-info">4</span></td>
+                                    <td><span class="text-warning">94.8%</span></td>
+                                    <td><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i class="far fa-star text-warning"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>Лікарня №1</td>
+                                    <td><span class="badge badge-info">3</span></td>
+                                    <td><span class="text-success">99.1%</span></td>
+                                    <td><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i><i class="fas fa-star text-warning"></i></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Календар ТО -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-calendar-alt mr-2"></i>
+                            Календар технічного обслуговування
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="maintenance-calendar">
+                            <div class="timeline">
+                                <div class="time-label">
+                                    <span class="bg-primary">Цей тиждень</span>
+                                </div>
+                                <div>
+                                    <i class="fas fa-tools bg-warning"></i>
+                                    <div class="timeline-item">
+                                        <span class="time"><i class="fas fa-clock"></i> Завтра</span>
+                                        <h3 class="timeline-header">Планове ТО - Ліфт №3</h3>
+                                        <div class="timeline-body">
+                                            <strong>ТЦ Перемога</strong><br>
+                                            Щомісячне технічне обслуговування
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <i class="fas fa-wrench bg-info"></i>
+                                    <div class="timeline-item">
+                                        <span class="time"><i class="fas fa-clock"></i> П'ятниця</span>
+                                        <h3 class="timeline-header">Інспекція безпеки</h3>
+                                        <div class="timeline-body">
+                                            <strong>ЖК Центральний</strong><br>
+                                            Перевірка систем безпеки
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="time-label">
+                                    <span class="bg-success">Наступний тиждень</span>
+                                </div>
+                                <div>
+                                    <i class="fas fa-check-circle bg-success"></i>
+                                    <div class="timeline-item">
+                                        <span class="time"><i class="fas fa-clock"></i> Понеділок</span>
+                                        <h3 class="timeline-header">Профілактичне ТО</h3>
+                                        <div class="timeline-body">
+                                            <strong>Лікарня №1</strong><br>
+                                            Щотижневе обслуговування
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- QR коди аналітика -->
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-qrcode mr-2"></i>
+                            QR коди - детальна аналітика
+                        </h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-sm btn-success" onclick="window.crmSystem.loadModule('qr-generator')">
+                                <i class="fas fa-plus"></i> Створити QR
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-info"><i class="fas fa-qrcode"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Всього QR кодів</span>
+                                        <span class="info-box-number">156</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-success"><i class="fas fa-eye"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Сканувань за місяць</span>
+                                        <span class="info-box-number">1,247</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-warning"><i class="fas fa-clock"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Середній час сканування</span>
+                                        <span class="info-box-number">3.2 сек</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-danger"><i class="fas fa-exclamation-triangle"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Невдалі спроби</span>
+                                        <span class="info-box-number">12</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Таблиця найбільш активних QR кодів -->
+                        <h5 class="mt-4">Найбільш активні QR коди</h5>
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>QR код</th>
+                                    <th>Ліфт</th>
+                                    <th>Сканувань</th>
+                                    <th>Останнє сканування</th>
+                                    <th>Статус</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>QR001</code></td>
+                                    <td>Ліфт №1 - ЖК Центральний</td>
+                                    <td><span class="badge badge-success">89</span></td>
+                                    <td>2 години тому</td>
+                                    <td><span class="badge badge-success">Активний</span></td>
+                                </tr>
+                                <tr>
+                                    <td><code>QR003</code></td>
+                                    <td>Ліфт №3 - ТЦ Перемога</td>
+                                    <td><span class="badge badge-warning">67</span></td>
+                                    <td>5 годин тому</td>
+                                    <td><span class="badge badge-warning">На ТО</span></td>
+                                </tr>
+                                <tr>
+                                    <td><code>QR002</code></td>
+                                    <td>Ліфт №2 - ЖК Франківський</td>
+                                    <td><span class="badge badge-info">45</span></td>
+                                    <td>1 день тому</td>
+                                    <td><span class="badge badge-success">Активний</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.timeline {
+    position: relative;
+    margin: 0 0 30px 0;
+    padding: 0;
+    list-style: none;
+}
+
+.timeline:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: #dee2e6;
+    left: 31px;
+    margin: 0;
+    border-radius: 2px;
+}
+
+.timeline > div {
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.timeline > div > .timeline-item {
+    box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+    border-radius: 3px;
+    margin-top: 0;
+    background: #fff;
+    color: #444;
+    margin-left: 60px;
+    margin-right: 15px;
+    padding: 0;
+    position: relative;
+}
+
+.timeline > div > .fas {
+    width: 30px;
+    height: 30px;
+    font-size: 15px;
+    line-height: 30px;
+    position: absolute;
+    color: #666;
+    background: #d2d6de;
+    border-radius: 50%;
+    text-align: center;
+    left: 18px;
+    top: 0;
+}
+
+.timeline > div > .timeline-item > .time {
+    color: #999;
+    float: right;
+    padding: 10px;
+    font-size: 12px;
+}
+
+.timeline > div > .timeline-item > .timeline-header {
+    margin: 0;
+    color: #555;
+    border-bottom: 1px solid #f4f4f4;
+    padding: 10px;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.timeline > div > .timeline-item > .timeline-body {
+    padding: 10px;
+}
+
+.time-label > span {
+    font-weight: 600;
+    color: #fff;
+    font-size: 16px;
+    padding: 5px 10px;
+    display: inline-block;
+    border-radius: 4px;
+}
+
+#main-chart, #pie-chart {
+    max-height: 300px !important;
+}
+</style>
+
+<script>
+// Глобальні змінні для графіків
+let mainChart = null;
+let pieChart = null;
+
+// Ініціалізація модуля аналітики
+$(document).ready(function() {
+    initializeCharts();
+    loadAnalyticsData();
+    setupEventListeners();
+});
+
+function setupEventListeners() {
+    // Зміна фільтрів
+    $('#period-filter, #type-filter, #status-filter, #client-filter').on('change', function() {
+        updateAnalytics();
+    });
+    
+    // Переключення типу графіка
+    $('[data-chart]').on('click', function() {
+        const chartType = $(this).data('chart');
+        $('[data-chart]').removeClass('active');
+        $(this).addClass('active');
+        updateMainChart(chartType);
+    });
+    
+    // Автоматичне оновлення кожні 5 хвилин
+    setInterval(loadAnalyticsData, 300000);
+}
+
+function initializeCharts() {
+    // Ініціалізуємо основний графік
+    const mainCtx = document.getElementById('main-chart').getContext('2d');
+    mainChart = new Chart(mainCtx, {
+        type: 'line',
+        data: {
+            labels: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'],
+            datasets: [{
+                label: 'Uptime (%)',
+                data: [95, 97, 94, 98, 96, 99, 97],
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    min: 90,
+                    max: 100
+                }
+            }
+        }
+    });
+    
+    // Ініціалізуємо круговий графік
+    const pieCtx = document.getElementById('pie-chart').getContext('2d');
+    pieChart = new Chart(pieCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Пасажирські', 'Вантажні', 'Лікарняні', 'Службові'],
+            datasets: [{
+                data: [60, 25, 10, 5],
+                backgroundColor: [
+                    '#007bff',
+                    '#28a745',
+                    '#ffc107',
+                    '#17a2b8'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+}
+
+function loadAnalyticsData() {
+    // Імітуємо завантаження даних аналітики
+    const data = {
+        totalMaintenance: Math.floor(Math.random() * 10) + 20,
+        avgUptime: (Math.random() * 5 + 95).toFixed(1),
+        qrScans: Math.floor(Math.random() * 500) + 1000,
+        emergencyCalls: Math.floor(Math.random() * 5) + 1
+    };
+    
+    // Оновлюємо статистику
+    $('#total-maintenance').text(data.totalMaintenance);
+    $('#avg-uptime').text(data.avgUptime + '%');
+    $('#qr-scans').text(data.qrScans.toLocaleString());
+    $('#emergency-calls').text(data.emergencyCalls);
+    
+    // Імітуємо успішне завантаження
+    toastr.success('Дані аналітики оновлено', 'Аналітика');
+}
+
+function updateAnalytics() {
+    const period = $('#period-filter').val();
+    const type = $('#type-filter').val();
+    const status = $('#status-filter').val();
+    const client = $('#client-filter').val();
+    
+    toastr.info(`Оновлення аналітики за ${period} днів...`, 'Аналітика');
+    
+    // Імітуємо оновлення даних
+    setTimeout(() => {
+        loadAnalyticsData();
+        updateChartsData();
+    }, 1000);
+}
+
+function updateMainChart(chartType) {
+    let newData, label, color;
+    
+    switch(chartType) {
+        case 'uptime':
+            newData = [95, 97, 94, 98, 96, 99, 97];
+            label = 'Uptime (%)';
+            color = 'rgb(75, 192, 192)';
+            break;
+        case 'maintenance':
+            newData = [2, 1, 3, 2, 4, 1, 2];
+            label = 'Кількість ТО';
+            color = 'rgb(255, 206, 86)';
+            break;
+        case 'qr':
+            newData = [45, 67, 34, 89, 56, 78, 91];
+            label = 'QR сканування';
+            color = 'rgb(153, 102, 255)';
+            break;
+    }
+    
+    mainChart.data.datasets[0].data = newData;
+    mainChart.data.datasets[0].label = label;
+    mainChart.data.datasets[0].borderColor = color;
+    mainChart.data.datasets[0].backgroundColor = color.replace('rgb', 'rgba').replace(')', ', 0.2)');
+    
+    // Налаштування шкали Y
+    if (chartType === 'uptime') {
+        mainChart.options.scales.y.min = 90;
+        mainChart.options.scales.y.max = 100;
+    } else {
+        mainChart.options.scales.y.min = 0;
+        mainChart.options.scales.y.max = Math.max(...newData) + 10;
+    }
+    
+    mainChart.update();
+}
+
+function updateChartsData() {
+    // Генеруємо нові випадкові дані для демонстрації
+    const newUptimeData = Array.from({length: 7}, () => Math.floor(Math.random() * 8) + 92);
+    const newPieData = [
+        Math.floor(Math.random() * 20) + 50,  // Пасажирські
+        Math.floor(Math.random() * 15) + 20,  // Вантажні
+        Math.floor(Math.random() * 10) + 5,   // Лікарняні
+        Math.floor(Math.random() * 8) + 2     // Службові
+    ];
+    
+    // Оновлюємо дані основного графіка
+    const currentType = $('[data-chart].active').data('chart') || 'uptime';
+    updateMainChart(currentType);
+    
+    // Оновлюємо круговий графік
+    pieChart.data.datasets[0].data = newPieData;
+    pieChart.update();
+    
+    // Оновлюємо прогрес-бари
+    const total = newPieData.reduce((sum, val) => sum + val, 0);
+    $('.progress-group').each(function(index) {
+        if (index < newPieData.length) {
+            const percentage = Math.round((newPieData[index] / total) * 100);
+            $(this).find('span.float-right b').text(percentage + '%');
+            $(this).find('.progress-bar').css('width', percentage + '%');
+        }
+    });
+}
+
+// Функції експорту
+function exportAnalytics() {
+    toastr.info('Підготовка звіту для експорту...', 'Експорт');
+    
+    setTimeout(() => {
+        toastr.success('Звіт успішно експортовано!', 'Експорт');
+    }, 2000);
+}
+
+// Завантаження Chart.js якщо не завантажений
+if (typeof Chart === 'undefined') {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+    script.onload = function() {
+        initializeCharts();
+    };
+    document.head.appendChild(script);
+}
+</script>
