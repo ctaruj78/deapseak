@@ -1,0 +1,514 @@
+<!-- Tasks Module для Техніків -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Мої завдання</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#" onclick="window.crmSystem.loadDashboard()">Головна</a></li>
+                    <li class="breadcrumb-item active">Завдання</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <!-- Статистика завдань -->
+        <div class="row mb-4">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3 id="total-tasks">5</h3>
+                        <p>Всього завдань</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3 id="completed-tasks">2</h3>
+                        <p>Виконано сьогодні</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3 id="pending-tasks">2</h3>
+                        <p>В процесі</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3 id="urgent-tasks">1</h3>
+                        <p>Терміново</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Поточні завдання -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-clipboard-list mr-2"></i>
+                            Поточні завдання
+                        </h3>
+                        <div class="card-tools">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-sm btn-outline-primary active" data-filter="all">
+                                    Всі
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-warning" data-filter="pending">
+                                    В процесі
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-filter="urgent">
+                                    Терміново
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="tasks-list">
+                            <!-- Завдання з високим пріоритетом -->
+                            <div class="task-item urgent p-3 border-left-danger" data-task-id="1" data-priority="urgent">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <h5 class="mb-1">
+                                            <span class="badge badge-danger mr-2">ТЕРМІНОВО</span>
+                                            Аварійний ремонт ліфта №3
+                                        </h5>
+                                        <p class="mb-2 text-muted">
+                                            <i class="fas fa-map-marker-alt mr-1"></i>
+                                            БЦ "Сонячний", А блок
+                                        </p>
+                                        <p class="mb-2">Ліфт зупинився між 3 та 4 поверхами. Пасажири евакуйовані. Потрібна термінова діагностика та ремонт.</p>
+                                        <div class="task-meta">
+                                            <span class="badge badge-info mr-2">
+                                                <i class="fas fa-clock mr-1"></i>
+                                                Призначено: 14:30
+                                            </span>
+                                            <span class="badge badge-warning mr-2">
+                                                <i class="fas fa-hourglass-half mr-1"></i>
+                                                Дедлайн: 16:00
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="task-actions ml-3">
+                                        <button class="btn btn-success btn-sm" onclick="startTask(1)">
+                                            <i class="fas fa-play"></i> Почати
+                                        </button>
+                                        <button class="btn btn-info btn-sm" onclick="viewTaskDetails(1)">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Звичайні завдання -->
+                            <div class="task-item pending p-3 border-left-primary" data-task-id="2" data-priority="medium">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <h5 class="mb-1">
+                                            <span class="badge badge-primary mr-2">ПЛАНОВЕ</span>
+                                            Щомісячне обслуговування ліфта №1
+                                        </h5>
+                                        <p class="mb-2 text-muted">
+                                            <i class="fas fa-map-marker-alt mr-1"></i>
+                                            ТРЦ "Центральний", 1 під'їзд
+                                        </p>
+                                        <p class="mb-2">Проведення планового технічного обслуговування згідно регламенту.</p>
+                                        <div class="task-meta">
+                                            <span class="badge badge-info mr-2">
+                                                <i class="fas fa-clock mr-1"></i>
+                                                Призначено: 09:00
+                                            </span>
+                                            <span class="badge badge-success mr-2">
+                                                <i class="fas fa-calendar mr-1"></i>
+                                                До кінця дня
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="task-actions ml-3">
+                                        <button class="btn btn-warning btn-sm" onclick="continueTask(2)">
+                                            <i class="fas fa-pause"></i> Продовжити
+                                        </button>
+                                        <button class="btn btn-info btn-sm" onclick="viewTaskDetails(2)">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="progress mt-2" style="height: 8px;">
+                                    <div class="progress-bar bg-warning" style="width: 45%"></div>
+                                </div>
+                                <small class="text-muted">Прогрес: 45%</small>
+                            </div>
+
+                            <div class="task-item pending p-3 border-left-info" data-task-id="3" data-priority="low">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <h5 class="mb-1">
+                                            <span class="badge badge-info mr-2">ІНСПЕКЦІЯ</span>
+                                            Перевірка безпеки ліфта №5
+                                        </h5>
+                                        <p class="mb-2 text-muted">
+                                            <i class="fas fa-map-marker-alt mr-1"></i>
+                                            ЖК "Перлина", 12 під'їзд
+                                        </p>
+                                        <p class="mb-2">Щотижнева перевірка систем безпеки та аварійного зв'язку.</p>
+                                        <div class="task-meta">
+                                            <span class="badge badge-info mr-2">
+                                                <i class="fas fa-clock mr-1"></i>
+                                                Призначено: 15:00
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="task-actions ml-3">
+                                        <button class="btn btn-success btn-sm" onclick="startTask(3)">
+                                            <i class="fas fa-play"></i> Почати
+                                        </button>
+                                        <button class="btn btn-info btn-sm" onclick="viewTaskDetails(3)">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Бічна панель з інструментами -->
+            <div class="col-md-4">
+                <!-- Швидкі дії -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-bolt mr-2"></i>
+                            Швидкі дії
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <button class="btn btn-primary btn-block mb-2" onclick="window.crmSystem.loadModule('qr-scanner')">
+                            <i class="fas fa-qrcode mr-2"></i>
+                            QR Сканер
+                        </button>
+                        <button class="btn btn-success btn-block mb-2" onclick="window.crmSystem.loadModule('checklists')">
+                            <i class="fas fa-clipboard-check mr-2"></i>
+                            Чек-листи
+                        </button>
+                        <button class="btn btn-info btn-block mb-2" onclick="window.crmSystem.loadModule('tools')">
+                            <i class="fas fa-toolbox mr-2"></i>
+                            Інструменти
+                        </button>
+                        <button class="btn btn-warning btn-block" onclick="reportEmergency()">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            Аварійний виклик
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Завдання на сьогодні -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-calendar-day mr-2"></i>
+                            План на сьогодні
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="timeline">
+                            <div class="time-label">
+                                <span class="bg-primary">Сьогодні</span>
+                            </div>
+                            <div>
+                                <i class="fas fa-check bg-success"></i>
+                                <div class="timeline-item">
+                                    <span class="time"><i class="fas fa-clock"></i> 09:00</span>
+                                    <h3 class="timeline-header">Обслуговування ліфта №1</h3>
+                                    <div class="timeline-body">
+                                        <span class="badge badge-success">Завершено</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <i class="fas fa-wrench bg-warning"></i>
+                                <div class="timeline-item">
+                                    <span class="time"><i class="fas fa-clock"></i> 14:30</span>
+                                    <h3 class="timeline-header">Аварійний ремонт</h3>
+                                    <div class="timeline-body">
+                                        <span class="badge badge-danger">Терміново</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <i class="fas fa-search bg-info"></i>
+                                <div class="timeline-item">
+                                    <span class="time"><i class="fas fa-clock"></i> 15:00</span>
+                                    <h3 class="timeline-header">Інспекція безпеки</h3>
+                                    <div class="timeline-body">
+                                        <span class="badge badge-info">Заплановано</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.task-item {
+    border-bottom: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.task-item:hover {
+    background-color: #f8f9fa;
+}
+
+.task-item:last-child {
+    border-bottom: none;
+}
+
+.border-left-danger {
+    border-left: 4px solid #dc3545 !important;
+}
+
+.border-left-primary {
+    border-left: 4px solid #007bff !important;
+}
+
+.border-left-info {
+    border-left: 4px solid #17a2b8 !important;
+}
+
+.task-meta .badge {
+    font-size: 0.75em;
+}
+
+.timeline {
+    position: relative;
+    margin: 0 0 30px 0;
+    padding: 0;
+    list-style: none;
+}
+
+.timeline:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: #dee2e6;
+    left: 31px;
+    margin: 0;
+    border-radius: 2px;
+}
+
+.timeline > div {
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.timeline > div > .timeline-item {
+    box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+    border-radius: 3px;
+    margin-top: 0;
+    background: #fff;
+    color: #444;
+    margin-left: 60px;
+    margin-right: 15px;
+    padding: 0;
+    position: relative;
+}
+
+.timeline > div > .fas {
+    width: 30px;
+    height: 30px;
+    font-size: 15px;
+    line-height: 30px;
+    position: absolute;
+    color: #666;
+    background: #d2d6de;
+    border-radius: 50%;
+    text-align: center;
+    left: 18px;
+    top: 0;
+}
+
+.timeline > div > .timeline-item > .time {
+    color: #999;
+    float: right;
+    padding: 10px;
+    font-size: 12px;
+}
+
+.timeline > div > .timeline-item > .timeline-header {
+    margin: 0;
+    color: #555;
+    border-bottom: 1px solid #f4f4f4;
+    padding: 10px;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.timeline > div > .timeline-item > .timeline-body {
+    padding: 10px;
+}
+
+.time-label > span {
+    font-weight: 600;
+    color: #fff;
+    font-size: 16px;
+    padding: 5px 10px;
+    display: inline-block;
+    border-radius: 4px;
+}
+</style>
+
+<script>
+// Ініціалізація модуля завдань
+$(document).ready(function() {
+    // Фільтрація завдань
+    $('[data-filter]').on('click', function() {
+        const filter = $(this).data('filter');
+        $('[data-filter]').removeClass('active');
+        $(this).addClass('active');
+        filterTasks(filter);
+    });
+    
+    // Автоматичне оновлення кожні 30 секунд
+    setInterval(updateTaskStats, 30000);
+});
+
+function filterTasks(filter) {
+    $('.task-item').show();
+    
+    if (filter !== 'all') {
+        $('.task-item').each(function() {
+            const priority = $(this).data('priority');
+            const isMatch = (filter === 'urgent' && priority === 'urgent') ||
+                          (filter === 'pending' && $(this).hasClass('pending'));
+            
+            if (!isMatch) {
+                $(this).hide();
+            }
+        });
+    }
+}
+
+function startTask(taskId) {
+    // Імітація початку завдання
+    toastr.info(`Розпочинаємо виконання завдання #${taskId}`);
+    
+    // Оновлюємо статус завдання
+    const taskElement = $(`.task-item[data-task-id="${taskId}"]`);
+    taskElement.removeClass('pending').addClass('in-progress');
+    
+    // Замінюємо кнопку "Почати" на "В процесі"
+    taskElement.find('.task-actions').html(`
+        <button class="btn btn-warning btn-sm" onclick="pauseTask(${taskId})">
+            <i class="fas fa-pause"></i> Пауза
+        </button>
+        <button class="btn btn-success btn-sm" onclick="completeTask(${taskId})">
+            <i class="fas fa-check"></i> Завершити
+        </button>
+        <button class="btn btn-info btn-sm" onclick="viewTaskDetails(${taskId})">
+            <i class="fas fa-eye"></i>
+        </button>
+    `);
+    
+    updateTaskStats();
+}
+
+function continueTask(taskId) {
+    toastr.info(`Продовжуємо виконання завдання #${taskId}`);
+    startTask(taskId);
+}
+
+function pauseTask(taskId) {
+    toastr.warning(`Призупинено виконання завдання #${taskId}`);
+    
+    const taskElement = $(`.task-item[data-task-id="${taskId}"]`);
+    taskElement.find('.task-actions').html(`
+        <button class="btn btn-success btn-sm" onclick="continueTask(${taskId})">
+            <i class="fas fa-play"></i> Продовжити
+        </button>
+        <button class="btn btn-info btn-sm" onclick="viewTaskDetails(${taskId})">
+            <i class="fas fa-eye"></i>
+        </button>
+    `);
+}
+
+function completeTask(taskId) {
+    toastr.success(`Завдання #${taskId} успішно завершено!`);
+    
+    const taskElement = $(`.task-item[data-task-id="${taskId}"]`);
+    taskElement.removeClass('pending in-progress').addClass('completed');
+    taskElement.find('.badge:first').removeClass('badge-danger badge-primary badge-info').addClass('badge-success').text('ЗАВЕРШЕНО');
+    taskElement.find('.task-actions').html(`
+        <button class="btn btn-secondary btn-sm" disabled>
+            <i class="fas fa-check"></i> Виконано
+        </button>
+    `);
+    
+    // Додаємо прогрес-бар на 100%
+    taskElement.find('.progress-bar').css('width', '100%').removeClass('bg-warning').addClass('bg-success');
+    taskElement.find('small').text('Прогрес: 100%');
+    
+    updateTaskStats();
+}
+
+function viewTaskDetails(taskId) {
+    // Імітація відкриття деталей завдання
+    toastr.info(`Перегляд деталей завдання #${taskId}`);
+    
+    // Тут може бути модальне вікно з детальною інформацією
+    alert(`Деталі завдання #${taskId}\n\nТут будуть відображатися:\n- Повний опис завдання\n- Технічні характеристики\n- Історія виконання\n- Файли та документи\n- Коментарі`);
+}
+
+function reportEmergency() {
+    toastr.error('Формування аварійного виклику...');
+    
+    // Імітація аварійного виклику
+    setTimeout(() => {
+        toastr.success('Аварійний виклик відправлено! Диспетчер буде повідомлений.');
+    }, 1500);
+}
+
+function updateTaskStats() {
+    // Підрахунок статистики
+    const totalTasks = $('.task-item').length;
+    const completedTasks = $('.task-item.completed').length;
+    const pendingTasks = $('.task-item.pending, .task-item.in-progress').length;
+    const urgentTasks = $('.task-item[data-priority="urgent"]:not(.completed)').length;
+    
+    $('#total-tasks').text(totalTasks);
+    $('#completed-tasks').text(completedTasks);
+    $('#pending-tasks').text(pendingTasks);
+    $('#urgent-tasks').text(urgentTasks);
+}
+</script>

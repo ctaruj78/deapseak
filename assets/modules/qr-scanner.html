@@ -1,0 +1,390 @@
+<!-- QR Scanner Module для Техніків -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">QR Сканер</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#" onclick="window.crmSystem.loadDashboard()">Головна</a></li>
+                    <li class="breadcrumb-item active">QR Сканер</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Сканер -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary">
+                        <h3 class="card-title text-white">
+                            <i class="fas fa-camera mr-2"></i>
+                            QR Сканер
+                        </h3>
+                    </div>
+                    <div class="card-body text-center">
+                        <div id="scanner-container" class="mb-3">
+                            <div class="scanner-placeholder" style="width: 100%; height: 300px; border: 2px dashed #007bff; display: flex; align-items: center; justify-content: center; background: #f8f9fa; border-radius: 10px;">
+                                <div>
+                                    <i class="fas fa-camera fa-4x text-primary mb-3"></i>
+                                    <p class="h5 text-primary">Камера для сканування QR-кодів</p>
+                                    <button class="btn btn-primary" id="start-camera">
+                                        <i class="fas fa-video mr-2"></i>
+                                        Запустити камеру
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="btn-group mb-3" role="group">
+                            <button type="button" class="btn btn-outline-primary" id="camera-front">
+                                <i class="fas fa-camera mr-1"></i>
+                                Передня камера
+                            </button>
+                            <button type="button" class="btn btn-outline-primary active" id="camera-back">
+                                <i class="fas fa-camera-retro mr-1"></i>
+                                Задня камера
+                            </button>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            <strong>Інструкції:</strong> Наведіть камеру на QR-код ліфта для отримання інформації та можливості звітування.
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Ручне введення -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-keyboard mr-2"></i>
+                            Ручне введення
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="manual-qr-code">Код QR (якщо камера не працює)</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="manual-qr-code" placeholder="Введіть код QR...">
+                                <div class="input-group-append">
+                                    <button class="btn btn-primary" type="button" id="manual-scan">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <small class="form-text text-muted">
+                            Введіть код QR вручну, якщо сканування камерою неможливе
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Результат сканування -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-success">
+                        <h3 class="card-title text-white">
+                            <i class="fas fa-clipboard-check mr-2"></i>
+                            Результат сканування
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="scan-result" class="text-center" style="min-height: 300px; display: flex; align-items: center; justify-content: center;">
+                            <div class="text-muted">
+                                <i class="fas fa-qrcode fa-4x mb-3"></i>
+                                <p class="h5">Очікування сканування</p>
+                                <p>Відскануйте QR-код для отримання інформації про ліфт</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Швидкі дії -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-bolt mr-2"></i>
+                            Швидкі дії
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <button class="btn btn-success btn-block mb-2" onclick="window.crmSystem.loadModule('tasks')">
+                            <i class="fas fa-tasks mr-2"></i>
+                            Мої завдання
+                        </button>
+                        <button class="btn btn-info btn-block mb-2" onclick="window.crmSystem.loadModule('checklists')">
+                            <i class="fas fa-clipboard-list mr-2"></i>
+                            Чек-листи
+                        </button>
+                        <button class="btn btn-warning btn-block" onclick="window.crmSystem.loadModule('schedule')">
+                            <i class="fas fa-calendar mr-2"></i>
+                            Мій розклад
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Історія сканувань -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-history mr-2"></i>
+                            Історія сканувань (сьогодні)
+                        </h3>
+                        <div class="card-tools">
+                            <button class="btn btn-sm btn-primary" onclick="refreshScanHistory()">
+                                <i class="fas fa-sync-alt mr-1"></i>
+                                Оновити
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped" id="scan-history-table">
+                                <thead>
+                                    <tr>
+                                        <th>Час</th>
+                                        <th>Ліфт</th>
+                                        <th>Локація</th>
+                                        <th>Тип операції</th>
+                                        <th>Статус</th>
+                                        <th>Дії</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>14:30</td>
+                                        <td>Ліфт №1</td>
+                                        <td>ТРЦ "Центральний", 1 під'їзд</td>
+                                        <td><span class="badge badge-primary">Планове обслуговування</span></td>
+                                        <td><span class="badge badge-success">Завершено</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-info" title="Деталі">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>12:15</td>
+                                        <td>Ліфт №3</td>
+                                        <td>БЦ "Сонячний", А блок</td>
+                                        <td><span class="badge badge-warning">Технічний огляд</span></td>
+                                        <td><span class="badge badge-success">Завершено</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-info" title="Деталі">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+// Ініціалізація QR сканера
+$(document).ready(function() {
+    // Обробники подій
+    $('#start-camera').on('click', startCamera);
+    $('#camera-front, #camera-back').on('click', switchCamera);
+    $('#manual-scan').on('click', manualScan);
+    $('#manual-qr-code').on('keypress', function(e) {
+        if (e.which === 13) {
+            manualScan();
+        }
+    });
+});
+
+function startCamera() {
+    // Імітація запуску камери
+    $('#scanner-container').html(`
+        <div class="scanner-active" style="width: 100%; height: 300px; border: 2px solid #28a745; display: flex; align-items: center; justify-content: center; background: #000; border-radius: 10px; position: relative;">
+            <div class="scanner-overlay" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 200px; height: 200px; border: 2px solid #28a745; border-radius: 10px;"></div>
+            <div style="color: white; text-align: center;">
+                <i class="fas fa-camera fa-2x mb-2"></i>
+                <p>Камера активна</p>
+                <small>Наведіть на QR-код</small>
+            </div>
+        </div>
+    `);
+    
+    // Імітація виявлення QR-коду через 3 секунди
+    setTimeout(() => {
+        simulateQRScan('LIFT_001_MAINTENANCE');
+    }, 3000);
+    
+    toastr.info('Камера запущена. Наведіть на QR-код ліфта.');
+}
+
+function switchCamera() {
+    $('.btn-group button').removeClass('active');
+    $(event.target).addClass('active');
+    
+    const cameraType = $(event.target).attr('id') === 'camera-front' ? 'передню' : 'задню';
+    toastr.info(`Перемикання на ${cameraType} камеру`);
+}
+
+function manualScan() {
+    const qrCode = $('#manual-qr-code').val().trim();
+    if (qrCode) {
+        simulateQRScan(qrCode);
+        $('#manual-qr-code').val('');
+    } else {
+        toastr.warning('Будь ласка, введіть код QR');
+    }
+}
+
+function simulateQRScan(qrCode) {
+    // Імітація обробки QR-коду
+    const liftData = {
+        'LIFT_001_MAINTENANCE': {
+            id: 'LIFT_001',
+            name: 'Ліфт №1',
+            location: 'ТРЦ "Центральний", 1 під\'їзд',
+            type: 'Пасажирський',
+            lastMaintenance: '28.09.2025',
+            status: 'Активний',
+            task: 'Планове обслуговування'
+        },
+        'LIFT_003_INSPECTION': {
+            id: 'LIFT_003',
+            name: 'Ліфт №3',
+            location: 'БЦ "Сонячний", А блок',
+            type: 'Вантажо-пасажирський',
+            lastMaintenance: '25.09.2025',
+            status: 'Потребує огляду',
+            task: 'Технічний огляд'
+        }
+    };
+    
+    const lift = liftData[qrCode] || {
+        id: 'UNKNOWN',
+        name: 'Невідомий ліфт',
+        location: 'Невідома локація',
+        type: 'Невизначено',
+        lastMaintenance: 'Невідомо',
+        status: 'Невідомо',
+        task: 'Перевірити QR-код'
+    };
+    
+    displayScanResult(lift);
+    addToScanHistory(lift);
+    
+    toastr.success('QR-код успішно відсканований!');
+}
+
+function displayScanResult(lift) {
+    const statusClass = lift.status === 'Активний' ? 'success' : 
+                       lift.status === 'Потребує огляду' ? 'warning' : 'danger';
+    
+    $('#scan-result').html(`
+        <div class="w-100">
+            <div class="text-center mb-3">
+                <i class="fas fa-elevator fa-3x text-primary mb-2"></i>
+                <h4>${lift.name}</h4>
+            </div>
+            
+            <div class="row">
+                <div class="col-12">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>ID:</th>
+                            <td>${lift.id}</td>
+                        </tr>
+                        <tr>
+                            <th>Локація:</th>
+                            <td>${lift.location}</td>
+                        </tr>
+                        <tr>
+                            <th>Тип:</th>
+                            <td>${lift.type}</td>
+                        </tr>
+                        <tr>
+                            <th>Останнє обслуговування:</th>
+                            <td>${lift.lastMaintenance}</td>
+                        </tr>
+                        <tr>
+                            <th>Статус:</th>
+                            <td><span class="badge badge-${statusClass}">${lift.status}</span></td>
+                        </tr>
+                        <tr>
+                            <th>Поточне завдання:</th>
+                            <td><strong>${lift.task}</strong></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="text-center">
+                <button class="btn btn-success mr-2" onclick="startTask('${lift.id}')">
+                    <i class="fas fa-play mr-1"></i>
+                    Почати роботу
+                </button>
+                <button class="btn btn-info mr-2" onclick="reportIssue('${lift.id}')">
+                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                    Звіт про проблему
+                </button>
+                <button class="btn btn-secondary" onclick="viewHistory('${lift.id}')">
+                    <i class="fas fa-history mr-1"></i>
+                    Історія
+                </button>
+            </div>
+        </div>
+    `);
+}
+
+function addToScanHistory(lift) {
+    const currentTime = new Date().toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
+    const newRow = `
+        <tr>
+            <td>${currentTime}</td>
+            <td>${lift.name}</td>
+            <td>${lift.location}</td>
+            <td><span class="badge badge-primary">${lift.task}</span></td>
+            <td><span class="badge badge-info">Відсканований</span></td>
+            <td>
+                <button class="btn btn-sm btn-info" title="Деталі">
+                    <i class="fas fa-eye"></i>
+                </button>
+            </td>
+        </tr>
+    `;
+    
+    $('#scan-history-table tbody').prepend(newRow);
+}
+
+function startTask(liftId) {
+    toastr.success(`Розпочато виконання завдання для ${liftId}`);
+    // Тут буде логіка початку завдання
+}
+
+function reportIssue(liftId) {
+    toastr.info(`Відкриття форми звіту про проблему для ${liftId}`);
+    // Тут буде логіка звітування про проблему
+}
+
+function viewHistory(liftId) {
+    toastr.info(`Перегляд історії обслуговування для ${liftId}`);
+    // Тут буде логіка перегляду історії
+}
+
+function refreshScanHistory() {
+    toastr.info('Оновлення історії сканувань...');
+    // Тут буде логіка оновлення з сервера
+}
+</script>
