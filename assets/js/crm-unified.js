@@ -898,10 +898,12 @@ class CRMUnified {
     }
     
     hasAccessToModule(moduleId) {
-        // Перевірка доступу на основі ролі користувача
+        console.log(`Перевірка доступу до модуля: ${moduleId}`);
+        console.log(`Доступні модулі для ролі ${this.userRole}:`, this.availableModules);
         
         // Пряма перевірка доступу
         if (this.availableModules.includes(moduleId)) {
+            console.log(`Модуль ${moduleId} знайдено в availableModules`);
             return true;
         }
         
@@ -951,43 +953,33 @@ class CRMUnified {
     }
     
     async getModuleContent(moduleId) {
-        // Показуємо лоадер під час завантаження
-        const loadingHtml = `
-            <div class="content-header">
-                <div class="container-fluid">
-                    <div class="row mb-2">
-                        <div class="col-sm-6">
-                            <h1 class="m-0">Завантаження...</h1>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <section class="content">
-                <div class="container-fluid">
-                    <div class="text-center" style="padding: 50px;">
-                        <i class="fas fa-spinner fa-spin fa-3x text-primary"></i>
-                        <p class="mt-3">Завантаження модуля ${moduleId}...</p>
-                    </div>
-                </div>
-            </section>
-        `;
+        console.log(`Завантаження модуля: ${moduleId}`);
         
         try {
             // Визначаємо шлях до файлу залежно від модуля та ролі
             const modulePath = this.getModulePath(moduleId);
+            console.log(`Шлях до модуля ${moduleId}: ${modulePath}`);
             
             if (modulePath) {
                 const response = await fetch(modulePath);
+                console.log(`Відповідь сервера для ${moduleId}: ${response.status}`);
+                
                 if (response.ok) {
                     const htmlContent = await response.text();
+                    console.log(`Модуль ${moduleId} успішно завантажено`);
                     return this.extractContentFromHtml(htmlContent);
+                } else {
+                    console.error(`Помилка HTTP ${response.status} для модуля ${moduleId}`);
                 }
+            } else {
+                console.error(`Шлях для модуля ${moduleId} не знайдено`);
             }
         } catch (error) {
             console.error(`Помилка завантаження модуля ${moduleId}:`, error);
         }
         
         // Якщо не вдалося завантажити - показуємо заглушку
+        console.log(`Показуємо заглушку для модуля ${moduleId}`);
         return this.getDefaultModuleContent(moduleId);
     }
     
@@ -1013,8 +1005,7 @@ class CRMUnified {
             // Інші модулі
             'lifts': '/assets/modules/lift-management.html',  // Перенаправляємо на новий модуль
             'users': 'pages/admin/users.html',
-            'reports': this.userRole === 'admin' ? 'pages/admin/reports.html' : 
-                      this.userRole === 'dispatcher' ? 'pages/dispatcher/reports.html' : 'pages/tech/reports.html',
+            'reports': '/assets/modules/reports.html',  // Уніфікований модуль звітів
             'settings': 'pages/admin/settings.html',
             
             // Модулі диспетчера

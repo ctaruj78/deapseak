@@ -332,6 +332,9 @@ class DispatcherDashboard {
                         <button class="btn btn-success btn-xs" data-action="edit" data-id="${request.id}" onclick="window.dispatcherDashboard.editRequest(${request.id})" title="Редагувати">
                             <i class="fas fa-edit"></i>
                         </button>
+                        <button class="btn btn-danger btn-xs" data-action="delete" data-id="${request.id}" onclick="window.dispatcherDashboard.deleteRequest(${request.id})" title="Видалити">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
                 </td>
             `;
@@ -1008,7 +1011,34 @@ class DispatcherDashboard {
         console.log('editRequest called with id:', requestId);
         const request = this.requests.find(r => r.id === requestId);
         if (request) {
-            alert(`Редагування заявки #${request.id}\n\nЦя функція буде реалізована в наступній версії.`);
+            console.log('Found request for editing:', request.title);
+            
+            // Заповнення форми редагування даними заявки
+            document.getElementById('editRequestId').value = request.id;
+            document.getElementById('editTitle').value = request.title;
+            document.getElementById('editClient').value = request.client;
+            document.getElementById('editDescription').value = request.description;
+            document.getElementById('editLocation').value = request.location;
+            document.getElementById('editPriority').value = request.priority;
+            document.getElementById('editStatus').value = request.status;
+            
+            // Заповнення техніка якщо призначено
+            const editAssignedSelect = document.getElementById('editAssignedTo');
+            editAssignedSelect.innerHTML = '<option value="">Не призначено</option>';
+            
+            // Додавання доступних техніків
+            this.technicians.forEach(tech => {
+                const option = document.createElement('option');
+                option.value = tech.id;
+                option.textContent = `${tech.firstName} ${tech.lastName}`;
+                if (request.assignedTo === `${tech.firstName} ${tech.lastName}`) {
+                    option.selected = true;
+                }
+                editAssignedSelect.appendChild(option);
+            });
+            
+            $('#editRequestModal').modal('show');
+            console.log('Edit request modal shown');
         } else {
             console.error('Request not found for editing with id:', requestId);
         }
@@ -1400,13 +1430,181 @@ class DispatcherDashboard {
         $(modal).modal('show');
     }
 
+    // Відправка оновленої заявки
+    async submitEditRequest() {
+        const form = document.getElementById('editRequestForm');
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+        
+        const requestId = document.getElementById('editRequestId').value;
+        const title = document.getElementById('editTitle').value;
+        const client = document.getElementById('editClient').value;
+        const description = document.getElementById('editDescription').value;
+        const location = document.getElementById('editLocation').value;
+        const priority = document.getElementById('editPriority').value;
+        const status = document.getElementById('editStatus').value;
+        const assignedToId = document.getElementById('editAssignedTo').value;
+        
+        // Визначення assignedTo
+        let assignedTo = null;
+        if (assignedToId) {
+            const tech = this.technicians.find(t => t.id == assignedToId);
+            if (tech) {
+                assignedTo = `${tech.firstName} ${tech.lastName}`;
+            }
+        }
+        
+        try {
+            const response = await fetch(`/api/requests/${requestId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                },
+                body: JSON.stringify({
+                    title,
+                    client,
+                    description,
+                    location,
+                    priority,
+                    status,
+                    assignedTo
+                })
+            });
+            
+            if (response.ok) {
+                const updatedRequest = await response.json();
+                
+                // Оновлення локальних даних
+                const requestIndex = this.requests.findIndex(r => r.id == requestId);
+                if (requestIndex !== -1) {
+                    this.requests[requestIndex] = {
+                        ...this.requests[requestIndex],
+                        title,
+                        client,
+                        description,
+                        location,
+                        priority,
+                        status,
+                        assignedTo
+                    };
+                }
+                
+                // Додавання активності
+                const activity = {
+                    id: this.activities.length + 1,
+                    type: "edit",
+                    message: `Заявку #${requestId} відредаговано: ${title}`,
+                    timestamp: new Date().toLocaleString('uk-UA'),
+                    icon: "fas fa-edit",
+                    color: "text-info"
+                };
+                this.activities.unshift(activity);
+                
+                this.renderRequests();
+                this.renderActivities();
+                this.updateStats();
+                this.showNotification('Заявку успішно оновлено', 'success');
+                $('#editRequestModal').modal('hide');
+            } else {
+                let errorText = '';
+                try {
+                    errorText = await response.text();
+                } catch (e) {}
+                this.showNotification('Помилка оновлення заявки: ' + (errorText || response.statusText), 'error');
+            }
+        } catch (error) {
+            this.showNotification('Помилка оновлення заявки: ' + error.message, 'error');
+        }
+    }
+
+    // Видалення заявки
+    async deleteRequest(requestId) {
+        if (!confirm('Ви впевнені, що хочете видалити цю заявку?')) {
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/api/requests/${requestId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                }
+            });
+            
+            if (response.ok) {
+                // Видалення з локальних даних
+                this.requests = this.requests.filter(r => r.id != requestId);
+                
+                // Додавання активності
+                const activity = {
+                    id: this.activities.length + 1,
+                    type: "delete",
+                    message: `Заявку #${requestId} видалено`,
+                    timestamp: new Date().toLocaleString('uk-UA'),
+                    icon: "fas fa-trash",
+                    color: "text-danger"
+                };
+                this.activities.unshift(activity);
+                
+                this.renderRequests();
+                this.renderActivities();
+                this.updateStats();
+                this.showNotification('Заявку успішно видалено', 'success');
+            } else {
+                let errorText = '';
+                try {
+                    errorText = await response.text();
+                } catch (e) {}
+                this.showNotification('Помилка видалення заявки: ' + (errorText || response.statusText), 'error');
+            }
+        } catch (error) {
+            this.showNotification('Помилка видалення заявки: ' + error.message, 'error');
+        }
+    }
+
     // Масове управління заявками
-    bulkDelete() {
-        this.requests = this.requests.filter(r => !this.selectedRequests.has(r.id));
+    async bulkDelete() {
+        if (!confirm(`Ви впевнені, що хочете видалити ${this.selectedRequests.size} заявок?`)) {
+            return;
+        }
+        
+        const deletePromises = Array.from(this.selectedRequests).map(async (requestId) => {
+            try {
+                const response = await fetch(`/api/requests/${requestId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+                return { requestId, success: response.ok };
+            } catch (error) {
+                return { requestId, success: false, error: error.message };
+            }
+        });
+        
+        const results = await Promise.all(deletePromises);
+        const successCount = results.filter(r => r.success).length;
+        const failCount = results.length - successCount;
+        
+        // Видалення успішно видалених заявок з локальних даних
+        results.forEach(result => {
+            if (result.success) {
+                this.requests = this.requests.filter(r => r.id != result.requestId);
+            }
+        });
+        
         this.selectedRequests.clear();
         this.renderRequests();
         this.updateStats();
-        this.showNotification('Вибрані заявки видалено', 'success');
+        
+        if (failCount === 0) {
+            this.showNotification(`Успішно видалено ${successCount} заявок`, 'success');
+        } else {
+            this.showNotification(`Видалено ${successCount} заявок, помилок: ${failCount}`, 'warning');
+        }
     }
 
     bulkAssign() {
