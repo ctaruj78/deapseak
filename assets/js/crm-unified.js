@@ -108,6 +108,7 @@ class CRMUnified {
             admin: [
                 'dashboard',
                 'qr-full',      // Повне управління QR
+                'qr-management', // Управління QR (додано для сумісності)
                 'lifts',
                 'users',
                 'analytics-full', // Повна аналітика
@@ -117,7 +118,7 @@ class CRMUnified {
             ],
             dispatcher: [
                 'dashboard',
-                'qr-basic',     // Основне управління QR
+                'qr-management', // Управління QR (перейменовано з qr-basic)
                 'assignments',
                 'technicians',
                 'clients',
@@ -832,8 +833,31 @@ class CRMUnified {
     
     hasAccessToModule(moduleId) {
         // Перевірка доступу на основі ролі користувача
-        return this.availableModules.includes(moduleId) || 
-               this.availableModules.some(mod => mod.startsWith(moduleId.split('-')[0]));
+        
+        // Пряма перевірка доступу
+        if (this.availableModules.includes(moduleId)) {
+            return true;
+        }
+        
+        // Перевірка за префіксом (наприклад qr-* модулі)
+        if (this.availableModules.some(mod => mod.startsWith(moduleId.split('-')[0]))) {
+            return true;
+        }
+        
+        // Додаткові перевірки для специфічних модулів
+        const moduleAliases = {
+            'qr-management': ['qr-full', 'qr-basic'],
+            'qr-generator': ['qr-full', 'qr-management'], 
+            'qr-scanner': ['qr-full'],
+            'lift-management': ['lifts'],
+            'analytics': ['analytics-full', 'analytics-basic']
+        };
+        
+        if (moduleAliases[moduleId]) {
+            return moduleAliases[moduleId].some(alias => this.availableModules.includes(alias));
+        }
+        
+        return false;
     }
     
     showAccessDenied() {
@@ -897,7 +921,7 @@ class CRMUnified {
             // QR модулі - використовуємо нові модулі
             'qr-generator': 'assets/modules/qr-generator.html',
             'qr-scanner': 'assets/modules/qr-scanner.html',
-            'qr-management': this.userRole === 'admin' ? 'assets/modules/qr-generator.html' : 'assets/modules/qr-generator.html',
+            'qr-management': 'assets/modules/qr-generator.html',  // Для всіх ролей використовуємо генератор
             'qr-history': 'pages/admin/qr-history.html',
             'qr-analytics': 'pages/admin/qr-analytics.html',
             'qr-batch': 'pages/admin/qr-batch.html',
@@ -906,6 +930,8 @@ class CRMUnified {
             'lift-management': 'assets/modules/lift-management.html',
             'tasks': 'assets/modules/tasks.html',
             'analytics': 'assets/modules/analytics.html',    // Новий модуль аналітики
+            'analytics-full': 'assets/modules/analytics.html', // Повна аналітика для адміна
+            'analytics-basic': 'assets/modules/analytics.html', // Базова аналітика для диспетчера
             
             // Інші модулі
             'lifts': 'assets/modules/lift-management.html',  // Перенаправляємо на новий модуль
