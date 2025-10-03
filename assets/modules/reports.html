@@ -1,0 +1,399 @@
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1><i class="fas fa-chart-bar"></i> Звіти та аналітика</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#" onclick="window.crmSystem.loadModule('dashboard')">Головна</a></li>
+                    <li class="breadcrumb-item active">Звіти</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <!-- Статистика за періоди -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-calendar-alt"></i>
+                            Звіт за період
+                        </h3>
+                        <div class="card-tools">
+                            <div class="input-group input-group-sm" style="width: 300px;">
+                                <select class="form-control" id="reportPeriod">
+                                    <option value="today">Сьогодні</option>
+                                    <option value="week">Поточний тиждень</option>
+                                    <option value="month" selected>Поточний місяць</option>
+                                    <option value="quarter">Поточний квартал</option>
+                                    <option value="year">Поточний рік</option>
+                                    <option value="custom">Вибраний період</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-lg-3 col-6">
+                                <div class="small-box bg-info">
+                                    <div class="inner">
+                                        <h3 id="totalLiftChecks">156</h3>
+                                        <p>Перевірок ліфтів</p>
+                                    </div>
+                                    <div class="icon">
+                                        <i class="fas fa-elevator"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-6">
+                                <div class="small-box bg-success">
+                                    <div class="inner">
+                                        <h3 id="completedTasks">142</h3>
+                                        <p>Виконаних завдань</p>
+                                    </div>
+                                    <div class="icon">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-6">
+                                <div class="small-box bg-warning">
+                                <div class="inner">
+                                        <h3 id="pendingTasks">23</h3>
+                                        <p>Завдань в очікуванні</p>
+                                    </div>
+                                    <div class="icon">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-6">
+                                <div class="small-box bg-danger">
+                                    <div class="inner">
+                                        <h3 id="emergencyRequests">7</h3>
+                                        <p>Аварійних викликів</p>
+                                    </div>
+                                    <div class="icon">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Графіки -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-chart-line"></i>
+                            Динаміка роботи за тиждень
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="weeklyChart" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-chart-pie"></i>
+                            Розподіл типів завдань
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="taskTypeChart" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Деталізовані звіти -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-table"></i>
+                            Деталізований звіт
+                        </h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-success btn-sm" onclick="exportReport('excel')">
+                                <i class="fas fa-file-excel"></i> Excel
+                            </button>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="exportReport('pdf')">
+                                <i class="fas fa-file-pdf"></i> PDF
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body table-responsive p-0">
+                        <table class="table table-hover text-nowrap" id="reportTable">
+                            <thead>
+                                <tr>
+                                    <th>Дата</th>
+                                    <th>Ліфт</th>
+                                    <th>Тип роботи</th>
+                                    <th>Технік</th>
+                                    <th>Статус</th>
+                                    <th>Час роботи</th>
+                                    <th>Примітки</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>2025-10-03</td>
+                                    <td>Ліфт #001</td>
+                                    <td>Планове ТО</td>
+                                    <td>Іван Петренко</td>
+                                    <td><span class="badge badge-success">Виконано</span></td>
+                                    <td>2 год 30 хв</td>
+                                    <td>Заміна тросів</td>
+                                </tr>
+                                <tr>
+                                    <td>2025-10-02</td>
+                                    <td>Ліфт #005</td>
+                                    <td>Аварійний ремонт</td>
+                                    <td>Сергій Коваленко</td>
+                                    <td><span class="badge badge-warning">В процесі</span></td>
+                                    <td>4 год 15 хв</td>
+                                    <td>Ремонт двигуна</td>
+                                </tr>
+                                <tr>
+                                    <td>2025-10-02</td>
+                                    <td>Ліфт #012</td>
+                                    <td>Діагностика</td>
+                                    <td>Олексій Сидоренко</td>
+                                    <td><span class="badge badge-success">Виконано</span></td>
+                                    <td>1 год 45 хв</td>
+                                    <td>Перевірка безпеки</td>
+                                </tr>
+                                <tr>
+                                    <td>2025-10-01</td>
+                                    <td>Ліфт #008</td>
+                                    <td>Встановлення QR</td>
+                                    <td>Максим Іваненко</td>
+                                    <td><span class="badge badge-success">Виконано</span></td>
+                                    <td>45 хв</td>
+                                    <td>QR код встановлено</td>
+                                </tr>
+                                <tr>
+                                    <td>2025-09-30</td>
+                                    <td>Ліфт #015</td>
+                                    <td>Планове ТО</td>
+                                    <td>Володимир Мельник</td>
+                                    <td><span class="badge badge-danger">Відхилено</span></td>
+                                    <td>-</td>
+                                    <td>Недоступний ліфт</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Експорт та налаштування -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-download"></i>
+                            Експорт даних
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <form>
+                            <div class="form-group">
+                                <label>Період експорту:</label>
+                                <div class="input-group">
+                                    <input type="date" class="form-control" id="exportFromDate">
+                                    <div class="input-group-prepend input-group-append">
+                                        <span class="input-group-text">-</span>
+                                    </div>
+                                    <input type="date" class="form-control" id="exportToDate">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Формат файлу:</label>
+                                <select class="form-control" id="exportFormat">
+                                    <option value="excel">Excel (.xlsx)</option>
+                                    <option value="csv">CSV (.csv)</option>
+                                    <option value="pdf">PDF (.pdf)</option>
+                                </select>
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="generateCustomReport()">
+                                <i class="fas fa-download"></i> Створити звіт
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-cog"></i>
+                            Налаштування звітів
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <form>
+                            <div class="form-group">
+                                <label>Автоматичний експорт:</label>
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="autoExport">
+                                    <label class="custom-control-label" for="autoExport">Щомісячний експорт</label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Email для розсилки:</label>
+                                <input type="email" class="form-control" placeholder="admin@company.com" id="reportEmail">
+                            </div>
+                            <div class="form-group">
+                                <label>Включати в звіт:</label>
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="includeTasks" checked>
+                                    <label class="custom-control-label" for="includeTasks">Завдання</label>
+                                </div>
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="includeLifts" checked>
+                                    <label class="custom-control-label" for="includeLifts">Ліфти</label>
+                                </div>
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="includeQR" checked>
+                                    <label class="custom-control-label" for="includeQR">QR коди</label>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-success" onclick="saveReportSettings()">
+                                <i class="fas fa-save"></i> Зберегти налаштування
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+// Ініціалізація графіків
+document.addEventListener('DOMContentLoaded', function() {
+    initializeReportsCharts();
+    loadReportData();
+});
+
+function initializeReportsCharts() {
+    // Графік динаміки роботи
+    const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
+    new Chart(weeklyCtx, {
+        type: 'line',
+        data: {
+            labels: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'],
+            datasets: [{
+                label: 'Виконані завдання',
+                data: [12, 19, 15, 25, 22, 8, 5],
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                tension: 0.4
+            }, {
+                label: 'Аварійні виклики',
+                data: [2, 3, 1, 5, 4, 1, 2],
+                borderColor: 'rgb(255, 99, 132)',
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Графік розподілу типів завдань
+    const taskTypeCtx = document.getElementById('taskTypeChart').getContext('2d');
+    new Chart(taskTypeCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Планове ТО', 'Аварійний ремонт', 'Діагностика', 'Встановлення QR'],
+            datasets: [{
+                data: [45, 25, 20, 10],
+                backgroundColor: [
+                    'rgba(54, 162, 235, 0.8)',
+                    'rgba(255, 99, 132, 0.8)',
+                    'rgba(255, 205, 86, 0.8)',
+                    'rgba(75, 192, 192, 0.8)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+}
+
+function loadReportData() {
+    // Симуляція завантаження даних
+    console.log('Завантаження даних звітів...');
+}
+
+function exportReport(format) {
+    toastr.info('Експорт звіту в форматі ' + format.toUpperCase() + ' розпочато...', 'Експорт');
+    
+    setTimeout(() => {
+        toastr.success('Звіт успішно експортовано!', 'Успіх');
+    }, 2000);
+}
+
+function generateCustomReport() {
+    const fromDate = document.getElementById('exportFromDate').value;
+    const toDate = document.getElementById('exportToDate').value;
+    const format = document.getElementById('exportFormat').value;
+    
+    if (!fromDate || !toDate) {
+        toastr.error('Оберіть період для експорту', 'Помилка');
+        return;
+    }
+    
+    toastr.info(`Створення звіту за період ${fromDate} - ${toDate}`, 'Генерація звіту');
+    
+    setTimeout(() => {
+        toastr.success('Користувацький звіт готовий до завантаження!', 'Успіх');
+    }, 3000);
+}
+
+function saveReportSettings() {
+    const autoExport = document.getElementById('autoExport').checked;
+    const email = document.getElementById('reportEmail').value;
+    
+    // Симуляція збереження налаштувань
+    toastr.success('Налаштування звітів збережено!', 'Успіх');
+}
+
+// Обновление периода отчета
+document.getElementById('reportPeriod').addEventListener('change', function() {
+    const period = this.value;
+    console.log('Зміна періоду звіту:', period);
+    
+    // Тут можна додати логіку завантаження даних за обраний період
+    toastr.info('Оновлення даних за обраний період...', 'Завантаження');
+});
+</script>
