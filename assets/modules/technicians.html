@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управління техніками</title>
+    <link rel="stylesheet" href="../plugins/adminlte/css/adminlte.min.css">
+    <link rel="stylesheet" href="../plugins/fontawesome-free/css/all.min.css">
+</head>
+<body>
+<div class="content-wrapper">
+    <!-- Content Header -->
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">Управління техніками</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="#" onclick="window.crmSystem.loadDashboard()">Головна</a></li>
+                        <li class="breadcrumb-item active">Техніки</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid">
+            <!-- Statistics -->
+            <div class="row">
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-info">
+                        <div class="inner">
+                            <h3>12</h3>
+                            <p>Всього техніків</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-success">
+                        <div class="inner">
+                            <h3>8</h3>
+                            <p>На роботі</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-warning">
+                        <div class="inner">
+                            <h3>2</h3>
+                            <p>На завданні</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-tools"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-secondary">
+                        <div class="inner">
+                            <h3>2</h3>
+                            <p>Недоступні</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-user-times"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Technicians List -->
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Список техніків</h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-primary btn-sm" onclick="addTechnician()">
+                                    <i class="fas fa-plus"></i> Додати техніка
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body table-responsive p-0">
+                            <table class="table table-hover text-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Ім'я</th>
+                                        <th>Статус</th>
+                                        <th>Поточне завдання</th>
+                                        <th>Рейтинг</th>
+                                        <th>Дії</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>TECH001</td>
+                                        <td>
+                                            <div class="user-panel d-flex">
+                                                <div class="image">
+                                                    <div class="bg-info rounded-circle d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
+                                                        <i class="fas fa-user text-white"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="info ml-2">
+                                                    <strong>Іванов Іван Іванович</strong><br>
+                                                    <small>+38 (098) 123-45-67</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td><span class="badge badge-success">Доступний</span></td>
+                                        <td><span class="text-muted">Немає</span></td>
+                                        <td>
+                                            <div class="progress progress-xs">
+                                                <div class="progress-bar bg-success" style="width: 95%"></div>
+                                            </div>
+                                            <span class="badge badge-success">4.8/5</span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <button class="btn btn-primary btn-sm" onclick="assignTask('TECH001')">
+                                                    <i class="fas fa-tasks"></i>
+                                                </button>
+                                                <button class="btn btn-info btn-sm" onclick="viewTechDetails('TECH001')">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button class="btn btn-success btn-sm" onclick="callTech('TECH001')">
+                                                    <i class="fas fa-phone"></i>
+                                                </button>
+                                                <button class="btn btn-warning btn-sm" onclick="editTech('TECH001')">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>TECH002</td>
+                                        <td>
+                                            <div class="user-panel d-flex">
+                                                <div class="image">
+                                                    <div class="bg-warning rounded-circle d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
+                                                        <i class="fas fa-user text-white"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="info ml-2">
+                                                    <strong>Петров Петро Петрович</strong><br>
+                                                    <small>+38 (098) 765-43-21</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td><span class="badge badge-warning">На завданні</span></td>
+                                        <td>T003 - пр-т Перемоги, 42</td>
+                                        <td>
+                                            <div class="progress progress-xs">
+                                                <div class="progress-bar bg-warning" style="width: 75%"></div>
+                                            </div>
+                                            <span class="badge badge-warning">4.2/5</span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <button class="btn btn-secondary btn-sm" disabled>
+                                                    <i class="fas fa-tasks"></i>
+                                                </button>
+                                                <button class="btn btn-info btn-sm" onclick="viewTechDetails('TECH002')">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button class="btn btn-success btn-sm" onclick="callTech('TECH002')">
+                                                    <i class="fas fa-phone"></i>
+                                                </button>
+                                                <button class="btn btn-warning btn-sm" onclick="editTech('TECH002')">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>TECH003</td>
+                                        <td>
+                                            <div class="user-panel d-flex">
+                                                <div class="image">
+                                                    <div class="bg-danger rounded-circle d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
+                                                        <i class="fas fa-user text-white"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="info ml-2">
+                                                    <strong>Сидоров Сидір Сидорович</strong><br>
+                                                    <small>+38 (098) 111-22-33</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td><span class="badge badge-danger">Недоступний</span></td>
+                                        <td><span class="text-muted">Лікарняний</span></td>
+                                        <td>
+                                            <div class="progress progress-xs">
+                                                <div class="progress-bar bg-info" style="width: 88%"></div>
+                                            </div>
+                                            <span class="badge badge-info">4.6/5</span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <button class="btn btn-secondary btn-sm" disabled>
+                                                    <i class="fas fa-tasks"></i>
+                                                </button>
+                                                <button class="btn btn-info btn-sm" onclick="viewTechDetails('TECH003')">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button class="btn btn-secondary btn-sm" disabled>
+                                                    <i class="fas fa-phone"></i>
+                                                </button>
+                                                <button class="btn btn-warning btn-sm" onclick="editTech('TECH003')">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Work Schedule -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Робочий розклад</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Технік</th>
+                                                    <th>Пн</th>
+                                                    <th>Вт</th>
+                                                    <th>Ср</th>
+                                                    <th>Чт</th>
+                                                    <th>Пт</th>
+                                                    <th>Сб</th>
+                                                    <th>Нд</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td><strong>Іванов І.І.</strong></td>
+                                                    <td><span class="badge badge-success">8-17</span></td>
+                                                    <td><span class="badge badge-success">8-17</span></td>
+                                                    <td><span class="badge badge-success">8-17</span></td>
+                                                    <td><span class="badge badge-success">8-17</span></td>
+                                                    <td><span class="badge badge-success">8-17</span></td>
+                                                    <td><span class="badge badge-secondary">Вихідний</span></td>
+                                                    <td><span class="badge badge-secondary">Вихідний</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Петров П.П.</strong></td>
+                                                    <td><span class="badge badge-warning">12-21</span></td>
+                                                    <td><span class="badge badge-warning">12-21</span></td>
+                                                    <td><span class="badge badge-warning">12-21</span></td>
+                                                    <td><span class="badge badge-warning">12-21</span></td>
+                                                    <td><span class="badge badge-warning">12-21</span></td>
+                                                    <td><span class="badge badge-warning">10-19</span></td>
+                                                    <td><span class="badge badge-secondary">Вихідний</span></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="col-md-4">
+                    <!-- Performance -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Продуктивність</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="info-box mb-3">
+                                <span class="info-box-icon bg-info"><i class="fas fa-tasks"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Завдань сьогодні</span>
+                                    <span class="info-box-number">24</span>
+                                </div>
+                            </div>
+                            <div class="info-box mb-3">
+                                <span class="info-box-icon bg-success"><i class="fas fa-clock"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Середній час</span>
+                                    <span class="info-box-number">2.3 год</span>
+                                </div>
+                            </div>
+                            <div class="info-box">
+                                <span class="info-box-icon bg-warning"><i class="fas fa-star"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Середній рейтинг</span>
+                                    <span class="info-box-number">4.5/5</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Performers -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Кращі працівники</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center border-bottom mb-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-success rounded-circle d-flex align-items-center justify-content-center mr-3" style="width: 40px; height: 40px;">
+                                        <span class="text-white font-weight-bold">1</span>
+                                    </div>
+                                    <div>
+                                        <strong>Іванов І.І.</strong><br>
+                                        <small>95% виконання</small>
+                                    </div>
+                                </div>
+                                <span class="badge badge-success">4.8★</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center border-bottom mb-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-info rounded-circle d-flex align-items-center justify-content-center mr-3" style="width: 40px; height: 40px;">
+                                        <span class="text-white font-weight-bold">2</span>
+                                    </div>
+                                    <div>
+                                        <strong>Сидоров С.С.</strong><br>
+                                        <small>88% виконання</small>
+                                    </div>
+                                </div>
+                                <span class="badge badge-info">4.6★</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-warning rounded-circle d-flex align-items-center justify-content-center mr-3" style="width: 40px; height: 40px;">
+                                        <span class="text-white font-weight-bold">3</span>
+                                    </div>
+                                    <div>
+                                        <strong>Петров П.П.</strong><br>
+                                        <small>75% виконання</small>
+                                    </div>
+                                </div>
+                                <span class="badge badge-warning">4.2★</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Швидкі дії</h3>
+                        </div>
+                        <div class="card-body">
+                            <button class="btn btn-primary btn-block mb-2" onclick="massNotification()">
+                                <i class="fas fa-bullhorn mr-2"></i>Оповістити всіх
+                            </button>
+                            <button class="btn btn-success btn-block mb-2" onclick="generateSchedule()">
+                                <i class="fas fa-calendar mr-2"></i>Створити розклад
+                            </button>
+                            <button class="btn btn-info btn-block mb-2" onclick="performanceReport()">
+                                <i class="fas fa-chart-line mr-2"></i>Звіт продуктивності
+                            </button>
+                            <button class="btn btn-warning btn-block" onclick="trainingSchedule()">
+                                <i class="fas fa-graduation-cap mr-2"></i>Навчання
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+function addTechnician() {
+    alert('Додавання нового техніка');
+}
+
+function assignTask(techId) {
+    alert('Призначення завдання техніку: ' + techId);
+}
+
+function viewTechDetails(techId) {
+    alert('Перегляд деталей техніка: ' + techId);
+}
+
+function callTech(techId) {
+    alert('Дзвінок техніку: ' + techId);
+}
+
+function editTech(techId) {
+    alert('Редагування даних техніка: ' + techId);
+}
+
+function massNotification() {
+    alert('Масове оповіщення техніків');
+}
+
+function generateSchedule() {
+    alert('Генерація робочого розкладу');
+}
+
+function performanceReport() {
+    alert('Звіт про продуктивність техніків');
+}
+
+function trainingSchedule() {
+    alert('Планування навчання для техніків');
+}
+</script>
+</body>
+</html>

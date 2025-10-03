@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Карта ліфтів</title>
+    <link rel="stylesheet" href="../plugins/adminlte/css/adminlte.min.css">
+    <link rel="stylesheet" href="../plugins/fontawesome-free/css/all.min.css">
+    <style>
+        .map-container {
+            height: 500px;
+            background: #f4f4f4;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .lift-marker {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: #007bff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .lift-marker.working { background: #28a745; }
+        .lift-marker.maintenance { background: #ffc107; }
+        .lift-marker.emergency { background: #dc3545; }
+        .lift-info-popup {
+            position: absolute;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            min-width: 200px;
+            z-index: 1000;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="content-wrapper">
+    <!-- Content Header -->
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">Карта ліфтів</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="#" onclick="window.crmSystem.loadDashboard()">Головна</a></li>
+                        <li class="breadcrumb-item active">Карта</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid">
+            <!-- Map filters -->
+            <div class="row mb-3">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Фільтри карти</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Статус ліфтів</label>
+                                        <select class="form-control" id="statusFilter" onchange="filterLifts()">
+                                            <option value="all">Всі статуси</option>
+                                            <option value="working">Працюючі</option>
+                                            <option value="maintenance">Потребують ТО</option>
+                                            <option value="emergency">Аварійні</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Район</label>
+                                        <select class="form-control" id="districtFilter" onchange="filterLifts()">
+                                            <option value="all">Всі райони</option>
+                                            <option value="center">Центральний</option>
+                                            <option value="left-bank">Лівобережний</option>
+                                            <option value="right-bank">Правобережний</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Модель ліфта</label>
+                                        <select class="form-control" id="modelFilter" onchange="filterLifts()">
+                                            <option value="all">Всі моделі</option>
+                                            <option value="otis">OTIS</option>
+                                            <option value="kone">KONE</option>
+                                            <option value="schindler">Schindler</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>&nbsp;</label>
+                                        <button class="btn btn-primary btn-block" onclick="refreshMap()">
+                                            <i class="fas fa-sync"></i> Оновити карту
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map and legend -->
+            <div class="row">
+                <div class="col-md-9">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Інтерактивна карта ліфтів</h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" onclick="toggleFullscreen()">
+                                    <i class="fas fa-expand-arrows-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="map-container" id="mapContainer">
+                                <!-- Lift markers -->
+                                <div class="lift-marker working" style="top: 20%; left: 30%;" 
+                                     onclick="showLiftInfo('L001', event)" data-lift="L001">1</div>
+                                <div class="lift-marker maintenance" style="top: 40%; left: 50%;" 
+                                     onclick="showLiftInfo('L002', event)" data-lift="L002">2</div>
+                                <div class="lift-marker emergency" style="top: 60%; left: 20%;" 
+                                     onclick="showLiftInfo('L003', event)" data-lift="L003">3</div>
+                                <div class="lift-marker working" style="top: 30%; left: 70%;" 
+                                     onclick="showLiftInfo('L004', event)" data-lift="L004">4</div>
+                                <div class="lift-marker working" style="top: 70%; left: 60%;" 
+                                     onclick="showLiftInfo('L005', event)" data-lift="L005">5</div>
+                                
+                                <!-- Map placeholder -->
+                                <div class="text-center text-muted">
+                                    <i class="fas fa-map fa-3x mb-2"></i>
+                                    <p>Інтерактивна карта ліфтів</p>
+                                    <small>Натисніть на маркер для деталей</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <!-- Legend -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Легенда</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <span class="badge badge-success mr-2">●</span>
+                                Працюючі (142)
+                            </div>
+                            <div class="mb-2">
+                                <span class="badge badge-warning mr-2">●</span>
+                                Потребують ТО (8)
+                            </div>
+                            <div class="mb-2">
+                                <span class="badge badge-danger mr-2">●</span>
+                                Аварійні (6)
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Statistics -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Статистика</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="info-box mb-3">
+                                <span class="info-box-icon bg-info"><i class="fas fa-building"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Будинків</span>
+                                    <span class="info-box-number">42</span>
+                                </div>
+                            </div>
+                            <div class="info-box mb-3">
+                                <span class="info-box-icon bg-success"><i class="fas fa-elevator"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Ліфтів</span>
+                                    <span class="info-box-number">156</span>
+                                </div>
+                            </div>
+                            <div class="info-box">
+                                <span class="info-box-icon bg-warning"><i class="fas fa-users"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Техніків</span>
+                                    <span class="info-box-number">12</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Lift info popup -->
+    <div class="lift-info-popup" id="liftInfoPopup">
+        <div id="liftInfoContent"></div>
+        <button class="btn btn-sm btn-secondary float-right mt-2" onclick="hideLiftInfo()">Закрити</button>
+    </div>
+</div>
+
+<script>
+const liftData = {
+    'L001': {
+        id: 'L001',
+        address: 'вул. Хрещатик, 1',
+        model: 'OTIS Gen2',
+        status: 'Працює',
+        lastMaintenance: '15.11.2024',
+        nextMaintenance: '15.02.2025'
+    },
+    'L002': {
+        id: 'L002',
+        address: 'вул. Володимирська, 15',
+        model: 'KONE MonoSpace',
+        status: 'Потребує ТО',
+        lastMaintenance: '10.10.2024',
+        nextMaintenance: '10.01.2025'
+    },
+    'L003': {
+        id: 'L003',
+        address: 'пр-т Перемоги, 42',
+        model: 'Schindler 5500',
+        status: 'Аварія',
+        lastMaintenance: '05.09.2024',
+        nextMaintenance: '-'
+    }
+};
+
+function filterLifts() {
+    const statusFilter = document.getElementById('statusFilter').value;
+    const markers = document.querySelectorAll('.lift-marker');
+    
+    markers.forEach(marker => {
+        const classes = marker.classList;
+        let show = true;
+        
+        if (statusFilter !== 'all') {
+            show = classes.contains(statusFilter);
+        }
+        
+        marker.style.display = show ? 'flex' : 'none';
+    });
+}
+
+function showLiftInfo(liftId, event) {
+    const lift = liftData[liftId];
+    const popup = document.getElementById('liftInfoPopup');
+    const content = document.getElementById('liftInfoContent');
+    
+    if (lift) {
+        content.innerHTML = `
+            <h6><strong>${lift.id}</strong></h6>
+            <p><strong>Адреса:</strong> ${lift.address}</p>
+            <p><strong>Модель:</strong> ${lift.model}</p>
+            <p><strong>Статус:</strong> ${lift.status}</p>
+            <p><strong>Останнє ТО:</strong> ${lift.lastMaintenance}</p>
+            <p><strong>Наступне ТО:</strong> ${lift.nextMaintenance}</p>
+        `;
+        
+        popup.style.left = event.pageX + 'px';
+        popup.style.top = event.pageY + 'px';
+        popup.style.display = 'block';
+    }
+}
+
+function hideLiftInfo() {
+    document.getElementById('liftInfoPopup').style.display = 'none';
+}
+
+function refreshMap() {
+    toastr.info('Карта оновлена');
+}
+
+function toggleFullscreen() {
+    const mapContainer = document.getElementById('mapContainer');
+    if (!document.fullscreenElement) {
+        mapContainer.requestFullscreen();
+    } else {
+        document.exitFullscreen();
+    }
+}
+
+// Hide popup when clicking outside
+document.addEventListener('click', function(event) {
+    const popup = document.getElementById('liftInfoPopup');
+    const markers = document.querySelectorAll('.lift-marker');
+    let clickedMarker = false;
+    
+    markers.forEach(marker => {
+        if (marker.contains(event.target)) {
+            clickedMarker = true;
+        }
+    });
+    
+    if (!clickedMarker && !popup.contains(event.target)) {
+        hideLiftInfo();
+    }
+});
+</script>
+</body>
+</html>

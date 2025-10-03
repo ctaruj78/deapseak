@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управління ліфтами</title>
+    <link rel="stylesheet" href="../plugins/adminlte/css/adminlte.min.css">
+    <link rel="stylesheet" href="../plugins/fontawesome-free/css/all.min.css">
+</head>
+<body>
+<div class="content-wrapper">
+    <!-- Content Header -->
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">Управління ліфтами</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="#" onclick="window.crmSystem.loadDashboard()">Головна</a></li>
+                        <li class="breadcrumb-item active">Ліфти</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid">
+            <!-- Statistics cards -->
+            <div class="row">
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-info">
+                        <div class="inner">
+                            <h3>156</h3>
+                            <p>Всього ліфтів</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-elevator"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-success">
+                        <div class="inner">
+                            <h3>142</h3>
+                            <p>Працюючі</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-warning">
+                        <div class="inner">
+                            <h3>8</h3>
+                            <p>Потребують ТО</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-wrench"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-danger">
+                        <div class="inner">
+                            <h3>6</h3>
+                            <p>Аварійні</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lift management table -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">База ліфтів</h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-primary btn-sm" onclick="addNewLift()">
+                                    <i class="fas fa-plus"></i> Додати ліфт
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body table-responsive p-0">
+                            <table class="table table-hover text-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Адреса</th>
+                                        <th>Модель</th>
+                                        <th>Статус</th>
+                                        <th>Останнє ТО</th>
+                                        <th>Наступне ТО</th>
+                                        <th>QR-код</th>
+                                        <th>Дії</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>L001</td>
+                                        <td>вул. Хрещатик, 1, під'їзд 1</td>
+                                        <td>OTIS Gen2</td>
+                                        <td><span class="badge badge-success">Працює</span></td>
+                                        <td>15.11.2024</td>
+                                        <td>15.02.2025</td>
+                                        <td><i class="fas fa-qrcode text-success" title="QR згенеровано"></i></td>
+                                        <td>
+                                            <button class="btn btn-info btn-sm" onclick="viewLiftDetails('L001')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-warning btn-sm" onclick="editLift('L001')">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-danger btn-sm" onclick="deleteLift('L001')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>L002</td>
+                                        <td>вул. Володимирська, 15, під'їзд 2</td>
+                                        <td>KONE MonoSpace</td>
+                                        <td><span class="badge badge-warning">Потребує ТО</span></td>
+                                        <td>10.10.2024</td>
+                                        <td>10.01.2025</td>
+                                        <td><i class="fas fa-qrcode text-success" title="QR згенеровано"></i></td>
+                                        <td>
+                                            <button class="btn btn-info btn-sm" onclick="viewLiftDetails('L002')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-warning btn-sm" onclick="editLift('L002')">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-danger btn-sm" onclick="deleteLift('L002')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>L003</td>
+                                        <td>пр-т Перемоги, 42, під'їзд 1</td>
+                                        <td>Schindler 5500</td>
+                                        <td><span class="badge badge-danger">Аварія</span></td>
+                                        <td>05.09.2024</td>
+                                        <td>-</td>
+                                        <td><i class="fas fa-qrcode text-success" title="QR згенеровано"></i></td>
+                                        <td>
+                                            <button class="btn btn-info btn-sm" onclick="viewLiftDetails('L003')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-warning btn-sm" onclick="editLift('L003')">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-danger btn-sm" onclick="deleteLift('L003')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="card-footer clearfix">
+                            <ul class="pagination pagination-sm m-0 float-right">
+                                <li class="page-item"><a class="page-link" href="#">&laquo;</a></li>
+                                <li class="page-item"><a class="page-link" href="#">1</a></li>
+                                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                <li class="page-item"><a class="page-link" href="#">&raquo;</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+function addNewLift() {
+    alert('Форма додавання нового ліфта');
+}
+
+function viewLiftDetails(liftId) {
+    alert('Перегляд деталей ліфта: ' + liftId);
+}
+
+function editLift(liftId) {
+    alert('Редагування ліфта: ' + liftId);
+}
+
+function deleteLift(liftId) {
+    if(confirm('Видалити ліфт ' + liftId + '?')) {
+        alert('Ліфт видалено');
+    }
+}
+</script>
+</body>
+</html>
