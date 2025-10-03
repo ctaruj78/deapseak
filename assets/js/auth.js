@@ -150,7 +150,7 @@ class AuthManager {
         const dashboards = {
             admin: 'pages/crm-unified.html?role=admin',
             tech: 'pages/crm-unified.html?role=tech',
-            client: 'pages/client/dashboard.html',
+            client: 'pages/client-unified.html',
             dispatcher: 'pages/crm-unified.html?role=dispatcher'
         };
 

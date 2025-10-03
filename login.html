@@ -2,7 +2,11 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-                    } else if (userData.role === 'admin') {
+                        window.location.href = 'pages/crm-unified.html?role=admin';
+                    } else {
+                        window.location.href = 'pages/client-unified.html';
+                    }=1.0">
     <title>Вхід - LiftMaster Pro</title>
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
@@ -53,6 +57,19 @@
                 </form>
                 <div class="mt-3 text-center">
                     <span>Немає облікового запису? <a href="register.html">Зареєструватися</a></span>
+                </div>
+                
+                <!-- Demo акаунти -->
+                <div class="mt-4">
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle"></i> Демо акаунти для тестування:</h6>
+                        <small>
+                            <strong>Адмін:</strong> admin / admin123<br>
+                            <strong>Технік:</strong> tech1 / tech123<br>
+                            <strong>Диспетчер:</strong> dispatcher1 / dispatcher123<br>
+                            <strong>Клієнт:</strong> client1 / client123
+                        </small>
+                    </div>
                 </div>
             </div>
         </div>
@@ -131,7 +148,7 @@
                     } else if (user.role === 'admin') {
                         window.location.href = 'pages/crm-unified.html?role=admin';
                     } else {
-                        window.location.href = 'pages/client/dashboard.html';
+                        window.location.href = 'pages/client-unified.html';
                     }
                 } else {
                     // Реальный API запрос для входа
@@ -157,7 +174,7 @@
                                 } else if (response.user.role === 'admin') {
                                     window.location.href = 'pages/crm-unified.html?role=admin';
                                 } else {
-                                    window.location.href = 'pages/client/dashboard.html';
+                                    window.location.href = 'pages/client-unified.html';
                                 }
                             } else {
                                 $('#login-error').text(response.message || 'Помилка входу').show();
