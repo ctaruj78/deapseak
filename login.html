@@ -73,11 +73,11 @@
             if (localStorage.getItem('authToken')) {
                 const userData = JSON.parse(localStorage.getItem('userData') || '{}');
                 if (userData.role === 'dispatcher') {
-                    window.location.href = 'pages/dispatcher/dashboard.html';
+                    window.location.href = 'pages/crm-unified.html?role=dispatcher';
                 } else if (userData.role === 'technician') {
-                    window.location.href = 'pages/tech/dashboard.html';
+                    window.location.href = 'pages/crm-unified.html?role=tech';
                 } else if (userData.role === 'admin') {
-                    window.location.href = 'pages/admin/dashboard.html';
+                    window.location.href = 'pages/crm-unified.html?role=admin';
                 } else {
                     window.location.href = 'pages/client/dashboard.html';
                 }
@@ -125,11 +125,11 @@
                     
                     // Перенаправляем пользователя в зависимости от роли
                     if (user.role === 'dispatcher') {
-                        window.location.href = 'pages/dispatcher/dashboard.html';
+                        window.location.href = 'pages/crm-unified.html?role=dispatcher';
                     } else if (user.role === 'technician') {
-                        window.location.href = 'pages/tech/dashboard.html';
+                        window.location.href = 'pages/crm-unified.html?role=tech';
                     } else if (user.role === 'admin') {
-                        window.location.href = 'pages/admin/dashboard.html';
+                        window.location.href = 'pages/crm-unified.html?role=admin';
                     } else {
                         window.location.href = 'pages/client/dashboard.html';
                     }
@@ -151,11 +151,11 @@
                                 
                                 // Перенаправляем пользователя в зависимости от роли
                                 if (response.user.role === 'dispatcher') {
-                                    window.location.href = 'pages/dispatcher/dashboard.html';
+                                    window.location.href = 'pages/crm-unified.html?role=dispatcher';
                                 } else if (response.user.role === 'technician') {
-                                    window.location.href = 'pages/tech/dashboard.html';
+                                    window.location.href = 'pages/crm-unified.html?role=tech';
                                 } else if (response.user.role === 'admin') {
-                                    window.location.href = 'pages/admin/dashboard.html';
+                                    window.location.href = 'pages/crm-unified.html?role=admin';
                                 } else {
                                     window.location.href = 'pages/client/dashboard.html';
                                 }

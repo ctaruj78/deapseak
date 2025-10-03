@@ -148,13 +148,13 @@ class AuthManager {
 
     redirectToDashboard(role) {
         const dashboards = {
-            admin: 'pages/admin/admin-dashboard.html',
-            tech: 'pages/tech/dashboard.html',
+            admin: 'pages/crm-unified.html?role=admin',
+            tech: 'pages/crm-unified.html?role=tech',
             client: 'pages/client/dashboard.html',
-            dispatcher: 'pages/dispatcher/dashboard.html'
+            dispatcher: 'pages/crm-unified.html?role=dispatcher'
         };
 
-        window.location.href = dashboards[role] || 'pages/admin/admin-dashboard.html';
+        window.location.href = dashboards[role] || 'pages/crm-unified.html?role=admin';
     }
 
     handleFailedLogin() {
