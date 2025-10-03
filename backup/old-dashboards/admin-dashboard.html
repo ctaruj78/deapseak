@@ -1,78 +1,41 @@
-<!DOCTYPE html><!DOCTYPE html>
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Адмін-панель - LiftMaster Pro</title>
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Toastr CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <!-- Chart.js for graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
 
-<html lang="uk"><html lang="uk">
-
-<head><head>
-
-    <meta charset="UTF-8">    <meta charset="UTF-8">
-
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Перенаправлення на нову CRM систему</title>    <title>Адмін-панель - LiftMaster Pro</title>
-
-    <script>    <!-- PWA Manifest -->
-
-        // Автоматичне перенаправлення на нову CRM систему з роллю адміністратора    <link rel="manifest" href="/manifest.json">
-
-        setTimeout(function() {    <!-- AdminLTE CSS -->
-
-            window.location.href = '/pages/crm-unified.html?role=admin';    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
-
-        }, 1000);    <!-- Font Awesome -->
-
-    </script>    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <style>    <!-- Toastr CSS -->
-
-        body {    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-
-            font-family: Arial, sans-serif;    <!-- Chart.js for graphs -->
-
-            text-align: center;    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);    <style>
-
+        /* Стилі залишаються незмінними */
+        .qr-small {
+            width: 80px;
+            height: 80px;
+            cursor: pointer;
+        }
+        .qr-modal-img {
+            width: 300px;
+            height: 300px;
+        }
+        .stats-box {
+            text-align: center;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
             color: white;
-
-            padding: 50px;        /* Стилі залишаються незмінними */
-
-        }        .qr-small {
-
-        .redirect-message {            width: 80px;
-
-            background: rgba(255,255,255,0.1);            height: 80px;
-
-            padding: 30px;            cursor: pointer;
-
-            border-radius: 10px;        }
-
-            max-width: 500px;        .qr-modal-img {
-
-            margin: 0 auto;            width: 300px;
-
-        }            height: 300px;
-
-    </style>        }
-
-</head>        .stats-box {
-
-<body>            text-align: center;
-
-    <div class="redirect-message">            padding: 15px;
-
-        <h2>🔄 Перенаправлення</h2>            border-radius: 5px;
-
-        <p>Адмін-панель була перенесена до нової єдиної CRM системи.</p>            margin-bottom: 20px;
-
-        <p>Ви будете автоматично перенаправлені через 1 секунду...</p>            color: white;
-
-        <p><a href="/pages/crm-unified.html?role=admin" style="color: #fff;">Перейти зараз (Адміністратор)</a></p>        }
-
-    </div>        .bg-gradient-primary { background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); }
-
-</body>        .bg-gradient-success { background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%); }
-
-</html>        .bg-gradient-warning { background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%); }
+        }
+        .bg-gradient-primary { background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); }
+        .bg-gradient-success { background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%); }
+        .bg-gradient-warning { background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%); }
         .bg-gradient-info { background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); }
         .bg-gradient-danger { background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); }
         
