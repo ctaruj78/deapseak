@@ -995,23 +995,23 @@ class CRMUnified {
         // Визначаємо шлях до файлу залежно від модуля та ролі користувача
         const modulePaths = {
             // QR модулі - використовуємо нові модулі
-            'qr-generator': 'assets/modules/qr-generator.html',
-            'qr-scanner': 'assets/modules/qr-scanner.html',
-            'qr-management': 'assets/modules/qr-generator.html',  // Для всіх ролей використовуємо генератор
-            'qr-full': 'assets/modules/qr-generator.html',        // Повна QR система для адмінів
+            'qr-generator': '/assets/modules/qr-generator.html',
+            'qr-scanner': '/assets/modules/qr-scanner.html',
+            'qr-management': '/assets/modules/qr-generator.html',  // Для всіх ролей використовуємо генератор
+            'qr-full': '/assets/modules/qr-generator.html',        // Повна QR система для адмінів
             'qr-history': 'pages/admin/qr-history.html',
             'qr-analytics': 'pages/admin/qr-analytics.html',
             'qr-batch': 'pages/admin/qr-batch.html',
             
             // Нові функціональні модулі
-            'lift-management': 'assets/modules/lift-management.html',
-            'tasks': 'assets/modules/tasks.html',
-            'analytics': 'assets/modules/analytics.html',    // Новий модуль аналітики
-            'analytics-full': 'assets/modules/analytics.html', // Повна аналітика для адміна
-            'analytics-basic': 'assets/modules/analytics.html', // Базова аналітика для диспетчера
+            'lift-management': '/assets/modules/lift-management.html',
+            'tasks': '/assets/modules/tasks.html',
+            'analytics': '/assets/modules/analytics.html',    // Новий модуль аналітики
+            'analytics-full': '/assets/modules/analytics.html', // Повна аналітика для адміна
+            'analytics-basic': '/assets/modules/analytics.html', // Базова аналітика для диспетчера
             
             // Інші модулі
-            'lifts': 'assets/modules/lift-management.html',  // Перенаправляємо на новий модуль
+            'lifts': '/assets/modules/lift-management.html',  // Перенаправляємо на новий модуль
             'users': 'pages/admin/users.html',
             'reports': this.userRole === 'admin' ? 'pages/admin/reports.html' : 
                       this.userRole === 'dispatcher' ? 'pages/dispatcher/reports.html' : 'pages/tech/reports.html',
@@ -1024,7 +1024,7 @@ class CRMUnified {
             'monitoring': 'pages/dispatcher/monitoring.html',
             
             // Модулі техніка
-            'tasks': 'assets/modules/tasks.html',
+            'tasks': '/assets/modules/tasks.html',
             'schedule': 'pages/tech/schedule.html',
             'checklists': 'pages/tech/checklists.html',
             'knowledge-base': 'pages/tech/knowledge-base.html',
