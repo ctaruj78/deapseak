@@ -24,6 +24,66 @@
     <!-- Toastr for notifications -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.js"></script>
+    
+    <!-- Sweet Alert for better modals -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        .lift-card {
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+        .lift-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        .status-working { background-color: #28a745; }
+        .status-maintenance { background-color: #ffc107; }
+        .status-emergency { background-color: #dc3545; }
+        .animated-counter {
+            animation: countUp 2s ease-in-out;
+        }
+        @keyframes countUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .request-timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        .request-timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #dee2e6;
+        }
+        .request-timeline .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .request-timeline .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -23px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #007bff;
+            border: 3px solid #fff;
+            box-shadow: 0 0 0 3px #dee2e6;
+        }
+    </style>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
 <div class="wrapper">
@@ -1390,6 +1450,945 @@ $(document).ready(function() {
     border-radius: 8px;
 }
 </style>
+
+<script>
+// Клас для управління даними клієнта
+class ClientDataManager {
+    constructor() {
+        this.storageKey = 'clientPortalData';
+        this.init();
+    }
+    
+    init() {
+        // Ініціалізуємо дані якщо їх немає
+        if (!localStorage.getItem(this.storageKey)) {
+            const defaultData = {
+                lifts: [
+                    {
+                        id: 'L001',
+                        address: 'вул. Хрещатик, 1',
+                        model: 'OTIS Gen2',
+                        status: 'working',
+                        lastMaintenance: '2024-11-15',
+                        nextMaintenance: '2025-02-15',
+                        floors: 12,
+                        year: 2018,
+                        contract: 'Стандартний'
+                    },
+                    {
+                        id: 'L002',
+                        address: 'вул. Володимирська, 15',
+                        model: 'KONE MonoSpace',
+                        status: 'maintenance',
+                        lastMaintenance: '2024-10-10',
+                        nextMaintenance: '2025-01-10',
+                        floors: 9,
+                        year: 2020,
+                        contract: 'Розширений'
+                    }
+                ],
+                requests: [
+                    {
+                        id: 'R001',
+                        liftId: 'L001',
+                        type: 'repair',
+                        priority: 'high',
+                        description: 'Не працює кнопка 3-го поверху',
+                        status: 'in-progress',
+                        created: '2024-12-20T09:30:00',
+                        technician: 'Іванов І.І.',
+                        estimatedCompletion: '2024-12-21T16:00:00'
+                    },
+                    {
+                        id: 'R002',
+                        liftId: 'L002',
+                        type: 'maintenance',
+                        priority: 'medium',
+                        description: 'Планове ТО',
+                        status: 'pending',
+                        created: '2024-12-18T14:20:00',
+                        technician: null,
+                        estimatedCompletion: null
+                    }
+                ],
+                invoices: [
+                    {
+                        id: 'INV-001',
+                        date: '2024-11-15',
+                        description: 'ТО ліфта (вул. Хрещатик, 1)',
+                        amount: 2500,
+                        status: 'paid',
+                        liftId: 'L001'
+                    },
+                    {
+                        id: 'INV-002',
+                        date: '2024-12-20',
+                        description: 'Ремонт кнопок (вул. Хрещатик, 1)',
+                        amount: 800,
+                        status: 'pending',
+                        liftId: 'L001'
+                    }
+                ],
+                profile: {
+                    name: 'Іваненко Іван Іванович',
+                    email: 'ivan.ivanenko@example.com',
+                    phone: '+38 (098) 123-45-67',
+                    company: 'ТОВ "Ромашка"',
+                    address: 'м. Київ, вул. Хрещатик, 1',
+                    notifications: {
+                        email: true,
+                        sms: false,
+                        maintenance: true
+                    }
+                },
+                tickets: [
+                    {
+                        id: 'T001',
+                        subject: 'Питання щодо графіку ТО',
+                        status: 'open',
+                        priority: 'medium',
+                        created: '2024-12-19T10:30:00',
+                        updated: '2024-12-19T15:45:00',
+                        messages: [
+                            {
+                                from: 'client',
+                                time: '2024-12-19T10:30:00',
+                                message: 'Коли планується наступне ТО для ліфта на вул. Володимирська, 15?'
+                            },
+                            {
+                                from: 'support',
+                                time: '2024-12-19T15:45:00',
+                                message: 'Планове ТО заплановане на 10 січня 2025 року. Ми зв\'яжемося з вами за тиждень до початку робіт.'
+                            }
+                        ]
+                    }
+                ]
+            };
+            localStorage.setItem(this.storageKey, JSON.stringify(defaultData));
+        }
+    }
+    
+    getData() {
+        return JSON.parse(localStorage.getItem(this.storageKey));
+    }
+    
+    saveData(data) {
+        localStorage.setItem(this.storageKey, JSON.stringify(data));
+    }
+    
+    // Методи для роботи з ліфтами
+    getLifts() {
+        return this.getData().lifts;
+    }
+    
+    addLift(lift) {
+        const data = this.getData();
+        lift.id = 'L' + String(data.lifts.length + 1).padStart(3, '0');
+        data.lifts.push(lift);
+        this.saveData(data);
+        return lift;
+    }
+    
+    // Методи для заявок
+    getRequests() {
+        return this.getData().requests;
+    }
+    
+    addRequest(request) {
+        const data = this.getData();
+        request.id = 'R' + String(data.requests.length + 1).padStart(3, '0');
+        request.created = new Date().toISOString();
+        request.status = 'pending';
+        data.requests.unshift(request);
+        this.saveData(data);
+        return request;
+    }
+    
+    updateRequestStatus(requestId, status, technician = null) {
+        const data = this.getData();
+        const request = data.requests.find(r => r.id === requestId);
+        if (request) {
+            request.status = status;
+            if (technician) request.technician = technician;
+            this.saveData(data);
+        }
+        return request;
+    }
+    
+    // Методи для рахунків
+    getInvoices() {
+        return this.getData().invoices;
+    }
+    
+    // Методи для профілю
+    getProfile() {
+        return this.getData().profile;
+    }
+    
+    updateProfile(profileData) {
+        const data = this.getData();
+        data.profile = { ...data.profile, ...profileData };
+        this.saveData(data);
+        return data.profile;
+    }
+    
+    // Методи для тікетів
+    getTickets() {
+        return this.getData().tickets;
+    }
+    
+    addTicket(ticket) {
+        const data = this.getData();
+        ticket.id = 'T' + String(data.tickets.length + 1).padStart(3, '0');
+        ticket.created = new Date().toISOString();
+        ticket.status = 'open';
+        ticket.messages = [{
+            from: 'client',
+            time: new Date().toISOString(),
+            message: ticket.message
+        }];
+        delete ticket.message;
+        data.tickets.unshift(ticket);
+        this.saveData(data);
+        return ticket;
+    }
+    
+    addTicketMessage(ticketId, message, from = 'client') {
+        const data = this.getData();
+        const ticket = data.tickets.find(t => t.id === ticketId);
+        if (ticket) {
+            ticket.messages.push({
+                from: from,
+                time: new Date().toISOString(),
+                message: message
+            });
+            ticket.updated = new Date().toISOString();
+            this.saveData(data);
+        }
+        return ticket;
+    }
+}
+
+// Ініціалізуємо менеджер даних
+const dataManager = new ClientDataManager();
+
+// Розширюємо клас ClientSystem
+class EnhancedClientSystem extends ClientSystem {
+    constructor() {
+        super();
+        this.dataManager = dataManager;
+        this.setupInteractivity();
+    }
+    
+    setupInteractivity() {
+        // Налаштовуємо toastr
+        toastr.options = {
+            closeButton: true,
+            debug: false,
+            newestOnTop: true,
+            progressBar: true,
+            positionClass: "toast-top-right",
+            preventDuplicates: false,
+            onclick: null,
+            showDuration: "300",
+            hideDuration: "1000",
+            timeOut: "5000",
+            extendedTimeOut: "1000",
+            showEasing: "swing",
+            hideEasing: "linear",
+            showMethod: "fadeIn",
+            hideMethod: "fadeOut"
+        };
+    }
+    
+    // Перевизначаємо метод getModuleContent для додавання інтерактивності
+    getModuleContent(moduleId) {
+        switch(moduleId) {
+            case 'my-lifts':
+                return this.generateLiftsContent();
+            case 'service-requests':
+                return this.generateRequestsContent();
+            case 'support':
+                return this.generateSupportContent();
+            case 'profile':
+                return this.generateProfileContent();
+            case 'invoices':
+                return this.generateInvoicesContent();
+            case 'history':
+                return this.generateHistoryContent();
+            case 'maintenance-schedule':
+                return this.generateScheduleContent();
+            case 'settings':
+                return this.generateSettingsContent();
+            default:
+                return super.getModuleContent(moduleId);
+        }
+    }
+    
+    generateLiftsContent() {
+        const lifts = this.dataManager.getLifts();
+        const workingCount = lifts.filter(l => l.status === 'working').length;
+        const maintenanceCount = lifts.filter(l => l.status === 'maintenance').length;
+        const emergencyCount = lifts.filter(l => l.status === 'emergency').length;
+        
+        return `
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6"><h1 class="m-0">Мої ліфти</h1></div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="#" onclick="window.clientSystem.loadDashboard()">Головна</a></li>
+                                <li class="breadcrumb-item active">Мої ліфти</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <section class="content">
+                <div class="container-fluid">
+                    <!-- Statistics Cards -->
+                    <div class="row mb-3">
+                        <div class="col-lg-4 col-6">
+                            <div class="small-box bg-success">
+                                <div class="inner">
+                                    <h3 class="animated-counter">${workingCount}</h3>
+                                    <p>Працюючих ліфтів</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-6">
+                            <div class="small-box bg-warning">
+                                <div class="inner">
+                                    <h3 class="animated-counter">${maintenanceCount}</h3>
+                                    <p>Потребують ТО</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-wrench"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-6">
+                            <div class="small-box bg-danger">
+                                <div class="inner">
+                                    <h3 class="animated-counter">${emergencyCount}</h3>
+                                    <p>Аварійні</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Add Lift Button -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <button class="btn btn-primary" onclick="window.clientSystem.showAddLiftModal()">
+                                <i class="fas fa-plus mr-2"></i>Додати ліфт
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Lifts Grid -->
+                    <div class="row">
+                        ${lifts.map(lift => `
+                            <div class="col-md-6 mb-3">
+                                <div class="card lift-card" onclick="window.clientSystem.showLiftDetails('${lift.id}')">
+                                    <div class="card-header">
+                                        <h5 class="card-title mb-0">
+                                            <span class="status-indicator status-${lift.status}"></span>
+                                            ${lift.address}
+                                        </h5>
+                                        <span class="badge badge-${this.getStatusBadgeClass(lift.status)}">${this.getStatusText(lift.status)}</span>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <small class="text-muted">Модель:</small><br>
+                                                <strong>${lift.model}</strong>
+                                            </div>
+                                            <div class="col-6">
+                                                <small class="text-muted">Поверхів:</small><br>
+                                                <strong>${lift.floors}</strong>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-2">
+                                            <div class="col-6">
+                                                <small class="text-muted">Останнє ТО:</small><br>
+                                                <strong>${this.formatDate(lift.lastMaintenance)}</strong>
+                                            </div>
+                                            <div class="col-6">
+                                                <small class="text-muted">Наступне ТО:</small><br>
+                                                <strong>${this.formatDate(lift.nextMaintenance)}</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer">
+                                        <button class="btn btn-sm btn-info mr-2" onclick="event.stopPropagation(); window.clientSystem.showLiftDetails('${lift.id}')">
+                                            <i class="fas fa-eye"></i> Деталі
+                                        </button>
+                                        <button class="btn btn-sm btn-warning" onclick="event.stopPropagation(); window.clientSystem.createMaintenanceRequest('${lift.id}')">
+                                            <i class="fas fa-tools"></i> Заявка на ТО
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </section>
+        `;
+    }
+    
+    generateRequestsContent() {
+        const requests = this.dataManager.getRequests();
+        const lifts = this.dataManager.getLifts();
+        
+        const pendingCount = requests.filter(r => r.status === 'pending').length;
+        const inProgressCount = requests.filter(r => r.status === 'in-progress').length;
+        const completedCount = requests.filter(r => r.status === 'completed').length;
+        
+        return `
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6"><h1 class="m-0">Заявки на обслуговування</h1></div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="#" onclick="window.clientSystem.loadDashboard()">Головна</a></li>
+                                <li class="breadcrumb-item active">Заявки</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <section class="content">
+                <div class="container-fluid">
+                    <!-- Statistics -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-info"><i class="fas fa-clock"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">В очікуванні</span>
+                                    <span class="info-box-number">${pendingCount}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-warning"><i class="fas fa-tools"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">В роботі</span>
+                                    <span class="info-box-number">${inProgressCount}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-success"><i class="fas fa-check"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Виконано</span>
+                                    <span class="info-box-number">${completedCount}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- New Request Button -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <button class="btn btn-success" onclick="window.clientSystem.showNewRequestModal()">
+                                <i class="fas fa-plus mr-2"></i>Нова заявка
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Requests List -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Мої заявки</h3>
+                                </div>
+                                <div class="card-body">
+                                    ${requests.length === 0 ? 
+                                        '<div class="text-center text-muted py-4"><i class="fas fa-inbox fa-3x mb-3"></i><p>У вас поки немає заявок</p></div>' :
+                                        requests.map(request => {
+                                            const lift = lifts.find(l => l.id === request.liftId);
+                                            return `
+                                                <div class="card mb-3 border-left-${this.getRequestStatusColor(request.status)}">
+                                                    <div class="card-body">
+                                                        <div class="row">
+                                                            <div class="col-md-8">
+                                                                <h5 class="card-title">
+                                                                    Заявка ${request.id} - ${lift ? lift.address : 'Невідомий ліфт'}
+                                                                    <span class="badge badge-${this.getRequestStatusBadge(request.status)} ml-2">
+                                                                        ${this.getRequestStatusText(request.status)}
+                                                                    </span>
+                                                                </h5>
+                                                                <p class="card-text">${request.description}</p>
+                                                                <small class="text-muted">
+                                                                    <i class="fas fa-clock mr-1"></i>
+                                                                    Створено: ${this.formatDateTime(request.created)}
+                                                                </small>
+                                                                ${request.technician ? `<br><small class="text-success"><i class="fas fa-user mr-1"></i>Технік: ${request.technician}</small>` : ''}
+                                                            </div>
+                                                            <div class="col-md-4 text-right">
+                                                                <div class="btn-group-vertical">
+                                                                    <button class="btn btn-sm btn-info mb-1" onclick="window.clientSystem.showRequestDetails('${request.id}')">
+                                                                        <i class="fas fa-eye"></i> Деталі
+                                                                    </button>
+                                                                    ${request.status === 'pending' ? 
+                                                                        `<button class="btn btn-sm btn-secondary mb-1" onclick="window.clientSystem.cancelRequest('${request.id}')">
+                                                                            <i class="fas fa-times"></i> Скасувати
+                                                                        </button>` : ''
+                                                                    }
+                                                                    ${request.status === 'completed' ? 
+                                                                        `<button class="btn btn-sm btn-success" onclick="window.clientSystem.rateService('${request.id}')">
+                                                                            <i class="fas fa-star"></i> Оцінити
+                                                                        </button>` : ''
+                                                                    }
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            `;
+                                        }).join('')
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        `;
+    }
+    
+    // Допоміжні методи для форматування
+    getStatusBadgeClass(status) {
+        const classes = {
+            'working': 'success',
+            'maintenance': 'warning', 
+            'emergency': 'danger'
+        };
+        return classes[status] || 'secondary';
+    }
+    
+    getStatusText(status) {
+        const texts = {
+            'working': 'Працює',
+            'maintenance': 'Потребує ТО',
+            'emergency': 'Аварія'
+        };
+        return texts[status] || 'Невідомо';
+    }
+    
+    getRequestStatusColor(status) {
+        const colors = {
+            'pending': 'info',
+            'in-progress': 'warning',
+            'completed': 'success',
+            'cancelled': 'secondary'
+        };
+        return colors[status] || 'secondary';
+    }
+    
+    getRequestStatusBadge(status) {
+        return this.getRequestStatusColor(status);
+    }
+    
+    getRequestStatusText(status) {
+        const texts = {
+            'pending': 'В очікуванні',
+            'in-progress': 'В роботі', 
+            'completed': 'Виконано',
+            'cancelled': 'Скасовано'
+        };
+        return texts[status] || 'Невідомо';
+    }
+    
+    formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('uk-UA');
+    }
+    
+    formatDateTime(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('uk-UA') + ' ' + date.toLocaleTimeString('uk-UA', {hour: '2-digit', minute: '2-digit'});
+    }
+    
+    // Методи для модальних вікон та взаємодії
+    showAddLiftModal() {
+        Swal.fire({
+            title: 'Додати новий ліфт',
+            html: `
+                <form id="addLiftForm">
+                    <div class="form-group text-left">
+                        <label>Адреса</label>
+                        <input type="text" class="form-control" id="liftAddress" required>
+                    </div>
+                    <div class="form-group text-left">
+                        <label>Модель ліфта</label>
+                        <select class="form-control" id="liftModel" required>
+                            <option value="">Виберіть модель</option>
+                            <option value="OTIS Gen2">OTIS Gen2</option>
+                            <option value="KONE MonoSpace">KONE MonoSpace</option>
+                            <option value="Schindler 5500">Schindler 5500</option>
+                            <option value="ThyssenKrupp Evolution">ThyssenKrupp Evolution</option>
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-group text-left">
+                                <label>Кількість поверхів</label>
+                                <input type="number" class="form-control" id="liftFloors" min="2" max="50" required>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group text-left">
+                                <label>Рік установки</label>
+                                <input type="number" class="form-control" id="liftYear" min="1990" max="2024" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group text-left">
+                        <label>Тип контракту</label>
+                        <select class="form-control" id="liftContract" required>
+                            <option value="">Виберіть тип</option>
+                            <option value="Стандартний">Стандартний</option>
+                            <option value="Розширений">Розширений</option>
+                            <option value="Преміум">Преміум</option>
+                        </select>
+                    </div>
+                </form>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Додати',
+            cancelButtonText: 'Скасувати',
+            confirmButtonColor: '#28a745',
+            preConfirm: () => {
+                const address = document.getElementById('liftAddress').value;
+                const model = document.getElementById('liftModel').value;
+                const floors = document.getElementById('liftFloors').value;
+                const year = document.getElementById('liftYear').value;
+                const contract = document.getElementById('liftContract').value;
+                
+                if (!address || !model || !floors || !year || !contract) {
+                    Swal.showValidationMessage('Заповніть всі поля');
+                    return false;
+                }
+                
+                return { address, model, floors: parseInt(floors), year: parseInt(year), contract };
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const liftData = {
+                    ...result.value,
+                    status: 'working',
+                    lastMaintenance: new Date().toISOString().split('T')[0],
+                    nextMaintenance: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+                };
+                
+                this.dataManager.addLift(liftData);
+                toastr.success('Ліфт успішно додано!');
+                this.loadModule('my-lifts');
+            }
+        });
+    }
+    
+    showLiftDetails(liftId) {
+        const lift = this.dataManager.getLifts().find(l => l.id === liftId);
+        if (!lift) return;
+        
+        Swal.fire({
+            title: `Ліфт ${lift.id}`,
+            html: `
+                <div class="text-left">
+                    <div class="row mb-3">
+                        <div class="col-6"><strong>Адреса:</strong></div>
+                        <div class="col-6">${lift.address}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-6"><strong>Модель:</strong></div>
+                        <div class="col-6">${lift.model}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-6"><strong>Статус:</strong></div>
+                        <div class="col-6"><span class="badge badge-${this.getStatusBadgeClass(lift.status)}">${this.getStatusText(lift.status)}</span></div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-6"><strong>Поверхів:</strong></div>
+                        <div class="col-6">${lift.floors}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-6"><strong>Рік установки:</strong></div>
+                        <div class="col-6">${lift.year}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-6"><strong>Контракт:</strong></div>
+                        <div class="col-6">${lift.contract}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-6"><strong>Останнє ТО:</strong></div>
+                        <div class="col-6">${this.formatDate(lift.lastMaintenance)}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6"><strong>Наступне ТО:</strong></div>
+                        <div class="col-6">${this.formatDate(lift.nextMaintenance)}</div>
+                    </div>
+                </div>
+            `,
+            confirmButtonText: 'Закрити',
+            showCancelButton: true,
+            cancelButtonText: 'Створити заявку',
+            cancelButtonColor: '#ffc107'
+        }).then((result) => {
+            if (result.dismiss === Swal.DismissReason.cancel) {
+                this.createMaintenanceRequest(liftId);
+            }
+        });
+    }
+    
+    createMaintenanceRequest(liftId) {
+        const lift = this.dataManager.getLifts().find(l => l.id === liftId);
+        if (!lift) return;
+        
+        Swal.fire({
+            title: 'Створити заявку на обслуговування',
+            html: `
+                <div class="text-left">
+                    <div class="form-group">
+                        <label>Ліфт:</label>
+                        <input type="text" class="form-control" value="${lift.address} (${lift.model})" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Тип заявки:</label>
+                        <select class="form-control" id="requestType">
+                            <option value="maintenance">Планове ТО</option>
+                            <option value="repair">Ремонт</option>
+                            <option value="emergency">Аварійний виклик</option>
+                            <option value="inspection">Технічна перевірка</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Пріоритет:</label>
+                        <select class="form-control" id="requestPriority">
+                            <option value="low">Низький</option>
+                            <option value="medium">Середній</option>
+                            <option value="high">Високий</option>
+                            <option value="urgent">Терміновий</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Опис проблеми:</label>
+                        <textarea class="form-control" id="requestDescription" rows="3" placeholder="Детально опишіть проблему..."></textarea>
+                    </div>
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Створити заявку',
+            cancelButtonText: 'Скасувати',
+            confirmButtonColor: '#28a745',
+            preConfirm: () => {
+                const type = document.getElementById('requestType').value;
+                const priority = document.getElementById('requestPriority').value;
+                const description = document.getElementById('requestDescription').value;
+                
+                if (!description.trim()) {
+                    Swal.showValidationMessage('Введіть опис проблеми');
+                    return false;
+                }
+                
+                return { type, priority, description };
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const requestData = {
+                    liftId: liftId,
+                    ...result.value
+                };
+                
+                this.dataManager.addRequest(requestData);
+                toastr.success('Заявку успішно створено!');
+                this.loadModule('service-requests');
+            }
+        });
+    }
+    
+    showNewRequestModal() {
+        const lifts = this.dataManager.getLifts();
+        
+        Swal.fire({
+            title: 'Нова заявка на обслуговування',
+            html: `
+                <div class="text-left">
+                    <div class="form-group">
+                        <label>Виберіть ліфт:</label>
+                        <select class="form-control" id="requestLift" required>
+                            <option value="">Виберіть ліфт</option>
+                            ${lifts.map(lift => 
+                                `<option value="${lift.id}">${lift.address} (${lift.model})</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Тип заявки:</label>
+                        <select class="form-control" id="requestType">
+                            <option value="maintenance">Планове ТО</option>
+                            <option value="repair">Ремонт</option>
+                            <option value="emergency">Аварійний виклик</option>
+                            <option value="inspection">Технічна перевірка</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Пріоритет:</label>
+                        <select class="form-control" id="requestPriority">
+                            <option value="low">Низький</option>
+                            <option value="medium">Середній</option>
+                            <option value="high">Високий</option>
+                            <option value="urgent">Терміновий</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Опис проблеми:</label>
+                        <textarea class="form-control" id="requestDescription" rows="4" placeholder="Детально опишіть проблему або необхідні роботи..." required></textarea>
+                    </div>
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Створити заявку',
+            cancelButtonText: 'Скасувати',
+            confirmButtonColor: '#28a745',
+            preConfirm: () => {
+                const liftId = document.getElementById('requestLift').value;
+                const type = document.getElementById('requestType').value;
+                const priority = document.getElementById('requestPriority').value;
+                const description = document.getElementById('requestDescription').value;
+                
+                if (!liftId) {
+                    Swal.showValidationMessage('Виберіть ліфт');
+                    return false;
+                }
+                
+                if (!description.trim()) {
+                    Swal.showValidationMessage('Введіть опис проблеми');
+                    return false;
+                }
+                
+                return { liftId, type, priority, description };
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                this.dataManager.addRequest(result.value);
+                toastr.success('Заявку успішно створено! Ми зв\'яжемося з вами найближчим часом.');
+                this.loadModule('service-requests');
+            }
+        });
+    }
+    
+    showRequestDetails(requestId) {
+        const request = this.dataManager.getRequests().find(r => r.id === requestId);
+        const lift = this.dataManager.getLifts().find(l => l.id === request?.liftId);
+        
+        if (!request) return;
+        
+        Swal.fire({
+            title: `Заявка ${request.id}`,
+            html: `
+                <div class="text-left">
+                    <div class="row mb-3">
+                        <div class="col-4"><strong>Ліфт:</strong></div>
+                        <div class="col-8">${lift ? lift.address + ' (' + lift.model + ')' : 'Невідомий'}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-4"><strong>Тип:</strong></div>
+                        <div class="col-8">${this.getRequestTypeText(request.type)}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-4"><strong>Статус:</strong></div>
+                        <div class="col-8"><span class="badge badge-${this.getRequestStatusBadge(request.status)}">${this.getRequestStatusText(request.status)}</span></div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-4"><strong>Пріоритет:</strong></div>
+                        <div class="col-8"><span class="badge badge-${this.getPriorityBadgeClass(request.priority)}">${this.getPriorityText(request.priority)}</span></div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-4"><strong>Створено:</strong></div>
+                        <div class="col-8">${this.formatDateTime(request.created)}</div>
+                    </div>
+                    ${request.technician ? `
+                        <div class="row mb-3">
+                            <div class="col-4"><strong>Технік:</strong></div>
+                            <div class="col-8">${request.technician}</div>
+                        </div>
+                    ` : ''}
+                    ${request.estimatedCompletion ? `
+                        <div class="row mb-3">
+                            <div class="col-4"><strong>Очікуване завершення:</strong></div>
+                            <div class="col-8">${this.formatDateTime(request.estimatedCompletion)}</div>
+                        </div>
+                    ` : ''}
+                    <div class="row">
+                        <div class="col-4"><strong>Опис:</strong></div>
+                        <div class="col-8">${request.description}</div>
+                    </div>
+                </div>
+            `,
+            confirmButtonText: 'Закрити'
+        });
+    }
+    
+    getRequestTypeText(type) {
+        const types = {
+            'maintenance': 'Планове ТО',
+            'repair': 'Ремонт',
+            'emergency': 'Аварійний виклик',
+            'inspection': 'Технічна перевірка'
+        };
+        return types[type] || type;
+    }
+    
+    getPriorityText(priority) {
+        const priorities = {
+            'low': 'Низький',
+            'medium': 'Середній',
+            'high': 'Високий',
+            'urgent': 'Терміновий'
+        };
+        return priorities[priority] || priority;
+    }
+    
+    getPriorityBadgeClass(priority) {
+        const classes = {
+            'low': 'secondary',
+            'medium': 'info',
+            'high': 'warning',
+            'urgent': 'danger'
+        };
+        return classes[priority] || 'secondary';
+    }
+}
+
+// Замінюємо стару систему на нову
+$(document).ready(function() {
+    window.clientSystem = new EnhancedClientSystem();
+    
+    // Додаємо обробник для оновлення лічильників
+    setInterval(() => {
+        const requests = window.clientSystem.dataManager.getRequests();
+        const pendingCount = requests.filter(r => r.status === 'pending').length;
+        $('#notification-count').text(pendingCount);
+    }, 5000);
+});
+</script>
 
 </body>
 </html>

@@ -9,6 +9,8 @@ class CRMUnified {
         this.userRole = null;
         this.permissions = {};
         this.availableModules = [];
+        this.dataManager = null;
+        this.currentModule = null;
         
         console.log('CRMUnified constructor викликано');
         
@@ -31,6 +33,13 @@ class CRMUnified {
                 });
             }
             
+            // Чекаємо на доступність менеджера даних
+            if (typeof CRMDataManager !== 'undefined') {
+                this.dataManager = window.dataManager || new CRMDataManager();
+            } else {
+                console.warn('CRMDataManager не доступний, використовуємо базову функціональність');
+            }
+            
             // Завантаження даних користувача
             await this.loadUserData();
             
@@ -42,6 +51,9 @@ class CRMUnified {
             
             // Завантаження дашборду
             this.loadDashboard();
+            
+            // Налаштовуємо інтерактивність
+            this.setupInteractivity();
             
             console.log(`CRM ініціалізовано для ролі: ${this.userRole}`);
         } catch (error) {
@@ -169,6 +181,9 @@ class CRMUnified {
     }
     
     setupRoleAccess() {
+        // Налаштовуємо дозволи для ролі
+        this.setupRolePermissions();
+        
         // Конфігурація модулів для кожної ролі
         const modulesByRole = {
             admin: [
@@ -300,6 +315,31 @@ class CRMUnified {
         
         this.availableModules = modulesByRole[this.userRole] || [];
         this.permissions = permissionsByRole[this.userRole] || {};
+        
+        console.log(`Завантажуємо модулі для ролі: ${this.userRole}`, this.availableModules);
+    }
+    
+    setupRolePermissions() {
+        this.rolePermissions = {
+            admin: ['admin.*', 'qr.*', 'lifts.*', 'users.*', 'analytics.*', 'reports.*'],
+            dispatcher: ['dispatcher.*', 'qr.read', 'qr.generate', 'lifts.read', 'users.read', 'tasks.*'],
+            tech: ['tech.*', 'maintenance.*', 'qr.read', 'qr.scan', 'schedule.*'],
+            client: ['client.*', 'profile.*', 'qr.scan']
+        };
+        
+        this.userPermissions = this.rolePermissions[this.userRole] || [];
+    }
+    
+    hasPermission(permission) {
+        if (!this.userPermissions) return false;
+        
+        return this.userPermissions.some(p => {
+            if (p.endsWith('.*')) {
+                const prefix = p.slice(0, -2);
+                return permission.startsWith(prefix);
+            }
+            return p === permission;
+        });
     }
     
     renderNavigation() {
@@ -985,9 +1025,12 @@ class CRMUnified {
             </section>
         `;
         
+        // Встановлюємо поточний модуль
+        this.currentModule = moduleId;
+        
         try {
-            // Асинхронне завантаження модуля
-            const content = await this.getModuleContent(moduleId);
+            // Генеруємо інтерактивний контент модуля
+            const content = await this.generateInteractiveModule(moduleId);
             document.getElementById('main-content').innerHTML = content;
             
             // Ініціалізація модуля після завантаження
@@ -1000,6 +1043,299 @@ class CRMUnified {
         
         // Активація пункту меню
         this.setActiveMenuItem(moduleId);
+    }
+
+    async generateInteractiveModule(moduleId) {
+        console.log(`Генерація інтерактивного модуля: ${moduleId}`);
+        
+        // Спробуємо завантажити існуючий файл, якщо не знайдемо - створимо динамічно
+        try {
+            const content = await this.getModuleContent(moduleId);
+            return content;
+        } catch (error) {
+            console.log(`Файл для ${moduleId} не знайдено, генеруємо динамічно`);
+            return this.generateDynamicModule(moduleId);
+        }
+    }
+
+    generateDynamicModule(moduleId) {
+        const moduleConfig = this.getModuleConfig(moduleId);
+        
+        return `
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">
+                                <i class="${moduleConfig.icon}"></i>
+                                ${moduleConfig.title}
+                            </h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="float-sm-right">
+                                ${this.generateModuleActions(moduleId)}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <section class="content">
+                <div class="container-fluid">
+                    ${this.generateModuleContent(moduleId)}
+                </div>
+            </section>
+        `;
+    }
+
+    getModuleConfig(moduleId) {
+        const configs = {
+            'users': {
+                title: 'Управління користувачами',
+                icon: 'fas fa-users',
+                description: 'Керування користувачами системи'
+            },
+            'lifts': {
+                title: 'Управління ліфтами',
+                icon: 'fas fa-elevator',
+                description: 'Керування ліфтами та їх станом'
+            },
+            'qr-generator': {
+                title: 'Генератор QR-кодів',
+                icon: 'fas fa-qrcode',
+                description: 'Створення QR-кодів для ліфтів'
+            },
+            'qr-management': {
+                title: 'Управління QR',
+                icon: 'fas fa-cog',
+                description: 'Керування QR-кодами системи'
+            },
+            'tasks': {
+                title: 'Управління завданнями',
+                icon: 'fas fa-tasks',
+                description: 'Створення та відстеження завдань'
+            },
+            'analytics': {
+                title: 'Аналітика системи',
+                icon: 'fas fa-chart-bar',
+                description: 'Статистика та аналіз даних'
+            },
+            'reports': {
+                title: 'Звіти',
+                icon: 'fas fa-file-alt',
+                description: 'Генерація та перегляд звітів'
+            },
+            'settings': {
+                title: 'Налаштування',
+                icon: 'fas fa-cogs',
+                description: 'Системні налаштування'
+            }
+        };
+        
+        return configs[moduleId] || {
+            title: moduleId.charAt(0).toUpperCase() + moduleId.slice(1),
+            icon: 'fas fa-cube',
+            description: `Модуль ${moduleId}`
+        };
+    }
+
+    generateModuleActions(moduleId) {
+        const actions = [];
+        
+        // Загальні дії для всіх модулів
+        actions.push(`
+            <button type="button" class="btn btn-primary" data-action="refresh-data">
+                <i class="fas fa-sync"></i> Оновити
+            </button>
+        `);
+        
+        // Специфічні дії для модулів
+        switch (moduleId) {
+            case 'users':
+                if (this.hasPermission('users.create')) {
+                    actions.unshift(`
+                        <button type="button" class="btn btn-success" data-action="add-user">
+                            <i class="fas fa-plus"></i> Додати користувача
+                        </button>
+                    `);
+                }
+                actions.push(`
+                    <button type="button" class="btn btn-info" data-action="export-data" data-type="users">
+                        <i class="fas fa-download"></i> Експорт
+                    </button>
+                `);
+                break;
+                
+            case 'lifts':
+                if (this.hasPermission('lifts.create')) {
+                    actions.unshift(`
+                        <button type="button" class="btn btn-success" data-action="add-lift">
+                            <i class="fas fa-plus"></i> Додати ліфт
+                        </button>
+                    `);
+                }
+                actions.push(`
+                    <button type="button" class="btn btn-info" data-action="export-data" data-type="lifts">
+                        <i class="fas fa-download"></i> Експорт
+                    </button>
+                `);
+                break;
+                
+            case 'qr-generator':
+                actions.unshift(`
+                    <button type="button" class="btn btn-success" data-action="generate-qr">
+                        <i class="fas fa-qrcode"></i> Згенерувати QR
+                    </button>
+                `);
+                break;
+                
+            case 'tasks':
+                if (this.hasPermission('tasks.create')) {
+                    actions.unshift(`
+                        <button type="button" class="btn btn-success" data-action="add-task">
+                            <i class="fas fa-plus"></i> Нове завдання
+                        </button>
+                    `);
+                }
+                break;
+        }
+        
+        return actions.join(' ');
+    }
+
+    generateModuleContent(moduleId) {
+        switch (moduleId) {
+            case 'users':
+                return this.generateUsersContent();
+            case 'lifts':
+                return this.generateLiftsContent();
+            case 'qr-generator':
+                return this.generateQRGeneratorContent();
+            case 'qr-management':
+                return this.generateQRManagementContent();
+            case 'tasks':
+                return this.generateTasksContent();
+            case 'analytics':
+                return this.generateAnalyticsContent();
+            case 'reports':
+                return this.generateReportsContent();
+            case 'settings':
+                return this.generateSettingsContent();
+            default:
+                return this.generateDefaultContent(moduleId);
+        }
+    }
+
+    generateUsersContent() {
+        const users = this.dataManager ? this.dataManager.getAllUsers() : this.getMockUsers();
+        
+        return `
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Список користувачів</h3>
+                            <div class="card-tools">
+                                <div class="input-group input-group-sm" style="width: 250px;">
+                                    <input type="text" class="form-control" placeholder="Пошук користувачів..." id="users-search">
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-default">
+                                            <i class="fas fa-search"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body table-responsive p-0">
+                            <table class="table table-hover text-nowrap" data-sortable="true">
+                                <thead>
+                                    <tr>
+                                        <th data-sort="id">ID</th>
+                                        <th data-sort="name">Ім'я</th>
+                                        <th data-sort="email">Email</th>
+                                        <th data-sort="role">Роль</th>
+                                        <th data-sort="status">Статус</th>
+                                        <th data-sort="created">Створено</th>
+                                        <th>Дії</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${users.map(user => `
+                                        <tr>
+                                            <td>${user.id}</td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="${user.avatar || 'https://via.placeholder.com/32x32/17a2b8/ffffff?text=' + user.name.charAt(0)}" 
+                                                         class="img-circle elevation-2 mr-2" 
+                                                         width="32" height="32" alt="${user.name}">
+                                                    ${user.name}
+                                                </div>
+                                            </td>
+                                            <td>${user.email}</td>
+                                            <td>
+                                                <span class="badge badge-${this.getRoleBadgeColor(user.role)}">
+                                                    ${this.getRoleLabel(user.role)}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-${user.active ? 'success' : 'secondary'}">
+                                                    ${user.active ? 'Активний' : 'Неактивний'}
+                                                </span>
+                                            </td>
+                                            <td>${this.formatDate(user.createdAt)}</td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <button type="button" class="btn btn-info" data-action="view-details" data-type="user" data-id="${user.id}" title="Переглянути">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    ${this.hasPermission('users.edit') ? `
+                                                        <button type="button" class="btn btn-warning" data-action="edit-user" data-id="${user.id}" title="Редагувати">
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>
+                                                    ` : ''}
+                                                    ${this.hasPermission('users.delete') ? `
+                                                        <button type="button" class="btn btn-danger" data-action="delete-user" data-id="${user.id}" title="Видалити">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    ` : ''}
+                                                    <button type="button" class="btn btn-secondary" data-action="toggle-status" data-type="user" data-id="${user.id}" title="Змінити статус">
+                                                        <i class="fas fa-toggle-${user.active ? 'on' : 'off'}"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="card-footer">
+                            <div class="row">
+                                <div class="col-sm-12 col-md-5">
+                                    <div class="dataTables_info">
+                                        Показано ${users.length} записів
+                                    </div>
+                                </div>
+                                <div class="col-sm-12 col-md-7">
+                                    <div class="dataTables_paginate paging_simple_numbers">
+                                        <ul class="pagination">
+                                            <li class="paginate_button page-item previous disabled">
+                                                <a href="#" class="page-link">Попередня</a>
+                                            </li>
+                                            <li class="paginate_button page-item active">
+                                                <a href="#" class="page-link">1</a>
+                                            </li>
+                                            <li class="paginate_button page-item next disabled">
+                                                <a href="#" class="page-link">Наступна</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
     }
     
     initModuleAfterLoad(moduleId) {
@@ -1300,6 +1636,831 @@ class CRMUnified {
         // Обробка помилки авторизації
         alert('Помилка авторизації. Перенаправлення на сторінку входу...');
         window.location.href = '/login.html';
+    }
+
+    // === ІНТЕРАКТИВНІ МЕТОДИ ===
+
+    setupInteractivity() {
+        console.log('Налаштування інтерактивності...');
+        
+        // Налаштування глобальних обробників подій
+        this.setupGlobalEventHandlers();
+        
+        // Налаштування модальних вікон
+        this.setupModals();
+        
+        // Налаштування форм
+        this.setupForms();
+        
+        // Налаштування таблиць з інтерактивністю
+        this.setupInteractiveTables();
+        
+        console.log('Інтерактивність налаштовано');
+    }
+
+    setupGlobalEventHandlers() {
+        // Обробка всіх кнопок з data-action
+        document.addEventListener('click', (e) => {
+            const target = e.target.closest('[data-action]');
+            if (target) {
+                e.preventDefault();
+                const action = target.dataset.action;
+                const data = target.dataset;
+                this.handleAction(action, data, target);
+            }
+        });
+
+        // Обробка форм з data-submit
+        document.addEventListener('submit', (e) => {
+            const form = e.target.closest('[data-submit]');
+            if (form) {
+                e.preventDefault();
+                const action = form.dataset.submit;
+                this.handleFormSubmit(action, form);
+            }
+        });
+
+        // Обробка змін у select елементах з data-change
+        document.addEventListener('change', (e) => {
+            const target = e.target.closest('[data-change]');
+            if (target) {
+                const action = target.dataset.change;
+                this.handleChange(action, target.value, target);
+            }
+        });
+    }
+
+    async handleAction(action, data, element) {
+        try {
+            element.disabled = true; // Запобігаємо множинним кліками
+            
+            switch (action) {
+                case 'add-user':
+                    await this.showUserModal();
+                    break;
+                case 'edit-user':
+                    await this.showUserModal(data.id);
+                    break;
+                case 'delete-user':
+                    await this.deleteUser(data.id);
+                    break;
+                case 'add-lift':
+                    await this.showLiftModal();
+                    break;
+                case 'edit-lift':
+                    await this.showLiftModal(data.id);
+                    break;
+                case 'delete-lift':
+                    await this.deleteLift(data.id);
+                    break;
+                case 'add-task':
+                    await this.showTaskModal();
+                    break;
+                case 'edit-task':
+                    await this.showTaskModal(data.id);
+                    break;
+                case 'complete-task':
+                    await this.completeTask(data.id);
+                    break;
+                case 'generate-qr':
+                    await this.generateQRCode(data);
+                    break;
+                case 'scan-qr':
+                    await this.scanQRCode();
+                    break;
+                case 'export-data':
+                    await this.exportData(data.type);
+                    break;
+                case 'refresh-data':
+                    await this.refreshCurrentModule();
+                    break;
+                case 'toggle-status':
+                    await this.toggleStatus(data.type, data.id);
+                    break;
+                case 'view-details':
+                    await this.viewDetails(data.type, data.id);
+                    break;
+                default:
+                    console.warn(`Невідома дія: ${action}`);
+            }
+        } catch (error) {
+            console.error(`Помилка виконання дії ${action}:`, error);
+            this.showErrorMessage(`Помилка: ${error.message}`);
+        } finally {
+            element.disabled = false;
+        }
+    }
+
+    setupModals() {
+        // Налаштовуємо SweetAlert2 якщо доступний
+        if (typeof Swal !== 'undefined') {
+            this.swal = Swal.mixin({
+                customClass: {
+                    confirmButton: 'btn btn-success mr-2',
+                    cancelButton: 'btn btn-danger'
+                },
+                buttonsStyling: false
+            });
+        } else {
+            console.warn('SweetAlert2 не доступний, використовуємо стандартні діалоги');
+            this.swal = {
+                fire: async (options) => {
+                    if (options.input) {
+                        const result = prompt(options.title + '\n' + (options.text || ''));
+                        return { value: result };
+                    } else {
+                        const confirmed = confirm(options.title + '\n' + (options.text || ''));
+                        return { isConfirmed: confirmed };
+                    }
+                }
+            };
+        }
+    }
+
+    setupForms() {
+        // Налаштування валідації форм
+        document.querySelectorAll('form[data-validate="true"]').forEach(form => {
+            form.addEventListener('submit', (e) => {
+                if (!this.validateForm(form)) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            });
+        });
+    }
+
+    validateForm(form) {
+        const requiredFields = form.querySelectorAll('[required]');
+        let isValid = true;
+
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                field.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+
+        return isValid;
+    }
+
+    setupInteractiveTables() {
+        // Налаштування сортування таблиць
+        document.querySelectorAll('table[data-sortable="true"]').forEach(table => {
+            const headers = table.querySelectorAll('th[data-sort]');
+            headers.forEach(header => {
+                header.style.cursor = 'pointer';
+                header.addEventListener('click', () => {
+                    this.sortTable(table, header.dataset.sort);
+                });
+            });
+        });
+    }
+
+    // === МОДАЛЬНІ ВІКНА ===
+
+    async showUserModal(userId = null) {
+        if (!this.hasPermission('users.create') && !userId) {
+            return this.showErrorMessage('Немає прав для створення користувачів');
+        }
+
+        const user = userId ? await this.getUserById(userId) : null;
+        const isEdit = !!user;
+
+        const { value: formValues } = await this.swal.fire({
+            title: isEdit ? 'Редагувати користувача' : 'Додати користувача',
+            html: this.getUserFormHTML(user),
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: isEdit ? 'Зберегти' : 'Створити',
+            cancelButtonText: 'Скасувати',
+            width: '600px',
+            preConfirm: () => {
+                return this.getUserFormData();
+            }
+        });
+
+        if (formValues) {
+            try {
+                if (isEdit) {
+                    await this.updateUser(userId, formValues);
+                } else {
+                    await this.createUser(formValues);
+                }
+                await this.refreshCurrentModule();
+                this.showSuccessMessage(isEdit ? 'Користувача оновлено' : 'Користувача створено');
+            } catch (error) {
+                this.showErrorMessage('Помилка збереження: ' + error.message);
+            }
+        }
+    }
+
+    getUserFormHTML(user = null) {
+        return `
+            <div class="form-group text-left">
+                <label for="user-name">Ім'я користувача</label>
+                <input type="text" id="user-name" class="form-control" value="${user?.name || ''}" required>
+            </div>
+            <div class="form-group text-left">
+                <label for="user-email">Email</label>
+                <input type="email" id="user-email" class="form-control" value="${user?.email || ''}" required>
+            </div>
+            <div class="form-group text-left">
+                <label for="user-role">Роль</label>
+                <select id="user-role" class="form-control" required>
+                    <option value="">Оберіть роль</option>
+                    <option value="admin" ${user?.role === 'admin' ? 'selected' : ''}>Адміністратор</option>
+                    <option value="dispatcher" ${user?.role === 'dispatcher' ? 'selected' : ''}>Диспетчер</option>
+                    <option value="tech" ${user?.role === 'tech' ? 'selected' : ''}>Технік</option>
+                    <option value="client" ${user?.role === 'client' ? 'selected' : ''}>Клієнт</option>
+                </select>
+            </div>
+            <div class="form-group text-left">
+                <label for="user-phone">Телефон</label>
+                <input type="tel" id="user-phone" class="form-control" value="${user?.phone || ''}">
+            </div>
+        `;
+    }
+
+    getUserFormData() {
+        return {
+            name: document.getElementById('user-name').value,
+            email: document.getElementById('user-email').value,
+            role: document.getElementById('user-role').value,
+            phone: document.getElementById('user-phone').value
+        };
+    }
+
+    async showLiftModal(liftId = null) {
+        if (!this.hasPermission('lifts.create') && !liftId) {
+            return this.showErrorMessage('Немає прав для створення ліфтів');
+        }
+
+        const lift = liftId ? await this.getLiftById(liftId) : null;
+        const isEdit = !!lift;
+
+        const { value: formValues } = await this.swal.fire({
+            title: isEdit ? 'Редагувати ліфт' : 'Додати ліфт',
+            html: this.getLiftFormHTML(lift),
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: isEdit ? 'Зберегти' : 'Створити',
+            cancelButtonText: 'Скасувати',
+            width: '700px',
+            preConfirm: () => {
+                return this.getLiftFormData();
+            }
+        });
+
+        if (formValues) {
+            try {
+                if (isEdit) {
+                    await this.updateLift(liftId, formValues);
+                } else {
+                    await this.createLift(formValues);
+                }
+                await this.refreshCurrentModule();
+                this.showSuccessMessage(isEdit ? 'Ліфт оновлено' : 'Ліфт створено');
+            } catch (error) {
+                this.showErrorMessage('Помилка збереження: ' + error.message);
+            }
+        }
+    }
+
+    getLiftFormHTML(lift = null) {
+        return `
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group text-left">
+                        <label for="lift-building">Будівля</label>
+                        <input type="text" id="lift-building" class="form-control" value="${lift?.building || ''}" required>
+                    </div>
+                    <div class="form-group text-left">
+                        <label for="lift-floor">Поверх</label>
+                        <input type="number" id="lift-floor" class="form-control" value="${lift?.floor || ''}" required>
+                    </div>
+                    <div class="form-group text-left">
+                        <label for="lift-model">Модель</label>
+                        <input type="text" id="lift-model" class="form-control" value="${lift?.model || ''}">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group text-left">
+                        <label for="lift-status">Статус</label>
+                        <select id="lift-status" class="form-control" required>
+                            <option value="active" ${lift?.status === 'active' ? 'selected' : ''}>Активний</option>
+                            <option value="maintenance" ${lift?.status === 'maintenance' ? 'selected' : ''}>На обслуговуванні</option>
+                            <option value="inactive" ${lift?.status === 'inactive' ? 'selected' : ''}>Неактивний</option>
+                        </select>
+                    </div>
+                    <div class="form-group text-left">
+                        <label for="lift-capacity">Вантажопідйомність (кг)</label>
+                        <input type="number" id="lift-capacity" class="form-control" value="${lift?.capacity || ''}">
+                    </div>
+                    <div class="form-group text-left">
+                        <label for="lift-location">Локація</label>
+                        <textarea id="lift-location" class="form-control" rows="2">${lift?.location || ''}</textarea>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    getLiftFormData() {
+        return {
+            building: document.getElementById('lift-building').value,
+            floor: parseInt(document.getElementById('lift-floor').value),
+            model: document.getElementById('lift-model').value,
+            status: document.getElementById('lift-status').value,
+            capacity: parseInt(document.getElementById('lift-capacity').value) || null,
+            location: document.getElementById('lift-location').value
+        };
+    }
+
+    // === CRUD ОПЕРАЦІЇ ===
+
+    async getUserById(id) {
+        if (this.dataManager) {
+            return this.dataManager.getUser(id);
+        }
+        // Fallback для тестових даних
+        return {
+            id,
+            name: 'Тестовий користувач',
+            email: 'test@example.com',
+            role: 'client'
+        };
+    }
+
+    async createUser(userData) {
+        if (this.dataManager) {
+            return this.dataManager.addUser(userData);
+        }
+        console.log('Створення користувача:', userData);
+    }
+
+    async updateUser(id, userData) {
+        if (this.dataManager) {
+            return this.dataManager.updateUser(id, userData);
+        }
+        console.log('Оновлення користувача:', id, userData);
+    }
+
+    async deleteUser(id) {
+        const confirmed = await this.swal.fire({
+            title: 'Видалити користувача?',
+            text: 'Цю дію неможливо скасувати!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Так, видалити!',
+            cancelButtonText: 'Скасувати'
+        });
+
+        if (confirmed.isConfirmed) {
+            try {
+                if (this.dataManager) {
+                    await this.dataManager.deleteUser(id);
+                }
+                await this.refreshCurrentModule();
+                this.showSuccessMessage('Користувача видалено');
+            } catch (error) {
+                this.showErrorMessage('Помилка видалення: ' + error.message);
+            }
+        }
+    }
+
+    async getLiftById(id) {
+        if (this.dataManager) {
+            return this.dataManager.getLift(id);
+        }
+        return {
+            id,
+            building: 'Тестова будівля',
+            floor: 1,
+            status: 'active'
+        };
+    }
+
+    async createLift(liftData) {
+        if (this.dataManager) {
+            return this.dataManager.addLift(liftData);
+        }
+        console.log('Створення ліфта:', liftData);
+    }
+
+    async updateLift(id, liftData) {
+        if (this.dataManager) {
+            return this.dataManager.updateLift(id, liftData);
+        }
+        console.log('Оновлення ліфта:', id, liftData);
+    }
+
+    async deleteLift(id) {
+        const confirmed = await this.swal.fire({
+            title: 'Видалити ліфт?',
+            text: 'Цю дію неможливо скасувати!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Так, видалити!',
+            cancelButtonText: 'Скасувати'
+        });
+
+        if (confirmed.isConfirmed) {
+            try {
+                if (this.dataManager) {
+                    await this.dataManager.deleteLift(id);
+                }
+                await this.refreshCurrentModule();
+                this.showSuccessMessage('Ліфт видалено');
+            } catch (error) {
+                this.showErrorMessage('Помилка видалення: ' + error.message);
+            }
+        }
+    }
+
+    // === HELPER МЕТОДИ ===
+
+    async refreshCurrentModule() {
+        if (this.currentModule) {
+            await this.loadModule(this.currentModule);
+        }
+    }
+
+    showSuccessMessage(message) {
+        if (typeof toastr !== 'undefined') {
+            toastr.success(message);
+        } else if (this.swal) {
+            this.swal.fire({
+                icon: 'success',
+                title: 'Успіх!',
+                text: message,
+                timer: 3000,
+                showConfirmButton: false
+            });
+        } else {
+            alert(message);
+        }
+    }
+
+    showErrorMessage(message) {
+        if (typeof toastr !== 'undefined') {
+            toastr.error(message);
+        } else if (this.swal) {
+            this.swal.fire({
+                icon: 'error',
+                title: 'Помилка!',
+                text: message
+            });
+        } else {
+            alert(message);
+        }
+    }
+
+    async generateQRCode(data) {
+        try {
+            const qrData = {
+                liftId: data.liftId,
+                building: data.building,
+                floor: data.floor,
+                timestamp: new Date().toISOString()
+            };
+
+            if (this.dataManager) {
+                const qrCode = await this.dataManager.generateQRCode(qrData);
+                this.showSuccessMessage('QR-код згенеровано успішно');
+                return qrCode;
+            }
+        } catch (error) {
+            this.showErrorMessage('Помилка генерації QR-кода: ' + error.message);
+        }
+    }
+
+    async exportData(type) {
+        try {
+            let data;
+            if (this.dataManager) {
+                switch (type) {
+                    case 'users':
+                        data = this.dataManager.getAllUsers();
+                        break;
+                    case 'lifts':
+                        data = this.dataManager.getAllLifts();
+                        break;
+                    case 'tasks':
+                        data = this.dataManager.getAllTasks();
+                        break;
+                    default:
+                        throw new Error(`Невідомий тип для експорту: ${type}`);
+                }
+            } else {
+                data = { message: `Тестові дані для ${type}` };
+            }
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${type}_export_${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            this.showSuccessMessage(`Дані ${type} експортовано успішно`);
+        } catch (error) {
+            this.showErrorMessage('Помилка експорту: ' + error.message);
+        }
+    }
+
+    async toggleStatus(type, id) {
+        try {
+            if (this.dataManager) {
+                let item;
+                switch (type) {
+                    case 'lift':
+                        item = this.dataManager.getLift(id);
+                        if (item) {
+                            const newStatus = item.status === 'active' ? 'maintenance' : 'active';
+                            await this.dataManager.updateLift(id, { ...item, status: newStatus });
+                        }
+                        break;
+                    case 'user':
+                        item = this.dataManager.getUser(id);
+                        if (item) {
+                            const newStatus = item.active ? false : true;
+                            await this.dataManager.updateUser(id, { ...item, active: newStatus });
+                        }
+                        break;
+                    default:
+                        throw new Error(`Невідомий тип: ${type}`);
+                }
+                await this.refreshCurrentModule();
+                this.showSuccessMessage('Статус змінено успішно');
+            }
+        } catch (error) {
+            this.showErrorMessage('Помилка зміни статусу: ' + error.message);
+        }
+    }
+
+    generateLiftsContent() {
+        const lifts = this.dataManager ? this.dataManager.getAllLifts() : this.getMockLifts();
+        
+        return `
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Список ліфтів</h3>
+                        </div>
+                        <div class="card-body table-responsive p-0">
+                            <table class="table table-hover text-nowrap" data-sortable="true">
+                                <thead>
+                                    <tr>
+                                        <th data-sort="id">ID</th>
+                                        <th data-sort="building">Будівля</th>
+                                        <th data-sort="floor">Поверх</th>
+                                        <th data-sort="model">Модель</th>
+                                        <th data-sort="status">Статус</th>
+                                        <th data-sort="lastMaintenance">Останнє ТО</th>
+                                        <th>Дії</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${lifts.map(lift => `
+                                        <tr>
+                                            <td>${lift.id}</td>
+                                            <td>${lift.building}</td>
+                                            <td>${lift.floor}</td>
+                                            <td>${lift.model || 'Не вказано'}</td>
+                                            <td>
+                                                <span class="badge badge-${this.getStatusBadgeColor(lift.status)}">
+                                                    ${this.getStatusLabel(lift.status)}
+                                                </span>
+                                            </td>
+                                            <td>${this.formatDate(lift.lastMaintenance)}</td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <button type="button" class="btn btn-info" data-action="view-details" data-type="lift" data-id="${lift.id}" title="Переглянути">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    ${this.hasPermission('lifts.edit') ? `
+                                                        <button type="button" class="btn btn-warning" data-action="edit-lift" data-id="${lift.id}" title="Редагувати">
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>
+                                                    ` : ''}
+                                                    <button type="button" class="btn btn-success" data-action="generate-qr" data-lift-id="${lift.id}" data-building="${lift.building}" data-floor="${lift.floor}" title="Згенерувати QR">
+                                                        <i class="fas fa-qrcode"></i>
+                                                    </button>
+                                                    ${this.hasPermission('lifts.delete') ? `
+                                                        <button type="button" class="btn btn-danger" data-action="delete-lift" data-id="${lift.id}" title="Видалити">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    ` : ''}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // === MOCK DATA ===
+
+    getMockUsers() {
+        return [
+            {
+                id: 1,
+                name: 'Іван Петренко',
+                email: 'ivan@example.com',
+                role: 'admin',
+                active: true,
+                createdAt: '2024-01-15',
+                avatar: null
+            },
+            {
+                id: 2,
+                name: 'Марія Коваленко',
+                email: 'maria@example.com',
+                role: 'dispatcher',
+                active: true,
+                createdAt: '2024-01-20',
+                avatar: null
+            },
+            {
+                id: 3,
+                name: 'Олексій Сидоренко',
+                email: 'alex@example.com',
+                role: 'tech',
+                active: true,
+                createdAt: '2024-02-01',
+                avatar: null
+            },
+            {
+                id: 4,
+                name: 'Світлана Іванова',
+                email: 'svitlana@example.com',
+                role: 'client',
+                active: false,
+                createdAt: '2024-02-10',
+                avatar: null
+            }
+        ];
+    }
+
+    getMockLifts() {
+        return [
+            {
+                id: 1,
+                building: 'Житловий комплекс "Оріон"',
+                floor: 1,
+                model: 'Otis Gen2',
+                status: 'active',
+                capacity: 630,
+                lastMaintenance: '2024-01-15'
+            },
+            {
+                id: 2,
+                building: 'Офісний центр "Столичний"',
+                floor: 5,
+                model: 'Schindler 3300',
+                status: 'maintenance',
+                capacity: 1000,
+                lastMaintenance: '2024-01-10'
+            },
+            {
+                id: 3,
+                building: 'ТРЦ "Мегаполіс"',
+                floor: 2,
+                model: 'Kone MonoSpace',
+                status: 'active',
+                capacity: 1250,
+                lastMaintenance: '2024-02-01'
+            }
+        ];
+    }
+
+    getMockTasks() {
+        return [
+            {
+                id: 1,
+                title: 'Планове ТО ліфта №1',
+                assignee: 'Олексій Сидоренко',
+                priority: 'medium',
+                status: 'pending',
+                dueDate: '2024-12-28'
+            },
+            {
+                id: 2,
+                title: 'Ремонт двигуна ліфта №2',
+                assignee: 'Віктор Петров',
+                priority: 'high',
+                status: 'in-progress',
+                dueDate: '2024-12-25'
+            },
+            {
+                id: 3,
+                title: 'Заміна кнопок в кабіні',
+                assignee: 'Олексій Сидоренко',
+                priority: 'low',
+                status: 'completed',
+                dueDate: '2024-12-20'
+            }
+        ];
+    }
+
+    // === HELPER METHODS ===
+
+    getRoleBadgeColor(role) {
+        const colors = {
+            admin: 'danger',
+            dispatcher: 'warning',
+            tech: 'info',
+            client: 'secondary'
+        };
+        return colors[role] || 'secondary';
+    }
+
+    getRoleLabel(role) {
+        const labels = {
+            admin: 'Адміністратор',
+            dispatcher: 'Диспетчер',
+            tech: 'Технік',
+            client: 'Клієнт'
+        };
+        return labels[role] || role;
+    }
+
+    getStatusBadgeColor(status) {
+        const colors = {
+            active: 'success',
+            maintenance: 'warning',
+            inactive: 'secondary',
+            error: 'danger'
+        };
+        return colors[status] || 'secondary';
+    }
+
+    getStatusLabel(status) {
+        const labels = {
+            active: 'Активний',
+            maintenance: 'На ТО',
+            inactive: 'Неактивний',
+            error: 'Помилка'
+        };
+        return labels[status] || status;
+    }
+
+    getPriorityBadgeColor(priority) {
+        const colors = {
+            low: 'secondary',
+            medium: 'info',
+            high: 'warning',
+            urgent: 'danger'
+        };
+        return colors[priority] || 'secondary';
+    }
+
+    getPriorityLabel(priority) {
+        const labels = {
+            low: 'Низький',
+            medium: 'Середній',
+            high: 'Високий',
+            urgent: 'Терміново'
+        };
+        return labels[priority] || priority;
+    }
+
+    getTaskStatusBadgeColor(status) {
+        const colors = {
+            pending: 'warning',
+            'in-progress': 'info',
+            completed: 'success',
+            cancelled: 'danger'
+        };
+        return colors[status] || 'secondary';
+    }
+
+    getTaskStatusLabel(status) {
+        const labels = {
+            pending: 'Очікує',
+            'in-progress': 'В роботі',
+            completed: 'Завершено',
+            cancelled: 'Скасовано'
+        };
+        return labels[status] || status;
+    }
+
+    formatDate(dateString) {
+        if (!dateString) return 'Не вказано';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('uk-UA');
     }
 }
 
