@@ -175,8 +175,14 @@ class CRMUnified {
                 'dashboard',
                 'qr-full',      // Повне управління QR
                 'qr-management', // Управління QR (додано для сумісності)
+                'qr-generator',  // Генератор QR
+                'qr-history',    // Історія сканувань  
+                'qr-analytics',  // Аналітика QR
+                'qr-batch',      // Пакетне керування
                 'lifts',
+                'maps',         // Мапа ліфтів
                 'users',
+                'analytics',    // Аналітика
                 'analytics-full', // Повна аналітика
                 'reports',
                 'settings',
@@ -185,9 +191,12 @@ class CRMUnified {
             dispatcher: [
                 'dashboard',
                 'qr-management', // Управління QR (перейменовано з qr-basic)
+                'qr-generator',  // Генератор QR
+                'qr-history',    // Історія сканувань
                 'assignments',
                 'technicians',
                 'clients',
+                'analytics',     // Аналітика
                 'analytics-basic', // Базова аналітика
                 'reports',
                 'monitoring'
@@ -813,6 +822,13 @@ class CRMUnified {
     async loadModule(moduleId) {
         console.log(`Завантаження модуля: ${moduleId}`);
         
+        // Спеціальний випадок для dashboard - використовуємо власну функцію
+        if (moduleId === 'dashboard') {
+            this.loadDashboard();
+            this.setActiveMenuItem(moduleId);
+            return;
+        }
+        
         // Перевірка доступу до модуля
         if (!this.hasAccessToModule(moduleId)) {
             this.showAccessDenied();
@@ -1004,6 +1020,7 @@ class CRMUnified {
             
             // Інші модулі
             'lifts': '/assets/modules/lift-management.html',  // Перенаправляємо на новий модуль
+            'maps': '/pages/admin/maps.html',              // Мапа ліфтів
             'users': '/pages/admin/users.html',
             'reports': '/assets/modules/reports.html',  // Уніфікований модуль звітів
             'settings': '/pages/admin/settings.html',
@@ -1033,6 +1050,16 @@ class CRMUnified {
         const parser = new DOMParser();
         const doc = parser.parseFromString(htmlContent, 'text/html');
         
+        // Витягуємо CSS стилі з head
+        const head = doc.querySelector('head');
+        let customStyles = '';
+        if (head) {
+            const styleElements = head.querySelectorAll('style');
+            styleElements.forEach(style => {
+                customStyles += style.textContent;
+            });
+        }
+        
         // Витягуємо основний контент (все що в body, але без навігації)
         const body = doc.querySelector('body');
         
@@ -1048,7 +1075,14 @@ class CRMUnified {
             mainContent = body;
         }
         
-        return mainContent ? mainContent.innerHTML : this.getDefaultModuleContent(moduleId);
+        // Поєднуємо стилі та контент
+        let result = '';
+        if (customStyles) {
+            result += `<style>${customStyles}</style>`;
+        }
+        result += mainContent ? mainContent.innerHTML : this.getDefaultModuleContent(moduleId);
+        
+        return result;
     }
     
     getDefaultModuleContent(moduleId) {
