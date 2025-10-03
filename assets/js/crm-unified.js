@@ -991,9 +991,9 @@ class CRMUnified {
             'qr-scanner': '/assets/modules/qr-scanner.html',
             'qr-management': '/assets/modules/qr-generator.html',  // Для всіх ролей використовуємо генератор
             'qr-full': '/assets/modules/qr-generator.html',        // Повна QR система для адмінів
-            'qr-history': 'pages/admin/qr-history.html',
-            'qr-analytics': 'pages/admin/qr-analytics.html',
-            'qr-batch': 'pages/admin/qr-batch.html',
+            'qr-history': '/pages/admin/qr-history.html',
+            'qr-analytics': '/pages/admin/qr-analytics.html',
+            'qr-batch': '/pages/admin/qr-batch.html',
             
             // Нові функціональні модулі
             'lift-management': '/assets/modules/lift-management.html',
@@ -1004,25 +1004,25 @@ class CRMUnified {
             
             // Інші модулі
             'lifts': '/assets/modules/lift-management.html',  // Перенаправляємо на новий модуль
-            'users': 'pages/admin/users.html',
+            'users': '/pages/admin/users.html',
             'reports': '/assets/modules/reports.html',  // Уніфікований модуль звітів
-            'settings': 'pages/admin/settings.html',
+            'settings': '/pages/admin/settings.html',
             
             // Модулі диспетчера
-            'assignments': 'pages/dispatcher/assignments.html',
-            'technicians': 'pages/dispatcher/technicians.html',
-            'clients': 'pages/dispatcher/clients.html',
-            'monitoring': 'pages/dispatcher/monitoring.html',
+            'assignments': '/pages/dispatcher/assignments.html',
+            'technicians': '/pages/dispatcher/technicians.html',
+            'clients': '/pages/dispatcher/clients.html',
+            'monitoring': '/pages/dispatcher/monitoring.html',
             
             // Модулі техніка
             'tasks': '/assets/modules/tasks.html',
-            'schedule': 'pages/tech/schedule.html',
-            'checklists': 'pages/tech/checklists.html',
-            'knowledge-base': 'pages/tech/knowledge-base.html',
-            'tools': 'pages/tech/tools.html',
+            'schedule': '/pages/tech/schedule.html',
+            'checklists': '/pages/tech/checklists.html',
+            'knowledge-base': '/pages/tech/knowledge-base.html',
+            'tools': '/pages/tech/tools.html',
             
             // Загальні модулі
-            'support': 'pages/support.html'
+            'support': '/pages/support.html'
         };
         
         return modulePaths[moduleId];
