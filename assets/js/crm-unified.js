@@ -173,42 +173,87 @@ class CRMUnified {
         const modulesByRole = {
             admin: [
                 'dashboard',
-                'qr-full',      // Повне управління QR
-                'qr-management', // Управління QR (додано для сумісності)
+                // QR управління - повне 
                 'qr-generator',  // Генератор QR
+                'qr-management', // Управління QR системою
                 'qr-history',    // Історія сканувань  
                 'qr-analytics',  // Аналітика QR
                 'qr-batch',      // Пакетне керування
-                'lifts',
-                'maps',         // Мапа ліфтів
-                'users',
-                'analytics',    // Аналітика
+                
+                // Основні модулі управління
+                'lifts',         // Управління ліфтами
+                'maps',          // Мапа ліфтів
+                'users',         // Управління користувачами
+                'settings',      // Налаштування системи
+                
+                // Аналітика та звітність
                 'analytics-full', // Повна аналітика
-                'reports',
-                'settings',
-                'support'
+                'reports',       // Звіти
+                
+                // Розумні системи управління
+                'ai-assistant',      // AI помічник для прийняття рішень
+                'knowledge-manager', // Управління базою знань
+                'batch-manager',     // Пакетні операції
+                'assignment-manager', // Управління завданнями
+                'profile-manager',   // Управління профілями
+                'monitoring-manager', // Система моніторингу
+                'support-manager',   // Управління підтримкою
+                'chat-system',       // Корпоративний чат
+                'support'            // Підтримка
             ],
             dispatcher: [
                 'dashboard',
-                'qr-management', // Управління QR (перейменовано з qr-basic)
-                'qr-generator',  // Генератор QR
+                
+                // QR - базове управління
+                'qr-generator',  // Генерація нових QR
+                'qr-management', // Перегляд та управління
                 'qr-history',    // Історія сканувань
-                'assignments',
-                'technicians',
-                'clients',
-                'analytics',     // Аналітика
+                
+                // Основні функції диспетчера
+                'assignments',   // Призначення завдань
+                'technicians',   // Управління техніками
+                'clients',       // Робота з клієнтами
+                'monitoring',    // Моніторинг процесів
+                
+                // Аналітика та звітність
                 'analytics-basic', // Базова аналітика
-                'reports',
-                'monitoring'
+                'reports',        // Звіти
+                
+                // Координаційні системи
+                'ai-assistant',      // AI для планування
+                'assignment-manager', // Розподіл завдань
+                'monitoring-manager', // Контроль виконання
+                'batch-manager',     // Групові операції
+                'chat-system'        // Координаційний чат
             ],
             tech: [
                 'dashboard',
-                'qr-scanner',   // Тільки сканер
-                'tasks',
-                'schedule',
-                'checklists',
-                'knowledge-base',
-                'tools'
+                
+                // QR - тільки сканування
+                'qr-scanner',    // Сканування QR кодів
+                
+                // Основні робочі функції
+                'tasks',         // Мої завдання
+                'schedule',      // Розклад роботи
+                'checklists',    // Чек-листи перевірок
+                'inspections',   // Проведення інспекцій
+                
+                // Навчання та довідка
+                'knowledge-base', // База знань
+                'manuals',       // Технічні інструкції
+                'videos',        // Відео-гайди та навчання
+                
+                // Робочі інструменти
+                'tools',         // Інструменти техніка
+                'ar-helper',     // AR помічник - КЛЮЧОВА функція!
+                'task-map',      // Карта завдань у полі
+                'notifications', // Робочі сповіщення
+                
+                // Допоміжні системи
+                'ai-assistant',  // AI помічник в роботі
+                'voice-control', // Голосові команди (руки зайняті)
+                'tool-manager',  // Управління інструментами
+                'chat-system'    // Зв'язок з диспетчером
             ]
         };
         
@@ -375,6 +420,90 @@ class CRMUnified {
                 title: 'Підтримка',
                 icon: 'fas fa-headset',
                 action: () => this.loadModule('support')
+            },
+            
+            // Розумні модулі та допоміжні системи
+            'ai-assistant': {
+                title: 'AI Асистент',
+                icon: 'fas fa-robot',
+                action: () => this.loadModule('ai-assistant')
+            },
+            'ar-helper': {
+                title: 'AR Помічник',
+                icon: 'fas fa-cube',
+                action: () => this.loadModule('ar-helper')
+            },
+            'voice-control': {
+                title: 'Голосове керування',
+                icon: 'fas fa-microphone',
+                action: () => this.loadModule('voice-control')
+            },
+            'knowledge-manager': {
+                title: 'Менеджер знань',
+                icon: 'fas fa-brain',
+                action: () => this.loadModule('knowledge-manager')
+            },
+            'batch-manager': {
+                title: 'Пакетний менеджер',
+                icon: 'fas fa-boxes',
+                action: () => this.loadModule('batch-manager')
+            },
+            'assignment-manager': {
+                title: 'Менеджер завдань',
+                icon: 'fas fa-clipboard-list',
+                action: () => this.loadModule('assignment-manager')
+            },
+            'tool-manager': {
+                title: 'Менеджер інструментів',
+                icon: 'fas fa-wrench',
+                action: () => this.loadModule('tool-manager')
+            },
+            'profile-manager': {
+                title: 'Менеджер профілів',
+                icon: 'fas fa-user-cog',
+                action: () => this.loadModule('profile-manager')
+            },
+            'monitoring-manager': {
+                title: 'Менеджер моніторингу',
+                icon: 'fas fa-chart-line',
+                action: () => this.loadModule('monitoring-manager')
+            },
+            'support-manager': {
+                title: 'Менеджер підтримки',
+                icon: 'fas fa-life-ring',
+                action: () => this.loadModule('support-manager')
+            },
+            'chat-system': {
+                title: 'Система чату',
+                icon: 'fas fa-comments',
+                action: () => this.loadModule('chat-system')
+            },
+            
+            // Додаткові модулі для техніків
+            'inspections': {
+                title: 'Інспекції',
+                icon: 'fas fa-search',
+                action: () => this.loadModule('inspections')
+            },
+            'manuals': {
+                title: 'Інструкції',
+                icon: 'fas fa-book-open',
+                action: () => this.loadModule('manuals')
+            },
+            'videos': {
+                title: 'Відео-гайди',
+                icon: 'fas fa-video',
+                action: () => this.loadModule('videos')
+            },
+            'task-map': {
+                title: 'Карта завдань',
+                icon: 'fas fa-map-marked-alt',
+                action: () => this.loadModule('task-map')
+            },
+            'notifications': {
+                title: 'Сповіщення',
+                icon: 'fas fa-bell',
+                action: () => this.loadModule('notifications')
             }
         };
         
@@ -1001,12 +1130,34 @@ class CRMUnified {
     
     getModulePath(moduleId) {
         // Визначаємо шлях до файлу залежно від модуля та ролі користувача
+        
+        // Рольово-специфічні модулі
+        if (this.userRole === 'tech') {
+            const techModulePaths = {
+                'tasks': '/pages/tech/tasks.html',
+                'qr-scanner': '/pages/tech/qr-scanner.html',
+                'schedule': '/pages/tech/schedule.html',
+                'checklists': '/pages/tech/checklists.html',
+                'knowledge-base': '/pages/tech/knowledge-base.html',
+                'tools': '/pages/tech/tools.html',
+                'ar-helper': '/pages/tech/ar-helper.html',
+                'inspections': '/pages/tech/inspections.html',
+                'manuals': '/pages/tech/manuals.html',
+                'videos': '/pages/tech/videos.html',
+                'task-map': '/pages/tech/task-map.html',
+                'notifications': '/pages/tech/notifications.html'
+            };
+            if (techModulePaths[moduleId]) {
+                return techModulePaths[moduleId];
+            }
+        }
+        
         const modulePaths = {
-            // QR модулі - використовуємо нові модулі
+            // QR модулі - використовуємо відповідні файли
             'qr-generator': '/assets/modules/qr-generator.html',
             'qr-scanner': '/assets/modules/qr-scanner.html',
-            'qr-management': '/assets/modules/qr-generator.html',  // Для всіх ролей використовуємо генератор
-            'qr-full': '/assets/modules/qr-generator.html',        // Повна QR система для адмінів
+            'qr-management': '/pages/admin/qr-management.html',    // Управління QR кодами
+            'qr-full': '/pages/admin/qr-management.html',          // Повне управління QR для адмінів
             'qr-history': '/pages/admin/qr-history.html',
             'qr-analytics': '/pages/admin/qr-analytics.html',
             'qr-batch': '/pages/admin/qr-batch.html',
@@ -1015,7 +1166,7 @@ class CRMUnified {
             'lift-management': '/assets/modules/lift-management.html',
             'tasks': '/assets/modules/tasks.html',
             'analytics': '/assets/modules/analytics.html',    // Новий модуль аналітики
-            'analytics-full': '/assets/modules/analytics.html', // Повна аналітика для адміна
+            'analytics-full': '/pages/admin/analytics.html',    // Повна аналітика для адміна
             'analytics-basic': '/assets/modules/analytics.html', // Базова аналітика для диспетчера
             
             // Інші модулі
@@ -1025,18 +1176,24 @@ class CRMUnified {
             'reports': '/assets/modules/reports.html',  // Уніфікований модуль звітів
             'settings': '/pages/admin/settings.html',
             
+            // Розумні модулі
+            'ai-assistant': '/pages/ai-assistant/ai-assistant.html',
+            'ar-helper': '/pages/ar-helper/index.html',
+            'voice-control': '/pages/voice-control/index.html',
+            'knowledge-manager': '/pages/knowledge-manager/index.html',
+            'batch-manager': '/pages/batch-manager/index.html',
+            'assignment-manager': '/pages/assignment-manager/index.html',
+            'tool-manager': '/pages/tool-manager/index.html',
+            'profile-manager': '/pages/profile-manager/index.html',
+            'monitoring-manager': '/pages/monitoring-manager/index.html',
+            'support-manager': '/pages/support-manager/index.html',
+            'chat-system': '/pages/chat-system/index.html',
+            
             // Модулі диспетчера
             'assignments': '/pages/dispatcher/assignments.html',
             'technicians': '/pages/dispatcher/technicians.html',
             'clients': '/pages/dispatcher/clients.html',
             'monitoring': '/pages/dispatcher/monitoring.html',
-            
-            // Модулі техніка
-            'tasks': '/assets/modules/tasks.html',
-            'schedule': '/pages/tech/schedule.html',
-            'checklists': '/pages/tech/checklists.html',
-            'knowledge-base': '/pages/tech/knowledge-base.html',
-            'tools': '/pages/tech/tools.html',
             
             // Загальні модулі
             'support': '/pages/support.html'
