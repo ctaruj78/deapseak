@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Карта завдань</title>
+    <link rel="stylesheet" href="../plugins/adminlte/css/adminlte.min.css">
+    <link rel="stylesheet" href="../plugins/fontawesome-free/css/all.min.css">
+    <style>
+        .task-map-container {
+            height: 600px;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+        .task-marker {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+            border: 3px solid white;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+            font-weight: bold;
+        }
+        .task-marker.urgent { background: #dc3545; animation: pulse 2s infinite; }
+        .task-marker.normal { background: #ffc107; }
+        .task-marker.completed { background: #28a745; }
+        .task-marker.in-progress { background: #007bff; }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+        }
+        
+        .tech-marker {
+            position: absolute;
+            width: 35px;
+            height: 35px;
+            background: #17a2b8;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .route-line {
+            position: absolute;
+            height: 2px;
+            background: #007bff;
+            transform-origin: 0 50%;
+            opacity: 0.7;
+        }
+        
+        .task-info-card {
+            position: absolute;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            min-width: 250px;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        
+        .filter-panel {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+<div class="content-wrapper">
+    <!-- Content Header -->
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">Карта завдань</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="#" onclick="window.crmSystem.loadDashboard()">Головна</a></li>
+                        <li class="breadcrumb-item active">Карта завдань</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid">
+            <!-- Statistics -->
+            <div class="row mb-3">
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-danger">
+                        <div class="inner">
+                            <h3>8</h3>
+                            <p>Термінові завдання</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-warning">
+                        <div class="inner">
+                            <h3>15</h3>
+                            <p>Звичайні завдання</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-info">
+                        <div class="inner">
+                            <h3>6</h3>
+                            <p>Виконуються</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-cog fa-spin"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-success">
+                        <div class="inner">
+                            <h3>42</h3>
+                            <p>Завершені сьогодні</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Map -->
+                <div class="col-md-9">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Інтерактивна карта завдань</h3>
+                            <div class="card-tools">
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-info" onclick="refreshMap()">
+                                        <i class="fas fa-sync"></i> Оновити
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-primary" onclick="centerMap()">
+                                        <i class="fas fa-crosshairs"></i> Центрувати
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-success" onclick="optimizeRoutes()">
+                                        <i class="fas fa-route"></i> Оптимізувати маршрути
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body p-2">
+                            <div class="task-map-container" id="taskMapContainer">
+                                <!-- Task markers -->
+                                <div class="task-marker urgent" style="top: 15%; left: 25%;" 
+                                     onclick="showTaskInfo('T001', event)" data-task="T001">T1</div>
+                                <div class="task-marker urgent" style="top: 45%; left: 15%;" 
+                                     onclick="showTaskInfo('T002', event)" data-task="T002">T2</div>
+                                <div class="task-marker normal" style="top: 30%; left: 55%;" 
+                                     onclick="showTaskInfo('T003', event)" data-task="T003">T3</div>
+                                <div class="task-marker in-progress" style="top: 60%; left: 40%;" 
+                                     onclick="showTaskInfo('T004', event)" data-task="T004">T4</div>
+                                <div class="task-marker completed" style="top: 20%; left: 70%;" 
+                                     onclick="showTaskInfo('T005', event)" data-task="T005">T5</div>
+                                <div class="task-marker normal" style="top: 75%; left: 60%;" 
+                                     onclick="showTaskInfo('T006', event)" data-task="T006">T6</div>
+                                
+                                <!-- Technician markers -->
+                                <div class="tech-marker" style="top: 35%; left: 30%;" 
+                                     onclick="showTechInfo('TECH001', event)" data-tech="TECH001" title="Іванов І.І.">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="tech-marker" style="top: 50%; left: 50%;" 
+                                     onclick="showTechInfo('TECH002', event)" data-tech="TECH002" title="Петров П.П.">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                
+                                <!-- Route lines -->
+                                <div class="route-line" style="top: 35%; left: 30%; width: 150px; transform: rotate(25deg);"></div>
+                                <div class="route-line" style="top: 50%; left: 50%; width: 100px; transform: rotate(-15deg);"></div>
+                                
+                                <!-- Map center indicator -->
+                                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; opacity: 0.3;">
+                                    <i class="fas fa-map-marked-alt fa-3x text-muted"></i>
+                                    <p class="text-muted mt-2">Карта завдань та техніків</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="col-md-3">
+                    <!-- Filters -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Фільтри</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="filter-panel">
+                                <div class="form-group">
+                                    <label>Статус завдання</label>
+                                    <select class="form-control" id="statusFilter" onchange="filterTasks()">
+                                        <option value="all">Всі статуси</option>
+                                        <option value="urgent">Термінові</option>
+                                        <option value="normal">Звичайні</option>
+                                        <option value="in-progress">Виконуються</option>
+                                        <option value="completed">Завершені</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Технік</label>
+                                    <select class="form-control" id="techFilter" onchange="filterTasks()">
+                                        <option value="all">Всі техніки</option>
+                                        <option value="TECH001">Іванов І.І.</option>
+                                        <option value="TECH002">Петров П.П.</option>
+                                        <option value="TECH003">Сидоров С.С.</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Тип завдання</label>
+                                    <select class="form-control" id="typeFilter" onchange="filterTasks()">
+                                        <option value="all">Всі типи</option>
+                                        <option value="maintenance">ТО</option>
+                                        <option value="repair">Ремонт</option>
+                                        <option value="emergency">Аварія</option>
+                                        <option value="inspection">Перевірка</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-primary btn-block" onclick="applyFilters()">Застосувати</button>
+                                <button class="btn btn-secondary btn-block" onclick="clearFilters()">Очистити</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Legend -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Легенда</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #dc3545;"></div>
+                                <span>Термінові завдання</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #ffc107;"></div>
+                                <span>Звичайні завдання</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #007bff;"></div>
+                                <span>Виконуються</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #28a745;"></div>
+                                <span>Завершені</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #17a2b8;"></div>
+                                <span>Техніки</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Швидкі дії</h3>
+                        </div>
+                        <div class="card-body">
+                            <button class="btn btn-success btn-block mb-2" onclick="createTask()">
+                                <i class="fas fa-plus mr-2"></i>Нове завдання
+                            </button>
+                            <button class="btn btn-info btn-block mb-2" onclick="assignTechnician()">
+                                <i class="fas fa-user-check mr-2"></i>Призначити техніка
+                            </button>
+                            <button class="btn btn-warning btn-block mb-2" onclick="generateReport()">
+                                <i class="fas fa-chart-line mr-2"></i>Звіт маршрутів
+                            </button>
+                            <button class="btn btn-secondary btn-block" onclick="exportMap()">
+                                <i class="fas fa-download mr-2"></i>Експорт карти
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Task info popup -->
+    <div class="task-info-card" id="taskInfoCard">
+        <div id="taskInfoContent"></div>
+        <button class="btn btn-sm btn-secondary float-right mt-2" onclick="hideTaskInfo()">Закрити</button>
+    </div>
+</div>
+
+<script>
+const taskData = {
+    'T001': {
+        id: 'T001',
+        address: 'вул. Хрещатик, 1',
+        type: 'Аварія',
+        priority: 'Термінова',
+        technician: 'Не призначено',
+        created: '21.12.2024 09:30',
+        description: 'Ліфт зупинився між поверхами'
+    },
+    'T002': {
+        id: 'T002',
+        address: 'вул. Володимирська, 15',
+        type: 'ТО',
+        priority: 'Термінова',
+        technician: 'Іванов І.І.',
+        created: '21.12.2024 08:15',
+        description: 'Планове технічне обслуговування'
+    },
+    'T003': {
+        id: 'T003',
+        address: 'пр-т Перемоги, 42',
+        type: 'Ремонт',
+        priority: 'Звичайна',
+        technician: 'Петров П.П.',
+        created: '20.12.2024 16:20',
+        description: 'Заміна кнопок виклику'
+    }
+};
+
+const techData = {
+    'TECH001': {
+        id: 'TECH001',
+        name: 'Іванов Іван Іванович',
+        status: 'На завданні',
+        currentTask: 'T002',
+        phone: '+38 (098) 123-45-67',
+        experience: '5 років'
+    },
+    'TECH002': {
+        id: 'TECH002',
+        name: 'Петров Петро Петрович',
+        status: 'В дорозі',
+        currentTask: 'T003',
+        phone: '+38 (098) 765-43-21',
+        experience: '3 роки'
+    }
+};
+
+function showTaskInfo(taskId, event) {
+    const task = taskData[taskId];
+    const popup = document.getElementById('taskInfoCard');
+    const content = document.getElementById('taskInfoContent');
+    
+    if (task) {
+        content.innerHTML = `
+            <h6><strong>Завдання ${task.id}</strong></h6>
+            <p><strong>Адреса:</strong> ${task.address}</p>
+            <p><strong>Тип:</strong> ${task.type}</p>
+            <p><strong>Пріоритет:</strong> ${task.priority}</p>
+            <p><strong>Технік:</strong> ${task.technician}</p>
+            <p><strong>Створено:</strong> ${task.created}</p>
+            <p><strong>Опис:</strong> ${task.description}</p>
+            <div class="mt-2">
+                <button class="btn btn-sm btn-primary mr-1" onclick="editTask('${taskId}')">Редагувати</button>
+                <button class="btn btn-sm btn-success" onclick="completeTask('${taskId}')">Завершити</button>
+            </div>
+        `;
+        
+        popup.style.left = (event.pageX + 10) + 'px';
+        popup.style.top = (event.pageY - 50) + 'px';
+        popup.style.display = 'block';
+    }
+}
+
+function showTechInfo(techId, event) {
+    const tech = techData[techId];
+    const popup = document.getElementById('taskInfoCard');
+    const content = document.getElementById('taskInfoContent');
+    
+    if (tech) {
+        content.innerHTML = `
+            <h6><strong>${tech.name}</strong></h6>
+            <p><strong>Статус:</strong> ${tech.status}</p>
+            <p><strong>Поточне завдання:</strong> ${tech.currentTask}</p>
+            <p><strong>Телефон:</strong> ${tech.phone}</p>
+            <p><strong>Досвід:</strong> ${tech.experience}</p>
+            <div class="mt-2">
+                <button class="btn btn-sm btn-info mr-1" onclick="contactTech('${techId}')">Зв'язатися</button>
+                <button class="btn btn-sm btn-warning" onclick="reassignTech('${techId}')">Перепризначити</button>
+            </div>
+        `;
+        
+        popup.style.left = (event.pageX + 10) + 'px';
+        popup.style.top = (event.pageY - 50) + 'px';
+        popup.style.display = 'block';
+    }
+}
+
+function hideTaskInfo() {
+    document.getElementById('taskInfoCard').style.display = 'none';
+}
+
+function filterTasks() {
+    const status = document.getElementById('statusFilter').value;
+    const tech = document.getElementById('techFilter').value;
+    const type = document.getElementById('typeFilter').value;
+    
+    console.log('Фільтрація:', { status, tech, type });
+}
+
+function applyFilters() {
+    filterTasks();
+    toastr.info('Фільтри застосовано');
+}
+
+function clearFilters() {
+    document.getElementById('statusFilter').value = 'all';
+    document.getElementById('techFilter').value = 'all';
+    document.getElementById('typeFilter').value = 'all';
+    filterTasks();
+    toastr.info('Фільтри очищено');
+}
+
+function refreshMap() {
+    toastr.info('Карта оновлена');
+}
+
+function centerMap() {
+    toastr.info('Карта відцентрована');
+}
+
+function optimizeRoutes() {
+    toastr.info('Оптимізація маршрутів...');
+    setTimeout(() => {
+        toastr.success('Маршрути оптимізовано');
+    }, 2000);
+}
+
+function createTask() {
+    alert('Створення нового завдання');
+}
+
+function assignTechnician() {
+    alert('Призначення техніка');
+}
+
+function generateReport() {
+    alert('Генерація звіту маршрутів');
+}
+
+function exportMap() {
+    alert('Експорт карти');
+}
+
+function editTask(taskId) {
+    hideTaskInfo();
+    alert('Редагування завдання: ' + taskId);
+}
+
+function completeTask(taskId) {
+    hideTaskInfo();
+    if(confirm('Позначити завдання як завершене?')) {
+        toastr.success('Завдання ' + taskId + ' завершено');
+    }
+}
+
+function contactTech(techId) {
+    hideTaskInfo();
+    alert('Зв\'язок з технікою: ' + techId);
+}
+
+function reassignTech(techId) {
+    hideTaskInfo();
+    alert('Перепризначення техніка: ' + techId);
+}
+
+// Hide popup when clicking outside
+document.addEventListener('click', function(event) {
+    const popup = document.getElementById('taskInfoCard');
+    const markers = document.querySelectorAll('.task-marker, .tech-marker');
+    let clickedMarker = false;
+    
+    markers.forEach(marker => {
+        if (marker.contains(event.target)) {
+            clickedMarker = true;
+        }
+    });
+    
+    if (!clickedMarker && !popup.contains(event.target)) {
+        hideTaskInfo();
+    }
+});
+</script>
+</body>
+</html>

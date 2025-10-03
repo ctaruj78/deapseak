@@ -553,10 +553,135 @@ class ClientSystem {
                 '</ol></div></div></div></div>' +
                 '<section class="content">' +
                 '<div class="container-fluid">' +
-                '<div class="alert alert-info">' +
-                '<i class="fas fa-info-circle mr-2"></i>' +
-                'Тут буде детальна інформація про всі ваші ліфти з можливістю перегляду статусу, історії обслуговування та створення заявок.' +
-                '</div></div></section>',
+                '<div class="row">' +
+                '<div class="col-lg-12">' +
+                '<div class="card">' +
+                '<div class="card-header">' +
+                '<h3 class="card-title"><i class="fas fa-building mr-2"></i>Ваші ліфти</h3>' +
+                '<div class="card-tools">' +
+                '<button class="btn btn-primary btn-sm" onclick="alert(\'Додавання нового ліфта\')"><i class="fas fa-plus mr-1"></i>Додати ліфт</button>' +
+                '</div>' +
+                '</div>' +
+                '<div class="card-body table-responsive p-0">' +
+                '<table class="table table-hover text-nowrap">' +
+                '<thead>' +
+                '<tr>' +
+                '<th>ID</th>' +
+                '<th>Адреса</th>' +
+                '<th>Модель</th>' +
+                '<th>Статус</th>' +
+                '<th>Останнє ТО</th>' +
+                '<th>Наступне ТО</th>' +
+                '<th>Дії</th>' +
+                '</tr>' +
+                '</thead>' +
+                '<tbody>' +
+                '<tr>' +
+                '<td>L001</td>' +
+                '<td>вул. Хрещатик, 1</td>' +
+                '<td>OTIS Gen2</td>' +
+                '<td><span class="badge badge-success">Працює</span></td>' +
+                '<td>15.11.2024</td>' +
+                '<td>15.02.2025</td>' +
+                '<td>' +
+                '<button class="btn btn-info btn-sm mr-1" onclick="alert(\'Перегляд деталей\')"><i class="fas fa-eye"></i></button>' +
+                '<button class="btn btn-warning btn-sm" onclick="alert(\'Створити заявку\')"><i class="fas fa-tools"></i></button>' +
+                '</td>' +
+                '</tr>' +
+                '<tr>' +
+                '<td>L002</td>' +
+                '<td>вул. Володимирська, 15</td>' +
+                '<td>KONE MonoSpace</td>' +
+                '<td><span class="badge badge-warning">Потребує ТО</span></td>' +
+                '<td>10.10.2024</td>' +
+                '<td>10.01.2025</td>' +
+                '<td>' +
+                '<button class="btn btn-info btn-sm mr-1" onclick="alert(\'Перегляд деталей\')"><i class="fas fa-eye"></i></button>' +
+                '<button class="btn btn-warning btn-sm" onclick="alert(\'Створити заявку\')"><i class="fas fa-tools"></i></button>' +
+                '</td>' +
+                '</tr>' +
+                '</tbody>' +
+                '</table>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</section>',
+
+            'maintenance-schedule': '<div class="content-header">' +
+                '<div class="container-fluid">' +
+                '<div class="row mb-2">' +
+                '<div class="col-sm-6"><h1 class="m-0">Графік ТО</h1></div>' +
+                '<div class="col-sm-6">' +
+                '<ol class="breadcrumb float-sm-right">' +
+                '<li class="breadcrumb-item"><a href="#" onclick="window.clientSystem.loadDashboard()">Головна</a></li>' +
+                '<li class="breadcrumb-item active">Графік ТО</li>' +
+                '</ol></div></div></div></div>' +
+                '<section class="content">' +
+                '<div class="container-fluid">' +
+                '<div class="row">' +
+                '<div class="col-md-6">' +
+                '<div class="card card-primary">' +
+                '<div class="card-header">' +
+                '<h3 class="card-title"><i class="fas fa-calendar mr-2"></i>Заплановані ТО</h3>' +
+                '</div>' +
+                '<div class="card-body">' +
+                '<div class="info-box mb-3">' +
+                '<span class="info-box-icon bg-warning"><i class="fas fa-wrench"></i></span>' +
+                '<div class="info-box-content">' +
+                '<span class="info-box-text">Наступне ТО</span>' +
+                '<span class="info-box-number">10 січня 2025</span>' +
+                '<span class="progress-description">вул. Володимирська, 15</span>' +
+                '</div>' +
+                '</div>' +
+                '<div class="info-box mb-3">' +
+                '<span class="info-box-icon bg-success"><i class="fas fa-check"></i></span>' +
+                '<div class="info-box-content">' +
+                '<span class="info-box-text">Останнє ТО</span>' +
+                '<span class="info-box-number">15 листопада 2024</span>' +
+                '<span class="progress-description">вул. Хрещатик, 1</span>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '<div class="col-md-6">' +
+                '<div class="card card-info">' +
+                '<div class="card-header">' +
+                '<h3 class="card-title"><i class="fas fa-chart-line mr-2"></i>Статистика</h3>' +
+                '</div>' +
+                '<div class="card-body">' +
+                '<div class="row">' +
+                '<div class="col-6">' +
+                '<div class="small-box bg-info">' +
+                '<div class="inner">' +
+                '<h3>2</h3>' +
+                '<p>Всього ліфтів</p>' +
+                '</div>' +
+                '<div class="icon">' +
+                '<i class="fas fa-building"></i>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '<div class="col-6">' +
+                '<div class="small-box bg-success">' +
+                '<div class="inner">' +
+                '<h3>1</h3>' +
+                '<p>Справні</p>' +
+                '</div>' +
+                '<div class="icon">' +
+                '<i class="fas fa-check-circle"></i>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</section>',
                 
             'service-requests': '<div class="content-header">' +
                 '<div class="container-fluid">' +
@@ -569,10 +694,244 @@ class ClientSystem {
                 '</ol></div></div></div></div>' +
                 '<section class="content">' +
                 '<div class="container-fluid">' +
-                '<div class="alert alert-success">' +
-                '<i class="fas fa-clipboard-list mr-2"></i>' +
-                'Тут ви зможете створювати нові заявки на обслуговування, відстежувати їх статус та історію виконання.' +
-                '</div></div></section>',
+                '<div class="row">' +
+                '<div class="col-lg-12">' +
+                '<div class="card">' +
+                '<div class="card-header">' +
+                '<h3 class="card-title"><i class="fas fa-clipboard-list mr-2"></i>Мої заявки</h3>' +
+                '<div class="card-tools">' +
+                '<button class="btn btn-success btn-sm" onclick="alert(\'Створення нової заявки\')"><i class="fas fa-plus mr-1"></i>Нова заявка</button>' +
+                '</div>' +
+                '</div>' +
+                '<div class="card-body">' +
+                '<div class="row">' +
+                '<div class="col-md-4">' +
+                '<div class="info-box">' +
+                '<span class="info-box-icon bg-info"><i class="fas fa-clock"></i></span>' +
+                '<div class="info-box-content">' +
+                '<span class="info-box-text">В очікуванні</span>' +
+                '<span class="info-box-number">2</span>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '<div class="col-md-4">' +
+                '<div class="info-box">' +
+                '<span class="info-box-icon bg-warning"><i class="fas fa-tools"></i></span>' +
+                '<div class="info-box-content">' +
+                '<span class="info-box-text">В роботі</span>' +
+                '<span class="info-box-number">1</span>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '<div class="col-md-4">' +
+                '<div class="info-box">' +
+                '<span class="info-box-icon bg-success"><i class="fas fa-check"></i></span>' +
+                '<div class="info-box-content">' +
+                '<span class="info-box-text">Виконано</span>' +
+                '<span class="info-box-number">8</span>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '<table class="table table-bordered">' +
+                '<thead>' +
+                '<tr>' +
+                '<th>№ заявки</th>' +
+                '<th>Ліфт</th>' +
+                '<th>Проблема</th>' +
+                '<th>Статус</th>' +
+                '<th>Дата створення</th>' +
+                '<th>Дії</th>' +
+                '</tr>' +
+                '</thead>' +
+                '<tbody>' +
+                '<tr>' +
+                '<td>#001</td>' +
+                '<td>вул. Хрещатик, 1</td>' +
+                '<td>Не працює кнопка 3-го поверху</td>' +
+                '<td><span class="badge badge-warning">В роботі</span></td>' +
+                '<td>20.12.2024</td>' +
+                '<td><button class="btn btn-info btn-sm" onclick="alert(\'Деталі заявки\')"><i class="fas fa-eye"></i></button></td>' +
+                '</tr>' +
+                '<tr>' +
+                '<td>#002</td>' +
+                '<td>вул. Володимирська, 15</td>' +
+                '<td>Планове ТО</td>' +
+                '<td><span class="badge badge-info">В очікуванні</span></td>' +
+                '<td>18.12.2024</td>' +
+                '<td><button class="btn btn-info btn-sm" onclick="alert(\'Деталі заявки\')"><i class="fas fa-eye"></i></button></td>' +
+                '</tr>' +
+                '</tbody>' +
+                '</table>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</section>',
+
+            'history': '<div class="content-header">' +
+                '<div class="container-fluid">' +
+                '<div class="row mb-2">' +
+                '<div class="col-sm-6"><h1 class="m-0">Історія обслуговування</h1></div>' +
+                '<div class="col-sm-6">' +
+                '<ol class="breadcrumb float-sm-right">' +
+                '<li class="breadcrumb-item"><a href="#" onclick="window.clientSystem.loadDashboard()">Головна</a></li>' +
+                '<li class="breadcrumb-item active">Історія</li>' +
+                '</ol></div></div></div></div>' +
+                '<section class="content">' +
+                '<div class="container-fluid">' +
+                '<div class="row">' +
+                '<div class="col-lg-12">' +
+                '<div class="card">' +
+                '<div class="card-header">' +
+                '<h3 class="card-title"><i class="fas fa-history mr-2"></i>Журнал робіт</h3>' +
+                '<div class="card-tools">' +
+                '<div class="input-group input-group-sm" style="width: 250px;">' +
+                '<input type="text" name="table_search" class="form-control float-right" placeholder="Пошук...">' +
+                '<div class="input-group-append">' +
+                '<button type="submit" class="btn btn-default"><i class="fas fa-search"></i></button>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '<div class="card-body table-responsive p-0">' +
+                '<table class="table table-hover text-nowrap">' +
+                '<thead>' +
+                '<tr>' +
+                '<th>Дата</th>' +
+                '<th>Ліфт</th>' +
+                '<th>Тип роботи</th>' +
+                '<th>Виконавець</th>' +
+                '<th>Статус</th>' +
+                '<th>Вартість</th>' +
+                '<th>Звіт</th>' +
+                '</tr>' +
+                '</thead>' +
+                '<tbody>' +
+                '<tr>' +
+                '<td>15.11.2024</td>' +
+                '<td>вул. Хрещатик, 1</td>' +
+                '<td>Планове ТО</td>' +
+                '<td>Іванов І.І.</td>' +
+                '<td><span class="badge badge-success">Виконано</span></td>' +
+                '<td>2500 грн</td>' +
+                '<td><button class="btn btn-info btn-sm" onclick="alert(\'Звіт про роботи\')"><i class="fas fa-file-alt"></i></button></td>' +
+                '</tr>' +
+                '<tr>' +
+                '<td>10.10.2024</td>' +
+                '<td>вул. Володимирська, 15</td>' +
+                '<td>Ремонт кнопок</td>' +
+                '<td>Петров П.П.</td>' +
+                '<td><span class="badge badge-success">Виконано</span></td>' +
+                '<td>800 грн</td>' +
+                '<td><button class="btn btn-info btn-sm" onclick="alert(\'Звіт про роботи\')"><i class="fas fa-file-alt"></i></button></td>' +
+                '</tr>' +
+                '<tr>' +
+                '<td>05.09.2024</td>' +
+                '<td>вул. Хрещатик, 1</td>' +
+                '<td>Заміна тросів</td>' +
+                '<td>Сидоров С.С.</td>' +
+                '<td><span class="badge badge-success">Виконано</span></td>' +
+                '<td>5200 грн</td>' +
+                '<td><button class="btn btn-info btn-sm" onclick="alert(\'Звіт про роботи\')"><i class="fas fa-file-alt"></i></button></td>' +
+                '</tr>' +
+                '</tbody>' +
+                '</table>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</section>',
+
+            'invoices': '<div class="content-header">' +
+                '<div class="container-fluid">' +
+                '<div class="row mb-2">' +
+                '<div class="col-sm-6"><h1 class="m-0">Рахунки та оплата</h1></div>' +
+                '<div class="col-sm-6">' +
+                '<ol class="breadcrumb float-sm-right">' +
+                '<li class="breadcrumb-item"><a href="#" onclick="window.clientSystem.loadDashboard()">Головна</a></li>' +
+                '<li class="breadcrumb-item active">Рахунки</li>' +
+                '</ol></div></div></div></div>' +
+                '<section class="content">' +
+                '<div class="container-fluid">' +
+                '<div class="row">' +
+                '<div class="col-md-8">' +
+                '<div class="card">' +
+                '<div class="card-header">' +
+                '<h3 class="card-title"><i class="fas fa-file-invoice mr-2"></i>Рахунки</h3>' +
+                '</div>' +
+                '<div class="card-body table-responsive p-0">' +
+                '<table class="table table-hover text-nowrap">' +
+                '<thead>' +
+                '<tr>' +
+                '<th>№ рахунку</th>' +
+                '<th>Дата</th>' +
+                '<th>Опис</th>' +
+                '<th>Сума</th>' +
+                '<th>Статус</th>' +
+                '<th>Дії</th>' +
+                '</tr>' +
+                '</thead>' +
+                '<tbody>' +
+                '<tr>' +
+                '<td>INV-001</td>' +
+                '<td>15.11.2024</td>' +
+                '<td>ТО ліфта (вул. Хрещатик, 1)</td>' +
+                '<td>2500 грн</td>' +
+                '<td><span class="badge badge-success">Оплачено</span></td>' +
+                '<td><button class="btn btn-info btn-sm" onclick="alert(\'Скачати PDF\')"><i class="fas fa-download"></i></button></td>' +
+                '</tr>' +
+                '<tr>' +
+                '<td>INV-002</td>' +
+                '<td>20.12.2024</td>' +
+                '<td>Ремонт кнопок (вул. Володимирська, 15)</td>' +
+                '<td>800 грн</td>' +
+                '<td><span class="badge badge-warning">Очікує оплати</span></td>' +
+                '<td>' +
+                '<button class="btn btn-success btn-sm mr-1" onclick="alert(\'Оплатити онлайн\')"><i class="fas fa-credit-card"></i></button>' +
+                '<button class="btn btn-info btn-sm" onclick="alert(\'Скачати PDF\')"><i class="fas fa-download"></i></button>' +
+                '</td>' +
+                '</tr>' +
+                '</tbody>' +
+                '</table>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '<div class="col-md-4">' +
+                '<div class="card card-primary">' +
+                '<div class="card-header">' +
+                '<h3 class="card-title"><i class="fas fa-chart-pie mr-2"></i>Статистика</h3>' +
+                '</div>' +
+                '<div class="card-body">' +
+                '<div class="info-box">' +
+                '<span class="info-box-icon bg-info"><i class="fas fa-hryvnia-sign"></i></span>' +
+                '<div class="info-box-content">' +
+                '<span class="info-box-text">Всього за рік</span>' +
+                '<span class="info-box-number">15,600 грн</span>' +
+                '</div>' +
+                '</div>' +
+                '<div class="info-box">' +
+                '<span class="info-box-icon bg-success"><i class="fas fa-check"></i></span>' +
+                '<div class="info-box-content">' +
+                '<span class="info-box-text">Оплачено</span>' +
+                '<span class="info-box-number">14,800 грн</span>' +
+                '</div>' +
+                '</div>' +
+                '<div class="info-box">' +
+                '<span class="info-box-icon bg-warning"><i class="fas fa-clock"></i></span>' +
+                '<div class="info-box-content">' +
+                '<span class="info-box-text">До оплати</span>' +
+                '<span class="info-box-number">800 грн</span>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</section>',
                 
             'support': '<div class="content-header">' +
                 '<div class="container-fluid">' +
@@ -585,10 +944,310 @@ class ClientSystem {
                 '</ol></div></div></div></div>' +
                 '<section class="content">' +
                 '<div class="container-fluid">' +
-                '<div class="alert alert-warning">' +
-                '<i class="fas fa-headset mr-2"></i>' +
-                'Розділ технічної підтримки з можливістю створення тікетів, чату з операторами та перегляду часто задаваних питань.' +
-                '</div></div></section>'
+                '<div class="row">' +
+                '<div class="col-md-8">' +
+                '<div class="card">' +
+                '<div class="card-header">' +
+                '<h3 class="card-title"><i class="fas fa-ticket-alt mr-2"></i>Мої звернення</h3>' +
+                '<div class="card-tools">' +
+                '<button class="btn btn-primary btn-sm" onclick="alert(\'Нове звернення\')"><i class="fas fa-plus mr-1"></i>Створити тікет</button>' +
+                '</div>' +
+                '</div>' +
+                '<div class="card-body table-responsive p-0">' +
+                '<table class="table table-hover text-nowrap">' +
+                '<thead>' +
+                '<tr>' +
+                '<th>№ тікета</th>' +
+                '<th>Тема</th>' +
+                '<th>Статус</th>' +
+                '<th>Дата створення</th>' +
+                '<th>Дії</th>' +
+                '</tr>' +
+                '</thead>' +
+                '<tbody>' +
+                '<tr>' +
+                '<td>#T001</td>' +
+                '<td>Питання щодо графіку ТО</td>' +
+                '<td><span class="badge badge-info">Відкритий</span></td>' +
+                '<td>19.12.2024</td>' +
+                '<td><button class="btn btn-info btn-sm" onclick="alert(\'Переглянути тікет\')"><i class="fas fa-eye"></i></button></td>' +
+                '</tr>' +
+                '<tr>' +
+                '<td>#T002</td>' +
+                '<td>Проблема з доступом до системи</td>' +
+                '<td><span class="badge badge-success">Вирішено</span></td>' +
+                '<td>15.12.2024</td>' +
+                '<td><button class="btn btn-info btn-sm" onclick="alert(\'Переглянути тікет\')"><i class="fas fa-eye"></i></button></td>' +
+                '</tr>' +
+                '</tbody>' +
+                '</table>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '<div class="col-md-4">' +
+                '<div class="card card-info">' +
+                '<div class="card-header">' +
+                '<h3 class="card-title"><i class="fas fa-phone mr-2"></i>Контакти</h3>' +
+                '</div>' +
+                '<div class="card-body">' +
+                '<div class="info-box">' +
+                '<span class="info-box-icon bg-green"><i class="fas fa-phone"></i></span>' +
+                '<div class="info-box-content">' +
+                '<span class="info-box-text">Гаряча лінія</span>' +
+                '<span class="info-box-number">0-800-123-456</span>' +
+                '</div>' +
+                '</div>' +
+                '<div class="info-box">' +
+                '<span class="info-box-icon bg-blue"><i class="fas fa-envelope"></i></span>' +
+                '<div class="info-box-content">' +
+                '<span class="info-box-text">Email підтримка</span>' +
+                '<span class="info-box-number" style="font-size: 14px;">support@lifts.com</span>' +
+                '</div>' +
+                '</div>' +
+                '<div class="info-box">' +
+                '<span class="info-box-icon bg-orange"><i class="fas fa-clock"></i></span>' +
+                '<div class="info-box-content">' +
+                '<span class="info-box-text">Режим роботи</span>' +
+                '<span class="info-box-number" style="font-size: 14px;">24/7</span>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '<div class="card card-warning">' +
+                '<div class="card-header">' +
+                '<h3 class="card-title"><i class="fas fa-question-circle mr-2"></i>FAQ</h3>' +
+                '</div>' +
+                '<div class="card-body">' +
+                '<div class="accordion" id="faqAccordion">' +
+                '<div class="card">' +
+                '<div class="card-header" id="faq1">' +
+                '<button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse1">' +
+                'Як створити заявку на ремонт?' +
+                '</button>' +
+                '</div>' +
+                '<div id="collapse1" class="collapse" data-parent="#faqAccordion">' +
+                '<div class="card-body">' +
+                'Перейдіть в розділ "Заявки на обслуговування" та натисніть "Нова заявка"' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '<div class="card">' +
+                '<div class="card-header" id="faq2">' +
+                '<button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse2">' +
+                'Коли планується наступне ТО?' +
+                '</button>' +
+                '</div>' +
+                '<div id="collapse2" class="collapse" data-parent="#faqAccordion">' +
+                '<div class="card-body">' +
+                'Графік ТО доступний в розділі "Графік ТО" або на головній сторінці' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</section>',
+
+            'profile': '<div class="content-header">' +
+                '<div class="container-fluid">' +
+                '<div class="row mb-2">' +
+                '<div class="col-sm-6"><h1 class="m-0">Мій профіль</h1></div>' +
+                '<div class="col-sm-6">' +
+                '<ol class="breadcrumb float-sm-right">' +
+                '<li class="breadcrumb-item"><a href="#" onclick="window.clientSystem.loadDashboard()">Головна</a></li>' +
+                '<li class="breadcrumb-item active">Профіль</li>' +
+                '</ol></div></div></div></div>' +
+                '<section class="content">' +
+                '<div class="container-fluid">' +
+                '<div class="row">' +
+                '<div class="col-md-6">' +
+                '<div class="card card-primary">' +
+                '<div class="card-header">' +
+                '<h3 class="card-title"><i class="fas fa-user mr-2"></i>Особисті дані</h3>' +
+                '</div>' +
+                '<form>' +
+                '<div class="card-body">' +
+                '<div class="form-group">' +
+                '<label for="fullName">ПІБ</label>' +
+                '<input type="text" class="form-control" id="fullName" value="Іваненко Іван Іванович">' +
+                '</div>' +
+                '<div class="form-group">' +
+                '<label for="email">Email</label>' +
+                '<input type="email" class="form-control" id="email" value="ivan.ivanenko@example.com">' +
+                '</div>' +
+                '<div class="form-group">' +
+                '<label for="phone">Телефон</label>' +
+                '<input type="tel" class="form-control" id="phone" value="+38 (098) 123-45-67">' +
+                '</div>' +
+                '<div class="form-group">' +
+                '<label for="company">Компанія</label>' +
+                '<input type="text" class="form-control" id="company" value="ТОВ Ромашка">' +
+                '</div>' +
+                '</div>' +
+                '<div class="card-footer">' +
+                '<button type="button" class="btn btn-primary" onclick="alert(\'Профіль оновлено\')">Зберегти зміни</button>' +
+                '</div>' +
+                '</form>' +
+                '</div>' +
+                '</div>' +
+                '<div class="col-md-6">' +
+                '<div class="card card-info">' +
+                '<div class="card-header">' +
+                '<h3 class="card-title"><i class="fas fa-key mr-2"></i>Зміна паролю</h3>' +
+                '</div>' +
+                '<form>' +
+                '<div class="card-body">' +
+                '<div class="form-group">' +
+                '<label for="currentPassword">Поточний пароль</label>' +
+                '<input type="password" class="form-control" id="currentPassword">' +
+                '</div>' +
+                '<div class="form-group">' +
+                '<label for="newPassword">Новий пароль</label>' +
+                '<input type="password" class="form-control" id="newPassword">' +
+                '</div>' +
+                '<div class="form-group">' +
+                '<label for="confirmPassword">Підтвердіть пароль</label>' +
+                '<input type="password" class="form-control" id="confirmPassword">' +
+                '</div>' +
+                '</div>' +
+                '<div class="card-footer">' +
+                '<button type="button" class="btn btn-info" onclick="alert(\'Пароль змінено\')">Змінити пароль</button>' +
+                '</div>' +
+                '</form>' +
+                '</div>' +
+                '<div class="card card-warning">' +
+                '<div class="card-header">' +
+                '<h3 class="card-title"><i class="fas fa-bell mr-2"></i>Сповіщення</h3>' +
+                '</div>' +
+                '<div class="card-body">' +
+                '<div class="form-group">' +
+                '<div class="custom-control custom-switch">' +
+                '<input type="checkbox" class="custom-control-input" id="emailNotifications" checked>' +
+                '<label class="custom-control-label" for="emailNotifications">Email сповіщення</label>' +
+                '</div>' +
+                '</div>' +
+                '<div class="form-group">' +
+                '<div class="custom-control custom-switch">' +
+                '<input type="checkbox" class="custom-control-input" id="smsNotifications">' +
+                '<label class="custom-control-label" for="smsNotifications">SMS сповіщення</label>' +
+                '</div>' +
+                '</div>' +
+                '<div class="form-group">' +
+                '<div class="custom-control custom-switch">' +
+                '<input type="checkbox" class="custom-control-input" id="maintenanceReminders" checked>' +
+                '<label class="custom-control-label" for="maintenanceReminders">Нагадування про ТО</label>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '<div class="card-footer">' +
+                '<button type="button" class="btn btn-warning" onclick="alert(\'Налаштування збережено\')">Зберегти</button>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</section>',
+
+            'settings': '<div class="content-header">' +
+                '<div class="container-fluid">' +
+                '<div class="row mb-2">' +
+                '<div class="col-sm-6"><h1 class="m-0">Налаштування системи</h1></div>' +
+                '<div class="col-sm-6">' +
+                '<ol class="breadcrumb float-sm-right">' +
+                '<li class="breadcrumb-item"><a href="#" onclick="window.clientSystem.loadDashboard()">Головна</a></li>' +
+                '<li class="breadcrumb-item active">Налаштування</li>' +
+                '</ol></div></div></div></div>' +
+                '<section class="content">' +
+                '<div class="container-fluid">' +
+                '<div class="row">' +
+                '<div class="col-md-8">' +
+                '<div class="card">' +
+                '<div class="card-header">' +
+                '<h3 class="card-title"><i class="fas fa-cog mr-2"></i>Загальні налаштування</h3>' +
+                '</div>' +
+                '<div class="card-body">' +
+                '<div class="row">' +
+                '<div class="col-md-6">' +
+                '<div class="form-group">' +
+                '<label>Мова інтерфейсу</label>' +
+                '<select class="form-control">' +
+                '<option selected>Українська</option>' +
+                '<option>English</option>' +
+                '<option>Русский</option>' +
+                '</select>' +
+                '</div>' +
+                '</div>' +
+                '<div class="col-md-6">' +
+                '<div class="form-group">' +
+                '<label>Часовий пояс</label>' +
+                '<select class="form-control">' +
+                '<option selected>Europe/Kiev (UTC+2)</option>' +
+                '<option>Europe/London (UTC+0)</option>' +
+                '<option>America/New_York (UTC-5)</option>' +
+                '</select>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '<div class="row">' +
+                '<div class="col-md-6">' +
+                '<div class="form-group">' +
+                '<label>Тема оформлення</label>' +
+                '<select class="form-control">' +
+                '<option selected>Світла</option>' +
+                '<option>Темна</option>' +
+                '<option>Автоматично</option>' +
+                '</select>' +
+                '</div>' +
+                '</div>' +
+                '<div class="col-md-6">' +
+                '<div class="form-group">' +
+                '<label>Кількість записів на сторінці</label>' +
+                '<select class="form-control">' +
+                '<option>10</option>' +
+                '<option selected>25</option>' +
+                '<option>50</option>' +
+                '<option>100</option>' +
+                '</select>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '<div class="card-footer">' +
+                '<button type="button" class="btn btn-primary" onclick="alert(\'Налаштування збережено\')">Зберегти налаштування</button>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '<div class="col-md-4">' +
+                '<div class="card card-info">' +
+                '<div class="card-header">' +
+                '<h3 class="card-title"><i class="fas fa-download mr-2"></i>Експорт даних</h3>' +
+                '</div>' +
+                '<div class="card-body">' +
+                '<p>Завантажити дані у різних форматах:</p>' +
+                '<div class="btn-group-vertical d-block">' +
+                '<button class="btn btn-outline-primary mb-2" onclick="alert(\'Експорт у PDF\')"><i class="fas fa-file-pdf mr-2"></i>Звіт у PDF</button>' +
+                '<button class="btn btn-outline-success mb-2" onclick="alert(\'Експорт у Excel\')"><i class="fas fa-file-excel mr-2"></i>Таблиця Excel</button>' +
+                '<button class="btn btn-outline-info mb-2" onclick="alert(\'Експорт у CSV\')"><i class="fas fa-file-csv mr-2"></i>Файл CSV</button>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '<div class="card card-danger">' +
+                '<div class="card-header">' +
+                '<h3 class="card-title"><i class="fas fa-exclamation-triangle mr-2"></i>Небезпечна зона</h3>' +
+                '</div>' +
+                '<div class="card-body">' +
+                '<p>Дії, що потребують особливої уваги:</p>' +
+                '<button class="btn btn-warning btn-block mb-2" onclick="alert(\'Очистити кеш\')"><i class="fas fa-broom mr-2"></i>Очистити кеш</button>' +
+                '<button class="btn btn-danger btn-block" onclick="alert(\'Видалення аккаунта потребує підтвердження\')"><i class="fas fa-trash mr-2"></i>Видалити аккаунт</button>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</section>'
         };
         
         return modules[moduleId] || 

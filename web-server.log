@@ -158,3 +158,36 @@
 127.0.0.1 - - [03/Oct/2025 22:33:40] code 404, message File not found
 127.0.0.1 - - [03/Oct/2025 22:33:40] "GET /assets/img/icons/google-calendar.png HTTP/1.1" 404 -
 127.0.0.1 - - [03/Oct/2025 22:33:43] "GET /assets/modules/lift-management.html HTTP/1.1" 200 -
+127.0.0.1 - - [03/Oct/2025 22:38:04] "GET /pages/crm-unified.html?role=admin HTTP/1.1" 200 -
+127.0.0.1 - - [03/Oct/2025 22:38:05] "GET /assets/js/crm-unified.js HTTP/1.1" 200 -
+127.0.0.1 - - [03/Oct/2025 22:38:23] code 501, message Unsupported method ('POST')
+127.0.0.1 - - [03/Oct/2025 22:38:23] "POST /api/login HTTP/1.1" 501 -
+127.0.0.1 - - [03/Oct/2025 22:38:23] "GET /pages/crm-unified.html?role=dispatcher HTTP/1.1" 304 -
+127.0.0.1 - - [03/Oct/2025 22:38:24] "GET /assets/js/crm-unified.js HTTP/1.1" 304 -
+127.0.0.1 - - [03/Oct/2025 22:38:36] "GET /assets/modules/analytics.html HTTP/1.1" 304 -
+127.0.0.1 - - [03/Oct/2025 22:38:39] "GET /assets/modules/reports.html HTTP/1.1" 200 -
+127.0.0.1 - - [03/Oct/2025 22:38:42] "GET /pages/assignment-manager/index.html HTTP/1.1" 200 -
+127.0.0.1 - - [03/Oct/2025 22:38:47] "GET /pages/batch-manager/index.html HTTP/1.1" 200 -
+127.0.0.1 - - [03/Oct/2025 22:39:01] "GET /pages/client-unified.html HTTP/1.1" 200 -
+127.0.0.1 - - [03/Oct/2025 22:39:01] code 404, message File not found
+127.0.0.1 - - [03/Oct/2025 22:39:01] "GET /assets/img/AdminLTELogo.png HTTP/1.1" 404 -
+127.0.0.1 - - [03/Oct/2025 22:39:02] code 501, message Unsupported method ('POST')
+127.0.0.1 - - [03/Oct/2025 22:39:02] "POST /api/login HTTP/1.1" 501 -
+127.0.0.1 - - [03/Oct/2025 22:40:34] "GET /pages/crm-unified.html?role=tech HTTP/1.1" 200 -
+127.0.0.1 - - [03/Oct/2025 22:40:34] code 501, message Unsupported method ('POST')
+127.0.0.1 - - [03/Oct/2025 22:40:34] "POST /api/login HTTP/1.1" 501 -
+127.0.0.1 - - [03/Oct/2025 22:40:35] "GET /assets/js/crm-unified.js HTTP/1.1" 304 -
+127.0.0.1 - - [03/Oct/2025 22:40:42] "GET /pages/tech/qr-scanner.html HTTP/1.1" 200 -
+127.0.0.1 - - [03/Oct/2025 22:40:55] "GET /pages/tech/tasks.html HTTP/1.1" 200 -
+127.0.0.1 - - [03/Oct/2025 22:41:02] "GET /pages/tech/knowledge-base.html HTTP/1.1" 200 -
+127.0.0.1 - - [03/Oct/2025 22:41:07] "GET /pages/tech/tools.html HTTP/1.1" 200 -
+127.0.0.1 - - [03/Oct/2025 22:41:16] "GET /pages/tech/task-map.html HTTP/1.1" 200 -
+127.0.0.1 - - [03/Oct/2025 22:41:25] "GET /pages/tech/notifications.html HTTP/1.1" 200 -
+127.0.0.1 - - [03/Oct/2025 22:41:36] "GET /pages/tool-manager/index.html HTTP/1.1" 200 -
+127.0.0.1 - - [03/Oct/2025 22:42:36] "GET /assets/js/crm-unified.js HTTP/1.1" 304 -
+127.0.0.1 - - [03/Oct/2025 22:42:37] code 501, message Unsupported method ('POST')
+127.0.0.1 - - [03/Oct/2025 22:42:37] "POST /api/login HTTP/1.1" 501 -
+127.0.0.1 - - [03/Oct/2025 22:46:21] code 501, message Unsupported method ('POST')
+127.0.0.1 - - [03/Oct/2025 22:46:21] "POST /api/login HTTP/1.1" 501 -
+127.0.0.1 - - [03/Oct/2025 22:46:21] code 404, message File not found
+127.0.0.1 - - [03/Oct/2025 22:46:21] "GET /assets/img/AdminLTELogo.png HTTP/1.1" 404 -

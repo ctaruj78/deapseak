@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Моніторинг процесів</title>
+    <link rel="stylesheet" href="../plugins/adminlte/css/adminlte.min.css">
+    <link rel="stylesheet" href="../plugins/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" href="../plugins/chart.js/Chart.min.css">
+</head>
+<body>
+<div class="content-wrapper">
+    <!-- Content Header -->
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">Моніторинг процесів</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="#" onclick="window.crmSystem.loadDashboard()">Головна</a></li>
+                        <li class="breadcrumb-item active">Моніторинг</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid">
+            <!-- Real-time Statistics -->
+            <div class="row">
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-info">
+                        <div class="inner">
+                            <h3 id="activeTasks">15</h3>
+                            <p>Активних завдань</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-success">
+                        <div class="inner">
+                            <h3 id="completedToday">42</h3>
+                            <p>Виконано сьогодні</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-warning">
+                        <div class="inner">
+                            <h3 id="avgTime">2.5 год</h3>
+                            <p>Середній час</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-danger">
+                        <div class="inner">
+                            <h3 id="alertsCount">3</h3>
+                            <p>Критичні сповіщення</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Real-time Activity -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Активність в реальному часі</h3>
+                            <div class="card-tools">
+                                <span class="badge badge-success" id="statusIndicator">ONLINE</span>
+                            </div>
+                        </div>
+                        <div class="card-body" style="height: 400px; overflow-y: auto;">
+                            <div class="timeline" id="activityTimeline">
+                                <div class="time-label">
+                                    <span class="bg-blue">Зараз</span>
+                                </div>
+                                <div>
+                                    <i class="fas fa-check bg-green"></i>
+                                    <div class="timeline-item">
+                                        <span class="time"><i class="fas fa-clock"></i> 14:32</span>
+                                        <h3 class="timeline-header">Завдання T042 завершено</h3>
+                                        <div class="timeline-body">
+                                            Іванов І.І. завершив ТО ліфта на вул. Хрещатик, 1
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <i class="fas fa-user bg-blue"></i>
+                                    <div class="timeline-item">
+                                        <span class="time"><i class="fas fa-clock"></i> 14:28</span>
+                                        <h3 class="timeline-header">Технік змінив статус</h3>
+                                        <div class="timeline-body">
+                                            Петров П.П. перейшов до завдання T043
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <i class="fas fa-exclamation-triangle bg-red"></i>
+                                    <div class="timeline-item">
+                                        <span class="time"><i class="fas fa-clock"></i> 14:15</span>
+                                        <h3 class="timeline-header">Аварійний виклик</h3>
+                                        <div class="timeline-body">
+                                            Новий аварійний виклик - вул. Володимирська, 25
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <i class="fas fa-phone bg-yellow"></i>
+                                    <div class="timeline-item">
+                                        <span class="time"><i class="fas fa-clock"></i> 14:10</span>
+                                        <h3 class="timeline-header">Зв'язок з клієнтом</h3>
+                                        <div class="timeline-body">
+                                            Сидоров С.С. зв'язався з клієнтом для підтвердження часу
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-primary btn-sm" onclick="refreshActivity()">
+                                <i class="fas fa-sync"></i> Оновити
+                            </button>
+                            <button class="btn btn-info btn-sm" onclick="exportLog()">
+                                <i class="fas fa-download"></i> Експорт
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance Charts -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Продуктивність за годинами</h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="performanceChart" style="height: 300px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- System Alerts -->
+                <div class="col-md-4">
+                    <div class="card card-danger">
+                        <div class="card-header">
+                            <h3 class="card-title">Системні сповіщення</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>
+                                <strong>Критично!</strong> Завдання T018 прострочене на 2 години
+                                <button class="btn btn-sm btn-outline-light float-right" onclick="resolveAlert('T018')">
+                                    Вирішити
+                                </button>
+                            </div>
+                            <div class="alert alert-warning">
+                                <i class="fas fa-clock mr-2"></i>
+                                <strong>Увага!</strong> Технік Петров П.П. не відповідає 15 хвилин
+                                <button class="btn btn-sm btn-outline-dark float-right" onclick="contactTech('TECH002')">
+                                    Зв'язатися
+                                </button>
+                            </div>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                <strong>Інформація:</strong> Запланований перерв у роботі системи о 02:00
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Tasks Status -->
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Статус активних завдань</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="progress-group mb-4">
+                                <div class="progress-text">Завдання в черзі</div>
+                                <div class="float-right"><b>8</b>/23</div>
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-warning" style="width: 35%"></div>
+                                </div>
+                            </div>
+                            <div class="progress-group mb-4">
+                                <div class="progress-text">В процесі виконання</div>
+                                <div class="float-right"><b>15</b>/23</div>
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-info" style="width: 65%"></div>
+                                </div>
+                            </div>
+                            <div class="progress-group mb-4">
+                                <div class="progress-text">Виконано сьогодні</div>
+                                <div class="float-right"><b>42</b>/50</div>
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-success" style="width: 84%"></div>
+                                </div>
+                            </div>
+                            <div class="progress-group">
+                                <div class="progress-text">Прострочено</div>
+                                <div class="float-right"><b>2</b>/23</div>
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-danger" style="width: 8%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Technicians Online -->
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Техніки онлайн</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="users-list clearfix">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge badge-success">●</span>
+                                        <span class="ml-2">Іванов І.І.</span>
+                                    </div>
+                                    <small class="text-muted">На базі</small>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge badge-warning">●</span>
+                                        <span class="ml-2">Петров П.П.</span>
+                                    </div>
+                                    <small class="text-muted">На завданні</small>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge badge-info">●</span>
+                                        <span class="ml-2">Сидоров С.С.</span>
+                                    </div>
+                                    <small class="text-muted">В дорозі</small>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge badge-secondary">●</span>
+                                        <span class="ml-2">Коваленко К.К.</span>
+                                    </div>
+                                    <small class="text-muted">Офлайн (5 хв)</small>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary btn-block" onclick="viewAllTechnicians()">
+                                Переглянути всіх
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Health -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Стан системи</h3>
+                            <div class="card-tools">
+                                <button class="btn btn-success btn-sm" id="systemStatus">
+                                    <i class="fas fa-circle"></i> Система працює нормально
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="info-box">
+                                        <span class="info-box-icon bg-info"><i class="fas fa-server"></i></span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">Сервер</span>
+                                            <span class="info-box-number">98.5%</span>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-info" style="width: 98.5%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="info-box">
+                                        <span class="info-box-icon bg-success"><i class="fas fa-database"></i></span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">База даних</span>
+                                            <span class="info-box-number">99.2%</span>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-success" style="width: 99.2%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="info-box">
+                                        <span class="info-box-icon bg-warning"><i class="fas fa-mobile-alt"></i></span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">Мобільний API</span>
+                                            <span class="info-box-number">97.8%</span>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-warning" style="width: 97.8%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="info-box">
+                                        <span class="info-box-icon bg-danger"><i class="fas fa-wifi"></i></span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">Мережа</span>
+                                            <span class="info-box-number">94.1%</span>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-danger" style="width: 94.1%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script src="../plugins/chart.js/Chart.min.js"></script>
+<script>
+// Initialize performance chart
+$(document).ready(function() {
+    const ctx = document.getElementById('performanceChart').getContext('2d');
+    const performanceChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00'],
+            datasets: [{
+                label: 'Завершені завдання',
+                data: [2, 5, 8, 12, 15, 18, 22, 25],
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    
+    // Auto-refresh data
+    setInterval(refreshData, 30000); // Refresh every 30 seconds
+});
+
+function refreshData() {
+    // Simulate real-time data update
+    const activeTasks = document.getElementById('activeTasks');
+    const completedToday = document.getElementById('completedToday');
+    
+    activeTasks.textContent = Math.floor(Math.random() * 5) + 15;
+    completedToday.textContent = Math.floor(Math.random() * 10) + 40;
+}
+
+function refreshActivity() {
+    toastr.info('Оновлення активності...');
+    setTimeout(() => {
+        toastr.success('Дані оновлено');
+    }, 1000);
+}
+
+function exportLog() {
+    toastr.success('Експорт журналу активності');
+}
+
+function resolveAlert(taskId) {
+    if(confirm('Позначити сповіщення як вирішене?')) {
+        toastr.success('Сповіщення вирішено: ' + taskId);
+    }
+}
+
+function contactTech(techId) {
+    alert('Зв\'язок з технікою: ' + techId);
+}
+
+function viewAllTechnicians() {
+    window.crmSystem.loadModule('technicians');
+}
+
+// Simulate real-time updates
+setInterval(() => {
+    const indicator = document.getElementById('statusIndicator');
+    indicator.className = 'badge badge-success';
+    indicator.textContent = 'ONLINE';
+}, 5000);
+</script>
+</body>
+</html>
