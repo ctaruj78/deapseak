@@ -200,3 +200,24 @@
 127.0.0.1 - - [04/Oct/2025 21:07:09] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
 127.0.0.1 - - [04/Oct/2025 21:07:10] "GET /assets/js/simple-lift-modal.js HTTP/1.1" 304 -
 127.0.0.1 - - [04/Oct/2025 21:07:10] "GET /assets/js/enhanced-lift-modal.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 21:18:15] "GET /login.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 21:18:16] "GET /assets/js/common.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 21:18:16] "GET /assets/js/auth.js HTTP/1.1" 304 -
+127.0.0.1 - - [04/Oct/2025 21:18:19] code 501, message Unsupported method ('POST')
+127.0.0.1 - - [04/Oct/2025 21:18:19] "POST /api/login HTTP/1.1" 501 -
+127.0.0.1 - - [04/Oct/2025 21:18:19] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 21:18:22] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 21:18:22] "GET /assets/js/test-lift-saving.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 21:18:22] "GET /assets/js/modules/ai-assistant.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 21:18:22] "GET /assets/js/lifts.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 21:18:22] "GET /assets/js/lift-utils.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 21:18:22] "GET /assets/css/ai-assistant.css HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 21:18:23] "GET /assets/css/enhanced-lift-modal.css HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 21:18:23] "GET /assets/js/enhanced-lift-modal.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 21:18:23] "GET /assets/js/simple-lift-modal.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 21:20:21] "GET /pages/admin/maps.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 21:20:22] "GET /assets/img/logo.png HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 21:20:33] "GET /pages/admin/lifts.html HTTP/1.1" 304 -
+127.0.0.1 - - [04/Oct/2025 21:20:34] "GET /assets/js/enhanced-lift-modal.js HTTP/1.1" 304 -
+127.0.0.1 - - [04/Oct/2025 21:20:36] "GET /qr-interface.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 21:20:37] "GET /assets/js/qr-utils.js HTTP/1.1" 200 -
