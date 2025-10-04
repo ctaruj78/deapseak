@@ -40,10 +40,16 @@ class EnhancedLiftModal {
             this.updateMapFromCoords();
         });
         
-        // Скидання форми при відкритті модалки
+        // Скидання форми при відкритті модалки (тільки для нових ліфтів)
         $('#enhancedLiftModal').on('show.bs.modal', () => {
-            console.log('📝 Enhanced modal opening, resetting form...');
-            this.resetForm();
+            console.log('📝 Enhanced modal opening...');
+            // Скидаємо форму тільки якщо це не режим редагування
+            if (!this.currentLiftId) {
+                console.log('📝 Resetting form for new lift...');
+                this.resetForm();
+            } else {
+                console.log('📝 Editing mode - keeping existing data');
+            }
             setTimeout(() => this.initializeMap(), 500);
         });
         
@@ -542,7 +548,8 @@ class EnhancedLiftModal {
         $('.invalid-feedback').remove();
         $('#enhancedModalTitle').text('Додати ліфт з картою');
         
-        // Скидаємо координати
+        // Скидаємо ID поточного ліфта і координати
+        this.currentLiftId = null;
         this.currentCoords = null;
         if (this.marker && this.map) {
             this.map.removeLayer(this.marker);
@@ -555,6 +562,10 @@ class EnhancedLiftModal {
 
     loadLiftForEdit(liftData) {
         console.log('📝 Loading lift for enhanced edit:', liftData);
+        
+        // Встановлюємо currentLiftId перед заповненням форми
+        this.currentLiftId = liftData.id;
+        console.log('🔧 Set currentLiftId:', this.currentLiftId);
         
         // Заповнюємо всі поля з префіксом enhanced
         $('#enhancedLiftId').val(liftData.id);
@@ -590,9 +601,8 @@ class EnhancedLiftModal {
             }, 500);
         }
         
-        this.currentLiftId = liftData.id;
         $('#enhancedModalTitle').text('Редагувати ліфт (з картою)');
-        console.log('✅ Enhanced lift data loaded for editing');
+        console.log('✅ Enhanced lift data loaded for editing. Current ID:', this.currentLiftId);
     }
 
     showMessage(message, type = 'info') {
