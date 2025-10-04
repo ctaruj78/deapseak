@@ -390,35 +390,48 @@ class EnhancedLiftModal {
         console.log('💾 Saving enhanced lift data...');
         
         try {
-            // Використовуємо ту ж логіку що і в SimpleLiftModal
+            // Ініціалізуємо масив якщо потрібно
             if (typeof window.allLifts === 'undefined') {
                 console.log('⚠️ window.allLifts not found, creating new array');
                 window.allLifts = [];
             }
             
-            const existingIndex = window.allLifts.findIndex(l => l.id === liftData.id);
-            console.log('📊 Current lifts count:', window.allLifts.length);
-            console.log('🔍 Checking for existing lift with ID:', liftData.id, 'Found at index:', existingIndex);
+            // НОВА ЛОГІКА: Створюємо окремі записи для кожного ліфта
+            const liftsToSave = this.createSeparateLifts(liftData);
+            console.log('🏢 Creating separate lifts:', liftsToSave.length);
             
-            if (existingIndex !== -1) {
-                window.allLifts[existingIndex] = { ...window.allLifts[existingIndex], ...liftData };
-                console.log('✏️ Updated existing lift at index:', existingIndex);
-            } else {
-                window.allLifts.push(liftData);
-                console.log('➕ Added new lift. Total count now:', window.allLifts.length);
+            let savedCount = 0;
+            
+            // Зберігаємо кожен ліфт окремо
+            for (const lift of liftsToSave) {
+                const existingIndex = window.allLifts.findIndex(l => l.id === lift.id);
+                
+                if (existingIndex !== -1) {
+                    // Оновлюємо існуючий
+                    window.allLifts[existingIndex] = { ...window.allLifts[existingIndex], ...lift };
+                    console.log('✏️ Updated existing lift:', lift.municipalNumber);
+                } else {
+                    // Додаємо новий
+                    window.allLifts.push(lift);
+                    console.log('➕ Added new lift:', lift.municipalNumber);
+                    savedCount++;
+                }
             }
             
             // Синхронізуємо з глобальною змінною
             if (typeof allLifts !== 'undefined') {
                 allLifts = [...window.allLifts];
-                console.log('🔄 Synchronized global allLifts variable, count:', allLifts.length);
+                console.log('🔄 Synchronized global allLifts variable, total count:', allLifts.length);
             }
             
             // Зберігаємо в localStorage
             this.saveToStorage();
             
-            // Успіх
-            this.showMessage('Ліфт успішно збережено з координатами!', 'success');
+            // Успіх з кількістю збережених ліфтів
+            const message = savedCount > 1 ? 
+                `Успішно збережено ${savedCount} ліфтів з координатами!` :
+                'Ліфт успішно збережено з координатами!';
+            this.showMessage(message, 'success');
             $('#enhancedLiftModal').modal('hide');
             
             // Оновлюємо таблицю
@@ -599,6 +612,46 @@ class EnhancedLiftModal {
         
         console.log('🔢 Additional municipal numbers collected:', additionalNumbers);
         return additionalNumbers;
+    }
+
+    createSeparateLifts(baseLiftData) {
+        const lifts = [];
+        
+        // Головний ліфт (завжди створюємо)
+        const mainLift = { ...baseLiftData };
+        delete mainLift.additionalMunicipalNumbers; // Видаляємо додаткові номери з основного запису
+        lifts.push(mainLift);
+        
+        // Створюємо додаткові ліфти якщо є
+        if (baseLiftData.additionalMunicipalNumbers && baseLiftData.additionalMunicipalNumbers.length > 0) {
+            for (const additionalInfo of baseLiftData.additionalMunicipalNumbers) {
+                if (additionalInfo.municipalNumber && additionalInfo.municipalNumber.trim()) {
+                    // Створюємо копію базових даних для додаткового ліфта
+                    const additionalLift = { 
+                        ...baseLiftData,
+                        id: 'lift_' + Date.now() + '_' + additionalInfo.liftNumber, // Унікальний ID
+                        municipalNumber: additionalInfo.municipalNumber.trim(),
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString()
+                    };
+                    
+                    // Видаляємо additionalMunicipalNumbers з копії
+                    delete additionalLift.additionalMunicipalNumbers;
+                    
+                    // Додаємо мітку що це додатковий ліфт
+                    additionalLift.isAdditionalLift = true;
+                    additionalLift.mainLiftId = mainLift.id;
+                    additionalLift.liftNumberInBuilding = additionalInfo.liftNumber;
+                    
+                    lifts.push(additionalLift);
+                    
+                    console.log(`🏗️ Created additional lift #${additionalInfo.liftNumber}: ${additionalInfo.municipalNumber}`);
+                }
+            }
+        }
+        
+        console.log(`📋 Total lifts to save: ${lifts.length} (1 main + ${lifts.length - 1} additional)`);
+        return lifts;
     }
 }
 

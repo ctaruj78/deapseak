@@ -347,26 +347,43 @@ class SimpleLiftModal {
                 const nextMaintenance = lift.nextInspection ? 
                     new Date(lift.nextInspection).toLocaleDateString('uk-UA') : 'Не вказано';
                 
+                // Показуємо додаткову інформацію якщо це додатковий ліфт
+                let municipalNumberDisplay = lift.municipalNumber || 'Не вказано';
+                if (lift.isAdditionalLift && lift.liftNumberInBuilding) {
+                    municipalNumberDisplay += ` <small class="text-muted">(Ліфт #${lift.liftNumberInBuilding})</small>`;
+                }
+                
+                // Додаємо іконку якщо це група ліфтів
+                let addressDisplay = lift.address || 'Не вказано';
+                if (lift.liftsCountAtAddress && lift.liftsCountAtAddress > 1) {
+                    addressDisplay += ` <i class="fas fa-building text-info" title="У будівлі ${lift.liftsCountAtAddress} ліфтів"></i>`;
+                }
+                
+                const rowClass = lift.isAdditionalLift ? 'table-secondary' : '';
+                
                 const row = `
-                    <tr>
-                        <td>${lift.municipalNumber || 'Не вказано'}</td>
+                    <tr class="${rowClass}">
+                        <td>${municipalNumberDisplay}</td>
                         <td>${lift.model || 'Не вказано'}</td>
                         <td>${lift.type || 'passenger'}</td>
-                        <td>${lift.address || 'Не вказано'}</td>
+                        <td>${addressDisplay}</td>
                         <td>${lift.clientName || 'Не вказано'}</td>
                         <td>${lift.clientEmail || 'Не вказано'}</td>
                         <td><span class="badge badge-${this.getStatusColor(lift.status)}">${this.getStatusText(lift.status)}</span></td>
                         <td>${lastMaintenance}</td>
                         <td>${nextMaintenance}</td>
                         <td>
-                            <button class="btn btn-sm btn-primary edit-lift" data-lift-id="${lift.id}" title="Редагувати">
+                            <button class="btn btn-sm btn-primary edit-lift" data-lift-id="${lift.id}" title="Редагувати ліфт ${lift.municipalNumber}">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn btn-sm btn-danger delete-lift" data-lift-id="${lift.id}" title="Видалити">
+                            <button class="btn btn-sm btn-danger delete-lift" data-lift-id="${lift.id}" title="Видалити ліфт ${lift.municipalNumber}">
                                 <i class="fas fa-trash"></i>
                             </button>
-                            <button class="btn btn-sm btn-info view-lift" data-lift-id="${lift.id}" title="Переглянути">
+                            <button class="btn btn-sm btn-info view-lift" data-lift-id="${lift.id}" title="Переглянути ліфт ${lift.municipalNumber}">
                                 <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-success create-ticket" data-lift-id="${lift.id}" title="Створити заявку для ліфта ${lift.municipalNumber}">
+                                <i class="fas fa-ticket-alt"></i>
                             </button>
                         </td>
                     </tr>
