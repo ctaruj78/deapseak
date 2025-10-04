@@ -196,17 +196,27 @@ class EnhancedLiftModal {
         let countryCode = 'ua';
         
         if (postcode) {
+            const ukrainianRegex = /^[0-9]{5}$/;
             const portugueseRegex = /^[0-9]{4}-[0-9]{3}$/;
+            
             if (portugueseRegex.test(postcode)) {
                 country = 'Portugal';
                 countryCode = 'pt';
+            } else if (ukrainianRegex.test(postcode)) {
+                country = 'Ukraine';
+                countryCode = 'ua';
             }
         }
         
-        // Або використовуємо раніше визначену країну
+        // Використовуємо раніше визначену країну якщо є
         if (this.detectedCountry) {
-            country = this.detectedCountry;
-            countryCode = country === 'Portugal' ? 'pt' : 'ua';
+            if (this.detectedCountry === 'Portugal') {
+                country = 'Portugal';
+                countryCode = 'pt';
+            } else if (this.detectedCountry === 'Ukraine') {
+                country = 'Ukraine';
+                countryCode = 'ua';
+            }
         }
         
         searchQuery += ', ' + country;
@@ -369,20 +379,24 @@ class EnhancedLiftModal {
             }
         }
         
-        // Валідація поштового коду (українські та португальські формати)
+        // Валідація поштового коду (гнучка для різних форматів)
         if (data.postcode && data.postcode.trim()) {
             const ukrainianRegex = /^[0-9]{5}$/; // 01001
             const portugueseRegex = /^[0-9]{4}-[0-9]{3}$/; // 1234-567
+            const generalRegex = /^[a-zA-Z0-9\s\-]{3,10}$/; // Загальний формат для інших країн
             
-            if (!ukrainianRegex.test(data.postcode) && !portugueseRegex.test(data.postcode)) {
-                $('#enhancedLiftPostcode').addClass('is-invalid');
-                this.showMessage('Введіть коректний поштовий код: Український (01001) або Португальський (1234-567)', 'warning');
-                return false;
-            } else {
+            if (ukrainianRegex.test(data.postcode) || portugueseRegex.test(data.postcode) || generalRegex.test(data.postcode)) {
                 $('#enhancedLiftPostcode').removeClass('is-invalid');
+                
                 // Визначаємо країну за форматом для покращення геокодування
-                this.detectedCountry = ukrainianRegex.test(data.postcode) ? 'Ukraine' : 'Portugal';
-                console.log('🌍 Detected country by postcode format:', this.detectedCountry);
+                if (ukrainianRegex.test(data.postcode)) {
+                    this.detectedCountry = 'Ukraine';
+                } else if (portugueseRegex.test(data.postcode)) {
+                    this.detectedCountry = 'Portugal';
+                } else {
+                    this.detectedCountry = null; // Загальний пошук без країни
+                }
+                console.log('🌍 Detected country by postcode format:', this.detectedCountry || 'general');
             }
         }
         
