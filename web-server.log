@@ -1,0 +1,60 @@
+127.0.0.1 - - [04/Oct/2025 18:39:34] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 18:39:36] code 404, message File not found
+127.0.0.1 - - [04/Oct/2025 18:39:36] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [04/Oct/2025 18:39:38] "GET /login.html HTTP/1.1" 304 -
+127.0.0.1 - - [04/Oct/2025 18:39:39] "GET /assets/js/auth.js HTTP/1.1" 304 -
+127.0.0.1 - - [04/Oct/2025 18:39:39] "GET /assets/js/common.js HTTP/1.1" 304 -
+127.0.0.1 - - [04/Oct/2025 18:39:39] "GET /assets/css/auth.css HTTP/1.1" 304 -
+127.0.0.1 - - [04/Oct/2025 18:39:46] code 501, message Unsupported method ('POST')
+127.0.0.1 - - [04/Oct/2025 18:39:46] "POST /api/login HTTP/1.1" 501 -
+127.0.0.1 - - [04/Oct/2025 18:39:46] "GET /pages/crm-unified.html?role=admin HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 18:39:47] "GET /assets/js/crm-navigation.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 18:39:51] code 501, message Unsupported method ('POST')
+127.0.0.1 - - [04/Oct/2025 18:39:51] "POST /api/login HTTP/1.1" 501 -
+127.0.0.1 - - [04/Oct/2025 18:39:51] code 501, message Unsupported method ('POST')
+127.0.0.1 - - [04/Oct/2025 18:39:51] "POST /api/login HTTP/1.1" 501 -
+127.0.0.1 - - [04/Oct/2025 18:39:51] code 501, message Unsupported method ('POST')
+127.0.0.1 - - [04/Oct/2025 18:39:51] "POST /api/login HTTP/1.1" 501 -
+127.0.0.1 - - [04/Oct/2025 18:39:53] code 501, message Unsupported method ('POST')
+127.0.0.1 - - [04/Oct/2025 18:39:53] "POST /api/login HTTP/1.1" 501 -
+127.0.0.1 - - [04/Oct/2025 18:39:55] "GET /login.html HTTP/1.1" 304 -
+127.0.0.1 - - [04/Oct/2025 18:40:01] code 501, message Unsupported method ('POST')
+127.0.0.1 - - [04/Oct/2025 18:40:01] "POST /api/login HTTP/1.1" 501 -
+127.0.0.1 - - [04/Oct/2025 18:40:01] "GET /pages/crm-unified.html?role=dispatcher HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 18:40:37] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 18:41:32] "GET /login.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 18:41:32] "GET /assets/js/auth.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 18:41:33] "GET /assets/js/config.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 18:41:33] "GET /assets/js/common.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 18:41:33] "GET /assets/css/auth.css HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 18:41:33] "GET /assets/css/main.css HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 18:41:36] code 501, message Unsupported method ('POST')
+127.0.0.1 - - [04/Oct/2025 18:41:36] "POST /api/login HTTP/1.1" 501 -
+127.0.0.1 - - [04/Oct/2025 18:41:36] "GET /pages/crm-unified.html?role=admin HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 18:41:37] "GET /assets/js/crm-navigation.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 18:41:37] "GET /login.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 18:42:18] "GET /pages/crm-unified.html?role=admin HTTP/1.1" 304 -
+127.0.0.1 - - [04/Oct/2025 18:42:18] code 501, message Unsupported method ('POST')
+127.0.0.1 - - [04/Oct/2025 18:42:18] "POST /api/login HTTP/1.1" 501 -
+127.0.0.1 - - [04/Oct/2025 18:42:18] "GET /assets/js/crm-navigation.js HTTP/1.1" 304 -
+127.0.0.1 - - [04/Oct/2025 18:42:24] code 501, message Unsupported method ('POST')
+127.0.0.1 - - [04/Oct/2025 18:42:24] "POST /api/login HTTP/1.1" 501 -
+127.0.0.1 - - [04/Oct/2025 18:42:24] "GET /pages/client-unified.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 18:42:24] code 404, message File not found
+127.0.0.1 - - [04/Oct/2025 18:42:24] "GET /assets/img/AdminLTELogo.png HTTP/1.1" 404 -
+127.0.0.1 - - [04/Oct/2025 18:43:47] "GET /pages/crm-unified.html?role=dispatcher HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 18:43:47] code 501, message Unsupported method ('POST')
+127.0.0.1 - - [04/Oct/2025 18:43:47] "POST /api/login HTTP/1.1" 501 -
+127.0.0.1 - - [04/Oct/2025 18:43:48] "GET /assets/js/crm-navigation.js HTTP/1.1" 304 -
+127.0.0.1 - - [04/Oct/2025 18:43:56] code 501, message Unsupported method ('POST')
+127.0.0.1 - - [04/Oct/2025 18:43:56] "POST /api/login HTTP/1.1" 501 -
+127.0.0.1 - - [04/Oct/2025 18:43:57] "GET /pages/crm-unified.html?role=tech HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 18:44:05] code 501, message Unsupported method ('POST')
+127.0.0.1 - - [04/Oct/2025 18:44:05] "POST /api/login HTTP/1.1" 501 -
+127.0.0.1 - - [04/Oct/2025 18:44:13] code 501, message Unsupported method ('POST')
+127.0.0.1 - - [04/Oct/2025 18:44:13] "POST /api/login HTTP/1.1" 501 -
+127.0.0.1 - - [04/Oct/2025 18:44:14] "GET /pages/crm-unified.html?role=admin HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 18:45:49] "GET /pages/crm-unified.html?role=dispatcher HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 18:45:49] code 501, message Unsupported method ('POST')
+127.0.0.1 - - [04/Oct/2025 18:45:49] "POST /api/login HTTP/1.1" 501 -
+127.0.0.1 - - [04/Oct/2025 18:45:51] "GET /assets/js/crm-navigation.js HTTP/1.1" 304 -
