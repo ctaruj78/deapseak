@@ -5,6 +5,7 @@ class EnhancedLiftModal {
         this.map = null;
         this.marker = null;
         this.currentCoords = null;
+        this.detectedCountry = null; // Для автоматичної детекції країни за поштовим кодом
         this.init();
     }
 
@@ -189,12 +190,32 @@ class EnhancedLiftModal {
         if (postcode) {
             searchQuery += ', ' + postcode;
         }
-        searchQuery += ', Ukraine'; // Додаємо країну для точності
+        
+        // Визначаємо країну та код країни за форматом поштового коду
+        let country = 'Ukraine';
+        let countryCode = 'ua';
+        
+        if (postcode) {
+            const portugueseRegex = /^[0-9]{4}-[0-9]{3}$/;
+            if (portugueseRegex.test(postcode)) {
+                country = 'Portugal';
+                countryCode = 'pt';
+            }
+        }
+        
+        // Або використовуємо раніше визначену країну
+        if (this.detectedCountry) {
+            country = this.detectedCountry;
+            countryCode = country === 'Portugal' ? 'pt' : 'ua';
+        }
+        
+        searchQuery += ', ' + country;
         
         console.log('🔍 Geocoding query:', searchQuery);
+        console.log('🌍 Target country:', country, 'Code:', countryCode);
         
         // Використовуємо Nominatim API для геокодування
-        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=1&countrycodes=ua`;
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=1&countrycodes=${countryCode}`;
         
         fetch(url)
             .then(response => response.json())
@@ -348,15 +369,20 @@ class EnhancedLiftModal {
             }
         }
         
-        // Валідація поштового коду (українські формати)
+        // Валідація поштового коду (українські та португальські формати)
         if (data.postcode && data.postcode.trim()) {
-            const postcodeRegex = /^[0-9]{5}$/;
-            if (!postcodeRegex.test(data.postcode)) {
+            const ukrainianRegex = /^[0-9]{5}$/; // 01001
+            const portugueseRegex = /^[0-9]{4}-[0-9]{3}$/; // 1234-567
+            
+            if (!ukrainianRegex.test(data.postcode) && !portugueseRegex.test(data.postcode)) {
                 $('#enhancedLiftPostcode').addClass('is-invalid');
-                this.showMessage('Введіть коректний поштовий код (5 цифр, наприклад: 01001)', 'warning');
+                this.showMessage('Введіть коректний поштовий код: Український (01001) або Португальський (1234-567)', 'warning');
                 return false;
             } else {
                 $('#enhancedLiftPostcode').removeClass('is-invalid');
+                // Визначаємо країну за форматом для покращення геокодування
+                this.detectedCountry = ukrainianRegex.test(data.postcode) ? 'Ukraine' : 'Portugal';
+                console.log('🌍 Detected country by postcode format:', this.detectedCountry);
             }
         }
         
