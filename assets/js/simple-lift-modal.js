@@ -132,10 +132,25 @@ class SimpleLiftModal {
         console.log('💾 Saving lift data...');
         
         try {
-            // Перевіряємо allLifts
+            // Перевіряємо allLifts (можливо є і глобальна і window версія)
             if (typeof window.allLifts === 'undefined') {
-                console.log('⚠️ allLifts not found, creating empty array');
-                window.allLifts = [];
+                console.log('⚠️ window.allLifts not found');
+                if (typeof allLifts !== 'undefined') {
+                    console.log('📋 Using global allLifts variable');
+                    window.allLifts = allLifts;
+                } else {
+                    console.log('⚠️ Creating new empty array');
+                    window.allLifts = [];
+                    if (typeof window !== 'undefined') {
+                        window.allLifts = window.allLifts;
+                    }
+                }
+            }
+            
+            // Синхронізуємо глобальну змінну якщо існує
+            if (typeof allLifts !== 'undefined') {
+                allLifts = window.allLifts;
+                console.log('🔄 Synchronized global allLifts with window.allLifts');
             }
             
             console.log('📊 Current lifts count:', window.allLifts.length);
@@ -153,6 +168,16 @@ class SimpleLiftModal {
                 console.log('➕ Added new lift. Total count:', window.allLifts.length);
             }
             
+            // ВАЖЛИВО: Синхронізуємо з глобальною змінною
+            if (typeof allLifts !== 'undefined') {
+                if (existingIndex !== -1) {
+                    allLifts[existingIndex] = window.allLifts[existingIndex];
+                } else {
+                    allLifts.push(liftData);
+                }
+                console.log('🔄 Synchronized global allLifts variable');
+            }
+            
             // Зберігаємо в localStorage
             this.saveToStorage();
             
@@ -161,8 +186,21 @@ class SimpleLiftModal {
             $('#liftModal').modal('hide');
             
             // Оновлюємо таблицю якщо є
-            if (typeof window.liftManager !== 'undefined' && window.liftManager.loadLifts) {
-                setTimeout(() => window.liftManager.loadLifts(), 100);
+            console.log('🔄 Attempting to refresh lift table...');
+            if (typeof window.liftManager !== 'undefined') {
+                if (window.liftManager.loadLifts) {
+                    console.log('✅ Found liftManager.loadLifts, calling it...');
+                    setTimeout(() => {
+                        window.liftManager.loadLifts();
+                        console.log('✅ liftManager.loadLifts() called');
+                    }, 200);
+                } else {
+                    console.log('❌ liftManager.loadLifts not found');
+                }
+            } else {
+                console.log('❌ window.liftManager not found');
+                // Спробуємо знайти таблицю і оновити її вручну
+                this.manualRefreshTable();
             }
             
         } catch (error) {
@@ -298,6 +336,62 @@ class SimpleLiftModal {
         // Запускаємо збереження
         this.handleFormSubmit();
     }
+    
+    manualRefreshTable() {
+        console.log('🔄 Attempting manual table refresh...');
+        
+        // Знаходимо таблицю ліфтів
+        const tbody = $('#liftsTable tbody');
+        if (tbody.length === 0) {
+            console.log('❌ Table #liftsTable not found');
+            return;
+        }
+        
+        console.log('📋 Found table, updating with', window.allLifts.length, 'lifts');
+        
+        // Очищаємо таблицю
+        tbody.empty();
+        
+        // Додаємо ліфти (спрощена версія без пагінації)
+        if (window.allLifts && window.allLifts.length > 0) {
+            window.allLifts.forEach((lift, index) => {
+                const row = `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${lift.municipalNumber || 'Не вказано'}</td>
+                        <td>${lift.serial || lift.serialNumber || 'Не вказано'}</td>
+                        <td>${lift.brand || 'Не вказано'}</td>
+                        <td>${lift.model || 'Не вказано'}</td>
+                        <td>${lift.address || 'Не вказано'}</td>
+                        <td><span class="badge badge-${this.getStatusColor(lift.status)}">${lift.status || 'operational'}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-primary edit-lift" data-lift-id="${lift.id}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger delete-lift" data-lift-id="${lift.id}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.append(row);
+            });
+            console.log('✅ Manual table refresh completed');
+        } else {
+            tbody.append('<tr><td colspan="8" class="text-center">Немає ліфтів</td></tr>');
+            console.log('ℹ️ No lifts to display');
+        }
+    }
+    
+    getStatusColor(status) {
+        switch (status) {
+            case 'operational': return 'success';
+            case 'maintenance': return 'warning';
+            case 'broken': return 'danger';
+            case 'inactive': return 'secondary';
+            default: return 'primary';
+        }
+    }
 }
 
 // Глобальна ініціалізація
@@ -305,7 +399,7 @@ $(document).ready(function() {
     console.log('📱 Initializing Simple Lift Modal...');
     window.simpleLiftModal = new SimpleLiftModal();
     
-    // Тестова кнопка
+    // Тестові кнопки
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         setTimeout(() => {
             if ($('#test-simple-save').length === 0) {
@@ -322,6 +416,23 @@ $(document).ready(function() {
                         border-radius: 5px;
                         font-size: 12px;
                     " onclick="window.simpleLiftModal.testSave()">🧪 Простий тест</button>
+                `);
+            }
+            
+            if ($('#refresh-table').length === 0) {
+                $('body').append(`
+                    <button id="refresh-table" style="
+                        position: fixed; 
+                        bottom: 60px; 
+                        right: 10px; 
+                        z-index: 9999; 
+                        background: #28a745; 
+                        color: white; 
+                        border: none; 
+                        padding: 10px 15px; 
+                        border-radius: 5px;
+                        font-size: 12px;
+                    " onclick="window.simpleLiftModal.manualRefreshTable()">🔄 Оновити таблицю</button>
                 `);
             }
         }, 1000);
