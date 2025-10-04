@@ -65,6 +65,8 @@ class EnhancedLiftModal {
     }
 
     initializeMap() {
+        console.log('🗺️ Attempting to initialize map...');
+        
         if (typeof L === 'undefined') {
             console.log('⚠️ Leaflet not loaded, skipping map initialization');
             return;
@@ -75,6 +77,8 @@ class EnhancedLiftModal {
             console.log('⚠️ Enhanced map container not found');
             return;
         }
+        
+        console.log('✅ Map container found, Leaflet loaded');
 
         try {
             // Видаляємо попередню карту якщо існує
@@ -280,9 +284,6 @@ class EnhancedLiftModal {
 
     collectFormData() {
         // Збираємо дані з полів з префіксом enhanced
-        const postcodeValue = $('#enhancedLiftPostcode').val() || '';
-        console.log('🔍 DEBUG: postcode field value:', postcodeValue);
-        
         const data = {
             id: $('#enhancedLiftId').val() || 'lift_' + Date.now(),
             municipalNumber: $('#enhancedMunicipalNumber').val() || '',
@@ -294,7 +295,7 @@ class EnhancedLiftModal {
             speed: parseFloat($('#enhancedLiftSpeed').val()) || 1.0,
             installationYear: parseInt($('#enhancedInstallationYear').val()) || new Date().getFullYear(),
             address: $('#enhancedLiftAddress').val() || '',
-            postcode: postcodeValue,
+            postcode: $('#enhancedLiftPostcode').val() || '',
             liftsCountAtAddress: parseInt($('#enhancedLiftsCountAtAddress').val()) || 1,
             lat: parseFloat($('#enhancedLiftLat').val()) || null,
             lng: parseFloat($('#enhancedLiftLng').val()) || null,
@@ -336,13 +337,9 @@ class EnhancedLiftModal {
         const required = ['municipalNumber', 'brand', 'model', 'address', 'postcode', 'clientEmail'];
         const missing = [];
         
-        console.log('🔍 DEBUG: Validating fields, data postcode:', data.postcode);
-        
         for (let field of required) {
-            console.log(`🔍 DEBUG: Checking field ${field}:`, data[field]);
             if (!data[field] || data[field].trim() === '') {
                 missing.push(field);
-                console.log(`❌ DEBUG: Field ${field} is missing or empty`);
                 // Спеціальна обробка для різних назв полів
                 if (field === 'postcode') {
                     $('#enhancedLiftPostcode').addClass('is-invalid');
@@ -648,7 +645,7 @@ class EnhancedLiftModal {
                                 <label>&nbsp;</label>
                                 <div class="d-block">
                                     <button type="button" class="btn btn-outline-primary btn-sm btn-block" 
-                                            onclick="enhancedLiftModal.generateQRCode('additionalMunicipalNumber${i}', ${i})">
+                                            onclick="window.enhancedLiftModal.generateQRCode('additionalMunicipalNumber${i}', ${i})">
                                         <i class="fas fa-qrcode"></i> Генерувати QR-код
                                     </button>
                                 </div>
@@ -781,11 +778,11 @@ class EnhancedLiftModal {
                 <div class="mt-2">
                     <div class="btn-group btn-group-sm" role="group">
                         <button type="button" class="btn btn-outline-success btn-sm" 
-                                onclick="enhancedLiftModal.downloadQRCode('${inputId}', ${liftNumber})">
+                                onclick="window.enhancedLiftModal.downloadQRCode('${inputId}', ${liftNumber})">
                             <i class="fas fa-download"></i> PNG
                         </button>
                         <button type="button" class="btn btn-outline-primary btn-sm" 
-                                onclick="enhancedLiftModal.printQRCode('${inputId}', ${liftNumber})">
+                                onclick="window.enhancedLiftModal.printQRCode('${inputId}', ${liftNumber})">
                             <i class="fas fa-print"></i> Друк
                         </button>
                     </div>
