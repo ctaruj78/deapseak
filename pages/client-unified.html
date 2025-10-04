@@ -2307,6 +2307,36 @@ class EnhancedClientSystem extends ClientSystem {
 
 // Замінюємо стару систему на нову
 $(document).ready(function() {
+    // Перевірка авторизації при завантаженні сторінки
+    const sessionData = localStorage.getItem('lm_session');
+    if (!sessionData) {
+        window.location.href = '../login.html';
+        return;
+    }
+
+    try {
+        const session = JSON.parse(sessionData);
+        const now = new Date();
+        
+        if (new Date(session.expiresAt) <= now) {
+            localStorage.removeItem('lm_session');
+            window.location.href = '../login.html';
+            return;
+        }
+
+        if (session.user && session.user.role !== 'client') {
+            alert('Доступ заборонено. Необхідні права клієнта.');
+            window.location.href = '../login.html';
+            return;
+        }
+        
+    } catch (error) {
+        console.error('Session error:', error);
+        localStorage.removeItem('lm_session');
+        window.location.href = '../login.html';
+        return;
+    }
+
     window.clientSystem = new EnhancedClientSystem();
     
     // Додаємо обробник для оновлення лічильників

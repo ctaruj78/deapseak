@@ -1,87 +1,30 @@
-<!DOCTYPE html><!DOCTYPE html>
-
-<html lang="uk"><html lang="uk">
-
-<head><head>
-
-    <meta charset="UTF-8">    <meta charset="UTF-8">
-
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Перенаправлення на нову CRM систему</title>    <title>Адмін-панель - LiftMaster Pro</title>
-
-    <script>    <!-- PWA Manifest -->
-
-        // Автоматичне перенаправлення на нову CRM систему з роллю адміністратора    <link rel="manifest" href="/manifest.json">
-
-        setTimeout(function() {    <!-- AdminLTE CSS -->
-
-            window.location.href = '/pages/crm-unified.html?role=admin';    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
-
-        }, 1000);    <!-- Font Awesome -->
-
-    </script>    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <style>    <!-- Toastr CSS -->
-
-        body {    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-
-            font-family: Arial, sans-serif;    <!-- Chart.js for graphs -->
-
-            text-align: center;    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);    <style>
-
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Адмін-панель - LiftMaster Pro</title>
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        .stats-box {
+            text-align: center;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
             color: white;
-
-            padding: 50px;        /* Стилі залишаються незмінними */
-
-        }        .qr-small {
-
-        .redirect-message {            width: 80px;
-
-            background: rgba(255,255,255,0.1);            height: 80px;
-
-            padding: 30px;            cursor: pointer;
-
-            border-radius: 10px;        }
-
-            max-width: 500px;        .qr-modal-img {
-
-            margin: 0 auto;            width: 300px;
-
-        }            height: 300px;
-
-    </style>        }
-
-</head>        .stats-box {
-
-<body>            text-align: center;
-
-    <div class="redirect-message">            padding: 15px;
-
-        <h2>🔄 Перенаправлення</h2>            border-radius: 5px;
-
-        <p>Адмін-панель була перенесена до нової єдиної CRM системи.</p>            margin-bottom: 20px;
-
-        <p>Ви будете автоматично перенаправлені через 1 секунду...</p>            color: white;
-
-        <p><a href="/pages/crm-unified.html?role=admin" style="color: #fff;">Перейти зараз (Адміністратор)</a></p>        }
-
-    </div>        .bg-gradient-primary { background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); }
-
-</body>        .bg-gradient-success { background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%); }
-
-</html>        .bg-gradient-warning { background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%); }
+        }
+        .bg-gradient-primary { background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); }
+        .bg-gradient-success { background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%); }
+        .bg-gradient-warning { background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%); }
         .bg-gradient-info { background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); }
         .bg-gradient-danger { background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); }
         
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
         .quick-action-btn {
             display: flex;
             flex-direction: column;
@@ -92,89 +35,19 @@
             border: 1px solid #dee2e6;
             border-radius: 5px;
             transition: all 0.3s ease;
+            text-decoration: none;
+            color: #333;
         }
         .quick-action-btn:hover {
             transform: translateY(-3px);
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             border-color: #007bff;
+            text-decoration: none;
+            color: #007bff;
         }
         .quick-action-btn i {
             font-size: 2rem;
             margin-bottom: 10px;
-            color: #007bff;
-        }
-        
-        /* Стилі для навігації */
-        .nav-link.disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-        .nav-link.disabled:hover {
-            background-color: transparent !important;
-        }
-
-        /* Стилі для нотифікацій */
-        .dropdown-item.unread {
-            background-color: #f8f9fa;
-            font-weight: bold;
-        }
-        .dropdown-item.unread:hover {
-            background-color: #e9ecef;
-        }
-        .navbar-badge {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            font-size: 0.6rem;
-            padding: 2px 4px;
-        }
-
-        /* PWA та мобільність */
-        @media (max-width: 768px) {
-            .stats-box {
-                margin-bottom: 15px;
-                padding: 10px;
-            }
-            .stats-box h3 {
-                font-size: 1.5rem;
-            }
-            .quick-actions {
-                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-                gap: 10px;
-            }
-            .navbar-nav.ml-auto {
-                flex-direction: row;
-                align-items: center;
-            }
-            .navbar-nav.ml-auto .nav-item {
-                margin-left: 5px;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .stats-box h3 {
-                font-size: 1.2rem;
-            }
-            .quick-action-btn {
-                padding: 15px;
-                font-size: 0.9rem;
-            }
-            .quick-action-btn i {
-                font-size: 1.5rem;
-            }
-        }
-
-        /* PWA install button */
-        #pwa-install-btn {
-            white-space: nowrap;
-        }
-
-        /* Touch-friendly elements */
-        @media (pointer: coarse) {
-            .nav-link, .btn, .dropdown-item {
-                min-height: 44px;
-                min-width: 44px;
-            }
         }
     </style>
 </head>
@@ -182,7 +55,6 @@
     <div class="wrapper">
         <!-- Navbar -->
         <nav class="main-header navbar navbar-expand navbar-white navbar-light">
-            <!-- Ліва частина навігації -->
             <ul class="navbar-nav">
                 <li class="nav-item">
                     <a class="nav-link" data-widget="pushmenu" href="#" role="button">
@@ -190,66 +62,46 @@
                     </a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="../index.html" class="nav-link">Головна</a>
+                    <a href="admin-dashboard.html" class="nav-link">Головна</a>
                 </li>
             </ul>
 
-            <!-- Права частина навігації -->
             <ul class="navbar-nav ml-auto">
-                <!-- Notifications Dropdown Menu -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link" data-toggle="dropdown" href="#" id="notifications-dropdown">
-                        <i class="far fa-bell"></i>
-                        <span class="badge badge-warning navbar-badge" id="notification-count">0</span>
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="navbar-search" href="#" role="button">
+                        <i class="fas fa-search"></i>
                     </a>
-                    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right" id="notifications-menu">
-                        <span class="dropdown-item dropdown-header" id="notification-header">0 сповіщень</span>
-                        <div class="dropdown-divider"></div>
-                        <div id="notifications-list">
-                            <!-- Нотифікації будуть додані динамічно -->
-                        </div>
-                        <div class="dropdown-divider"></div>
-                        <a href="#" class="dropdown-item dropdown-footer" id="view-all-notifications">Переглянути всі сповіщення</a>
+                    <div class="navbar-search-block">
+                        <form class="form-inline">
+                            <div class="input-group input-group-sm">
+                                <input class="form-control form-control-navbar" type="search" placeholder="Пошук" aria-label="Search">
+                                <div class="input-group-append">
+                                    <button class="btn btn-navbar" type="submit">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
                     </div>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="../login.html" role="button">
-                        <i class="fas fa-sign-out-alt"></i> <span data-i18n="logout">Вийти</span>
+                    <a class="nav-link" href="../../login.html" role="button">
+                        <i class="fas fa-sign-out-alt"></i> Вийти
                     </a>
-                </li>
-                <!-- Language Switcher -->
-                <li class="nav-item">
-                    <div id="language-switcher" class="d-flex"></div>
-                </li>
-                <!-- Theme Switcher -->
-                <li class="nav-item">
-                    <div id="theme-switcher" class="theme-switcher"></div>
                 </li>
             </ul>
         </nav>
-        <!-- /.navbar -->
 
         <!-- Main Sidebar Container -->
         <aside class="main-sidebar sidebar-dark-primary elevation-4">
             <!-- Brand Logo -->
             <a href="admin-dashboard.html" class="brand-link">
-                <i class="fas fa-elevator brand-image img-circle elevation-3"></i>
+                <i class="brand-image fas fa-elevator"></i>
                 <span class="brand-text font-weight-light">LiftMaster Pro</span>
             </a>
 
             <!-- Sidebar -->
             <div class="sidebar">
-                <!-- Sidebar user panel -->
-                <div class="user-panel mt-3 pb-3 mb-3 d-flex">
-                    <div class="image">
-                        <img src="https://via.placeholder.com/160x160" class="img-circle elevation-2" alt="User Image">
-                    </div>
-                    <div class="info">
-                        <a href="profile.html" class="d-block">Іван Петренко</a>
-                        <small class="text-success">Адміністратор</small>
-                    </div>
-                </div>
-
                 <!-- Sidebar Menu -->
                 <nav class="mt-2">
                     <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
@@ -259,57 +111,25 @@
                                 <p>Дашборд</p>
                             </a>
                         </li>
-                        
-                        <!-- QR System Menu -->
+
                         <li class="nav-item">
                             <a href="#" class="nav-link">
-                                <i class="nav-icon fas fa-qrcode"></i>
+                                <i class="nav-icon fas fa-users"></i>
                                 <p>
-                                    QR Система
+                                    Користувачі
                                     <i class="right fas fa-angle-left"></i>
                                 </p>
                             </a>
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
-                                    <a href="qr-generator.html" class="nav-link">
-                                        <i class="fas fa-plus-circle nav-icon"></i>
-                                        <p>Генератор QR-кодів</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="qr-management.html" class="nav-link">
-                                        <i class="fas fa-cog nav-icon"></i>
-                                        <p>Керування QR-кодами</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="qr-history.html" class="nav-link">
-                                        <i class="fas fa-history nav-icon"></i>
-                                        <p>Історія сканувань</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="qr-analytics.html" class="nav-link">
-                                        <i class="fas fa-chart-line nav-icon"></i>
-                                        <p>Аналітика сканувань</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="qr-batch.html" class="nav-link">
-                                        <i class="fas fa-layer-group nav-icon"></i>
-                                        <p>Пакетне керування</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="../qr/qr-scanner.html" class="nav-link">
-                                        <i class="fas fa-camera nav-icon"></i>
-                                        <p>Сканер QR-кодів</p>
+                                    <a href="users.html" class="nav-link">
+                                        <i class="fas fa-list nav-icon"></i>
+                                        <p>Список користувачів</p>
                                     </a>
                                 </li>
                             </ul>
                         </li>
 
-                        <!-- Lifts Menu -->
                         <li class="nav-item">
                             <a href="#" class="nav-link">
                                 <i class="nav-icon fas fa-elevator"></i>
@@ -325,67 +145,34 @@
                                         <p>Управління ліфтами</p>
                                     </a>
                                 </li>
-                                <li class="nav-item">
-                                    <a href="maps.html" class="nav-link">
-                                        <i class="fas fa-map-marked-alt nav-icon"></i>
-                                        <p>Мапа ліфтів</p>
-                                    </a>
-                                </li>
                             </ul>
                         </li>
 
                         <li class="nav-item">
-                            <a href="users.html" class="nav-link">
-                                <i class="nav-icon fas fa-users"></i>
-                                <p>Користувачі</p>
-                            </a>
-                        </li>
-
-                        <!-- Reports & Analytics Menu -->
-                        <li class="nav-item">
                             <a href="#" class="nav-link">
-                                <i class="nav-icon fas fa-chart-bar"></i>
+                                <i class="nav-icon fas fa-file-alt"></i>
                                 <p>
-                                    Звіти та Аналітика
+                                    Документи
                                     <i class="right fas fa-angle-left"></i>
                                 </p>
                             </a>
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
-                                    <a href="reports.html" class="nav-link">
-                                        <i class="fas fa-file-alt nav-icon"></i>
-                                        <p>Звіти</p>
+                                    <a href="email-template.html" class="nav-link">
+                                        <i class="fas fa-envelope nav-icon"></i>
+                                        <p>Email шаблони</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="analytics.html" class="nav-link">
-                                        <i class="fas fa-chart-line nav-icon"></i>
-                                        <p>Аналітика</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        <!-- Support Menu -->
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="nav-icon fas fa-headset"></i>
-                                <p>
-                                    Підтримка
-                                    <i class="right fas fa-angle-left"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <a href="support.html" class="nav-link">
-                                        <i class="fas fa-ticket-alt nav-icon"></i>
-                                        <p>Технічна підтримка</p>
+                                    <a href="invoice-template.html" class="nav-link">
+                                        <i class="fas fa-file-invoice nav-icon"></i>
+                                        <p>Рахунки</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="notifications.html" class="nav-link">
-                                        <i class="fas fa-bell nav-icon"></i>
-                                        <p>Сповіщення</p>
+                                    <a href="inspection-template.html" class="nav-link">
+                                        <i class="fas fa-clipboard-check nav-icon"></i>
+                                        <p>Інспекції</p>
                                     </a>
                                 </li>
                             </ul>
@@ -397,89 +184,80 @@
                                 <p>Налаштування</p>
                             </a>
                         </li>
-
-                        <li class="nav-item">
-                            <a href="../ai-assistant/ai-assistant.html" class="nav-link">
-                                <i class="nav-icon fas fa-robot"></i>
-                                <p>AI Асистент</p>
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a href="profile.html" class="nav-link">
-                                <i class="nav-icon fas fa-user"></i>
-                                <p>Профіль</p>
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" onclick="logout()">
-                                <i class="nav-icon fas fa-sign-out-alt"></i>
-                                <p>Вийти</p>
-                            </a>
-                        </li>
                     </ul>
                 </nav>
-                <!-- /.sidebar-menu -->
             </div>
-            <!-- /.sidebar -->
         </aside>
 
-        <!-- Content Wrapper. Contains page content -->
+        <!-- Content Wrapper -->
         <div class="content-wrapper">
-            <!-- Content Header (Page header) -->
+            <!-- Content Header -->
             <div class="content-header">
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1 class="m-0">Адмін-панель</h1>
+                            <h1 class="m-0">Адмін дашборд</h1>
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="admin-dashboard.html">Головна</a></li>
+                                <li class="breadcrumb-item"><a href="#">Головна</a></li>
                                 <li class="breadcrumb-item active">Дашборд</li>
                             </ol>
                         </div>
                     </div>
                 </div>
             </div>
-            <!-- /.content-header -->
 
             <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
-                    <!-- Small boxes (Stat box) -->
-                    <div class="row" id="stats-row">
+                    <!-- Stats Boxes -->
+                    <div class="row">
                         <div class="col-lg-3 col-6">
                             <div class="stats-box bg-gradient-primary">
-                                <i class="fas fa-elevator"></i>
-                                <h3 id="total-lifts">156</h3>
-                                <p>Активних ліфтів</p>
+                                <div class="inner">
+                                    <h3 id="totalUsers">0</h3>
+                                    <p>Користувачів</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
                             </div>
                         </div>
                         <div class="col-lg-3 col-6">
                             <div class="stats-box bg-gradient-success">
-                                <i class="fas fa-check-circle"></i>
-                                <h3 id="today-repairs">128</h3>
-                                <p>Обслугованих сьогодні</p>
+                                <div class="inner">
+                                    <h3 id="totalLifts">0</h3>
+                                    <p>Ліфтів</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-elevator"></i>
+                                </div>
                             </div>
                         </div>
                         <div class="col-lg-3 col-6">
                             <div class="stats-box bg-gradient-warning">
-                                <i class="fas fa-exclamation-triangle"></i>
-                                <h3 id="maintenance-lifts">12</h3>
-                                <p>Проблемних ліфтів</p>
+                                <div class="inner">
+                                    <h3 id="activeRequests">0</h3>
+                                    <p>Активних заявок</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-clipboard-list"></i>
+                                </div>
                             </div>
                         </div>
                         <div class="col-lg-3 col-6">
                             <div class="stats-box bg-gradient-info">
-                                <i class="fas fa-qrcode"></i>
-                                <h3 id="today-scans">45</h3>
-                                <p>Нових сканувань</p>
+                                <div class="inner">
+                                    <h3 id="totalRevenue">0</h3>
+                                    <p>Доходів (грн)</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-money-bill"></i>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <!-- /.row -->
 
                     <!-- Quick Actions -->
                     <div class="row mt-4">
@@ -489,572 +267,184 @@
                                     <h3 class="card-title">Швидкі дії</h3>
                                 </div>
                                 <div class="card-body">
-                                    <div class="quick-actions">
-                                        <a href="../../qr-interface.html" class="quick-action-btn">
-                                            <i class="fas fa-qrcode"></i>
-                                            <span>QR Система</span>
-                                            <small>Загальний інтерфейс</small>
-                                        </a>
-                                        <a href="lifts.html" class="quick-action-btn">
-                                            <i class="fas fa-plus"></i>
-                                            <span>Додати ліфт</span>
-                                            <small>Новий ліфт в систему</small>
-                                        </a>
-                                        <a href="users.html" class="quick-action-btn">
-                                            <i class="fas fa-user-plus"></i>
-                                            <span>Додати користувача</span>
-                                            <small>Новий технік/клієнт</small>
-                                        </a>
-                                        <a href="reports.html" class="quick-action-btn">
-                                            <i class="fas fa-file-pdf"></i>
-                                            <span>Звіт за день</span>
-                                            <small>Сформувати звіт</small>
-                                        </a>
+                                    <div class="row">
+                                        <div class="col-md-3 col-sm-6 mb-3">
+                                            <a href="users.html" class="quick-action-btn">
+                                                <i class="fas fa-user-plus text-primary"></i>
+                                                <h6>Додати користувача</h6>
+                                                <p class="text-muted small mb-0">Створити новий обліковий запис</p>
+                                            </a>
+                                        </div>
+                                        <div class="col-md-3 col-sm-6 mb-3">
+                                            <a href="lifts.html" class="quick-action-btn">
+                                                <i class="fas fa-elevator text-success"></i>
+                                                <h6>Управління ліфтами</h6>
+                                                <p class="text-muted small mb-0">Додати або редагувати ліфти</p>
+                                            </a>
+                                        </div>
+                                        <div class="col-md-3 col-sm-6 mb-3">
+                                            <a href="reports.html" class="quick-action-btn">
+                                                <i class="fas fa-chart-line text-warning"></i>
+                                                <h6>Звіти</h6>
+                                                <p class="text-muted small mb-0">Перегляд аналітики та звітів</p>
+                                            </a>
+                                        </div>
+                                        <div class="col-md-3 col-sm-6 mb-3">
+                                            <a href="settings.html" class="quick-action-btn">
+                                                <i class="fas fa-cog text-info"></i>
+                                                <h6>Налаштування</h6>
+                                                <p class="text-muted small mb-0">Конфігурація системи</p>
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Charts Section -->
+                    <!-- Recent Activity -->
                     <div class="row mt-4">
-                        <div class="col-md-8">
+                        <div class="col-md-6">
                             <div class="card">
                                 <div class="card-header">
-                                    <h3 class="card-title">Аналітика за місяць</h3>
-                                    <div class="card-tools">
-                                        <button type="button" class="btn btn-success btn-sm" onclick="exportDashboard()">
-                                            <i class="fas fa-download"></i> Експорт звіту
-                                        </button>
-                                    </div>
+                                    <h3 class="card-title">Останні дії</h3>
                                 </div>
                                 <div class="card-body">
-                                    <canvas id="analyticsChart" style="height: 300px;"></canvas>
+                                    <ul class="list-unstyled" id="recentActivity">
+                                        <li class="media mb-3">
+                                            <i class="fas fa-user-plus text-primary mr-3 mt-1"></i>
+                                            <div class="media-body">
+                                                <h6 class="mt-0 mb-1">Новий користувач зареєстрований</h6>
+                                                <small class="text-muted">2 хвилини тому</small>
+                                            </div>
+                                        </li>
+                                        <li class="media mb-3">
+                                            <i class="fas fa-tools text-warning mr-3 mt-1"></i>
+                                            <div class="media-body">
+                                                <h6 class="mt-0 mb-1">Заявка на ТО завершена</h6>
+                                                <small class="text-muted">15 хвилин тому</small>
+                                            </div>
+                                        </li>
+                                        <li class="media mb-3">
+                                            <i class="fas fa-elevator text-success mr-3 mt-1"></i>
+                                            <div class="media-body">
+                                                <h6 class="mt-0 mb-1">Ліфт додано до системи</h6>
+                                                <small class="text-muted">1 година тому</small>
+                                            </div>
+                                        </li>
+                                    </ul>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        
+                        <div class="col-md-6">
                             <div class="card">
                                 <div class="card-header">
-                                    <h3 class="card-title">Розподіл за статусом</h3>
+                                    <h3 class="card-title">Система</h3>
                                 </div>
                                 <div class="card-body">
-                                    <canvas id="statusChart" style="height: 300px;"></canvas>
+                                    <div class="info-box mb-3">
+                                        <span class="info-box-icon bg-success"><i class="fas fa-server"></i></span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">Стан сервера</span>
+                                            <span class="info-box-number">Онлайн</span>
+                                        </div>
+                                    </div>
+                                    <div class="info-box mb-3">
+                                        <span class="info-box-icon bg-info"><i class="fas fa-database"></i></span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">База даних</span>
+                                            <span class="info-box-number">Підключено</span>
+                                        </div>
+                                    </div>
+                                    <div class="info-box">
+                                        <span class="info-box-icon bg-warning"><i class="fas fa-clock"></i></span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">Останнє оновлення</span>
+                                            <span class="info-box-number" id="lastUpdate">Зараз</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Main row -->
-                    <div class="row">
-                        <!-- Ліва колонка -->
-                        <div class="col-md-8">
-                            <!-- Таблиця останніх сканувань -->
-                            <div class="card">
-                                <div class="card-header border-transparent">
-                                    <h3 class="card-title">Останні сканування QR-кодів</h3>
-                                </div>
-                                <div class="card-body p-0">
-                                    <div class="table-responsive">
-                                        <table class="table m-0">
-                                            <thead>
-                                                <tr>
-                                                    <th>QR код</th>
-                                                    <th>Ліфт</th>
-                                                    <th>Технік</th>
-                                                    <th>Час</th>
-                                                    <th>Статус</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td><img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=LFT-045" class="qr-small"></td>
-                                                    <td>LFT-045 (вул. Центральна, 10)</td>
-                                                    <td>Петров І.І.</td>
-                                                    <td>10:25</td>
-                                                    <td><span class="badge badge-success">Завершено</span></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=LFT-128" class="qr-small"></td>
-                                                    <td>LFT-128 (пр. Перемоги, 15)</td>
-                                                    <td>Сидоров О.П.</td>
-                                                    <td>09:48</td>
-                                                    <td><span class="badge badge-warning">В роботі</span></td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                                <div class="card-footer clearfix">
-                                    <a href="qr-history.html" class="btn btn-sm btn-secondary float-right">Переглянути всі сканування</a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Права колонка -->
-                        <div class="col-md-4">
-                            <!-- Інформаційні блоки -->
-                            <div class="info-box mb-3 bg-warning">
-                                <span class="info-box-icon"><i class="fas fa-exclamation-triangle"></i></span>
-                                <div class="info-box-content">
-                                    <span class="info-box-text">Проблемні ліфти</span>
-                                    <span class="info-box-number">12</span>
-                                </div>
-                            </div>
-                            <div class="info-box mb-3 bg-success">
-                                <span class="info-box-icon"><i class="fas fa-qrcode"></i></span>
-                                <div class="info-box-content">
-                                    <span class="info-box-text">QR сканування сьогодні</span>
-                                    <span class="info-box-number">45</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- /.row -->
-                </div><!--/. container-fluid -->
+                </div>
             </section>
-            <!-- /.content -->
         </div>
-        <!-- /.content-wrapper -->
 
-        <!-- Main Footer -->
+        <!-- Footer -->
         <footer class="main-footer">
-            <strong>Copyright &copy; 2024 <a href="admin-dashboard.html">LiftMaster Pro</a>.</strong>
+            <strong>&copy; 2024 <a href="#">LiftMaster Pro</a>.</strong>
             Всі права захищені.
+            <div class="float-right d-none d-sm-inline-block">
+                <b>Версія</b> 3.2.0
+            </div>
         </footer>
     </div>
-    <!-- ./wrapper -->
 
-    <!-- Scripts -->
+    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- AdminLTE -->
     <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
 
-    <!-- Navigation Manager -->
-    <script src="/assets/js/modules/navigation-manager.js"></script>
-
     <script>
+        // Перевірка авторизації
         $(document).ready(function() {
-            console.log('Адмін-панель завантажена');
+            // Перевіряємо чи є активна сесія
+            const sessionData = localStorage.getItem('lm_session');
+            if (!sessionData) {
+                console.log('No session found, redirecting to login');
+                window.location.href = '../../login.html';
+                return;
+            }
+
+            try {
+                const session = JSON.parse(sessionData);
+                const now = new Date();
+                
+                // Перевіряємо термін дії сесії
+                if (new Date(session.expiresAt) <= now) {
+                    console.log('Session expired, redirecting to login');
+                    localStorage.removeItem('lm_session');
+                    window.location.href = '../../login.html';
+                    return;
+                }
+
+                // Перевіряємо роль користувача
+                if (session.user && session.user.role !== 'admin') {
+                    console.log('Access denied for role:', session.user.role);
+                    alert('Доступ заборонено. Необхідні права адміністратора.');
+                    window.location.href = '../../login.html';
+                    return;
+                }
+
+                console.log('Admin session valid:', session.user);
+                
+                // Завантажуємо дані дашборду
+                loadDashboardData();
+                
+            } catch (error) {
+                console.error('Session parsing error:', error);
+                localStorage.removeItem('lm_session');
+                window.location.href = '../../login.html';
+            }
+        });
+
+        function loadDashboardData() {
+            // Завантажуємо статистику
+            $('#totalUsers').text(Math.floor(Math.random() * 100) + 50);
+            $('#totalLifts').text(Math.floor(Math.random() * 500) + 200);
+            $('#activeRequests').text(Math.floor(Math.random() * 20) + 5);
+            $('#totalRevenue').text((Math.floor(Math.random() * 50000) + 10000).toLocaleString());
             
-            // Проста навігація як резервний варіант
-            $('.nav-link:not([href="#"])').on('click', function(e) {
-                e.preventDefault();
-                const href = $(this).attr('href');
-                if (href && href !== '#') {
-                    window.location.href = href;
-                }
-            });
-
-            // Обробка деревовидного меню
-            $('.nav-treeview .nav-link').on('click', function(e) {
-                e.preventDefault();
-                const href = $(this).attr('href');
-                if (href && href !== '#') {
-                    window.location.href = href;
-                }
-            });
-
-            // Анімація статистики
-            $('.stats-box').each(function() {
-                $(this).prop('Counter', 0).animate({
-                    Counter: $(this).find('h3').text()
-                }, {
-                    duration: 2000,
-                    easing: 'swing',
-                    step: function(now) {
-                        $(this).find('h3').text(Math.ceil(now));
-                    }
-                });
-            });
-
-            // Завантаження даних з API
-            loadDashboardData();
-        });
-
-        // Функція завантаження даних дашборду
-        async function loadDashboardData() {
-            try {
-                // Завантаження статистики
-                const stats = await LiftAPI.getDashboardStats();
-                updateStatsDisplay(stats);
-
-                // Завантаження аналітики для графіків
-                const analytics = await LiftAPI.getAnalytics('month');
-                createCharts(analytics);
-
-            } catch (error) {
-                console.error('Помилка завантаження даних дашборду:', error);
-                // Fallback до статичних даних
-                animateStats();
-            }
+            // Оновлюємо час
+            $('#lastUpdate').text(new Date().toLocaleTimeString('uk-UA'));
         }
 
-        // Оновлення відображення статистики
-        function updateStatsDisplay(stats) {
-            document.getElementById('total-lifts').textContent = stats.activeLifts || 156;
-            document.getElementById('today-repairs').textContent = stats.todayRepairs || 128;
-            document.getElementById('maintenance-lifts').textContent = stats.maintenanceLifts || 12;
-            document.getElementById('today-scans').textContent = stats.todayScans || 45;
-
-            // Анімація після оновлення
-            animateStats();
-        }
-
-        // Анімація статистики
-        function animateStats() {
-            $('.stats-box h3').each(function() {
-                $(this).prop('Counter', 0).animate({
-                    Counter: $(this).text()
-                }, {
-                    duration: 2000,
-                    easing: 'swing',
-                    step: function(now) {
-                        $(this).text(Math.ceil(now));
-                    }
-                });
-            });
-        }
-
-        // Створення графіків
-        function createCharts(analytics) {
-            // Лінійний графік аналітики
-            const analyticsCtx = document.getElementById('analyticsChart').getContext('2d');
-            new Chart(analyticsCtx, {
-                type: 'line',
-                data: {
-                    labels: ['Січ', 'Лют', 'Бер', 'Кві', 'Тра', 'Чер', 'Лип', 'Сер', 'Вер', 'Жов', 'Лис', 'Гру'],
-                    datasets: [{
-                        label: 'Сканування',
-                        data: analytics.trends?.scans || [120, 135, 142, 158, 145, 167, 189, 201, 195, 210, 225, 240],
-                        borderColor: 'rgb(75, 192, 192)',
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        tension: 0.1
-                    }, {
-                        label: 'Ремонти',
-                        data: analytics.trends?.repairs || [8, 9, 7, 12, 10, 11, 13, 15, 12, 14, 16, 18],
-                        borderColor: 'rgb(255, 99, 132)',
-                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                        tension: 0.1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-
-            // Кругова діаграма статусів
-            const statusCtx = document.getElementById('statusChart').getContext('2d');
-            new Chart(statusCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Активні', 'Обслуговування', 'Неактивні'],
-                    datasets: [{
-                        data: [
-                            analytics.totalScans * 0.85 || 142,
-                            analytics.totalRepairs * 0.1 || 12,
-                            analytics.totalScans * 0.05 || 2
-                        ],
-                        backgroundColor: [
-                            'rgb(40, 167, 69)',
-                            'rgb(255, 193, 7)',
-                            'rgb(220, 53, 69)'
-                        ],
-                        hoverOffset: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
-                }
-            });
-        }
-
-        // Резервна функція навігації
-        function navigateTo(page) {
-            window.location.href = page;
-        }
-    </script>
-
-    <!-- Toastr JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-    <!-- EmailJS -->
-    <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
-    <!-- Notifications Module -->
-    <script src="../../../assets/js/modules/notifications.js"></script>
-    <!-- I18n Module -->
-    <script src="../../../assets/js/modules/i18n.js"></script>
-    <!-- Export Module -->
-    <script src="../../../assets/js/modules/export.js"></script>
-    <!-- Theme Module -->
-    <script src="../../../assets/js/modules/theme.js"></script>
-
-    <script>
-        // Ініціалізація нотифікацій
-        document.addEventListener('DOMContentLoaded', function() {
-            // Реєстрація Service Worker
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(registration => {
-                        console.log('Service Worker registered:', registration);
-                    })
-                    .catch(error => {
-                        console.error('Service Worker registration failed:', error);
-                    });
-            }
-
-            // Налаштування Toastr
-            toastr.options = {
-                "closeButton": true,
-                "debug": false,
-                "newestOnTop": true,
-                "progressBar": true,
-                <!-- Додано: Підтримка -->
-                <li class="nav-item">
-                    <a class="nav-link" href="support.html" title="Підтримка">
-                        <i class="fas fa-headset"></i>
-                    </a>
-                </li>
-                <!-- Додано: Темна тема -->
-                <li class="nav-item">
-                    <a class="nav-link" href="#" id="darkModeToggle" title="Темна тема">
-                        <i class="fas fa-moon"></i>
-                    </a>
-                </li>
-                "preventDuplicates": false,
-                "onclick": null,
-                "showDuration": "300",
-                "hideDuration": "1000",
-                "timeOut": "5000",
-                "extendedTimeOut": "1000",
-                "showEasing": "swing",
-                "hideEasing": "linear",
-                "showMethod": "fadeIn",
-                "hideMethod": "fadeOut"
-            };
-
-            // Додавання тестових нотифікацій
-            setTimeout(() => {
-                NotificationManager.success('Система завантажена', 'Вітаємо в LiftManager!');
-            }, 1000);
-
-            // Симуляція нових нотифікацій
-            setInterval(() => {
-                if (Math.random() > 0.8) { // 20% шанс
-                    const messages = [
-                        { type: 'maintenance', title: 'Обслуговування', message: 'Ліфт №5 потребує перевірки' },
-                        { type: 'assignment', title: 'Нове завдання', message: 'Призначено ремонт ліфта №3' },
-                        { type: 'payment', title: 'Оплата', message: 'Отримано оплату за послуги' }
-                    ];
-                    const randomMsg = messages[Math.floor(Math.random() * messages.length)];
-                    notificationManager.add(randomMsg);
-                }
-            }, 30000); // Кожні 30 секунд
-
-            // Оновлення UI нотифікацій
-            updateNotificationsUI();
-
-            // Слухач для оновлення UI
-            notificationManager.addListener((event, data) => {
-                if (event === 'new' || event === 'read' || event === 'all_read') {
-                    updateNotificationsUI();
-                }
-            });
-        });
-
-        // Функція для оновлення UI нотифікацій
-        function updateNotificationsUI() {
-            const unreadCount = notificationManager.unreadCount;
-            const notifications = notificationManager.getNotifications({ limit: 5 });
-
-            // Оновлення лічильника
-            const countElement = document.getElementById('notification-count');
-            const headerElement = document.getElementById('notification-header');
-
-            if (unreadCount > 0) {
-                countElement.textContent = unreadCount > 99 ? '99+' : unreadCount;
-                countElement.style.display = 'inline';
-                headerElement.textContent = `${unreadCount} нових сповіщень`;
-            } else {
-                countElement.style.display = 'none';
-                headerElement.textContent = 'Немає нових сповіщень';
-            }
-
-            // Оновлення списку нотифікацій
-            const listElement = document.getElementById('notifications-list');
-            listElement.innerHTML = '';
-
-            if (notifications.length === 0) {
-                listElement.innerHTML = '<a href="#" class="dropdown-item">Немає сповіщень</a>';
-            } else {
-                notifications.forEach(notification => {
-                    const item = document.createElement('a');
-                    item.href = '#';
-                    item.className = `dropdown-item ${!notification.read ? 'unread' : ''}`;
-                    item.onclick = () => markAsRead(notification.id);
-
-                    const iconClass = getNotificationIcon(notification.type);
-                    const timeAgo = getTimeAgo(notification.createdAt);
-
-                    item.innerHTML = `
-                        <i class="${iconClass} mr-2"></i> ${notification.title}
-                        <span class="float-right text-muted text-sm">${timeAgo}</span>
-                        <p class="text-sm mb-0">${notification.message}</p>
-                    `;
-
-                    listElement.appendChild(item);
-                });
-            }
-        }
-
-        // Функція для позначення як прочитане
-        function markAsRead(notificationId) {
-            notificationManager.markAsRead(notificationId);
-        }
-
-        // Функція для отримання іконки за типом
-        function getNotificationIcon(type) {
-            switch (type) {
-                case 'success': return 'fas fa-check-circle text-success';
-                case 'error': return 'fas fa-exclamation-triangle text-danger';
-                case 'warning': return 'fas fa-exclamation-circle text-warning';
-                case 'info': return 'fas fa-info-circle text-info';
-                case 'maintenance': return 'fas fa-wrench text-warning';
-                case 'assignment': return 'fas fa-user-check text-primary';
-                case 'payment': return 'fas fa-dollar-sign text-success';
-                default: return 'fas fa-bell text-secondary';
-            }
-        }
-
-        // Функція для форматування часу
-        function getTimeAgo(dateString) {
-            const now = new Date();
-            const date = new Date(dateString);
-            const diffMs = now - date;
-            const diffMins = Math.floor(diffMs / 60000);
-            const diffHours = Math.floor(diffMins / 60);
-            const diffDays = Math.floor(diffHours / 24);
-
-            if (diffMins < 1) return 'щойно';
-            if (diffMins < 60) return `${diffMins} хв тому`;
-            if (diffHours < 24) return `${diffHours} год тому`;
-            return `${diffDays} дн тому`;
-        }
-
-        // Обробка "Переглянути всі"
-        document.getElementById('view-all-notifications').addEventListener('click', function(e) {
-            e.preventDefault();
-            // Тут можна відкрити сторінку всіх нотифікацій
-            alert(__('view_all_notifications', 'Перегляд всіх сповіщень (поки що не реалізований)'));
-        });
-
-        // Ініціалізація перемикача мов
-        i18nManager.initLanguageSwitcher('language-switcher');
-
-        // Ініціалізація перемикача тем
-        themeManager.initThemeSwitcher('theme-switcher');
-
-            // Ініціалізація PWA install prompt
-            initPWAInstall();        // Оновлення міток графіків при зміні мови
-        function updateChartLabels() {
-            // Тут можна оновити мітки графіків при зміні мови
-            const months = [
-                __('jan', 'Січ'), __('feb', 'Лют'), __('mar', 'Бер'), __('apr', 'Кві'),
-                __('may', 'Тра'), __('jun', 'Чер'), __('jul', 'Лип'), __('aug', 'Сер'),
-                __('sep', 'Вер'), __('oct', 'Жов'), __('nov', 'Лис'), __('dec', 'Гру')
-            ];
-
-            // Оновлення міток місяців у графіку
-            if (window.analyticsChart) {
-                window.analyticsChart.data.labels = months;
-                window.analyticsChart.update();
-            }
-        }
-
-        // PWA install prompt
-        let deferredPrompt;
-        function initPWAInstall() {
-            window.addEventListener('beforeinstallprompt', (e) => {
-                // Запобігає автоматичному показу prompt
-                e.preventDefault();
-                deferredPrompt = e;
-
-                // Показуємо кнопку встановлення
-                showInstallButton();
-            });
-
-            window.addEventListener('appinstalled', (evt) => {
-                console.log('PWA was installed successfully');
-                hideInstallButton();
-            });
-        }
-
-        function showInstallButton() {
-            // Створюємо кнопку встановлення
-            const installButton = document.createElement('button');
-            installButton.id = 'pwa-install-btn';
-            installButton.className = 'btn btn-success btn-sm ml-2';
-            installButton.innerHTML = '<i class="fas fa-download"></i> Встановити додаток';
-            installButton.onclick = installPWA;
-
-            // Додаємо до navbar
-            const navbar = document.querySelector('.navbar-nav.ml-auto');
-            if (navbar) {
-                const li = document.createElement('li');
-                li.className = 'nav-item';
-                li.appendChild(installButton);
-                navbar.appendChild(li);
-            }
-        }
-
-        function hideInstallButton() {
-            const installButton = document.getElementById('pwa-install-btn');
-            if (installButton) {
-                installButton.parentElement.remove();
-            }
-        }
-
-        async function installPWA() {
-            if (!deferredPrompt) return;
-
-            // Показуємо prompt
-            deferredPrompt.prompt();
-
-            // Чекаємо на відповідь користувача
-            const { outcome } = await deferredPrompt.userChoice;
-
-            console.log(`User response to install prompt: ${outcome}`);
-
-            // Очищуємо deferredPrompt
-            deferredPrompt = null;
-
-            // Приховуємо кнопку
-            hideInstallButton();
-        }
-
-        // Функція експорту дашборду
-        async function exportDashboard() {
-            try {
-                await ExportManager.exportDashboard();
-            } catch (error) {
-                console.error('Export failed:', error);
-                NotificationManager.error('Помилка експорту', 'Не вдалося експортувати звіт');
-            }
-        }
+        // Оновлення даних кожні 30 секунд
+        setInterval(loadDashboardData, 30000);
     </script>
 </body>
 </html>
-    <!-- AI Assistant Include -->
-    <!--#include file="../../templates/ai-assistant-include.html" -->
-    <!-- Якщо сервер не підтримує include, вставте вміст ai-assistant-include.html вручну перед </body> -->
