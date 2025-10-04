@@ -115,3 +115,37 @@
 127.0.0.1 - - [04/Oct/2025 19:15:47] "GET /qr-interface.html HTTP/1.1" 304 -
 127.0.0.1 - - [04/Oct/2025 19:15:47] "GET /assets/js/qr-utils.js HTTP/1.1" 304 -
 127.0.0.1 - - [04/Oct/2025 19:15:48] "GET /assets/js/auth.js HTTP/1.1" 304 -
+127.0.0.1 - - [04/Oct/2025 19:17:08] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:17:19] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:17:34] "GET /pages/admin/reports.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:17:35] "GET /assets/js/modules/navigation-manager.js HTTP/1.1" 304 -
+127.0.0.1 - - [04/Oct/2025 19:17:35] code 404, message File not found
+127.0.0.1 - - [04/Oct/2025 19:17:35] "GET /assets/js/modules/reports-manager.js HTTP/1.1" 404 -
+127.0.0.1 - - [04/Oct/2025 19:17:40] "GET /pages/admin/settings.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:17:40] code 404, message File not found
+127.0.0.1 - - [04/Oct/2025 19:17:40] "GET /assets/img/icons/google-calendar.png HTTP/1.1" 404 -
+127.0.0.1 - - [04/Oct/2025 19:17:41] code 404, message File not found
+127.0.0.1 - - [04/Oct/2025 19:17:41] "GET /assets/img/avatars/admin.png HTTP/1.1" 404 -
+127.0.0.1 - - [04/Oct/2025 19:17:41] code 404, message File not found
+127.0.0.1 - - [04/Oct/2025 19:17:41] "GET /assets/css/custom.css HTTP/1.1" 404 -
+127.0.0.1 - - [04/Oct/2025 19:17:41] code 404, message File not found
+127.0.0.1 - - [04/Oct/2025 19:17:41] "GET /assets/img/icons/slack.png HTTP/1.1" 404 -
+127.0.0.1 - - [04/Oct/2025 19:17:41] code 404, message File not found
+127.0.0.1 - - [04/Oct/2025 19:17:41] "GET /assets/img/icons/quickbooks.png HTTP/1.1" 404 -
+127.0.0.1 - - [04/Oct/2025 19:18:35] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 304 -
+127.0.0.1 - - [04/Oct/2025 19:18:52] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:19:25] "GET /pages/admin/settings.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:19:26] code 404, message File not found
+127.0.0.1 - - [04/Oct/2025 19:19:26] "GET /assets/img/avatars/admin.png HTTP/1.1" 404 -
+127.0.0.1 - - [04/Oct/2025 19:19:26] code 404, message File not found
+127.0.0.1 - - [04/Oct/2025 19:19:26] "GET /assets/css/custom.css HTTP/1.1" 404 -
+127.0.0.1 - - [04/Oct/2025 19:19:26] code 404, message File not found
+127.0.0.1 - - [04/Oct/2025 19:19:26] "GET /assets/img/icons/google-calendar.png HTTP/1.1" 404 -
+127.0.0.1 - - [04/Oct/2025 19:19:26] code 404, message File not found
+127.0.0.1 - - [04/Oct/2025 19:19:26] "GET /assets/img/icons/slack.png HTTP/1.1" 404 -
+127.0.0.1 - - [04/Oct/2025 19:19:26] code 404, message File not found
+127.0.0.1 - - [04/Oct/2025 19:19:26] "GET /assets/img/icons/quickbooks.png HTTP/1.1" 404 -
+127.0.0.1 - - [04/Oct/2025 19:19:30] "GET /pages/admin/profile.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:19:31] code 404, message File not found
+127.0.0.1 - - [04/Oct/2025 19:19:31] "GET /assets/img/avatars/admin.png HTTP/1.1" 404 -
+127.0.0.1 - - [04/Oct/2025 19:19:38] "GET /pages/admin/settings.html HTTP/1.1" 200 -
