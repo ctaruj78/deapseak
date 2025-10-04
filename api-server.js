@@ -20,6 +20,22 @@ connectDB().catch(err => {
     process.exit(1);
 });
 
+// Status endpoint (без авторизації)
+app.get("/api/status", (req, res) => {
+    res.json({
+        status: "online",
+        timestamp: new Date(),
+        version: "2.0.0",
+        uptime: process.uptime(),
+        modules: {
+            assignments: true,
+            monitoring: true,
+            chat: true,
+            qr: true
+        }
+    });
+});
+
 // Middleware для аутентифікації
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
@@ -1240,6 +1256,1693 @@ app.post("/api/init-test-data", async (req, res) => {
         res.status(500).json({ 
             success: false, 
             message: "Не вдалося ініціалізувати тестові дані" 
+        });
+    }
+});
+
+// ============================================
+// API ENDPOINTS ДЛЯ ASSIGNMENT MANAGER
+// ============================================
+
+// Отримання списку заявок з фільтрацією
+app.get("/api/assignments", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        
+        // Фільтри з query параметрів
+        const filter = {};
+        
+        if (req.query.status && req.query.status !== 'all') {
+            filter.status = req.query.status;
+        }
+        
+        if (req.query.priority && req.query.priority !== 'all') {
+            filter.priority = req.query.priority;
+        }
+        
+        if (req.query.assignedTo && req.query.assignedTo !== 'all') {
+            filter['assignment.assignedTo'] = req.query.assignedTo;
+        }
+        
+        if (req.query.category && req.query.category !== 'all') {
+            filter['metadata.category'] = req.query.category;
+        }
+        
+        // Фільтр за роллю користувача
+        if (req.user.role === 'tech') {
+            // Техніки бачать тільки свої заявки або нові
+            filter.$or = [
+                { 'assignment.assignedTo': req.user.id },
+                { status: 'new' }
+            ];
+        }
+        
+        // Сортування та пагінація
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const skip = (page - 1) * limit;
+        
+        const assignments = await db.collection("assignments")
+            .find(filter)
+            .sort({ 'timestamps.created': -1 })
+            .skip(skip)
+            .limit(limit)
+            .toArray();
+        
+        // Загальна кількість для пагінації
+        const total = await db.collection("assignments").countDocuments(filter);
+        
+        res.json({
+            success: true,
+            data: assignments,
+            pagination: {
+                total,
+                page,
+                limit,
+                pages: Math.ceil(total / limit)
+            }
+        });
+    } catch (error) {
+        console.error("Помилка отримання заявок:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося завантажити заявки" 
+        });
+    }
+});
+
+// Створення нової заявки
+app.post("/api/assignments", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        const assignmentData = req.body;
+        
+        // Валідація обов'язкових полів
+        if (!assignmentData.title || !assignmentData.description) {
+            return res.status(400).json({
+                success: false,
+                message: "Заголовок та опис заявки обов'язкові"
+            });
+        }
+        
+        // Генерація унікального номера заявки
+        const count = await db.collection("assignments").countDocuments();
+        const year = new Date().getFullYear();
+        const assignmentNumber = `ASG-${year}-${String(count + 1).padStart(3, '0')}`;
+        
+        // Створення нової заявки
+        const newAssignment = {
+            ...assignmentData,
+            assignmentNumber,
+            status: 'new',
+            timestamps: {
+                created: new Date(),
+                updated: new Date()
+            },
+            metadata: {
+                source: 'web',
+                category: assignmentData.category || 'maintenance',
+                createdBy: req.user.id
+            }
+        };
+        
+        const result = await db.collection("assignments").insertOne(newAssignment);
+        
+        // Додавання запису в історію
+        await db.collection("assignment_history").insertOne({
+            assignmentId: result.insertedId,
+            changedBy: req.user.id,
+            changeType: 'created',
+            newValues: newAssignment,
+            timestamp: new Date(),
+            notes: 'Заявка створена'
+        });
+        
+        res.status(201).json({
+            success: true,
+            message: "Заявка успішно створена",
+            data: { ...newAssignment, _id: result.insertedId }
+        });
+    } catch (error) {
+        console.error("Помилка створення заявки:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося створити заявку" 
+        });
+    }
+});
+
+// Отримання конкретної заявки
+app.get("/api/assignments/:id", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        
+        const assignment = await db.collection("assignments").findOne({ 
+            _id: new ObjectId(req.params.id) 
+        });
+        
+        if (!assignment) {
+            return res.status(404).json({
+                success: false,
+                message: "Заявка не знайдена"
+            });
+        }
+        
+        // Перевірка прав доступу
+        if (req.user.role === 'tech' && 
+            assignment.assignment?.assignedTo !== req.user.id && 
+            assignment.status !== 'new') {
+            return res.status(403).json({
+                success: false,
+                message: "Немає доступу до цієї заявки"
+            });
+        }
+        
+        res.json({
+            success: true,
+            data: assignment
+        });
+    } catch (error) {
+        console.error("Помилка отримання заявки:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося отримати заявку" 
+        });
+    }
+});
+
+// Призначення заявки техніку
+app.put("/api/assignments/:id/assign", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        
+        // Тільки диспетчери та адміни можуть призначати заявки
+        if (req.user.role !== 'dispatcher' && req.user.role !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: "Недостатньо прав для призначення заявок"
+            });
+        }
+        
+        const { assignedTo, instructions, deadline } = req.body;
+        
+        if (!assignedTo) {
+            return res.status(400).json({
+                success: false,
+                message: "ID техніка обов'язковий"
+            });
+        }
+        
+        // Перевірка існування техніка
+        const technician = await db.collection("users").findOne({
+            _id: new ObjectId(assignedTo),
+            role: 'tech'
+        });
+        
+        if (!technician) {
+            return res.status(404).json({
+                success: false,
+                message: "Технік не знайдений"
+            });
+        }
+        
+        // Оновлення заявки
+        const updateData = {
+            'assignment.assignedTo': assignedTo,
+            'assignment.assignedBy': req.user.id,
+            'assignment.assignedAt': new Date(),
+            'assignment.instructions': instructions || '',
+            'assignment.deadline': deadline ? new Date(deadline) : null,
+            status: 'assigned',
+            'timestamps.updated': new Date()
+        };
+        
+        const result = await db.collection("assignments").updateOne(
+            { _id: new ObjectId(req.params.id) },
+            { $set: updateData }
+        );
+        
+        if (result.modifiedCount === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Заявка не знайдена або не оновлена"
+            });
+        }
+        
+        // Додавання запису в історію
+        await db.collection("assignment_history").insertOne({
+            assignmentId: new ObjectId(req.params.id),
+            changedBy: req.user.id,
+            changeType: 'assigned',
+            newValues: updateData,
+            timestamp: new Date(),
+            notes: `Призначено техніку: ${technician.firstName} ${technician.lastName}`
+        });
+        
+        res.json({
+            success: true,
+            message: "Заявка успішно призначена"
+        });
+    } catch (error) {
+        console.error("Помилка призначення заявки:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося призначити заявку" 
+        });
+    }
+});
+
+// Оновлення статусу заявки
+app.put("/api/assignments/:id/status", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        const { status, notes } = req.body;
+        
+        if (!status) {
+            return res.status(400).json({
+                success: false,
+                message: "Статус обов'язковий"
+            });
+        }
+        
+        // Валідація статусів
+        const validStatuses = ['new', 'assigned', 'in-progress', 'completed', 'cancelled', 'on-hold'];
+        if (!validStatuses.includes(status)) {
+            return res.status(400).json({
+                success: false,
+                message: "Невалідний статус"
+            });
+        }
+        
+        // Отримання поточної заявки для перевірки прав
+        const assignment = await db.collection("assignments").findOne({ 
+            _id: new ObjectId(req.params.id) 
+        });
+        
+        if (!assignment) {
+            return res.status(404).json({
+                success: false,
+                message: "Заявка не знайдена"
+            });
+        }
+        
+        // Перевірка прав на оновлення статусу
+        if (req.user.role === 'tech' && assignment.assignment?.assignedTo !== req.user.id) {
+            return res.status(403).json({
+                success: false,
+                message: "Ви можете оновлювати тільки свої заявки"
+            });
+        }
+        
+        // Підготовка оновлень
+        const updateData = {
+            status,
+            'timestamps.updated': new Date()
+        };
+        
+        // Додавання специфічних часових міток
+        if (status === 'in-progress' && assignment.status !== 'in-progress') {
+            updateData['timestamps.started'] = new Date();
+        }
+        
+        if (status === 'completed' && assignment.status !== 'completed') {
+            updateData['timestamps.completed'] = new Date();
+        }
+        
+        if (status === 'cancelled' && assignment.status !== 'cancelled') {
+            updateData['timestamps.cancelled'] = new Date();
+        }
+        
+        // Якщо є додаткові дані в request body
+        if (req.body.workData) {
+            updateData.workData = { ...assignment.workData, ...req.body.workData };
+        }
+        
+        // Оновлення заявки
+        const result = await db.collection("assignments").updateOne(
+            { _id: new ObjectId(req.params.id) },
+            { $set: updateData }
+        );
+        
+        if (result.modifiedCount === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Заявка не оновлена"
+            });
+        }
+        
+        // Додавання запису в історію
+        await db.collection("assignment_history").insertOne({
+            assignmentId: new ObjectId(req.params.id),
+            changedBy: req.user.id,
+            changeType: 'status_changed',
+            oldValues: { status: assignment.status },
+            newValues: { status },
+            timestamp: new Date(),
+            notes: notes || `Статус змінено на ${status}`
+        });
+        
+        res.json({
+            success: true,
+            message: "Статус заявки оновлено"
+        });
+    } catch (error) {
+        console.error("Помилка оновлення статусу заявки:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося оновити статус заявки" 
+        });
+    }
+});
+
+// QR інтеграція - пошук заявки за QR кодом
+app.get("/api/assignments/by-qr/:qrCode", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        
+        const assignment = await db.collection("assignments").findOne({ 
+            'qrCode.code': req.params.qrCode 
+        });
+        
+        if (!assignment) {
+            return res.status(404).json({
+                success: false,
+                message: "Заявка з таким QR кодом не знайдена"
+            });
+        }
+        
+        res.json({
+            success: true,
+            data: assignment
+        });
+    } catch (error) {
+        console.error("Помилка пошуку заявки за QR:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося знайти заявку за QR кодом" 
+        });
+    }
+});
+
+// Реєстрація QR сканування для заявки
+app.post("/api/assignments/:id/qr-scan", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        const { action, qrCode, notes } = req.body;
+        
+        const scanRecord = {
+            scannedBy: req.user.id,
+            scannedAt: new Date(),
+            action: action || 'scanned',
+            qrCode,
+            notes: notes || ''
+        };
+        
+        // Додаємо запис про сканування до заявки
+        const result = await db.collection("assignments").updateOne(
+            { _id: new ObjectId(req.params.id) },
+            { 
+                $push: { 'qrCode.scanHistory': scanRecord },
+                $set: { 'timestamps.updated': new Date() }
+            }
+        );
+        
+        if (result.modifiedCount === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Заявка не знайдена"
+            });
+        }
+        
+        res.json({
+            success: true,
+            message: "QR сканування зареєстровано"
+        });
+    } catch (error) {
+        console.error("Помилка реєстрації QR сканування:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося зареєструвати QR сканування" 
+        });
+    }
+});
+
+// Отримання шаблонів заявок
+app.get("/api/assignment-templates", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        
+        const filter = { isActive: true };
+        
+        const templates = await db.collection("assignment_templates")
+            .find(filter)
+            .sort({ name: 1 })
+            .toArray();
+        
+        res.json({
+            success: true,
+            data: templates
+        });
+    } catch (error) {
+        console.error("Помилка отримання шаблонів:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося завантажити шаблони" 
+        });
+    }
+});
+
+// Створення шаблону заявки
+app.post("/api/assignment-templates", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        
+        // Тільки адміни та диспетчери можуть створювати шаблони
+        if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
+            return res.status(403).json({
+                success: false,
+                message: "Недостатньо прав для створення шаблонів"
+            });
+        }
+        
+        const templateData = {
+            ...req.body,
+            createdBy: req.user.id,
+            createdAt: new Date(),
+            isActive: true
+        };
+        
+        const result = await db.collection("assignment_templates").insertOne(templateData);
+        
+        res.status(201).json({
+            success: true,
+            message: "Шаблон створено",
+            data: { ...templateData, _id: result.insertedId }
+        });
+    } catch (error) {
+        console.error("Помилка створення шаблону:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося створити шаблон" 
+        });
+    }
+});
+
+// Отримання історії змін заявки
+app.get("/api/assignments/:id/history", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        
+        const history = await db.collection("assignment_history")
+            .find({ assignmentId: new ObjectId(req.params.id) })
+            .sort({ timestamp: -1 })
+            .toArray();
+        
+        res.json({
+            success: true,
+            data: history
+        });
+    } catch (error) {
+        console.error("Помилка отримання історії:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося отримати історію заявки" 
+        });
+    }
+});
+
+// Статистика заявок
+app.get("/api/assignments/stats", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        
+        // Загальна статистика
+        const totalAssignments = await db.collection("assignments").countDocuments();
+        
+        // Статистика за статусами
+        const statusStats = await db.collection("assignments").aggregate([
+            { $group: { _id: "$status", count: { $sum: 1 } } }
+        ]).toArray();
+        
+        // Статистика за пріоритетами
+        const priorityStats = await db.collection("assignments").aggregate([
+            { $group: { _id: "$priority", count: { $sum: 1 } } }
+        ]).toArray();
+        
+        // Статистика за техніками (тільки призначені заявки)
+        const techStats = await db.collection("assignments").aggregate([
+            { $match: { "assignment.assignedTo": { $exists: true } } },
+            { $group: { _id: "$assignment.assignedTo", count: { $sum: 1 } } },
+            { $sort: { count: -1 } },
+            { $limit: 10 }
+        ]).toArray();
+        
+        // Статистика за категоріями
+        const categoryStats = await db.collection("assignments").aggregate([
+            { $group: { _id: "$metadata.category", count: { $sum: 1 } } }
+        ]).toArray();
+        
+        // Статистика за місяцями (останні 12 місяців)
+        const last12Months = new Date();
+        last12Months.setMonth(last12Months.getMonth() - 12);
+        
+        const monthlyStats = await db.collection("assignments").aggregate([
+            { $match: { "timestamps.created": { $gte: last12Months } } },
+            { 
+                $group: {
+                    _id: {
+                        year: { $year: "$timestamps.created" },
+                        month: { $month: "$timestamps.created" }
+                    },
+                    count: { $sum: 1 }
+                }
+            },
+            { $sort: { "_id.year": 1, "_id.month": 1 } }
+        ]).toArray();
+        
+        res.json({
+            success: true,
+            stats: {
+                total: totalAssignments,
+                byStatus: statusStats,
+                byPriority: priorityStats,
+                byTechnician: techStats,
+                byCategory: categoryStats,
+                monthly: monthlyStats
+            }
+        });
+    } catch (error) {
+        console.error("Помилка отримання статистики:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося отримати статистику заявок" 
+        });
+    }
+});
+
+// ============================================
+// API ENDPOINTS ДЛЯ MONITORING MANAGER
+// ============================================
+
+// Отримання метрик системи моніторингу
+app.get("/api/monitoring/metrics", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        
+        // Загальна кількість ліфтів
+        const totalLifts = await db.collection("lifts").countDocuments();
+        
+        // Ліфти за статусами
+        const activeLifts = await db.collection("lifts").countDocuments({ status: "active" });
+        const maintenanceLifts = await db.collection("lifts").countDocuments({ status: "maintenance" });
+        const errorLifts = await db.collection("lifts").countDocuments({ status: "error" });
+        const inactiveLifts = await db.collection("lifts").countDocuments({ status: "inactive" });
+        
+        // Сповіщення
+        const criticalAlerts = await db.collection("monitoring_alerts").countDocuments({ 
+            severity: "critical", 
+            resolvedAt: null 
+        });
+        const warningAlerts = await db.collection("monitoring_alerts").countDocuments({ 
+            severity: "warning", 
+            resolvedAt: null 
+        });
+        
+        // Заявки в роботі
+        const activeAssignments = await db.collection("assignments").countDocuments({ 
+            status: "in-progress" 
+        });
+        
+        // Середня температура ліфтів (якщо дані є)
+        const temperatureData = await db.collection("lifts").aggregate([
+            { $match: { temperature: { $exists: true } } },
+            { $group: { _id: null, avgTemp: { $avg: "$temperature" } } }
+        ]).toArray();
+        
+        const averageTemperature = temperatureData.length > 0 ? temperatureData[0].avgTemp : 22;
+        
+        // Загальне енергоспоживання
+        const powerData = await db.collection("lifts").aggregate([
+            { $match: { powerConsumption: { $exists: true } } },
+            { $group: { _id: null, totalPower: { $sum: "$powerConsumption" } } }
+        ]).toArray();
+        
+        const totalPowerConsumption = powerData.length > 0 ? powerData[0].totalPower : 0;
+        
+        // Uptime (симуляція - в реальному проекті буде з окремої колекції метрик)
+        const averageUptime = 98.5 + (Math.random() - 0.5) * 0.5;
+        
+        const metrics = {
+            totalLifts,
+            activeLifts,
+            maintenanceLifts,
+            errorLifts,
+            inactiveLifts,
+            criticalAlerts,
+            warningAlerts,
+            activeAssignments,
+            averageTemperature: Math.round(averageTemperature * 10) / 10,
+            totalPowerConsumption: Math.round(totalPowerConsumption),
+            averageUptime: Math.round(averageUptime * 100) / 100,
+            lastUpdated: new Date().toISOString()
+        };
+        
+        res.json({
+            success: true,
+            data: metrics
+        });
+    } catch (error) {
+        console.error("Помилка отримання метрик моніторингу:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося отримати метрики моніторингу" 
+        });
+    }
+});
+
+// Отримання сповіщень моніторингу
+app.get("/api/monitoring/alerts", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        
+        // Фільтри
+        const filter = {};
+        
+        if (req.query.severity && req.query.severity !== 'all') {
+            filter.severity = req.query.severity;
+        }
+        
+        if (req.query.resolved !== undefined) {
+            if (req.query.resolved === 'true') {
+                filter.resolvedAt = { $ne: null };
+            } else {
+                filter.resolvedAt = null;
+            }
+        } else {
+            // За замовчуванням показуємо тільки нерозв'язані
+            filter.resolvedAt = null;
+        }
+        
+        if (req.query.liftId) {
+            filter.liftId = req.query.liftId;
+        }
+        
+        // Пагінація
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 50;
+        const skip = (page - 1) * limit;
+        
+        // Отримання сповіщень
+        const alerts = await db.collection("monitoring_alerts")
+            .find(filter)
+            .sort({ timestamp: -1, severity: -1 })
+            .skip(skip)
+            .limit(limit)
+            .toArray();
+        
+        // Загальна кількість для пагінації
+        const total = await db.collection("monitoring_alerts").countDocuments(filter);
+        
+        res.json({
+            success: true,
+            data: alerts,
+            pagination: {
+                total,
+                page,
+                limit,
+                pages: Math.ceil(total / limit)
+            }
+        });
+    } catch (error) {
+        console.error("Помилка отримання сповіщень:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося отримати сповіщення" 
+        });
+    }
+});
+
+// Створення нового сповіщення
+app.post("/api/monitoring/alerts", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        const { type, title, description, liftId, severity, metadata } = req.body;
+        
+        // Валідація
+        if (!type || !title || !description || !severity) {
+            return res.status(400).json({
+                success: false,
+                message: "Тип, заголовок, опис та рівень важливості обов'язкові"
+            });
+        }
+        
+        const validSeverities = ['info', 'warning', 'critical'];
+        if (!validSeverities.includes(severity)) {
+            return res.status(400).json({
+                success: false,
+                message: "Невалідний рівень важливості"
+            });
+        }
+        
+        // Створення сповіщення
+        const newAlert = {
+            type,
+            title,
+            description,
+            liftId: liftId || null,
+            severity,
+            metadata: metadata || {},
+            timestamp: new Date(),
+            acknowledged: false,
+            acknowledgedBy: null,
+            acknowledgedAt: null,
+            resolvedAt: null,
+            resolvedBy: null,
+            createdBy: req.user.id
+        };
+        
+        const result = await db.collection("monitoring_alerts").insertOne(newAlert);
+        
+        // Якщо це критичне сповіщення, можна додати логіку для негайного оповіщення
+        if (severity === 'critical') {
+            console.log(`🚨 КРИТИЧНЕ СПОВІЩЕННЯ: ${title}`);
+            // Тут можна додати WebSocket broadcast, email, SMS тощо
+        }
+        
+        res.status(201).json({
+            success: true,
+            message: "Сповіщення створено",
+            data: { ...newAlert, _id: result.insertedId }
+        });
+    } catch (error) {
+        console.error("Помилка створення сповіщення:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося створити сповіщення" 
+        });
+    }
+});
+
+// Підтвердження сповіщення
+app.put("/api/monitoring/alerts/:id/acknowledge", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        
+        const result = await db.collection("monitoring_alerts").updateOne(
+            { _id: new ObjectId(req.params.id) },
+            { 
+                $set: { 
+                    acknowledged: true,
+                    acknowledgedBy: req.user.id,
+                    acknowledgedAt: new Date()
+                }
+            }
+        );
+        
+        if (result.modifiedCount === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Сповіщення не знайдено"
+            });
+        }
+        
+        res.json({
+            success: true,
+            message: "Сповіщення підтверджено"
+        });
+    } catch (error) {
+        console.error("Помилка підтвердження сповіщення:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося підтвердити сповіщення" 
+        });
+    }
+});
+
+// Вирішення сповіщення
+app.put("/api/monitoring/alerts/:id/resolve", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        const { resolution } = req.body;
+        
+        const result = await db.collection("monitoring_alerts").updateOne(
+            { _id: new ObjectId(req.params.id) },
+            { 
+                $set: { 
+                    resolvedAt: new Date(),
+                    resolvedBy: req.user.id,
+                    resolution: resolution || 'Вирішено користувачем',
+                    acknowledged: true,
+                    acknowledgedBy: req.user.id,
+                    acknowledgedAt: new Date()
+                }
+            }
+        );
+        
+        if (result.modifiedCount === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Сповіщення не знайдено"
+            });
+        }
+        
+        res.json({
+            success: true,
+            message: "Сповіщення вирішено"
+        });
+    } catch (error) {
+        console.error("Помилка вирішення сповіщення:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося вирішити сповіщення" 
+        });
+    }
+});
+
+// Отримання статистики роботи ліфтів
+app.get("/api/monitoring/lifts/stats", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        
+        // Статистика за статусами
+        const statusStats = await db.collection("lifts").aggregate([
+            { $group: { _id: "$status", count: { $sum: 1 } } }
+        ]).toArray();
+        
+        // Статистика за моделями
+        const modelStats = await db.collection("lifts").aggregate([
+            { $group: { _id: "$model", count: { $sum: 1 } } },
+            { $sort: { count: -1 } }
+        ]).toArray();
+        
+        // Статистика за типами
+        const typeStats = await db.collection("lifts").aggregate([
+            { $group: { _id: "$type", count: { $sum: 1 } } }
+        ]).toArray();
+        
+        // Ліфти, які потребують ТО
+        const maintenanceDue = await db.collection("lifts").countDocuments({
+            nextMaintenance: { $lte: new Date() }
+        });
+        
+        // Ліфти з помилками
+        const liftsWithErrors = await db.collection("lifts").countDocuments({
+            $or: [
+                { errorCodes: { $exists: true, $ne: [] } },
+                { status: "error" }
+            ]
+        });
+        
+        res.json({
+            success: true,
+            stats: {
+                byStatus: statusStats,
+                byModel: modelStats,
+                byType: typeStats,
+                maintenanceDue,
+                liftsWithErrors,
+                generatedAt: new Date().toISOString()
+            }
+        });
+    } catch (error) {
+        console.error("Помилка отримання статистики ліфтів:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося отримати статистику ліфтів" 
+        });
+    }
+});
+
+// Отримання детальної інформації про ліфт для моніторингу
+app.get("/api/monitoring/lifts/:id", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        
+        // Основна інформація про ліфт
+        const lift = await db.collection("lifts").findOne({ 
+            _id: new ObjectId(req.params.id) 
+        });
+        
+        if (!lift) {
+            return res.status(404).json({
+                success: false,
+                message: "Ліфт не знайдено"
+            });
+        }
+        
+        // Останні сповіщення для цього ліфта
+        const recentAlerts = await db.collection("monitoring_alerts")
+            .find({ liftId: req.params.id })
+            .sort({ timestamp: -1 })
+            .limit(10)
+            .toArray();
+        
+        // Активні заявки для цього ліфта
+        const activeAssignments = await db.collection("assignments")
+            .find({ 
+                'location.liftId': req.params.id,
+                status: { $in: ['new', 'assigned', 'in-progress'] }
+            })
+            .sort({ 'timestamps.created': -1 })
+            .toArray();
+        
+        // Історія обслуговування (якщо є)
+        const maintenanceHistory = await db.collection("maintenance_history")
+            .find({ liftId: req.params.id })
+            .sort({ date: -1 })
+            .limit(5)
+            .toArray();
+        
+        res.json({
+            success: true,
+            data: {
+                lift,
+                recentAlerts,
+                activeAssignments,
+                maintenanceHistory: maintenanceHistory || []
+            }
+        });
+    } catch (error) {
+        console.error("Помилка отримання деталей ліфта:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося отримати деталі ліфта" 
+        });
+    }
+});
+
+// Оновлення статусу ліфта
+app.put("/api/monitoring/lifts/:id/status", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        const { status, reason } = req.body;
+        
+        const validStatuses = ['active', 'maintenance', 'error', 'inactive'];
+        if (!validStatuses.includes(status)) {
+            return res.status(400).json({
+                success: false,
+                message: "Невалідний статус"
+            });
+        }
+        
+        // Оновлення статусу ліфта
+        const result = await db.collection("lifts").updateOne(
+            { _id: new ObjectId(req.params.id) },
+            { 
+                $set: { 
+                    status,
+                    lastStatusChange: new Date(),
+                    statusChangedBy: req.user.id,
+                    statusChangeReason: reason || 'Оновлено через систему моніторингу'
+                }
+            }
+        );
+        
+        if (result.modifiedCount === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Ліфт не знайдено"
+            });
+        }
+        
+        // Створення сповіщення про зміну статусу
+        if (status === 'error' || status === 'maintenance') {
+            await db.collection("monitoring_alerts").insertOne({
+                type: 'status_change',
+                title: `Зміна статусу ліфта на "${status}"`,
+                description: reason || `Статус ліфта змінено на "${status}"`,
+                liftId: req.params.id,
+                severity: status === 'error' ? 'critical' : 'warning',
+                timestamp: new Date(),
+                acknowledged: false,
+                resolvedAt: null,
+                createdBy: req.user.id
+            });
+        }
+        
+        res.json({
+            success: true,
+            message: "Статус ліфта оновлено"
+        });
+    } catch (error) {
+        console.error("Помилка оновлення статусу ліфта:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося оновити статус ліфта" 
+        });
+    }
+});
+
+// Отримання метрик продуктивності системи
+app.get("/api/monitoring/performance", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        
+        // Період для аналізу (за замовчуванням - останній тиждень)
+        const fromDate = req.query.from ? new Date(req.query.from) : 
+                        new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        const toDate = req.query.to ? new Date(req.query.to) : new Date();
+        
+        // Кількість заявок за період
+        const assignmentsCount = await db.collection("assignments").countDocuments({
+            'timestamps.created': { $gte: fromDate, $lte: toDate }
+        });
+        
+        // Завершені заявки
+        const completedAssignments = await db.collection("assignments").countDocuments({
+            'timestamps.completed': { $gte: fromDate, $lte: toDate },
+            status: 'completed'
+        });
+        
+        // Середній час виконання заявок
+        const avgCompletionTime = await db.collection("assignments").aggregate([
+            {
+                $match: {
+                    'timestamps.completed': { $gte: fromDate, $lte: toDate },
+                    status: 'completed'
+                }
+            },
+            {
+                $addFields: {
+                    completionTime: {
+                        $subtract: ['$timestamps.completed', '$timestamps.created']
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    avgTime: { $avg: '$completionTime' }
+                }
+            }
+        ]).toArray();
+        
+        const averageCompletionTimeMs = avgCompletionTime.length > 0 ? avgCompletionTime[0].avgTime : 0;
+        const averageCompletionTimeHours = Math.round(averageCompletionTimeMs / (1000 * 60 * 60) * 10) / 10;
+        
+        // Кількість сповіщень за період
+        const alertsCount = await db.collection("monitoring_alerts").countDocuments({
+            timestamp: { $gte: fromDate, $lte: toDate }
+        });
+        
+        // Розподіл сповіщень за рівнем важливості
+        const alertsBySeverity = await db.collection("monitoring_alerts").aggregate([
+            { $match: { timestamp: { $gte: fromDate, $lte: toDate } } },
+            { $group: { _id: '$severity', count: { $sum: 1 } } }
+        ]).toArray();
+        
+        // Найактивніші техніки
+        const topTechnicians = await db.collection("assignments").aggregate([
+            {
+                $match: {
+                    'timestamps.completed': { $gte: fromDate, $lte: toDate },
+                    'assignment.assignedTo': { $exists: true }
+                }
+            },
+            {
+                $group: {
+                    _id: '$assignment.assignedTo',
+                    completedTasks: { $sum: 1 }
+                }
+            },
+            { $sort: { completedTasks: -1 } },
+            { $limit: 5 }
+        ]).toArray();
+        
+        res.json({
+            success: true,
+            performance: {
+                period: {
+                    from: fromDate.toISOString(),
+                    to: toDate.toISOString()
+                },
+                assignments: {
+                    total: assignmentsCount,
+                    completed: completedAssignments,
+                    completionRate: assignmentsCount > 0 ? Math.round(completedAssignments / assignmentsCount * 100) : 0,
+                    averageCompletionTimeHours
+                },
+                alerts: {
+                    total: alertsCount,
+                    bySeverity: alertsBySeverity
+                },
+                topTechnicians,
+                generatedAt: new Date().toISOString()
+            }
+        });
+    } catch (error) {
+        console.error("Помилка отримання метрик продуктивності:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося отримати метрики продуктивності" 
+        });
+    }
+});
+
+// Ендпойнт для створення тестових сповіщень (для демонстрації)
+app.post("/api/monitoring/alerts/test", authenticateToken, async (req, res) => {
+    try {
+        if (process.env.NODE_ENV === 'production') {
+            return res.status(403).json({
+                success: false,
+                message: "Тестові сповіщення недоступні в production"
+            });
+        }
+        
+        const db = getDB();
+        
+        const testAlerts = [
+            {
+                type: 'system',
+                title: 'Тестове критичне сповіщення',
+                description: 'Це тестове критичне сповіщення для перевірки системи',
+                liftId: null,
+                severity: 'critical',
+                timestamp: new Date(),
+                acknowledged: false,
+                resolvedAt: null,
+                createdBy: req.user.id
+            },
+            {
+                type: 'maintenance',
+                title: 'Тестове попередження',
+                description: 'Це тестове попередження для перевірки системи',
+                liftId: null,
+                severity: 'warning',
+                timestamp: new Date(),
+                acknowledged: false,
+                resolvedAt: null,
+                createdBy: req.user.id
+            },
+            {
+                type: 'info',
+                title: 'Тестове інформаційне сповіщення',
+                description: 'Це тестове інформаційне сповіщення для перевірки системи',
+                liftId: null,
+                severity: 'info',
+                timestamp: new Date(),
+                acknowledged: false,
+                resolvedAt: null,
+                createdBy: req.user.id
+            }
+        ];
+        
+        const result = await db.collection("monitoring_alerts").insertMany(testAlerts);
+        
+        res.json({
+            success: true,
+            message: `Створено ${result.insertedCount} тестових сповіщень`
+        });
+    } catch (error) {
+        console.error("Помилка створення тестових сповіщень:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося створити тестові сповіщення" 
+        });
+    }
+});
+
+// ===============================================
+// CHAT SYSTEM ENDPOINTS - Система чату
+// ===============================================
+
+// Отримати всіх користувачів для чату
+app.get("/api/users", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        
+        // Отримуємо всіх користувачів крім поточного
+        const users = await db.collection("users").find(
+            { _id: { $ne: new ObjectId(req.user.id) } },
+            { 
+                projection: { 
+                    password: 0,  // Виключаємо пароль
+                    refreshTokens: 0 
+                } 
+            }
+        ).toArray();
+        
+        res.json(users);
+    } catch (error) {
+        console.error("Помилка отримання користувачів:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося отримати список користувачів" 
+        });
+    }
+});
+
+// Отримати канали чату
+app.get("/api/chat/channels", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        
+        // Отримуємо канали, до яких користувач має доступ
+        const channels = await db.collection("chat_channels").find({
+            $or: [
+                { type: 'public' },
+                { members: req.user.role },
+                { members: 'all' },
+                { members: req.user.id }
+            ]
+        }).toArray();
+        
+        res.json(channels);
+    } catch (error) {
+        console.error("Помилка отримання каналів:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося отримати список каналів" 
+        });
+    }
+});
+
+// Створити новий канал
+app.post("/api/chat/channels", authenticateToken, async (req, res) => {
+    try {
+        const { name, description, type, members } = req.body;
+        const db = getDB();
+        
+        // Перевірка прав на створення каналів
+        if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
+            return res.status(403).json({ 
+                success: false, 
+                message: "Недостатньо прав для створення каналу" 
+            });
+        }
+        
+        const channel = {
+            name,
+            description,
+            type: type || 'public',
+            members: members || ['all'],
+            createdBy: req.user.id,
+            createdAt: new Date(),
+            lastActivity: new Date()
+        };
+        
+        const result = await db.collection("chat_channels").insertOne(channel);
+        
+        res.json({
+            success: true,
+            channelId: result.insertedId,
+            channel: { ...channel, _id: result.insertedId }
+        });
+    } catch (error) {
+        console.error("Помилка створення каналу:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося створити канал" 
+        });
+    }
+});
+
+// Отримати повідомлення чату
+app.get("/api/chat/messages", authenticateToken, async (req, res) => {
+    try {
+        const { chatId, type, limit = 50, offset = 0 } = req.query;
+        const db = getDB();
+        
+        let query = {};
+        
+        if (type === 'direct') {
+            // Приватний чат між двома користувачами
+            query = {
+                $or: [
+                    { from: req.user.id, to: chatId },
+                    { from: chatId, to: req.user.id }
+                ]
+            };
+        } else if (type === 'channel') {
+            // Повідомлення каналу
+            query = { chatId: chatId, type: 'channel' };
+        }
+        
+        const messages = await db.collection("chat_messages")
+            .find(query)
+            .sort({ timestamp: -1 })
+            .limit(parseInt(limit))
+            .skip(parseInt(offset))
+            .toArray();
+        
+        // Отримуємо інформацію про відправників
+        const senderIds = [...new Set(messages.map(m => m.from))];
+        const senders = await db.collection("users").find(
+            { _id: { $in: senderIds.map(id => new ObjectId(id)) } },
+            { projection: { firstName: 1, lastName: 1, role: 1, avatar: 1 } }
+        ).toArray();
+        
+        // Об'єднуємо повідомлення з інформацією про відправників
+        const messagesWithSenders = messages.map(message => ({
+            ...message,
+            sender: senders.find(s => s._id.toString() === message.from) || 
+                   { firstName: 'Невідомий', lastName: '', role: 'unknown' }
+        })).reverse(); // Повертаємо в прямому порядку
+        
+        res.json(messagesWithSenders);
+    } catch (error) {
+        console.error("Помилка отримання повідомлень:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося отримати повідомлення" 
+        });
+    }
+});
+
+// Надіслати повідомлення
+app.post("/api/chat/messages", authenticateToken, async (req, res) => {
+    try {
+        const { text, chatId, type, attachments = [] } = req.body;
+        const db = getDB();
+        
+        if (!text?.trim() && attachments.length === 0) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Повідомлення не може бути порожнім" 
+            });
+        }
+        
+        // Перевірка доступу до каналу (якщо це канал)
+        if (type === 'channel') {
+            const channel = await db.collection("chat_channels").findOne({ _id: new ObjectId(chatId) });
+            if (!channel) {
+                return res.status(404).json({ 
+                    success: false, 
+                    message: "Канал не знайдено" 
+                });
+            }
+            
+            // Перевірка доступу
+            const hasAccess = channel.type === 'public' ||
+                            channel.members.includes(req.user.role) ||
+                            channel.members.includes('all') ||
+                            channel.members.includes(req.user.id);
+            
+            if (!hasAccess) {
+                return res.status(403).json({ 
+                    success: false, 
+                    message: "Немає доступу до цього каналу" 
+                });
+            }
+        }
+        
+        const message = {
+            text: text?.trim() || '',
+            from: req.user.id,
+            to: type === 'direct' ? chatId : null,
+            chatId: chatId,
+            type: type,
+            attachments: attachments,
+            timestamp: new Date(),
+            edited: false,
+            editedAt: null
+        };
+        
+        const result = await db.collection("chat_messages").insertOne(message);
+        
+        // Отримуємо інформацію про відправника
+        const sender = await db.collection("users").findOne(
+            { _id: new ObjectId(req.user.id) },
+            { projection: { firstName: 1, lastName: 1, role: 1, avatar: 1 } }
+        );
+        
+        // Оновлюємо активність каналу
+        if (type === 'channel') {
+            await db.collection("chat_channels").updateOne(
+                { _id: new ObjectId(chatId) },
+                { $set: { lastActivity: new Date() } }
+            );
+        }
+        
+        const sentMessage = {
+            ...message,
+            _id: result.insertedId,
+            sender: sender
+        };
+        
+        // TODO: Тут буде WebSocket broadcast для real-time оновлень
+        
+        res.json({
+            success: true,
+            message: sentMessage
+        });
+    } catch (error) {
+        console.error("Помилка надсилання повідомлення:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося надіслати повідомлення" 
+        });
+    }
+});
+
+// Позначити повідомлення як прочитані
+app.post("/api/chat/messages/read", authenticateToken, async (req, res) => {
+    try {
+        const { chatId, type, messageIds = [] } = req.body;
+        const db = getDB();
+        
+        let query = {};
+        
+        if (type === 'direct') {
+            query = {
+                $or: [
+                    { from: chatId, to: req.user.id },
+                    { from: req.user.id, to: chatId }
+                ]
+            };
+        } else if (type === 'channel') {
+            query = { chatId: chatId, type: 'channel' };
+        }
+        
+        if (messageIds.length > 0) {
+            query._id = { $in: messageIds.map(id => new ObjectId(id)) };
+        }
+        
+        // Додаємо користувача до списку тих, хто прочитав
+        await db.collection("chat_messages").updateMany(
+            query,
+            { 
+                $addToSet: { 
+                    readBy: {
+                        userId: req.user.id,
+                        readAt: new Date()
+                    }
+                }
+            }
+        );
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error("Помилка позначення як прочитано:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося позначити як прочитано" 
+        });
+    }
+});
+
+// Редагувати повідомлення
+app.put("/api/chat/messages/:messageId", authenticateToken, async (req, res) => {
+    try {
+        const { messageId } = req.params;
+        const { text } = req.body;
+        const db = getDB();
+        
+        if (!text?.trim()) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Текст повідомлення не може бути порожнім" 
+            });
+        }
+        
+        // Перевірка, чи користувач може редагувати це повідомлення
+        const message = await db.collection("chat_messages").findOne({ 
+            _id: new ObjectId(messageId),
+            from: req.user.id 
+        });
+        
+        if (!message) {
+            return res.status(404).json({ 
+                success: false, 
+                message: "Повідомлення не знайдено або немає прав на редагування" 
+            });
+        }
+        
+        // Перевірка часу (можна редагувати тільки протягом 15 хвилин)
+        const editTimeLimit = 15 * 60 * 1000; // 15 хвилин
+        if (Date.now() - message.timestamp.getTime() > editTimeLimit) {
+            return res.status(403).json({ 
+                success: false, 
+                message: "Час для редагування повідомлення минув" 
+            });
+        }
+        
+        await db.collection("chat_messages").updateOne(
+            { _id: new ObjectId(messageId) },
+            { 
+                $set: { 
+                    text: text.trim(),
+                    edited: true,
+                    editedAt: new Date()
+                }
+            }
+        );
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error("Помилка редагування повідомлення:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося відредагувати повідомлення" 
+        });
+    }
+});
+
+// Видалити повідомлення
+app.delete("/api/chat/messages/:messageId", authenticateToken, async (req, res) => {
+    try {
+        const { messageId } = req.params;
+        const db = getDB();
+        
+        // Перевірка прав на видалення
+        const message = await db.collection("chat_messages").findOne({ 
+            _id: new ObjectId(messageId) 
+        });
+        
+        if (!message) {
+            return res.status(404).json({ 
+                success: false, 
+                message: "Повідомлення не знайдено" 
+            });
+        }
+        
+        // Користувач може видаляти свої повідомлення або адмін/диспетчер можуть видаляти будь-які
+        const canDelete = message.from === req.user.id || 
+                         req.user.role === 'admin' || 
+                         req.user.role === 'dispatcher';
+        
+        if (!canDelete) {
+            return res.status(403).json({ 
+                success: false, 
+                message: "Немає прав на видалення цього повідомлення" 
+            });
+        }
+        
+        await db.collection("chat_messages").updateOne(
+            { _id: new ObjectId(messageId) },
+            { 
+                $set: { 
+                    text: '[Повідомлення видалено]',
+                    deleted: true,
+                    deletedAt: new Date(),
+                    deletedBy: req.user.id
+                }
+            }
+        );
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error("Помилка видалення повідомлення:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося видалити повідомлення" 
+        });
+    }
+});
+
+// Отримати статистику чату
+app.get("/api/chat/stats", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        
+        // Підрахунок статистики
+        const [
+            totalMessages,
+            totalChannels,
+            activeUsers,
+            todayMessages
+        ] = await Promise.all([
+            db.collection("chat_messages").countDocuments(),
+            db.collection("chat_channels").countDocuments(),
+            db.collection("users").countDocuments({ isActive: true }),
+            db.collection("chat_messages").countDocuments({
+                timestamp: { 
+                    $gte: new Date(new Date().setHours(0, 0, 0, 0)) 
+                }
+            })
+        ]);
+        
+        res.json({
+            totalMessages,
+            totalChannels,
+            activeUsers,
+            todayMessages
+        });
+    } catch (error) {
+        console.error("Помилка отримання статистики чату:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося отримати статистику" 
+        });
+    }
+});
+
+// Пошук повідомлень
+app.get("/api/chat/search", authenticateToken, async (req, res) => {
+    try {
+        const { query, chatId, type, limit = 20 } = req.query;
+        const db = getDB();
+        
+        if (!query?.trim()) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Запит для пошуку не може бути порожнім" 
+            });
+        }
+        
+        let searchQuery = {
+            text: { $regex: query, $options: 'i' },
+            deleted: { $ne: true }
+        };
+        
+        // Фільтр по чату
+        if (chatId && type) {
+            if (type === 'direct') {
+                searchQuery.$or = [
+                    { from: req.user.id, to: chatId },
+                    { from: chatId, to: req.user.id }
+                ];
+            } else if (type === 'channel') {
+                searchQuery.chatId = chatId;
+                searchQuery.type = 'channel';
+            }
+        }
+        
+        const messages = await db.collection("chat_messages")
+            .find(searchQuery)
+            .sort({ timestamp: -1 })
+            .limit(parseInt(limit))
+            .toArray();
+        
+        // Додаємо інформацію про відправників
+        const senderIds = [...new Set(messages.map(m => m.from))];
+        const senders = await db.collection("users").find(
+            { _id: { $in: senderIds.map(id => new ObjectId(id)) } },
+            { projection: { firstName: 1, lastName: 1, role: 1, avatar: 1 } }
+        ).toArray();
+        
+        const messagesWithSenders = messages.map(message => ({
+            ...message,
+            sender: senders.find(s => s._id.toString() === message.from) || 
+                   { firstName: 'Невідомий', lastName: '', role: 'unknown' }
+        }));
+        
+        res.json(messagesWithSenders);
+    } catch (error) {
+        console.error("Помилка пошуку повідомлень:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося виконати пошук" 
         });
     }
 });

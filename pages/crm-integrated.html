@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeapSeaK - Unified CRM System</title>
+    
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="../plugins/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" href="../plugins/adminlte/css/adminlte.min.css">
+    <link rel="stylesheet" href="../plugins/chart.js/Chart.min.css">
+    
+    <!-- Custom CSS -->
+    <style>
+        .content-wrapper {
+            margin-left: 0;
+        }
+        
+        .main-sidebar {
+            z-index: 1040;
+        }
+        
+        .sidebar-mini .main-sidebar:hover {
+            width: 250px;
+        }
+        
+        .quick-action-card {
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+        
+        .quick-action-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .widget-container {
+            min-height: 300px;
+        }
+        
+        .dashboard-metric {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        .status-indicator.online {
+            background-color: #28a745;
+        }
+        
+        .status-indicator.offline {
+            background-color: #6c757d;
+        }
+        
+        .chat-system-container .messages-area {
+            background-color: #f8f9fa;
+        }
+        
+        .assignment-manager-container .info-box {
+            margin-bottom: 0;
+        }
+        
+        .monitoring-manager-container .description-block {
+            padding: 10px;
+        }
+        
+        .module-header {
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed">
+
+<div class="wrapper">
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <!-- Left navbar links -->
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-widget="pushmenu" href="#" role="button">
+                    <i class="fas fa-bars"></i>
+                </a>
+            </li>
+            <li class="nav-item d-none d-sm-inline-block">
+                <a href="#" class="nav-link" onclick="showDashboard()">
+                    <i class="fas fa-home"></i> Головна
+                </a>
+            </li>
+        </ul>
+
+        <!-- Right navbar links -->
+        <ul class="navbar-nav ml-auto">
+            <!-- Notifications -->
+            <li class="nav-item dropdown">
+                <a class="nav-link" data-toggle="dropdown" href="#">
+                    <i class="far fa-bell"></i>
+                    <span class="badge badge-warning navbar-badge" id="notifications-count">3</span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+                    <span class="dropdown-item dropdown-header">3 нових сповіщення</span>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item">
+                        <i class="fas fa-tools mr-2"></i> Ліфт потребує обслуговування
+                        <span class="float-right text-muted text-sm">3 хв</span>
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item">
+                        <i class="fas fa-envelope mr-2"></i> Нове повідомлення
+                        <span class="float-right text-muted text-sm">12 хв</span>
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item dropdown-footer">Переглянути всі</a>
+                </div>
+            </li>
+
+            <!-- User Menu -->
+            <li class="nav-item dropdown">
+                <a class="nav-link" data-toggle="dropdown" href="#">
+                    <i class="far fa-user"></i>
+                    <span id="current-user-name">Користувач</span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+                    <a href="#" class="dropdown-item">
+                        <i class="fas fa-user mr-2"></i> Профіль
+                    </a>
+                    <a href="#" class="dropdown-item">
+                        <i class="fas fa-cog mr-2"></i> Налаштування
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="/login.html" class="dropdown-item">
+                        <i class="fas fa-sign-out-alt mr-2"></i> Вихід
+                    </a>
+                </div>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Sidebar -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <!-- Brand Logo -->
+        <a href="#" class="brand-link" onclick="showDashboard()">
+            <img src="../assets/img/logo.png" alt="DeapSeaK" class="brand-image img-circle elevation-3" style="opacity: .8" onerror="this.style.display='none'">
+            <span class="brand-text font-weight-light">DeapSeaK CRM</span>
+        </a>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- User Panel -->
+            <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                <div class="image">
+                    <img src="../assets/img/user-avatar.png" class="img-circle elevation-2" alt="User Avatar" onerror="this.src='https://ui-avatars.com/api/?name=User&background=007bff&color=fff'">
+                </div>
+                <div class="info">
+                    <a href="#" class="d-block" id="sidebar-user-name">Користувач системи</a>
+                </div>
+            </div>
+
+            <!-- Sidebar Menu -->
+            <nav class="mt-2">
+                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                    <!-- Dashboard -->
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" onclick="showDashboard()">
+                            <i class="nav-icon fas fa-tachometer-alt"></i>
+                            <p>Дашборд</p>
+                        </a>
+                    </li>
+
+                    <!-- Assignment Management -->
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" onclick="showAssignmentManager()">
+                            <i class="nav-icon fas fa-tasks"></i>
+                            <p>
+                                Управління заявками
+                                <span class="badge badge-info right" id="assignments-count">-</span>
+                            </p>
+                        </a>
+                    </li>
+
+                    <!-- Monitoring -->
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" onclick="showMonitoring()">
+                            <i class="nav-icon fas fa-chart-line"></i>
+                            <p>
+                                Моніторинг системи
+                                <span class="badge badge-success right" id="system-status">OK</span>
+                            </p>
+                        </a>
+                    </li>
+
+                    <!-- Chat System -->
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" onclick="showChatSystem()">
+                            <i class="nav-icon fas fa-comments"></i>
+                            <p>
+                                Повідомлення
+                                <span class="badge badge-warning right" id="unread-messages">-</span>
+                            </p>
+                        </a>
+                    </li>
+
+                    <!-- QR System -->
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" onclick="showQRSystem()">
+                            <i class="nav-icon fas fa-qrcode"></i>
+                            <p>QR Система</p>
+                        </a>
+                    </li>
+
+                    <!-- Other Modules -->
+                    <li class="nav-item has-treeview">
+                        <a href="#" class="nav-link">
+                            <i class="nav-icon fas fa-cogs"></i>
+                            <p>
+                                Інші модулі
+                                <i class="right fas fa-angle-left"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="/pages/support-manager/" class="nav-link">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Підтримка клієнтів</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/pages/profile-manager/" class="nav-link">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Управління профілями</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/pages/knowledge-manager/" class="nav-link">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>База знань</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Content Wrapper -->
+    <div class="content-wrapper">
+        <!-- Main content -->
+        <section class="content" style="padding-top: 20px;">
+            <div class="container-fluid">
+                <div id="main-content">
+                    <!-- Dashboard content will be loaded here -->
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <strong>Copyright &copy; 2024 <a href="#">DeapSeaK</a>.</strong>
+        Система управління ліфтами.
+        <div class="float-right d-none d-sm-inline-block">
+            <b>Version</b> 2.0.0
+        </div>
+    </footer>
+</div>
+
+<!-- Scripts -->
+<script src="../plugins/jquery/jquery.min.js"></script>
+<script src="../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="../plugins/adminlte/js/adminlte.min.js"></script>
+<script src="../plugins/chart.js/Chart.min.js"></script>
+
+<!-- Core modules -->
+<script src="../assets/js/modules/assignment-manager.js"></script>
+<script src="../assets/js/modules/monitoring-manager.js"></script>
+<script src="../assets/js/modules/chat-system.js"></script>
+<script src="../assets/js/qr.js"></script>
+<script src="../assets/js/login.js"></script>
+
+<script>
+// Global CRM Controller
+class CRMController {
+    constructor() {
+        this.currentModule = 'dashboard';
+        this.userData = JSON.parse(localStorage.getItem('userData')) || {};
+        this.init();
+    }
+
+    init() {
+        // Set user info
+        this.updateUserInfo();
+        
+        // Load dashboard by default
+        this.showDashboard();
+        
+        // Start periodic updates
+        this.startPeriodicUpdates();
+        
+        // Check authentication
+        this.checkAuth();
+    }
+
+    updateUserInfo() {
+        const userName = `${this.userData.firstName || 'Користувач'} ${this.userData.lastName || ''}`.trim();
+        
+        const currentUserName = document.getElementById('current-user-name');
+        const sidebarUserName = document.getElementById('sidebar-user-name');
+        
+        if (currentUserName) currentUserName.textContent = userName;
+        if (sidebarUserName) sidebarUserName.textContent = userName;
+    }
+
+    checkAuth() {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            window.location.href = '/login.html';
+            return;
+        }
+        
+        // Verify token with API
+        fetch('http://localhost:3001/api/verify-token', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        }).catch(() => {
+            // If API is unavailable, continue with stored data
+            console.warn('API недоступний, використовую збережені дані');
+        });
+    }
+
+    showDashboard() {
+        this.currentModule = 'dashboard';
+        this.setActiveNavItem('dashboard');
+        
+        const mainContent = document.getElementById('main-content');
+        mainContent.innerHTML = `
+            <div class="dashboard-container">
+                <div class="module-header">
+                    <h1><i class="fas fa-tachometer-alt"></i> Головний дашборд</h1>
+                    <p class="text-muted">Загальний огляд системи управління ліфтами DeapSeaK</p>
+                </div>
+
+                <!-- Stats Row -->
+                <div class="row mb-4">
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-info">
+                            <div class="inner">
+                                <h3 id="dashboard-assignments-count">-</h3>
+                                <p>Активні заявки</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-tasks"></i>
+                            </div>
+                            <a href="#" onclick="crmController.showAssignmentManager()" class="small-box-footer">
+                                Детальніше <i class="fas fa-arrow-circle-right"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-success">
+                            <div class="inner">
+                                <h3 id="dashboard-lifts-active">-</h3>
+                                <p>Активні ліфти</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-elevator"></i>
+                            </div>
+                            <a href="#" onclick="crmController.showMonitoring()" class="small-box-footer">
+                                Детальніше <i class="fas fa-arrow-circle-right"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-warning">
+                            <div class="inner">
+                                <h3 id="dashboard-unread-messages">-</h3>
+                                <p>Непрочитані повідомлення</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-comments"></i>
+                            </div>
+                            <a href="#" onclick="crmController.showChatSystem()" class="small-box-footer">
+                                Детальніше <i class="fas fa-arrow-circle-right"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-danger">
+                            <div class="inner">
+                                <h3 id="dashboard-alerts-count">-</h3>
+                                <p>Активні алерти</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <a href="#" onclick="crmController.showMonitoring()" class="small-box-footer">
+                                Детальніше <i class="fas fa-arrow-circle-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Widgets Row -->
+                <div class="row">
+                    <!-- Recent Assignments Widget -->
+                    <div class="col-md-6 mb-4">
+                        <div id="assignments-widget" class="widget-container">
+                            <div class="text-center">
+                                <i class="fas fa-spinner fa-spin"></i> Завантаження заявок...
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- System Monitoring Widget -->
+                    <div class="col-md-6 mb-4">
+                        <div id="monitoring-widget" class="widget-container">
+                            <div class="text-center">
+                                <i class="fas fa-spinner fa-spin"></i> Завантаження моніторингу...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Second Row -->
+                <div class="row">
+                    <!-- Chat Widget -->
+                    <div class="col-md-6 mb-4">
+                        <div id="chat-widget" class="widget-container">
+                            <div class="text-center">
+                                <i class="fas fa-spinner fa-spin"></i> Завантаження повідомлень...
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-rocket"></i> Швидкі дії
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-6 mb-3">
+                                        <div class="card quick-action-card text-center" onclick="crmController.createNewAssignment()">
+                                            <div class="card-body">
+                                                <i class="fas fa-plus-circle fa-2x text-primary mb-2"></i>
+                                                <p class="mb-0 small">Нова заявка</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 mb-3">
+                                        <div class="card quick-action-card text-center" onclick="crmController.scanQR()">
+                                            <div class="card-body">
+                                                <i class="fas fa-qrcode fa-2x text-success mb-2"></i>
+                                                <p class="mb-0 small">Сканувати QR</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 mb-3">
+                                        <div class="card quick-action-card text-center" onclick="crmController.showChatSystem()">
+                                            <div class="card-body">
+                                                <i class="fas fa-comments fa-2x text-warning mb-2"></i>
+                                                <p class="mb-0 small">Відкрити чат</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 mb-3">
+                                        <div class="card quick-action-card text-center" onclick="crmController.showMonitoring()">
+                                            <div class="card-body">
+                                                <i class="fas fa-chart-line fa-2x text-info mb-2"></i>
+                                                <p class="mb-0 small">Моніторинг</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Load widgets
+        setTimeout(() => {
+            this.loadDashboardWidgets();
+        }, 100);
+    }
+
+    loadDashboardWidgets() {
+        // Load assignment widget
+        if (typeof assignmentManager !== 'undefined' && assignmentManager.renderWidget) {
+            assignmentManager.renderWidget('assignments-widget', 'Останні заявки');
+        }
+
+        // Load monitoring widget  
+        if (typeof monitoringManager !== 'undefined' && monitoringManager.renderWidget) {
+            monitoringManager.renderWidget('monitoring-widget', 'Стан системи');
+        }
+
+        // Load chat widget
+        if (typeof chatSystem !== 'undefined' && chatSystem.renderWidget) {
+            chatSystem.renderWidget('chat-widget', 'Останні повідомлення');
+        }
+
+        // Update dashboard stats
+        this.updateDashboardStats();
+    }
+
+    updateDashboardStats() {
+        // Update assignments count
+        if (typeof assignmentManager !== 'undefined' && assignmentManager.getStats) {
+            const stats = assignmentManager.getStats();
+            const countElement = document.getElementById('dashboard-assignments-count');
+            if (countElement) countElement.textContent = stats.pending + stats.inProgress;
+        }
+
+        // Update monitoring stats
+        if (typeof monitoringManager !== 'undefined' && monitoringManager.getSystemStats) {
+            const stats = monitoringManager.getSystemStats();
+            const activeLiftsElement = document.getElementById('dashboard-lifts-active');
+            const alertsElement = document.getElementById('dashboard-alerts-count');
+            
+            if (activeLiftsElement) activeLiftsElement.textContent = stats.activeLifts;
+            if (alertsElement) alertsElement.textContent = stats.alertsCount;
+        }
+
+        // Update chat stats
+        if (typeof chatSystem !== 'undefined' && chatSystem.getChatStats) {
+            const stats = chatSystem.getChatStats();
+            const unreadElement = document.getElementById('dashboard-unread-messages');
+            if (unreadElement) unreadElement.textContent = stats.unreadMessages;
+        }
+    }
+
+    showAssignmentManager() {
+        this.currentModule = 'assignments';
+        this.setActiveNavItem('assignments');
+        
+        if (typeof assignmentManager !== 'undefined' && assignmentManager.renderInContainer) {
+            assignmentManager.renderInContainer('main-content');
+        } else {
+            document.getElementById('main-content').innerHTML = `
+                <div class="alert alert-warning">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Модуль недоступний</h4>
+                    <p>Assignment Manager не завантажений. Перевірте підключення модуля.</p>
+                </div>
+            `;
+        }
+    }
+
+    showMonitoring() {
+        this.currentModule = 'monitoring';
+        this.setActiveNavItem('monitoring');
+        
+        if (typeof monitoringManager !== 'undefined' && monitoringManager.renderInContainer) {
+            monitoringManager.renderInContainer('main-content');
+        } else {
+            document.getElementById('main-content').innerHTML = `
+                <div class="alert alert-warning">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Модуль недоступний</h4>
+                    <p>Monitoring Manager не завантажений. Перевірте підключення модуля.</p>
+                </div>
+            `;
+        }
+    }
+
+    showChatSystem() {
+        this.currentModule = 'chat';
+        this.setActiveNavItem('chat');
+        
+        if (typeof chatSystem !== 'undefined' && chatSystem.renderInContainer) {
+            chatSystem.renderInContainer('main-content');
+        } else {
+            document.getElementById('main-content').innerHTML = `
+                <div class="alert alert-warning">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Модуль недоступний</h4>
+                    <p>Chat System не завантажений. Перевірте підключення модуля.</p>
+                </div>
+            `;
+        }
+    }
+
+    showQRSystem() {
+        window.location.href = '/qr-interface.html';
+    }
+
+    setActiveNavItem(module) {
+        // Remove active class from all nav items
+        document.querySelectorAll('.nav-link').forEach(item => {
+            item.classList.remove('active');
+        });
+
+        // Add active class to current module
+        const moduleLinks = {
+            'dashboard': 'fas fa-tachometer-alt',
+            'assignments': 'fas fa-tasks', 
+            'monitoring': 'fas fa-chart-line',
+            'chat': 'fas fa-comments'
+        };
+
+        document.querySelectorAll('.nav-link').forEach(item => {
+            const icon = item.querySelector('i.nav-icon');
+            if (icon && icon.className.includes(moduleLinks[module])) {
+                item.classList.add('active');
+            }
+        });
+    }
+
+    // Quick Actions
+    createNewAssignment() {
+        this.showAssignmentManager();
+        setTimeout(() => {
+            if (typeof assignmentManager !== 'undefined' && assignmentManager.showCreateForm) {
+                assignmentManager.showCreateForm();
+            }
+        }, 500);
+    }
+
+    scanQR() {
+        if (typeof QRManager !== 'undefined') {
+            QRManager.startScanning();
+        } else {
+            alert('QR сканер недоступний');
+        }
+    }
+
+    startPeriodicUpdates() {
+        // Update sidebar badges every 30 seconds
+        setInterval(() => {
+            this.updateSidebarBadges();
+        }, 30000);
+
+        // Update dashboard if active
+        setInterval(() => {
+            if (this.currentModule === 'dashboard') {
+                this.updateDashboardStats();
+            }
+        }, 10000);
+    }
+
+    updateSidebarBadges() {
+        // Update assignments count
+        if (typeof assignmentManager !== 'undefined' && assignmentManager.getStats) {
+            const stats = assignmentManager.getStats();
+            const badge = document.getElementById('assignments-count');
+            if (badge) badge.textContent = stats.pending + stats.inProgress;
+        }
+
+        // Update unread messages
+        if (typeof chatSystem !== 'undefined' && chatSystem.getTotalUnreadCount) {
+            const unread = chatSystem.getTotalUnreadCount();
+            const badge = document.getElementById('unread-messages');
+            if (badge) badge.textContent = unread > 0 ? unread : '-';
+        }
+
+        // Update system status
+        if (typeof monitoringManager !== 'undefined' && monitoringManager.getSystemStats) {
+            const stats = monitoringManager.getSystemStats();
+            const badge = document.getElementById('system-status');
+            if (badge) {
+                badge.textContent = stats.alertsCount > 0 ? 'ALERT' : 'OK';
+                badge.className = stats.alertsCount > 0 ? 'badge badge-danger right' : 'badge badge-success right';
+            }
+        }
+    }
+}
+
+// Global functions for navigation
+function showDashboard() {
+    crmController.showDashboard();
+}
+
+function showAssignmentManager() {
+    crmController.showAssignmentManager();
+}
+
+function showMonitoring() {
+    crmController.showMonitoring();
+}
+
+function showChatSystem() {
+    crmController.showChatSystem();
+}
+
+function showQRSystem() {
+    crmController.showQRSystem();
+}
+
+// Initialize CRM when DOM is ready
+let crmController;
+
+document.addEventListener('DOMContentLoaded', () => {
+    crmController = new CRMController();
+    window.crmController = crmController; // Global access
+});
+
+// Handle module loading errors
+window.addEventListener('error', (event) => {
+    console.error('Module loading error:', event.error);
+});
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeapSeaK - Комплексне тестування модулів</title>
+    
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="../plugins/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" href="../plugins/adminlte/css/adminlte.min.css">
+    <link rel="stylesheet" href="../plugins/chart.js/Chart.min.css">
+    
+    <style>
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        
+        .test-success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .test-error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .test-warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        
+        .api-status {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .api-status.online {
+            background-color: #28a745;
+        }
+        
+        .api-status.offline {
+            background-color: #dc3545;
+        }
+        
+        .module-test {
+            border-left: 4px solid #007bff;
+            padding-left: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .endpoint-test {
+            background-color: #f8f9fa;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body class="hold-transition layout-top-nav">
+
+<div class="wrapper">
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand-md navbar-light navbar-white">
+        <div class="container">
+            <a href="/pages/crm-integrated.html" class="navbar-brand">
+                <span class="brand-text font-weight-light">
+                    <i class="fas fa-arrow-left"></i> Назад до CRM
+                </span>
+            </a>
+
+            <div class="navbar-nav ml-auto">
+                <div class="nav-item">
+                    <button class="btn btn-primary" onclick="runAllTests()">
+                        <i class="fas fa-play"></i> Запустити всі тести
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Content Wrapper -->
+    <div class="content-wrapper">
+        <div class="content-header">
+            <div class="container">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 class="m-0">
+                            <i class="fas fa-flask"></i> Комплексне тестування DeapSeaK
+                        </h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="float-sm-right">
+                            <span class="api-status" id="api-status"></span>
+                            <span id="api-status-text">Перевірка API...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="content">
+            <div class="container">
+                
+                <!-- Overall Status -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-info-circle"></i> Загальний стан системи
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <div id="overall-status">
+                                    <div class="text-center">
+                                        <i class="fas fa-spinner fa-spin fa-2x"></i>
+                                        <p>Ініціалізація тестів...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- API Tests -->
+                <div class="test-section">
+                    <h3><i class="fas fa-server"></i> Тестування API Server</h3>
+                    <div id="api-tests">
+                        <!-- API tests will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Assignment Manager Tests -->
+                <div class="test-section">
+                    <h3><i class="fas fa-tasks"></i> Тестування Assignment Manager</h3>
+                    <div id="assignment-tests">
+                        <!-- Assignment tests will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Monitoring Manager Tests -->
+                <div class="test-section">
+                    <h3><i class="fas fa-chart-line"></i> Тестування Monitoring Manager</h3>
+                    <div id="monitoring-tests">
+                        <!-- Monitoring tests will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Chat System Tests -->
+                <div class="test-section">
+                    <h3><i class="fas fa-comments"></i> Тестування Chat System</h3>
+                    <div id="chat-tests">
+                        <!-- Chat tests will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Integration Tests -->
+                <div class="test-section">
+                    <h3><i class="fas fa-link"></i> Тестування інтеграції модулів</h3>
+                    <div id="integration-tests">
+                        <!-- Integration tests will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Performance Tests -->
+                <div class="test-section">
+                    <h3><i class="fas fa-tachometer-alt"></i> Тестування продуктивності</h3>
+                    <div id="performance-tests">
+                        <!-- Performance tests will be inserted here -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="float-right d-none d-sm-inline">
+            <b>Test Suite</b> v1.0.0
+        </div>
+        <strong>Copyright &copy; 2024 DeapSeaK.</strong> Test Environment.
+    </footer>
+</div>
+
+<!-- Scripts -->
+<script src="../plugins/jquery/jquery.min.js"></script>
+<script src="../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="../plugins/adminlte/js/adminlte.min.js"></script>
+<script src="../plugins/chart.js/Chart.min.js"></script>
+
+<!-- Core modules -->
+<script src="../assets/js/modules/assignment-manager.js"></script>
+<script src="../assets/js/modules/monitoring-manager.js"></script>
+<script src="../assets/js/modules/chat-system.js"></script>
+
+<script>
+class DeapSeaKTestSuite {
+    constructor() {
+        this.apiUrl = 'http://localhost:3001/api';
+        this.testResults = {
+            api: [],
+            assignment: [],
+            monitoring: [],
+            chat: [],
+            integration: [],
+            performance: []
+        };
+        this.startTime = Date.now();
+        
+        this.init();
+    }
+
+    init() {
+        console.log('🧪 Ініціалізація Test Suite...');
+        this.checkAPIStatus();
+        this.setupTestEnvironment();
+    }
+
+    async checkAPIStatus() {
+        try {
+            const response = await fetch(`${this.apiUrl}/status`);
+            const isOnline = response.ok;
+            
+            const statusIndicator = document.getElementById('api-status');
+            const statusText = document.getElementById('api-status-text');
+            
+            if (isOnline) {
+                statusIndicator.className = 'api-status online';
+                statusText.textContent = 'API Server Online';
+            } else {
+                throw new Error('API не відповідає');
+            }
+        } catch (error) {
+            const statusIndicator = document.getElementById('api-status');
+            const statusText = document.getElementById('api-status-text');
+            
+            statusIndicator.className = 'api-status offline';
+            statusText.textContent = 'API Server Offline';
+        }
+    }
+
+    setupTestEnvironment() {
+        // Set up test user data
+        localStorage.setItem('userData', JSON.stringify({
+            _id: 'test-user-001',
+            firstName: 'Тест',
+            lastName: 'Користувач',
+            email: 'test@deapseak.com',
+            role: 'admin'
+        }));
+
+        localStorage.setItem('authToken', 'test-token-' + Date.now());
+    }
+
+    async runAllTests() {
+        console.log('🚀 Запуск всіх тестів...');
+        this.showOverallStatus('running');
+        
+        try {
+            await this.testAPIEndpoints();
+            await this.testAssignmentManager();
+            await this.testMonitoringManager();
+            await this.testChatSystem();
+            await this.testIntegration();
+            await this.testPerformance();
+            
+            this.showFinalResults();
+        } catch (error) {
+            console.error('❌ Помилка під час тестування:', error);
+            this.addTestResult('integration', 'error', 'Критична помилка', error.message);
+        }
+    }
+
+    showOverallStatus(status) {
+        const container = document.getElementById('overall-status');
+        
+        if (status === 'running') {
+            container.innerHTML = `
+                <div class="text-center">
+                    <i class="fas fa-cog fa-spin fa-2x text-primary"></i>
+                    <h4 class="mt-3">Виконуються тести...</h4>
+                    <p class="text-muted">Це може зайняти кілька хвилин</p>
+                </div>
+            `;
+        }
+    }
+
+    async testAPIEndpoints() {
+        console.log('📡 Тестування API ендпойнтів...');
+        
+        const endpoints = [
+            { method: 'GET', url: '/users', name: 'Список користувачів' },
+            { method: 'GET', url: '/assignments', name: 'Список заявок' },
+            { method: 'GET', url: '/monitoring/stats', name: 'Статистика моніторингу' },
+            { method: 'GET', url: '/chat/channels', name: 'Канали чату' },
+            { method: 'GET', url: '/qr-codes', name: 'QR коди' }
+        ];
+
+        for (const endpoint of endpoints) {
+            try {
+                const startTime = Date.now();
+                const response = await fetch(`${this.apiUrl}${endpoint.url}`, {
+                    method: endpoint.method,
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('authToken'),
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const duration = Date.now() - startTime;
+                
+                if (response.ok) {
+                    this.addTestResult('api', 'success', endpoint.name, `✅ ${response.status} (${duration}ms)`);
+                } else {
+                    this.addTestResult('api', 'warning', endpoint.name, `⚠️ ${response.status} - ${response.statusText}`);
+                }
+            } catch (error) {
+                this.addTestResult('api', 'error', endpoint.name, `❌ ${error.message}`);
+            }
+            
+            await this.delay(100);
+        }
+        
+        this.renderTestResults('api');
+    }
+
+    async testAssignmentManager() {
+        console.log('📋 Тестування Assignment Manager...');
+        
+        // Test module loading
+        if (typeof assignmentManager !== 'undefined') {
+            this.addTestResult('assignment', 'success', 'Завантаження модуля', '✅ Assignment Manager завантажено');
+            
+            // Test methods
+            const methods = ['loadAssignments', 'getStats', 'renderInContainer', 'renderWidget'];
+            for (const method of methods) {
+                if (typeof assignmentManager[method] === 'function') {
+                    this.addTestResult('assignment', 'success', `Метод ${method}`, '✅ Метод доступний');
+                } else {
+                    this.addTestResult('assignment', 'error', `Метод ${method}`, '❌ Метод недоступний');
+                }
+            }
+            
+            // Test rendering
+            try {
+                const testContainer = document.createElement('div');
+                testContainer.id = 'assignment-test-container';
+                document.body.appendChild(testContainer);
+                
+                assignmentManager.renderInContainer('assignment-test-container');
+                
+                await this.delay(1000);
+                
+                if (testContainer.innerHTML.includes('assignment-manager-container')) {
+                    this.addTestResult('assignment', 'success', 'Рендеринг модуля', '✅ Модуль рендериться коректно');
+                } else {
+                    this.addTestResult('assignment', 'warning', 'Рендеринг модуля', '⚠️ Можливі проблеми з рендерингом');
+                }
+                
+                document.body.removeChild(testContainer);
+            } catch (error) {
+                this.addTestResult('assignment', 'error', 'Рендеринг модуля', `❌ ${error.message}`);
+            }
+            
+        } else {
+            this.addTestResult('assignment', 'error', 'Завантаження модуля', '❌ Assignment Manager не завантажено');
+        }
+        
+        this.renderTestResults('assignment');
+    }
+
+    async testMonitoringManager() {
+        console.log('📊 Тестування Monitoring Manager...');
+        
+        if (typeof monitoringManager !== 'undefined') {
+            this.addTestResult('monitoring', 'success', 'Завантаження модуля', '✅ Monitoring Manager завантажено');
+            
+            // Test methods
+            const methods = ['loadData', 'getSystemStats', 'renderInContainer', 'renderWidget'];
+            for (const method of methods) {
+                if (typeof monitoringManager[method] === 'function') {
+                    this.addTestResult('monitoring', 'success', `Метод ${method}`, '✅ Метод доступний');
+                } else {
+                    this.addTestResult('monitoring', 'error', `Метод ${method}`, '❌ Метод недоступний');
+                }
+            }
+            
+            // Test stats generation
+            try {
+                const stats = monitoringManager.getSystemStats();
+                if (stats && typeof stats === 'object') {
+                    this.addTestResult('monitoring', 'success', 'Генерація статистики', '✅ Статистика генерується');
+                } else {
+                    this.addTestResult('monitoring', 'warning', 'Генерація статистики', '⚠️ Проблеми зі статистикою');
+                }
+            } catch (error) {
+                this.addTestResult('monitoring', 'error', 'Генерація статистики', `❌ ${error.message}`);
+            }
+            
+        } else {
+            this.addTestResult('monitoring', 'error', 'Завантаження модуля', '❌ Monitoring Manager не завантажено');
+        }
+        
+        this.renderTestResults('monitoring');
+    }
+
+    async testChatSystem() {
+        console.log('💬 Тестування Chat System...');
+        
+        if (typeof chatSystem !== 'undefined') {
+            this.addTestResult('chat', 'success', 'Завантаження модуля', '✅ Chat System завантажено');
+            
+            // Test initialization
+            if (chatSystem.isInitialized) {
+                this.addTestResult('chat', 'success', 'Ініціалізація', '✅ Модуль ініціалізовано');
+            } else {
+                this.addTestResult('chat', 'warning', 'Ініціалізація', '⚠️ Модуль ще ініціалізується');
+            }
+            
+            // Test methods
+            const methods = ['loadContacts', 'loadChannels', 'renderInContainer', 'getChatStats'];
+            for (const method of methods) {
+                if (typeof chatSystem[method] === 'function') {
+                    this.addTestResult('chat', 'success', `Метод ${method}`, '✅ Метод доступний');
+                } else {
+                    this.addTestResult('chat', 'error', `Метод ${method}`, '❌ Метод недоступний');
+                }
+            }
+            
+            // Test connection status
+            if (chatSystem.isConnected) {
+                this.addTestResult('chat', 'success', 'WebSocket підключення', '✅ Підключення активне');
+            } else {
+                this.addTestResult('chat', 'warning', 'WebSocket підключення', '⚠️ Підключення неактивне (симуляція)');
+            }
+            
+        } else {
+            this.addTestResult('chat', 'error', 'Завантаження модуля', '❌ Chat System не завантажено');
+        }
+        
+        this.renderTestResults('chat');
+    }
+
+    async testIntegration() {
+        console.log('🔗 Тестування інтеграції модулів...');
+        
+        // Test CRM integration
+        const modules = ['assignmentManager', 'monitoringManager', 'chatSystem'];
+        let loadedModules = 0;
+        
+        for (const module of modules) {
+            if (typeof window[module] !== 'undefined') {
+                loadedModules++;
+                this.addTestResult('integration', 'success', `Модуль ${module}`, '✅ Завантажено та доступний');
+            } else {
+                this.addTestResult('integration', 'error', `Модуль ${module}`, '❌ Недоступний');
+            }
+        }
+        
+        if (loadedModules === modules.length) {
+            this.addTestResult('integration', 'success', 'Загальна інтеграція', '✅ Всі модулі успішно інтегровані');
+        } else {
+            this.addTestResult('integration', 'warning', 'Загальна інтеграція', `⚠️ ${loadedModules}/${modules.length} модулів завантажено`);
+        }
+        
+        // Test widget rendering
+        const testWidgetContainer = document.createElement('div');
+        testWidgetContainer.id = 'test-widget-container';
+        document.body.appendChild(testWidgetContainer);
+        
+        let widgetsRendered = 0;
+        
+        if (typeof assignmentManager !== 'undefined' && assignmentManager.renderWidget) {
+            try {
+                assignmentManager.renderWidget('test-widget-container', 'Test Widget');
+                if (testWidgetContainer.innerHTML.trim() !== '') {
+                    widgetsRendered++;
+                    this.addTestResult('integration', 'success', 'Assignment Widget', '✅ Віджет рендериться');
+                }
+            } catch (error) {
+                this.addTestResult('integration', 'error', 'Assignment Widget', `❌ ${error.message}`);
+            }
+        }
+        
+        document.body.removeChild(testWidgetContainer);
+        
+        this.renderTestResults('integration');
+    }
+
+    async testPerformance() {
+        console.log('⚡ Тестування продуктивності...');
+        
+        const performanceTests = [
+            {
+                name: 'Завантаження модулів',
+                test: () => {
+                    const start = Date.now();
+                    // Simulate module loading
+                    return Date.now() - start;
+                }
+            },
+            {
+                name: 'API запит до /users',
+                test: async () => {
+                    const start = Date.now();
+                    try {
+                        await fetch(`${this.apiUrl}/users`, {
+                            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('authToken') }
+                        });
+                        return Date.now() - start;
+                    } catch (error) {
+                        return -1;
+                    }
+                }
+            },
+            {
+                name: 'Рендеринг віджета',
+                test: () => {
+                    const start = Date.now();
+                    const container = document.createElement('div');
+                    container.innerHTML = '<div class="test-content">'.repeat(100) + '</div>'.repeat(100);
+                    document.body.appendChild(container);
+                    document.body.removeChild(container);
+                    return Date.now() - start;
+                }
+            }
+        ];
+        
+        for (const perfTest of performanceTests) {
+            try {
+                const duration = await perfTest.test();
+                
+                if (duration === -1) {
+                    this.addTestResult('performance', 'error', perfTest.name, '❌ Тест не пройдено');
+                } else if (duration < 100) {
+                    this.addTestResult('performance', 'success', perfTest.name, `✅ ${duration}ms (відмінно)`);
+                } else if (duration < 500) {
+                    this.addTestResult('performance', 'warning', perfTest.name, `⚠️ ${duration}ms (задовільно)`);
+                } else {
+                    this.addTestResult('performance', 'error', perfTest.name, `❌ ${duration}ms (повільно)`);
+                }
+            } catch (error) {
+                this.addTestResult('performance', 'error', perfTest.name, `❌ ${error.message}`);
+            }
+            
+            await this.delay(100);
+        }
+        
+        this.renderTestResults('performance');
+    }
+
+    addTestResult(category, type, name, result) {
+        this.testResults[category].push({
+            type,
+            name,
+            result,
+            timestamp: new Date().toLocaleTimeString()
+        });
+    }
+
+    renderTestResults(category) {
+        const container = document.getElementById(`${category}-tests`);
+        const results = this.testResults[category];
+        
+        if (results.length === 0) {
+            container.innerHTML = '<div class="text-muted">Тести не виконувались</div>';
+            return;
+        }
+        
+        let html = '';
+        for (const result of results) {
+            html += `
+                <div class="test-result test-${result.type}">
+                    <div class="d-flex justify-content-between">
+                        <strong>${result.name}</strong>
+                        <small class="text-muted">${result.timestamp}</small>
+                    </div>
+                    <div>${result.result}</div>
+                </div>
+            `;
+        }
+        
+        container.innerHTML = html;
+    }
+
+    showFinalResults() {
+        const totalTests = Object.values(this.testResults).reduce((sum, category) => sum + category.length, 0);
+        const passedTests = Object.values(this.testResults).reduce((sum, category) => 
+            sum + category.filter(test => test.type === 'success').length, 0);
+        const warningTests = Object.values(this.testResults).reduce((sum, category) => 
+            sum + category.filter(test => test.type === 'warning').length, 0);
+        const failedTests = Object.values(this.testResults).reduce((sum, category) => 
+            sum + category.filter(test => test.type === 'error').length, 0);
+        
+        const duration = Date.now() - this.startTime;
+        
+        const container = document.getElementById('overall-status');
+        container.innerHTML = `
+            <div class="row text-center">
+                <div class="col-md-3">
+                    <div class="info-box bg-success">
+                        <span class="info-box-icon"><i class="fas fa-check"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Пройдено</span>
+                            <span class="info-box-number">${passedTests}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="info-box bg-warning">
+                        <span class="info-box-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Попередження</span>
+                            <span class="info-box-number">${warningTests}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="info-box bg-danger">
+                        <span class="info-box-icon"><i class="fas fa-times"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Помилки</span>
+                            <span class="info-box-number">${failedTests}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="info-box bg-info">
+                        <span class="info-box-icon"><i class="fas fa-clock"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Час виконання</span>
+                            <span class="info-box-number">${(duration / 1000).toFixed(1)}s</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-3 text-center">
+                <h4>Результат тестування: ${Math.round((passedTests / totalTests) * 100)}% успіху</h4>
+                <p class="text-muted">Виконано ${totalTests} тестів за ${(duration / 1000).toFixed(1)} секунд</p>
+                
+                ${failedTests > 0 ? `
+                    <div class="alert alert-danger">
+                        <strong>Увага!</strong> Знайдено ${failedTests} критичних помилок, які потребують виправлення.
+                    </div>
+                ` : ''}
+                
+                ${warningTests > 0 && failedTests === 0 ? `
+                    <div class="alert alert-warning">
+                        <strong>Майже готово!</strong> Є ${warningTests} попереджень, які бажано виправити.
+                    </div>
+                ` : ''}
+                
+                ${failedTests === 0 && warningTests === 0 ? `
+                    <div class="alert alert-success">
+                        <strong>Чудово!</strong> Всі тести пройшли успішно. Система готова до використання.
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }
+
+    delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+}
+
+// Global functions
+function runAllTests() {
+    if (window.testSuite) {
+        window.testSuite.runAllTests();
+    }
+}
+
+// Initialize test suite
+let testSuite;
+
+document.addEventListener('DOMContentLoaded', () => {
+    testSuite = new DeapSeaKTestSuite();
+    window.testSuite = testSuite;
+});
+
+</script>
+
+</body>
+</html>

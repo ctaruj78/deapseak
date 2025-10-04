@@ -1,866 +1,1221 @@
-// assignment-manager.js - МЕНЕДЖЕР ПРИЗНАЧЕНЬ ДИСПЕТЧЕРА
+/**
+ * Assignment Manager - Система управління заявками з QR інтеграцією
+ * Оновлена версія з повною інтеграцією API та QR системою
+ */
 class AssignmentManager {
     constructor() {
+        this.apiUrl = 'http://localhost:3001/api';
         this.assignments = [];
         this.technicians = [];
-        this.requests = [];
+        this.templates = [];
+        this.currentUser = JSON.parse(localStorage.getItem('userData')) || {};
+        
         this.filters = {
             status: 'all',
             priority: 'all',
             technician: 'all',
-            period: 'today'
+            period: 'today',
+            category: 'all'
         };
         this.currentView = 'listView';
         this.currentPage = 1;
         this.itemsPerPage = 10;
         this.searchQuery = '';
+        this.isInitialized = false;
+        
         this.init();
     }
 
-    init() {
-        this.loadData();
-        this.setupEventListeners();
-        this.setupDragAndDrop();
-        this.setupAutoRefresh();
+    /**
+     * Ініціалізація модуля
+     */
+    async init() {
+        try {
+            await this.loadData();
+            await this.loadTemplates();
+            this.setupEventListeners();
+            this.setupAutoRefresh();
+            this.isInitialized = true;
+            
+            console.log('✅ Assignment Manager ініціалізовано з QR підтримкою');
+        } catch (error) {
+            console.error('❌ Помилка ініціалізації Assignment Manager:', error);
+            this.loadFromLocalStorage(); // Fallback на локальні дані
+        }
     }
 
-    async loadData() {
+    /**
+     * Завантаження даних з API
+     */
+    async loadData(filters = {}) {
         try {
-            const [assignmentsRes, techsRes, requestsRes] = await Promise.all([
-                fetch('../api/assignments'),
-                fetch('../api/technicians'),
-                fetch('../api/maintenance-requests')
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                throw new Error('Відсутній токен авторизації');
+            }
+
+            const headers = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+
+            const queryParams = new URLSearchParams(filters).toString();
+            
+            const [assignmentsRes, techsRes] = await Promise.all([
+                fetch(`${this.apiUrl}/assignments?${queryParams}`, { headers }),
+                fetch(`${this.apiUrl}/users?role=tech`, { headers })
             ]);
 
-            if (assignmentsRes.ok && techsRes.ok && requestsRes.ok) {
+            if (assignmentsRes.ok && techsRes.ok) {
                 this.assignments = await assignmentsRes.json();
                 this.technicians = await techsRes.json();
-                this.requests = await requestsRes.json();
                 
+                // Зберігання для офлайн режиму
                 localStorage.setItem('assignments', JSON.stringify(this.assignments));
                 localStorage.setItem('technicians', JSON.stringify(this.technicians));
-                localStorage.setItem('maintenanceRequests', JSON.stringify(this.requests));
+                
+                this.renderAssignments();
+                this.updateStatistics();
+                
+                return { assignments: this.assignments, technicians: this.technicians };
             } else {
-                throw new Error('API недоступне');
+                throw new Error('Помилка завантаження з API');
             }
         } catch (error) {
-            console.warn('Використання локальних даних:', error);
+            console.warn('⚠️ Використання локальних даних:', error.message);
             this.loadFromLocalStorage();
         }
-
-        this.updateAllUI();
     }
 
+    /**
+     * Завантаження з localStorage
+     */
     loadFromLocalStorage() {
         this.assignments = JSON.parse(localStorage.getItem('assignments')) || [];
         this.technicians = JSON.parse(localStorage.getItem('technicians')) || [];
-        this.requests = JSON.parse(localStorage.getItem('maintenanceRequests')) || [];
         
         if (this.assignments.length === 0) {
             this.createSampleData();
         }
+        
+        this.renderAssignments();
+        this.updateStatistics();
     }
 
+    /**
+     * Створення тестових даних
+     */
     createSampleData() {
-        // Створення тестових даних для демонстрації
         this.assignments = [
             {
-                id: 'ASSIGN-001',
-                requestId: 'REQ-2024-001',
-                technicianId: 'TECH-001',
+                _id: '1',
+                assignmentNumber: 'ASG-2024-001',
+                title: 'Ремонт ліфта №1',
+                description: 'Заміна тросів та перевірка системи безпеки',
+                status: 'new',
                 priority: 'high',
-                status: 'in-progress',
-                assignedAt: new Date().toISOString(),
-                deadline: new Date(Date.now() + 24 * 3600000).toISOString(),
-                notes: 'Термінове призначення через несправність кнопки виклику',
-                completedAt: null
+                client: {
+                    name: 'ТОВ "Будинвест"',
+                    company: 'ТОВ "Будинвест"',
+                    phone: '+380671234567',
+                    email: 'info@budinvest.ua'
+                },
+                location: {
+                    address: 'вул. Хрещатик, 1, Київ',
+                    building: 'ЖК "Центральний"',
+                    floor: '15',
+                    liftNumber: 'Ліфт №1'
+                },
+                qrCode: {
+                    code: 'QR001',
+                    scanHistory: []
+                },
+                timestamps: {
+                    created: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 дні тому
+                    updated: new Date()
+                },
+                metadata: {
+                    category: 'repair',
+                    source: 'web'
+                }
             },
             {
-                id: 'ASSIGN-002',
-                requestId: 'REQ-2024-002',
-                technicianId: 'TECH-002',
-                priority: 'medium',
+                _id: '2',
+                assignmentNumber: 'ASG-2024-002',
+                title: 'Профілактичне обслуговування',
+                description: 'Планове ТО згідно з графіком',
                 status: 'assigned',
-                assignedAt: new Date(Date.now() - 2 * 3600000).toISOString(),
-                deadline: new Date(Date.now() + 48 * 3600000).toISOString(),
-                notes: 'Планове обслуговування',
-                completedAt: null
+                priority: 'medium',
+                client: {
+                    name: 'ОСББ "Сонячний"',
+                    company: 'ОСББ "Сонячний"',
+                    phone: '+380501234567',
+                    email: 'osbb.sunny@gmail.com'
+                },
+                location: {
+                    address: 'просп. Перемоги, 55, Київ',
+                    building: 'ЖК "Сонячний"',
+                    floor: '12',
+                    liftNumber: 'Ліфт №2'
+                },
+                assignment: {
+                    assignedTo: 'tech1',
+                    assignedAt: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 години тому
+                    instructions: 'Повна перевірка всіх систем'
+                },
+                qrCode: {
+                    code: 'QR002',
+                    scanHistory: []
+                },
+                timestamps: {
+                    created: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 день тому
+                    updated: new Date()
+                },
+                metadata: {
+                    category: 'maintenance',
+                    source: 'mobile'
+                }
             }
         ];
 
+        this.technicians = [
+            {
+                _id: 'tech1',
+                firstName: 'Олександр',
+                lastName: 'Петренко',
+                phone: '+380671111111',
+                email: 'a.petrenko@deapseak.com',
+                role: 'tech',
+                status: 'available',
+                specialization: ['ремонт', 'обслуговування']
+            },
+            {
+                _id: 'tech2',
+                firstName: 'Михайло',
+                lastName: 'Іваненко',
+                phone: '+380672222222',
+                email: 'm.ivanenko@deapseak.com',
+                role: 'tech',
+                status: 'busy',
+                specialization: ['установка', 'модернізація']
+            }
+        ];
+
+        // Зберегти тестові дані
         localStorage.setItem('assignments', JSON.stringify(this.assignments));
+        localStorage.setItem('technicians', JSON.stringify(this.technicians));
     }
 
-    updateAllUI() {
-        this.updateStatistics();
-        this.applyFilters();
-        this.populateTechFilter();
-        this.updateLastUpdateTime();
-    }
+    /**
+     * Створення нової заявки
+     */
+    async createAssignment(assignmentData) {
+        try {
+            const token = localStorage.getItem('authToken');
+            
+            // Генерація номера заявки
+            const assignmentNumber = await this.generateAssignmentNumber();
+            
+            const newAssignment = {
+                ...assignmentData,
+                assignmentNumber,
+                status: 'new',
+                timestamps: {
+                    created: new Date(),
+                    updated: new Date()
+                },
+                metadata: {
+                    source: 'web',
+                    category: assignmentData.category || 'maintenance',
+                    createdBy: this.currentUser._id
+                }
+            };
 
-    updateStatistics() {
-        const stats = {
-            total: this.assignments.length,
-            active: this.assignments.filter(a => 
-                a.status === 'assigned' || a.status === 'in-progress'
-            ).length,
-            completed: this.assignments.filter(a => a.status === 'completed').length,
-            overdue: this.assignments.filter(a => this.isAssignmentOverdue(a)).length
-        };
+            const response = await fetch(`${this.apiUrl}/assignments`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newAssignment)
+            });
 
-        $('#totalAssignments').text(stats.total);
-        $('#activeAssignments').text(stats.active);
-        $('#completedAssignments').text(stats.completed);
-        $('#overdueAssignments').text(stats.overdue);
-        $('#assignmentsBadge').text(stats.active);
-    }
-
-    isAssignmentOverdue(assignment) {
-        if (assignment.status === 'completed' || !assignment.deadline) return false;
-        return new Date() > new Date(assignment.deadline);
-    }
-
-    applyFilters() {
-        let filtered = this.assignments.filter(assignment => {
-            const statusMatch = this.filters.status === 'all' || assignment.status === this.filters.status;
-            const priorityMatch = this.filters.priority === 'all' || assignment.priority === this.filters.priority;
-            const techMatch = this.filters.technician === 'all' || assignment.technicianId === this.filters.technician;
-            const periodMatch = this.filterByPeriod(assignment);
-            const searchMatch = this.searchQuery === '' || this.matchesSearch(assignment);
-
-            return statusMatch && priorityMatch && techMatch && periodMatch && searchMatch;
-        });
-
-        this.renderAssignments(filtered);
-        this.updatePagination(filtered.length);
-    }
-
-    filterByPeriod(assignment) {
-        const assignedDate = new Date(assignment.assignedAt);
-        const now = new Date();
-
-        switch(this.filters.period) {
-            case 'today':
-                return assignedDate.toDateString() === now.toDateString();
-            case 'week':
-                const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
-                return assignedDate >= startOfWeek;
-            case 'month':
-                return assignedDate.getMonth() === now.getMonth() && 
-                       assignedDate.getFullYear() === now.getFullYear();
-            default:
-                return true;
+            if (response.ok) {
+                const createdAssignment = await response.json();
+                this.assignments.unshift(createdAssignment);
+                this.renderAssignments();
+                this.updateStatistics();
+                
+                // QR інтеграція
+                if (assignmentData.qrCode?.code) {
+                    await this.linkQRToAssignment(createdAssignment._id, assignmentData.qrCode.code);
+                }
+                
+                this.showNotification('✅ Заявка успішно створена', 'success');
+                return createdAssignment;
+            } else {
+                throw new Error('Помилка створення заявки');
+            }
+        } catch (error) {
+            console.error('Помилка створення заявки:', error);
+            this.showNotification('❌ Помилка створення заявки', 'error');
         }
     }
 
-    matchesSearch(assignment) {
-        const request = this.requests.find(r => r.id === assignment.requestId);
-        const technician = this.technicians.find(t => t.id === assignment.technicianId);
-        
-        const searchTerms = this.searchQuery.toLowerCase().split(' ');
-        
-        return searchTerms.some(term => 
-            assignment.id.toLowerCase().includes(term) ||
-            (request && request.title.toLowerCase().includes(term)) ||
-            (technician && (
-                technician.firstName.toLowerCase().includes(term) ||
-                technician.lastName.toLowerCase().includes(term)
-            )) ||
-            assignment.priority.toLowerCase().includes(term) ||
-            assignment.status.toLowerCase().includes(term)
-        );
+    /**
+     * Призначення заявки техніку
+     */
+    async assignToTechnician(assignmentId, technicianId, instructions = '') {
+        try {
+            const token = localStorage.getItem('authToken');
+            
+            const assignmentData = {
+                assignment: {
+                    assignedTo: technicianId,
+                    assignedBy: this.currentUser._id,
+                    assignedAt: new Date(),
+                    instructions
+                },
+                status: 'assigned',
+                timestamps: {
+                    updated: new Date()
+                }
+            };
+
+            const response = await fetch(`${this.apiUrl}/assignments/${assignmentId}/assign`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(assignmentData)
+            });
+
+            if (response.ok) {
+                await this.loadData();
+                this.showNotification('✅ Заявка призначена техніку', 'success');
+                
+                // Відправка сповіщення техніку
+                await this.sendNotificationToTechnician(technicianId, assignmentId);
+                
+                return true;
+            } else {
+                throw new Error('Помилка призначення заявки');
+            }
+        } catch (error) {
+            console.error('Помилка призначення заявки:', error);
+            this.showNotification('❌ Помилка призначення заявки', 'error');
+        }
     }
 
-    resetFilters() {
-        $('#statusFilter').val('all');
-        $('#priorityFilter').val('all');
-        $('#techFilter').val('all');
-        $('#periodFilter').val('today');
-        $('#searchInput').val('');
-        
-        this.filters = {
-            status: 'all',
-            priority: 'all',
-            technician: 'all',
-            period: 'today'
-        };
-        this.searchQuery = '';
-        
-        this.applyFilters();
+    /**
+     * QR інтеграція - обробка сканування
+     */
+    async handleQRScan(qrCode) {
+        try {
+            const token = localStorage.getItem('authToken');
+            
+            // Пошук заявки за QR кодом
+            const response = await fetch(`${this.apiUrl}/assignments/by-qr/${qrCode}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const assignment = await response.json();
+                
+                // Реєстрація сканування
+                await this.recordQRScan(assignment._id, qrCode, 'scanned');
+                
+                // Відкриття деталей заявки
+                this.openAssignmentDetails(assignment._id);
+                
+                this.showNotification(`📱 QR скановано: ${assignment.title}`, 'info');
+                return assignment;
+            } else {
+                // QR не знайдено - пропонуємо створити заявку
+                this.showQRNotFoundDialog(qrCode);
+            }
+        } catch (error) {
+            console.error('Помилка обробки QR:', error);
+            this.showNotification('❌ Помилка сканування QR коду', 'error');
+        }
     }
 
-    populateTechFilter() {
-        const select = $('#techFilter');
-        select.empty().append('<option value="all">Всі техніки</option>');
-        
-        this.technicians.forEach(tech => {
-            select.append(new Option(
-                `${tech.firstName} ${tech.lastName}`,
-                tech.id
-            ));
-        });
+    /**
+     * Реєстрація QR сканування
+     */
+    async recordQRScan(assignmentId, qrCode, action = 'scanned') {
+        try {
+            const token = localStorage.getItem('authToken');
+            
+            const scanData = {
+                scannedBy: this.currentUser._id,
+                scannedAt: new Date(),
+                action,
+                qrCode,
+                notes: `${action} користувачем ${this.currentUser.firstName || 'Unknown'}`
+            };
+
+            await fetch(`${this.apiUrl}/assignments/${assignmentId}/qr-scan`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(scanData)
+            });
+        } catch (error) {
+            console.error('Помилка реєстрації QR сканування:', error);
+        }
     }
 
-    renderAssignments(assignments) {
-        const container = $('#assignmentsContainer');
-        container.empty();
-
-        if (assignments.length === 0) {
-            container.html(`
-                <div class="text-center py-5">
-                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                    <h4>Призначень не знайдено</h4>
-                    <p>Спробуйте змінити параметри фільтрів</p>
-                </div>
-            `);
+    /**
+     * Відображення списку заявок
+     */
+    renderAssignments() {
+        const container = document.getElementById('assignmentsContainer') || 
+                         document.getElementById('requestsTableBody') ||
+                         document.querySelector('.assignments-list');
+                         
+        if (!container) {
+            console.warn('Контейнер для заявок не знайдено');
             return;
         }
 
-        // Пагінація
-        const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-        const paginated = assignments.slice(startIndex, startIndex + this.itemsPerPage);
+        let filteredAssignments = this.getFilteredAssignments();
+        let html = '';
 
-        paginated.forEach(assignment => {
-            const element = this.createAssignmentElement(assignment);
-            container.append(element);
-        });
+        if (filteredAssignments.length === 0) {
+            html = `
+                <div class="col-12">
+                    <div class="alert alert-info text-center">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        Заявки не знайдено. <a href="#" onclick="assignmentManager.showCreateDialog()">Створити нову заявку</a>
+                    </div>
+                </div>
+            `;
+        } else {
+            filteredAssignments.forEach(assignment => {
+                html += this.createAssignmentCard(assignment);
+            });
+        }
 
-        $('#shownCount').text(paginated.length);
-        $('#totalCount').text(assignments.length);
+        container.innerHTML = html;
+        this.updatePagination();
     }
 
-    createAssignmentElement(assignment) {
-        const request = this.requests.find(r => r.id === assignment.requestId);
-        const technician = this.technicians.find(t => t.id === assignment.technicianId);
-        const isOverdue = this.isAssignmentOverdue(assignment);
-
+    /**
+     * Створення картки заявки
+     */
+    createAssignmentCard(assignment) {
+        const statusClass = this.getStatusClass(assignment.status);
+        const priorityClass = this.getPriorityClass(assignment.priority);
+        const assignedTech = this.getTechnicianName(assignment.assignment?.assignedTo);
+        
         return `
-            <div class="assignment-card ${assignment.priority}-priority ${isOverdue ? 'overdue' : ''}" 
-                 data-assignment-id="${assignment.id}">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div>
-                            <h5 class="card-title mb-1">${request ? request.title : 'Невідома заявка'}</h5>
-                            <p class="card-text text-muted mb-1">ID: ${assignment.id}</p>
-                            ${request ? `<p class="card-text mb-1">📍 ${request.location}</p>` : ''}
-                        </div>
-                        <div class="text-right">
-                            <span class="priority-badge priority-${assignment.priority}">
-                                ${this.getPriorityText(assignment.priority)}
-                            </span>
-                            <span class="badge ${this.getStatusClass(assignment.status)}">
-                                ${this.getStatusText(assignment.status)}
-                            </span>
-                            ${isOverdue ? '<span class="badge badge-danger ml-1">Протерміновано</span>' : ''}
-                        </div>
-                    </div>
-
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <p class="mb-1"><strong>Технік:</strong> ${technician ? 
-                                `${technician.firstName} ${technician.lastName}` : 'Не призначено'}</p>
-                            <p class="mb-1"><strong>Призначено:</strong> ${this.formatDateTime(assignment.assignedAt)}</p>
-                            ${assignment.deadline ? `
-                                <p class="mb-1"><strong>Крайній термін:</strong> ${this.formatDateTime(assignment.deadline)}</p>
-                            ` : ''}
-                        </div>
-                        <div class="col-md-6">
-                            ${this.renderProgress(assignment)}
-                        </div>
-                    </div>
-
-                    ${assignment.notes ? `
-                        <div class="alert alert-info py-2 mb-3">
-                            <strong>Нотатки:</strong> ${assignment.notes}
-                        </div>
-                    ` : ''}
-
-                    <div class="assignment-actions">
-                        <button class="btn btn-sm btn-info" onclick="assignmentManager.viewAssignment('${assignment.id}')">
-                            <i class="fas fa-eye"></i> Перегляд
-                        </button>
-                        <button class="btn btn-sm btn-warning" onclick="assignmentManager.editAssignment('${assignment.id}')">
-                            <i class="fas fa-edit"></i> Редагувати
-                        </button>
-                        ${assignment.status !== 'completed' ? `
-                            <button class="btn btn-sm btn-success" onclick="assignmentManager.completeAssignment('${assignment.id}')">
-                                <i class="fas fa-check"></i> Завершити
-                            </button>
-                        ` : ''}
-                        <button class="btn btn-sm btn-danger" onclick="assignmentManager.cancelAssignment('${assignment.id}')">
-                            <i class="fas fa-times"></i> Скасувати
-                        </button>
-                        <span class="drag-handle ml-auto" title="Перетягнути для зміни порядку">
-                            <i class="fas fa-grip-vertical"></i>
+            <div class="col-lg-6 col-xl-4 mb-3">
+                <div class="card assignment-card h-100" data-id="${assignment._id}">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span class="badge badge-${priorityClass} priority-badge">
+                            ${this.getPriorityText(assignment.priority)}
+                        </span>
+                        <span class="badge badge-${statusClass} status-badge">
+                            ${this.getStatusText(assignment.status)}
                         </span>
                     </div>
+                    
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="card-title mb-1">${assignment.assignmentNumber}</h6>
+                            ${assignment.qrCode?.code ? `
+                                <span class="badge badge-info qr-badge" title="QR код: ${assignment.qrCode.code}">
+                                    <i class="fas fa-qrcode"></i>
+                                </span>
+                            ` : ''}
+                        </div>
+                        
+                        <h6 class="assignment-title">${assignment.title}</h6>
+                        <p class="card-text text-muted small">${assignment.description.substring(0, 80)}${assignment.description.length > 80 ? '...' : ''}</p>
+                        
+                        <div class="assignment-details">
+                            <div class="detail-row mb-1">
+                                <i class="fas fa-building text-muted mr-2"></i>
+                                <small>${assignment.client?.company || 'Не вказано'}</small>
+                            </div>
+                            
+                            <div class="detail-row mb-1">
+                                <i class="fas fa-map-marker-alt text-muted mr-2"></i>
+                                <small>${assignment.location?.address || 'Не вказано'}</small>
+                            </div>
+                            
+                            <div class="detail-row mb-1">
+                                <i class="fas fa-user text-muted mr-2"></i>
+                                <small>${assignedTech || 'Не призначено'}</small>
+                            </div>
+                            
+                            <div class="detail-row">
+                                <i class="fas fa-clock text-muted mr-2"></i>
+                                <small>${this.formatDate(assignment.timestamps.created)}</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-footer">
+                        <div class="btn-group btn-group-sm w-100" role="group">
+                            <button class="btn btn-outline-primary" onclick="assignmentManager.viewAssignment('${assignment._id}')" title="Переглянути">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            
+                            ${this.currentUser.role === 'dispatcher' ? `
+                                <button class="btn btn-outline-warning" onclick="assignmentManager.editAssignment('${assignment._id}')" title="Редагувати">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-outline-success" onclick="assignmentManager.showAssignDialog('${assignment._id}')" title="Призначити">
+                                    <i class="fas fa-user-plus"></i>
+                                </button>
+                            ` : ''}
+                            
+                            ${this.currentUser.role === 'tech' && assignment.assignment?.assignedTo === this.currentUser._id ? `
+                                <button class="btn btn-outline-info" onclick="assignmentManager.startWork('${assignment._id}')" title="Почати роботу">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                            ` : ''}
+                            
+                            ${assignment.qrCode?.code ? `
+                                <button class="btn btn-outline-dark" onclick="assignmentManager.showQR('${assignment.qrCode.code}')" title="Показати QR">
+                                    <i class="fas fa-qrcode"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
     }
 
-    renderProgress(assignment) {
-        if (assignment.status === 'completed') {
-            return `
-                <div class="progress progress-sm mb-2">
-                    <div class="progress-bar bg-success" style="width: 100%"></div>
-                </div>
-                <small class="text-success">Завершено: ${this.formatDateTime(assignment.completedAt)}</small>
-            `;
-        }
-
-        const assigned = new Date(assignment.assignedAt);
-        const deadline = new Date(assignment.deadline);
-        const now = new Date();
-        const totalTime = deadline - assigned;
-        const elapsed = now - assigned;
-        const progress = Math.min(Math.max((elapsed / totalTime) * 100, 0), 100);
-
-        return `
-            <div class="progress progress-sm mb-2">
-                <div class="progress-bar ${progress > 80 ? 'bg-warning' : 'bg-info'}" 
-                     style="width: ${progress}%"></div>
-            </div>
-            <small class="text-muted">Виконано: ${Math.round(progress)}%</small>
-        `;
-    }
-
-    switchView(viewType) {
-        this.currentView = viewType;
-        // Додаткова логіка для зміни виду буде реалізована
-        this.applyFilters();
-    }
-
-    setupEventListeners() {
-        $('#statusFilter, #priorityFilter, #techFilter, #periodFilter').change(() => {
-            this.filters.status = $('#statusFilter').val();
-            this.filters.priority = $('#priorityFilter').val();
-            this.filters.technician = $('#techFilter').val();
-            this.filters.period = $('#periodFilter').val();
-            this.applyFilters();
-        });
-
-        $('#searchInput').on('input', (e) => {
-            this.searchQuery = e.target.value.trim();
-            this.applyFilters();
-        });
-
-        // Гарячі клавіші
-        $(document).on('keydown', (e) => {
-            if (e.ctrlKey) {
-                switch(e.key) {
-                    case 'n':
-                        e.preventDefault();
-                        this.createNewAssignment();
-                        break;
-                    case 'f':
-                        e.preventDefault();
-                        $('#searchInput').focus();
-                        break;
-                }
-            }
-        });
-    }
-
-    setupDragAndDrop() {
-        // Ініціалізація drag and drop для сортування
-        const container = document.getElementById('assignmentsContainer');
-        if (container) {
-            new Sortable(container, {
-                handle: '.drag-handle',
-                animation: 150,
-                onEnd: (evt) => {
-                    this.onAssignmentReorder(evt.oldIndex, evt.newIndex);
-                }
-            });
-        }
-    }
-
-    onAssignmentReorder(oldIndex, newIndex) {
-        // Логіка зміни порядку призначень
-        console.log('Переміщено з', oldIndex, 'на', newIndex);
-    }
-
-    setupAutoRefresh() {
-        setInterval(() => {
-            this.refreshData();
-        }, 300000); // Оновлення кожні 5 хвилин
-    }
-
-    refreshData() {
-        this.loadData();
-        this.showToast('Дані оновлено', 'info');
-    }
-
-    searchAssignments() {
-        this.applyFilters();
-    }
-
-    previousPage() {
-        if (this.currentPage > 1) {
-            this.currentPage--;
-            this.applyFilters();
-        }
-    }
-
-    nextPage() {
-        const totalItems = this.getFilteredAssignments().length;
-        const totalPages = Math.ceil(totalItems / this.itemsPerPage);
-        
-        if (this.currentPage < totalPages) {
-            this.currentPage++;
-            this.applyFilters();
-        }
-    }
-
-    updatePagination(totalItems) {
-        const totalPages = Math.ceil(totalItems / this.itemsPerPage);
-        $('#currentPage').text(this.currentPage);
-        
-        if (totalPages === 0) {
-            $('#currentPage').text('1');
-        }
-    }
-
+    /**
+     * Фільтрація заявок
+     */
     getFilteredAssignments() {
         return this.assignments.filter(assignment => {
-            const statusMatch = this.filters.status === 'all' || assignment.status === this.filters.status;
-            const priorityMatch = this.filters.priority === 'all' || assignment.priority === this.filters.priority;
-            const techMatch = this.filters.technician === 'all' || assignment.technicianId === this.filters.technician;
-            const periodMatch = this.filterByPeriod(assignment);
-            const searchMatch = this.searchQuery === '' || this.matchesSearch(assignment);
-
-            return statusMatch && priorityMatch && techMatch && periodMatch && searchMatch;
-        });
-    }
-
-    createNewAssignment() {
-        this.showAssignmentModal('create');
-    }
-
-    viewAssignment(assignmentId) {
-        this.showAssignmentModal('view', assignmentId);
-    }
-
-    editAssignment(assignmentId) {
-        this.showAssignmentModal('edit', assignmentId);
-    }
-
-    showAssignmentModal(mode, assignmentId = null) {
-        let title = '';
-        let content = '';
-
-        if (mode === 'create') {
-            title = 'Нове призначення';
-            content = this.getAssignmentForm();
-        } else {
-            const assignment = this.assignments.find(a => a.id === assignmentId);
-            if (assignment) {
-                title = mode === 'view' ? 'Перегляд призначення' : 'Редагування призначення';
-                content = this.getAssignmentDetails(assignment, mode);
+            // Фільтр по статусу
+            if (this.filters.status !== 'all' && assignment.status !== this.filters.status) {
+                return false;
             }
-        }
-
-        $('#assignmentModalBody').html(content);
-        $('#assignmentModal .modal-title').text(title);
-        $('#assignmentModal').modal('show');
-    }
-
-    getAssignmentForm() {
-        const pendingRequests = this.requests.filter(req => req.status === 'pending');
-        const availableTechs = this.technicians.filter(tech => this.isTechnicianAvailable(tech.id));
-
-        return `
-            <form id="assignmentForm">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="requestSelect">Заявка *</label>
-                            <select id="requestSelect" class="form-control" required>
-                                <option value="">Оберіть заявку...</option>
-                                ${pendingRequests.map(req => 
-                                    `<option value="${req.id}">${req.id} - ${req.title}</option>`
-                                ).join('')}
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="techSelect">Технік *</label>
-                            <select id="techSelect" class="form-control" required>
-                                <option value="">Оберіть техніка...</option>
-                                ${availableTechs.map(tech => 
-                                    `<option value="${tech.id}">${tech.firstName} ${tech.lastName}</option>`
-                                ).join('')}
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="prioritySelect">Пріоритет *</label>
-                            <select id="prioritySelect" class="form-control" required>
-                                <option value="high">Високий</option>
-                                <option value="medium" selected>Середній</option>
-                                <option value="low">Низький</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="deadline">Крайній термін *</label>
-                            <input type="datetime-local" id="deadline" class="form-control" required>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="assignmentNotes">Нотатки</label>
-                    <textarea id="assignmentNotes" class="form-control" rows="3" 
-                              placeholder="Додаткові вказівки..."></textarea>
-                </div>
-
-                <div class="form-group">
-                    <div class="custom-control custom-switch">
-                        <input type="checkbox" class="custom-control-input" id="notifyTech" checked>
-                        <label class="custom-control-label" for="notifyTech">Сповістити техніка</label>
-                    </div>
-                </div>
-            </form>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
-                <button type="button" class="btn btn-primary" onclick="assignmentManager.saveAssignment()">
-                    <i class="fas fa-save"></i> Зберегти
-                </button>
-            </div>
-        `;
-    }
-
-    saveAssignment() {
-        // Логіка збереження призначення
-        this.showToast('Призначення збережено', 'success');
-        $('#assignmentModal').modal('hide');
-        this.refreshData();
-    }
-
-    completeAssignment(assignmentId) {
-        if (confirm('Позначити призначення як завершене?')) {
-            const assignment = this.assignments.find(a => a.id === assignmentId);
-            if (assignment) {
-                assignment.status = 'completed';
-                assignment.completedAt = new Date().toISOString();
-                localStorage.setItem('assignments', JSON.stringify(this.assignments));
-                this.showToast('Призначення завершено', 'success');
-                this.refreshData();
-            }
-        }
-    }
-
-    cancelAssignment(assignmentId) {
-        if (confirm('Скасувати це призначення?')) {
-            const assignment = this.assignments.find(a => a.id === assignmentId);
-            if (assignment) {
-                assignment.status = 'cancelled';
-                localStorage.setItem('assignments', JSON.stringify(this.assignments));
-                this.showToast('Призначення скасовано', 'info');
-                this.refreshData();
-            }
-        }
-    }
-
-    bulkAssign() {
-        $('#bulkAssignmentModal').modal('show');
-        this.populateBulkAssignmentModal();
-    }
-
-    populateBulkAssignmentModal() {
-        const pendingRequests = this.requests.filter(req => req.status === 'pending');
-        const availableTechs = this.technicians.filter(tech => this.isTechnicianAvailable(tech.id));
-
-        // Заповнення доступних заявок
-        const requestsContainer = $('#availableRequests');
-        requestsContainer.empty();
-        
-        pendingRequests.forEach(req => {
-            requestsContainer.append(`
-                <div class="list-group-item request-item" data-request-id="${req.id}">
-                    <div class="custom-control custom-checkbox">
-                        <input type="checkbox" class="custom-control-input" id="req-${req.id}">
-                        <label class="custom-control-label" for="req-${req.id}">
-                            <strong>${req.id}</strong> - ${req.title}
-                            <br><small class="text-muted">${req.location}</small>
-                        </label>
-                    </div>
-                </div>
-            `);
-        });
-
-        // Заповнення вибору техніків
-        const techSelect = $('#bulkTechSelect');
-        techSelect.empty().append('<option value="">Оберіть техніка...</option>');
-        
-        availableTechs.forEach(tech => {
-            techSelect.append(new Option(
-                `${tech.firstName} ${tech.lastName} (${tech.specialty})`,
-                tech.id
-            ));
-        });
-    }
-
-    submitBulkAssignment() {
-        const selectedTech = $('#bulkTechSelect').val();
-        if (!selectedTech) {
-            this.showToast('Оберіть техніка для призначення', 'error');
-            return;
-        }
-
-        const selectedRequests = [];
-        $('.request-item input:checked').each(function() {
-            selectedRequests.push($(this).closest('.request-item').data('request-id'));
-        });
-
-        if (selectedRequests.length === 0) {
-            this.showToast('Оберіть хоча б одну заявку', 'error');
-            return;
-        }
-
-        // Створення масових призначень
-        selectedRequests.forEach(requestId => {
-            const newAssignment = {
-                id: 'ASSIGN-' + Date.now() + Math.random().toString(36).substr(2, 5),
-                requestId: requestId,
-                technicianId: selectedTech,
-                priority: 'medium',
-                status: 'assigned',
-                assignedAt: new Date().toISOString(),
-                deadline: new Date(Date.now() + 48 * 3600000).toISOString(),
-                notes: 'Масове призначення'
-            };
             
-            this.assignments.push(newAssignment);
-        });
-
-        localStorage.setItem('assignments', JSON.stringify(this.assignments));
-        $('#bulkAssignmentModal').modal('hide');
-        this.showToast(`Призначено ${selectedRequests.length} заявок`, 'success');
-        this.refreshData();
-    }
-
-    reassignOverdue() {
-        const overdueAssignments = this.assignments.filter(a => this.isAssignmentOverdue(a));
-        
-        if (overdueAssignments.length === 0) {
-            this.showToast('Немає протермінованих призначень', 'info');
-            return;
-        }
-
-        if (confirm(`Знайдено ${overdueAssignments.length} протермінованих призначень. Перепризначити?`)) {
-            overdueAssignments.forEach(assignment => {
-                // Логіка перепризначення
-                assignment.status = 'pending';
-                assignment.technicianId = null;
-                assignment.assignedAt = null;
-            });
-
-            localStorage.setItem('assignments', JSON.stringify(this.assignments));
-            this.showToast('Протерміновані призначення перепризначено', 'success');
-            this.refreshData();
-        }
-    }
-
-    generateReport() {
-        const reportData = this.prepareReportData();
-        this.showReportModal(reportData);
-    }
-
-    prepareReportData() {
-        return {
-            total: this.assignments.length,
-            byStatus: this.groupByStatus(),
-            byPriority: this.groupByPriority(),
-            byTechnician: this.groupByTechnician(),
-            completionRate: this.calculateCompletionRate(),
-            averageTime: this.calculateAverageCompletionTime()
-        };
-    }
-
-    showReportModal(reportData) {
-        const content = `
-            <div class="report-content">
-                <h5>Звіт по призначенням</h5>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="card mb-3">
-                            <div class="card-body">
-                                <h6>За статусами</h6>
-                                ${Object.entries(reportData.byStatus).map(([status, count]) => `
-                                    <p>${this.getStatusText(status)}: <strong>${count}</strong></p>
-                                `).join('')}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card mb-3">
-                            <div class="card-body">
-                                <h6>За пріоритетами</h6>
-                                ${Object.entries(reportData.byPriority).map(([priority, count]) => `
-                                    <p>${this.getPriorityText(priority)}: <strong>${count}</strong></p>
-                                `).join('')}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <button class="btn btn-primary" onclick="assignmentManager.exportReport()">
-                    <i class="fas fa-download"></i> Експортувати звіт
-                </button>
-            </div>
-        `;
-
-        this.showModal('Звіт по призначенням', content);
-    }
-
-    exportReport() {
-        this.showToast('Підготовка звіту до експорту...', 'info');
-        // Логіка експорту
-    }
-
-    exportAssignments() {
-        const filtered = this.getFilteredAssignments();
-        if (filtered.length === 0) {
-            this.showToast('Немає даних для експорту', 'warning');
-            return;
-        }
-
-        this.showToast('Експорт даних...', 'info');
-        // Логіка експорту в CSV/Excel
-    }
-
-    showCalendarView() {
-        this.showToast('Перегляд календаря призначень', 'info');
-        // Логіка календарного представлення
-    }
-
-    showNotifications() {
-        this.showToast('Функціонал сповіщень призначень', 'info');
-    }
-
-    showToast(message, type = 'info') {
-        $.notify(message, {
-            className: type,
-            position: 'bottom right',
-            autoHideDelay: 3000
+            // Фільтр по пріоритету
+            if (this.filters.priority !== 'all' && assignment.priority !== this.filters.priority) {
+                return false;
+            }
+            
+            // Фільтр по техніку
+            if (this.filters.technician !== 'all' && assignment.assignment?.assignedTo !== this.filters.technician) {
+                return false;
+            }
+            
+            // Фільтр по категорії
+            if (this.filters.category !== 'all' && assignment.metadata?.category !== this.filters.category) {
+                return false;
+            }
+            
+            // Пошук
+            if (this.searchQuery && !this.matchesSearch(assignment)) {
+                return false;
+            }
+            
+            return true;
         });
     }
 
-    showModal(title, content) {
-        $('#assignmentModalBody').html(content);
-        $('#assignmentModal .modal-title').text(title);
-        $('#assignmentModal').modal('show');
-    }
-
-    updateLastUpdateTime() {
-        $('#lastUpdate').text(`Оновлено: ${new Date().toLocaleTimeString('uk-UA')}`);
-    }
-
-    // Допоміжні методи
-    getPriorityText(priority) {
-        const priorities = {
-            'high': 'Високий',
-            'medium': 'Середній',
-            'low': 'Низький'
+    /**
+     * Допоміжні методи
+     */
+    getStatusClass(status) {
+        const classes = {
+            'new': 'primary',
+            'assigned': 'info', 
+            'in-progress': 'warning',
+            'completed': 'success',
+            'cancelled': 'secondary',
+            'on-hold': 'dark'
         };
-        return priorities[priority] || priority;
+        return classes[status] || 'secondary';
     }
 
     getStatusText(status) {
-        const statuses = {
-            'pending': 'В очікуванні',
-            'assigned': 'Призначено',
-            'in-progress': 'В роботі',
-            'completed': 'Завершено',
-            'cancelled': 'Скасовано'
+        const texts = {
+            'new': 'Нова',
+            'assigned': 'Призначена',
+            'in-progress': 'В роботі', 
+            'completed': 'Завершена',
+            'cancelled': 'Скасована',
+            'on-hold': 'Призупинена'
         };
-        return statuses[status] || status;
+        return texts[status] || status;
     }
 
-    getStatusClass(status) {
+    getPriorityClass(priority) {
         const classes = {
-            'pending': 'badge-secondary',
-            'assigned': 'badge-info',
-            'in-progress': 'badge-warning',
-            'completed': 'badge-success',
-            'cancelled': 'badge-danger'
+            'low': 'success',
+            'medium': 'warning',
+            'high': 'danger',
+            'urgent': 'danger'
         };
-        return classes[status] || 'badge-secondary';
+        return classes[priority] || 'secondary';
     }
 
-    formatDateTime(dateString) {
-        return new Date(dateString).toLocaleString('uk-UA');
+    getPriorityText(priority) {
+        const texts = {
+            'low': 'Низький',
+            'medium': 'Середній',
+            'high': 'Високий',
+            'urgent': 'Терміновий'
+        };
+        return texts[priority] || priority;
     }
 
-    groupByStatus() {
-        const groups = {};
-        this.assignments.forEach(a => {
-            groups[a.status] = (groups[a.status] || 0) + 1;
+    getTechnicianName(techId) {
+        if (!techId) return 'Не призначено';
+        const tech = this.technicians.find(t => t._id === techId);
+        return tech ? `${tech.firstName} ${tech.lastName}` : 'Невідомий технік';
+    }
+
+    matchesSearch(assignment) {
+        const query = this.searchQuery.toLowerCase();
+        const searchFields = [
+            assignment.title,
+            assignment.description,
+            assignment.assignmentNumber,
+            assignment.client?.company,
+            assignment.location?.address
+        ].filter(Boolean);
+        
+        return searchFields.some(field => 
+            field.toLowerCase().includes(query)
+        );
+    }
+
+    formatDate(dateString) {
+        return new Date(dateString).toLocaleDateString('uk-UA', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
         });
-        return groups;
     }
 
-    groupByPriority() {
-        const groups = {};
-        this.assignments.forEach(a => {
-            groups[a.priority] = (groups[a.priority] || 0) + 1;
-        });
-        return groups;
+    async generateAssignmentNumber() {
+        const year = new Date().getFullYear();
+        const count = this.assignments.length + 1;
+        return `ASG-${year}-${String(count).padStart(3, '0')}`;
     }
 
-    groupByTechnician() {
-        const groups = {};
-        this.assignments.forEach(a => {
-            if (a.technicianId) {
-                groups[a.technicianId] = (groups[a.technicianId] || 0) + 1;
+    /**
+     * Оновлення статистики
+     */
+    updateStatistics() {
+        const stats = {
+            total: this.assignments.length,
+            new: this.assignments.filter(a => a.status === 'new').length,
+            assigned: this.assignments.filter(a => a.status === 'assigned').length,
+            inProgress: this.assignments.filter(a => a.status === 'in-progress').length,
+            completed: this.assignments.filter(a => a.status === 'completed').length,
+            highPriority: this.assignments.filter(a => a.priority === 'high' || a.priority === 'urgent').length
+        };
+
+        // Оновлення елементів інтерфейсу
+        const updateElement = (id, value) => {
+            const element = document.getElementById(id);
+            if (element) element.textContent = value;
+        };
+
+        updateElement('totalAssignments', stats.total);
+        updateElement('newAssignments', stats.new);
+        updateElement('assignedAssignments', stats.assigned);
+        updateElement('inProgressAssignments', stats.inProgress);
+        updateElement('completedAssignments', stats.completed);
+        updateElement('highPriorityAssignments', stats.highPriority);
+    }
+
+    /**
+     * Налаштування подій
+     */
+    setupEventListeners() {
+        // Фільтри
+        document.addEventListener('change', (e) => {
+            if (e.target.hasAttribute('data-filter')) {
+                const filterType = e.target.getAttribute('data-filter');
+                this.filters[filterType] = e.target.value;
+                this.renderAssignments();
             }
         });
-        return groups;
+
+        // Пошук
+        const searchInput = document.getElementById('assignmentSearch');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                this.searchQuery = e.target.value;
+                this.renderAssignments();
+            });
+        }
     }
 
-    calculateCompletionRate() {
-        const completed = this.assignments.filter(a => a.status === 'completed').length;
-        return this.assignments.length > 0 ? (completed / this.assignments.length) * 100 : 0;
+    /**
+     * Автооновлення даних
+     */
+    setupAutoRefresh() {
+        // Оновлення кожні 30 секунд
+        setInterval(() => {
+            if (document.visibilityState === 'visible') {
+                this.loadData(this.filters);
+            }
+        }, 30000);
     }
 
-    calculateAverageCompletionTime() {
-        const completed = this.assignments.filter(a => 
-            a.status === 'completed' && a.assignedAt && a.completedAt
-        );
+    /**
+     * Завантаження шаблонів
+     */
+    async loadTemplates() {
+        try {
+            const token = localStorage.getItem('authToken');
+            
+            const response = await fetch(`${this.apiUrl}/assignment-templates`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
 
-        if (completed.length === 0) return 0;
-
-        const totalTime = completed.reduce((sum, a) => {
-            const assigned = new Date(a.assignedAt);
-            const completed = new Date(a.completedAt);
-            return sum + (completed - assigned);
-        }, 0);
-
-        return (totalTime / completed.length) / 3600000; // Години
+            if (response.ok) {
+                this.templates = await response.json();
+            }
+        } catch (error) {
+            console.error('Помилка завантаження шаблонів:', error);
+        }
     }
 
-    isTechnicianAvailable(techId) {
-        const tech = this.technicians.find(t => t.id === techId);
-        if (!tech) return false;
+    /**
+     * Показ сповіщення
+     */
+    showNotification(message, type = 'info') {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                text: message,
+                icon: type === 'error' ? 'error' : type === 'success' ? 'success' : 'info',
+                timer: 3000,
+                showConfirmButton: false,
+                toast: true,
+                position: 'top-end'
+            });
+        } else {
+            console.log(`${type.toUpperCase()}: ${message}`);
+        }
+    }
 
-        const activeAssignments = this.assignments.filter(a => 
-            a.technicianId === techId && 
-            (a.status === 'assigned' || a.status === 'in-progress')
-        );
+    /**
+     * Публічні методи для взаємодії з інтерфейсом
+     */
+    
+    // Перегляд деталей заявки
+    viewAssignment(id) {
+        console.log('Перегляд заявки:', id);
+        // Тут буде код для відкриття модального вікна з деталями
+    }
 
-        return activeAssignments.length < 3;
+    // Редагування заявки
+    editAssignment(id) {
+        console.log('Редагування заявки:', id);
+        // Тут буде код для відкриття форми редагування
+    }
+
+    // Показ діалогу призначення
+    showAssignDialog(id) {
+        console.log('Призначення заявки:', id);
+        // Тут буде код для відкриття діалогу призначення техніку
+    }
+
+    // Початок роботи техніком
+    startWork(id) {
+        console.log('Початок роботи над заявкою:', id);
+        this.updateAssignmentStatus(id, 'in-progress');
+    }
+
+    // Показ QR коду
+    showQR(qrCode) {
+        console.log('Показ QR коду:', qrCode);
+        // Тут буде код для відображення QR коду
+    }
+
+    // Діалог створення заявки
+    showCreateDialog() {
+        console.log('Створення нової заявки');
+        // Тут буде код для відкриття форми створення заявки
+    }
+
+    /**
+     * Оновлення статусу заявки
+     */
+    async updateAssignmentStatus(assignmentId, status, additionalData = {}) {
+        try {
+            const token = localStorage.getItem('authToken');
+            
+            const updateData = {
+                status,
+                timestamps: {
+                    updated: new Date(),
+                    [status === 'in-progress' ? 'started' : status]: new Date()
+                },
+                ...additionalData
+            };
+
+            const response = await fetch(`${this.apiUrl}/assignments/${assignmentId}/status`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updateData)
+            });
+
+            if (response.ok) {
+                await this.loadData();
+                this.showNotification(`✅ Статус оновлено на "${this.getStatusText(status)}"`, 'success');
+                return true;
+            } else {
+                throw new Error('Помилка оновлення статусу');
+            }
+        } catch (error) {
+            console.error('Помилка оновлення статусу:', error);
+            this.showNotification('❌ Помилка оновлення статусу', 'error');
+        }
+    }
+
+    /**
+     * Рендеринг модуля в заданому контейнері для CRM інтеграції
+     */
+    renderInContainer(containerId, action) {
+        action = action || '';
+        const container = document.getElementById(containerId);
+        if (!container) {
+            console.error(`Container ${containerId} not found`);
+            return;
+        }
+
+        let html = '';
+
+        switch (action) {
+            case 'create':
+                html = this.generateCreateForm();
+                break;
+            case 'my':
+            case 'my-tasks':
+                html = this.generateMyAssignments();
+                break;
+            case 'scan':
+                html = this.generateQRScanner();
+                break;
+            default:
+                html = this.generateMainInterface();
+        }
+
+        container.innerHTML = html;
+        this.setupContainerEvents(containerId);
+        
+        // Завантажуємо дані
+        this.loadAssignments();
+    }
+
+    generateMainInterface() {
+        return `
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-tasks"></i> Управління заявками
+                            </h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-primary btn-sm" onclick="assignmentManager.showCreateModal()">
+                                    <i class="fas fa-plus"></i> Нова заявка
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <!-- Фільтри -->
+                            <div class="row mb-3">
+                                <div class="col-md-3">
+                                    <select class="form-control" id="statusFilter">
+                                        <option value="">Всі статуси</option>
+                                        <option value="pending">Очікує</option>
+                                        <option value="in_progress">В роботі</option>
+                                        <option value="completed">Завершено</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <input type="text" class="form-control" id="searchFilter" placeholder="Пошук...">
+                                </div>
+                                <div class="col-md-2">
+                                    <button class="btn btn-info" onclick="assignmentManager.showQRScanner()">
+                                        <i class="fas fa-qrcode"></i> QR
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Таблиця заявок -->
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Тип</th>
+                                            <th>Опис</th>
+                                            <th>Статус</th>
+                                            <th>Клієнт</th>
+                                            <th>Створено</th>
+                                            <th>Дії</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="assignments-table-body">
+                                        <tr>
+                                            <td colspan="7" class="text-center">
+                                                <i class="fas fa-spinner fa-spin"></i> Завантаження...
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    generateCreateForm() {
+        return `
+            <div class="row">
+                <div class="col-md-8 offset-md-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-plus"></i> Нова заявка
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <form id="create-assignment-form">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="assignment-type">Тип заявки</label>
+                                            <select class="form-control" id="assignment-type" required>
+                                                <option value="">Оберіть тип</option>
+                                                <option value="maintenance">Технічне обслуговування</option>
+                                                <option value="repair">Ремонт</option>
+                                                <option value="installation">Встановлення</option>
+                                                <option value="inspection">Перевірка</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="assignment-priority">Пріоритет</label>
+                                            <select class="form-control" id="assignment-priority">
+                                                <option value="normal">Звичайний</option>
+                                                <option value="high">Високий</option>
+                                                <option value="urgent">Терміновий</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="assignment-description">Опис проблеми</label>
+                                    <textarea class="form-control" id="assignment-description" rows="4" 
+                                              placeholder="Опишіть детально проблему або вимоги до роботи..."></textarea>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="client-name">Ім'я клієнта</label>
+                                            <input type="text" class="form-control" id="client-name" 
+                                                   placeholder="Повне ім'я клієнта">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="client-phone">Телефон</label>
+                                            <input type="tel" class="form-control" id="client-phone" 
+                                                   placeholder="+380 XX XXX XXXX">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="assignment-location">Адреса</label>
+                                    <textarea class="form-control" id="assignment-location" rows="2" 
+                                              placeholder="Повна адреса об'єкта"></textarea>
+                                </div>
+
+                                <div class="form-group">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> Створити заявку
+                                    </button>
+                                    <button type="button" class="btn btn-secondary ml-2" onclick="crmNav.loadModule('assignment-manager')">
+                                        <i class="fas fa-times"></i> Скасувати
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    setupContainerEvents(containerId) {
+        // Налаштування обробників подій для контейнера
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        // Фільтри
+        const statusFilter = container.querySelector('#statusFilter');
+        const searchFilter = container.querySelector('#searchFilter');
+
+        if (statusFilter) {
+            statusFilter.addEventListener('change', () => this.applyFilters());
+        }
+        if (searchFilter) {
+            searchFilter.addEventListener('input', () => this.applyFilters());
+        }
+
+        // Форма створення заявки
+        const createForm = container.querySelector('#create-assignment-form');
+        if (createForm) {
+            createForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.handleCreateAssignment();
+            });
+        }
+    }
+
+    /**
+     * Методи для інтеграції з CRM системою
+     */
+
+    // Рендер модуля в контейнер CRM
+    renderInContainer(containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        container.innerHTML = `
+            <div class="assignment-manager-container">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-tasks"></i> Управління заявками</h2>
+                    <button class="btn btn-primary" onclick="assignmentManager.showCreateForm()">
+                        <i class="fas fa-plus"></i> Нова заявка
+                    </button>
+                </div>
+                
+                <!-- Фільтри та пошук -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <select class="form-control" id="status-filter">
+                                    <option value="">Всі статуси</option>
+                                    <option value="pending">Очікує</option>
+                                    <option value="in-progress">Виконується</option>
+                                    <option value="completed">Завершено</option>
+                                    <option value="cancelled">Скасовано</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-control" id="priority-filter">
+                                    <option value="">Всі пріоритети</option>
+                                    <option value="low">Низький</option>
+                                    <option value="medium">Середній</option>
+                                    <option value="high">Високий</option>
+                                    <option value="urgent">Терміново</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="text" class="form-control" id="search-input" placeholder="Пошук заявок...">
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-outline-secondary btn-block" onclick="assignmentManager.scanQRCode()">
+                                    <i class="fas fa-qrcode"></i> QR
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Список заявок -->
+                <div id="assignments-list-container">
+                    <div class="text-center">
+                        <i class="fas fa-spinner fa-spin fa-2x"></i>
+                        <p>Завантаження заявок...</p>
+                    </div>
+                </div>
+
+                <!-- Модальні вікна -->
+                <div id="assignment-modal-container"></div>
+            </div>
+        `;
+
+        // Налаштування обробників подій для CRM
+        this.setupCRMEventListeners();
+        
+        // Завантаження даних
+        this.loadAssignments();
+    }
+
+    // Налаштування обробників подій для CRM
+    setupCRMEventListeners() {
+        // Фільтри
+        const statusFilter = document.getElementById('status-filter');
+        const priorityFilter = document.getElementById('priority-filter');
+        const searchInput = document.getElementById('search-input');
+
+        if (statusFilter) {
+            statusFilter.addEventListener('change', () => {
+                this.applyFilters();
+            });
+        }
+
+        if (priorityFilter) {
+            priorityFilter.addEventListener('change', () => {
+                this.applyFilters();
+            });
+        }
+
+        if (searchInput) {
+            searchInput.addEventListener('input', () => {
+                clearTimeout(this.searchTimeout);
+                this.searchTimeout = setTimeout(() => {
+                    this.applyFilters();
+                }, 300);
+            });
+        }
+    }
+
+    // Застосування фільтрів
+    applyFilters() {
+        const status = document.getElementById('status-filter')?.value || '';
+        const priority = document.getElementById('priority-filter')?.value || '';
+        const search = document.getElementById('search-input')?.value || '';
+
+        let filteredAssignments = [...this.assignments];
+
+        // Фільтр по статусу
+        if (status) {
+            filteredAssignments = filteredAssignments.filter(a => a.status === status);
+        }
+
+        // Фільтр по пріоритету
+        if (priority) {
+            filteredAssignments = filteredAssignments.filter(a => a.priority === priority);
+        }
+
+        // Пошук
+        if (search) {
+            const searchLower = search.toLowerCase();
+            filteredAssignments = filteredAssignments.filter(a => 
+                a.title?.toLowerCase().includes(searchLower) ||
+                a.description?.toLowerCase().includes(searchLower) ||
+                a.location?.toLowerCase().includes(searchLower)
+            );
+        }
+
+        this.renderAssignmentsList(filteredAssignments);
+    }
+
+    // Отримання статистики для CRM дашборда
+    getStats() {
+        const stats = {
+            total: this.assignments.length,
+            pending: this.assignments.filter(a => a.status === 'pending').length,
+            inProgress: this.assignments.filter(a => a.status === 'in-progress').length,
+            completed: this.assignments.filter(a => a.status === 'completed').length,
+            urgent: this.assignments.filter(a => a.priority === 'urgent').length,
+            todayAssignments: this.assignments.filter(a => {
+                const today = new Date().toDateString();
+                return new Date(a.createdAt).toDateString() === today;
+            }).length
+        };
+
+        return stats;
+    }
+
+    // Отримання останніх заявок для віджета
+    getRecentAssignments(limit = 5) {
+        return this.assignments
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+            .slice(0, limit);
+    }
+
+    // Компактний віджет для дашборда
+    renderWidget(containerId, title = 'Останні заявки') {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        const recentAssignments = this.getRecentAssignments();
+
+        container.innerHTML = `
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">${title}</h5>
+                </div>
+                <div class="card-body p-0">
+                    ${recentAssignments.length > 0 ? `
+                        <div class="list-group list-group-flush">
+                            ${recentAssignments.map(assignment => `
+                                <div class="list-group-item list-group-item-action">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">${assignment.title || 'Без назви'}</h6>
+                                            <small class="text-muted">${assignment.location || 'Не вказано'}</small>
+                                        </div>
+                                        <span class="badge badge-${this.getStatusColor(assignment.status)}">
+                                            ${this.getStatusText(assignment.status)}
+                                        </span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="card-footer">
+                            <a href="#" onclick="assignmentManager.renderInContainer('main-content')" class="btn btn-sm btn-outline-primary btn-block">
+                                Переглянути всі
+                            </a>
+                        </div>
+                    ` : `
+                        <div class="text-center py-4">
+                            <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
+                            <p class="text-muted mb-0">Заявки відсутні</p>
+                        </div>
+                    `}
+                </div>
+            </div>
+        `;
     }
 }
 
-// Ініціалізація
-$(document).ready(function() {
-    window.assignmentManager = new AssignmentManager();
+// Глобальна ініціалізація
+let assignmentManager;
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof assignmentManager === 'undefined') {
+        assignmentManager = new AssignmentManager();
+        window.assignmentManager = assignmentManager; // Глобальний доступ
+    }
 });
+
+    // Експорт для використання в модулях
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = AssignmentManager;
+    }
