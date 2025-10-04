@@ -1304,6 +1304,61 @@
                                         </div>
                                     </div>
                                 </div>
+                                
+                                <!-- Технічні інспекції -->
+                                <div class="row">
+                                    <div class="col-12">
+                                        <h6 class="text-primary mb-3">
+                                            <i class="fas fa-clipboard-check"></i> Технічні інспекції
+                                        </h6>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="enhancedLastInspection">Остання інспекція</label>
+                                            <input type="date" id="enhancedLastInspection" name="lastInspection" class="form-control">
+                                            <small class="form-text text-muted">Дата останньої технічної інспекції</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="enhancedNextInspection">Наступна інспекція</label>
+                                            <input type="date" id="enhancedNextInspection" name="nextInspection" class="form-control">
+                                            <small class="form-text text-muted">Планова дата наступної інспекції</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="enhancedInspectionFrequency">Періодичність (міс.)</label>
+                                            <select id="enhancedInspectionFrequency" name="inspectionFrequency" class="form-control">
+                                                <option value="3">Кожні 3 місяці</option>
+                                                <option value="6" selected>Кожні 6 місяців</option>
+                                                <option value="12">Щорічно</option>
+                                                <option value="24">Кожні 2 роки</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Нотатки обслуговування -->
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <label for="enhancedMaintenanceNotes">Нотатки обслуговування</label>
+                                            <textarea id="enhancedMaintenanceNotes" name="maintenanceNotes" class="form-control" rows="3" placeholder="Записи про технічне обслуговування, ремонти, заміни деталей..."></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Кнопка додавання звіту -->
+                                <div class="row">
+                                    <div class="col-12">
+                                        <button type="button" class="btn btn-outline-info" id="addInspectionReportBtn">
+                                            <i class="fas fa-plus"></i> Додати звіт інспекції
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

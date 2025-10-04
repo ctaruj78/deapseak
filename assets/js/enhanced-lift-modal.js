@@ -305,17 +305,17 @@ class EnhancedLiftModal {
             contactPerson: $('#enhancedContactPerson').val() || '',
             tech: $('#enhancedAssignedTechnician').val() || 'auto',
             status: $('#enhancedLiftStatus').val() || 'operational',
+            // Технічні інспекції
+            lastInspection: $('#enhancedLastInspection').val() || null,
+            nextInspection: $('#enhancedNextInspection').val() || null,
+            inspectionFrequency: parseInt($('#enhancedInspectionFrequency').val()) || 6,
+            maintenanceNotes: $('#enhancedMaintenanceNotes').val() || '',
             // Додаткові поля за замовчуванням
             floorsCount: 5,
             doorsCount: 2,
-            postcode: '',
             buildingName: '',
             floorLocation: 'ground',
             accessCode: '',
-            lastInspection: null,
-            nextInspection: null,
-            inspectionFrequency: 6,
-            maintenanceNotes: '',
             qrAccessLevel: 'public',
             enableQrTracking: false,
             interventionHistory: [],
@@ -572,6 +572,11 @@ class EnhancedLiftModal {
         $('#enhancedContactPerson').val(liftData.contactPerson || '');
         $('#enhancedAssignedTechnician').val(liftData.tech || '');
         $('#enhancedLiftStatus').val(liftData.status || '');
+        // Поля інспекцій
+        $('#enhancedLastInspection').val(liftData.lastInspection || '');
+        $('#enhancedNextInspection').val(liftData.nextInspection || '');
+        $('#enhancedInspectionFrequency').val(liftData.inspectionFrequency || 6);
+        $('#enhancedMaintenanceNotes').val(liftData.maintenanceNotes || '');
         
         // Оновлюємо карту з координатами ліфта
         if (liftData.lat && liftData.lng) {
