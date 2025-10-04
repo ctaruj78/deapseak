@@ -1103,7 +1103,7 @@
                             <!-- Розташування і карта -->
                             <div class="tab-pane fade" id="location-info" role="tabpanel">
                                 <div class="row mb-3">
-                                    <div class="col-md-6">
+                                    <div class="col-md-5">
                                         <div class="form-group">
                                             <label for="enhancedLiftAddress">Повна адреса *</label>
                                             <div class="input-group">
@@ -1116,9 +1116,16 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-3">
+                                    <div class="col-md-2">
                                         <div class="form-group">
-                                            <label for="enhancedLiftsCountAtAddress">Кількість ліфтів за адресою</label>
+                                            <label for="enhancedLiftPostcode">Поштовий код *</label>
+                                            <input type="text" id="enhancedLiftPostcode" name="liftPostcode" class="form-control" required pattern="([0-9]{5}|[0-9]{4}-[0-9]{3})" placeholder="01001">
+                                            <small class="form-text text-muted">Для точної GPS навігації</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="form-group">
+                                            <label for="enhancedLiftsCountAtAddress">Кількість ліфтів</label>
                                             <div class="input-group">
                                                 <input type="number" id="enhancedLiftsCountAtAddress" name="liftsCountAtAddress" class="form-control" min="1" max="20" value="1" placeholder="1">
                                                 <div class="input-group-append">
@@ -1193,8 +1200,9 @@
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label for="enhancedClientEmail">Email клієнта</label>
-                                            <input type="email" id="enhancedClientEmail" name="clientEmail" class="form-control" placeholder="client@example.com">
+                                            <label for="enhancedClientEmail">Email клієнта *</label>
+                                            <input type="email" id="enhancedClientEmail" name="clientEmail" class="form-control" required placeholder="client@example.com">
+                                            <small class="form-text text-muted">Для групування ліфтів ОСББ та інших клієнтів</small>
                                         </div>
                                     </div>
                                 </div>

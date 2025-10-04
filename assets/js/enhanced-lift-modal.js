@@ -173,6 +173,8 @@ class EnhancedLiftModal {
 
     geocodeAddress() {
         const address = $('#enhancedLiftAddress').val().trim();
+        const postcode = $('#enhancedLiftPostcode').val().trim();
+        
         if (!address) {
             this.showMessage('Введіть адресу для пошуку координат', 'warning');
             return;
@@ -182,8 +184,17 @@ class EnhancedLiftModal {
         const originalHtml = btn.html();
         btn.html('<i class="fas fa-spinner fa-spin"></i>').prop('disabled', true);
 
+        // Комбінуємо адресу з поштовим кодом для точнішого пошуку
+        let searchQuery = address;
+        if (postcode) {
+            searchQuery += ', ' + postcode;
+        }
+        searchQuery += ', Ukraine'; // Додаємо країну для точності
+        
+        console.log('🔍 Geocoding query:', searchQuery);
+        
         // Використовуємо Nominatim API для геокодування
-        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=1&countrycodes=ua`;
         
         fetch(url)
             .then(response => response.json())
@@ -247,6 +258,7 @@ class EnhancedLiftModal {
             speed: parseFloat($('#enhancedLiftSpeed').val()) || 1.0,
             installationYear: parseInt($('#enhancedInstallationYear').val()) || new Date().getFullYear(),
             address: $('#enhancedLiftAddress').val() || '',
+            postcode: $('#enhancedLiftPostcode').val() || '',
             liftsCountAtAddress: parseInt($('#enhancedLiftsCountAtAddress').val()) || 1,
             lat: parseFloat($('#enhancedLiftLat').val()) || null,
             lng: parseFloat($('#enhancedLiftLng').val()) || null,
@@ -284,15 +296,30 @@ class EnhancedLiftModal {
 
     validateBasicFields(data) {
         // Серійний номер НЕ обов'язковий, тому що багато старих ліфтів не мають шильдиків
-        const required = ['municipalNumber', 'brand', 'model', 'address'];
+        // Email клієнта та поштовий код - ОБОВ'ЯЗКОВІ для правильної роботи системи
+        const required = ['municipalNumber', 'brand', 'model', 'address', 'postcode', 'clientEmail'];
         const missing = [];
         
         for (let field of required) {
             if (!data[field] || data[field].trim() === '') {
                 missing.push(field);
-                $(`#enhanced${field.charAt(0).toUpperCase() + field.slice(1)}`).addClass('is-invalid');
+                // Спеціальна обробка для різних назв полів
+                if (field === 'postcode') {
+                    $('#enhancedLiftPostcode').addClass('is-invalid');
+                } else if (field === 'clientEmail') {
+                    $('#enhancedClientEmail').addClass('is-invalid');
+                } else {
+                    $(`#enhanced${field.charAt(0).toUpperCase() + field.slice(1)}`).addClass('is-invalid');
+                }
             } else {
-                $(`#enhanced${field.charAt(0).toUpperCase() + field.slice(1)}`).removeClass('is-invalid');
+                // Видаляємо is-invalid при правильному заповненні
+                if (field === 'postcode') {
+                    $('#enhancedLiftPostcode').removeClass('is-invalid');
+                } else if (field === 'clientEmail') {
+                    $('#enhancedClientEmail').removeClass('is-invalid');
+                } else {
+                    $(`#enhanced${field.charAt(0).toUpperCase() + field.slice(1)}`).removeClass('is-invalid');
+                }
             }
         }
         
@@ -307,6 +334,30 @@ class EnhancedLiftModal {
             $('#enhancedLiftAddress').addClass('is-invalid');
         } else {
             $('#enhancedLiftAddress').removeClass('is-invalid');
+        }
+        
+        // Валідація email формату
+        if (data.clientEmail && data.clientEmail.trim()) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(data.clientEmail)) {
+                $('#enhancedClientEmail').addClass('is-invalid');
+                this.showMessage('Введіть коректний email клієнта (наприклад: osbb@example.com)', 'warning');
+                return false;
+            } else {
+                $('#enhancedClientEmail').removeClass('is-invalid');
+            }
+        }
+        
+        // Валідація поштового коду (українські формати)
+        if (data.postcode && data.postcode.trim()) {
+            const postcodeRegex = /^[0-9]{5}$/;
+            if (!postcodeRegex.test(data.postcode)) {
+                $('#enhancedLiftPostcode').addClass('is-invalid');
+                this.showMessage('Введіть коректний поштовий код (5 цифр, наприклад: 01001)', 'warning');
+                return false;
+            } else {
+                $('#enhancedLiftPostcode').removeClass('is-invalid');
+            }
         }
         
         if (missing.length > 0) {
@@ -454,6 +505,7 @@ class EnhancedLiftModal {
         $('#enhancedLiftSpeed').val(liftData.speed || '');
         $('#enhancedInstallationYear').val(liftData.installationYear || '');
         $('#enhancedLiftAddress').val(liftData.address || '');
+        $('#enhancedLiftPostcode').val(liftData.postcode || '');
         $('#enhancedLiftsCountAtAddress').val(liftData.liftsCountAtAddress || 1);
         $('#enhancedLiftLat').val(liftData.lat || '');
         $('#enhancedLiftLng').val(liftData.lng || '');
