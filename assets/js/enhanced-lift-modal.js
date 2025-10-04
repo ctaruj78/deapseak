@@ -906,22 +906,29 @@ class EnhancedLiftModal {
 
     async submitForm(event) {
         event.preventDefault();
+        console.log('🔄 submitForm started');
         
         if (!this.validateForm()) {
+            console.log('❌ Form validation failed');
             return;
         }
+        console.log('✅ Form validation passed');
 
         const formData = this.collectFormData();
+        console.log('📝 Form data collected:', formData);
         const submitBtn = $('button[type="submit"]');
         
         try {
+            console.log('🔄 Starting save process...');
             submitBtn.html('<i class="fas fa-spinner fa-spin"></i> Збереження...').prop('disabled', true);
             
             // Конвертуємо дані в формат, сумісний з існуючою системою
             const liftData = this.convertToLiftFormat(formData);
+            console.log('🔄 Converted lift data:', liftData);
             
             // Зберігаємо через існуючу систему
             await this.saveLiftData(liftData);
+            console.log('✅ Lift saved successfully');
             
             this.showToast('Ліфт успішно збережено', 'success');
             $('#liftModal').modal('hide');
@@ -932,9 +939,10 @@ class EnhancedLiftModal {
             }
             
         } catch (error) {
-            console.error('Error saving lift:', error);
-            this.showToast('Помилка збереження ліфта', 'error');
+            console.error('❌ Error saving lift:', error);
+            this.showToast('Помилка збереження ліфта: ' + error.message, 'error');
         } finally {
+            console.log('🔄 Restoring submit button');
             submitBtn.html('<i class="fas fa-save"></i> Зберегти ліфт').prop('disabled', false);
         }
     }
@@ -1031,6 +1039,7 @@ class EnhancedLiftModal {
     }
 
     validateForm() {
+        console.log('🔍 Starting form validation...');
         const requiredFields = [
             { id: '#municipalNumber', name: 'Муніципальний номер' },
             { id: '#serialNumber', name: 'Серійний номер' },
@@ -1050,10 +1059,11 @@ class EnhancedLiftModal {
 
         let isValid = true;
         let firstErrorField = null;
+        let emptyFields = [];
 
         requiredFields.forEach(field => {
             const element = $(field.id);
-            const value = element.val().trim();
+            const value = element.val() ? element.val().trim() : '';
             
             if (!value) {
                 element.addClass('is-invalid');
@@ -1064,12 +1074,19 @@ class EnhancedLiftModal {
                 if (!firstErrorField) {
                     firstErrorField = element;
                 }
+                emptyFields.push(field.name);
                 isValid = false;
             } else {
                 element.removeClass('is-invalid');
                 element.next('.invalid-feedback').remove();
             }
         });
+
+        if (emptyFields.length > 0) {
+            console.log('❌ Empty required fields:', emptyFields);
+        } else {
+            console.log('✅ All required fields filled');
+        }
 
         // Додаткова валідація email
         const email = $('#clientEmail').val();

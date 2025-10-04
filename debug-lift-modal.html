@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Lift Modal</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+</head>
+<body class="p-4">
+    <div class="container">
+        <h2>🔧 Debug: Тестування збереження ліфтів</h2>
+        
+        <div class="alert alert-info">
+            <h5>Перевірка системи:</h5>
+            <div id="system-status"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5>Тестова форма ліфта</h5>
+            </div>
+            <div class="card-body">
+                <form id="testLiftForm">
+                    <div class="form-group">
+                        <label>Муніципальний номер:</label>
+                        <input type="text" id="municipalNumber" class="form-control" value="TEST-001" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Серійний номер:</label>
+                        <input type="text" id="serialNumber" class="form-control" value="SER-001" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Бренд:</label>
+                        <input type="text" id="liftBrand" class="form-control" value="TestBrand" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Модель:</label>
+                        <input type="text" id="liftModel" class="form-control" value="TestModel" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Зберегти тестовий ліфт</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <h5>Результати:</h5>
+            <pre id="results" class="bg-light p-3" style="min-height: 200px;"></pre>
+        </div>
+        
+        <div class="mt-2">
+            <button class="btn btn-info" onclick="checkStorage()">Перевірити localStorage</button>
+            <button class="btn btn-warning" onclick="clearTestLifts()">Очистити тестові ліфти</button>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/assets/js/common.js"></script>
+    <script src="/assets/js/enhanced-lift-modal.js"></script>
+
+    <script>
+        let logArea = document.getElementById('results');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? 'red' : type === 'success' ? 'green' : type === 'warning' ? 'orange' : 'blue';
+            logArea.innerHTML += `<div style="color: ${color}">[${timestamp}] ${message}</div>`;
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+
+        function checkSystemStatus() {
+            const statusDiv = document.getElementById('system-status');
+            let status = '';
+            
+            status += `✅ jQuery: ${typeof $ !== 'undefined' ? 'OK' : '❌ НЕ ЗАВАНТАЖЕНО'}<br>`;
+            status += `✅ CommonUtils: ${typeof CommonUtils !== 'undefined' ? 'OK' : '❌ НЕ ЗАВАНТАЖЕНО'}<br>`;
+            status += `✅ allLifts: ${typeof allLifts !== 'undefined' ? 'OK (' + (allLifts?.length || 0) + ' ліфтів)' : '❌ НЕ ЗАВАНТАЖЕНО'}<br>`;
+            status += `✅ EnhancedLiftModal: ${typeof EnhancedLiftModal !== 'undefined' ? 'OK' : '❌ НЕ ЗАВАНТАЖЕНО'}<br>`;
+            status += `✅ localStorage: ${typeof Storage !== 'undefined' ? 'OK' : '❌ НЕ ПІДТРИМУЄТЬСЯ'}<br>`;
+            
+            statusDiv.innerHTML = status;
+        }
+
+        function checkStorage() {
+            log('=== Перевірка localStorage ===');
+            try {
+                const lifts = localStorage.getItem('lifts');
+                if (lifts) {
+                    const parsed = JSON.parse(lifts);
+                    log(`📦 В localStorage: ${parsed.length} ліфтів`, 'success');
+                    parsed.forEach((lift, i) => {
+                        log(`${i+1}. ${lift.municipalNumber} (${lift.brand} ${lift.model})`);
+                    });
+                } else {
+                    log('📦 localStorage порожній', 'warning');
+                }
+                
+                if (typeof allLifts !== 'undefined') {
+                    log(`💾 В пам'яті (allLifts): ${allLifts.length} ліфтів`, 'success');
+                } else {
+                    log('💾 allLifts не доступний', 'error');
+                }
+            } catch (error) {
+                log(`❌ Помилка перевірки: ${error.message}`, 'error');
+            }
+        }
+
+        function clearTestLifts() {
+            log('=== Очищення тестових ліфтів ===');
+            try {
+                if (typeof allLifts !== 'undefined') {
+                    const originalCount = allLifts.length;
+                    const filtered = allLifts.filter(lift => !lift.municipalNumber?.startsWith('TEST-'));
+                    allLifts.length = 0;
+                    allLifts.push(...filtered);
+                    
+                    if (typeof CommonUtils !== 'undefined' && CommonUtils.saveLifts) {
+                        CommonUtils.saveLifts(allLifts);
+                    } else {
+                        localStorage.setItem('lifts', JSON.stringify(allLifts));
+                    }
+                    
+                    const removedCount = originalCount - allLifts.length;
+                    log(`🗑️ Видалено ${removedCount} тестових ліфтів`, 'success');
+                } else {
+                    log('❌ allLifts не доступний', 'error');
+                }
+            } catch (error) {
+                log(`❌ Помилка очищення: ${error.message}`, 'error');
+            }
+        }
+
+        $(document).ready(function() {
+            log('🚀 Документ завантажено');
+            checkSystemStatus();
+            
+            // Ініціалізуємо modal якщо доступний
+            if (typeof EnhancedLiftModal !== 'undefined') {
+                window.testModal = new EnhancedLiftModal();
+                log('✅ EnhancedLiftModal ініціалізовано', 'success');
+            } else {
+                log('❌ EnhancedLiftModal недоступний', 'error');
+            }
+
+            $('#testLiftForm').on('submit', function(e) {
+                e.preventDefault();
+                log('=== Тестування збереження ліфта ===');
+                
+                const testLiftData = {
+                    id: 'test_' + Date.now(),
+                    municipalNumber: $('#municipalNumber').val(),
+                    serial: $('#serialNumber').val(),
+                    brand: $('#liftBrand').val(),
+                    model: $('#liftModel').val(),
+                    type: 'passenger',
+                    capacity: 8,
+                    speed: 1.0,
+                    floorsCount: 5,
+                    doorsCount: 2,
+                    installationYear: 2024,
+                    address: 'Тестова адреса, 1',
+                    postcode: '01001',
+                    buildingName: 'Тестовий будинок',
+                    floorLocation: 'ground',
+                    accessCode: '1234',
+                    lat: 50.4501,
+                    lng: 30.5234,
+                    clientName: 'Тестовий клієнт',
+                    clientEmail: 'test@example.com',
+                    clientPhone: '+380501234567',
+                    contactPerson: 'Тестовий контакт',
+                    clientNotes: 'Тестові нотатки',
+                    tech: 'auto',
+                    status: 'operational',
+                    lastInspection: null,
+                    nextInspection: null,
+                    inspectionFrequency: 6,
+                    maintenanceNotes: '',
+                    qrAccessLevel: 'public',
+                    enableQrTracking: true,
+                    interventionHistory: [],
+                    photos: [],
+                    inspectionHistory: [],
+                    chat: [],
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                };
+
+                try {
+                    log(`📝 Створюю ліфт: ${testLiftData.municipalNumber}`);
+                    
+                    // Перевіряємо доступність allLifts
+                    if (typeof allLifts === 'undefined') {
+                        throw new Error('allLifts не визначено');
+                    }
+
+                    log(`📋 Поточна кількість ліфтів: ${allLifts.length}`);
+                    
+                    // Додаємо новий ліфт
+                    allLifts.push(testLiftData);
+                    log(`➕ Ліфт додано в пам'ять. Нова кількість: ${allLifts.length}`, 'success');
+                    
+                    // Зберігаємо в localStorage
+                    if (typeof CommonUtils !== 'undefined' && CommonUtils.saveLifts) {
+                        const saved = CommonUtils.saveLifts(allLifts);
+                        if (saved) {
+                            log('💾 Збережено через CommonUtils.saveLifts', 'success');
+                        } else {
+                            throw new Error('CommonUtils.saveLifts повернув false');
+                        }
+                    } else {
+                        localStorage.setItem('lifts', JSON.stringify(allLifts));
+                        log('💾 Збережено напряму в localStorage', 'success');
+                    }
+                    
+                    log('✅ Ліфт успішно збережено!', 'success');
+                    
+                    // Перевіряємо збереження
+                    setTimeout(checkStorage, 100);
+                    
+                } catch (error) {
+                    log(`❌ Помилка збереження: ${error.message}`, 'error');
+                    console.error('Full error:', error);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
