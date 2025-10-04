@@ -761,8 +761,40 @@
     <script src="../../assets/js/modules/dispatcher-dashboard.js"></script>
 
     <script>
+        // Перевірка авторизації при завантаженні сторінки
+        $(document).ready(function() {
+            const sessionData = localStorage.getItem('lm_session');
+            if (!sessionData) {
+                window.location.href = '../../login.html';
+                return;
+            }
+
+            try {
+                const session = JSON.parse(sessionData);
+                const now = new Date();
+                
+                if (new Date(session.expiresAt) <= now) {
+                    localStorage.removeItem('lm_session');
+                    window.location.href = '../../login.html';
+                    return;
+                }
+
+                if (session.user && session.user.role !== 'dispatcher') {
+                    alert('Доступ заборонено. Необхідні права диспетчера.');
+                    window.location.href = '../../login.html';
+                    return;
+                }
+                
+            } catch (error) {
+                console.error('Session error:', error);
+                localStorage.removeItem('lm_session');
+                window.location.href = '../../login.html';
+            }
+        });
+
         function logout() {
             if (confirm('Ви впевнені, що хочете вийти з системи?')) {
+                localStorage.removeItem('lm_session');
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('userData');
                 window.location.href = '../../login.html';
