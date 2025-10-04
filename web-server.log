@@ -65,3 +65,53 @@
 127.0.0.1 - - [04/Oct/2025 18:58:52] code 501, message Unsupported method ('POST')
 127.0.0.1 - - [04/Oct/2025 18:58:52] "POST /api/login HTTP/1.1" 501 -
 127.0.0.1 - - [04/Oct/2025 18:58:52] "GET /pages/crm-unified.html?role=admin HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:09:30] code 501, message Unsupported method ('POST')
+127.0.0.1 - - [04/Oct/2025 19:09:30] "POST /api/login HTTP/1.1" 501 -
+127.0.0.1 - - [04/Oct/2025 19:09:30] "GET /pages/crm-unified.html?role=admin HTTP/1.1" 304 -
+127.0.0.1 - - [04/Oct/2025 19:09:31] "GET /assets/js/crm-navigation.js HTTP/1.1" 304 -
+127.0.0.1 - - [04/Oct/2025 19:09:35] "GET /pages/crm-unified.html?role=admin HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:09:35] code 501, message Unsupported method ('POST')
+127.0.0.1 - - [04/Oct/2025 19:09:35] "POST /api/login HTTP/1.1" 501 -
+127.0.0.1 - - [04/Oct/2025 19:10:10] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:10:12] "GET /login.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:10:13] "GET /assets/css/auth.css HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:10:13] "GET /assets/js/config.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:10:13] "GET /assets/css/main.css HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:10:13] "GET /assets/js/auth.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:10:13] "GET /assets/js/common.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:10:17] code 501, message Unsupported method ('POST')
+127.0.0.1 - - [04/Oct/2025 19:10:17] "POST /api/login HTTP/1.1" 501 -
+127.0.0.1 - - [04/Oct/2025 19:10:17] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:10:29] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:10:29] "GET /assets/css/enhanced-lift-modal.css HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:10:29] "GET /assets/js/enhanced-lift-modal.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:10:29] "GET /assets/css/ai-assistant.css HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:10:29] "GET /assets/js/lift-utils.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:10:29] "GET /assets/js/test-lift-saving.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:10:29] "GET /assets/js/modules/ai-assistant.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:10:29] "GET /assets/js/lifts.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:11:51] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 304 -
+127.0.0.1 - - [04/Oct/2025 19:12:03] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:13:28] "GET /pages/admin/settings.html HTTP/1.1" 304 -
+127.0.0.1 - - [04/Oct/2025 19:13:29] code 404, message File not found
+127.0.0.1 - - [04/Oct/2025 19:13:29] "GET /assets/css/custom.css HTTP/1.1" 404 -
+127.0.0.1 - - [04/Oct/2025 19:13:29] code 404, message File not found
+127.0.0.1 - - [04/Oct/2025 19:13:29] "GET /assets/img/avatars/admin.png HTTP/1.1" 404 -
+127.0.0.1 - - [04/Oct/2025 19:13:29] "GET /assets/img/logo.png HTTP/1.1" 304 -
+127.0.0.1 - - [04/Oct/2025 19:13:29] code 404, message File not found
+127.0.0.1 - - [04/Oct/2025 19:13:29] "GET /assets/img/icons/google-calendar.png HTTP/1.1" 404 -
+127.0.0.1 - - [04/Oct/2025 19:13:29] code 404, message File not found
+127.0.0.1 - - [04/Oct/2025 19:13:29] "GET /assets/img/icons/quickbooks.png HTTP/1.1" 404 -
+127.0.0.1 - - [04/Oct/2025 19:13:29] "GET /assets/js/modules/settings-manager.js HTTP/1.1" 304 -
+127.0.0.1 - - [04/Oct/2025 19:13:29] code 404, message File not found
+127.0.0.1 - - [04/Oct/2025 19:13:29] "GET /assets/img/icons/slack.png HTTP/1.1" 404 -
+127.0.0.1 - - [04/Oct/2025 19:13:35] "GET /pages/admin/email-template.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:13:36] "GET /assets/js/modules/email-template.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:13:56] "GET /pages/admin/email-template.html HTTP/1.1" 304 -
+127.0.0.1 - - [04/Oct/2025 19:14:44] "GET /pages/admin/notifications.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:15:08] "GET /pages/admin/users.html HTTP/1.1" 304 -
+127.0.0.1 - - [04/Oct/2025 19:15:29] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:15:36] "GET /pages/admin/maps.html HTTP/1.1" 304 -
+127.0.0.1 - - [04/Oct/2025 19:15:47] "GET /qr-interface.html HTTP/1.1" 304 -
+127.0.0.1 - - [04/Oct/2025 19:15:47] "GET /assets/js/qr-utils.js HTTP/1.1" 304 -
+127.0.0.1 - - [04/Oct/2025 19:15:48] "GET /assets/js/auth.js HTTP/1.1" 304 -
