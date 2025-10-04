@@ -183,3 +183,6 @@
 127.0.0.1 - - [04/Oct/2025 19:51:49] "GET /assets/js/simple-lift-modal.js HTTP/1.1" 304 -
 127.0.0.1 - - [04/Oct/2025 19:56:35] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
 127.0.0.1 - - [04/Oct/2025 19:56:36] "GET /assets/js/simple-lift-modal.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 20:18:15] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 20:18:16] "GET /assets/js/simple-lift-modal.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 20:18:16] "GET /assets/js/enhanced-lift-modal.js HTTP/1.1" 200 -

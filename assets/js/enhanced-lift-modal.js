@@ -53,6 +53,11 @@ class EnhancedLiftModal {
             }
         });
         
+        // Обробник зміни кількості ліфтів за адресою
+        $(document).off('change', '#enhancedLiftsCountAtAddress').on('change', '#enhancedLiftsCountAtAddress', () => {
+            this.handleLiftsCountChange();
+        });
+        
         console.log('✅ Enhanced event listeners set up');
     }
 
@@ -245,6 +250,8 @@ class EnhancedLiftModal {
             liftsCountAtAddress: parseInt($('#enhancedLiftsCountAtAddress').val()) || 1,
             lat: parseFloat($('#enhancedLiftLat').val()) || null,
             lng: parseFloat($('#enhancedLiftLng').val()) || null,
+            // Збираємо додаткові муніципальні номери якщо є
+            additionalMunicipalNumbers: this.collectAdditionalMunicipalNumbers(),
             clientName: $('#enhancedClientName').val() || 'Невказано',
             clientEmail: $('#enhancedClientEmail').val() || '',
             clientPhone: $('#enhancedClientPhone').val() || '',
@@ -276,7 +283,8 @@ class EnhancedLiftModal {
     }
 
     validateBasicFields(data) {
-        const required = ['municipalNumber', 'serialNumber', 'brand', 'model', 'address'];
+        // Серійний номер НЕ обов'язковий, тому що багато старих ліфтів не мають шильдиків
+        const required = ['municipalNumber', 'brand', 'model', 'address'];
         const missing = [];
         
         for (let field of required) {
@@ -490,6 +498,55 @@ class EnhancedLiftModal {
         }, 5000);
         
         console.log(`📢 Enhanced message shown: ${message}`);
+    }
+
+    handleLiftsCountChange() {
+        const count = parseInt($('#enhancedLiftsCountAtAddress').val()) || 1;
+        console.log(`🏢 Lifts count changed to: ${count}`);
+        
+        // Видаляємо попередні додаткові поля
+        $('#additionalLiftsContainer').remove();
+        
+        if (count > 1) {
+            let additionalFields = '<div id="additionalLiftsContainer" class="mt-3"><h6 class="text-info">Муніципальні номери інших ліфтів за цією адресою:</h6>';
+            
+            for (let i = 2; i <= count; i++) {
+                additionalFields += `
+                    <div class="form-group">
+                        <label for="additionalMunicipalNumber${i}">Муніципальний № ліфта ${i}:</label>
+                        <input type="text" 
+                               id="additionalMunicipalNumber${i}" 
+                               name="additionalMunicipalNumber${i}"
+                               class="form-control" 
+                               placeholder="Муніципальний номер ліфта ${i}">
+                        <small class="form-text text-muted">Цей номер допоможе ідентифікувати інші ліфти в тій же будівлі</small>
+                    </div>
+                `;
+            }
+            
+            additionalFields += '</div>';
+            
+            // Додаємо поля після основного поля кількості
+            $('#enhancedLiftsCountAtAddress').closest('.form-group').after(additionalFields);
+        }
+    }
+
+    collectAdditionalMunicipalNumbers() {
+        const count = parseInt($('#enhancedLiftsCountAtAddress').val()) || 1;
+        const additionalNumbers = [];
+        
+        for (let i = 2; i <= count; i++) {
+            const number = $(`#additionalMunicipalNumber${i}`).val();
+            if (number && number.trim()) {
+                additionalNumbers.push({
+                    liftNumber: i,
+                    municipalNumber: number.trim()
+                });
+            }
+        }
+        
+        console.log('🔢 Additional municipal numbers collected:', additionalNumbers);
+        return additionalNumbers;
     }
 }
 
