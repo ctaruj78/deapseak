@@ -17,6 +17,10 @@ class EnhancedLiftModal {
     }
 
     initEventListeners() {
+        console.log('🔧 Initializing event listeners...');
+        console.log('Form #liftForm exists:', $('#liftForm').length > 0);
+        console.log('Submit button exists:', $('button[type="submit"]').length > 0);
+        
         // Геокодування адреси
         $('#btnGeocode').on('click', () => this.geocodeAddress());
         
@@ -63,7 +67,19 @@ class EnhancedLiftModal {
         $('#generateQrBtn').on('click', () => this.generateQRCode());
         
         // Відправка форми
-        $('#liftForm').on('submit', (e) => this.submitForm(e));
+        $('#liftForm').on('submit', (e) => {
+            console.log('🔥 Form submit event triggered!');
+            this.submitForm(e);
+        });
+        
+        // Альтернативний обробник для кнопки submit
+        $(document).on('click', 'button[type="submit"]', (e) => {
+            console.log('🔥 Submit button clicked directly!');
+            if ($(e.target).closest('#liftForm').length > 0) {
+                e.preventDefault();
+                this.submitForm(e);
+            }
+        });
         
         // Автоматичне обчислення наступного ТО
         $('#lastMaintenance, #inspectionFrequency').on('change', () => this.calculateNextMaintenance());
@@ -1272,9 +1288,129 @@ class EnhancedLiftModal {
     }
 }
 
+// Функція для тестування збереження
+function testLiftSave() {
+    console.log('🧪 Testing lift save functionality...');
+    
+    // Перевіримо чи доступні необхідні компоненти
+    console.log('📋 System check:');
+    console.log('- allLifts available:', typeof allLifts !== 'undefined', allLifts?.length || 0);
+    console.log('- CommonUtils available:', typeof CommonUtils !== 'undefined');
+    console.log('- enhancedLiftModal available:', typeof window.enhancedLiftModal !== 'undefined');
+    
+    if (typeof allLifts === 'undefined') {
+        console.error('❌ allLifts not defined!');
+        return false;
+    }
+    
+    // Створюємо тестові дані
+    const testLift = {
+        id: 'test_' + Date.now(),
+        municipalNumber: 'TEST-SAVE-001',
+        serial: 'SER-TEST-001',
+        brand: 'TestBrand',
+        model: 'TestModel',
+        type: 'passenger',
+        capacity: 8,
+        speed: 1.0,
+        floorsCount: 5,
+        doorsCount: 2,
+        installationYear: 2024,
+        address: 'Тестова адреса для збереження',
+        postcode: '01001',
+        buildingName: 'Тестовий будинок',
+        floorLocation: 'ground',
+        accessCode: '',
+        lat: null,
+        lng: null,
+        clientName: 'Тестовий клієнт',
+        clientEmail: '',
+        clientPhone: '',
+        contactPerson: '',
+        clientNotes: '',
+        tech: 'auto',
+        status: 'operational',
+        lastInspection: null,
+        nextInspection: null,
+        inspectionFrequency: 6,
+        maintenanceNotes: '',
+        qrAccessLevel: 'public',
+        enableQrTracking: true,
+        interventionHistory: [],
+        photos: [],
+        inspectionHistory: [],
+        chat: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    };
+    
+    try {
+        console.log('🔄 Adding test lift to allLifts array...');
+        const beforeCount = allLifts.length;
+        allLifts.push(testLift);
+        console.log('✅ Lift added to memory. Before:', beforeCount, 'After:', allLifts.length);
+        
+        console.log('💾 Saving to localStorage...');
+        if (typeof CommonUtils !== 'undefined' && CommonUtils.saveLifts) {
+            const saved = CommonUtils.saveLifts(allLifts);
+            console.log('CommonUtils.saveLifts result:', saved);
+        } else {
+            localStorage.setItem('lifts', JSON.stringify(allLifts));
+            console.log('Direct localStorage save completed');
+        }
+        
+        // Перевіримо збереження
+        const stored = localStorage.getItem('lifts');
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            const found = parsed.find(l => l.id === testLift.id);
+            if (found) {
+                console.log('✅ Test lift successfully saved and found in localStorage!');
+                return true;
+            } else {
+                console.error('❌ Test lift not found in localStorage');
+                return false;
+            }
+        } else {
+            console.error('❌ No data in localStorage');
+            return false;
+        }
+        
+    } catch (error) {
+        console.error('❌ Error during test save:', error);
+        return false;
+    }
+}
+
+// Додаємо тестову функцію до глобального контексту
+window.testLiftSave = testLiftSave;
+
 // Ініціалізація при завантаженні сторінки
 $(document).ready(function() {
     console.log('Initializing Enhanced Lift Modal...');
     window.enhancedLiftModal = new EnhancedLiftModal();
     console.log('Enhanced Lift Modal initialized successfully');
+    
+    // Додаємо тестову кнопку в режимі розробки
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        console.log('🔧 Development mode detected - adding test button');
+        setTimeout(() => {
+            if ($('#test-save-lift').length === 0) {
+                $('body').append(`
+                    <button id="test-save-lift" style="
+                        position: fixed; 
+                        top: 10px; 
+                        right: 10px; 
+                        z-index: 9999; 
+                        background: #28a745; 
+                        color: white; 
+                        border: none; 
+                        padding: 10px 15px; 
+                        border-radius: 5px;
+                        font-size: 12px;
+                    " onclick="testLiftSave()">🧪 Тест збереження</button>
+                `);
+            }
+        }, 1000);
+    }
 });
