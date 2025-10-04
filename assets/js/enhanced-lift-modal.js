@@ -6,7 +6,9 @@ class EnhancedLiftModal {
         this.marker = null;
         this.currentCoords = null;
         this.detectedCountry = null; // Для автоматичної детекції країни за поштовим кодом
-        this.init();
+              // Серійний номер та поштовий код НЕ обов'язкові
+        // Email клієнта - ОБОВ'ЯЗКОВИЙ для правильної роботи системи
+        const required = ['municipalNumber', 'brand', 'model', 'address', 'clientEmail'];his.init();
     }
 
     init() {
@@ -278,6 +280,9 @@ class EnhancedLiftModal {
 
     collectFormData() {
         // Збираємо дані з полів з префіксом enhanced
+        const postcodeValue = $('#enhancedLiftPostcode').val() || '';
+        console.log('🔍 DEBUG: postcode field value:', postcodeValue);
+        
         const data = {
             id: $('#enhancedLiftId').val() || 'lift_' + Date.now(),
             municipalNumber: $('#enhancedMunicipalNumber').val() || '',
@@ -289,7 +294,7 @@ class EnhancedLiftModal {
             speed: parseFloat($('#enhancedLiftSpeed').val()) || 1.0,
             installationYear: parseInt($('#enhancedInstallationYear').val()) || new Date().getFullYear(),
             address: $('#enhancedLiftAddress').val() || '',
-            postcode: $('#enhancedLiftPostcode').val() || '',
+            postcode: postcodeValue,
             liftsCountAtAddress: parseInt($('#enhancedLiftsCountAtAddress').val()) || 1,
             lat: parseFloat($('#enhancedLiftLat').val()) || null,
             lng: parseFloat($('#enhancedLiftLng').val()) || null,
@@ -331,9 +336,13 @@ class EnhancedLiftModal {
         const required = ['municipalNumber', 'brand', 'model', 'address', 'postcode', 'clientEmail'];
         const missing = [];
         
+        console.log('🔍 DEBUG: Validating fields, data postcode:', data.postcode);
+        
         for (let field of required) {
+            console.log(`🔍 DEBUG: Checking field ${field}:`, data[field]);
             if (!data[field] || data[field].trim() === '') {
                 missing.push(field);
+                console.log(`❌ DEBUG: Field ${field} is missing or empty`);
                 // Спеціальна обробка для різних назв полів
                 if (field === 'postcode') {
                     $('#enhancedLiftPostcode').addClass('is-invalid');
