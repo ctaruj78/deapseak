@@ -366,11 +366,8 @@
                                         <button id="test-saving-button" class="btn btn-warning btn-sm mr-2" onclick="testLiftSaving()" style="display: none;">
                                             <i class="fas fa-bug"></i> Тест збереження
                                         </button>
-                                        <button id="add-lift-button" class="btn btn-primary btn-sm mr-2" data-toggle="modal" data-target="#liftModal">
-                                            <i class="fas fa-plus"></i> Додати ліфт (простий)
-                                        </button>
-                                        <button id="add-lift-enhanced-button" class="btn btn-success btn-sm" onclick="openEnhancedModal()">
-                                            <i class="fas fa-plus-circle"></i> Додати ліфт (з картою)
+                                        <button id="add-lift-button" class="btn btn-success btn-sm" onclick="openEnhancedModal()">
+                                            <i class="fas fa-plus"></i> Додати ліфт
                                         </button>
                                     </div>
                                 </div>
@@ -1036,8 +1033,8 @@
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label for="enhancedSerialNumber">Серійний номер *</label>
-                                            <input type="text" id="enhancedSerialNumber" name="serialNumber" class="form-control" required placeholder="Серійний номер ліфта">
+                                            <label for="enhancedSerialNumber">Серійний номер <small class="text-muted">(опціонально, багато старих ліфтів не мають шильдиків)</small></label>
+                                            <input type="text" id="enhancedSerialNumber" name="serialNumber" class="form-control" placeholder="Серійний номер ліфта (якщо є)">
                                         </div>
                                     </div>
                                 </div>
@@ -1580,35 +1577,25 @@
                 console.error('LiftManager class not found');
             }
 
-            // Інтеграція з простим модальним вікном
+            // Інтеграція тільки з enhanced модальним вікном (з картою)
             $('#add-lift-button').off('click').on('click', function() {
-                console.log('Add lift button clicked - using simple modal');
-                if (window.simpleLiftModal) {
-                    window.simpleLiftModal.resetForm();
-                    $('#modalTitle').text('Додати новий ліфт');
-                    $('#liftModal').modal('show');
-                } else {
-                    console.error('Simple Lift Modal not available');
-                    // Fallback
-                    $('#modalTitle').text('Додати ліфт');
-                    $('#liftModal').modal('show');
-                }
+                console.log('Add lift button clicked - using enhanced modal with map');
+                openEnhancedModal();
             });
 
-            // Обробник редагування ліфта з таблиці
+            // Обробник редагування ліфта з таблиці - тільки enhanced режим
             $(document).on('click', '.edit-lift, .edit-btn', function() {
                 const liftId = $(this).data('lift-id') || $(this).data('id');
                 console.log('Edit lift clicked for ID:', liftId);
-                if (window.simpleLiftModal && liftId) {
-                    // Завантажуємо дані ліфта для редагування
+                if (window.enhancedLiftModal && liftId) {
+                    // Завантажуємо дані ліфта для редагування в enhanced модальному вікні
                     const lift = window.allLifts?.find(l => l.id === liftId);
                     if (lift) {
-                        window.simpleLiftModal.loadLiftForEdit(lift);
-                        $('#modalTitle').text('Редагувати ліфт');
-                        $('#liftModal').modal('show');
+                        window.enhancedLiftModal.loadLiftForEdit(lift);
+                        $('#enhancedLiftModal').modal('show');
                     }
                 } else {
-                    console.error('Simple Lift Modal not available or no lift ID');
+                    console.error('Enhanced Lift Modal not available or no lift ID');
                 }
             });
 
@@ -1670,33 +1657,26 @@
     </script>
     
     <script>
-    // Функція для відкриття розширеного модального вікна
+    // Функція для відкриття модального вікна ліфта (тільки з картою)
     function openEnhancedModal() {
-        console.log('Opening enhanced modal with map...');
+        console.log('Opening lift modal with map...');
         
         // Перевіряємо чи доступний enhanced lift modal
         if (typeof window.enhancedLiftModal === 'undefined') {
             console.error('Enhanced lift modal not available');
-            // Fallback до простого модального вікна
-            $('#liftModal').modal('show');
+            // Показуємо повідомлення користувачу
+            alert('Модальне вікно з картою ще не завантажилось. Спробуйте через кілька секунд.');
             return;
         }
         
-        // Скидаємо форму та відкриваємо розширене модальне вікно
+        // Скидаємо форму та відкриваємо модальне вікно
         if (window.enhancedLiftModal.resetForm) {
             window.enhancedLiftModal.resetForm();
         }
         
-        $('#enhancedModalTitle').text('Додати новий ліфт (з картою)');
+        $('#enhancedModalTitle').text('Додати новий ліфт');
         $('#enhancedLiftModal').modal('show');
     }
-    
-    // Обробник для кнопки розширеного режиму
-    $(document).ready(function() {
-        $('#add-lift-enhanced-button').on('click', function() {
-            openEnhancedModal();
-        });
-    });
     </script>
 </body>
 </html>
