@@ -443,8 +443,15 @@ class SimpleLiftModal {
         console.log('✏️ Edit lift:', liftId);
         const lift = this.findLiftById(liftId);
         if (lift) {
-            this.loadLiftForEdit(lift);
-            $('#liftModal').modal('show');
+            // Використовуємо enhanced модальне вікно для редагування
+            if (typeof window.enhancedLiftModal !== 'undefined') {
+                window.enhancedLiftModal.loadLiftForEdit(lift);
+                $('#enhancedLiftModal').modal('show');
+            } else {
+                // Fallback на старе модальне вікно
+                this.loadLiftForEdit(lift);
+                $('#liftModal').modal('show');
+            }
         } else {
             this.showMessage('Ліфт не знайдено', 'error');
         }
