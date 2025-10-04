@@ -59,6 +59,11 @@ class EnhancedLiftModal {
             this.handleLiftsCountChange();
         });
         
+        // Обробник кнопки додавання звіту інспекції
+        $(document).off('click', '#addInspectionReportBtn').on('click', '#addInspectionReportBtn', () => {
+            this.openInspectionReportModal();
+        });
+        
         console.log('✅ Enhanced event listeners set up');
     }
 
@@ -865,6 +870,164 @@ class EnhancedLiftModal {
         };
         
         this.showMessage('Відправлено на друк', 'success');
+    }
+
+    // Функція для відкриття модального вікна звіту інспекції
+    openInspectionReportModal() {
+        const municipalNumber = $('#enhancedMunicipalNumber').val() || 'Новий ліфт';
+        
+        const modalHtml = `
+            <div class="modal fade" id="inspectionReportModal" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                <i class="fas fa-clipboard-check"></i> Звіт інспекції - ${municipalNumber}
+                            </h5>
+                            <button type="button" class="close" data-dismiss="modal">
+                                <span>&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="inspectionReportForm">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="inspectionDate">Дата інспекції *</label>
+                                            <input type="date" id="inspectionDate" class="form-control" required value="${new Date().toISOString().split('T')[0]}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="inspectionType">Тип інспекції *</label>
+                                            <select id="inspectionType" class="form-control" required>
+                                                <option value="">Оберіть тип...</option>
+                                                <option value="routine">Планова</option>
+                                                <option value="maintenance">Технічне обслуговування</option>
+                                                <option value="repair">Після ремонту</option>
+                                                <option value="emergency">Аварійна</option>
+                                                <option value="annual">Річна</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="inspectionResult">Результат *</label>
+                                            <select id="inspectionResult" class="form-control" required>
+                                                <option value="">Оберіть результат...</option>
+                                                <option value="passed">Пройшов</option>
+                                                <option value="minor_issues">Незначні зауваження</option>
+                                                <option value="major_issues">Серйозні проблеми</option>
+                                                <option value="failed">Не пройшов</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="inspectorName">Інспектор</label>
+                                            <input type="text" id="inspectorName" class="form-control" placeholder="Ім'я інспектора">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="nextInspectionDate">Наступна інспекція</label>
+                                            <input type="date" id="nextInspectionDate" class="form-control">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="inspectionNotes">Деталі та зауваження</label>
+                                    <textarea id="inspectionNotes" class="form-control" rows="4" placeholder="Детальний опис результатів інспекції, виявлених проблем, виконаних робіт..."></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="recommendedActions">Рекомендовані дії</label>
+                                    <textarea id="recommendedActions" class="form-control" rows="3" placeholder="Рекомендації щодо подальшого обслуговування, ремонту тощо..."></textarea>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                            <button type="button" class="btn btn-success" onclick="window.enhancedLiftModal.saveInspectionReport()">
+                                <i class="fas fa-save"></i> Зберегти звіт
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Видаляємо попередні модалки та додаємо нову
+        $('#inspectionReportModal').remove();
+        $('body').append(modalHtml);
+        $('#inspectionReportModal').modal('show');
+    }
+
+    // Збереження звіту інспекції
+    saveInspectionReport() {
+        const inspectionDate = $('#inspectionDate').val();
+        const inspectionType = $('#inspectionType').val();
+        const inspectionResult = $('#inspectionResult').val();
+        const inspectorName = $('#inspectorName').val();
+        const nextInspectionDate = $('#nextInspectionDate').val();
+        const inspectionNotes = $('#inspectionNotes').val();
+        const recommendedActions = $('#recommendedActions').val();
+        
+        if (!inspectionDate || !inspectionType || !inspectionResult) {
+            this.showMessage('Заповніть всі обов\'язкові поля', 'warning');
+            return;
+        }
+        
+        const report = {
+            id: 'inspection_' + Date.now(),
+            date: inspectionDate,
+            type: inspectionType,
+            result: inspectionResult,
+            inspector: inspectorName || 'Невказано',
+            nextInspectionDate: nextInspectionDate,
+            notes: inspectionNotes,
+            recommendedActions: recommendedActions,
+            createdAt: new Date().toISOString()
+        };
+        
+        // Оновлюємо поля форми
+        if (nextInspectionDate) {
+            $('#enhancedNextInspection').val(nextInspectionDate);
+        }
+        $('#enhancedLastInspection').val(inspectionDate);
+        
+        // Додаємо до нотаток
+        const currentNotes = $('#enhancedMaintenanceNotes').val();
+        const newNote = `[${inspectionDate}] ${this.getInspectionTypeText(inspectionType)} - ${this.getInspectionResultText(inspectionResult)}`;
+        const updatedNotes = currentNotes ? currentNotes + '\n' + newNote : newNote;
+        $('#enhancedMaintenanceNotes').val(updatedNotes);
+        
+        $('#inspectionReportModal').modal('hide');
+        this.showMessage('Звіт інспекції додано успішно!', 'success');
+        
+        console.log('✅ Inspection report saved:', report);
+    }
+    
+    getInspectionTypeText(type) {
+        switch (type) {
+            case 'routine': return 'Планова інспекція';
+            case 'maintenance': return 'ТО';
+            case 'repair': return 'Після ремонту';
+            case 'emergency': return 'Аварійна перевірка';
+            case 'annual': return 'Річна інспекція';
+            default: return 'Інспекція';
+        }
+    }
+    
+    getInspectionResultText(result) {
+        switch (result) {
+            case 'passed': return 'Пройшов';
+            case 'minor_issues': return 'Незначні зауваження';
+            case 'major_issues': return 'Серйозні проблеми';
+            case 'failed': return 'Не пройшов';
+            default: return 'Результат невизначений';
+        }
     }
 }
 
