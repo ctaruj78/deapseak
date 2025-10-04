@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeapSeaK - Тестування інтеграції модулів</title>
+    
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    
+    <!-- Sweet Alert -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        .test-section {
+            margin-bottom: 30px;
+        }
+        .test-status {
+            margin-top: 10px;
+        }
+        .test-status.success {
+            color: #28a745;
+        }
+        .test-status.error {
+            color: #dc3545;
+        }
+        .test-status.warning {
+            color: #ffc107;
+        }
+        .api-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini">
+    
+    <!-- API статус індикатор -->
+    <div class="api-status">
+        <span id="api-status-badge" class="badge badge-secondary">
+            <i class="fas fa-circle"></i> API статус
+        </span>
+    </div>
+
+    <div class="wrapper">
+        <div class="content-wrapper" style="margin-left: 0;">
+            
+            <!-- Заголовок -->
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">🧪 Тестування інтеграції модулів</h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="/pages/crm-unified.html">CRM</a></li>
+                                <li class="breadcrumb-item active">Тестування</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Основний контент -->
+            <section class="content">
+                <div class="container-fluid">
+                    
+                    <!-- Тест API підключення -->
+                    <div class="test-section">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-server"></i> API Сервер
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <button class="btn btn-primary" onclick="testApiConnection()">
+                                    <i class="fas fa-plug"></i> Тест підключення API
+                                </button>
+                                <div id="api-test-result" class="test-status"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Тест модуля заявок -->
+                    <div class="test-section">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-tasks"></i> Assignment Manager
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <button class="btn btn-success btn-block" onclick="testAssignmentManager()">
+                                            <i class="fas fa-play"></i> Тест модуля
+                                        </button>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button class="btn btn-info btn-block" onclick="testAssignmentAPI()">
+                                            <i class="fas fa-database"></i> Тест API
+                                        </button>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button class="btn btn-warning btn-block" onclick="renderAssignmentManager()">
+                                            <i class="fas fa-eye"></i> Показати модуль
+                                        </button>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button class="btn btn-secondary btn-block" onclick="clearTestArea()">
+                                            <i class="fas fa-eraser"></i> Очистити
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="assignment-test-result" class="test-status"></div>
+                                <div id="assignment-container" class="mt-3"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Тест модуля моніторингу -->
+                    <div class="test-section">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-chart-line"></i> Monitoring Manager
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <button class="btn btn-success btn-block" onclick="testMonitoringManager()">
+                                            <i class="fas fa-play"></i> Тест модуля
+                                        </button>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button class="btn btn-info btn-block" onclick="testMonitoringAPI()">
+                                            <i class="fas fa-database"></i> Тест API
+                                        </button>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button class="btn btn-warning btn-block" onclick="renderMonitoringManager()">
+                                            <i class="fas fa-eye"></i> Показати модуль
+                                        </button>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button class="btn btn-secondary btn-block" onclick="clearTestArea()">
+                                            <i class="fas fa-eraser"></i> Очистити
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="monitoring-test-result" class="test-status"></div>
+                                <div id="monitoring-container" class="mt-3"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Тест чат системи -->
+                    <div class="test-section">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-comments"></i> Chat System
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <button class="btn btn-success btn-block" onclick="testChatSystem()">
+                                            <i class="fas fa-play"></i> Тест модуля
+                                        </button>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button class="btn btn-info btn-block" onclick="testChatAPI()">
+                                            <i class="fas fa-database"></i> Тест API
+                                        </button>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button class="btn btn-warning btn-block" onclick="renderChatSystem()">
+                                            <i class="fas fa-eye"></i> Показати модуль
+                                        </button>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button class="btn btn-secondary btn-block" onclick="clearTestArea()">
+                                            <i class="fas fa-eraser"></i> Очистити
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="chat-test-result" class="test-status"></div>
+                                <div id="chat-container" class="mt-3"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Загальна область тестування -->
+                    <div class="test-section">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-flask"></i> Область тестування
+                                </h3>
+                                <div class="card-tools">
+                                    <button class="btn btn-danger btn-sm" onclick="runAllTests()">
+                                        <i class="fas fa-play-circle"></i> Запустити всі тести
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div id="test-area" style="min-height: 200px; border: 1px dashed #ccc; padding: 20px; border-radius: 5px;">
+                                    <p class="text-muted text-center">Область для тестування модулів</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Журнал тестування -->
+                    <div class="test-section">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-list"></i> Журнал тестування
+                                </h3>
+                                <div class="card-tools">
+                                    <button class="btn btn-secondary btn-sm" onclick="clearTestLog()">
+                                        <i class="fas fa-trash"></i> Очистити
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body p-0">
+                                <div id="test-log" style="max-height: 300px; overflow-y: auto; padding: 15px; background: #f8f9fa; font-family: monospace; font-size: 12px;">
+                                    <!-- Журнал тестування -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    
+    <!-- Тестовий скрипт -->
+    <script>
+        const API_URL = 'http://localhost:3001/api';
+        
+        // Ініціалізація тестової сторінки
+        document.addEventListener('DOMContentLoaded', () => {
+            log('🚀 Тестова сторінка завантажена');
+            
+            // Симуляція даних користувача для тестів
+            const testUser = {
+                _id: 'test-user-id',
+                firstName: 'Тестовий',
+                lastName: 'Користувач',
+                role: 'admin',
+                email: 'test@example.com'
+            };
+            
+            localStorage.setItem('userData', JSON.stringify(testUser));
+            localStorage.setItem('authToken', 'test-token-123');
+            
+            // Перевірка API статусу при завантаженні
+            checkApiStatus();
+            
+            // Періодична перевірка API
+            setInterval(checkApiStatus, 30000);
+        });
+
+        // Логування
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logArea = document.getElementById('test-log');
+            const colorClass = type === 'error' ? 'text-danger' : 
+                             type === 'success' ? 'text-success' : 
+                             type === 'warning' ? 'text-warning' : 'text-dark';
+            
+            logArea.innerHTML += `<div class="${colorClass}">[${timestamp}] ${message}</div>`;
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+
+        // Перевірка статусу API
+        async function checkApiStatus() {
+            try {
+                const response = await fetch(`${API_URL}/health`);
+                const status = response.ok ? 'Підключено' : 'Помилка';
+                const badgeClass = response.ok ? 'badge-success' : 'badge-danger';
+                
+                document.getElementById('api-status-badge').className = `badge ${badgeClass}`;
+                document.getElementById('api-status-badge').innerHTML = `<i class="fas fa-circle"></i> API: ${status}`;
+                
+            } catch (error) {
+                document.getElementById('api-status-badge').className = 'badge badge-danger';
+                document.getElementById('api-status-badge').innerHTML = '<i class="fas fa-circle"></i> API: Відключено';
+            }
+        }
+
+        // Тест API підключення
+        async function testApiConnection() {
+            log('🔌 Тестування API підключення...');
+            const resultDiv = document.getElementById('api-test-result');
+            
+            try {
+                const response = await fetch(`${API_URL}/health`);
+                if (response.ok) {
+                    resultDiv.innerHTML = '<i class="fas fa-check-circle text-success"></i> API сервер доступний';
+                    resultDiv.className = 'test-status success';
+                    log('✅ API сервер працює', 'success');
+                } else {
+                    throw new Error('API недоступний');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<i class="fas fa-times-circle text-danger"></i> API сервер недоступний';
+                resultDiv.className = 'test-status error';
+                log('❌ API сервер недоступний: ' + error.message, 'error');
+            }
+        }
+
+        // Тест модуля заявок
+        async function testAssignmentManager() {
+            log('📋 Тестування Assignment Manager...');
+            const resultDiv = document.getElementById('assignment-test-result');
+            
+            try {
+                // Завантаження скрипту
+                await loadScript('/assets/js/modules/assignment-manager.js');
+                
+                if (typeof AssignmentManager !== 'undefined') {
+                    resultDiv.innerHTML = '<i class="fas fa-check-circle text-success"></i> Модуль завантажено успішно';
+                    resultDiv.className = 'test-status success';
+                    log('✅ AssignmentManager завантажено', 'success');
+                } else {
+                    throw new Error('Клас AssignmentManager не знайдено');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<i class="fas fa-times-circle text-danger"></i> Помилка: ${error.message}`;
+                resultDiv.className = 'test-status error';
+                log('❌ Помилка AssignmentManager: ' + error.message, 'error');
+            }
+        }
+
+        // Тест API заявок
+        async function testAssignmentAPI() {
+            log('🔍 Тестування Assignment API...');
+            const resultDiv = document.getElementById('assignment-test-result');
+            
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_URL}/assignments`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `<i class="fas fa-check-circle text-success"></i> API працює. Заявок: ${data.length || 0}`;
+                    resultDiv.className = 'test-status success';
+                    log(`✅ Assignment API працює. Отримано ${data.length || 0} заявок`, 'success');
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<i class="fas fa-times-circle text-danger"></i> API помилка: ${error.message}`;
+                resultDiv.className = 'test-status error';
+                log('❌ Assignment API помилка: ' + error.message, 'error');
+            }
+        }
+
+        // Рендеринг модуля заявок
+        async function renderAssignmentManager() {
+            log('🎨 Рендеринг Assignment Manager...');
+            const container = document.getElementById('assignment-container');
+            
+            try {
+                await loadScript('/assets/js/modules/assignment-manager.js');
+                
+                if (typeof assignmentManager !== 'undefined' && assignmentManager.renderInContainer) {
+                    container.id = 'assignment-test-container';
+                    assignmentManager.renderInContainer('assignment-test-container');
+                    log('✅ Assignment Manager відрендерено', 'success');
+                } else {
+                    throw new Error('Метод renderInContainer не знайдено');
+                }
+            } catch (error) {
+                container.innerHTML = `<div class="alert alert-danger">${error.message}</div>`;
+                log('❌ Помилка рендерингу Assignment Manager: ' + error.message, 'error');
+            }
+        }
+
+        // Тест модуля моніторингу
+        async function testMonitoringManager() {
+            log('📊 Тестування Monitoring Manager...');
+            const resultDiv = document.getElementById('monitoring-test-result');
+            
+            try {
+                await loadScript('/assets/js/modules/monitoring-manager.js');
+                
+                if (typeof MonitoringManager !== 'undefined') {
+                    resultDiv.innerHTML = '<i class="fas fa-check-circle text-success"></i> Модуль завантажено успішно';
+                    resultDiv.className = 'test-status success';
+                    log('✅ MonitoringManager завантажено', 'success');
+                } else {
+                    throw new Error('Клас MonitoringManager не знайдено');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<i class="fas fa-times-circle text-danger"></i> Помилка: ${error.message}`;
+                resultDiv.className = 'test-status error';
+                log('❌ Помилка MonitoringManager: ' + error.message, 'error');
+            }
+        }
+
+        // Тест API моніторингу
+        async function testMonitoringAPI() {
+            log('📈 Тестування Monitoring API...');
+            const resultDiv = document.getElementById('monitoring-test-result');
+            
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_URL}/monitoring/stats`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `<i class="fas fa-check-circle text-success"></i> API працює. Ліфтів: ${data.totalLifts || 0}`;
+                    resultDiv.className = 'test-status success';
+                    log(`✅ Monitoring API працює. Статистика отримана`, 'success');
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<i class="fas fa-times-circle text-danger"></i> API помилка: ${error.message}`;
+                resultDiv.className = 'test-status error';
+                log('❌ Monitoring API помилка: ' + error.message, 'error');
+            }
+        }
+
+        // Рендеринг модуля моніторингу
+        async function renderMonitoringManager() {
+            log('🎯 Рендеринг Monitoring Manager...');
+            const container = document.getElementById('monitoring-container');
+            
+            try {
+                await loadScript('/assets/js/modules/monitoring-manager.js');
+                
+                if (typeof monitoringManager !== 'undefined' && monitoringManager.renderInContainer) {
+                    container.id = 'monitoring-test-container';
+                    monitoringManager.renderInContainer('monitoring-test-container');
+                    log('✅ Monitoring Manager відрендерено', 'success');
+                } else {
+                    throw new Error('Метод renderInContainer не знайдено');
+                }
+            } catch (error) {
+                container.innerHTML = `<div class="alert alert-danger">${error.message}</div>`;
+                log('❌ Помилка рендерингу Monitoring Manager: ' + error.message, 'error');
+            }
+        }
+
+        // Тест чат системи
+        async function testChatSystem() {
+            log('💬 Тестування Chat System...');
+            const resultDiv = document.getElementById('chat-test-result');
+            
+            try {
+                await loadScript('/assets/js/modules/chat-system.js');
+                
+                if (typeof ChatSystem !== 'undefined') {
+                    resultDiv.innerHTML = '<i class="fas fa-check-circle text-success"></i> Модуль завантажено успішно';
+                    resultDiv.className = 'test-status success';
+                    log('✅ ChatSystem завантажено', 'success');
+                } else {
+                    throw new Error('Клас ChatSystem не знайдено');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<i class="fas fa-times-circle text-danger"></i> Помилка: ${error.message}`;
+                resultDiv.className = 'test-status error';
+                log('❌ Помилка ChatSystem: ' + error.message, 'error');
+            }
+        }
+
+        // Тест API чату
+        async function testChatAPI() {
+            log('💭 Тестування Chat API...');
+            const resultDiv = document.getElementById('chat-test-result');
+            
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_URL}/chat/stats`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `<i class="fas fa-check-circle text-success"></i> API працює. Повідомлень: ${data.totalMessages || 0}`;
+                    resultDiv.className = 'test-status success';
+                    log(`✅ Chat API працює. Статистика отримана`, 'success');
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<i class="fas fa-times-circle text-danger"></i> API помилка: ${error.message}`;
+                resultDiv.className = 'test-status error';
+                log('❌ Chat API помилка: ' + error.message, 'error');
+            }
+        }
+
+        // Рендеринг чат системи
+        async function renderChatSystem() {
+            log('🗨️ Рендеринг Chat System...');
+            const container = document.getElementById('chat-container');
+            
+            try {
+                await loadScript('/assets/js/modules/chat-system.js');
+                
+                container.innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> 
+                        Chat System ініціалізується автоматично при завантаженні модуля.
+                        Перевірте консоль браузера для деталей.
+                    </div>
+                `;
+                log('✅ Chat System ініціалізовано', 'success');
+            } catch (error) {
+                container.innerHTML = `<div class="alert alert-danger">${error.message}</div>`;
+                log('❌ Помилка Chat System: ' + error.message, 'error');
+            }
+        }
+
+        // Запуск всіх тестів
+        async function runAllTests() {
+            log('🚀 Запуск всіх тестів...', 'warning');
+            clearTestArea();
+            
+            await testApiConnection();
+            await delay(1000);
+            
+            await testAssignmentManager();
+            await testAssignmentAPI();
+            await delay(1000);
+            
+            await testMonitoringManager();  
+            await testMonitoringAPI();
+            await delay(1000);
+            
+            await testChatSystem();
+            await testChatAPI();
+            
+            log('🎉 Всі тести завершені!', 'success');
+        }
+
+        // Допоміжні функції
+        function clearTestArea() {
+            document.getElementById('test-area').innerHTML = '<p class="text-muted text-center">Область для тестування модулів</p>';
+            document.getElementById('assignment-container').innerHTML = '';
+            document.getElementById('monitoring-container').innerHTML = '';
+            document.getElementById('chat-container').innerHTML = '';
+        }
+
+        function clearTestLog() {
+            document.getElementById('test-log').innerHTML = '';
+            log('📝 Журнал очищено');
+        }
+
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                if (document.querySelector(`script[src="${src}"]`)) {
+                    resolve();
+                    return;
+                }
+                
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+    </script>
+</body>
+</html>
