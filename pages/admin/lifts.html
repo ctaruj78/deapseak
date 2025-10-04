@@ -1784,6 +1784,7 @@
         
         // Скидаємо форму та відкриваємо модальне вікно
         if (window.enhancedLiftModal.resetForm) {
+            window.enhancedLiftModal.currentLiftId = null; // Скидаємо ID для нового ліфта
             window.enhancedLiftModal.resetForm();
         }
         

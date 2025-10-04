@@ -445,6 +445,8 @@ class SimpleLiftModal {
         if (lift) {
             // Використовуємо enhanced модальне вікно для редагування
             if (typeof window.enhancedLiftModal !== 'undefined') {
+                // Встановлюємо режим редагування перед відкриттям модального вікна
+                window.enhancedLiftModal.currentLiftId = lift.id;
                 window.enhancedLiftModal.loadLiftForEdit(lift);
                 $('#enhancedLiftModal').modal('show');
             } else {
