@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Адмін панель - Управління ліфтами</title>
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <!-- Enhanced Lift Modal CSS -->
     <link rel="stylesheet" href="/assets/css/enhanced-lift-modal.css">
     
@@ -719,15 +717,9 @@
                                 <!-- Інтерактивна мапа -->
                                 <div class="row">
                                     <div class="col-12">
-                                        <div class="form-group">
-                                            <label>Інтерактивна мапа</label>
-                                            <div id="liftMap" style="height: 300px; border: 1px solid #ddd; border-radius: 4px; position: relative;">
-                                                <div class="map-loading" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000;">
-                                                    <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
-                                                    <p class="mt-2">Завантаження карти...</p>
-                                                </div>
-                                            </div>
-                                            <small class="text-muted">Клікніть на карті для вибору точної локації</small>
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle"></i>
+                                            <strong>Координати (необов'язково):</strong> Ви можете ввести координати вручну або залишити порожніми.
                                         </div>
                                     </div>
                                 </div>
@@ -1248,15 +1240,13 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <!-- QR Code library -->
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <!-- Custom scripts -->
     <script src="/assets/js/common.js"></script>
     <script src="/assets/js/lift-utils.js"></script>
     <script src="/assets/js/lifts.js"></script>
-    <script src="/assets/js/enhanced-lift-modal.js"></script>
+    <script src="/assets/js/simple-lift-modal.js"></script>
     <script src="/assets/js/test-lift-saving.js"></script>
 
     <script>
@@ -1290,16 +1280,16 @@
                 console.error('LiftManager class not found');
             }
 
-            // Інтеграція з покращеним модальним вікном
+            // Інтеграція з простим модальним вікном
             $('#add-lift-button').off('click').on('click', function() {
-                console.log('Add lift button clicked - using enhanced modal');
-                if (window.enhancedLiftModal) {
-                    window.enhancedLiftModal.resetForm();
+                console.log('Add lift button clicked - using simple modal');
+                if (window.simpleLiftModal) {
+                    window.simpleLiftModal.resetForm();
                     $('#modalTitle').text('Додати новий ліфт');
                     $('#liftModal').modal('show');
                 } else {
-                    console.error('Enhanced Lift Modal not available');
-                    // Fallback до старого методу
+                    console.error('Simple Lift Modal not available');
+                    // Fallback
                     $('#modalTitle').text('Додати ліфт');
                     $('#liftModal').modal('show');
                 }
@@ -1309,12 +1299,16 @@
             $(document).on('click', '.edit-lift, .edit-btn', function() {
                 const liftId = $(this).data('lift-id') || $(this).data('id');
                 console.log('Edit lift clicked for ID:', liftId);
-                if (window.enhancedLiftModal && liftId) {
-                    window.enhancedLiftModal.loadLiftData(liftId);
-                    $('#modalTitle').text('Редагувати ліфт');
-                    $('#liftModal').modal('show');
+                if (window.simpleLiftModal && liftId) {
+                    // Завантажуємо дані ліфта для редагування
+                    const lift = window.allLifts?.find(l => l.id === liftId);
+                    if (lift) {
+                        window.simpleLiftModal.loadLiftForEdit(lift);
+                        $('#modalTitle').text('Редагувати ліфт');
+                        $('#liftModal').modal('show');
+                    }
                 } else {
-                    console.error('Enhanced Lift Modal not available or no lift ID');
+                    console.error('Simple Lift Modal not available or no lift ID');
                 }
             });
 
