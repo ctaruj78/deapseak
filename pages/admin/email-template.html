@@ -1,14 +1,44 @@
-<!-- This template has been moved to templates directory and is now removed -->
+<!DOCTYPE html>
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Email-шаблон</title>
+    <title>Email шаблони - Адмін панель</title>
+    
+    <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css">
+    
+    <style>
+        .template-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        .template-card:hover {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        .template-preview {
+            background: #f8f9fa;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: Arial, sans-serif;
+        }
+        .variable-tag {
+            background: #007bff;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+            margin: 0 2px;
+        }
+    </style>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
     <div class="wrapper">
+        <!-- Navbar -->
         <nav class="main-header navbar navbar-expand navbar-white navbar-light">
             <ul class="navbar-nav">
                 <li class="nav-item">
@@ -17,37 +47,509 @@
                 <li class="nav-item d-none d-sm-inline-block">
                     <a href="admin-dashboard.html" class="nav-link">Головна</a>
                 </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="email-template.html" class="nav-link">Email шаблони</a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="../auth/login.html" role="button">
+                        <i class="fas fa-sign-out-alt"></i> Вийти
+                    </a>
+                </li>
             </ul>
         </nav>
+
+        <!-- Main Sidebar Container -->
         <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <!-- Brand Logo -->
             <a href="admin-dashboard.html" class="brand-link">
+                <i class="brand-image fas fa-elevator"></i>
                 <span class="brand-text font-weight-light">LiftMaster Pro</span>
             </a>
+
+            <!-- Sidebar -->
             <div class="sidebar">
-                <!-- ...existing sidebar... -->
+                <nav class="mt-2">
+                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                        <li class="nav-item">
+                            <a href="admin-dashboard.html" class="nav-link">
+                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                                <p>Дашборд</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-envelope"></i>
+                                <p>
+                                    Повідомлення
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="email-template.html" class="nav-link active">
+                                        <i class="fas fa-file-alt nav-icon"></i>
+                                        <p>Email шаблони</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="notifications.html" class="nav-link">
+                                        <i class="fas fa-bell nav-icon"></i>
+                                        <p>Сповіщення</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="users.html" class="nav-link">
+                                <i class="nav-icon fas fa-users"></i>
+                                <p>Користувачі</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="lifts.html" class="nav-link">
+                                <i class="nav-icon fas fa-elevator"></i>
+                                <p>Ліфти</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="settings.html" class="nav-link">
+                                <i class="nav-icon fas fa-cog"></i>
+                                <p>Налаштування</p>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
             </div>
         </aside>
+
+        <!-- Content Wrapper -->
         <div class="content-wrapper">
+            <!-- Content Header -->
             <div class="content-header">
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1 class="m-0">Email-шаблон</h1>
+                            <h1 class="m-0">Email шаблони</h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="admin-dashboard.html">Головна</a></li>
+                                <li class="breadcrumb-item active">Email шаблони</li>
+                            </ol>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">Email-шаблон для повідомлень</h3>
+                    <!-- Create new template -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Створити новий шаблон</h3>
+                                    <div class="card-tools">
+                                        <button class="btn btn-primary btn-sm" id="createTemplateBtn">
+                                            <i class="fas fa-plus"></i> Новий шаблон
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <form id="emailForm">
-                                <div class="form-group">
-                                    <label for="emailTo">Кому</label>
-                                    <input type="email" class="form-control" id="emailTo" required>
+                    </div>
+
+                    <!-- Email templates list -->
+                    <div class="row">
+                        <!-- Template 1: Assignment notification -->
+                        <div class="col-md-6">
+                            <div class="template-card card">
+                                <div class="card-header bg-primary text-white">
+                                    <h4 class="card-title mb-0">
+                                        <i class="fas fa-clipboard-list mr-2"></i> Сповіщення про заявку
+                                    </h4>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Призначення:</strong> Повідомлення про нову заявку техніку</p>
+                                    <p><strong>Змінні:</strong> 
+                                        <span class="variable-tag">{{technician_name}}</span>
+                                        <span class="variable-tag">{{assignment_id}}</span>
+                                        <span class="variable-tag">{{location}}</span>
+                                        <span class="variable-tag">{{priority}}</span>
+                                    </p>
+                                    <div class="template-preview">
+                                        <strong>Шановний {{technician_name}}!</strong><br><br>
+                                        Вам призначено нову заявку #{{assignment_id}}.<br>
+                                        Локація: {{location}}<br>
+                                        Пріоритет: {{priority}}<br><br>
+                                        З повагою,<br>
+                                        Команда LiftMaster Pro
+                                    </div>
+                                    <div class="mt-3">
+                                        <button class="btn btn-warning btn-sm" onclick="editTemplate('assignment')">
+                                            <i class="fas fa-edit"></i> Редагувати
+                                        </button>
+                                        <button class="btn btn-info btn-sm" onclick="previewTemplate('assignment')">
+                                            <i class="fas fa-eye"></i> Попередній перегляд
+                                        </button>
+                                        <button class="btn btn-success btn-sm" onclick="testSendTemplate('assignment')">
+                                            <i class="fas fa-paper-plane"></i> Тестове відправлення
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Template 2: Maintenance reminder -->
+                        <div class="col-md-6">
+                            <div class="template-card card">
+                                <div class="card-header bg-warning text-dark">
+                                    <h4 class="card-title mb-0">
+                                        <i class="fas fa-tools mr-2"></i> Нагадування про ТО
+                                    </h4>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Призначення:</strong> Нагадування про планове технічне обслуговування</p>
+                                    <p><strong>Змінні:</strong> 
+                                        <span class="variable-tag">{{client_name}}</span>
+                                        <span class="variable-tag">{{lift_location}}</span>
+                                        <span class="variable-tag">{{maintenance_date}}</span>
+                                    </p>
+                                    <div class="template-preview">
+                                        <strong>Шановний {{client_name}}!</strong><br><br>
+                                        Нагадуємо про планове ТО ліфта:<br>
+                                        Адреса: {{lift_location}}<br>
+                                        Дата: {{maintenance_date}}<br><br>
+                                        Будь ласка, забезпечте доступ до ліфта.<br><br>
+                                        З повагою,<br>
+                                        Служба технічного обслуговування
+                                    </div>
+                                    <div class="mt-3">
+                                        <button class="btn btn-warning btn-sm" onclick="editTemplate('maintenance')">
+                                            <i class="fas fa-edit"></i> Редагувати
+                                        </button>
+                                        <button class="btn btn-info btn-sm" onclick="previewTemplate('maintenance')">
+                                            <i class="fas fa-eye"></i> Попередній перегляд
+                                        </button>
+                                        <button class="btn btn-success btn-sm" onclick="testSendTemplate('maintenance')">
+                                            <i class="fas fa-paper-plane"></i> Тестове відправлення
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Template 3: Completion notification -->
+                        <div class="col-md-6">
+                            <div class="template-card card">
+                                <div class="card-header bg-success text-white">
+                                    <h4 class="card-title mb-0">
+                                        <i class="fas fa-check-circle mr-2"></i> Завершення роботи
+                                    </h4>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Призначення:</strong> Повідомлення про завершення технічних робіт</p>
+                                    <p><strong>Змінні:</strong> 
+                                        <span class="variable-tag">{{client_name}}</span>
+                                        <span class="variable-tag">{{work_type}}</span>
+                                        <span class="variable-tag">{{completion_date}}</span>
+                                        <span class="variable-tag">{{technician_name}}</span>
+                                    </p>
+                                    <div class="template-preview">
+                                        <strong>Шановний {{client_name}}!</strong><br><br>
+                                        Повідомляємо про завершення робіт:<br>
+                                        Тип робіт: {{work_type}}<br>
+                                        Дата завершення: {{completion_date}}<br>
+                                        Виконавець: {{technician_name}}<br><br>
+                                        Дякуємо за довіру!<br><br>
+                                        З повагою,<br>
+                                        Команда LiftMaster Pro
+                                    </div>
+                                    <div class="mt-3">
+                                        <button class="btn btn-warning btn-sm" onclick="editTemplate('completion')">
+                                            <i class="fas fa-edit"></i> Редагувати
+                                        </button>
+                                        <button class="btn btn-info btn-sm" onclick="previewTemplate('completion')">
+                                            <i class="fas fa-eye"></i> Попередній перегляд
+                                        </button>
+                                        <button class="btn btn-success btn-sm" onclick="testSendTemplate('completion')">
+                                            <i class="fas fa-paper-plane"></i> Тестове відправлення
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Template 4: Emergency notification -->
+                        <div class="col-md-6">
+                            <div class="template-card card">
+                                <div class="card-header bg-danger text-white">
+                                    <h4 class="card-title mb-0">
+                                        <i class="fas fa-exclamation-triangle mr-2"></i> Екстренне повідомлення
+                                    </h4>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Призначення:</strong> Екстренні сповіщення про поломки</p>
+                                    <p><strong>Змінні:</strong> 
+                                        <span class="variable-tag">{{recipient_name}}</span>
+                                        <span class="variable-tag">{{emergency_type}}</span>
+                                        <span class="variable-tag">{{location}}</span>
+                                        <span class="variable-tag">{{contact_number}}</span>
+                                    </p>
+                                    <div class="template-preview">
+                                        <strong>ТЕРМІНОВЕ ПОВІДОМЛЕННЯ!</strong><br><br>
+                                        {{recipient_name}}, зафіксовано аварійну ситуацію:<br>
+                                        Тип: {{emergency_type}}<br>
+                                        Локація: {{location}}<br><br>
+                                        Для зв'язку: {{contact_number}}<br><br>
+                                        <strong>Необхідно термінове втручання!</strong>
+                                    </div>
+                                    <div class="mt-3">
+                                        <button class="btn btn-warning btn-sm" onclick="editTemplate('emergency')">
+                                            <i class="fas fa-edit"></i> Редагувати
+                                        </button>
+                                        <button class="btn btn-info btn-sm" onclick="previewTemplate('emergency')">
+                                            <i class="fas fa-eye"></i> Попередній перегляд
+                                        </button>
+                                        <button class="btn btn-success btn-sm" onclick="testSendTemplate('emergency')">
+                                            <i class="fas fa-paper-plane"></i> Тестове відправлення
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer class="main-footer">
+            <strong>&copy; 2024 <a href="#">LiftMaster Pro</a>.</strong>
+            Всі права захищені.
+            <div class="float-right d-none d-sm-inline-block">
+                <b>Версія</b> 3.2.0
+            </div>
+        </footer>
+    </div>
+
+    <!-- Edit Template Modal -->
+    <div class="modal fade" id="editTemplateModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Редагування шаблону</h4>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="templateEditForm">
+                        <div class="form-group">
+                            <label for="templateName">Назва шаблону</label>
+                            <input type="text" class="form-control" id="templateName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="templateSubject">Тема листа</label>
+                            <input type="text" class="form-control" id="templateSubject" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="templateContent">Вміст шаблону</label>
+                            <textarea class="form-control" id="templateContent" rows="10" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Доступні змінні:</label>
+                            <div class="available-variables">
+                                <span class="variable-tag clickable" onclick="insertVariable('{{technician_name}}')">{{technician_name}}</span>
+                                <span class="variable-tag clickable" onclick="insertVariable('{{client_name}}')">{{client_name}}</span>
+                                <span class="variable-tag clickable" onclick="insertVariable('{{location}}')">{{location}}</span>
+                                <span class="variable-tag clickable" onclick="insertVariable('{{date}}')">{{date}}</span>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                    <button type="button" class="btn btn-primary" onclick="saveTemplate()">Зберегти</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- AdminLTE -->
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+
+    <script>
+        // Email templates manager
+        const emailTemplateManager = {
+            templates: {
+                assignment: {
+                    name: "Сповіщення про заявку",
+                    subject: "Нова заявка #{assignment_id}",
+                    content: "Шановний {{technician_name}}!\n\nВам призначено нову заявку #{{assignment_id}}.\nЛокація: {{location}}\nПріоритет: {{priority}}\n\nЗ повагою,\nКоманда LiftMaster Pro"
+                },
+                maintenance: {
+                    name: "Нагадування про ТО", 
+                    subject: "Планове ТО - {{maintenance_date}}",
+                    content: "Шановний {{client_name}}!\n\nНагадуємо про планове ТО ліфта:\nАдреса: {{lift_location}}\nДата: {{maintenance_date}}\n\nБудь ласка, забезпечте доступ до ліфта.\n\nЗ повагою,\nСлужба технічного обслуговування"
+                },
+                completion: {
+                    name: "Завершення роботи",
+                    subject: "Роботи завершено - {{work_type}}",
+                    content: "Шановний {{client_name}}!\n\nПовідомляємо про завершення робіт:\nТип робіт: {{work_type}}\nДата завершення: {{completion_date}}\nВиконавець: {{technician_name}}\n\nДякуємо за довіру!\n\nЗ повагою,\nКоманда LiftMaster Pro"
+                },
+                emergency: {
+                    name: "Екстренне повідомлення",
+                    subject: "ТЕРМІНОВЕ - {{emergency_type}}",
+                    content: "ТЕРМІНОВЕ ПОВІДОМЛЕННЯ!\n\n{{recipient_name}}, зафіксовано аварійну ситуацію:\nТип: {{emergency_type}}\nЛокація: {{location}}\n\nДля зв'язку: {{contact_number}}\n\nНЕОБХІДНО ТЕРМІНОВЕ ВТРУЧАННЯ!"
+                }
+            },
+
+            editTemplate(templateId) {
+                const template = this.templates[templateId];
+                if (template) {
+                    $('#templateName').val(template.name);
+                    $('#templateSubject').val(template.subject);
+                    $('#templateContent').val(template.content);
+                    $('#editTemplateModal').data('template-id', templateId);
+                    $('#editTemplateModal').modal('show');
+                }
+            },
+
+            saveTemplate() {
+                const templateId = $('#editTemplateModal').data('template-id');
+                const name = $('#templateName').val();
+                const subject = $('#templateSubject').val();
+                const content = $('#templateContent').val();
+
+                if (templateId && name && subject && content) {
+                    this.templates[templateId] = {
+                        name: name,
+                        subject: subject,
+                        content: content
+                    };
+                    
+                    // Save to localStorage
+                    localStorage.setItem('emailTemplates', JSON.stringify(this.templates));
+                    
+                    $('#editTemplateModal').modal('hide');
+                    this.showNotification('Шаблон успішно збережено!', 'success');
+                    
+                    // Refresh the page to show updated template
+                    setTimeout(() => location.reload(), 1000);
+                }
+            },
+
+            previewTemplate(templateId) {
+                const template = this.templates[templateId];
+                if (template) {
+                    // Open preview in new window
+                    const previewWindow = window.open('', '_blank', 'width=600,height=400');
+                    previewWindow.document.write(`
+                        <html>
+                            <head><title>Попередній перегляд: ${template.name}</title></head>
+                            <body style="font-family: Arial, sans-serif; padding: 20px;">
+                                <h3>Тема: ${template.subject}</h3>
+                                <hr>
+                                <div style="white-space: pre-line;">${template.content}</div>
+                            </body>
+                        </html>
+                    `);
+                }
+            },
+
+            testSendTemplate(templateId) {
+                const email = prompt('Введіть email для тестового відправлення:');
+                if (email) {
+                    // Simulate sending email
+                    this.showNotification(`Тестовий email відправлено на ${email}`, 'info');
+                    
+                    // Here you would implement actual email sending logic
+                    console.log(`Sending test email to ${email} with template ${templateId}`);
+                }
+            },
+
+            showNotification(message, type = 'info') {
+                const alertClass = {
+                    success: 'alert-success',
+                    info: 'alert-info',
+                    warning: 'alert-warning',
+                    error: 'alert-danger'
+                }[type] || 'alert-info';
+
+                const notification = $(`
+                    <div class="alert ${alertClass} alert-dismissible fade show" style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
+                        ${message}
+                        <button type="button" class="close" data-dismiss="alert">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                `);
+
+                $('body').append(notification);
+                setTimeout(() => notification.remove(), 5000);
+            }
+        };
+
+        // Global functions
+        function editTemplate(templateId) {
+            emailTemplateManager.editTemplate(templateId);
+        }
+
+        function previewTemplate(templateId) {
+            emailTemplateManager.previewTemplate(templateId);
+        }
+
+        function testSendTemplate(templateId) {
+            emailTemplateManager.testSendTemplate(templateId);
+        }
+
+        function saveTemplate() {
+            emailTemplateManager.saveTemplate();
+        }
+
+        function insertVariable(variable) {
+            const textarea = $('#templateContent')[0];
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const text = textarea.value;
+            const before = text.substring(0, start);
+            const after = text.substring(end, text.length);
+            textarea.value = before + variable + after;
+            textarea.selectionStart = textarea.selectionEnd = start + variable.length;
+            textarea.focus();
+        }
+
+        // Initialize on page load
+        $(document).ready(function() {
+            // Load saved templates from localStorage
+            const saved = localStorage.getItem('emailTemplates');
+            if (saved) {
+                emailTemplateManager.templates = { ...emailTemplateManager.templates, ...JSON.parse(saved) };
+            }
+
+            $('#createTemplateBtn').click(function() {
+                emailTemplateManager.editTemplate('new');
+            });
+
+            // Make variable tags clickable
+            $('.clickable').css('cursor', 'pointer');
+        });
+    </script>
+</body>
+</html>
                                 </div>
                                 <div class="form-group">
                                     <label for="emailSubject">Тема</label>

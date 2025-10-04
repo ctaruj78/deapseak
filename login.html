@@ -2,11 +2,7 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-                    } else if (userData.role === 'admin') {
-                        window.location.href = 'pages/crm-unified.html?role=admin';
-                    } else {
-                        window.location.href = 'pages/client-unified.html';
-                    }=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Вхід - LiftMaster Pro</title>
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
@@ -87,16 +83,19 @@
     <script>
         $(document).ready(function() {
             // Проверяем, авторизован ли пользователь
-            if (localStorage.getItem('authToken')) {
-                const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-                if (userData.role === 'dispatcher') {
-                    window.location.href = 'pages/crm-unified.html?role=dispatcher';
-                } else if (userData.role === 'technician') {
-                    window.location.href = 'pages/crm-unified.html?role=tech';
-                } else if (userData.role === 'admin') {
-                    window.location.href = 'pages/crm-unified.html?role=admin';
-                } else {
-                    window.location.href = 'pages/client/dashboard.html';
+            if (localStorage.getItem('lm_session')) {
+                const sessionData = JSON.parse(localStorage.getItem('lm_session'));
+                const user = sessionData.user;
+                if (user && user.role) {
+                    if (user.role === 'dispatcher') {
+                        window.location.href = 'pages/dispatcher/dashboard.html';
+                    } else if (user.role === 'technician' || user.role === 'tech') {
+                        window.location.href = 'pages/tech/dashboard.html';
+                    } else if (user.role === 'admin') {
+                        window.location.href = 'pages/admin/admin-dashboard.html';
+                    } else {
+                        window.location.href = 'pages/client/dashboard.html';
+                    }
                 }
                 return;
             }
@@ -140,15 +139,26 @@
                     };
                     localStorage.setItem('userData', JSON.stringify(userData));
                     
-                    // Перенаправляем пользователя в зависимости от роли
-                    if (user.role === 'dispatcher') {
-                        window.location.href = 'pages/crm-unified.html?role=dispatcher';
-                    } else if (user.role === 'technician') {
-                        window.location.href = 'pages/crm-unified.html?role=tech';
-                    } else if (user.role === 'admin') {
-                        window.location.href = 'pages/crm-unified.html?role=admin';
+                    // Використовуємо AuthManager для створення сесії та перенаправлення
+                    if (window.authManager) {
+                        window.authManager.createSession(user, rememberMe);
+                        window.authManager.redirectToDashboard(user.role);
                     } else {
-                        window.location.href = 'pages/client-unified.html';
+                        // Fallback якщо AuthManager не ініціалізовано
+                        localStorage.setItem('lm_session', JSON.stringify({
+                            user: user,
+                            expiresAt: new Date(Date.now() + (rememberMe ? 30 : 1) * 24 * 60 * 60 * 1000).toISOString()
+                        }));
+                        
+                        if (user.role === 'dispatcher') {
+                            window.location.href = 'pages/dispatcher/dashboard.html';
+                        } else if (user.role === 'technician' || user.role === 'tech') {
+                            window.location.href = 'pages/tech/dashboard.html';
+                        } else if (user.role === 'admin') {
+                            window.location.href = 'pages/admin/admin-dashboard.html';
+                        } else {
+                            window.location.href = 'pages/client/dashboard.html';
+                        }
                     }
                 } else {
                     // Реальный API запрос для входа
@@ -168,13 +178,13 @@
                                 
                                 // Перенаправляем пользователя в зависимости от роли
                                 if (response.user.role === 'dispatcher') {
-                                    window.location.href = 'pages/crm-unified.html?role=dispatcher';
-                                } else if (response.user.role === 'technician') {
-                                    window.location.href = 'pages/crm-unified.html?role=tech';
+                                    window.location.href = 'pages/dispatcher/dashboard.html';
+                                } else if (response.user.role === 'technician' || response.user.role === 'tech') {
+                                    window.location.href = 'pages/tech/dashboard.html';
                                 } else if (response.user.role === 'admin') {
-                                    window.location.href = 'pages/crm-unified.html?role=admin';
+                                    window.location.href = 'pages/admin/admin-dashboard.html';
                                 } else {
-                                    window.location.href = 'pages/client-unified.html';
+                                    window.location.href = 'pages/client/dashboard.html';
                                 }
                             } else {
                                 $('#login-error').text(response.message || 'Помилка входу').show();

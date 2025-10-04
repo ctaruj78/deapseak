@@ -619,7 +619,7 @@ class ClientSystem {
                 '<div class="card-header">' +
                 '<h3 class="card-title"><i class="fas fa-building mr-2"></i>Ваші ліфти</h3>' +
                 '<div class="card-tools">' +
-                '<button class="btn btn-primary btn-sm" onclick="alert(\'Додавання нового ліфта\')"><i class="fas fa-plus mr-1"></i>Додати ліфт</button>' +
+                '<button class="btn btn-secondary btn-sm" onclick="window.clientSystem.refreshData()"><i class="fas fa-sync mr-1"></i>Оновити</button>' +
                 '</div>' +
                 '</div>' +
                 '<div class="card-body table-responsive p-0">' +
@@ -1581,13 +1581,8 @@ class ClientDataManager {
         return this.getData().lifts;
     }
     
-    addLift(lift) {
-        const data = this.getData();
-        lift.id = 'L' + String(data.lifts.length + 1).padStart(3, '0');
-        data.lifts.push(lift);
-        this.saveData(data);
-        return lift;
-    }
+    // Клієнти не можуть додавати ліфти
+    // Для додавання нових ліфтів зверніться до технічної підтримки
     
     // Методи для заявок
     getRequests() {
@@ -1785,12 +1780,13 @@ class EnhancedClientSystem extends ClientSystem {
                         </div>
                     </div>
                     
-                    <!-- Add Lift Button -->
+                    <!-- Client Information -->
                     <div class="row mb-3">
                         <div class="col-12">
-                            <button class="btn btn-primary" onclick="window.clientSystem.showAddLiftModal()">
-                                <i class="fas fa-plus mr-2"></i>Додати ліфт
-                            </button>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                <strong>Інформація:</strong> Для додавання нових ліфтів до системи, будь ласка, зверніться до нашого відділу технічної підтримки.
+                            </div>
                         </div>
                     </div>
                     
@@ -2026,81 +2022,13 @@ class EnhancedClientSystem extends ClientSystem {
     }
     
     // Методи для модальних вікон та взаємодії
-    showAddLiftModal() {
+    showClientInfo() {
         Swal.fire({
-            title: 'Додати новий ліфт',
-            html: `
-                <form id="addLiftForm">
-                    <div class="form-group text-left">
-                        <label>Адреса</label>
-                        <input type="text" class="form-control" id="liftAddress" required>
-                    </div>
-                    <div class="form-group text-left">
-                        <label>Модель ліфта</label>
-                        <select class="form-control" id="liftModel" required>
-                            <option value="">Виберіть модель</option>
-                            <option value="OTIS Gen2">OTIS Gen2</option>
-                            <option value="KONE MonoSpace">KONE MonoSpace</option>
-                            <option value="Schindler 5500">Schindler 5500</option>
-                            <option value="ThyssenKrupp Evolution">ThyssenKrupp Evolution</option>
-                        </select>
-                    </div>
-                    <div class="row">
-                        <div class="col-6">
-                            <div class="form-group text-left">
-                                <label>Кількість поверхів</label>
-                                <input type="number" class="form-control" id="liftFloors" min="2" max="50" required>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="form-group text-left">
-                                <label>Рік установки</label>
-                                <input type="number" class="form-control" id="liftYear" min="1990" max="2024" required>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group text-left">
-                        <label>Тип контракту</label>
-                        <select class="form-control" id="liftContract" required>
-                            <option value="">Виберіть тип</option>
-                            <option value="Стандартний">Стандартний</option>
-                            <option value="Розширений">Розширений</option>
-                            <option value="Преміум">Преміум</option>
-                        </select>
-                    </div>
-                </form>
-            `,
-            showCancelButton: true,
-            confirmButtonText: 'Додати',
-            cancelButtonText: 'Скасувати',
-            confirmButtonColor: '#28a745',
-            preConfirm: () => {
-                const address = document.getElementById('liftAddress').value;
-                const model = document.getElementById('liftModel').value;
-                const floors = document.getElementById('liftFloors').value;
-                const year = document.getElementById('liftYear').value;
-                const contract = document.getElementById('liftContract').value;
-                
-                if (!address || !model || !floors || !year || !contract) {
-                    Swal.showValidationMessage('Заповніть всі поля');
-                    return false;
-                }
-                
-                return { address, model, floors: parseInt(floors), year: parseInt(year), contract };
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                const liftData = {
-                    ...result.value,
-                    status: 'working',
-                    lastMaintenance: new Date().toISOString().split('T')[0],
-                    nextMaintenance: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-                };
-                
-                this.dataManager.addLift(liftData);
-                toastr.success('Ліфт успішно додано!');
-                this.loadModule('my-lifts');
-            }
+            title: 'Інформація',
+            text: 'Для додавання нових ліфтів до системи, будь ласка, зверніться до нашого відділу технічної підтримки.',
+            icon: 'info',
+            confirmButtonText: 'Зрозуміло',
+            confirmButtonColor: '#007bff'
         });
     }
     
