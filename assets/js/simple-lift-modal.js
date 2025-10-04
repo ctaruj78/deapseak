@@ -79,6 +79,7 @@ class SimpleLiftModal {
             postcode: $('#liftPostcode').val() || '',
             buildingName: $('#buildingName').val() || '',
             floorLocation: $('#floorLocation').val() || 'ground',
+            liftsCountAtAddress: parseInt($('#liftsCountAtAddress').val()) || 1,
             accessCode: $('#accessCode').val() || '',
             lat: parseFloat($('#liftLat').val()) || null,
             lng: parseFloat($('#liftLng').val()) || null,
@@ -132,50 +133,31 @@ class SimpleLiftModal {
         console.log('💾 Saving lift data...');
         
         try {
-            // Перевіряємо allLifts (можливо є і глобальна і window версія)
+            // Ініціалізуємо масив якщо потрібно
             if (typeof window.allLifts === 'undefined') {
-                console.log('⚠️ window.allLifts not found');
-                if (typeof allLifts !== 'undefined') {
-                    console.log('📋 Using global allLifts variable');
-                    window.allLifts = allLifts;
-                } else {
-                    console.log('⚠️ Creating new empty array');
-                    window.allLifts = [];
-                    if (typeof window !== 'undefined') {
-                        window.allLifts = window.allLifts;
-                    }
-                }
+                console.log('⚠️ window.allLifts not found, creating new array');
+                window.allLifts = [];
             }
             
-            // Синхронізуємо глобальну змінну якщо існує
-            if (typeof allLifts !== 'undefined') {
-                allLifts = window.allLifts;
-                console.log('🔄 Synchronized global allLifts with window.allLifts');
-            }
-            
-            console.log('📊 Current lifts count:', window.allLifts.length);
-            
-            // Перевіряємо чи це оновлення
+            // Перевіряємо чи це оновлення існуючого ліфта
             const existingIndex = window.allLifts.findIndex(l => l.id === liftData.id);
+            console.log('📊 Current lifts count:', window.allLifts.length);
+            console.log('🔍 Checking for existing lift with ID:', liftData.id, 'Found at index:', existingIndex);
             
             if (existingIndex !== -1) {
-                // Оновлюємо існуючий
+                // Оновлюємо існуючий ліфт
                 window.allLifts[existingIndex] = { ...window.allLifts[existingIndex], ...liftData };
                 console.log('✏️ Updated existing lift at index:', existingIndex);
             } else {
-                // Додаємо новий
+                // Додаємо новий ліфт ТІЛЬКИ один раз
                 window.allLifts.push(liftData);
-                console.log('➕ Added new lift. Total count:', window.allLifts.length);
+                console.log('➕ Added new lift. Total count now:', window.allLifts.length);
             }
             
-            // ВАЖЛИВО: Синхронізуємо з глобальною змінною
+            // Синхронізуємо з глобальною змінною ТІЛЬКИ ОДИН РАЗ
             if (typeof allLifts !== 'undefined') {
-                if (existingIndex !== -1) {
-                    allLifts[existingIndex] = window.allLifts[existingIndex];
-                } else {
-                    allLifts.push(liftData);
-                }
-                console.log('🔄 Synchronized global allLifts variable');
+                allLifts = [...window.allLifts]; // Повністю копіюємо масив
+                console.log('🔄 Synchronized global allLifts variable, count:', allLifts.length);
             }
             
             // Зберігаємо в localStorage
@@ -265,6 +247,7 @@ class SimpleLiftModal {
         $('#liftPostcode').val(liftData.postcode || '');
         $('#buildingName').val(liftData.buildingName || '');
         $('#floorLocation').val(liftData.floorLocation || '');
+        $('#liftsCountAtAddress').val(liftData.liftsCountAtAddress || 1);
         $('#accessCode').val(liftData.accessCode || '');
         $('#liftLat').val(liftData.lat || '');
         $('#liftLng').val(liftData.lng || '');
@@ -340,10 +323,13 @@ class SimpleLiftModal {
     manualRefreshTable() {
         console.log('🔄 Attempting manual table refresh...');
         
-        // Знаходимо таблицю ліфтів
-        const tbody = $('#liftsTable tbody');
+        // Знаходимо таблицю ліфтів (спробуємо обидва можливих селектори)
+        let tbody = $('#liftsTable tbody');
         if (tbody.length === 0) {
-            console.log('❌ Table #liftsTable not found');
+            tbody = $('#lifts-table-body');
+        }
+        if (tbody.length === 0) {
+            console.log('❌ Table tbody not found');
             return;
         }
         
@@ -352,24 +338,35 @@ class SimpleLiftModal {
         // Очищаємо таблицю
         tbody.empty();
         
-        // Додаємо ліфти (спрощена версія без пагінації)
+        // Додаємо ліфти відповідно до заголовків: 
+        // Муніципальний №, Модель, Тип, Локація, Клієнт, Email, Статус, Останнє ТО, Наступне ТО, Дії
         if (window.allLifts && window.allLifts.length > 0) {
             window.allLifts.forEach((lift, index) => {
+                const lastMaintenance = lift.lastInspection ? 
+                    new Date(lift.lastInspection).toLocaleDateString('uk-UA') : 'Не вказано';
+                const nextMaintenance = lift.nextInspection ? 
+                    new Date(lift.nextInspection).toLocaleDateString('uk-UA') : 'Не вказано';
+                
                 const row = `
                     <tr>
-                        <td>${index + 1}</td>
                         <td>${lift.municipalNumber || 'Не вказано'}</td>
-                        <td>${lift.serial || lift.serialNumber || 'Не вказано'}</td>
-                        <td>${lift.brand || 'Не вказано'}</td>
                         <td>${lift.model || 'Не вказано'}</td>
+                        <td>${lift.type || 'passenger'}</td>
                         <td>${lift.address || 'Не вказано'}</td>
-                        <td><span class="badge badge-${this.getStatusColor(lift.status)}">${lift.status || 'operational'}</span></td>
+                        <td>${lift.clientName || 'Не вказано'}</td>
+                        <td>${lift.clientEmail || 'Не вказано'}</td>
+                        <td><span class="badge badge-${this.getStatusColor(lift.status)}">${this.getStatusText(lift.status)}</span></td>
+                        <td>${lastMaintenance}</td>
+                        <td>${nextMaintenance}</td>
                         <td>
-                            <button class="btn btn-sm btn-primary edit-lift" data-lift-id="${lift.id}">
+                            <button class="btn btn-sm btn-primary edit-lift" data-lift-id="${lift.id}" title="Редагувати">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn btn-sm btn-danger delete-lift" data-lift-id="${lift.id}">
+                            <button class="btn btn-sm btn-danger delete-lift" data-lift-id="${lift.id}" title="Видалити">
                                 <i class="fas fa-trash"></i>
+                            </button>
+                            <button class="btn btn-sm btn-info view-lift" data-lift-id="${lift.id}" title="Переглянути">
+                                <i class="fas fa-eye"></i>
                             </button>
                         </td>
                     </tr>
@@ -378,7 +375,7 @@ class SimpleLiftModal {
             });
             console.log('✅ Manual table refresh completed');
         } else {
-            tbody.append('<tr><td colspan="8" class="text-center">Немає ліфтів</td></tr>');
+            tbody.append('<tr><td colspan="10" class="text-center">Немає ліфтів</td></tr>');
             console.log('ℹ️ No lifts to display');
         }
     }
@@ -390,6 +387,16 @@ class SimpleLiftModal {
             case 'broken': return 'danger';
             case 'inactive': return 'secondary';
             default: return 'primary';
+        }
+    }
+    
+    getStatusText(status) {
+        switch (status) {
+            case 'operational': return 'Працює';
+            case 'maintenance': return 'ТО';
+            case 'broken': return 'Поламаний';
+            case 'inactive': return 'Неактивний';
+            default: return 'Невизначено';
         }
     }
 }
