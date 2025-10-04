@@ -81,6 +81,25 @@
         .table-responsive {
             overflow-x: auto;
         }
+        
+        /* Стилі для QR-кодів */
+        .qr-preview-mini {
+            padding: 15px;
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        
+        .qr-preview-mini canvas {
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
+        
+        .qr-preview-mini .btn-group {
+            justify-content: center;
+            width: 100%;
+        }
     </style>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -1025,17 +1044,60 @@
                             <!-- Основна інформація -->
                             <div class="tab-pane fade show active" id="basic-info" role="tabpanel">
                                 <div class="row">
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <div class="form-group">
                                             <label for="enhancedMunicipalNumber">Муніципальний № *</label>
-                                            <input type="text" id="enhancedMunicipalNumber" name="municipalNumber" class="form-control" required placeholder="Муніципальний номер ліфта">
+                                            <div class="input-group">
+                                                <input type="text" id="enhancedMunicipalNumber" name="municipalNumber" class="form-control" required placeholder="Муніципальний номер ліфта">
+                                                <div class="input-group-append">
+                                                    <button type="button" class="btn btn-outline-primary" 
+                                                            onclick="enhancedLiftModal.generateQRCode('enhancedMunicipalNumber', 1)">
+                                                        <i class="fas fa-qrcode"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-3">
                                         <div class="form-group">
-                                            <label for="enhancedSerialNumber">Серійний номер <small class="text-muted">(опціонально, багато старих ліфтів не мають шильдиків)</small></label>
+                                            <label for="enhancedLiftsCountAtAddress">Кількість ліфтів</label>
+                                            <div class="input-group">
+                                                <input type="number" id="enhancedLiftsCountAtAddress" name="liftsCountAtAddress" class="form-control" min="1" max="20" value="1" placeholder="1">
+                                                <div class="input-group-append">
+                                                    <span class="input-group-text">шт</span>
+                                                </div>
+                                            </div>
+                                            <small class="form-text text-muted">Скільки ліфтів у цій будівлі</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <div class="form-group">
+                                            <label for="enhancedSerialNumber">Серійний номер <small class="text-muted">(опціонально, багато старих ліфтів не мають шільдиків)</small></label>
                                             <input type="text" id="enhancedSerialNumber" name="serialNumber" class="form-control" placeholder="Серійний номер ліфта (якщо є)">
                                         </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- QR-код для основного ліфта -->
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <div id="mainQrPreview" class="qr-preview-mini d-none text-center">
+                                            <!-- QR код основного ліфта буде тут -->
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Динамічні поля для муніципальних номерів додаткових ліфтів -->
+                                <div id="additionalLiftsContainer" class="d-none">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <h6 class="text-primary mb-3">
+                                                <i class="fas fa-plus-circle"></i> Додаткові ліфти
+                                            </h6>
+                                        </div>
+                                    </div>
+                                    <div id="additionalLiftsFields">
+                                        <!-- Тут будуть динамічно додаватися поля -->
                                     </div>
                                 </div>
                                 <div class="row">
@@ -1123,18 +1185,7 @@
                                             <small class="form-text text-muted">Українській: 01001 | Португальський: 1234-567</small>
                                         </div>
                                     </div>
-                                    <div class="col-md-2">
-                                        <div class="form-group">
-                                            <label for="enhancedLiftsCountAtAddress">Кількість ліфтів</label>
-                                            <div class="input-group">
-                                                <input type="number" id="enhancedLiftsCountAtAddress" name="liftsCountAtAddress" class="form-control" min="1" max="20" value="1" placeholder="1">
-                                                <div class="input-group-append">
-                                                    <span class="input-group-text">шт</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
+                                    <div class="col-md-5">
                                         <div class="form-group">
                                             <label>&nbsp;</label>
                                             <div class="d-block">

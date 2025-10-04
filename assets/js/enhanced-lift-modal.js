@@ -595,30 +595,57 @@ class EnhancedLiftModal {
         const count = parseInt($('#enhancedLiftsCountAtAddress').val()) || 1;
         console.log(`🏢 Lifts count changed to: ${count}`);
         
-        // Видаляємо попередні додаткові поля
-        $('#additionalLiftsContainer').remove();
+        // Очищуємо контейнер додаткових ліфтів
+        $('#additionalLiftsFields').empty();
         
         if (count > 1) {
-            let additionalFields = '<div id="additionalLiftsContainer" class="mt-3"><h6 class="text-info">Муніципальні номери інших ліфтів за цією адресою:</h6>';
+            // Показуємо контейнер
+            $('#additionalLiftsContainer').removeClass('d-none');
             
+            // Генеруємо поля для додаткових ліфтів
             for (let i = 2; i <= count; i++) {
-                additionalFields += `
-                    <div class="form-group">
-                        <label for="additionalMunicipalNumber${i}">Муніципальний № ліфта ${i}:</label>
-                        <input type="text" 
-                               id="additionalMunicipalNumber${i}" 
-                               name="additionalMunicipalNumber${i}"
-                               class="form-control" 
-                               placeholder="Муніципальний номер ліфта ${i}">
-                        <small class="form-text text-muted">Цей номер допоможе ідентифікувати інші ліфти в тій же будівлі</small>
+                const liftRow = `
+                    <div class="row mb-3">
+                        <div class="col-md-5">
+                            <div class="form-group">
+                                <label for="additionalMunicipalNumber${i}">
+                                    <i class="fas fa-elevator text-info"></i> 
+                                    Муніципальний № ліфта ${i} *
+                                </label>
+                                <input type="text" 
+                                       id="additionalMunicipalNumber${i}" 
+                                       name="additionalMunicipalNumber${i}"
+                                       class="form-control" 
+                                       required
+                                       placeholder="Муніципальний номер ліфта ${i}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <div class="d-block">
+                                    <button type="button" class="btn btn-outline-primary btn-sm btn-block" 
+                                            onclick="enhancedLiftModal.generateQRCode('additionalMunicipalNumber${i}', ${i})">
+                                        <i class="fas fa-qrcode"></i> Генерувати QR-код
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <div id="qrPreview${i}" class="qr-preview-mini d-none">
+                                    <!-- QR код буде тут -->
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 `;
+                $('#additionalLiftsFields').append(liftRow);
             }
-            
-            additionalFields += '</div>';
-            
-            // Додаємо поля після основного поля кількості
-            $('#enhancedLiftsCountAtAddress').closest('.form-group').after(additionalFields);
+        } else {
+            // Ховаємо контейнер
+            $('#additionalLiftsContainer').addClass('d-none');
         }
     }
 
@@ -678,6 +705,143 @@ class EnhancedLiftModal {
         
         console.log(`📋 Total lifts to save: ${lifts.length} (1 main + ${lifts.length - 1} additional)`);
         return lifts;
+    }
+
+    // Генерація QR-коду для ліфта
+    generateQRCode(inputId, liftNumber = 1) {
+        const municipalNumber = $(`#${inputId}`).val();
+        
+        if (!municipalNumber || !municipalNumber.trim()) {
+            this.showMessage('Будь ласка, введіть муніципальний номер ліфта', 'error');
+            return;
+        }
+        
+        // Отримуємо адресу для QR-коду
+        const address = $('#enhancedLiftAddress').val() || 'Адреса не вказана';
+        
+        // Створюємо дані для QR-коду
+        const qrData = {
+            municipalNumber: municipalNumber.trim(),
+            address: address,
+            liftNumber: liftNumber,
+            createdAt: new Date().toISOString(),
+            accessUrl: `${window.location.origin}/lift-access.html?id=${municipalNumber.trim()}`
+        };
+        
+        const qrText = JSON.stringify(qrData);
+        const previewContainer = liftNumber === 1 ? '#mainQrPreview' : `#qrPreview${liftNumber}`;
+        
+        // Очищуємо попередній QR-код
+        $(previewContainer).empty().removeClass('d-none');
+        
+        // Генеруємо QR-код
+        QRCode.toCanvas(qrText, {
+            width: 120,
+            height: 120,
+            margin: 2,
+            color: {
+                dark: '#000000',
+                light: '#FFFFFF'
+            }
+        }, (err, canvas) => {
+            if (err) {
+                console.error('❌ Error generating QR code:', err);
+                this.showMessage('Помилка створення QR-коду', 'error');
+                return;
+            }
+            
+            // Додаємо canvas до контейнера
+            $(previewContainer).html(canvas);
+            
+            // Додаємо кнопки для дій з QR-кодом
+            const actionsHtml = `
+                <div class="mt-2">
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn btn-outline-success btn-sm" 
+                                onclick="enhancedLiftModal.downloadQRCode('${inputId}', ${liftNumber})">
+                            <i class="fas fa-download"></i> PNG
+                        </button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" 
+                                onclick="enhancedLiftModal.printQRCode('${inputId}', ${liftNumber})">
+                            <i class="fas fa-print"></i> Друк
+                        </button>
+                    </div>
+                </div>
+            `;
+            $(previewContainer).append(actionsHtml);
+            
+            console.log(`✅ QR code generated for lift #${liftNumber}: ${municipalNumber}`);
+            this.showMessage(`QR-код створено для ліфта №${liftNumber}`, 'success');
+        });
+    }
+
+    // Завантаження QR-коду як PNG
+    downloadQRCode(inputId, liftNumber = 1) {
+        const municipalNumber = $(`#${inputId}`).val().trim();
+        const previewContainer = liftNumber === 1 ? '#mainQrPreview' : `#qrPreview${liftNumber}`;
+        const canvas = $(previewContainer).find('canvas')[0];
+        
+        if (!canvas) {
+            this.showMessage('Спочатку згенеруйте QR-код', 'error');
+            return;
+        }
+        
+        // Створюємо посилання для завантаження
+        const link = document.createElement('a');
+        link.download = `QR-lift-${municipalNumber}-${liftNumber}.png`;
+        link.href = canvas.toDataURL();
+        link.click();
+        
+        this.showMessage('QR-код завантажено', 'success');
+    }
+
+    // Друк QR-коду
+    printQRCode(inputId, liftNumber = 1) {
+        const municipalNumber = $(`#${inputId}`).val().trim();
+        const address = $('#enhancedLiftAddress').val() || 'Адреса не вказана';
+        const previewContainer = liftNumber === 1 ? '#mainQrPreview' : `#qrPreview${liftNumber}`;
+        const canvas = $(previewContainer).find('canvas')[0];
+        
+        if (!canvas) {
+            this.showMessage('Спочатку згенеруйте QR-код', 'error');
+            return;
+        }
+        
+        // Створюємо нове вікно для друку
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>QR-код ліфта ${municipalNumber}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+                    .qr-container { margin: 20px 0; }
+                    .info { margin: 10px 0; font-size: 14px; }
+                    .municipal { font-size: 18px; font-weight: bold; }
+                    @media print { body { margin: 0; } }
+                </style>
+            </head>
+            <body>
+                <h2>QR-код доступу до ліфта</h2>
+                <div class="info municipal">Муніципальний номер: ${municipalNumber}</div>
+                <div class="info">Ліфт №${liftNumber}</div>
+                <div class="info">Адреса: ${address}</div>
+                <div class="qr-container">
+                    <img src="${canvas.toDataURL()}" alt="QR код ліфта">
+                </div>
+                <div class="info">Створено: ${new Date().toLocaleString('uk-UA')}</div>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+        
+        // Автоматично відкриваємо діалог друку
+        printWindow.onload = () => {
+            printWindow.print();
+        };
+        
+        this.showMessage('Відправлено на друк', 'success');
     }
 }
 
