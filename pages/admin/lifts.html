@@ -11,6 +11,9 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css">
     
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
     <style>
         .lift-status {
             padding: 0.25rem 0.5rem;
@@ -363,8 +366,11 @@
                                         <button id="test-saving-button" class="btn btn-warning btn-sm mr-2" onclick="testLiftSaving()" style="display: none;">
                                             <i class="fas fa-bug"></i> Тест збереження
                                         </button>
-                                        <button id="add-lift-button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#liftModal">
-                                            <i class="fas fa-plus"></i> Додати ліфт
+                                        <button id="add-lift-button" class="btn btn-primary btn-sm mr-2" data-toggle="modal" data-target="#liftModal">
+                                            <i class="fas fa-plus"></i> Додати ліфт (простий)
+                                        </button>
+                                        <button id="add-lift-enhanced-button" class="btn btn-success btn-sm" onclick="openEnhancedModal()">
+                                            <i class="fas fa-plus-circle"></i> Додати ліфт (з картою)
                                         </button>
                                     </div>
                                 </div>
@@ -650,7 +656,7 @@
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <div class="form-group">
                                             <label for="buildingName">Назва будівлі</label>
                                             <input type="text" id="buildingName" class="form-control" placeholder="Торговий центр, житловий комплекс">
@@ -660,6 +666,18 @@
                                         <div class="form-group">
                                             <label for="floorLocation">Розташування на поверсі</label>
                                             <input type="text" id="floorLocation" class="form-control" placeholder="ліворуч, центр">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="form-group">
+                                            <label for="liftsCountAtAddress">Кількість ліфтів за адресою</label>
+                                            <div class="input-group">
+                                                <input type="number" id="liftsCountAtAddress" class="form-control" min="1" max="20" value="1" placeholder="1">
+                                                <div class="input-group-append">
+                                                    <span class="input-group-text">шт</span>
+                                                </div>
+                                            </div>
+                                            <small class="form-text text-muted">Загальна кількість ліфтів у цій будівлі</small>
                                         </div>
                                     </div>
                                     <div class="col-md-3">
@@ -968,6 +986,285 @@
         </div>
     </div>
 
+    <!-- Enhanced Lift Modal with Map -->
+    <div class="modal fade" id="enhancedLiftModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="false">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-success">
+                    <h5 class="modal-title" id="enhancedModalTitle">Додати ліфт з картою</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="enhancedLiftForm">
+                    <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
+                        <input type="hidden" id="enhancedLiftId">
+                        
+                        <!-- Навігація табами -->
+                        <ul class="nav nav-tabs" id="liftTabs" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="basic-tab" data-toggle="tab" href="#basic-info" role="tab">
+                                    <i class="fas fa-info-circle"></i> Основна інформація
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="location-tab" data-toggle="tab" href="#location-info" role="tab">
+                                    <i class="fas fa-map-marker-alt"></i> Розташування і карта
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="client-tab" data-toggle="tab" href="#client-info" role="tab">
+                                    <i class="fas fa-user"></i> Клієнт
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="tech-tab" data-toggle="tab" href="#tech-info" role="tab">
+                                    <i class="fas fa-wrench"></i> Технічні дані
+                                </a>
+                            </li>
+                        </ul>
+                        
+                        <div class="tab-content mt-3" id="liftTabsContent">
+                            <!-- Основна інформація -->
+                            <div class="tab-pane fade show active" id="basic-info" role="tabpanel">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="enhancedMunicipalNumber">Муніципальний № *</label>
+                                            <input type="text" id="enhancedMunicipalNumber" name="municipalNumber" class="form-control" required placeholder="Муніципальний номер ліфта">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="enhancedSerialNumber">Серійний номер *</label>
+                                            <input type="text" id="enhancedSerialNumber" name="serialNumber" class="form-control" required placeholder="Серійний номер ліфта">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="enhancedLiftBrand">Бренд *</label>
+                                            <select id="enhancedLiftBrand" name="liftBrand" class="form-control" required>
+                                                <option value="">Оберіть бренд...</option>
+                                                <option value="otis">Otis</option>
+                                                <option value="kone">KONE</option>
+                                                <option value="schindler">Schindler</option>
+                                                <option value="thyssen">ThyssenKrupp</option>
+                                                <option value="mitsubishi">Mitsubishi Electric</option>
+                                                <option value="fujitec">Fujitec</option>
+                                                <option value="other">Інший</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="enhancedLiftModel">Модель ліфта *</label>
+                                            <input type="text" id="enhancedLiftModel" name="liftModel" class="form-control" required placeholder="Наприклад: Otis Gen2, KONE MonoSpace">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="enhancedLiftType">Тип ліфта *</label>
+                                            <select id="enhancedLiftType" name="liftType" class="form-control" required>
+                                                <option value="">Оберіть тип...</option>
+                                                <option value="passenger">Пасажирський</option>
+                                                <option value="cargo">Вантажний</option>
+                                                <option value="hospital">Лікарняний</option>
+                                                <option value="panoramic">Панорамний</option>
+                                                <option value="machine-room-less">Безмашинний</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="enhancedLiftCapacity">Пасажиромісткість *</label>
+                                            <div class="input-group">
+                                                <input type="number" id="enhancedLiftCapacity" name="liftCapacity" class="form-control" min="4" max="50" required placeholder="осіб">
+                                                <div class="input-group-append">
+                                                    <span class="input-group-text">осіб</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="enhancedLiftSpeed">Швидкість *</label>
+                                            <div class="input-group">
+                                                <input type="number" id="enhancedLiftSpeed" name="liftSpeed" class="form-control" min="0.5" max="10" step="0.1" required placeholder="м/с">
+                                                <div class="input-group-append">
+                                                    <span class="input-group-text">м/с</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Розташування і карта -->
+                            <div class="tab-pane fade" id="location-info" role="tabpanel">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="enhancedLiftAddress">Повна адреса *</label>
+                                            <div class="input-group">
+                                                <input type="text" id="enhancedLiftAddress" name="liftAddress" class="form-control" required placeholder="вул. Хрещатик, 1, Київ">
+                                                <div class="input-group-append">
+                                                    <button type="button" class="btn btn-outline-info" id="enhancedBtnGeocode">
+                                                        <i class="fas fa-search-location"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="enhancedLiftsCountAtAddress">Кількість ліфтів за адресою</label>
+                                            <div class="input-group">
+                                                <input type="number" id="enhancedLiftsCountAtAddress" name="liftsCountAtAddress" class="form-control" min="1" max="20" value="1" placeholder="1">
+                                                <div class="input-group-append">
+                                                    <span class="input-group-text">шт</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label>&nbsp;</label>
+                                            <div class="d-block">
+                                                <button type="button" class="btn btn-outline-success btn-block" id="enhancedBtnCurrentLocation">
+                                                    <i class="fas fa-crosshairs"></i> Моя локація
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-5">
+                                        <div class="form-group">
+                                            <label for="enhancedLiftLat">Широта *</label>
+                                            <input type="number" id="enhancedLiftLat" name="liftLat" class="form-control" step="0.000001" required placeholder="50.4501">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <div class="form-group">
+                                            <label for="enhancedLiftLng">Довгота *</label>
+                                            <input type="number" id="enhancedLiftLng" name="liftLng" class="form-control" step="0.000001" required placeholder="30.5234">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="form-group">
+                                            <label>&nbsp;</label>
+                                            <div class="d-block">
+                                                <button type="button" class="btn btn-outline-primary btn-block" id="enhancedBtnCopyCoords">
+                                                    <i class="fas fa-map-pin"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Карта -->
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h3 class="card-title">
+                                                    <i class="fas fa-map"></i> Інтерактивна карта
+                                                </h3>
+                                            </div>
+                                            <div class="card-body">
+                                                <p class="text-muted">Клікніть на карту щоб встановити розташування ліфта</p>
+                                                <div id="enhancedLiftMap" style="height: 400px; width: 100%;"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Клієнт -->
+                            <div class="tab-pane fade" id="client-info" role="tabpanel">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="enhancedClientName">Ім'я клієнта</label>
+                                            <input type="text" id="enhancedClientName" name="clientName" class="form-control" placeholder="Повне ім'я клієнта">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="enhancedClientEmail">Email клієнта</label>
+                                            <input type="email" id="enhancedClientEmail" name="clientEmail" class="form-control" placeholder="client@example.com">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="enhancedClientPhone">Телефон клієнта</label>
+                                            <input type="tel" id="enhancedClientPhone" name="clientPhone" class="form-control" placeholder="+380 12 345 6789">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="enhancedContactPerson">Контактна особа</label>
+                                            <input type="text" id="enhancedContactPerson" name="contactPerson" class="form-control" placeholder="Менеджер, адміністратор">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Технічні дані -->
+                            <div class="tab-pane fade" id="tech-info" role="tabpanel">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="enhancedLiftStatus">Статус ліфта</label>
+                                            <select id="enhancedLiftStatus" name="liftStatus" class="form-control">
+                                                <option value="operational">Працює</option>
+                                                <option value="maintenance">На технічному обслуговуванні</option>
+                                                <option value="broken">Поламаний</option>
+                                                <option value="inactive">Неактивний</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="enhancedAssignedTechnician">Призначений технік</label>
+                                            <select id="enhancedAssignedTechnician" name="assignedTechnician" class="form-control">
+                                                <option value="auto">Автоматичне призначення</option>
+                                                <option value="tech1">Технік 1</option>
+                                                <option value="tech2">Технік 2</option>
+                                                <option value="tech3">Технік 3</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="enhancedInstallationYear">Рік встановлення</label>
+                                            <input type="number" id="enhancedInstallationYear" name="installationYear" class="form-control" min="1950" max="2030" placeholder="YYYY">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                            <i class="fas fa-times"></i> Скасувати
+                        </button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save"></i> Зберегти ліфт з картою
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Lift Details Modal -->
     <div class="modal fade" id="liftDetailsModal" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
@@ -1240,6 +1537,8 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <!-- QR Code library -->
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <!-- Custom scripts -->
@@ -1247,6 +1546,7 @@
     <script src="/assets/js/lift-utils.js"></script>
     <script src="/assets/js/lifts.js"></script>
     <script src="/assets/js/simple-lift-modal.js"></script>
+    <script src="/assets/js/enhanced-lift-modal.js"></script>
     <script src="/assets/js/test-lift-saving.js"></script>
 
     <script>
@@ -1367,6 +1667,36 @@
     const modal = document.getElementById('ai-assistant-modal');
     fabBtn.onclick = () => { modal.style.display = 'block'; };
     document.querySelector('.ai-chat-close').onclick = () => { modal.style.display = 'none'; };
+    </script>
+    
+    <script>
+    // Функція для відкриття розширеного модального вікна
+    function openEnhancedModal() {
+        console.log('Opening enhanced modal with map...');
+        
+        // Перевіряємо чи доступний enhanced lift modal
+        if (typeof window.enhancedLiftModal === 'undefined') {
+            console.error('Enhanced lift modal not available');
+            // Fallback до простого модального вікна
+            $('#liftModal').modal('show');
+            return;
+        }
+        
+        // Скидаємо форму та відкриваємо розширене модальне вікно
+        if (window.enhancedLiftModal.resetForm) {
+            window.enhancedLiftModal.resetForm();
+        }
+        
+        $('#enhancedModalTitle').text('Додати новий ліфт (з картою)');
+        $('#enhancedLiftModal').modal('show');
+    }
+    
+    // Обробник для кнопки розширеного режиму
+    $(document).ready(function() {
+        $('#add-lift-enhanced-button').on('click', function() {
+            openEnhancedModal();
+        });
+    });
     </script>
 </body>
 </html>
