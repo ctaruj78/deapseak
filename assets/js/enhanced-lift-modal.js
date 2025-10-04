@@ -6,14 +6,29 @@ class EnhancedLiftModal {
         this.interventions = [];
         this.photos = [];
         this.currentLiftId = null;
+        this.mapEnabled = true; // Флаг для відключення карти
         this.init();
     }
 
     init() {
         console.log('Initializing Enhanced Lift Modal...');
         this.initEventListeners();
-        this.initMap();
+        this.waitForLeafletAndInitMap();
         this.loadTechniciansData();
+    }
+
+    waitForLeafletAndInitMap() {
+        // Чекаємо завантаження Leaflet
+        const checkLeaflet = () => {
+            if (typeof L !== 'undefined') {
+                console.log('✅ Leaflet loaded, initializing map...');
+                this.initMap();
+            } else {
+                console.log('⏳ Waiting for Leaflet to load...');
+                setTimeout(checkLeaflet, 100);
+            }
+        };
+        checkLeaflet();
     }
 
     initEventListeners() {
@@ -99,8 +114,20 @@ class EnhancedLiftModal {
 
     async initMap() {
         try {
+            console.log('🗺️ Initializing map system...');
+            console.log('Leaflet available:', typeof L !== 'undefined');
+            console.log('#liftMap element exists:', $('#liftMap').length > 0);
+            
+            // Перевірка наявності Leaflet
+            if (typeof L === 'undefined') {
+                console.error('❌ Leaflet library not loaded! Map will be disabled.');
+                this.hideMapInterface();
+                return;
+            }
+            
             // Чекаємо, поки модальне вікно буде показано, щоб карта правильно ініціалізувалася
             $('#liftModal').on('shown.bs.modal', () => {
+                console.log('🗺️ Modal shown, creating map...');
                 if (!this.map) {
                     this.createMap();
                 } else {
@@ -111,15 +138,48 @@ class EnhancedLiftModal {
                 }
             });
             
-            console.log('Map initialization prepared');
+            console.log('✅ Map initialization prepared');
         } catch (error) {
-            console.error('Error preparing map initialization:', error);
+            console.error('❌ Error preparing map initialization:', error);
+            this.hideMapInterface();
         }
+    }
+
+    hideMapInterface() {
+        // Сховати карту якщо є проблеми з Leaflet
+        this.mapEnabled = false;
+        $('#liftMap').parent().hide();
+        // Показати повідомлення замість карти
+        const mapContainer = $('#liftMap').parent();
+        if (mapContainer.find('.map-disabled-message').length === 0) {
+            mapContainer.append(`
+                <div class="map-disabled-message alert alert-info">
+                    <i class="fas fa-info-circle"></i> 
+                    Карта тимчасово недоступна. Ви можете заповнити координати вручну або залишити порожніми.
+                </div>
+            `);
+        }
+        console.log('🚫 Map interface hidden due to loading issues');
     }
 
     createMap() {
         try {
-            console.log('Creating Leaflet map...');
+            console.log('🗺️ Creating Leaflet map...');
+            
+            // Перевірка наявності контейнера карти
+            const mapContainer = document.getElementById('liftMap');
+            if (!mapContainer) {
+                console.error('❌ Map container #liftMap not found!');
+                return;
+            }
+            
+            // Очистити попередню карту якщо є
+            if (this.map) {
+                this.map.remove();
+                this.map = null;
+            }
+            
+            console.log('📍 Initializing Leaflet map with container:', mapContainer);
             
             // Ініціалізація Leaflet карти з Києвом як центром за замовчуванням
             this.map = L.map('liftMap', {
