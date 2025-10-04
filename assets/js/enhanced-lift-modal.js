@@ -6,9 +6,7 @@ class EnhancedLiftModal {
         this.marker = null;
         this.currentCoords = null;
         this.detectedCountry = null; // Для автоматичної детекції країни за поштовим кодом
-              // Серійний номер та поштовий код НЕ обов'язкові
-        // Email клієнта - ОБОВ'ЯЗКОВИЙ для правильної роботи системи
-        const required = ['municipalNumber', 'brand', 'model', 'address', 'clientEmail'];his.init();
+        this.init();
     }
 
     init() {
@@ -332,9 +330,9 @@ class EnhancedLiftModal {
     }
 
     validateBasicFields(data) {
-        // Серійний номер НЕ обов'язковий, тому що багато старих ліфтів не мають шильдиків
-        // Email клієнта та поштовий код - ОБОВ'ЯЗКОВІ для правильної роботи системи
-        const required = ['municipalNumber', 'brand', 'model', 'address', 'postcode', 'clientEmail'];
+        // Серійний номер та поштовий код НЕ обов'язкові
+        // Email клієнта - ОБОВ'ЯЗКОВИЙ для правильної роботи системи
+        const required = ['municipalNumber', 'brand', 'model', 'address', 'clientEmail'];
         const missing = [];
         
         for (let field of required) {
