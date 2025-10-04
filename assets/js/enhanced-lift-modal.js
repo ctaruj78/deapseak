@@ -957,30 +957,30 @@ class EnhancedLiftModal {
             serial: formData.serialNumber,
             brand: formData.brand,
             model: formData.model,
-            type: formData.type,
-            capacity: parseInt(formData.capacity) || null,
-            speed: parseFloat(formData.speed) || null,
-            floorsCount: parseInt(formData.floorsCount) || null,
+            type: formData.type || 'passenger', // За замовчуванням пасажирський
+            capacity: parseInt(formData.capacity) || 8, // За замовчуванням 8 осіб
+            speed: parseFloat(formData.speed) || 1.0, // За замовчуванням 1 м/с
+            floorsCount: parseInt(formData.floorsCount) || 5, // За замовчуванням 5 поверхів
             doorsCount: parseInt(formData.doorsCount) || 2,
-            installationYear: parseInt(formData.installationYear) || null,
+            installationYear: parseInt(formData.installationYear) || new Date().getFullYear(),
             address: formData.address,
-            postcode: formData.postcode || formData.postCode,
-            buildingName: formData.buildingName,
-            floorLocation: formData.floorLocation,
-            accessCode: formData.accessCode,
+            postcode: formData.postcode || formData.postCode || '',
+            buildingName: formData.buildingName || '',
+            floorLocation: formData.floorLocation || 'ground',
+            accessCode: formData.accessCode || '',
             lat: parseFloat(formData.lat) || null,
             lng: parseFloat(formData.lng) || null,
-            clientName: formData.clientName,
-            clientEmail: formData.clientEmail,
-            clientPhone: formData.clientPhone,
-            contactPerson: formData.contactPerson,
-            clientNotes: formData.clientNotes,
-            tech: formData.assignedTechnician,
-            status: formData.status,
-            lastInspection: formData.lastMaintenance,
-            nextInspection: formData.nextMaintenance,
+            clientName: formData.clientName || 'Невказано',
+            clientEmail: formData.clientEmail || '',
+            clientPhone: formData.clientPhone || '',
+            contactPerson: formData.contactPerson || '',
+            clientNotes: formData.clientNotes || '',
+            tech: formData.assignedTechnician || 'auto',
+            status: formData.status || 'operational',
+            lastInspection: formData.lastMaintenance || null,
+            nextInspection: formData.nextMaintenance || null,
             inspectionFrequency: parseInt(formData.inspectionFrequency) || 6,
-            maintenanceNotes: formData.maintenanceNotes,
+            maintenanceNotes: formData.maintenanceNotes || '',
             qrAccessLevel: formData.qrAccessLevel || 'public',
             enableQrTracking: formData.enableQrTracking !== false,
             interventionHistory: formData.interventions || [],
@@ -1040,21 +1040,13 @@ class EnhancedLiftModal {
 
     validateForm() {
         console.log('🔍 Starting form validation...');
+        // Тільки найважливіші поля є обов'язковими
         const requiredFields = [
             { id: '#municipalNumber', name: 'Муніципальний номер' },
             { id: '#serialNumber', name: 'Серійний номер' },
             { id: '#liftBrand', name: 'Бренд' },
             { id: '#liftModel', name: 'Модель' },
-            { id: '#liftType', name: 'Тип ліфта' },
-            { id: '#liftCapacity', name: 'Пасажиромісткість' },
-            { id: '#liftSpeed', name: 'Швидкість' },
-            { id: '#liftAddress', name: 'Адреса' },
-            { id: '#liftPostcode', name: 'Поштовий код' },
-            { id: '#liftLat', name: 'Широта' },
-            { id: '#liftLng', name: 'Довгота' },
-            { id: '#clientName', name: 'Ім\'я клієнта' },
-            { id: '#clientEmail', name: 'Email клієнта' },
-            { id: '#liftStatus', name: 'Статус' }
+            { id: '#liftAddress', name: 'Адреса' }
         ];
 
         let isValid = true;
