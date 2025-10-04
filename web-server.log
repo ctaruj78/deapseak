@@ -161,3 +161,23 @@
 127.0.0.1 - - [04/Oct/2025 19:28:35] code 404, message File not found
 127.0.0.1 - - [04/Oct/2025 19:28:35] "GET /assets/img/icons/quickbooks.png HTTP/1.1" 404 -
 127.0.0.1 - - [04/Oct/2025 19:28:37] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:50:46] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:50:49] "GET /login.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:50:50] "GET /assets/js/config.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:50:50] "GET /assets/css/auth.css HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:50:50] "GET /assets/js/auth.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:50:50] "GET /assets/css/main.css HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:50:50] "GET /assets/js/common.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:50:53] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:50:53] code 501, message Unsupported method ('POST')
+127.0.0.1 - - [04/Oct/2025 19:50:53] "POST /api/login HTTP/1.1" 501 -
+127.0.0.1 - - [04/Oct/2025 19:50:56] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:50:56] "GET /assets/js/simple-lift-modal.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:50:56] "GET /assets/js/modules/ai-assistant.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:50:56] "GET /assets/js/lifts.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:50:56] "GET /assets/js/test-lift-saving.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:50:56] "GET /assets/css/ai-assistant.css HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:50:56] "GET /assets/css/enhanced-lift-modal.css HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:50:56] "GET /assets/js/lift-utils.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Oct/2025 19:51:49] "GET /pages/admin/lifts.html HTTP/1.1" 304 -
+127.0.0.1 - - [04/Oct/2025 19:51:49] "GET /assets/js/simple-lift-modal.js HTTP/1.1" 304 -
