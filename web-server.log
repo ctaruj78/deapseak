@@ -222,3 +222,10 @@
 127.0.0.1 - - [05/Oct/2025 20:31:46] "GET /assets/js/test-lift-saving.js HTTP/1.1" 200 -
 127.0.0.1 - - [05/Oct/2025 20:31:46] "GET /assets/js/modules/ai-assistant.js HTTP/1.1" 200 -
 127.0.0.1 - - [05/Oct/2025 20:31:46] "GET /assets/js/enhanced-lift-modal.js HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 20:35:02] "GET /pages/admin/unified-analytics.html HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 20:35:03] "GET /assets/js/unified-analytics-engine.js HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 20:35:54] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 20:35:58] "GET /pages/admin/unified-analytics.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 20:36:01] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 20:36:07] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 20:37:22] "GET /pages/admin/lifts.html HTTP/1.1" 304 -
