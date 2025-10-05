@@ -71,7 +71,10 @@ class UnifiedAnalyticsEngine {
             this.startRealTimeUpdates();
             
             // Обробляємо хеш URL для автоматичного переключення табів
-            this.handleUrlHash();
+            // Додаємо затримку для повного завантаження DOM
+            setTimeout(() => {
+                this.handleUrlHash();
+            }, 2000);
             
             // Додаємо обробник зміни хешу
             window.addEventListener('hashchange', () => {
@@ -1207,13 +1210,25 @@ class UnifiedAnalyticsEngine {
      */
     handleUrlHash() {
         const hash = window.location.hash;
+        console.log(`🔍 Поточний хеш: "${hash}"`);
+        
         if (hash) {
             // Очищаємо хеш від #
             const tabId = hash.substring(1);
             console.log(`🔍 Шукаємо таб: ${tabId}`);
             
+            // Перевіряємо чи є взагалі таби на сторінці
+            const allTabs = document.querySelectorAll('[data-target]');
+            console.log(`📋 Знайдено ${allTabs.length} табів на сторінці`);
+            
+            if (allTabs.length === 0) {
+                console.warn('⚠️ На сторінці немає табів для навігації');
+                return;
+            }
+            
             // Знаходимо відповідну кнопку таба
             const tabButton = document.querySelector(`[data-target="#${tabId}"]`);
+            console.log(`🎯 Результат пошуку кнопки таба:`, tabButton);
             
             if (tabButton) {
                 // Використовуємо Bootstrap 4 API для активації таба
@@ -1278,11 +1293,44 @@ let analyticsEngine;
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('📄 DOM завантажено, ініціалізуємо Analytics Engine...');
-    analyticsEngine = new UnifiedAnalyticsEngine();
     
-    // Додатковий debug для хешу
-    if (window.location.hash) {
-        console.log(`🔗 Знайдено хеш при завантаженні: ${window.location.hash}`);
+    try {
+        analyticsEngine = new UnifiedAnalyticsEngine();
+        
+        // Додатковий debug для хешу
+        if (window.location.hash) {
+            console.log(`🔗 Знайдено хеш при завантаженні: ${window.location.hash}`);
+        }
+        
+        console.log('✅ Analytics Engine успішно ініціалізовано');
+        
+    } catch (error) {
+        console.error('❌ Critical error initializing Analytics Engine:', error);
+        
+        // Fallback обробка хешу без повного engine
+        if (window.location.hash === '#predictive-analytics') {
+            console.log('🔄 Пробуємо fallback активацію AI прогнозування...');
+            setTimeout(() => {
+                const tabButton = document.querySelector('[data-target="#predictive-analytics"]');
+                const tabPane = document.querySelector('#predictive-analytics');
+                
+                if (tabButton && tabPane) {
+                    // Вимикаємо всі таби
+                    document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('active'));
+                    document.querySelectorAll('.tab-pane').forEach(pane => {
+                        pane.classList.remove('active', 'show');
+                    });
+                    
+                    // Включаємо потрібний таб
+                    tabButton.classList.add('active');
+                    tabPane.classList.add('active', 'show');
+                    
+                    console.log('✅ Fallback активація AI прогнозування успішна');
+                } else {
+                    console.error('❌ Не вдалося знайти елементи для fallback активації');
+                }
+            }, 2000);
+        }
     }
 });
 
