@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест AI Прогнозування - DeapSeaK</title>
+    <script>
+        console.log('🚀 Тестова сторінка завантажена');
+        
+        // Перевіряємо хеш при завантаженні
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📄 DOM завантажено');
+            console.log('🔗 Поточний хеш:', window.location.hash);
+            
+            // Імітуємо що робить наш код
+            setTimeout(function() {
+                const hash = window.location.hash;
+                if (hash === '#predictive-analytics') {
+                    console.log('✅ AI Прогнозування хеш виявлено!');
+                    document.getElementById('result').innerHTML = '✅ AI Прогнозування працює!';
+                } else {
+                    console.log('❌ Хеш не знайдено:', hash);
+                    document.getElementById('result').innerHTML = '❌ Хеш не знайдено: ' + hash;
+                }
+            }, 1000);
+        });
+    </script>
+</head>
+<body>
+    <h1>Тест навігації AI Прогнозування</h1>
+    <div id="result">Завантаження...</div>
+    
+    <h2>Тестові посилання:</h2>
+    <a href="?test=1#predictive-analytics">Тест з хешем #predictive-analytics</a><br>
+    <a href="unified-analytics.html#predictive-analytics">Перейти до справжньої сторінки</a>
+</body>
+</html>
