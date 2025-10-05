@@ -71,10 +71,10 @@ class UnifiedAnalyticsEngine {
             this.startRealTimeUpdates();
             
             // Обробляємо хеш URL для автоматичного переключення табів
-            // Додаємо затримку для повного завантаження DOM
-            setTimeout(() => {
+            // Використовуємо requestAnimationFrame для більш надійної синхронізації
+            this.waitForDOM(() => {
                 this.handleUrlHash();
-            }, 2000);
+            });
             
             // Додаємо обробник зміни хешу
             window.addEventListener('hashchange', () => {
@@ -1206,6 +1206,25 @@ class UnifiedAnalyticsEngine {
     }
 
     /**
+     * ⏳ Чекаємо поки DOM буде повністю готовий
+     */
+    waitForDOM(callback) {
+        const checkDOM = () => {
+            const tabsExist = document.querySelectorAll('[data-target]').length > 0;
+            if (tabsExist) {
+                console.log('✅ DOM готовий, таби знайдено');
+                callback();
+            } else {
+                console.log('⏳ Чекаємо готовності DOM...');
+                setTimeout(checkDOM, 500);
+            }
+        };
+        
+        // Запускаємо перевірку через requestAnimationFrame для синхронізації з рендерингом
+        requestAnimationFrame(checkDOM);
+    }
+
+    /**
      * 🔗 Обробка хешу URL для автоматичного переключення табів
      */
     handleUrlHash() {
@@ -1231,31 +1250,30 @@ class UnifiedAnalyticsEngine {
             console.log(`🎯 Результат пошуку кнопки таба:`, tabButton);
             
             if (tabButton) {
-                // Використовуємо Bootstrap 4 API для активації таба
-                setTimeout(() => {
-                    console.log(`🎯 Знайдено кнопку таба: ${tabButton.textContent.trim()}`);
+                console.log(`🎯 Знайдено кнопку таба: ${tabButton.textContent.trim()}`);
+                
+                // Спочатку прибираємо активний клас з усіх табів
+                document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.tab-pane').forEach(pane => {
+                    pane.classList.remove('active', 'show');
+                });
+                
+                // Активуємо потрібний таб
+                tabButton.classList.add('active');
+                const targetPane = document.querySelector(tabButton.dataset.target);
+                if (targetPane) {
+                    targetPane.classList.add('active', 'show');
                     
-                    // Спочатку прибираємо активний клас з усіх табів
-                    document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('active'));
-                    document.querySelectorAll('.tab-pane').forEach(pane => {
-                        pane.classList.remove('active', 'show');
-                    });
-                    
-                    // Активуємо потрібний таб
-                    tabButton.classList.add('active');
-                    const targetPane = document.querySelector(tabButton.dataset.target);
-                    if (targetPane) {
-                        targetPane.classList.add('active', 'show');
-                        
-                        // Ініціалізуємо контент таба при першому відкритті
-                        if (!tabButton.dataset.initialized) {
-                            this.initTabContent(tabId);
-                            tabButton.dataset.initialized = 'true';
-                        }
-                        
-                        console.log(`✅ Таб "${tabId}" успішно активовано`);
+                    // Ініціалізуємо контент таба при першому відкритті
+                    if (!tabButton.dataset.initialized) {
+                        this.initTabContent(tabId);
+                        tabButton.dataset.initialized = 'true';
                     }
-                }, 1000); // Збільшуємо затримку для повного завантаження
+                    
+                    console.log(`✅ Таб "${tabId}" успішно активовано`);
+                } else {
+                    console.error(`❌ Не вдалося знайти панель для таба "${tabId}"`);
+                }
             } else {
                 console.warn(`⚠️ Таб з ID "${tabId}" не знайдено. Доступні таби:`, 
                     Array.from(document.querySelectorAll('[data-target]')).map(btn => btn.dataset.target));
