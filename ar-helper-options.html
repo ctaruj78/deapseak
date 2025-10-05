@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🥽 Управління AR Helper</title>
+    
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper">
+        <!-- Content Wrapper -->
+        <div class="content-wrapper" style="margin-left: 0;">
+            <!-- Content Header -->
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">🥽 AR Helper - Варіанти рішення</h1>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card card-warning">
+                                <div class="card-header">
+                                    <h3 class="card-title">🤔 Проблема з AR Helper</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="alert alert-danger">
+                                        <h5><i class="icon fas fa-exclamation-triangle"></i> Поточна проблема:</h5>
+                                        <ul>
+                                            <li>AR Helper автоматично ініціалізується при кожному завантаженні сторінки</li>
+                                            <li>Кнопка AR завжди присутня в інтерфейсі</li>
+                                            <li>Дратує користувачів якщо не потрібна</li>
+                                            <li>Споживає ресурси без необхідності</li>
+                                        </ul>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="card card-outline card-primary">
+                                                <div class="card-header">
+                                                    <h3 class="card-title">📱 Варіант 1: Sidebar меню</h3>
+                                                </div>
+                                                <div class="card-body">
+                                                    <h6><strong>✅ Переваги:</strong></h6>
+                                                    <ul>
+                                                        <li>Чистий основний інтерфейс</li>
+                                                        <li>AR доступний при потребі</li>
+                                                        <li>Логічне розміщення</li>
+                                                    </ul>
+                                                    
+                                                    <h6><strong>🔧 Реалізація:</strong></h6>
+                                                    <ul>
+                                                        <li>Додати пункт в sidebar: "AR Помічник"</li>
+                                                        <li>Створити окрему сторінку ar-helper.html</li>
+                                                        <li>Прибрати кнопку з lifts.html</li>
+                                                    </ul>
+
+                                                    <div class="mt-3">
+                                                        <button class="btn btn-primary" onclick="implementSidebarOption()">
+                                                            <i class="fas fa-arrow-right"></i> Обрати цей варіант
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="card card-outline card-success">
+                                                <div class="card-header">
+                                                    <h3 class="card-title">⚙️ Варіант 2: Опціональний</h3>
+                                                </div>
+                                                <div class="card-body">
+                                                    <h6><strong>✅ Переваги:</strong></h6>
+                                                    <ul>
+                                                        <li>Користувач контролює функцію</li>
+                                                        <li>Зберігає налаштування</li>
+                                                        <li>Гнучкість використання</li>
+                                                    </ul>
+                                                    
+                                                    <h6><strong>🔧 Реалізація:</strong></h6>
+                                                    <ul>
+                                                        <li>Додати перемикач в налаштування</li>
+                                                        <li>localStorage для збереження вибору</li>
+                                                        <li>Умовна ініціалізація AR</li>
+                                                    </ul>
+
+                                                    <div class="mt-3">
+                                                        <button class="btn btn-success" onclick="implementOptionalOption()">
+                                                            <i class="fas fa-toggle-on"></i> Обрати цей варіант
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="card card-outline card-danger">
+                                                <div class="card-header">
+                                                    <h3 class="card-title">🗑️ Варіант 3: Повне видалення</h3>
+                                                </div>
+                                                <div class="card-body">
+                                                    <h6><strong>✅ Переваги:</strong></h6>
+                                                    <ul>
+                                                        <li>Повністю чистий код</li>
+                                                        <li>Жодних проблем з AR</li>
+                                                        <li>Швидша робота сторінки</li>
+                                                    </ul>
+                                                    
+                                                    <h6><strong>❌ Недоліки:</strong></h6>
+                                                    <ul>
+                                                        <li>Втрата функціональності</li>
+                                                        <li>Потрібно видаляти багато коду</li>
+                                                    </ul>
+
+                                                    <div class="mt-3">
+                                                        <button class="btn btn-danger" onclick="implementRemovalOption()">
+                                                            <i class="fas fa-trash"></i> Видалити AR
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="card card-outline card-info">
+                                                <div class="card-header">
+                                                    <h3 class="card-title">🎚️ Варіант 4: Smart mode</h3>
+                                                </div>
+                                                <div class="card-body">
+                                                    <h6><strong>✅ Переваги:</strong></h6>
+                                                    <ul>
+                                                        <li>AR тільки коли потрібен</li>
+                                                        <li>Контекстна активація</li>
+                                                        <li>Оптимальний UX</li>
+                                                    </ul>
+                                                    
+                                                    <h6><strong>🔧 Реалізація:</strong></h6>
+                                                    <ul>
+                                                        <li>AR активується для QR сканування</li>
+                                                        <li>AR для допомоги при інспекції</li>
+                                                        <li>Сховати кнопку по замовчуванню</li>
+                                                    </ul>
+
+                                                    <div class="mt-3">
+                                                        <button class="btn btn-info" onclick="implementSmartOption()">
+                                                            <i class="fas fa-brain"></i> Smart активація
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="alert alert-info">
+                                        <h6><strong>💡 Моя рекомендація:</strong></h6>
+                                        <p><strong>Варіант 2 (Опціональний)</strong> - найбільш збалансований підхід:</p>
+                                        <ul>
+                                            <li>Додати перемикач "Увімкнути AR Helper" в налаштування</li>
+                                            <li>По замовчуванню - вимкнено</li>
+                                            <li>Користувач сам вирішує чи потрібен AR</li>
+                                            <li>Зберігається вся функціональність для тих хто хоче</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+    
+    <script>
+        function implementSidebarOption() {
+            if (confirm('Реалізувати варіант з sidebar меню?\n\n- Створити окрему сторінку для AR\n- Прибрати кнопку з основної сторінки\n- Додати пункт в sidebar')) {
+                alert('✅ Отличний вибір! Sidebar варіант буде реалізований.');
+                console.log('🚀 Реалізуємо sidebar варіант...');
+            }
+        }
+        
+        function implementOptionalOption() {
+            if (confirm('Реалізувати опціональний AR?\n\n- Додати перемикач в налаштування\n- По замовчуванню вимкнено\n- Користувач контролює функцію')) {
+                alert('✅ Відмінний вибір! Опціональний AR буде реалізований.');
+                console.log('🚀 Реалізуємо опціональний AR...');
+            }
+        }
+        
+        function implementRemovalOption() {
+            if (confirm('⚠️ УВАГА! Повністю видалити AR функціональність?\n\nЦе незворотна дія!')) {
+                if (confirm('Ви впевнені? AR код буде повністю видалений.')) {
+                    alert('🗑️ AR буде повністю видалений з системи.');
+                    console.log('🚀 Видаляємо AR функціональність...');
+                }
+            }
+        }
+        
+        function implementSmartOption() {
+            if (confirm('Реалізувати Smart AR mode?\n\n- AR тільки коли потрібен\n- Контекстна активація\n- Сховати кнопку по замовчуванню')) {
+                alert('✅ Smart режим - розумний вибір! Буде реалізований.');
+                console.log('🚀 Реалізуємо Smart AR mode...');
+            }
+        }
+    </script>
+</body>
+</html>
