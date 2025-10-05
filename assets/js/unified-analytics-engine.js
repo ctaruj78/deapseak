@@ -1458,48 +1458,84 @@ class UnifiedAnalyticsEngine {
             const tabId = hash.substring(1);
             console.log(`🔍 Шукаємо таб: ${tabId}`);
             
-            // Перевіряємо чи є взагалі таби на сторінці
-            const allTabs = document.querySelectorAll('[data-target]');
-            console.log(`📋 Знайдено ${allTabs.length} табів на сторінці`);
-            
-            if (allTabs.length === 0) {
-                console.warn('⚠️ На сторінці немає табів для навігації');
-                return;
-            }
-            
-            // Знаходимо відповідну кнопку таба
-            const tabButton = document.querySelector(`[data-target="#${tabId}"]`);
-            console.log(`🎯 Результат пошуку кнопки таба:`, tabButton);
-            
-            if (tabButton) {
-                console.log(`🎯 Знайдено кнопку таба: ${tabButton.textContent.trim()}`);
+            // Використовуємо нашу універсальну функцію активації
+            this.activateTab(tabId);
+        }
+    }
+
+    /**
+     * 🎯 Універсальна функція активації таба
+     */
+    activateTab(tabId) {
+        console.log(`🎯 Активуємо таб: ${tabId}`);
+        
+        // Перевіряємо чи є взагалі таби на сторінці
+        const allTabs = document.querySelectorAll('[data-target]');
+        console.log(`📋 Знайдено ${allTabs.length} табів на сторінці`);
+        
+        if (allTabs.length === 0) {
+            console.warn('⚠️ На сторінці немає табів для навігації');
+            return false;
+        }
+        
+        // Знаходимо відповідну кнопку таба
+        const tabButton = document.querySelector(`[data-target="#${tabId}"]`);
+        console.log(`🎯 Результат пошуку кнопки таба:`, tabButton);
+        
+        if (!tabButton) {
+            console.warn(`⚠️ Таб з ID "${tabId}" не знайдено. Доступні таби:`, 
+                Array.from(document.querySelectorAll('[data-target]')).map(btn => btn.dataset.target));
+            return false;
+        }
+
+        // Спробуємо кілька способів активації
+        console.log(`🎯 Знайдено кнопку таба: ${tabButton.textContent.trim()}`);
+        
+        // Спосіб 1: Bootstrap API (якщо доступний)
+        if (typeof $ !== 'undefined' && $.fn.tab) {
+            console.log('📋 Використовуємо Bootstrap API');
+            try {
+                $(tabButton).tab('show');
+                console.log('✅ Bootstrap API активація успішна');
                 
-                // Спочатку прибираємо активний клас з усіх табів
-                document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('active'));
-                document.querySelectorAll('.tab-pane').forEach(pane => {
-                    pane.classList.remove('active', 'show');
-                });
-                
-                // Активуємо потрібний таб
-                tabButton.classList.add('active');
-                const targetPane = document.querySelector(tabButton.dataset.target);
-                if (targetPane) {
-                    targetPane.classList.add('active', 'show');
-                    
-                    // Ініціалізуємо контент таба при першому відкритті
-                    if (!tabButton.dataset.initialized) {
-                        this.initTabContent(tabId);
-                        tabButton.dataset.initialized = 'true';
-                    }
-                    
-                    console.log(`✅ Таб "${tabId}" успішно активовано`);
-                } else {
-                    console.error(`❌ Не вдалося знайти панель для таба "${tabId}"`);
+                // Ініціалізуємо контент таба
+                if (!tabButton.dataset.initialized) {
+                    this.initTabContent(tabId);
+                    tabButton.dataset.initialized = 'true';
                 }
-            } else {
-                console.warn(`⚠️ Таб з ID "${tabId}" не знайдено. Доступні таби:`, 
-                    Array.from(document.querySelectorAll('[data-target]')).map(btn => btn.dataset.target));
+                return true;
+            } catch (error) {
+                console.warn('⚠️ Bootstrap API не спрацював, використовуємо DOM маніпуляції');
             }
+        }
+        
+        // Спосіб 2: Прямі DOM маніпуляції
+        console.log('📋 Використовуємо DOM маніпуляції');
+        
+        // Прибираємо активний клас з усіх табів
+        document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach(pane => {
+            pane.classList.remove('active', 'show');
+        });
+        
+        // Активуємо потрібний таб
+        tabButton.classList.add('active');
+        const targetPane = document.querySelector(tabButton.dataset.target);
+        
+        if (targetPane) {
+            targetPane.classList.add('active', 'show');
+            
+            // Ініціалізуємо контент таба при першому відкритті
+            if (!tabButton.dataset.initialized) {
+                this.initTabContent(tabId);
+                tabButton.dataset.initialized = 'true';
+            }
+            
+            console.log(`✅ Таб "${tabId}" успішно активовано через DOM`);
+            return true;
+        } else {
+            console.error(`❌ Не вдалося знайти панель для таба "${tabId}"`);
+            return false;
         }
     }
 
@@ -1531,6 +1567,22 @@ class UnifiedAnalyticsEngine {
 
 // Ініціалізація при завантаженні сторінки
 let analyticsEngine;
+
+// Глобальна функція для активації AI прогнозування
+window.activateAIPredictive = function() {
+    console.log('🔮 Глобальна активація AI прогнозування...');
+    if (analyticsEngine) {
+        const success = analyticsEngine.activateTab('predictive-analytics');
+        if (success) {
+            // Оновлюємо URL без перезавантаження сторінки
+            window.history.pushState(null, null, '#predictive-analytics');
+        }
+        return success;
+    } else {
+        console.error('❌ Analytics Engine не ініціалізований');
+        return false;
+    }
+};
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('📄 DOM завантажено, ініціалізуємо Analytics Engine...');

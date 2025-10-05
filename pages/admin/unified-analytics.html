@@ -1210,5 +1210,65 @@
 <!-- Unified Analytics Engine -->
 <script src="../../assets/js/unified-analytics-engine.js"></script>
 
+<!-- Додатковий скрипт для гарантованої активації AI прогнозування -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔍 Перевіряємо хеш при завантаженні сторінки...');
+    
+    // Якщо в URL є хеш predictive-analytics, форсуємо активацію
+    if (window.location.hash === '#predictive-analytics') {
+        console.log('🎯 Знайдено хеш AI прогнозування, форсуємо активацію...');
+        
+        // Чекаємо поки все завантажиться і активуємо таб
+        setTimeout(() => {
+            if (window.activateAIPredictive) {
+                const success = window.activateAIPredictive();
+                console.log(success ? '✅ AI таб активовано' : '❌ Не вдалося активувати AI таб');
+            } else {
+                // Fallback - пряма активація
+                console.log('🔄 Використовуємо fallback активацію...');
+                const tabButton = document.querySelector('[data-target="#predictive-analytics"]');
+                const tabPane = document.querySelector('#predictive-analytics');
+                
+                if (tabButton && tabPane) {
+                    // Деактивуємо всі таби
+                    document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('active'));
+                    document.querySelectorAll('.tab-pane').forEach(pane => {
+                        pane.classList.remove('active', 'show');
+                    });
+                    
+                    // Активуємо AI таб
+                    tabButton.classList.add('active');
+                    tabPane.classList.add('active', 'show');
+                    
+                    console.log('✅ Fallback активація AI таба успішна');
+                } else {
+                    console.error('❌ Не вдалося знайти елементи AI таба');
+                }
+            }
+        }, 2000); // Збільшена затримка для надійності
+    }
+});
+
+// Додаємо обробник для всіх посилань на AI прогнозування
+document.addEventListener('click', function(e) {
+    const link = e.target.closest('a[href*="#predictive-analytics"]');
+    if (link) {
+        e.preventDefault();
+        console.log('🔗 Перехоплено клік по посиланню AI прогнозування');
+        
+        // Оновлюємо URL
+        window.history.pushState(null, null, '#predictive-analytics');
+        
+        // Активуємо таб
+        setTimeout(() => {
+            if (window.activateAIPredictive) {
+                window.activateAIPredictive();
+            }
+        }, 100);
+    }
+});
+</script>
+
 </body>
 </html>
