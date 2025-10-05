@@ -844,7 +844,7 @@ class UnifiedAnalyticsEngine {
         document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab => {
             tab.addEventListener('click', (e) => {
                 e.preventDefault();
-                this.handleTabSwitch(e.target.getAttribute('data-bs-target'));
+                this.handleTabSwitch(e.target.getAttribute('data-target'));
             });
         });
         
@@ -875,7 +875,7 @@ class UnifiedAnalyticsEngine {
             link.classList.remove('active');
         });
         
-        document.querySelector(`[data-bs-target="${targetTab}"]`)?.classList.add('active');
+        document.querySelector(`[data-target="${targetTab}"]`)?.classList.add('active');
     }
 
     // Очистка ресурсів
@@ -1207,7 +1207,7 @@ class UnifiedAnalyticsEngine {
             const tabId = hash.substring(1);
             
             // Знаходимо відповідну кнопку таба
-            const tabButton = document.querySelector(`[data-bs-target="#${tabId}"]`);
+            const tabButton = document.querySelector(`[data-target="#${tabId}"]`);
             
             if (tabButton) {
                 // Симулюємо клік по табу для його активації

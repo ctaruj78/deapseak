@@ -229,3 +229,25 @@
 127.0.0.1 - - [05/Oct/2025 20:36:01] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
 127.0.0.1 - - [05/Oct/2025 20:36:07] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
 127.0.0.1 - - [05/Oct/2025 20:37:22] "GET /pages/admin/lifts.html HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 20:40:36] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 20:40:39] "GET /login.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 20:40:40] "GET /assets/css/main.css HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 20:40:40] "GET /assets/js/auth.js HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 20:40:40] "GET /assets/css/auth.css HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 20:40:40] "GET /assets/js/config.js HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 20:40:40] "GET /assets/js/common.js HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 20:40:43] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 20:40:43] code 501, message Unsupported method ('POST')
+127.0.0.1 - - [05/Oct/2025 20:40:43] "POST /api/login HTTP/1.1" 501 -
+127.0.0.1 - - [05/Oct/2025 20:40:45] "GET /pages/admin/unified-analytics.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 20:40:46] "GET /assets/js/unified-analytics-engine.js HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 20:40:51] "GET /assets/js/unified-analytics-engine.js HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 20:41:03] "GET /assets/js/unified-analytics-engine.js HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 20:44:40] "GET /pages/ai-assistant/ai-assistant.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 20:44:40] "GET /assets/js/modules/ai-assistant.js HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 20:44:41] code 404, message File not found
+127.0.0.1 - - [05/Oct/2025 20:44:41] "GET /assets/img/avatars/admin.png HTTP/1.1" 404 -
+127.0.0.1 - - [05/Oct/2025 20:44:41] "GET /assets/css/ai-assistant.css HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 20:44:41] "GET /assets/img/logo.png HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 20:44:48] "GET /pages/admin/unified-analytics.html HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 20:44:49] "GET /assets/js/unified-analytics-engine.js HTTP/1.1" 304 -
