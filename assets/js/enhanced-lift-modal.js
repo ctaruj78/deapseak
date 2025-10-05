@@ -482,6 +482,22 @@ class EnhancedLiftModal {
             // Зберігаємо в localStorage
             this.saveToStorage();
             
+            // 🚀 EventBus: Повідомляємо про створення ліфтів
+            if (window.eventBus && savedCount > 0) {
+                for (const lift of liftsToSave) {
+                    if (window.allLifts.some(l => l.id === lift.id)) {
+                        eventBus.emit('lift:created', {
+                            id: lift.id,
+                            municipalNumber: lift.municipalNumber,
+                            name: lift.buildingName || lift.municipalNumber,
+                            address: lift.address,
+                            coordinates: { lat: lift.latitude, lng: lift.longitude },
+                            data: lift
+                        }, { source: 'enhanced-lift-modal' });
+                    }
+                }
+            }
+            
             // Успіх з кількістю збережених ліфтів
             const message = savedCount > 1 ? 
                 `Успішно збережено ${savedCount} ліфтів з координатами!` :
@@ -790,6 +806,16 @@ class EnhancedLiftModal {
             
             // Додаємо canvas до контейнера
             $(previewContainer).html(canvas);
+            
+            // 🚀 EventBus: Повідомляємо про генерацію QR коду
+            if (window.eventBus) {
+                eventBus.emit('qr:generated', {
+                    municipalNumber: qrData.municipalNumber,
+                    liftNumber: liftNumber,
+                    qrData: qrData,
+                    canvas: canvas
+                }, { source: 'qr-generator' });
+            }
             
             // Додаємо кнопки для дій з QR-кодом
             const actionsHtml = `
