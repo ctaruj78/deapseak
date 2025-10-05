@@ -379,6 +379,17 @@
                                         <button id="test-saving-button" class="btn btn-warning btn-sm mr-2" onclick="testLiftSaving()" style="display: none;">
                                             <i class="fas fa-bug"></i> Тест збереження
                                         </button>
+                                        
+                                        <!-- Voice + AR Controls -->
+                                        <div class="btn-group mr-2" role="group">
+                                            <button id="voice-control-btn" class="btn btn-primary btn-sm" onclick="toggleVoiceControl()" title="Голосове управління">
+                                                <i class="fas fa-microphone"></i> Voice
+                                            </button>
+                                            <button id="ar-helper-btn" class="btn btn-info btn-sm" onclick="startARHelper()" title="AR Помічник">
+                                                <i class="fas fa-eye"></i> AR
+                                            </button>
+                                        </div>
+                                        
                                         <button id="add-lift-button" class="btn btn-success btn-sm" onclick="openEnhancedModal()">
                                             <i class="fas fa-plus"></i> Додати ліфт
                                         </button>
@@ -1903,6 +1914,8 @@
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <!-- Custom scripts -->
     <script src="/assets/js/system-eventbus.js"></script>
+    <script src="/assets/js/voice-control.js"></script>
+    <script src="/assets/js/ar-helper.js"></script>
     <script src="/assets/js/common.js"></script>
     <script src="/assets/js/lift-utils.js"></script>
     <script src="/assets/js/lifts.js"></script>
@@ -2873,6 +2886,81 @@
         } else {
             console.warn('⚠️ EventBus не знайдено, деякі автоматичні функції не працюватимуть');
         }
+
+        // 🎤🥽 Voice + AR функції управління
+        window.toggleVoiceControl = function() {
+            if (!window.voiceControl) {
+                alert('⚠️ Voice Control ще не ініціалізований. Спробуйте через кілька секунд.');
+                return;
+            }
+            
+            const btn = document.getElementById('voice-control-btn');
+            
+            if (voiceControl.isListening) {
+                voiceControl.stopListening();
+                btn.classList.remove('btn-danger');
+                btn.classList.add('btn-primary');
+                btn.innerHTML = '<i class="fas fa-microphone"></i> Voice';
+            } else {
+                voiceControl.startListening();
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-danger');
+                btn.innerHTML = '<i class="fas fa-microphone"></i> Активний';
+                
+                // Показуємо підказку
+                toastr.info('🎤 Голосове управління активне! Скажіть "допомога" для команд');
+            }
+        };
+
+        window.startARHelper = function() {
+            if (!window.arHelper) {
+                alert('⚠️ AR Helper ще не ініціалізований. Спробуйте через кілька секунд.');
+                return;
+            }
+            
+            if (!arHelper.isInitialized) {
+                alert('⚠️ AR Helper не підтримується цим пристроєм/браузером');
+                return;
+            }
+            
+            // Запускаємо AR в режимі гіда
+            arHelper.startAR('guide');
+            toastr.success('🥽 AR Helper запущено! Наведіть камеру для інтерактивних підказок');
+        };
+
+        // Ініціалізація Voice + AR після завантаження EventBus
+        setTimeout(() => {
+            // Перевіряємо готовність Voice Control
+            if (window.voiceControl) {
+                console.log('✅ Voice Control готовий');
+                
+                // Додаємо спеціальні команди для сторінки ліфтів
+                voiceControl.addCustomCommand('показати список ліфтів', () => {
+                    document.getElementById('lifts-table-container').scrollIntoView({ behavior: 'smooth' });
+                    voiceControl.speak('Показую список ліфтів');
+                });
+                
+                voiceControl.addCustomCommand('відкрити статистику', () => {
+                    document.querySelector('.row .small-box').scrollIntoView({ behavior: 'smooth' });
+                    voiceControl.speak('Показую статистику');
+                });
+            }
+            
+            // Перевіряємо готовність AR Helper
+            if (window.arHelper && arHelper.isInitialized) {
+                console.log('✅ AR Helper готовий');
+                
+                // Додаємо індикатор готовності AR
+                const arBtn = document.getElementById('ar-helper-btn');
+                arBtn.title = 'AR Helper готовий! Клікніть для запуску';
+                arBtn.style.borderColor = '#4CAF50';
+            } else {
+                // AR не підтримується - показуємо fallback
+                const arBtn = document.getElementById('ar-helper-btn');
+                arBtn.title = 'Smart Helper (AR недоступний)';
+                arBtn.innerHTML = '<i class="fas fa-lightbulb"></i> Smart';
+            }
+        }, 3000);
 
         // Оновлюємо список при завантаженні
         setTimeout(updateScheduledInspectionsList, 500);
