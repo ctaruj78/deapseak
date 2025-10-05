@@ -1328,26 +1328,58 @@ document.addEventListener('DOMContentLoaded', function() {
         // Fallback обробка хешу без повного engine
         if (window.location.hash === '#predictive-analytics') {
             console.log('🔄 Пробуємо fallback активацію AI прогнозування...');
-            setTimeout(() => {
+            
+            const activatePredictiveTab = () => {
                 const tabButton = document.querySelector('[data-target="#predictive-analytics"]');
                 const tabPane = document.querySelector('#predictive-analytics');
                 
                 if (tabButton && tabPane) {
-                    // Вимикаємо всі таби
-                    document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('active'));
-                    document.querySelectorAll('.tab-pane').forEach(pane => {
-                        pane.classList.remove('active', 'show');
-                    });
+                    console.log('🎯 Знайдено елементи для fallback активації');
                     
-                    // Включаємо потрібний таб
-                    tabButton.classList.add('active');
-                    tabPane.classList.add('active', 'show');
+                    // Спробуємо використати Bootstrap 4 API якщо він доступний
+                    if (typeof $ !== 'undefined' && $.fn.tab) {
+                        console.log('📋 Використовуємо Bootstrap 4 API для активації таба');
+                        $(tabButton).tab('show');
+                        console.log('✅ Bootstrap API активація завершена');
+                    } else {
+                        console.log('📋 Використовуємо прямі DOM маніпуляції');
+                        // Вимикаємо всі таби
+                        document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('active'));
+                        document.querySelectorAll('.tab-pane').forEach(pane => {
+                            pane.classList.remove('active', 'show');
+                        });
+                        
+                        // Включаємо потрібний таб
+                        tabButton.classList.add('active');
+                        tabPane.classList.add('active', 'show');
+                        console.log('✅ DOM маніпуляції завершені');
+                    }
                     
                     console.log('✅ Fallback активація AI прогнозування успішна');
                 } else {
                     console.error('❌ Не вдалося знайти елементи для fallback активації');
+                    console.log('🔍 Доступні data-target елементи:', 
+                        Array.from(document.querySelectorAll('[data-target]')).map(el => el.dataset.target));
                 }
-            }, 2000);
+            };
+            
+            // Спробуємо кілька разів з інтервалом
+            let attempts = 0;
+            const maxAttempts = 5;
+            const tryActivate = () => {
+                attempts++;
+                console.log(`🔄 Спроба активації ${attempts}/${maxAttempts}`);
+                
+                if (document.querySelector('[data-target="#predictive-analytics"]')) {
+                    activatePredictiveTab();
+                } else if (attempts < maxAttempts) {
+                    setTimeout(tryActivate, 1000);
+                } else {
+                    console.error('❌ Не вдалося знайти таб після всіх спроб');
+                }
+            };
+            
+            setTimeout(tryActivate, 1000);
         }
     }
 });
