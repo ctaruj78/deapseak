@@ -252,6 +252,99 @@
                         </div>
                     </div>
 
+                    <!-- Lifts Management Settings -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card setting-card">
+                                <div class="card-header bg-primary">
+                                    <h3 class="card-title">🏢 Налаштування управління ліфтами</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="auto-refresh-interval">🔄 Автооновлення списку ліфтів (секунди)</label>
+                                                <div class="input-group">
+                                                    <input type="number" class="form-control" id="auto-refresh-interval" min="5" max="300" value="30">
+                                                    <div class="input-group-append">
+                                                        <span class="input-group-text">сек</span>
+                                                    </div>
+                                                </div>
+                                                <small class="text-muted">Інтервал оновлення даних ліфтів (5-300 секунд)</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="lifts-per-page">📄 Ліфтів на сторінку</label>
+                                                <select class="form-control" id="lifts-per-page">
+                                                    <option value="10">10 ліфтів</option>
+                                                    <option value="25" selected>25 ліфтів</option>
+                                                    <option value="50">50 ліфтів</option>
+                                                    <option value="100">100 ліфтів</option>
+                                                </select>
+                                                <small class="text-muted">Кількість ліфтів для відображення на одній сторінці</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <div>
+                                                    <h6>📊 Показувати статистику в реальному часі</h6>
+                                                    <small class="text-muted">Відображення live метрик ліфтів</small>
+                                                </div>
+                                                <label class="switch">
+                                                    <input type="checkbox" id="realtime-stats-toggle" checked>
+                                                    <span class="slider"></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <div>
+                                                    <h6>🔍 Автопошук при вводі</h6>
+                                                    <small class="text-muted">Пошук ліфтів під час набору тексту</small>
+                                                </div>
+                                                <label class="switch">
+                                                    <input type="checkbox" id="auto-search-toggle" checked>
+                                                    <span class="slider"></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <div>
+                                                    <h6>⚠️ Автоповідомлення про проблеми</h6>
+                                                    <small class="text-muted">Автоматичні повідомлення про поломки</small>
+                                                </div>
+                                                <label class="switch">
+                                                    <input type="checkbox" id="auto-alerts-toggle" checked>
+                                                    <span class="slider"></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <div>
+                                                    <h6>💾 Автозбереження змін</h6>
+                                                    <small class="text-muted">Зберігати зміни автоматично</small>
+                                                </div>
+                                                <label class="switch">
+                                                    <input type="checkbox" id="auto-save-toggle" checked>
+                                                    <span class="slider"></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Save Settings -->
                     <div class="row">
                         <div class="col-md-12">
@@ -302,7 +395,14 @@
                     analytics: true,
                     pushNotifications: true,
                     soundNotifications: true,
-                    emailNotifications: false
+                    emailNotifications: false,
+                    // Налаштування ліфтів
+                    autoRefreshInterval: 30,
+                    liftsPerPage: 25,
+                    realtimeStats: true,
+                    autoSearch: true,
+                    autoAlerts: true,
+                    autoSave: true
                 };
                 
                 const saved = localStorage.getItem('deapseak_settings');
@@ -322,6 +422,17 @@
                         toggle.checked = this.settings[key];
                     }
                 });
+                
+                // Завантажуємо числові поля
+                const intervalInput = document.getElementById('auto-refresh-interval');
+                if (intervalInput) {
+                    intervalInput.value = this.settings.autoRefreshInterval;
+                }
+                
+                const liftsPerPageSelect = document.getElementById('lifts-per-page');
+                if (liftsPerPageSelect) {
+                    liftsPerPageSelect.value = this.settings.liftsPerPage;
+                }
                 
                 this.updateARStatus();
             }
@@ -362,6 +473,31 @@
                         this.settings[`${type}Notifications`] = e.target.checked;
                         this.saveSettings();
                     });
+                });
+                
+                // Налаштування ліфтів
+                const autoRefreshInterval = document.getElementById('auto-refresh-interval');
+                autoRefreshInterval.addEventListener('change', (e) => {
+                    this.settings.autoRefreshInterval = parseInt(e.target.value);
+                    this.saveSettings();
+                });
+                
+                const liftsPerPage = document.getElementById('lifts-per-page');
+                liftsPerPage.addEventListener('change', (e) => {
+                    this.settings.liftsPerPage = parseInt(e.target.value);
+                    this.saveSettings();
+                });
+                
+                // Перемикачі налаштувань ліфтів
+                ['realtime-stats', 'auto-search', 'auto-alerts', 'auto-save'].forEach(setting => {
+                    const toggle = document.getElementById(`${setting}-toggle`);
+                    if (toggle) {
+                        toggle.addEventListener('change', (e) => {
+                            const key = setting.replace(/-([a-z])/g, (match, letter) => letter.toUpperCase());
+                            this.settings[key] = e.target.checked;
+                            this.saveSettings();
+                        });
+                    }
                 });
                 
                 // Test AR button
