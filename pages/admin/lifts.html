@@ -235,6 +235,10 @@
             border: 1px solid #ddd !important;
             color: #333 !important;
             transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            pointer-events: auto !important;
+            -webkit-user-select: text !important;
+            user-select: text !important;
+            z-index: 9999 !important;
         }
         
         #inspectionReportModal input:focus, 
@@ -244,6 +248,21 @@
             border-color: #80bdff !important;
             outline: 0;
             box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
+        }
+
+        /* Спеціальні стилі для поля інспектора */
+        #inspectionReportModal #inspectorName {
+            background: white !important;
+            border: 2px solid #007bff !important;
+            color: #000 !important;
+            font-weight: normal !important;
+            pointer-events: auto !important;
+            cursor: text !important;
+        }
+        
+        #inspectionReportModal #inspectorName:focus {
+            border-color: #0056b3 !important;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5) !important;
         }
         
         /* Покращення відображення модальних вікон один поверх іншого */
@@ -2019,9 +2038,8 @@
         </div>
     </div>
 
-    <!-- Inspection Report Modal -->
-    <div class="modal fade" id="inspectionReportModal" tabindex="-1" role="dialog" aria-hidden="true" 
-         style="z-index: 1060;">
+    <!-- Inspection Report Modal (спрощена версія) -->
+    <div class="modal fade" id="inspectionReportModal" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document" style="max-height: 90vh;">
             <div class="modal-content" style="max-height: 90vh; display: flex; flex-direction: column;">
                 <div class="modal-header bg-warning">
@@ -2070,24 +2088,12 @@
                                                    id="inspectorName" 
                                                    name="inspectorName"
                                                    class="form-control" 
-                                                   placeholder="Прізвище Ім'я По-батькові" 
+                                                   placeholder="Введіть прізвище, ім'я та по-батькові інспектора" 
                                                    autocomplete="off" 
-                                                   spellcheck="false"
                                                    tabindex="1"
                                                    maxlength="100"
-                                                   style="background: white !important; 
-                                                          color: black !important; 
-                                                          border: 1px solid #007bff !important;"
                                                    required>
-                                            <!-- Тестова кнопка для debug -->
-                                            <div class="mt-2">
-                                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="testInspectorInput()">
-                                                    🧪 Тест введення імені
-                                                </button>
-                                                <button type="button" class="btn btn-sm btn-outline-success" onclick="forceSetInspectorName('Петренко Петро Петрович')">
-                                                    ✏️ Встановити тестове ім'я
-                                                </button>
-                                            </div>
+                                            <small class="form-text text-muted">Приклад: Петренко Петро Петрович</small>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -2155,35 +2161,27 @@
                             </div>
                         </div>
 
-                        <!-- Додаткові коментарі -->
-                        <div class="card card-outline card-warning mb-3">
+                        <!-- Спрощена інформація -->
+                        <div class="card card-outline card-info mb-3">
                             <div class="card-header">
-                                <h3 class="card-title"><i class="fas fa-comments mr-2"></i>Коментарі та рекомендації</h3>
+                                <h3 class="card-title"><i class="fas fa-calendar mr-2"></i>Додаткова інформація</h3>
                             </div>
                             <div class="card-body">
-                                <div class="form-group">
-                                    <label for="inspectionComments">Коментарі інспектора</label>
-                                    <textarea class="form-control" id="inspectionComments" rows="4" 
-                                              placeholder="Додаткові коментарі, рекомендації, виявлені недоліки..."
-                                              style="background: white !important; 
-                                                     color: black !important; 
-                                                     border: 1px solid #28a745 !important;
-                                                     resize: vertical !important;"></textarea>
-                                    <!-- Тестові кнопки для поля коментарів -->
-                                    <div class="mt-2">
-                                        <button type="button" class="btn btn-sm btn-outline-info" onclick="testCommentsField()">
-                                            💬 Тест коментарів
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-outline-warning" onclick="document.getElementById('inspectionComments').value='Проведено планову інспекцію.\nВиявлено незначні недоліки в роботі дверей.\nРекомендується профілактичне обслуговування протягом місяця.'">
-                                            📝 Встановити тестовий коментар
-                                        </button>
-                                    </div>
-                                </div>
-                                
                                 <div class="form-group">
                                     <label for="nextInspectionDue">Наступна інспекція до</label>
                                     <input type="date" id="nextInspectionDue" class="form-control">
                                     <small class="text-muted">Рекомендована дата наступної інспекції</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="inspectionComments">Коментарі інспектора</label>
+                                    <textarea class="form-control" 
+                                              id="inspectionComments" 
+                                              name="inspectionComments"
+                                              rows="4" 
+                                              placeholder="Введіть коментарі, рекомендації, виявлені недоліки або інші примітки...">
+                                    </textarea>
+                                    <small class="form-text text-muted">Необов'язкове поле для додаткової інформації</small>
                                 </div>
                             </div>
                         </div>
@@ -2977,133 +2975,49 @@
             });
         }
 
-        // Додаткова функція для тестування поля інспектора
-        function testInspectorField() {
-            const field = document.getElementById('inspectorName');
-            if (field) {
-                console.log('Testing inspector field...');
-                console.log('Field found:', field);
-                console.log('Field value:', field.value);
-                console.log('Field disabled:', field.disabled);
-                console.log('Field readonly:', field.readOnly);
-                console.log('Field style:', field.style.cssText);
-                
-                // Пробуємо встановити значення програмно
-                field.value = 'Тест Тестович Тестенко';
-                console.log('After setting value:', field.value);
-                
-                // Пробуємо trigger events
-                field.dispatchEvent(new Event('input', { bubbles: true }));
-                field.dispatchEvent(new Event('change', { bubbles: true }));
-            }
-        }
+        // Ініціалізація форми звіту інспекції
+        console.log('✅ Форма звіту інспекції ініціалізована');
         
-        // Додаємо тестову кнопку (тимчасово для debug)
-        setTimeout(() => {
-            console.log('Testing inspector field on page load...');
-            testInspectorField();
-        }, 2000);
-
-        // Додаткова функція для примусового введення тексту
-        window.forceSetInspectorName = function(name) {
-            const field = document.getElementById('inspectorName');
-            if (field) {
-                field.value = name;
-                field.dispatchEvent(new Event('input', { bubbles: true }));
-                field.dispatchEvent(new Event('change', { bubbles: true }));
-                console.log('✅ Примусово встановлено ім\'я інспектора:', name);
-                return true;
-            }
-            console.error('❌ Поле inspectorName не знайдено');
-            return false;
-        };
-
-        // Функція для тестування введення в поле інспектора
-        window.testInspectorInput = function() {
-            console.log('🧪 === ТЕСТУВАННЯ INPUT ПОЛЯ ===');
+        // Debug функція для перевірки модального вікна
+        window.debugInspectionModal = function() {
+            console.log('🔍 === DEBUG МОДАЛЬНОГО ВІКНА ===');
+            const modal = document.getElementById('inspectionReportModal');
+            console.log('Modal element:', modal);
             
-            const field = document.getElementById('inspectorName');
-            if (!field) {
-                console.error('❌ Поле не знайдено!');
-                alert('Поле не знайдено!');
-                return;
-            }
-
-            console.log('✅ Поле знайдено:', field);
-            console.log('📋 Поточне значення:', field.value);
-            console.log('🎯 Disabled:', field.disabled);
-            console.log('📖 ReadOnly:', field.readOnly);
-            console.log('🎨 Style:', field.style.cssText);
-
-            // Пробуємо встановити фокус
-            field.focus();
-            console.log('🎯 Фокус встановлено');
-
-            // Пробуємо змінити значення
-            const testValue = 'Тестов Тест Тестович';
-            field.value = testValue;
-            console.log('✏️ Встановлено тестове значення:', testValue);
-
-            // Імітуємо події
-            field.dispatchEvent(new Event('input', { bubbles: true }));
-            field.dispatchEvent(new Event('change', { bubbles: true }));
-            console.log('🔄 Події input та change відправлені');
-
-            // Перевіряємо результат
-            setTimeout(() => {
-                console.log('📊 Фінальне значення:', field.value);
-                if (field.value === testValue) {
-                    console.log('✅ ТЕСТ ПРОЙШОВ УСПІШНО!');
-                    alert('✅ Поле працює! Значення: ' + field.value);
-                } else {
-                    console.log('❌ ТЕСТ НЕ ПРОЙШОВ');
-                    alert('❌ Поле не працює. Очікувалось: ' + testValue + ', отримано: ' + field.value);
+            if (modal) {
+                const inspectorField = document.getElementById('inspectorName');
+                const commentsField = document.getElementById('inspectionComments');
+                
+                console.log('Inspector field:', inspectorField);
+                console.log('Inspector disabled:', inspectorField?.disabled);
+                console.log('Inspector readonly:', inspectorField?.readOnly);
+                console.log('Inspector style:', inspectorField?.style?.cssText);
+                
+                console.log('Comments field:', commentsField);
+                console.log('Comments disabled:', commentsField?.disabled);
+                console.log('Comments readonly:', commentsField?.readOnly);
+                
+                // Перевіряємо backdrop'и
+                const backdrops = document.querySelectorAll('.modal-backdrop');
+                console.log('Backdrop count:', backdrops.length);
+                
+                // Перевіряємо duplicates
+                const modalCount = document.querySelectorAll('#inspectionReportModal').length;
+                console.log('Modal count:', modalCount);
+                
+                if (modalCount > 1) {
+                    console.error('❌ ЗНАЙДЕНО ДУБЛІКАТИ МОДАЛЬНОГО ВІКНА!');
                 }
-            }, 500);
-        };
-
-        // Функція для тестування поля коментарів
-        window.testCommentsField = function() {
-            console.log('💬 === ТЕСТУВАННЯ ПОЛЯ КОМЕНТАРІВ ===');
-            
-            const field = document.getElementById('inspectionComments');
-            if (!field) {
-                console.error('❌ Поле коментарів не знайдено!');
-                alert('Поле коментарів не знайдено!');
-                return;
             }
-
-            console.log('✅ Поле коментарів знайдено:', field);
-            console.log('📋 Поточне значення:', field.value);
-            console.log('🎯 Disabled:', field.disabled);
-            console.log('📖 ReadOnly:', field.readOnly);
-
-            // Пробуємо встановити фокус
-            field.focus();
-            console.log('🎯 Фокус встановлено на поле коментарів');
-
-            // Пробуємо змінити значення
-            const testValue = 'Тестовий коментар інспектора.\nВиявлено незначні недоліки.\nРекомендується планове обслуговування.';
-            field.value = testValue;
-            console.log('✏️ Встановлено тестовий коментар');
-
-            // Імітуємо події
-            field.dispatchEvent(new Event('input', { bubbles: true }));
-            field.dispatchEvent(new Event('change', { bubbles: true }));
-            console.log('🔄 Події для поля коментарів відправлені');
-
-            // Перевіряємо результат
-            setTimeout(() => {
-                console.log('📊 Фінальний коментар:', field.value);
-                if (field.value === testValue) {
-                    console.log('✅ ПОЛЕ КОМЕНТАРІВ ПРАЦЮЄ!');
-                    alert('✅ Поле коментарів працює!\nДовжина: ' + field.value.length + ' символів');
-                } else {
-                    console.log('❌ ПОЛЕ КОМЕНТАРІВ НЕ ПРАЦЮЄ');
-                    alert('❌ Поле коментарів не працює');
-                }
-            }, 500);
         };
+        
+        // Автодебаг при відкритті модального вікна
+        $(document).on('shown.bs.modal', '#inspectionReportModal', function() {
+            console.log('🔓 Модальне вікно відкрито, запуск debug...');
+            setTimeout(() => {
+                window.debugInspectionModal();
+            }, 500);
+        });
 
         // Обробник кнопки скасування звіту інспекції
         const cancelInspectionReportBtn = document.getElementById('cancelInspectionReportBtn');
@@ -3121,13 +3035,44 @@
             });
         }
 
-        // Універсальна функція закриття модального вікна
+        // Покращена функція закриття модального вікна
         function closeInspectionModal() {
-            console.log('🚪 Закриваємо модальне вікно інспекцій...');
+            console.log('🚪 Закриваємо модальне вікно інспекції...');
             
-            // Закриваємо модальне вікно
-            const inspectionModal = $('#inspectionReportModal');
-            inspectionModal.modal('hide');
+            // Спочатку видаляємо дублікати модальних вікон
+            const modals = document.querySelectorAll('#inspectionReportModal');
+            console.log('Знайдено модальних вікон:', modals.length);
+            
+            if (modals.length > 1) {
+                console.log('❌ Видаляємо дублікати...');
+                for (let i = 1; i < modals.length; i++) {
+                    modals[i].remove();
+                }
+            }
+            
+            // Закриваємо основне модальне вікно
+            const mainModal = document.getElementById('inspectionReportModal');
+            if (mainModal) {
+                $('#inspectionReportModal').modal('hide');
+            }
+            
+            // Видаляємо зайві backdrop'и
+            setTimeout(() => {
+                const backdrops = document.querySelectorAll('.modal-backdrop');
+                if (backdrops.length > 1) {
+                    console.log('🧹 Видаляємо зайві backdrop\'и...');
+                    for (let i = 1; i < backdrops.length; i++) {
+                        backdrops[i].remove();
+                    }
+                }
+                
+                // Перевіряємо чи немає відкритих модальних вікон
+                const openModals = document.querySelectorAll('.modal.show');
+                if (openModals.length === 0) {
+                    $('.modal-backdrop').remove();
+                    $('body').removeClass('modal-open').css('padding-right', '');
+                }
+            }, 300);
             
             // Очищуємо форму
             const form = document.getElementById('inspectionReportForm');
@@ -3141,7 +3086,7 @@
                 previewContainer.style.display = 'none';
             }
             
-            console.log('✅ Модальне вікно закрито та форма очищена');
+            console.log('✅ ВСІ модальні вікна закрито');
         }
 
         // Обробник натискання ESC для закриття модального вікна звітів інспекції
@@ -3241,51 +3186,68 @@
 
     // Функція збереження звіту інспекції
     function saveInspectionReport() {
-        console.log('=== ПОЧАТОК ЗБЕРЕЖЕННЯ ЗВІТУ ===');
+        console.log('=== ЗБЕРЕЖЕННЯ ЗВІТУ ІНСПЕКЦІЇ ===');
         
-        // Спочатку валідуємо форму
-        if (!validateInspectionForm()) {
-            console.log('❌ Валідація не пройшла, збереження скасовано');
+        // Отримуємо дані з форми
+        const inspectorName = document.getElementById('inspectorName').value.trim();
+        const inspectionDate = document.getElementById('inspectionDate').value;
+        const inspectionStatus = document.getElementById('inspectionStatus').value;
+        const inspectionComments = document.getElementById('inspectionComments').value.trim();
+        const nextInspectionDue = document.getElementById('nextInspectionDue').value;
+        
+        // Валідація обов'язкових полів
+        if (!inspectorName) {
+            alert('❌ Помилка: Введіть ім\'я інспектора');
+            document.getElementById('inspectorName').focus();
+            return;
+        }
+        
+        if (!inspectionDate) {
+            alert('❌ Помилка: Оберіть дату інспекції');
+            document.getElementById('inspectionDate').focus();
             return;
         }
 
-        // Збираємо дані з форми після успішної валідації
+        // Формуємо дані для збереження
         const reportData = {
-            id: 'REPORT_' + Date.now(),
-            liftId: window.currentLiftId || 'UNKNOWN',
-            date: document.getElementById('inspectionDate').value,
-            type: document.getElementById('inspectionType').value,
-            inspector: document.getElementById('inspectorName').value,
-            status: document.getElementById('inspectionStatus').value,
-            comments: document.getElementById('inspectionComments').value || '',
-            nextDue: document.getElementById('nextInspectionDue').value || '',
-            pdfFile: currentInspectionPDFFile ? currentInspectionPDFFile.name : null,
-            createdAt: new Date().toISOString()
+            id: 'INSPECTION_' + Date.now(),
+            inspector: inspectorName,
+            inspectionDate: inspectionDate,
+            status: inspectionStatus,
+            comments: inspectionComments,
+            nextInspectionDue: nextInspectionDue,
+            liftId: currentLiftId || 'unknown',
+            createdAt: new Date().toISOString(),
+            reportType: 'inspection'
         };
 
         console.log('📋 Дані для збереження:', reportData);
 
-        // СПРОЩЕНЕ ЗБЕРЕЖЕННЯ
+        // Збереження
         try {
-            console.log('💾 Збереження звіту...');
+            // Зберігаємо в localStorage
+            localStorage.setItem('last_inspection_report', JSON.stringify(reportData));
             
-            let reports = [];
-            try {
-                const existing = localStorage.getItem('inspection_reports');
-                if (existing) reports = JSON.parse(existing);
-            } catch (e) {
-                console.log('Створюємо новий масив звітів');
+            // Зберігаємо в список всіх звітів
+            const allReports = JSON.parse(localStorage.getItem('inspection_reports') || '[]');
+            allReports.push(reportData);
+            localStorage.setItem('inspection_reports', JSON.stringify(allReports));
+            
+            console.log('✅ Звіт успішно збережено!');
+            
+            // Показуємо повідомлення про успіх
+            if (typeof toastr !== 'undefined') {
+                toastr.success('Звіт інспекції успішно збережено!');
+            } else {
+                alert('✅ Звіт інспекції успішно збережено!\n\nІнспектор: ' + inspectorName + '\nДата: ' + inspectionDate);
             }
-
-            reports.push(reportData);
-            localStorage.setItem('inspection_reports', JSON.stringify(reports));
             
-            console.log('✅ Звіт збережено!', reportData);
+            // Закриваємо модальне вікно
+            closeInspectionModal();
             
         } catch (error) {
-            console.error('❌ Помилка:', error);
-            alert('Помилка збереження: ' + error.message);
-            return;
+            console.error('❌ Помилка збереження:', error);
+            alert('❌ Помилка збереження звіту: ' + error.message);
         }
 
         toastr.success('Звіт інспекції успішно збережено!');
