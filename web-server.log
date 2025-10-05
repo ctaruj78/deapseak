@@ -251,3 +251,6 @@
 127.0.0.1 - - [05/Oct/2025 20:44:41] "GET /assets/img/logo.png HTTP/1.1" 200 -
 127.0.0.1 - - [05/Oct/2025 20:44:48] "GET /pages/admin/unified-analytics.html HTTP/1.1" 304 -
 127.0.0.1 - - [05/Oct/2025 20:44:49] "GET /assets/js/unified-analytics-engine.js HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 20:48:56] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 20:48:59] "GET /pages/admin/unified-analytics.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 20:49:00] "GET /assets/js/unified-analytics-engine.js HTTP/1.1" 200 -
