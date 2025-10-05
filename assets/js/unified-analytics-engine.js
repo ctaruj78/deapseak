@@ -73,6 +73,11 @@ class UnifiedAnalyticsEngine {
             // Обробляємо хеш URL для автоматичного переключення табів
             this.handleUrlHash();
             
+            // Додаємо обробник зміни хешу
+            window.addEventListener('hashchange', () => {
+                this.handleUrlHash();
+            });
+            
             console.log('✅ Unified Analytics Engine готовий!');
             
         } catch (error) {
@@ -1205,19 +1210,65 @@ class UnifiedAnalyticsEngine {
         if (hash) {
             // Очищаємо хеш від #
             const tabId = hash.substring(1);
+            console.log(`🔍 Шукаємо таб: ${tabId}`);
             
             // Знаходимо відповідну кнопку таба
             const tabButton = document.querySelector(`[data-target="#${tabId}"]`);
             
             if (tabButton) {
-                // Симулюємо клік по табу для його активації
+                // Використовуємо Bootstrap 4 API для активації таба
                 setTimeout(() => {
-                    tabButton.click();
-                    console.log(`🎯 Автоматично переключено на таб: ${tabId}`);
-                }, 500); // Невелика затримка для завантаження сторінки
+                    console.log(`🎯 Знайдено кнопку таба: ${tabButton.textContent.trim()}`);
+                    
+                    // Спочатку прибираємо активний клас з усіх табів
+                    document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('active'));
+                    document.querySelectorAll('.tab-pane').forEach(pane => {
+                        pane.classList.remove('active', 'show');
+                    });
+                    
+                    // Активуємо потрібний таб
+                    tabButton.classList.add('active');
+                    const targetPane = document.querySelector(tabButton.dataset.target);
+                    if (targetPane) {
+                        targetPane.classList.add('active', 'show');
+                        
+                        // Ініціалізуємо контент таба при першому відкритті
+                        if (!tabButton.dataset.initialized) {
+                            this.initTabContent(tabId);
+                            tabButton.dataset.initialized = 'true';
+                        }
+                        
+                        console.log(`✅ Таб "${tabId}" успішно активовано`);
+                    }
+                }, 1000); // Збільшуємо затримку для повного завантаження
             } else {
-                console.warn(`⚠️ Таб з ID "${tabId}" не знайдено`);
+                console.warn(`⚠️ Таб з ID "${tabId}" не знайдено. Доступні таби:`, 
+                    Array.from(document.querySelectorAll('[data-target]')).map(btn => btn.dataset.target));
             }
+        }
+    }
+
+    /**
+     * 🔄 Ініціалізація контенту таба
+     */
+    initTabContent(tabId) {
+        switch(tabId) {
+            case 'predictive-analytics':
+                // Ініціалізуємо прогнозну аналітику
+                console.log('🧠 Ініціалізація AI прогнозування...');
+                break;
+            case 'financial-analytics':
+                this.initFinancialAnalytics();
+                break;
+            case 'inspections-analytics':
+                this.initInspectionsAnalytics();
+                break;
+            case 'users-analytics':
+                this.initUsersAnalytics();
+                break;
+            case 'reports-analytics':
+                this.initReportsAnalytics();
+                break;
         }
     }
 }
@@ -1226,7 +1277,13 @@ class UnifiedAnalyticsEngine {
 let analyticsEngine;
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('📄 DOM завантажено, ініціалізуємо Analytics Engine...');
     analyticsEngine = new UnifiedAnalyticsEngine();
+    
+    // Додатковий debug для хешу
+    if (window.location.hash) {
+        console.log(`🔗 Знайдено хеш при завантаженні: ${window.location.hash}`);
+    }
 });
 
 // Експорт для використання в інших модулях
