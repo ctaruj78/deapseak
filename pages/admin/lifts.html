@@ -326,6 +326,33 @@
         .fresh-inspector-input:hover {
             border-color: #0056b3 !important;
         }
+        
+        /* Стилі для нового динамічно створеного textarea коментарів */
+        .fresh-comments-textarea {
+            background-color: white !important;
+            color: #333 !important;
+            border: 2px solid #28a745 !important;
+            border-radius: 5px !important;
+            padding: 8px 12px !important;
+            font-size: 14px !important;
+            width: 100% !important;
+            min-height: 100px !important;
+            resize: vertical !important;
+            box-sizing: border-box !important;
+            outline: none !important;
+            font-family: inherit !important;
+            line-height: 1.5 !important;
+        }
+        
+        .fresh-comments-textarea:focus {
+            border-color: #28a745 !important;
+            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25) !important;
+            background-color: white !important;
+        }
+        
+        .fresh-comments-textarea:hover {
+            border-color: #218838 !important;
+        }
     </style>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -2001,7 +2028,7 @@
                     <h5 class="modal-title">
                         <i class="fas fa-clipboard-check mr-2"></i>Додати звіт інспекції
                     </h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" id="closeInspectionModalBtn" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -2042,17 +2069,20 @@
                                             <input type="text" 
                                                    id="inspectorName" 
                                                    name="inspectorName"
-                                                   class="form-control inspector-input" 
+                                                   class="form-control" 
                                                    placeholder="Прізвище Ім'я По-батькові" 
                                                    autocomplete="off" 
                                                    spellcheck="false"
                                                    tabindex="1"
                                                    maxlength="100"
+                                                   style="background: white !important; 
+                                                          color: black !important; 
+                                                          border: 1px solid #007bff !important;"
                                                    required>
                                             <!-- Тестова кнопка для debug -->
                                             <div class="mt-2">
                                                 <button type="button" class="btn btn-sm btn-outline-primary" onclick="testInspectorInput()">
-                                                    🧪 Тест введення
+                                                    🧪 Тест введення імені
                                                 </button>
                                                 <button type="button" class="btn btn-sm btn-outline-success" onclick="forceSetInspectorName('Петренко Петро Петрович')">
                                                     ✏️ Встановити тестове ім'я
@@ -2134,7 +2164,20 @@
                                 <div class="form-group">
                                     <label for="inspectionComments">Коментарі інспектора</label>
                                     <textarea class="form-control" id="inspectionComments" rows="4" 
-                                              placeholder="Додаткові коментарі, рекомендації, виявлені недоліки..."></textarea>
+                                              placeholder="Додаткові коментарі, рекомендації, виявлені недоліки..."
+                                              style="background: white !important; 
+                                                     color: black !important; 
+                                                     border: 1px solid #28a745 !important;
+                                                     resize: vertical !important;"></textarea>
+                                    <!-- Тестові кнопки для поля коментарів -->
+                                    <div class="mt-2">
+                                        <button type="button" class="btn btn-sm btn-outline-info" onclick="testCommentsField()">
+                                            💬 Тест коментарів
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-warning" onclick="document.getElementById('inspectionComments').value='Проведено планову інспекцію.\nВиявлено незначні недоліки в роботі дверей.\nРекомендується профілактичне обслуговування протягом місяця.'">
+                                            📝 Встановити тестовий коментар
+                                        </button>
+                                    </div>
                                 </div>
                                 
                                 <div class="form-group">
@@ -2890,66 +2933,14 @@
                         modalBackdrop.style.zIndex = '1059';
                     }
                     
-                    // РАДИКАЛЬНА ЗАМІНА: створюємо новий input елемент
-                    const oldInspectorField = document.getElementById('inspectorName');
-                    if (oldInspectorField) {
-                        console.log('🔄 Заміняємо старий input на новий...');
-                        
-                        // Створюємо абсолютно новий input елемент
-                        const newInput = document.createElement('input');
-                        newInput.type = 'text';
-                        newInput.id = 'inspectorName';
-                        newInput.name = 'inspectorName';
-                        newInput.className = 'form-control fresh-inspector-input';
-                        newInput.placeholder = 'Прізвище Ім\'я По-батькові';
-                        newInput.autocomplete = 'off';
-                        newInput.spellcheck = false;
-                        newInput.maxLength = 100;
-                        newInput.required = true;
-                        
-                        // Встановлюємо інлайн стилі для гарантії
-                        newInput.style.cssText = `
-                            background-color: white !important;
-                            color: #333 !important;
-                            border: 2px solid #007bff !important;
-                            border-radius: 5px !important;
-                            padding: 8px 12px !important;
-                            font-size: 14px !important;
-                            width: 100% !important;
-                            box-sizing: border-box !important;
-                            outline: none !important;
-                        `;
-                        
-                        // Заміняємо старий елемент новим
-                        oldInspectorField.parentNode.replaceChild(newInput, oldInspectorField);
-                        
-                        // Додаємо event listeners до нового елемента
-                        newInput.addEventListener('input', function(e) {
-                            console.log('✅ NEW Inspector field input:', e.target.value);
-                            e.target.style.borderColor = e.target.value ? '#28a745' : '#007bff';
-                        });
-                        
-                        newInput.addEventListener('keyup', function(e) {
-                            console.log('✅ NEW Inspector field keyup:', e.target.value);
-                        });
-                        
-                        newInput.addEventListener('focus', function(e) {
-                            console.log('✅ NEW Inspector field focused');
-                            e.target.style.borderColor = '#007bff';
-                            e.target.style.boxShadow = '0 0 0 0.2rem rgba(0, 123, 255, 0.25)';
-                        });
-                        
-                        newInput.addEventListener('blur', function(e) {
-                            console.log('✅ NEW Inspector field blurred, value:', e.target.value);
-                            e.target.style.boxShadow = 'none';
-                        });
-                        
-                        // Фокус на новий елемент
-                        setTimeout(() => {
-                            newInput.focus();
-                            console.log('🎯 Фокус встановлено на новий input');
-                        }, 200);
-                    }
+                    // ПРОСТИЙ ФОКУС НА ПОЛЯ
+                    setTimeout(() => {
+                        const inspectorField = document.getElementById('inspectorName');
+                        if (inspectorField) {
+                            inspectorField.focus();
+                            console.log('🎯 Фокус встановлено на поле інспектора');
+                        }
+                    }, 300);
                 }, 100);
             });
         }
@@ -3071,26 +3062,86 @@
             }, 500);
         };
 
+        // Функція для тестування поля коментарів
+        window.testCommentsField = function() {
+            console.log('💬 === ТЕСТУВАННЯ ПОЛЯ КОМЕНТАРІВ ===');
+            
+            const field = document.getElementById('inspectionComments');
+            if (!field) {
+                console.error('❌ Поле коментарів не знайдено!');
+                alert('Поле коментарів не знайдено!');
+                return;
+            }
+
+            console.log('✅ Поле коментарів знайдено:', field);
+            console.log('📋 Поточне значення:', field.value);
+            console.log('🎯 Disabled:', field.disabled);
+            console.log('📖 ReadOnly:', field.readOnly);
+
+            // Пробуємо встановити фокус
+            field.focus();
+            console.log('🎯 Фокус встановлено на поле коментарів');
+
+            // Пробуємо змінити значення
+            const testValue = 'Тестовий коментар інспектора.\nВиявлено незначні недоліки.\nРекомендується планове обслуговування.';
+            field.value = testValue;
+            console.log('✏️ Встановлено тестовий коментар');
+
+            // Імітуємо події
+            field.dispatchEvent(new Event('input', { bubbles: true }));
+            field.dispatchEvent(new Event('change', { bubbles: true }));
+            console.log('🔄 Події для поля коментарів відправлені');
+
+            // Перевіряємо результат
+            setTimeout(() => {
+                console.log('📊 Фінальний коментар:', field.value);
+                if (field.value === testValue) {
+                    console.log('✅ ПОЛЕ КОМЕНТАРІВ ПРАЦЮЄ!');
+                    alert('✅ Поле коментарів працює!\nДовжина: ' + field.value.length + ' символів');
+                } else {
+                    console.log('❌ ПОЛЕ КОМЕНТАРІВ НЕ ПРАЦЮЄ');
+                    alert('❌ Поле коментарів не працює');
+                }
+            }, 500);
+        };
+
         // Обробник кнопки скасування звіту інспекції
         const cancelInspectionReportBtn = document.getElementById('cancelInspectionReportBtn');
         if (cancelInspectionReportBtn) {
             cancelInspectionReportBtn.addEventListener('click', function() {
-                // Закриваємо модальне вікно
-                const inspectionModal = $('#inspectionReportModal');
-                inspectionModal.modal('hide');
-                
-                // Очищуємо форму
-                const form = document.getElementById('inspectionReportForm');
-                if (form) {
-                    form.reset();
-                }
-                
-                currentInspectionPDFFile = null;
-                const previewContainer = document.getElementById('pdfReportPreviewContainer');
-                if (previewContainer) {
-                    previewContainer.style.display = 'none';
-                }
+                closeInspectionModal();
             });
+        }
+
+        // Обробник хрестика закриття модального вікна
+        const closeInspectionModalBtn = document.getElementById('closeInspectionModalBtn');
+        if (closeInspectionModalBtn) {
+            closeInspectionModalBtn.addEventListener('click', function() {
+                closeInspectionModal();
+            });
+        }
+
+        // Універсальна функція закриття модального вікна
+        function closeInspectionModal() {
+            console.log('🚪 Закриваємо модальне вікно інспекцій...');
+            
+            // Закриваємо модальне вікно
+            const inspectionModal = $('#inspectionReportModal');
+            inspectionModal.modal('hide');
+            
+            // Очищуємо форму
+            const form = document.getElementById('inspectionReportForm');
+            if (form) {
+                form.reset();
+            }
+            
+            currentInspectionPDFFile = null;
+            const previewContainer = document.getElementById('pdfReportPreviewContainer');
+            if (previewContainer) {
+                previewContainer.style.display = 'none';
+            }
+            
+            console.log('✅ Модальне вікно закрито та форма очищена');
         }
 
         // Обробник натискання ESC для закриття модального вікна звітів інспекції
@@ -3135,16 +3186,15 @@
         });
     });
 
-    // Допоміжна функція для валідації полів форми
+        // Допоміжна функція для валідації полів форми
     function validateInspectionForm() {
         const fields = {
             date: document.getElementById('inspectionDate'),
             type: document.getElementById('inspectionType'),
             inspector: document.getElementById('inspectorName'),
-            status: document.getElementById('inspectionStatus')
-        };
-
-        console.log('=== ВАЛІДАЦІЯ ФОРМИ ===');
+            status: document.getElementById('inspectionStatus'),
+            comments: document.getElementById('inspectionComments')
+        };        console.log('=== ВАЛІДАЦІЯ ФОРМИ ===');
         
         // Перевіряємо чи всі поля існують
         for (const [key, field] of Object.entries(fields)) {
@@ -3215,23 +3265,26 @@
 
         console.log('📋 Дані для збереження:', reportData);
 
-        // Зберігаємо звіт
+        // СПРОЩЕНЕ ЗБЕРЕЖЕННЯ
         try {
-            let inspectionReports = JSON.parse(localStorage.getItem('inspection_reports') || '[]');
-            inspectionReports.push(reportData);
-            localStorage.setItem('inspection_reports', JSON.stringify(inspectionReports));
+            console.log('💾 Збереження звіту...');
             
-            console.log('💾 Звіт збережено в localStorage');
-            console.log('📊 Всього звітів:', inspectionReports.length);
-
-            // Автоматично архівуємо PDF
-            if (typeof archiveInspectionPDF === 'function') {
-                archiveInspectionPDF();
-                console.log('📁 PDF архівовано');
+            let reports = [];
+            try {
+                const existing = localStorage.getItem('inspection_reports');
+                if (existing) reports = JSON.parse(existing);
+            } catch (e) {
+                console.log('Створюємо новий масив звітів');
             }
+
+            reports.push(reportData);
+            localStorage.setItem('inspection_reports', JSON.stringify(reports));
+            
+            console.log('✅ Звіт збережено!', reportData);
+            
         } catch (error) {
-            console.error('❌ Помилка збереження:', error);
-            alert('Помилка збереження звіту. Перевірте консоль браузера.');
+            console.error('❌ Помилка:', error);
+            alert('Помилка збереження: ' + error.message);
             return;
         }
 
