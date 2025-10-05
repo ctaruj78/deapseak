@@ -996,6 +996,95 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Система інспекцій та сповіщень -->
+                        <div class="card card-outline card-warning mb-3">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-calendar-check mr-2"></i>Планування інспекцій</h3>
+                                <div class="card-tools">
+                                    <button type="button" class="btn btn-sm btn-success" id="scheduleInspectionBtn">
+                                        <i class="fas fa-plus"></i> Додати інспекцію
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="nextInspectionDate">Дата наступної інспекції</label>
+                                            <input type="date" id="nextInspectionDate" class="form-control">
+                                            <small class="text-muted">Дата, отримана від муніципалітету</small>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="inspectionType">Тип інспекції</label>
+                                            <select class="form-control" id="inspectionType">
+                                                <option value="annual">Річна інспекція</option>
+                                                <option value="safety">Інспекція безпеки</option>
+                                                <option value="technical">Технічна перевірка</option>
+                                                <option value="certification">Сертифікація</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="clientNotificationDays">Попередити клієнта за</label>
+                                            <div class="input-group">
+                                                <input type="number" id="clientNotificationDays" class="form-control" min="1" max="60" value="14" placeholder="днів">
+                                                <div class="input-group-append">
+                                                    <span class="input-group-text">днів</span>
+                                                </div>
+                                            </div>
+                                            <small class="text-muted">Кількість днів до інспекції для автоматичного email</small>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="clientEmail">Email клієнта для сповіщень</label>
+                                            <input type="email" id="clientEmail" class="form-control" placeholder="client@example.com">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Email налаштування -->
+                                <div class="form-group">
+                                    <div class="custom-control custom-checkbox">
+                                        <input class="custom-control-input" type="checkbox" id="enableAutoEmails" checked>
+                                        <label for="enableAutoEmails" class="custom-control-label">
+                                            Автоматично надсилати email сповіщення про інспекції
+                                        </label>
+                                    </div>
+                                    <small class="text-muted">Система автоматично надішле email клієнту за вказану кількість днів до інспекції</small>
+                                </div>
+                                
+                                <!-- Шаблон email повідомлення -->
+                                <div class="form-group">
+                                    <label for="emailTemplate">Шаблон повідомлення</label>
+                                    <textarea class="form-control" id="emailTemplate" rows="4" placeholder="Шаблон email повідомлення...">Шановний клієнте!
+
+Повідомляємо, що для вашого ліфта заплановано інспекцію на {INSPECTION_DATE}.
+
+Будь ласка, підготуйте ліфт для проведення інспекції:
+- Забезпечте вільний доступ до ліфта
+- Підготуйте документи попередніх інспекцій
+- Забезпечте присутність відповідальної особи
+
+З повагою,
+Команда обслуговування DeapSeaK</textarea>
+                                </div>
+                                
+                                <!-- Список запланованих інспекцій -->
+                                <div class="mt-3">
+                                    <h6><i class="fas fa-list mr-2"></i>Заплановані інспекції</h6>
+                                    <div id="scheduledInspections" class="list-group">
+                                        <div class="list-group-item text-muted text-center py-3">
+                                            <i class="fas fa-calendar-plus mr-2"></i>
+                                            Інспекції не заплановані. Додайте дату інспекції вище.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                     <!-- Модальний футер -->
@@ -2150,6 +2239,195 @@
                 }
             });
         }
+
+        // Система управління інспекціями
+        const scheduleInspectionBtn = document.getElementById('scheduleInspectionBtn');
+        if (scheduleInspectionBtn) {
+            scheduleInspectionBtn.addEventListener('click', function() {
+                scheduleInspection();
+            });
+        }
+    });
+
+    // Функції для системи інспекцій
+    function scheduleInspection() {
+        const inspectionDate = document.getElementById('nextInspectionDate').value;
+        const inspectionType = document.getElementById('inspectionType').value;
+        const clientEmail = document.getElementById('clientEmail').value;
+        const notificationDays = document.getElementById('clientNotificationDays').value;
+        const autoEmails = document.getElementById('enableAutoEmails').checked;
+
+        if (!inspectionDate) {
+            alert('Будь ласка, вкажіть дату інспекції');
+            return;
+        }
+
+        if (!clientEmail) {
+            alert('Будь ласка, вкажіть email клієнта для сповіщень');
+            return;
+        }
+
+        // Створюємо об'єкт інспекції
+        const inspection = {
+            id: 'INSPECTION_' + Date.now(),
+            liftId: window.currentLiftId || 'NEW_LIFT',
+            date: inspectionDate,
+            type: inspectionType,
+            clientEmail: clientEmail,
+            notificationDays: parseInt(notificationDays),
+            autoEmails: autoEmails,
+            status: 'scheduled',
+            createdAt: new Date().toISOString()
+        };
+
+        // Зберігаємо інспекцію
+        let scheduledInspections = JSON.parse(localStorage.getItem('scheduled_inspections') || '[]');
+        scheduledInspections.push(inspection);
+        localStorage.setItem('scheduled_inspections', JSON.stringify(scheduledInspections));
+
+        // Оновлюємо список
+        updateScheduledInspectionsList();
+
+        // Налаштовуємо автоматичне email сповіщення
+        if (autoEmails) {
+            scheduleEmailNotification(inspection);
+        }
+
+        toastr.success('Інспекція успішно заплановано!');
+        
+        // Очищуємо поля
+        document.getElementById('nextInspectionDate').value = '';
+    }
+
+    function updateScheduledInspectionsList() {
+        const container = document.getElementById('scheduledInspections');
+        const inspections = JSON.parse(localStorage.getItem('scheduled_inspections') || '[]');
+        
+        if (inspections.length === 0) {
+            container.innerHTML = `
+                <div class="list-group-item text-muted text-center py-3">
+                    <i class="fas fa-calendar-plus mr-2"></i>
+                    Інспекції не заплановані. Додайте дату інспекції вище.
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+        inspections.forEach(inspection => {
+            const date = new Date(inspection.date).toLocaleDateString();
+            const daysUntil = Math.ceil((new Date(inspection.date) - new Date()) / (1000 * 60 * 60 * 24));
+            const statusColor = daysUntil <= inspection.notificationDays ? 'warning' : 'info';
+            
+            html += `
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1">${inspection.type} - ${date}</h6>
+                        <p class="mb-1">
+                            <small class="text-muted">Email: ${inspection.clientEmail}</small><br>
+                            <small class="text-${statusColor}">
+                                ${daysUntil > 0 ? `Залишилося ${daysUntil} днів` : 'Інспекція сьогодні!'}
+                            </small>
+                        </p>
+                    </div>
+                    <div class="btn-group-sm">
+                        <button class="btn btn-outline-primary btn-sm" onclick="sendInspectionReminder('${inspection.id}')">
+                            <i class="fas fa-envelope"></i>
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm" onclick="cancelInspection('${inspection.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+        
+        container.innerHTML = html;
+    }
+
+    function scheduleEmailNotification(inspection) {
+        const notificationDate = new Date(inspection.date);
+        notificationDate.setDate(notificationDate.getDate() - inspection.notificationDays);
+        
+        const now = new Date();
+        const timeUntilNotification = notificationDate.getTime() - now.getTime();
+        
+        if (timeUntilNotification > 0) {
+            // Планування email (в реальній системі це буде backend job)
+            setTimeout(() => {
+                sendInspectionEmail(inspection);
+            }, Math.min(timeUntilNotification, 2147483647)); // Максимальний setTimeout
+            
+            console.log(`Email заплановано на ${notificationDate.toLocaleString()}`);
+        } else {
+            // Якщо дата вже минула, відправляємо зразу
+            sendInspectionEmail(inspection);
+        }
+    }
+
+    function sendInspectionEmail(inspection) {
+        const template = document.getElementById('emailTemplate').value;
+        const formattedDate = new Date(inspection.date).toLocaleDateString();
+        const emailContent = template.replace('{INSPECTION_DATE}', formattedDate);
+        
+        // Симуляція відправки email (в реальній системі - API виклик)
+        console.log('Відправка email:', {
+            to: inspection.clientEmail,
+            subject: `Нагадування про інспекцію ліфта - ${formattedDate}`,
+            content: emailContent
+        });
+        
+        toastr.success(`Email сповіщення надіслано на ${inspection.clientEmail}`);
+        
+        // Оновлюємо статус інспекції
+        let inspections = JSON.parse(localStorage.getItem('scheduled_inspections') || '[]');
+        const index = inspections.findIndex(i => i.id === inspection.id);
+        if (index !== -1) {
+            inspections[index].emailSent = true;
+            inspections[index].emailSentAt = new Date().toISOString();
+            localStorage.setItem('scheduled_inspections', JSON.stringify(inspections));
+        }
+    }
+
+    function sendInspectionReminder(inspectionId) {
+        const inspections = JSON.parse(localStorage.getItem('scheduled_inspections') || '[]');
+        const inspection = inspections.find(i => i.id === inspectionId);
+        
+        if (inspection) {
+            sendInspectionEmail(inspection);
+        }
+    }
+
+    function cancelInspection(inspectionId) {
+        if (confirm('Скасувати цю інспекцію?')) {
+            let inspections = JSON.parse(localStorage.getItem('scheduled_inspections') || '[]');
+            inspections = inspections.filter(i => i.id !== inspectionId);
+            localStorage.setItem('scheduled_inspections', JSON.stringify(inspections));
+            
+            updateScheduledInspectionsList();
+            toastr.success('Інспекція скасована');
+        }
+    }
+
+    // Автоматична перевірка інспекцій при завантаженні сторінки
+    document.addEventListener('DOMContentLoaded', function() {
+        // Перевіряємо чи є інспекції, для яких потрібно відправити сповіщення
+        const inspections = JSON.parse(localStorage.getItem('scheduled_inspections') || '[]');
+        const now = new Date();
+        
+        inspections.forEach(inspection => {
+            if (!inspection.emailSent && inspection.autoEmails) {
+                const notificationDate = new Date(inspection.date);
+                notificationDate.setDate(notificationDate.getDate() - inspection.notificationDays);
+                
+                if (now >= notificationDate) {
+                    sendInspectionEmail(inspection);
+                }
+            }
+        });
+        
+        // Оновлюємо список при завантаженні
+        setTimeout(updateScheduledInspectionsList, 500);
     });
     </script>
 </body>
