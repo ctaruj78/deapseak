@@ -1893,6 +1893,7 @@
     <!-- QR Code library -->
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <!-- Custom scripts -->
+    <script src="/assets/js/system-eventbus.js"></script>
     <script src="/assets/js/common.js"></script>
     <script src="/assets/js/lift-utils.js"></script>
     <script src="/assets/js/lifts.js"></script>
@@ -2002,6 +2003,17 @@
             console.log('Subject:', subject);
             console.log('Message:', message);
             console.log('PDF file:', currentPDFFile.name);
+
+            // 🚀 EventBus: Повідомляємо про відправку email
+            if (window.eventBus) {
+                eventBus.emit('email:sent', {
+                    email: email,
+                    subject: subject,
+                    hasAttachment: !!currentPDFFile,
+                    attachmentName: currentPDFFile?.name,
+                    type: 'inspection_report'
+                }, { source: 'email-system' });
+            }
 
             alert('Звіт успішно надіслано на email: ' + email);
             $('#emailModal').modal('hide');
@@ -2432,6 +2444,11 @@
         scheduledInspections.push(inspection);
         localStorage.setItem('scheduled_inspections', JSON.stringify(scheduledInspections));
 
+        // 🚀 EventBus: Повідомляємо про планування інспекції
+        if (window.eventBus) {
+            eventBus.emit('inspection:scheduled', inspection, { source: 'inspection-system' });
+        }
+
         // Оновлюємо список
         updateScheduledInspectionsList();
 
@@ -2805,6 +2822,49 @@
             }
         });
         
+        // 🚀 EventBus: Налаштовуємо слухачів для автоматичної роботи системи
+        if (window.eventBus) {
+            console.log('🚀 Налаштування EventBus інтеграції для сторінки ліфтів...');
+            
+            // Слухаємо створення QR кодів для автоматичного оновлення інтерфейсу
+            eventBus.on('qr:auto-generated', (data) => {
+                console.log('🏷️ Автоматично згенеровано QR код для ліфта:', data.liftId);
+                toastr.info(`QR код автоматично створено для ліфта ${data.liftId}`);
+            }, { module: 'lifts-page', priority: 5 });
+
+            // Слухаємо аналітику для оновлення статистики
+            eventBus.on('analytics:qr-created', (data) => {
+                console.log('📊 Оновлюємо статистику QR кодів');
+                // Тут можна оновити лічильники QR кодів
+            }, { module: 'lifts-page' });
+
+            // Слухаємо плановані інспекції для налаштування сповіщень
+            eventBus.on('inspection:scheduled', (data) => {
+                console.log('📅 Інспекція заплановано, налаштовуємо автоматичні сповіщення');
+                if (data.autoEmails) {
+                    console.log(`📧 Буде надіслано email на ${data.clientEmail} за ${data.notificationDays} днів`);
+                }
+            }, { module: 'lifts-page' });
+
+            // Слухаємо відправку email для логування
+            eventBus.on('email:sent', (data) => {
+                console.log('📧 Email успішно надіслано:', data);
+                // Можна додати запис до журналу відправлених email
+            }, { module: 'lifts-page' });
+
+            // Демо EventBus статистики (можна видалити пізніше)
+            setTimeout(() => {
+                if (window.eventBus) {
+                    console.group('🔍 EventBus Integration Status');
+                    console.log('✅ EventBus ready and integrated');
+                    console.log('📊 System stats:', eventBus.getSystemStats());
+                    console.groupEnd();
+                }
+            }, 2000);
+        } else {
+            console.warn('⚠️ EventBus не знайдено, деякі автоматичні функції не працюватимуть');
+        }
+
         // Оновлюємо список при завантаженні
         setTimeout(updateScheduledInspectionsList, 500);
     });
