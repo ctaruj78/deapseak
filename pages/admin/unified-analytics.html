@@ -203,30 +203,138 @@
             <span class="brand-text font-weight-light">LiftMaster Pro</span>
         </a>
 
+        <!-- Sidebar -->
         <div class="sidebar">
+            <!-- Sidebar Menu -->
             <nav class="mt-2">
-                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                     <li class="nav-item">
                         <a href="admin-dashboard.html" class="nav-link">
                             <i class="nav-icon fas fa-tachometer-alt"></i>
                             <p>Дашборд</p>
                         </a>
                     </li>
+
+                    <!-- QR System Menu -->
                     <li class="nav-item">
-                        <a href="lifts.html" class="nav-link">
+                        <a href="#" class="nav-link">
+                            <i class="nav-icon fas fa-qrcode"></i>
+                            <p>
+                                QR Система
+                                <i class="right fas fa-angle-left"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="qr-generator.html" class="nav-link">
+                                    <i class="fas fa-plus-circle nav-icon"></i>
+                                    <p>Генератор QR-кодів</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="qr-management.html" class="nav-link">
+                                    <i class="fas fa-cog nav-icon"></i>
+                                    <p>Керування QR-кодами</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="unified-analytics.html#qr-analytics" class="nav-link">
+                                    <i class="fas fa-chart-line nav-icon"></i>
+                                    <p>Аналітика QR-кодів</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="qr-history.html" class="nav-link">
+                                    <i class="fas fa-history nav-icon"></i>
+                                    <p>Історія QR-кодів</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <!-- Lifts Menu -->
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
                             <i class="nav-icon fas fa-elevator"></i>
-                            <p>Ліфти</p>
+                            <p>
+                                Ліфти
+                                <i class="right fas fa-angle-left"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="lifts.html" class="nav-link">
+                                    <i class="fas fa-list nav-icon"></i>
+                                    <p>Управління ліфтами</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="maps.html" class="nav-link">
+                                    <i class="fas fa-map-marked-alt nav-icon"></i>
+                                    <p>Мапа ліфтів</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="users.html" class="nav-link">
+                            <i class="nav-icon fas fa-users"></i>
+                            <p>Користувачі</p>
                         </a>
                     </li>
+
+                    <!-- Analytics Menu -->
                     <li class="nav-item">
                         <a href="unified-analytics.html" class="nav-link active">
                             <i class="nav-icon fas fa-chart-line"></i>
                             <p>Аналітика</p>
                         </a>
                     </li>
+
+                    <!-- Predictive Analytics -->
                     <li class="nav-item">
-                        <a href="../../system-settings.html" class="nav-link">
-                            <i class="nav-icon fas fa-cog"></i>
+                        <a href="unified-analytics.html#predictive-analytics" class="nav-link">
+                            <i class="nav-icon fas fa-brain"></i>
+                            <p>AI Прогнозування</p>
+                        </a>
+                    </li>
+
+                    <!-- Support Menu -->
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="nav-icon fas fa-headset"></i>
+                            <p>
+                                Підтримка
+                                <i class="right fas fa-angle-left"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="support.html" class="nav-link">
+                                    <i class="fas fa-ticket-alt nav-icon"></i>
+                                    <p>Технічна підтримка</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="notifications.html" class="nav-link">
+                                    <i class="fas fa-bell nav-icon"></i>
+                                    <p>Сповіщення</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="../ai-assistant/ai-assistant.html" class="nav-link">
+                            <i class="nav-icon fas fa-robot"></i>
+                            <p>AI Асистент</p>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="settings.html" class="nav-link">
+                            <i class="nav-icon fas fa-cogs"></i>
                             <p>Налаштування</p>
                         </a>
                     </li>
@@ -299,48 +407,48 @@
                 <!-- Main Analytics Tabs -->
                 <div class="tab-section">
                     <ul class="nav nav-tabs" id="analytics-tabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">
-                                <i class="fas fa-chart-pie"></i> Огляд
+                                                <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="overview-tab" data-toggle="tab" data-target="#overview" type="button" role="tab">
+                                <i class="fas fa-chart-line"></i> Огляд
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="lifts-tab" data-bs-toggle="tab" data-bs-target="#lifts-analytics" type="button" role="tab">
+                            <button class="nav-link" id="lifts-tab" data-toggle="tab" data-target="#lifts-analytics" type="button" role="tab">
                                 <i class="fas fa-elevator"></i> Ліфти
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="maintenance-tab" data-bs-toggle="tab" data-bs-target="#maintenance-analytics" type="button" role="tab">
-                                <i class="fas fa-tools"></i> Технічне обслуговування
+                            <button class="nav-link" id="maintenance-tab" data-toggle="tab" data-target="#maintenance-analytics" type="button" role="tab">
+                                <i class="fas fa-tools"></i> ТО
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="qr-tab" data-bs-toggle="tab" data-bs-target="#qr-analytics" type="button" role="tab">
+                            <button class="nav-link" id="qr-tab" data-toggle="tab" data-target="#qr-analytics" type="button" role="tab">
                                 <i class="fas fa-qrcode"></i> QR Аналітика
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="predictive-tab" data-bs-toggle="tab" data-bs-target="#predictive-analytics" type="button" role="tab">
+                            <button class="nav-link" id="predictive-tab" data-toggle="tab" data-target="#predictive-analytics" type="button" role="tab">
                                 <i class="fas fa-brain"></i> Прогнозування
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="financial-tab" data-bs-toggle="tab" data-bs-target="#financial-analytics" type="button" role="tab">
+                            <button class="nav-link" id="financial-tab" data-toggle="tab" data-target="#financial-analytics" type="button" role="tab">
                                 <i class="fas fa-money-bill-wave"></i> Фінанси
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="inspections-tab" data-bs-toggle="tab" data-bs-target="#inspections-analytics" type="button" role="tab">
+                            <button class="nav-link" id="inspections-tab" data-toggle="tab" data-target="#inspections-analytics" type="button" role="tab">
                                 <i class="fas fa-clipboard-check"></i> Інспекції
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="users-tab" data-bs-toggle="tab" data-bs-target="#users-analytics" type="button" role="tab">
+                            <button class="nav-link" id="users-tab" data-toggle="tab" data-target="#users-analytics" type="button" role="tab">
                                 <i class="fas fa-users"></i> Користувачі
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="reports-tab" data-bs-toggle="tab" data-bs-target="#reports-analytics" type="button" role="tab">
+                            <button class="nav-link" id="reports-tab" data-toggle="tab" data-target="#reports-analytics" type="button" role="tab">
                                 <i class="fas fa-file-alt"></i> Звіти
                             </button>
                         </li>
