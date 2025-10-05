@@ -737,13 +737,145 @@ class DeapSeaKARHelper {
 }
 
 // Експорт та автоініціалізація
+// Система управління AR Helper
+class ARHelperManager {
+    constructor() {
+        this.arHelper = null;
+        this.checkUserSettings();
+    }
+    
+    checkUserSettings() {
+        // Перевіряємо налаштування користувача
+        const settings = this.loadSettings();
+        console.log('⚙️ Перевірка налаштувань AR Helper:', settings);
+        
+        if (settings.arHelper) {
+            this.initializeAR();
+        } else {
+            console.log('🥽 AR Helper вимкнено в налаштуваннях');
+            this.createDisabledState();
+        }
+    }
+    
+    loadSettings() {
+        const defaultSettings = { arHelper: false }; // По замовчуванню вимкнено
+        
+        try {
+            const saved = localStorage.getItem('deapseak_settings');
+            return saved ? { ...defaultSettings, ...JSON.parse(saved) } : defaultSettings;
+        } catch (error) {
+            console.warn('⚠️ Помилка читання налаштувань:', error);
+            return defaultSettings;
+        }
+    }
+    
+    async initializeAR() {
+        try {
+            console.log('🥽 Ініціалізація AR Helper...');
+            this.arHelper = new DeapSeaKARHelper();
+            window.arHelper = this.arHelper;
+            
+            // Перевіряємо чи AR готовий
+            if (this.arHelper.isInitialized) {
+                this.updateARButton(true);
+            }
+        } catch (error) {
+            console.error('❌ Помилка ініціалізації AR Helper:', error);
+            this.createFallbackState();
+        }
+    }
+    
+    createDisabledState() {
+        // Створюємо заглушку для AR кнопки
+        setTimeout(() => {
+            const arBtn = document.getElementById('ar-helper-btn');
+            if (arBtn) {
+                arBtn.title = 'AR Helper вимкнено в налаштуваннях';
+                arBtn.innerHTML = '<i class="fas fa-cog"></i> Налаштування';
+                arBtn.onclick = () => {
+                    this.showSettingsPrompt();
+                };
+                arBtn.classList.remove('btn-info');
+                arBtn.classList.add('btn-secondary');
+            }
+        }, 500);
+    }
+    
+    createFallbackState() {
+        setTimeout(() => {
+            const arBtn = document.getElementById('ar-helper-btn');
+            if (arBtn) {
+                arBtn.title = 'Smart Helper (AR недоступний)';
+                arBtn.innerHTML = '<i class="fas fa-lightbulb"></i> Smart';
+                arBtn.onclick = () => {
+                    this.showSmartHelper();
+                };
+            }
+        }, 500);
+    }
+    
+    updateARButton(enabled) {
+        setTimeout(() => {
+            const arBtn = document.getElementById('ar-helper-btn');
+            if (arBtn && enabled) {
+                arBtn.title = 'AR Helper готовий!';
+                arBtn.style.borderColor = '#4CAF50';
+                arBtn.onclick = () => {
+                    if (this.arHelper) {
+                        this.arHelper.startAR('guide');
+                    }
+                };
+            }
+        }, 500);
+    }
+    
+    showSettingsPrompt() {
+        const result = confirm('AR Helper вимкнено в налаштуваннях.\n\nВи хочете перейти до налаштувань щоб увімкнути AR?');
+        if (result) {
+            window.open('system-settings.html', '_blank');
+        }
+    }
+    
+    showSmartHelper() {
+        if (!this.arHelper) {
+            // Створюємо тимчасовий fallback інстанс
+            this.arHelper = new DeapSeaKARHelper();
+            this.arHelper.initFallbackMode();
+        }
+        this.arHelper.showSmartHelperModal();
+    }
+    
+    // Публічні методи для управління AR
+    enableAR() {
+        if (!this.arHelper) {
+            this.initializeAR();
+        }
+        this.updateARButton(true);
+    }
+    
+    disableAR() {
+        if (this.arHelper && this.arHelper.isARActive) {
+            this.arHelper.closeAR();
+        }
+        this.arHelper = null;
+        window.arHelper = null;
+        this.createDisabledState();
+    }
+}
+
 if (typeof window !== 'undefined') {
     window.DeapSeaKARHelper = DeapSeaKARHelper;
+    window.ARHelperManager = ARHelperManager;
     
-    // Автоматичне створення інстансу
+    // Ініціалізуємо менеджер AR Helper (він сам перевірить налаштування)
     setTimeout(() => {
-        window.arHelper = new DeapSeaKARHelper();
+        window.arHelperManager = new ARHelperManager();
+        
+        // Глобальні функції для налаштувань
+        window.enableARHelper = () => window.arHelperManager.enableAR();
+        window.disableARHelper = () => window.arHelperManager.disableAR();
+        
     }, 1000);
 }
 
-console.log('🥽 AR Helper модуль завантажено!');
+console.log('🥽 AR Helper модуль завантажено! (Controlled by settings)');

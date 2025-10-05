@@ -312,8 +312,8 @@ class EnhancedLiftModal {
             tech: $('#enhancedAssignedTechnician').val() || 'auto',
             status: $('#enhancedLiftStatus').val() || 'operational',
             // Технічні інспекції
-            lastInspection: $('#enhancedLastInspection').val() || null,
-            nextInspection: $('#enhancedNextInspection').val() || null,
+            lastMaintenance: $('#lastMaintenance').val() || null,
+            nextMaintenance: $('#nextMaintenance').val() || null,
             inspectionFrequency: parseInt($('#enhancedInspectionFrequency').val()) || 6,
             maintenanceNotes: $('#enhancedMaintenanceNotes').val() || '',
             // Додаткові поля за замовчуванням
@@ -600,8 +600,8 @@ class EnhancedLiftModal {
         $('#enhancedAssignedTechnician').val(liftData.tech || '');
         $('#enhancedLiftStatus').val(liftData.status || '');
         // Поля інспекцій
-        $('#enhancedLastInspection').val(liftData.lastInspection || '');
-        $('#enhancedNextInspection').val(liftData.nextInspection || '');
+        $('#lastMaintenance').val(liftData.lastMaintenance || '');
+        $('#nextMaintenance').val(liftData.nextMaintenance || '');
         $('#enhancedInspectionFrequency').val(liftData.inspectionFrequency || 6);
         $('#enhancedMaintenanceNotes').val(liftData.maintenanceNotes || '');
         
