@@ -182,6 +182,48 @@
                         
                         <div class="col-md-6">
                             <div class="card setting-card">
+                                <div class="card-header bg-success">
+                                    <h3 class="card-title">🧠 Smart Система</h3>
+                                    <div class="card-tools">
+                                        <span id="smart-status-badge" class="badge badge-secondary">Завантаження...</span>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div>
+                                            <h6>Активувати Smart систему</h6>
+                                            <small class="text-muted">Розумні алгоритми та автоматизація</small>
+                                        </div>
+                                        <label class="switch">
+                                            <input type="checkbox" id="smart-system-toggle">
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="mt-3">
+                                        <h6>Можливості Smart системи:</h6>
+                                        <ul class="mb-0">
+                                            <li>🤖 Автоматичне планування обслуговування</li>
+                                            <li>📈 Прогнозна аналітика</li>
+                                            <li>⚡ Оптимізація роботи ліфтів</li>
+                                            <li>🔔 Розумні сповіщення</li>
+                                            <li>📊 Адаптивна аналітика поведінки</li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <div class="alert alert-info mt-3">
+                                        <i class="fas fa-info-circle"></i>
+                                        <strong>Примітка:</strong> Smart система використовує машинне навчання для покращення роботи всіх підсистем.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Analytics Row -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card setting-card">
                                 <div class="card-header bg-warning">
                                     <h3 class="card-title">📊 Аналітика</h3>
                                 </div>
@@ -392,6 +434,7 @@
                 const defaultSettings = {
                     arHelper: false,
                     voiceControl: false,
+                    smartSystem: false,
                     analytics: true,
                     pushNotifications: true,
                     soundNotifications: true,
@@ -435,6 +478,7 @@
                 }
                 
                 this.updateARStatus();
+                this.updateSmartSystemStatus();
             }
             
             setupEventListeners() {
@@ -457,6 +501,14 @@
                 voiceToggle.addEventListener('change', (e) => {
                     this.settings.voiceControl = e.target.checked;
                     this.saveSettings();
+                });
+                
+                // Smart System toggle
+                const smartToggle = document.getElementById('smart-system-toggle');
+                smartToggle.addEventListener('change', (e) => {
+                    this.settings.smartSystem = e.target.checked;
+                    this.saveSettings();
+                    this.updateSmartSystemStatus();
                 });
                 
                 // Analytics toggle
@@ -536,6 +588,21 @@
                     statusDiv.innerHTML = '<span class="status-badge bg-success">✅ Увімкнено</span>';
                 } else {
                     statusDiv.innerHTML = '<span class="status-badge bg-secondary">⏸️ Вимкнено</span>';
+                }
+            }
+            
+            updateSmartSystemStatus() {
+                const statusBadge = document.getElementById('smart-status-badge');
+                const smartEnabled = this.settings.smartSystem;
+                
+                if (smartEnabled) {
+                    statusBadge.className = 'badge badge-success';
+                    statusBadge.textContent = '✅ Активна';
+                    this.showNotification('🧠 Smart система активована!', 'success');
+                } else {
+                    statusBadge.className = 'badge badge-secondary';
+                    statusBadge.textContent = '⏸️ Неактивна';
+                    this.showNotification('🧠 Smart система вимкнута', 'info');
                 }
             }
             

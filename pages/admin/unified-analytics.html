@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Єдина система аналітики - DeapSeaK</title>
     
     <!-- AdminLTE CSS -->
@@ -1205,30 +1208,63 @@
 <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
 
 <!-- Predictive Maintenance System -->
-<script src="../../assets/js/predictive-maintenance.js"></script>
+<script src="../../assets/js/predictive-maintenance.js?v=2025.10.05.1"></script>
 
 <!-- Unified Analytics Engine -->
-<script src="../../assets/js/unified-analytics-engine.js"></script>
+<script src="../../assets/js/unified-analytics-engine.js?v=2025.10.05.1"></script>
 
 <!-- Додатковий скрипт для гарантованої активації AI прогнозування -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🔍 Перевіряємо хеш при завантаженні сторінки...');
     
+    // Функція для повідомлення батьківської сторінки про активний пункт меню
+    function updateParentMenu(menuItem) {
+        try {
+            // Зберігаємо стан меню
+            sessionStorage.setItem('activeMenuItem', menuItem);
+            
+            // Якщо це не iframe, можемо безпосередньо оновити меню на цій сторінці
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => link.classList.remove('active'));
+            
+            console.log(`📋 Оновлено активний пункт меню: ${menuItem}`);
+        } catch (error) {
+            console.warn('⚠️ Не вдалося оновити стан меню:', error);
+        }
+    }
+    
     // Якщо в URL є хеш predictive-analytics, форсуємо активацію
     if (window.location.hash === '#predictive-analytics') {
         console.log('🎯 Знайдено хеш AI прогнозування, форсуємо активацію...');
         
+        // Повідомляємо що активний AI прогнозування пункт меню
+        updateParentMenu('ai-predictive');
+        
         // Чекаємо поки все завантажиться і активуємо таб
         setTimeout(() => {
+            console.log('🔍 Перевіряємо наявність функції activateAIPredictive...');
+            
             if (window.activateAIPredictive) {
+                console.log('✅ Функція activateAIPredictive знайдена, викликаємо...');
                 const success = window.activateAIPredictive();
-                console.log(success ? '✅ AI таб активовано' : '❌ Не вдалося активувати AI таб');
+                console.log(success ? '✅ AI таб активовано успішно' : '❌ Не вдалося активувати AI таб');
+                
+                // Додатково ініціалізуємо AI компоненти
+                if (window.initPredictiveAnalytics) {
+                    console.log('🤖 Ініціалізуємо AI компоненти...');
+                    window.initPredictiveAnalytics();
+                }
+                
             } else {
+                console.warn('⚠️ Функція activateAIPredictive не знайдена, використовуємо fallback...');
+                
                 // Fallback - пряма активація
                 console.log('🔄 Використовуємо fallback активацію...');
                 const tabButton = document.querySelector('[data-target="#predictive-analytics"]');
                 const tabPane = document.querySelector('#predictive-analytics');
+                
+                console.log('Знайдені елементи:', { tabButton, tabPane });
                 
                 if (tabButton && tabPane) {
                     // Деактивуємо всі таби
@@ -1247,6 +1283,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         }, 2000); // Збільшена затримка для надійності
+    } else {
+        // Якщо немає хешу, то це звичайна аналітика
+        updateParentMenu('analytics');
     }
 });
 
@@ -1260,6 +1299,9 @@ document.addEventListener('click', function(e) {
         // Оновлюємо URL
         window.history.pushState(null, null, '#predictive-analytics');
         
+        // Повідомляємо про зміну активного пункту меню
+        sessionStorage.setItem('activeMenuItem', 'ai-predictive');
+        
         // Активуємо таб
         setTimeout(() => {
             if (window.activateAIPredictive) {
@@ -1268,6 +1310,50 @@ document.addEventListener('click', function(e) {
         }, 100);
     }
 });
+
+// Слухаємо зміни в хеші для оновлення меню
+window.addEventListener('hashchange', function() {
+    const hash = window.location.hash;
+    if (hash === '#predictive-analytics') {
+        sessionStorage.setItem('activeMenuItem', 'ai-predictive');
+    } else {
+        sessionStorage.setItem('activeMenuItem', 'analytics');
+    }
+});
+
+// Ініціалізуємо AI систему при завантаженні
+setTimeout(() => {
+    console.log('🤖 Ініціалізуємо Predictive Maintenance System...');
+    
+    try {
+        // Створюємо екземпляр системи прогнозування якщо його немає
+        if (!window.predictiveMaintenanceSystem) {
+            window.predictiveMaintenanceSystem = new PredictiveMaintenanceSystem();
+            console.log('✅ PredictiveMaintenanceSystem створено');
+        }
+        
+        // Ініціалізуємо unified analytics engine
+        if (typeof window.initPredictiveAnalytics === 'function') {
+            window.initPredictiveAnalytics();
+            console.log('✅ Predictive Analytics ініціалізовано');
+        } else {
+            console.warn('⚠️ initPredictiveAnalytics функція не знайдена');
+        }
+        
+        // Якщо це AI прогнозування таб - активуємо його
+        if (window.location.hash === '#predictive-analytics') {
+            setTimeout(() => {
+                if (window.activateAIPredictive) {
+                    window.activateAIPredictive();
+                    console.log('✅ AI прогнозування таб активовано');
+                }
+            }, 1000);
+        }
+        
+    } catch (error) {
+        console.error('❌ Помилка ініціалізації AI системи:', error);
+    }
+}, 2000);
 </script>
 
 </body>

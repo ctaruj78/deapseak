@@ -1568,6 +1568,133 @@ class UnifiedAnalyticsEngine {
 // Ініціалізація при завантаженні сторінки
 let analyticsEngine;
 
+// Функція для ініціалізації AI прогнозування
+window.initPredictiveAnalytics = function() {
+    console.log('🤖 Ініціалізація AI прогнозування...');
+    
+    try {
+        // Перевіряємо чи є система прогнозування
+        if (!window.predictiveMaintenanceSystem) {
+            console.warn('⚠️ PredictiveMaintenanceSystem не знайдена, створюємо...');
+            window.predictiveMaintenanceSystem = new PredictiveMaintenanceSystem();
+        }
+        
+        // Ініціалізуємо графік прогнозування
+        setTimeout(() => {
+            initPredictionChart();
+            loadAIRecommendations();
+        }, 500);
+        
+        console.log('✅ AI прогнозування ініціалізовано');
+        return true;
+        
+    } catch (error) {
+        console.error('❌ Помилка ініціалізації AI прогнозування:', error);
+        return false;
+    }
+};
+
+// Функція для ініціалізації графіка прогнозів
+function initPredictionChart() {
+    const canvas = document.getElementById('prediction-chart');
+    if (!canvas) {
+        console.warn('⚠️ Canvas prediction-chart не знайдено');
+        return;
+    }
+    
+    const ctx = canvas.getContext('2d');
+    
+    // Тестові дані для прогнозів
+    const predictionData = {
+        labels: ['Тиждень 1', 'Тиждень 2', 'Тиждень 3', 'Тиждень 4'],
+        datasets: [{
+            label: 'Ймовірність поломки (%)',
+            data: [15, 23, 35, 48],
+            borderColor: '#ff6b6b',
+            backgroundColor: 'rgba(255, 107, 107, 0.1)',
+            tension: 0.4,
+            fill: true
+        }, {
+            label: 'Рекомендоване ТО (%)',
+            data: [25, 40, 60, 85],
+            borderColor: '#4ecdc4',
+            backgroundColor: 'rgba(78, 205, 196, 0.1)',
+            tension: 0.4,
+            fill: true
+        }]
+    };
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: predictionData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Прогноз потреби в обслуговуванні'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+    
+    console.log('✅ Графік прогнозів створено');
+}
+
+// Функція для завантаження AI рекомендацій
+function loadAIRecommendations() {
+    const container = document.getElementById('ai-recommendations');
+    if (!container) {
+        console.warn('⚠️ Контейнер ai-recommendations не знайдено');
+        return;
+    }
+    
+    // Генеруємо AI рекомендації
+    const recommendations = [
+        {
+            type: 'critical',
+            icon: '🚨',
+            title: 'Критичне попередження',
+            text: 'Ліфт #L003 потребує негайного огляду гальмівної системи'
+        },
+        {
+            type: 'warning',
+            icon: '⚠️',
+            title: 'Планове обслуговування',
+            text: 'Рекомендується провести ТО ліфтів #L001, #L005 протягом 7 днів'
+        },
+        {
+            type: 'info',
+            icon: '💡',
+            title: 'Оптимізація',
+            text: 'Виявлено можливість зменшення енергоспоживання на 15%'
+        },
+        {
+            type: 'success',
+            icon: '✅',
+            title: 'Відмінна робота',
+            text: 'Ліфти #L002, #L004 працюють в оптимальному режимі'
+        }
+    ];
+    
+    const html = recommendations.map(rec => `
+        <div class="alert alert-${rec.type === 'critical' ? 'danger' : rec.type === 'warning' ? 'warning' : rec.type === 'info' ? 'info' : 'success'} mb-3">
+            <strong>${rec.icon} ${rec.title}</strong><br>
+            <small>${rec.text}</small>
+        </div>
+    `).join('');
+    
+    container.innerHTML = html;
+    console.log('✅ AI рекомендації завантажено');
+}
+
 // Глобальна функція для активації AI прогнозування
 window.activateAIPredictive = function() {
     console.log('🔮 Глобальна активація AI прогнозування...');
