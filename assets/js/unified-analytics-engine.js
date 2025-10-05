@@ -70,6 +70,9 @@ class UnifiedAnalyticsEngine {
             // Запускаємо реал-тайм оновлення
             this.startRealTimeUpdates();
             
+            // Обробляємо хеш URL для автоматичного переключення табів
+            this.handleUrlHash();
+            
             console.log('✅ Unified Analytics Engine готовий!');
             
         } catch (error) {
@@ -1192,6 +1195,30 @@ class UnifiedAnalyticsEngine {
                 this.showTab(targetTab);
             });
         });
+    }
+
+    /**
+     * 🔗 Обробка хешу URL для автоматичного переключення табів
+     */
+    handleUrlHash() {
+        const hash = window.location.hash;
+        if (hash) {
+            // Очищаємо хеш від #
+            const tabId = hash.substring(1);
+            
+            // Знаходимо відповідну кнопку таба
+            const tabButton = document.querySelector(`[data-bs-target="#${tabId}"]`);
+            
+            if (tabButton) {
+                // Симулюємо клік по табу для його активації
+                setTimeout(() => {
+                    tabButton.click();
+                    console.log(`🎯 Автоматично переключено на таб: ${tabId}`);
+                }, 500); // Невелика затримка для завантаження сторінки
+            } else {
+                console.warn(`⚠️ Таб з ID "${tabId}" не знайдено`);
+            }
+        }
     }
 }
 
