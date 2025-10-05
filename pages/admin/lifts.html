@@ -113,25 +113,47 @@
             position: relative !important;
             z-index: auto !important;
             background: white !important;
+            background-color: white !important;
             color: #495057 !important;
-            border: 1px solid #ced4da;
+            border: 1px solid #ced4da !important;
             border-radius: 0.375rem;
             padding: 0.375rem 0.75rem;
             font-size: 1rem;
             line-height: 1.5;
+            pointer-events: auto !important;
+            -webkit-user-select: text !important;
+            -moz-user-select: text !important;
+            -ms-user-select: text !important;
+            user-select: text !important;
+            touch-action: manipulation !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: textfield !important;
+            appearance: none !important;
         }
         
         #inspectorName:focus {
             background: white !important;
+            background-color: white !important;
             color: #495057 !important;
-            border-color: #80bdff;
-            outline: 0;
-            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+            border-color: #80bdff !important;
+            outline: 0 !important;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
+        }
+        
+        #inspectorName:hover {
+            background: white !important;
+            background-color: white !important;
         }
         
         #inspectorName::placeholder {
-            color: #6c757d;
-            opacity: 1;
+            color: #6c757d !important;
+            opacity: 1 !important;
+        }
+        
+        /* Забезпечуємо, що input не блокується overlay'ами */
+        #inspectionReportModal .form-control {
+            position: relative !important;
+            z-index: 1 !important;
         }
         
         /* Анімація для модального вікна */
@@ -251,6 +273,58 @@
             #inspectionReportModal .modal-body {
                 max-height: calc(100vh - 200px) !important;
             }
+        }
+        
+        /* Нові чисті стилі для поля інспектора */
+        .inspector-input {
+            background-color: #fff !important;
+            color: #495057 !important;
+            border: 1px solid #ced4da !important;
+            border-radius: 0.375rem !important;
+            padding: 0.375rem 0.75rem !important;
+            font-size: 1rem !important;
+            line-height: 1.5 !important;
+            width: 100% !important;
+            display: block !important;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
+        }
+        
+        .inspector-input:focus {
+            background-color: #fff !important;
+            border-color: #80bdff !important;
+            outline: 0 !important;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
+        }
+        
+        .inspector-input:disabled,
+        .inspector-input[readonly] {
+            background-color: #e9ecef !important;
+            opacity: 1 !important;
+        }
+        
+        /* Стилі для нового динамічно створеного input поля */
+        .fresh-inspector-input {
+            background-color: white !important;
+            color: #333 !important;
+            border: 2px solid #007bff !important;
+            border-radius: 5px !important;
+            padding: 8px 12px !important;
+            font-size: 14px !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+            outline: none !important;
+            font-family: inherit !important;
+            line-height: 1.5 !important;
+        }
+        
+        .fresh-inspector-input:focus {
+            border-color: #007bff !important;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
+            background-color: white !important;
+        }
+        
+        .fresh-inspector-input:hover {
+            border-color: #0056b3 !important;
         }
     </style>
 </head>
@@ -1965,11 +2039,25 @@
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label for="inspectorName">Ім'я інспектора</label>
-                                            <input type="text" id="inspectorName" class="form-control" 
+                                            <input type="text" 
+                                                   id="inspectorName" 
+                                                   name="inspectorName"
+                                                   class="form-control inspector-input" 
                                                    placeholder="Прізвище Ім'я По-батькові" 
                                                    autocomplete="off" 
                                                    spellcheck="false"
-                                                   style="z-index: auto;">
+                                                   tabindex="1"
+                                                   maxlength="100"
+                                                   required>
+                                            <!-- Тестова кнопка для debug -->
+                                            <div class="mt-2">
+                                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="testInspectorInput()">
+                                                    🧪 Тест введення
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-outline-success" onclick="forceSetInspectorName('Петренко Петро Петрович')">
+                                                    ✏️ Встановити тестове ім'я
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -2802,10 +2890,65 @@
                         modalBackdrop.style.zIndex = '1059';
                     }
                     
-                    // Фокус на поле інспектора після відкриття модального вікна
-                    const inspectorNameField = document.getElementById('inspectorName');
-                    if (inspectorNameField) {
-                        inspectorNameField.focus();
+                    // РАДИКАЛЬНА ЗАМІНА: створюємо новий input елемент
+                    const oldInspectorField = document.getElementById('inspectorName');
+                    if (oldInspectorField) {
+                        console.log('🔄 Заміняємо старий input на новий...');
+                        
+                        // Створюємо абсолютно новий input елемент
+                        const newInput = document.createElement('input');
+                        newInput.type = 'text';
+                        newInput.id = 'inspectorName';
+                        newInput.name = 'inspectorName';
+                        newInput.className = 'form-control fresh-inspector-input';
+                        newInput.placeholder = 'Прізвище Ім\'я По-батькові';
+                        newInput.autocomplete = 'off';
+                        newInput.spellcheck = false;
+                        newInput.maxLength = 100;
+                        newInput.required = true;
+                        
+                        // Встановлюємо інлайн стилі для гарантії
+                        newInput.style.cssText = `
+                            background-color: white !important;
+                            color: #333 !important;
+                            border: 2px solid #007bff !important;
+                            border-radius: 5px !important;
+                            padding: 8px 12px !important;
+                            font-size: 14px !important;
+                            width: 100% !important;
+                            box-sizing: border-box !important;
+                            outline: none !important;
+                        `;
+                        
+                        // Заміняємо старий елемент новим
+                        oldInspectorField.parentNode.replaceChild(newInput, oldInspectorField);
+                        
+                        // Додаємо event listeners до нового елемента
+                        newInput.addEventListener('input', function(e) {
+                            console.log('✅ NEW Inspector field input:', e.target.value);
+                            e.target.style.borderColor = e.target.value ? '#28a745' : '#007bff';
+                        });
+                        
+                        newInput.addEventListener('keyup', function(e) {
+                            console.log('✅ NEW Inspector field keyup:', e.target.value);
+                        });
+                        
+                        newInput.addEventListener('focus', function(e) {
+                            console.log('✅ NEW Inspector field focused');
+                            e.target.style.borderColor = '#007bff';
+                            e.target.style.boxShadow = '0 0 0 0.2rem rgba(0, 123, 255, 0.25)';
+                        });
+                        
+                        newInput.addEventListener('blur', function(e) {
+                            console.log('✅ NEW Inspector field blurred, value:', e.target.value);
+                            e.target.style.boxShadow = 'none';
+                        });
+                        
+                        // Фокус на новий елемент
+                        setTimeout(() => {
+                            newInput.focus();
+                            console.log('🎯 Фокус встановлено на новий input');
+                        }, 200);
                     }
                 }, 100);
             });
@@ -2830,10 +2973,103 @@
         // Обробник збереження звіту інспекції
         const saveInspectionReportBtn = document.getElementById('saveInspectionReportBtn');
         if (saveInspectionReportBtn) {
-            saveInspectionReportBtn.addEventListener('click', function() {
+            saveInspectionReportBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Save button clicked!'); // Debug
+                
+                // Перевіряємо значення перед збереженням
+                const inspectorValue = document.getElementById('inspectorName').value;
+                console.log('Inspector name value:', inspectorValue);
+                
                 saveInspectionReport();
             });
         }
+
+        // Додаткова функція для тестування поля інспектора
+        function testInspectorField() {
+            const field = document.getElementById('inspectorName');
+            if (field) {
+                console.log('Testing inspector field...');
+                console.log('Field found:', field);
+                console.log('Field value:', field.value);
+                console.log('Field disabled:', field.disabled);
+                console.log('Field readonly:', field.readOnly);
+                console.log('Field style:', field.style.cssText);
+                
+                // Пробуємо встановити значення програмно
+                field.value = 'Тест Тестович Тестенко';
+                console.log('After setting value:', field.value);
+                
+                // Пробуємо trigger events
+                field.dispatchEvent(new Event('input', { bubbles: true }));
+                field.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        }
+        
+        // Додаємо тестову кнопку (тимчасово для debug)
+        setTimeout(() => {
+            console.log('Testing inspector field on page load...');
+            testInspectorField();
+        }, 2000);
+
+        // Додаткова функція для примусового введення тексту
+        window.forceSetInspectorName = function(name) {
+            const field = document.getElementById('inspectorName');
+            if (field) {
+                field.value = name;
+                field.dispatchEvent(new Event('input', { bubbles: true }));
+                field.dispatchEvent(new Event('change', { bubbles: true }));
+                console.log('✅ Примусово встановлено ім\'я інспектора:', name);
+                return true;
+            }
+            console.error('❌ Поле inspectorName не знайдено');
+            return false;
+        };
+
+        // Функція для тестування введення в поле інспектора
+        window.testInspectorInput = function() {
+            console.log('🧪 === ТЕСТУВАННЯ INPUT ПОЛЯ ===');
+            
+            const field = document.getElementById('inspectorName');
+            if (!field) {
+                console.error('❌ Поле не знайдено!');
+                alert('Поле не знайдено!');
+                return;
+            }
+
+            console.log('✅ Поле знайдено:', field);
+            console.log('📋 Поточне значення:', field.value);
+            console.log('🎯 Disabled:', field.disabled);
+            console.log('📖 ReadOnly:', field.readOnly);
+            console.log('🎨 Style:', field.style.cssText);
+
+            // Пробуємо встановити фокус
+            field.focus();
+            console.log('🎯 Фокус встановлено');
+
+            // Пробуємо змінити значення
+            const testValue = 'Тестов Тест Тестович';
+            field.value = testValue;
+            console.log('✏️ Встановлено тестове значення:', testValue);
+
+            // Імітуємо події
+            field.dispatchEvent(new Event('input', { bubbles: true }));
+            field.dispatchEvent(new Event('change', { bubbles: true }));
+            console.log('🔄 Події input та change відправлені');
+
+            // Перевіряємо результат
+            setTimeout(() => {
+                console.log('📊 Фінальне значення:', field.value);
+                if (field.value === testValue) {
+                    console.log('✅ ТЕСТ ПРОЙШОВ УСПІШНО!');
+                    alert('✅ Поле працює! Значення: ' + field.value);
+                } else {
+                    console.log('❌ ТЕСТ НЕ ПРОЙШОВ');
+                    alert('❌ Поле не працює. Очікувалось: ' + testValue + ', отримано: ' + field.value);
+                }
+            }, 500);
+        };
 
         // Обробник кнопки скасування звіту інспекції
         const cancelInspectionReportBtn = document.getElementById('cancelInspectionReportBtn');
@@ -2899,9 +3135,71 @@
         });
     });
 
+    // Допоміжна функція для валідації полів форми
+    function validateInspectionForm() {
+        const fields = {
+            date: document.getElementById('inspectionDate'),
+            type: document.getElementById('inspectionType'),
+            inspector: document.getElementById('inspectorName'),
+            status: document.getElementById('inspectionStatus')
+        };
+
+        console.log('=== ВАЛІДАЦІЯ ФОРМИ ===');
+        
+        // Перевіряємо чи всі поля існують
+        for (const [key, field] of Object.entries(fields)) {
+            if (!field) {
+                console.error(`Поле ${key} не знайдено в DOM`);
+                alert(`Помилка: поле ${key} не знайдено`);
+                return false;
+            }
+            console.log(`${key}: "${field.value}" (element exists: ${!!field})`);
+        }
+
+        // Валідація значень
+        if (!fields.date.value.trim()) {
+            alert('Будь ласка, вкажіть дату інспекції');
+            fields.date.focus();
+            return false;
+        }
+
+        if (!fields.type.value.trim()) {
+            alert('Будь ласка, оберіть тип інспекції');
+            fields.type.focus();
+            return false;
+        }
+
+        if (!fields.inspector.value.trim()) {
+            alert('Будь ласка, вкажіть ім\'я інспектора');
+            fields.inspector.focus();
+            fields.inspector.style.backgroundColor = '#ffebee'; // Підсвічуємо червоним
+            setTimeout(() => {
+                fields.inspector.style.backgroundColor = '';
+            }, 3000);
+            return false;
+        }
+
+        if (!currentInspectionPDFFile) {
+            alert('Будь ласка, завантажте PDF звіт інспекції');
+            document.getElementById('inspectionReportPDF').focus();
+            return false;
+        }
+
+        console.log('✅ Валідація пройшла успішно');
+        return true;
+    }
+
     // Функція збереження звіту інспекції
     function saveInspectionReport() {
-        // Збираємо дані з форми
+        console.log('=== ПОЧАТОК ЗБЕРЕЖЕННЯ ЗВІТУ ===');
+        
+        // Спочатку валідуємо форму
+        if (!validateInspectionForm()) {
+            console.log('❌ Валідація не пройшла, збереження скасовано');
+            return;
+        }
+
+        // Збираємо дані з форми після успішної валідації
         const reportData = {
             id: 'REPORT_' + Date.now(),
             liftId: window.currentLiftId || 'UNKNOWN',
@@ -2909,25 +3207,33 @@
             type: document.getElementById('inspectionType').value,
             inspector: document.getElementById('inspectorName').value,
             status: document.getElementById('inspectionStatus').value,
-            comments: document.getElementById('inspectionComments').value,
-            nextDue: document.getElementById('nextInspectionDue').value,
+            comments: document.getElementById('inspectionComments').value || '',
+            nextDue: document.getElementById('nextInspectionDue').value || '',
             pdfFile: currentInspectionPDFFile ? currentInspectionPDFFile.name : null,
             createdAt: new Date().toISOString()
         };
 
-        // Валідація
-        if (!reportData.date || !reportData.type || !currentInspectionPDFFile) {
-            alert('Будь ласка, заповніть всі обов\'язкові поля та завантажте PDF звіт');
-            return;
-        }
+        console.log('📋 Дані для збереження:', reportData);
 
         // Зберігаємо звіт
-        let inspectionReports = JSON.parse(localStorage.getItem('inspection_reports') || '[]');
-        inspectionReports.push(reportData);
-        localStorage.setItem('inspection_reports', JSON.stringify(inspectionReports));
+        try {
+            let inspectionReports = JSON.parse(localStorage.getItem('inspection_reports') || '[]');
+            inspectionReports.push(reportData);
+            localStorage.setItem('inspection_reports', JSON.stringify(inspectionReports));
+            
+            console.log('💾 Звіт збережено в localStorage');
+            console.log('📊 Всього звітів:', inspectionReports.length);
 
-        // Автоматично архівуємо PDF
-        archiveInspectionPDF();
+            // Автоматично архівуємо PDF
+            if (typeof archiveInspectionPDF === 'function') {
+                archiveInspectionPDF();
+                console.log('📁 PDF архівовано');
+            }
+        } catch (error) {
+            console.error('❌ Помилка збереження:', error);
+            alert('Помилка збереження звіту. Перевірте консоль браузера.');
+            return;
+        }
 
         toastr.success('Звіт інспекції успішно збережено!');
         
