@@ -147,6 +147,56 @@
             100% { opacity: 1; transform: scale(1); }
         }
         
+        /* Стилі для звітів */
+        .report-type-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            height: 100%;
+        }
+        
+        .report-type-card:hover {
+            transform: translateY(-5px);
+            border-color: #007bff;
+            box-shadow: 0 4px 15px rgba(0,123,255,0.1);
+        }
+        
+        .report-type-card.active {
+            border-color: #007bff;
+            background-color: #f8f9fa;
+        }
+        
+        /* Timeline стилі */
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding-bottom: 15px;
+            border-left: 2px solid #dee2e6;
+        }
+        
+        .timeline-date {
+            position: absolute;
+            left: -35px;
+            top: 0;
+            width: 60px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            text-align: center;
+            padding: 2px 0;
+            border-radius: 10px;
+            background: white;
+            border: 2px solid currentColor;
+        }
+        
+        .timeline-content {
+            padding-left: 20px;
+            margin-bottom: 10px;
+        }
+        
         .prediction-card {
             background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%);
             color: white;
@@ -612,11 +662,53 @@
 
                         <!-- Financial Analytics Tab -->
                         <div class="tab-pane fade" id="financial-analytics" role="tabpanel">
-                            <div class="row">
+                            
+                            <!-- КПІ фінанси -->
+                            <div class="row mb-4">
+                                <div class="col-md-3">
+                                    <div class="analytics-card">
+                                        <div class="card-body text-center">
+                                            <h3 class="text-success">₴67,000</h3>
+                                            <p class="mb-0">Дохід цього місяця</p>
+                                            <small class="text-success"><i class="fas fa-arrow-up"></i> +12% до мин. місяця</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="analytics-card">
+                                        <div class="card-body text-center">
+                                            <h3 class="text-warning">₴35,000</h3>
+                                            <p class="mb-0">Витрати на ТО</p>
+                                            <small class="text-warning"><i class="fas fa-arrow-up"></i> +5% до мин. місяця</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="analytics-card">
+                                        <div class="card-body text-center">
+                                            <h3 class="text-primary">₴32,000</h3>
+                                            <p class="mb-0">Чистий прибуток</p>
+                                            <small class="text-success"><i class="fas fa-arrow-up"></i> +18% до мин. місяця</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="analytics-card">
+                                        <div class="card-body text-center">
+                                            <h3 class="text-info">47.8%</h3>
+                                            <p class="mb-0">Рентабельність</p>
+                                            <small class="text-success"><i class="fas fa-arrow-up"></i> +3.2% до мин. місяця</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Головні графіки -->
+                            <div class="row mb-4">
                                 <div class="col-md-8">
                                     <div class="analytics-card">
                                         <div class="card-header">
-                                            <h3 class="card-title">💰 Фінансова аналітика</h3>
+                                            <h3 class="card-title">💰 Доходи та витрати по місяцях</h3>
                                         </div>
                                         <div class="chart-container">
                                             <canvas id="financial-chart"></canvas>
@@ -626,20 +718,127 @@
                                 <div class="col-md-4">
                                     <div class="analytics-card">
                                         <div class="card-header">
-                                            <h3 class="card-title">📈 Фінансові показники</h3>
+                                            <h3 class="card-title">� Структура витрат</h3>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="expenses-pie-chart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Деталізація -->
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">📈 Рентабельність по об'єктах</h3>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="profitability-chart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">💳 Методи оплати</h3>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="payment-methods-chart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Фінансові таблиці -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">🏢 Найприбутковіші об'єкти</h3>
                                         </div>
                                         <div class="card-body">
-                                            <div class="metric-card info">
-                                                <div class="metric-label">Дохід цього місяця</div>
-                                                <div class="metric-value text-success" id="monthly-revenue">₴0</div>
+                                            <div class="table-responsive">
+                                                <table class="table table-sm">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Об'єкт</th>
+                                                            <th>Дохід</th>
+                                                            <th>Прибуток</th>
+                                                            <th>%</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>ТРЦ "Глобус"</td>
+                                                            <td>₴25,000</td>
+                                                            <td>₴15,000</td>
+                                                            <td class="text-success">60%</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Офіс-центр "Пріоритет"</td>
+                                                            <td>₴18,500</td>
+                                                            <td>₴9,200</td>
+                                                            <td class="text-success">49.7%</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>ЖК "Сонячний"</td>
+                                                            <td>₴15,300</td>
+                                                            <td>₴5,100</td>
+                                                            <td class="text-warning">33.3%</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>БЦ "Технопарк"</td>
+                                                            <td>₴8,200</td>
+                                                            <td>₴2,700</td>
+                                                            <td class="text-danger">32.9%</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
                                             </div>
-                                            <div class="metric-card warning">
-                                                <div class="metric-label">Витрати на ТО</div>
-                                                <div class="metric-value text-warning" id="maintenance-costs">₴0</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">📅 Фінансовий календар</h3>
+                                        </div>
+                                        <div class="card-body">
+                                            <h6>📋 Найближчі платежі:</h6>
+                                            <div class="timeline">
+                                                <div class="timeline-item">
+                                                    <div class="timeline-date text-primary">07.10</div>
+                                                    <div class="timeline-content">
+                                                        <strong>ТРЦ "Глобус"</strong><br>
+                                                        <small>Щомісячний контракт - ₴25,000</small>
+                                                    </div>
+                                                </div>
+                                                <div class="timeline-item">
+                                                    <div class="timeline-date text-warning">10.10</div>
+                                                    <div class="timeline-content">
+                                                        <strong>Оплата запчастин</strong><br>
+                                                        <small>Щомісячний закуп - ₴12,000</small>
+                                                    </div>
+                                                </div>
+                                                <div class="timeline-item">
+                                                    <div class="timeline-date text-success">15.10</div>
+                                                    <div class="timeline-content">
+                                                        <strong>ЖК "Сонячний"</strong><br>
+                                                        <small>Квартальний платіж - ₴45,900</small>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div class="metric-card primary">
-                                                <div class="metric-label">Чистий прибуток</div>
-                                                <div class="metric-value text-primary" id="net-profit">₴0</div>
+                                            
+                                            <hr>
+                                            
+                                            <h6>💡 Фінансові поради:</h6>
+                                            <div class="alert alert-info small">
+                                                <i class="fas fa-lightbulb"></i>
+                                                Розгляньте можливість збільшення частоти ТО для ТРЦ "Глобус" - 
+                                                це може підвищити рентабельність до 65%.
                                             </div>
                                         </div>
                                     </div>
@@ -712,67 +911,271 @@
 
                         <!-- Reports Analytics Tab -->
                         <div class="tab-pane fade" id="reports-analytics" role="tabpanel">
-                            <div class="row">
-                                <div class="col-md-12">
+                            
+                            <!-- Типи звітів -->
+                            <div class="row mb-4">
+                                <div class="col-12">
                                     <div class="analytics-card">
                                         <div class="card-header">
-                                            <h3 class="card-title">📄 Центр звітів</h3>
+                                            <h3 class="card-title">📄 Типи звітів</h3>
                                         </div>
                                         <div class="card-body">
                                             <div class="row">
-                                                <div class="col-md-3 mb-3">
-                                                    <button class="btn btn-outline-primary btn-block">
-                                                        <i class="fas fa-elevator"></i><br>
-                                                        Звіт по ліфтах
-                                                    </button>
+                                                <div class="col-md-3 col-sm-6 mb-3">
+                                                    <div class="card report-type-card active" data-report-type="maintenance">
+                                                        <div class="card-body text-center">
+                                                            <div style="font-size: 2.5rem; margin-bottom: 1rem; color: #007bff;">🔧</div>
+                                                            <h5>Технічне обслуговування</h5>
+                                                            <p class="text-muted">Звіти про ТО ліфтів</p>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div class="col-md-3 mb-3">
-                                                    <button class="btn btn-outline-success btn-block">
-                                                        <i class="fas fa-tools"></i><br>
-                                                        Звіт по ТО
-                                                    </button>
+                                                <div class="col-md-3 col-sm-6 mb-3">
+                                                    <div class="card report-type-card" data-report-type="financial">
+                                                        <div class="card-body text-center">
+                                                            <div style="font-size: 2.5rem; margin-bottom: 1rem; color: #007bff;">💰</div>
+                                                            <h5>Фінансовий</h5>
+                                                            <p class="text-muted">Фінансові звіти та аналітика</p>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div class="col-md-3 mb-3">
-                                                    <button class="btn btn-outline-warning btn-block">
-                                                        <i class="fas fa-money-bill"></i><br>
-                                                        Фінансовий звіт
-                                                    </button>
+                                                <div class="col-md-3 col-sm-6 mb-3">
+                                                    <div class="card report-type-card" data-report-type="performance">
+                                                        <div class="card-body text-center">
+                                                            <div style="font-size: 2.5rem; margin-bottom: 1rem; color: #007bff;">📊</div>
+                                                            <h5>Продуктивність</h5>
+                                                            <p class="text-muted">Ефективність роботи техніків</p>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div class="col-md-3 mb-3">
-                                                    <button class="btn btn-outline-info btn-block">
-                                                        <i class="fas fa-users"></i><br>
-                                                        Звіт по користувачах
-                                                    </button>
+                                                <div class="col-md-3 col-sm-6 mb-3">
+                                                    <div class="card report-type-card" data-report-type="inventory">
+                                                        <div class="card-body text-center">
+                                                            <div style="font-size: 2.5rem; margin-bottom: 1rem; color: #007bff;">📦</div>
+                                                            <h5>Інвентаризація</h5>
+                                                            <p class="text-muted">Залишки запчастин та матеріалів</p>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Календарний період -->
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">📅 Період звіту</h3>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="startDate">З дати</label>
+                                                        <input type="date" id="startDate" class="form-control">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="endDate">До дати</label>
+                                                        <input type="date" id="endDate" class="form-control">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="mt-3">
+                                                <h6>Швидкі періоди:</h6>
+                                                <button class="btn btn-outline-secondary btn-sm mr-2 mb-2" data-period="today">
+                                                    <i class="fas fa-calendar-day"></i> Сьогодні
+                                                </button>
+                                                <button class="btn btn-outline-secondary btn-sm mr-2 mb-2" data-period="week">
+                                                    <i class="fas fa-calendar-week"></i> Цей тиждень
+                                                </button>
+                                                <button class="btn btn-outline-secondary btn-sm mr-2 mb-2" data-period="month">
+                                                    <i class="fas fa-calendar-alt"></i> Цей місяць
+                                                </button>
+                                                <button class="btn btn-outline-secondary btn-sm mr-2 mb-2" data-period="quarter">
+                                                    <i class="fas fa-calendar"></i> Цей квартал
+                                                </button>
+                                                <button class="btn btn-outline-secondary btn-sm mr-2 mb-2" data-period="year">
+                                                    <i class="fas fa-calendar-check"></i> Цей рік
+                                                </button>
+                                                <button class="btn btn-outline-info btn-sm mr-2 mb-2" data-period="last-7">
+                                                    <i class="fas fa-backward"></i> Останні 7 днів
+                                                </button>
+                                                <button class="btn btn-outline-info btn-sm mr-2 mb-2" data-period="last-30">
+                                                    <i class="fas fa-backward"></i> Останні 30 днів
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Фільтри -->
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">🔍 Фільтри</h3>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    <div class="form-group">
+                                                        <label for="technicianFilter">Технік</label>
+                                                        <select id="technicianFilter" class="form-control">
+                                                            <option value="all">Всі техніки</option>
+                                                            <option value="tech1">Іван Петренко</option>
+                                                            <option value="tech2">Марія Коваленко</option>
+                                                            <option value="tech3">Олексій Сидоренко</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="form-group">
+                                                        <label for="statusFilter">Статус</label>
+                                                        <select id="statusFilter" class="form-control">
+                                                            <option value="all">Всі статуси</option>
+                                                            <option value="completed">Завершено</option>
+                                                            <option value="pending">В очікуванні</option>
+                                                            <option value="in-progress">В роботі</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="form-group">
+                                                        <label for="priorityFilter">Пріоритет</label>
+                                                        <select id="priorityFilter" class="form-control">
+                                                            <option value="all">Всі пріоритети</option>
+                                                            <option value="high">Високий</option>
+                                                            <option value="medium">Середній</option>
+                                                            <option value="low">Низький</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="form-group">
+                                                        <label for="buildingFilter">Будівля</label>
+                                                        <select id="buildingFilter" class="form-control">
+                                                            <option value="all">Всі будівлі</option>
+                                                            <option value="building1">ТРЦ "Глобус"</option>
+                                                            <option value="building2">Офіс-центр "Пріоритет"</option>
+                                                            <option value="building3">ЖК "Сонячний"</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Дії та готові звіти -->
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">📊 Готові звіти</h3>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-striped">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Назва звіту</th>
+                                                            <th>Тип</th>
+                                                            <th>Період</th>
+                                                            <th>Створено</th>
+                                                            <th>Статус</th>
+                                                            <th>Дії</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="reports-table">
+                                                        <tr>
+                                                            <td>Щоденний звіт активності</td>
+                                                            <td><span class="badge badge-info">ТО</span></td>
+                                                            <td>04.10.2025</td>
+                                                            <td>15 хв тому</td>
+                                                            <td><span class="badge badge-success">Готовий</span></td>
+                                                            <td>
+                                                                <button class="btn btn-sm btn-outline-primary mr-1">
+                                                                    <i class="fas fa-download"></i>
+                                                                </button>
+                                                                <button class="btn btn-sm btn-outline-info">
+                                                                    <i class="fas fa-eye"></i>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Тижневий фінансовий звіт</td>
+                                                            <td><span class="badge badge-warning">Фінанси</span></td>
+                                                            <td>28.09 - 04.10.2025</td>
+                                                            <td>1 год тому</td>
+                                                            <td><span class="badge badge-warning">Генерується</span></td>
+                                                            <td>
+                                                                <button class="btn btn-sm btn-outline-secondary" disabled>
+                                                                    <i class="fas fa-spinner fa-spin"></i>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Місячний звіт продуктивності</td>
+                                                            <td><span class="badge badge-primary">Продуктивність</span></td>
+                                                            <td>Вересень 2025</td>
+                                                            <td>2 години тому</td>
+                                                            <td><span class="badge badge-success">Готовий</span></td>
+                                                            <td>
+                                                                <button class="btn btn-sm btn-outline-primary mr-1">
+                                                                    <i class="fas fa-download"></i>
+                                                                </button>
+                                                                <button class="btn btn-sm btn-outline-info">
+                                                                    <i class="fas fa-eye"></i>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">🚀 Створити звіт</h3>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="d-grid gap-2">
+                                                <button class="btn btn-primary btn-block mb-2" id="generate-report">
+                                                    <i class="fas fa-file-export"></i> Створити звіт
+                                                </button>
+                                                <button class="btn btn-outline-success btn-block mb-2">
+                                                    <i class="fas fa-calendar-plus"></i> Запланувати звіт
+                                                </button>
+                                                <button class="btn btn-outline-info btn-block">
+                                                    <i class="fas fa-cog"></i> Налаштування звітів
+                                                </button>
+                                            </div>
                                             
-                                            <div class="mt-4">
-                                                <h5>📊 Швидкі звіти</h5>
-                                                <div class="table-responsive">
-                                                    <table class="table table-striped">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>Тип звіту</th>
-                                                                <th>Останнє оновлення</th>
-                                                                <th>Статус</th>
-                                                                <th>Дії</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody id="reports-table">
-                                                            <tr>
-                                                                <td>Місячний звіт активності</td>
-                                                                <td>5 хв тому</td>
-                                                                <td><span class="badge badge-success">Готовий</span></td>
-                                                                <td><button class="btn btn-sm btn-outline-primary">Завантажити</button></td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>Тижневі інспекції</td>
-                                                                <td>1 год тому</td>
-                                                                <td><span class="badge badge-warning">Генерується</span></td>
-                                                                <td><button class="btn btn-sm btn-outline-secondary" disabled>Очікування</button></td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
+                                            <hr>
+                                            
+                                            <h6>📈 Статистика звітів:</h6>
+                                            <div class="small">
+                                                <div class="d-flex justify-content-between">
+                                                    <span>Згенеровано сьогодні:</span>
+                                                    <strong>12</strong>
+                                                </div>
+                                                <div class="d-flex justify-content-between">
+                                                    <span>Заплановано:</span>
+                                                    <strong>5</strong>
+                                                </div>
+                                                <div class="d-flex justify-content-between">
+                                                    <span>Помилки генерації:</span>
+                                                    <strong class="text-danger">0</strong>
                                                 </div>
                                             </div>
                                         </div>
