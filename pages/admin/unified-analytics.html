@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Єдина система аналітики - DeapSeaK</title>
+    
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
+    
+    <!-- Toastr -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    
+    <style>
+        .analytics-card {
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        }
+        
+        .analytics-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .metric-card {
+            text-align: center;
+            padding: 20px;
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border-left: 4px solid;
+        }
+        
+        .metric-card.primary { border-left-color: #007bff; }
+        .metric-card.success { border-left-color: #28a745; }
+        .metric-card.warning { border-left-color: #ffc107; }
+        .metric-card.info { border-left-color: #17a2b8; }
+        .metric-card.danger { border-left-color: #dc3545; }
+        
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .metric-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .metric-change {
+            font-size: 0.85rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            margin-top: 8px;
+            display: inline-block;
+        }
+        
+        .metric-change.positive { background: #d4edda; color: #155724; }
+        .metric-change.negative { background: #f8d7da; color: #721c24; }
+        .metric-change.neutral { background: #e2e3e5; color: #6c757d; }
+        
+        .chart-container {
+            height: 400px;
+            position: relative;
+            padding: 20px;
+        }
+        
+        .tab-section {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .nav-tabs .nav-link {
+            border: none;
+            color: #6c757d;
+            padding: 12px 24px;
+            font-weight: 500;
+        }
+        
+        .nav-tabs .nav-link.active {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            border-radius: 10px 10px 0 0;
+        }
+        
+        .alert-panel {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .alert-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: white;
+        }
+        
+        .alert-critical { background: #dc3545; }
+        .alert-warning { background: #ffc107; }
+        .alert-info { background: #17a2b8; }
+        
+        .real-time-indicator {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 12px;
+            height: 12px;
+            background: #28a745;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.1); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        .prediction-card {
+            background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .system-health {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .health-good { background: #d4edda; color: #155724; }
+        .health-warning { background: #fff3cd; color: #856404; }
+        .health-critical { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+    <!-- Header -->
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-widget="pushmenu" href="#" role="button">
+                    <i class="fas fa-bars"></i>
+                </a>
+            </li>
+            <li class="nav-item d-none d-sm-inline-block">
+                <a href="admin-dashboard.html" class="nav-link">
+                    <i class="fas fa-home"></i> Головна
+                </a>
+            </li>
+        </ul>
+        
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <span class="nav-link">
+                    <i class="fas fa-circle text-success"></i>
+                    <span class="real-time-indicator"></span>
+                    Онлайн аналітика
+                </span>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <a href="admin-dashboard.html" class="brand-link">
+            <i class="fas fa-elevator brand-image"></i>
+            <span class="brand-text font-weight-light">LiftMaster Pro</span>
+        </a>
+
+        <div class="sidebar">
+            <nav class="mt-2">
+                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+                    <li class="nav-item">
+                        <a href="admin-dashboard.html" class="nav-link">
+                            <i class="nav-icon fas fa-tachometer-alt"></i>
+                            <p>Дашборд</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="lifts.html" class="nav-link">
+                            <i class="nav-icon fas fa-elevator"></i>
+                            <p>Ліфти</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="unified-analytics.html" class="nav-link active">
+                            <i class="nav-icon fas fa-chart-line"></i>
+                            <p>Аналітика</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="../../system-settings.html" class="nav-link">
+                            <i class="nav-icon fas fa-cog"></i>
+                            <p>Налаштування</p>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Content -->
+    <div class="content-wrapper">
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 class="m-0">📊 Єдина система аналітики</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="admin-dashboard.html">Головна</a></li>
+                            <li class="breadcrumb-item active">Аналітика</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="content">
+            <div class="container-fluid">
+                
+                <!-- KPI Cards -->
+                <div class="row mb-4">
+                    <div class="col-lg-3 col-6">
+                        <div class="metric-card primary">
+                            <div class="metric-label">Всього ліфтів</div>
+                            <div class="metric-value text-primary" id="total-lifts">0</div>
+                            <div class="metric-change positive" id="lifts-change">+5% цього місяця</div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="metric-card success">
+                            <div class="metric-label">Активних ліфтів</div>
+                            <div class="metric-value text-success" id="active-lifts">0</div>
+                            <div class="metric-change positive" id="active-change">98% онлайн</div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="metric-card warning">
+                        <div class="metric-label">QR сканувань</div>
+                            <div class="metric-value text-warning" id="qr-scans">0</div>
+                            <div class="metric-change positive" id="scans-change">+12% за тиждень</div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="metric-card danger">
+                            <div class="metric-label">Потребують ТО</div>
+                            <div class="metric-value text-danger" id="maintenance-needed">0</div>
+                            <div class="metric-change neutral" id="maintenance-change">Планово</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alerts Panel -->
+                <div class="alert-panel" id="alerts-panel" style="display: none;">
+                    <h6><i class="fas fa-exclamation-triangle"></i> Системні сповіщення</h6>
+                    <div id="alerts-container">
+                        <!-- Динамічні алерти -->
+                    </div>
+                </div>
+
+                <!-- Main Analytics Tabs -->
+                <div class="tab-section">
+                    <ul class="nav nav-tabs" id="analytics-tabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">
+                                <i class="fas fa-chart-pie"></i> Огляд
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="lifts-tab" data-bs-toggle="tab" data-bs-target="#lifts-analytics" type="button" role="tab">
+                                <i class="fas fa-elevator"></i> Ліфти
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="maintenance-tab" data-bs-toggle="tab" data-bs-target="#maintenance-analytics" type="button" role="tab">
+                                <i class="fas fa-tools"></i> Технічне обслуговування
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="qr-tab" data-bs-toggle="tab" data-bs-target="#qr-analytics" type="button" role="tab">
+                                <i class="fas fa-qrcode"></i> QR Аналітика
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="predictive-tab" data-bs-toggle="tab" data-bs-target="#predictive-analytics" type="button" role="tab">
+                                <i class="fas fa-brain"></i> Прогнозування
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="financial-tab" data-bs-toggle="tab" data-bs-target="#financial-analytics" type="button" role="tab">
+                                <i class="fas fa-money-bill-wave"></i> Фінанси
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="inspections-tab" data-bs-toggle="tab" data-bs-target="#inspections-analytics" type="button" role="tab">
+                                <i class="fas fa-clipboard-check"></i> Інспекції
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="users-tab" data-bs-toggle="tab" data-bs-target="#users-analytics" type="button" role="tab">
+                                <i class="fas fa-users"></i> Користувачі
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="reports-tab" data-bs-toggle="tab" data-bs-target="#reports-analytics" type="button" role="tab">
+                                <i class="fas fa-file-alt"></i> Звіти
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content p-3" id="analytics-content">
+                        <!-- Overview Tab -->
+                        <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">📈 Загальна активність системи</h3>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="overview-chart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">🏥 Стан системи</h3>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="system-health health-good">
+                                                <i class="fas fa-server mr-2"></i>
+                                                <div>
+                                                    <strong>Сервер</strong><br>
+                                                    <small>Онлайн • 99.9% uptime</small>
+                                                </div>
+                                            </div>
+                                            <div class="system-health health-good">
+                                                <i class="fas fa-database mr-2"></i>
+                                                <div>
+                                                    <strong>База даних</strong><br>
+                                                    <small>Стабільно • 2ms відповідь</small>
+                                                </div>
+                                            </div>
+                                            <div class="system-health health-warning">
+                                                <i class="fas fa-wifi mr-2"></i>
+                                                <div>
+                                                    <strong>IoT з'єднання</strong><br>
+                                                    <small>Стабільно • 95% ліфтів онлайн</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lifts Analytics Tab -->
+                        <div class="tab-pane fade" id="lifts-analytics" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">🏢 Розподіл ліфтів по статусу</h3>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="lifts-status-chart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">📍 Географічний розподіл</h3>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="lifts-location-chart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Maintenance Analytics Tab -->
+                        <div class="tab-pane fade" id="maintenance-analytics" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">🔧 Історія технічного обслуговування</h3>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="maintenance-chart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">⏰ Найближчі ТО</h3>
+                                        </div>
+                                        <div class="card-body" id="upcoming-maintenance">
+                                            <!-- Динамічний контент -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- QR Analytics Tab -->
+                        <div class="tab-pane fade" id="qr-analytics" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">📱 QR сканування по часу</h3>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="qr-scans-chart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">👥 Топ користувачів QR</h3>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="qr-users-chart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Predictive Analytics Tab -->
+                        <div class="tab-pane fade" id="predictive-analytics" role="tabpanel">
+                            <div class="prediction-card">
+                                <h4><i class="fas fa-brain"></i> AI Прогнозування та рекомендації</h4>
+                                <p>Розумна система аналізу даних та машинного навчання</p>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">🔮 Прогноз поломок</h3>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="prediction-chart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">💡 AI Рекомендації</h3>
+                                        </div>
+                                        <div class="card-body" id="ai-recommendations">
+                                            <!-- Динамічні AI рекомендації -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Financial Analytics Tab -->
+                        <div class="tab-pane fade" id="financial-analytics" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">💰 Фінансова аналітика</h3>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="financial-chart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">📈 Фінансові показники</h3>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="metric-card info">
+                                                <div class="metric-label">Дохід цього місяця</div>
+                                                <div class="metric-value text-success" id="monthly-revenue">₴0</div>
+                                            </div>
+                                            <div class="metric-card warning">
+                                                <div class="metric-label">Витрати на ТО</div>
+                                                <div class="metric-value text-warning" id="maintenance-costs">₴0</div>
+                                            </div>
+                                            <div class="metric-card primary">
+                                                <div class="metric-label">Чистий прибуток</div>
+                                                <div class="metric-value text-primary" id="net-profit">₴0</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Inspections Analytics Tab -->
+                        <div class="tab-pane fade" id="inspections-analytics" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">🔍 Статистика інспекцій</h3>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="inspections-chart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">📋 Результати інспекцій</h3>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="inspection-results-chart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Users Analytics Tab -->
+                        <div class="tab-pane fade" id="users-analytics" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">👥 Активність користувачів</h3>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="users-activity-chart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">📊 Статистика користувачів</h3>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="metric-card success">
+                                                <div class="metric-label">Активні користувачі</div>
+                                                <div class="metric-value text-success" id="active-users">0</div>
+                                            </div>
+                                            <div class="metric-card info">
+                                                <div class="metric-label">Техніки</div>
+                                                <div class="metric-value text-info" id="technicians-count">0</div>
+                                            </div>
+                                            <div class="metric-card warning">
+                                                <div class="metric-label">Адміністратори</div>
+                                                <div class="metric-value text-warning" id="admins-count">0</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Reports Analytics Tab -->
+                        <div class="tab-pane fade" id="reports-analytics" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">📄 Центр звітів</h3>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-3 mb-3">
+                                                    <button class="btn btn-outline-primary btn-block">
+                                                        <i class="fas fa-elevator"></i><br>
+                                                        Звіт по ліфтах
+                                                    </button>
+                                                </div>
+                                                <div class="col-md-3 mb-3">
+                                                    <button class="btn btn-outline-success btn-block">
+                                                        <i class="fas fa-tools"></i><br>
+                                                        Звіт по ТО
+                                                    </button>
+                                                </div>
+                                                <div class="col-md-3 mb-3">
+                                                    <button class="btn btn-outline-warning btn-block">
+                                                        <i class="fas fa-money-bill"></i><br>
+                                                        Фінансовий звіт
+                                                    </button>
+                                                </div>
+                                                <div class="col-md-3 mb-3">
+                                                    <button class="btn btn-outline-info btn-block">
+                                                        <i class="fas fa-users"></i><br>
+                                                        Звіт по користувачах
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mt-4">
+                                                <h5>📊 Швидкі звіти</h5>
+                                                <div class="table-responsive">
+                                                    <table class="table table-striped">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Тип звіту</th>
+                                                                <th>Останнє оновлення</th>
+                                                                <th>Статус</th>
+                                                                <th>Дії</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="reports-table">
+                                                            <tr>
+                                                                <td>Місячний звіт активності</td>
+                                                                <td>5 хв тому</td>
+                                                                <td><span class="badge badge-success">Готовий</span></td>
+                                                                <td><button class="btn btn-sm btn-outline-primary">Завантажити</button></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Тижневі інспекції</td>
+                                                                <td>1 год тому</td>
+                                                                <td><span class="badge badge-warning">Генерується</span></td>
+                                                                <td><button class="btn btn-sm btn-outline-secondary" disabled>Очікування</button></td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <strong>&copy; 2025 <a href="#">LiftMaster Pro</a>.</strong>
+        Всі права захищені.
+        <div class="float-right d-none d-sm-inline-block">
+            <b>Система аналітики</b> v2.0
+        </div>
+    </footer>
+</div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+
+<!-- Unified Analytics Engine -->
+<script src="../../assets/js/unified-analytics-engine.js"></script>
+
+</body>
+</html>

@@ -1,65 +1,132 @@
-127.0.0.1 - - [05/Oct/2025 15:26:33] "GET /login.html HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:26:34] "GET /assets/js/auth.js HTTP/1.1" 304 -
-127.0.0.1 - - [05/Oct/2025 15:26:34] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:26:38] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:26:39] "GET /assets/js/enhanced-lift-modal.js HTTP/1.1" 304 -
-127.0.0.1 - - [05/Oct/2025 15:26:39] "GET /assets/js/system-eventbus.js HTTP/1.1" 304 -
-127.0.0.1 - - [05/Oct/2025 15:26:40] "GET /assets/js/simple-lift-modal.js HTTP/1.1" 304 -
-127.0.0.1 - - [05/Oct/2025 15:26:40] "GET /assets/js/voice-control.js HTTP/1.1" 304 -
-127.0.0.1 - - [05/Oct/2025 15:26:40] "GET /assets/js/predictive-maintenance.js HTTP/1.1" 304 -
-127.0.0.1 - - [05/Oct/2025 15:26:40] "GET /assets/js/ar-helper.js HTTP/1.1" 304 -
-127.0.0.1 - - [05/Oct/2025 15:37:59] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:38:02] "GET /login.html HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:38:03] "GET /assets/js/auth.js HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:38:03] "GET /assets/js/config.js HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:38:03] "GET /assets/js/common.js HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:38:03] "GET /assets/css/main.css HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:38:03] "GET /assets/css/auth.css HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:38:06] code 501, message Unsupported method ('POST')
-127.0.0.1 - - [05/Oct/2025 15:38:06] "POST /api/login HTTP/1.1" 501 -
-127.0.0.1 - - [05/Oct/2025 15:38:06] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:38:10] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:38:10] "GET /assets/css/enhanced-lift-modal.css HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:38:10] "GET /assets/js/system-eventbus.js HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:38:10] "GET /assets/js/ar-helper.js HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:38:10] "GET /assets/js/lift-utils.js HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:38:10] "GET /assets/css/ai-assistant.css HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:38:10] "GET /assets/js/lifts.js HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:38:10] "GET /assets/js/simple-lift-modal.js HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:38:10] "GET /assets/js/enhanced-lift-modal.js HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:38:10] "GET /assets/js/predictive-maintenance.js HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:38:10] "GET /assets/js/modules/ai-assistant.js HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:38:10] "GET /assets/js/test-lift-saving.js HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:38:10] "GET /assets/js/voice-control.js HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:44:17] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:47:17] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:52:21] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:54:39] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:54:42] "GET /login.html HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:54:43] "GET /assets/js/config.js HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:54:43] "GET /assets/js/common.js HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:54:43] "GET /assets/css/auth.css HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:54:43] "GET /assets/js/auth.js HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:54:43] "GET /assets/css/main.css HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:54:46] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:54:46] code 501, message Unsupported method ('POST')
-127.0.0.1 - - [05/Oct/2025 15:54:46] "POST /api/login HTTP/1.1" 501 -
-127.0.0.1 - - [05/Oct/2025 15:54:49] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:54:49] "GET /assets/css/enhanced-lift-modal.css HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:54:49] "GET /assets/js/system-eventbus.js HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:54:49] "GET /assets/js/lifts.js HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:54:49] "GET /assets/js/test-lift-saving.js HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:54:49] "GET /assets/js/ar-helper.js HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:54:49] "GET /assets/js/enhanced-lift-modal.js HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:54:50] "GET /assets/js/voice-control.js HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:54:50] "GET /assets/js/lift-utils.js HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:54:50] "GET /assets/js/simple-lift-modal.js HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:54:50] "GET /assets/css/ai-assistant.css HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:54:50] "GET /assets/js/predictive-maintenance.js HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:54:50] "GET /assets/js/modules/ai-assistant.js HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:59:09] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 15:59:10] "GET /assets/js/enhanced-lift-modal.js HTTP/1.1" 304 -
-127.0.0.1 - - [05/Oct/2025 16:02:28] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 16:02:29] "GET /assets/js/enhanced-lift-modal.js HTTP/1.1" 304 -
-127.0.0.1 - - [05/Oct/2025 16:06:34] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
-127.0.0.1 - - [05/Oct/2025 16:06:35] "GET /assets/js/enhanced-lift-modal.js HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 19:19:16] "GET /login.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 19:19:17] "GET /assets/js/auth.js HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 19:19:18] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 19:19:18] code 404, message File not found
+127.0.0.1 - - [05/Oct/2025 19:19:18] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [05/Oct/2025 19:19:19] code 404, message File not found
+127.0.0.1 - - [05/Oct/2025 19:19:19] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [05/Oct/2025 19:19:22] "GET /pages/admin/lifts.html HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 19:19:23] "GET /assets/js/ar-helper.js HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 19:19:23] "GET /assets/js/simple-lift-modal.js HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 19:19:23] "GET /assets/js/enhanced-lift-modal.js HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 19:19:23] "GET /assets/js/predictive-maintenance.js HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 19:19:23] "GET /assets/js/voice-control.js HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 19:19:24] "GET /assets/js/system-eventbus.js HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 19:27:17] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 19:27:24] "GET /system-settings.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 19:27:49] code 404, message File not found
+127.0.0.1 - - [05/Oct/2025 19:27:49] "GET /pages/admin/system-settings.html HTTP/1.1" 404 -
+127.0.0.1 - - [05/Oct/2025 19:33:38] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 19:34:32] "GET /pages/admin/predictive-maintenance.html HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 19:34:55] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 19:35:00] "GET /pages/admin/predictive-maintenance.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 19:35:36] "GET /pages/admin/lifts.html HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 19:35:39] "GET /pages/admin/analytics-dashboard.html HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 19:35:39] "GET /assets/js/smart-analytics-engine.js HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 19:37:46] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 19:37:51] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 19:43:01] "GET /pages/admin/support.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 19:43:35] code 404, message File not found
+127.0.0.1 - - [05/Oct/2025 19:43:35] "GET /pages/admin/logs-viewer.html HTTP/1.1" 404 -
+127.0.0.1 - - [05/Oct/2025 19:43:59] "GET /pages/admin/notifications.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 19:44:10] "GET /pages/admin/settings.html HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 19:44:10] code 404, message File not found
+127.0.0.1 - - [05/Oct/2025 19:44:10] "GET /assets/img/icons/google-calendar.png HTTP/1.1" 404 -
+127.0.0.1 - - [05/Oct/2025 19:44:10] code 404, message File not found
+127.0.0.1 - - [05/Oct/2025 19:44:10] "GET /assets/img/icons/quickbooks.png HTTP/1.1" 404 -
+127.0.0.1 - - [05/Oct/2025 19:44:11] code 404, message File not found
+127.0.0.1 - - [05/Oct/2025 19:44:11] "GET /assets/css/custom.css HTTP/1.1" 404 -
+127.0.0.1 - - [05/Oct/2025 19:44:11] code 404, message File not found
+127.0.0.1 - - [05/Oct/2025 19:44:11] "GET /assets/img/avatars/admin.png HTTP/1.1" 404 -
+127.0.0.1 - - [05/Oct/2025 19:44:11] code 404, message File not found
+127.0.0.1 - - [05/Oct/2025 19:44:11] "GET /assets/img/icons/slack.png HTTP/1.1" 404 -
+127.0.0.1 - - [05/Oct/2025 19:44:37] "GET /pages/admin/qr-generator.html HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 19:44:38] code 404, message File not found
+127.0.0.1 - - [05/Oct/2025 19:44:38] "GET /pages/admin/assets/js/modules/qr-generator.js HTTP/1.1" 404 -
+127.0.0.1 - - [05/Oct/2025 19:44:38] code 404, message File not found
+127.0.0.1 - - [05/Oct/2025 19:44:38] "GET /pages/admin/assets/img/user-avatar.png HTTP/1.1" 404 -
+127.0.0.1 - - [05/Oct/2025 19:44:40] "GET /pages/admin/qr-management.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 19:44:40] code 404, message File not found
+127.0.0.1 - - [05/Oct/2025 19:44:40] "GET /pages/admin/assets/js/modules/qr-manager.js HTTP/1.1" 404 -
+127.0.0.1 - - [05/Oct/2025 19:44:41] code 404, message File not found
+127.0.0.1 - - [05/Oct/2025 19:44:41] "GET /pages/admin/assets/img/user-avatar.png HTTP/1.1" 404 -
+127.0.0.1 - - [05/Oct/2025 19:44:43] "GET /pages/admin/qr-analytics.html HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 19:44:43] code 404, message File not found
+127.0.0.1 - - [05/Oct/2025 19:44:43] "GET /pages/admin/assets/js/modules/scan-analytics.js HTTP/1.1" 404 -
+127.0.0.1 - - [05/Oct/2025 19:44:48] "GET /pages/ai-assistant/ai-assistant.html HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 19:44:48] code 404, message File not found
+127.0.0.1 - - [05/Oct/2025 19:44:48] "GET /assets/img/avatars/admin.png HTTP/1.1" 404 -
+127.0.0.1 - - [05/Oct/2025 19:47:14] "GET /pages/ai-assistant/ai-assistant.html HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 19:47:14] code 404, message File not found
+127.0.0.1 - - [05/Oct/2025 19:47:14] "GET /assets/img/avatars/admin.png HTTP/1.1" 404 -
+127.0.0.1 - - [05/Oct/2025 19:47:23] "GET /pages/admin/reports.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 19:47:23] "GET /assets/js/modules/navigation-manager.js HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 19:47:24] code 404, message File not found
+127.0.0.1 - - [05/Oct/2025 19:47:24] "GET /assets/js/modules/reports-manager.js HTTP/1.1" 404 -
+127.0.0.1 - - [05/Oct/2025 19:47:26] "GET /pages/admin/analytics.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 19:47:26] "GET /assets/js/modules/analytics-dashboard.js HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 19:47:26] code 404, message File not found
+127.0.0.1 - - [05/Oct/2025 19:47:26] "GET /assets/img/avatars/admin.png HTTP/1.1" 404 -
+127.0.0.1 - - [05/Oct/2025 19:47:27] code 404, message File not found
+127.0.0.1 - - [05/Oct/2025 19:47:27] "GET /assets/css/custom.css HTTP/1.1" 404 -
+127.0.0.1 - - [05/Oct/2025 19:47:42] code 404, message File not found
+127.0.0.1 - - [05/Oct/2025 19:47:42] "GET /assets/img/avatars/admin.png HTTP/1.1" 404 -
+127.0.0.1 - - [05/Oct/2025 19:47:42] code 404, message File not found
+127.0.0.1 - - [05/Oct/2025 19:47:42] "GET /assets/css/custom.css HTTP/1.1" 404 -
+127.0.0.1 - - [05/Oct/2025 19:48:02] "GET /pages/admin/email-template.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 19:48:02] "GET /assets/js/modules/email-template.js HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 19:48:29] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 19:48:34] "GET /pages/admin/unified-analytics.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 19:48:34] "GET /assets/js/unified-analytics-engine.js HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 19:48:47] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 19:48:48] "GET /assets/js/ar-helper.js HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 19:48:48] "GET /assets/js/enhanced-lift-modal.js HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 19:48:50] "GET /pages/admin/unified-analytics.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 19:48:53] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 19:50:54] "GET /pages/admin/unified-analytics.html HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 19:50:55] "GET /assets/js/unified-analytics-engine.js HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 19:51:04] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 19:51:13] "GET /pages/admin/unified-analytics.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 19:51:30] "GET /assets/js/unified-analytics-engine.js HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 19:51:47] "GET /assets/js/unified-analytics-engine.js HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 19:51:50] "GET /pages/admin/lifts.html HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 19:52:02] "GET /pages/admin/unified-analytics.html HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 19:52:16] "GET /pages/admin/unified-analytics.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 19:52:18] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 19:52:20] "GET /pages/admin/profile.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 19:52:21] code 404, message File not found
+127.0.0.1 - - [05/Oct/2025 19:52:21] "GET /assets/img/avatars/admin.png HTTP/1.1" 404 -
+127.0.0.1 - - [05/Oct/2025 19:52:23] code 404, message File not found
+127.0.0.1 - - [05/Oct/2025 19:52:23] "GET /assets/css/custom.css HTTP/1.1" 404 -
+127.0.0.1 - - [05/Oct/2025 19:52:23] code 404, message File not found
+127.0.0.1 - - [05/Oct/2025 19:52:23] "GET /assets/img/avatars/admin.png HTTP/1.1" 404 -
+127.0.0.1 - - [05/Oct/2025 19:52:24] code 404, message File not found
+127.0.0.1 - - [05/Oct/2025 19:52:24] "GET /assets/js/modules/reports-manager.js HTTP/1.1" 404 -
+127.0.0.1 - - [05/Oct/2025 19:52:27] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 19:52:32] "GET /assets/js/unified-analytics-engine.js HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 19:54:55] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 19:55:06] "GET /pages/admin/unified-analytics.html HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 19:55:07] "GET /assets/js/unified-analytics-engine.js HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 19:55:09] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 19:55:13] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 19:55:27] "GET /pages/admin/settings.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 19:55:27] code 404, message File not found
+127.0.0.1 - - [05/Oct/2025 19:55:27] "GET /assets/img/icons/slack.png HTTP/1.1" 404 -
+127.0.0.1 - - [05/Oct/2025 19:55:27] code 404, message File not found
+127.0.0.1 - - [05/Oct/2025 19:55:27] "GET /assets/img/avatars/admin.png HTTP/1.1" 404 -
+127.0.0.1 - - [05/Oct/2025 19:55:27] code 404, message File not found
+127.0.0.1 - - [05/Oct/2025 19:55:27] "GET /assets/img/icons/quickbooks.png HTTP/1.1" 404 -
+127.0.0.1 - - [05/Oct/2025 19:55:28] code 404, message File not found
+127.0.0.1 - - [05/Oct/2025 19:55:28] "GET /assets/css/custom.css HTTP/1.1" 404 -
+127.0.0.1 - - [05/Oct/2025 19:55:28] code 404, message File not found
+127.0.0.1 - - [05/Oct/2025 19:55:28] "GET /assets/img/icons/google-calendar.png HTTP/1.1" 404 -
+127.0.0.1 - - [05/Oct/2025 19:56:59] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 19:57:11] "GET /pages/admin/users.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 19:57:17] "GET /pages/admin/unified-analytics.html HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 19:57:18] "GET /assets/js/unified-analytics-engine.js HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 19:57:26] "GET /pages/admin/lifts.html HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 20:01:18] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 20:01:24] "GET /pages/admin/unified-analytics.html HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 20:01:25] "GET /assets/js/unified-analytics-engine.js HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 20:01:27] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 20:01:46] "GET /pages/admin/lifts.html HTTP/1.1" 304 -

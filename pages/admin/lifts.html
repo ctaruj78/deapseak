@@ -504,21 +504,21 @@
                             </a>
                         </li>
 
-                        <!-- Analytics Dashboard -->
+                        <!-- Unified Analytics -->
                         <li class="nav-item">
-                            <a href="analytics-dashboard.html" class="nav-link">
+                            <a href="unified-analytics.html" class="nav-link">
                                 <i class="nav-icon fas fa-chart-line"></i>
-                                <p>Smart Analytics</p>
-                                <span class="badge badge-success">NEW</span>
+                                <p>Єдина аналітика</p>
+                                <span class="badge badge-info">UNIFIED</span>
                             </a>
                         </li>
 
-                        <!-- Predictive Maintenance -->
+                        <!-- Predictive Analytics -->
                         <li class="nav-item">
-                            <a href="predictive-maintenance.html" class="nav-link">
-                                <i class="nav-icon fas fa-robot"></i>
-                                <p>Predictive AI</p>
-                                <span class="badge badge-danger">AI</span>
+                            <a href="unified-analytics.html#predictive-analytics" class="nav-link">
+                                <i class="nav-icon fas fa-brain"></i>
+                                <p>AI Прогнозування</p>
+                                <span class="badge badge-info">UNIFIED</span>
                             </a>
                         </li>
 
@@ -539,9 +539,9 @@
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="analytics.html" class="nav-link">
+                                    <a href="unified-analytics.html" class="nav-link">
                                         <i class="fas fa-chart-line nav-icon"></i>
-                                        <p>Аналітика</p>
+                                        <p>Єдина аналітика</p>
                                     </a>
                                 </li>
                             </ul>
@@ -683,26 +683,8 @@
                                 <div class="card-header">
                                     <h3 class="card-title">Список ліфтів <span id="lift-count">(0)</span></h3>
                                     <div class="card-tools">
-                                        <button id="test-saving-button" class="btn btn-warning btn-sm mr-2" onclick="testLiftSaving()" style="display: none;">
-                                            <i class="fas fa-bug"></i> Тест збереження
-                                        </button>
-                                        
-                                        <!-- Voice + AR Controls -->
-                                        <div class="btn-group mr-2" role="group">
-                                            <button id="voice-control-btn" class="btn btn-primary btn-sm" onclick="toggleVoiceControl()" title="Голосове управління">
-                                                <i class="fas fa-microphone"></i> Voice
-                                            </button>
-                                            <button id="ar-helper-btn" class="btn btn-info btn-sm" onclick="startARHelper()" title="AR Помічник">
-                                                <i class="fas fa-eye"></i> AR
-                                            </button>
-                                        </div>
-                                        
-                                        <button id="add-lift-button" class="btn btn-success btn-sm mr-2" onclick="openEnhancedModal()">
+                                        <button id="add-lift-button" class="btn btn-success btn-sm" onclick="openEnhancedModal()">
                                             <i class="fas fa-plus"></i> Додати ліфт
-                                        </button>
-                                        
-                                        <button id="system-settings-btn" class="btn btn-secondary btn-sm" onclick="openSystemSettings()" title="Налаштування системи">
-                                            <i class="fas fa-cog"></i> Налаштування
                                         </button>
                                     </div>
                                 </div>
@@ -1621,16 +1603,16 @@
     <!-- QR Code library -->
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <!-- Custom scripts -->
-    <script src="/assets/js/system-eventbus.js"></script>
-    <script src="/assets/js/predictive-maintenance.js"></script>
-    <script src="/assets/js/voice-control.js"></script>
-    <script src="/assets/js/ar-helper.js"></script>
-    <script src="/assets/js/common.js"></script>
-    <script src="/assets/js/lift-utils.js"></script>
-    <script src="/assets/js/lifts.js"></script>
-    <script src="/assets/js/simple-lift-modal.js"></script>
-    <script src="/assets/js/enhanced-lift-modal.js"></script>
-    <script src="/assets/js/test-lift-saving.js"></script>
+    <script src="../../assets/js/system-eventbus.js"></script>
+    <script src="../../assets/js/predictive-maintenance.js"></script>
+    <script src="../../assets/js/voice-control.js"></script>
+    <script src="../../assets/js/ar-helper.js"></script>
+    <script src="../../assets/js/common.js"></script>
+    <script src="../../assets/js/lift-utils.js"></script>
+    <script src="../../assets/js/lifts.js"></script>
+    <script src="../../assets/js/simple-lift-modal.js"></script>
+    <script src="../../assets/js/enhanced-lift-modal.js"></script>
+    <script src="../../assets/js/test-lift-saving.js"></script>
 
     <script>
         // Глобальна змінна для збереження PDF файлу
@@ -3001,46 +2983,7 @@
             console.warn('⚠️ EventBus не знайдено, деякі автоматичні функції не працюватимуть');
         }
 
-        // 🎤🥽 Voice + AR функції управління
-        window.toggleVoiceControl = function() {
-            if (!window.voiceControl) {
-                alert('⚠️ Voice Control ще не ініціалізований. Спробуйте через кілька секунд.');
-                return;
-            }
-            
-            const btn = document.getElementById('voice-control-btn');
-            
-            if (voiceControl.isListening) {
-                voiceControl.stopListening();
-                btn.classList.remove('btn-danger');
-                btn.classList.add('btn-primary');
-                btn.innerHTML = '<i class="fas fa-microphone"></i> Voice';
-            } else {
-                voiceControl.startListening();
-                btn.classList.remove('btn-primary');
-                btn.classList.add('btn-danger');
-                btn.innerHTML = '<i class="fas fa-microphone"></i> Активний';
-                
-                // Показуємо підказку
-                toastr.info('🎤 Голосове управління активне! Скажіть "допомога" для команд');
-            }
-        };
 
-        window.startARHelper = function() {
-            if (!window.arHelper) {
-                alert('⚠️ AR Helper ще не ініціалізований. Спробуйте через кілька секунд.');
-                return;
-            }
-            
-            if (!arHelper.isInitialized) {
-                alert('⚠️ AR Helper не підтримується цим пристроєм/браузером');
-                return;
-            }
-            
-            // Запускаємо AR в режимі гіда
-            arHelper.startAR('guide');
-            toastr.success('🥽 AR Helper запущено! Наведіть камеру для інтерактивних підказок');
-        };
 
         // Ініціалізація Voice + AR після завантаження EventBus
         setTimeout(() => {
@@ -3059,49 +3002,15 @@
                     voiceControl.speak('Показую статистику');
                 });
             }
-            
-            // Перевіряємо готовність AR Helper
-            if (window.arHelper && arHelper.isInitialized) {
-                console.log('✅ AR Helper готовий');
-                
-                // Додаємо індикатор готовності AR
-                const arBtn = document.getElementById('ar-helper-btn');
-                arBtn.title = 'AR Helper готовий! Клікніть для запуску';
-                arBtn.style.borderColor = '#4CAF50';
-            } else {
-                // AR не підтримується - показуємо fallback
-                const arBtn = document.getElementById('ar-helper-btn');
-                arBtn.title = 'Smart Helper (AR недоступний)';
-                arBtn.innerHTML = '<i class="fas fa-lightbulb"></i> Smart';
-            }
+
         }, 3000);
 
         // Оновлюємо список при завантаженні
         setTimeout(updateScheduledInspectionsList, 500);
     });
+
     
-    // Функція для відкриття налаштувань системи
-    function openSystemSettings() {
-        console.log('⚙️ Відкриття налаштувань системи...');
-        window.open('system-settings.html', '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
-    }
-    
-    // Функція для AR Helper (буде викликатися кнопкою AR)
-    function startARHelper() {
-        console.log('🥽 Спроба запуску AR Helper...');
-        
-        if (typeof window.arHelper !== 'undefined' && window.arHelper) {
-            if (window.arHelper.isInitialized) {
-                window.arHelper.startAR('guide');
-            } else {
-                alert('AR Helper ще ініціалізується. Спробуйте через кілька секунд.');
-            }
-        } else if (typeof window.arHelperManager !== 'undefined') {
-            window.arHelperManager.showSettingsPrompt();
-        } else {
-            alert('AR Helper недоступний. Перевірте налаштування системи.');
-        }
-    }
+
     
     </script>
 </body>
