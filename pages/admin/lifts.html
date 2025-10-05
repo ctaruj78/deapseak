@@ -427,7 +427,7 @@
                 </div>
                 
                 <nav class="mt-2">
-                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                    <ul class="nav nav-pills nav-sidebar flex-column" role="menu" data-accordion="false">
                         <li class="nav-item">
                             <a href="admin-dashboard.html" class="nav-link">
                                 <i class="nav-icon fas fa-tachometer-alt"></i>
@@ -506,7 +506,7 @@
 
                         <!-- Analytics Menu -->
                         <li class="nav-item">
-                            <a href="unified-analytics.html" class="nav-link">
+                            <a href="unified-analytics.html" class="nav-link" id="menu-analytics">
                                 <i class="nav-icon fas fa-chart-line"></i>
                                 <p>Аналітика</p>
                             </a>
@@ -514,7 +514,7 @@
 
                         <!-- Predictive Analytics -->
                         <li class="nav-item">
-                            <a href="unified-analytics.html#predictive-analytics" class="nav-link">
+                            <a href="unified-analytics.html#predictive-analytics" class="nav-link" id="menu-ai-predictive">
                                 <i class="nav-icon fas fa-brain"></i>
                                 <p>AI Прогнозування</p>
                             </a>
@@ -2982,7 +2982,80 @@
         setTimeout(updateScheduledInspectionsList, 500);
     });
 
-    
+    // Діагностика навігації AI прогнозування та управління активним меню
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🔍 Діагностика навігації AI прогнозування запущена');
+        
+        // Знаходимо посилання AI прогнозування
+        const aiLink = document.querySelector('a[href="unified-analytics.html#predictive-analytics"]');
+        const analyticsLink = document.querySelector('a[href="unified-analytics.html"]');
+        
+        if (aiLink) {
+            console.log('✅ Знайдено посилання AI прогнозування:', aiLink);
+            
+            // Додаємо обробник для правильного підсвічування меню
+            aiLink.addEventListener('click', function(e) {
+                console.log('🎯 Клік по AI прогнозуванню зареєстровано!');
+                
+                // Прибираємо активний клас з усіх пунктів меню
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+                
+                // Додаємо активний клас до AI прогнозування
+                this.classList.add('active');
+                
+                // Зберігаємо стан в sessionStorage для збереження після переходу
+                sessionStorage.setItem('activeMenuItem', 'ai-predictive');
+                
+                console.log('✅ Активовано пункт меню AI прогнозування');
+            });
+            
+        } else {
+            console.error('❌ Посилання AI прогнозування не знайдено!');
+        }
+        
+        // Додаємо обробник для звичайної аналітики
+        if (analyticsLink) {
+            analyticsLink.addEventListener('click', function(e) {
+                console.log('📊 Клік по аналітиці зареєстровано!');
+                
+                // Прибираємо активний клас з усіх пунктів меню
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+                
+                // Додаємо активний клас до аналітики
+                this.classList.add('active');
+                
+                // Зберігаємо стан в sessionStorage
+                sessionStorage.setItem('activeMenuItem', 'analytics');
+                
+                console.log('✅ Активовано пункт меню Аналітика');
+            });
+        }
+        
+        // Відновлюємо активний пункт меню при завантаженні сторінки
+        const activeMenuItem = sessionStorage.getItem('activeMenuItem');
+        if (activeMenuItem) {
+            const menuMap = {
+                'ai-predictive': aiLink,
+                'analytics': analyticsLink
+            };
+            
+            const activeLink = menuMap[activeMenuItem];
+            if (activeLink) {
+                // Прибираємо активний клас з усіх
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+                
+                // Додаємо до потрібного
+                activeLink.classList.add('active');
+                console.log(`🔄 Відновлено активний пункт меню: ${activeMenuItem}`);
+            }
+        }
+    });
 
     
     </script>
