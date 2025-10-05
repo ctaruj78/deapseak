@@ -889,19 +889,39 @@
                                                         </h6>
                                                     </div>
                                                     <div class="card-body">
-                                                        <div class="btn-group" role="group">
+                                                        <div class="btn-group mr-2" role="group">
                                                             <button type="button" class="btn btn-primary btn-sm" onclick="previewPDF()">
                                                                 <i class="fas fa-eye mr-1"></i>Переглянути
                                                             </button>
                                                             <button type="button" class="btn btn-success btn-sm" onclick="printPDF()">
                                                                 <i class="fas fa-print mr-1"></i>Друкувати
                                                             </button>
-                                                            <button type="button" class="btn btn-info btn-sm" onclick="emailPDF()">
-                                                                <i class="fas fa-envelope mr-1"></i>Надіслати email
+                                                            <button type="button" class="btn btn-info btn-sm" onclick="downloadPDF()">
+                                                                <i class="fas fa-download mr-1"></i>Завантажити
+                                                            </button>
+                                                        </div>
+                                                        <div class="btn-group" role="group">
+                                                            <button type="button" class="btn btn-warning btn-sm" onclick="emailPDF()">
+                                                                <i class="fas fa-envelope mr-1"></i>Email
+                                                            </button>
+                                                            <button type="button" class="btn btn-secondary btn-sm" onclick="archivePDF()">
+                                                                <i class="fas fa-archive mr-1"></i>Архівувати
                                                             </button>
                                                             <button type="button" class="btn btn-danger btn-sm" onclick="removePDF()">
                                                                 <i class="fas fa-trash mr-1"></i>Видалити
                                                             </button>
+                                                        </div>
+                                                        
+                                                        <!-- Додаткові опції для звіту -->
+                                                        <div class="mt-2">
+                                                            <small class="text-muted">Тип звіту:</small>
+                                                            <select class="form-control form-control-sm" id="reportType">
+                                                                <option value="technical">Технічна інспекція</option>
+                                                                <option value="safety">Перевірка безпеки</option>
+                                                                <option value="maintenance">Планове обслуговування</option>
+                                                                <option value="repair">Ремонт</option>
+                                                                <option value="certification">Сертифікація</option>
+                                                            </select>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -988,11 +1008,11 @@
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">
                             <i class="fas fa-times"></i> Скасувати
                         </button>
-                        <button type="button" class="btn btn-info" id="generateQrBtn" style="display:none">
-                            <i class="fas fa-qrcode"></i> Створити QR код
-                        </button>
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save"></i> Зберегти ліфт
+                        </button>
+                        <button type="button" class="btn btn-success" id="saveAndGenerateQrBtn">
+                            <i class="fas fa-save"></i> <i class="fas fa-qrcode ml-1"></i> Зберегти і створити QR код
                         </button>
                     </div>
                 </form>
@@ -1759,6 +1779,141 @@
             }
         }
 
+        // Нові функції для розширеної роботи з PDF
+        function downloadPDF() {
+            if (!currentPDFFile) {
+                alert('Спочатку завантажте PDF файл');
+                return;
+            }
+
+            // Створюємо посилання для завантаження
+            const reportType = document.getElementById('reportType')?.value || 'technical';
+            const timestamp = new Date().toISOString().split('T')[0];
+            const filename = `${reportType}_report_${timestamp}.pdf`;
+            
+            const fileURL = URL.createObjectURL(currentPDFFile);
+            const downloadLink = document.createElement('a');
+            downloadLink.href = fileURL;
+            downloadLink.download = filename;
+            downloadLink.click();
+            
+            // Показуємо повідомлення
+            toastr.success(`Звіт завантажено як: ${filename}`);
+        }
+
+        function archivePDF() {
+            if (!currentPDFFile) {
+                alert('Спочатку завантажте PDF файл');
+                return;
+            }
+
+            const reportType = document.getElementById('reportType')?.value || 'technical';
+            
+            // Створюємо об'єкт архівного звіту
+            const archivedReport = {
+                id: 'REPORT_' + Date.now(),
+                fileName: currentPDFFile.name,
+                reportType: reportType,
+                size: currentPDFFile.size,
+                archivedAt: new Date().toISOString(),
+                liftId: window.currentLiftId || 'UNKNOWN',
+                status: 'archived'
+            };
+
+            // Зберігаємо в localStorage (в реальній системі - на сервер)
+            let archivedReports = JSON.parse(localStorage.getItem('archived_reports') || '[]');
+            archivedReports.push(archivedReport);
+            localStorage.setItem('archived_reports', JSON.stringify(archivedReports));
+
+            toastr.success('Звіт успішно архівовано!');
+            
+            // Показуємо діалог з опціями
+            setTimeout(() => {
+                if (confirm('Звіт архівовано. Хочете переглянути архів звітів?')) {
+                    showArchivedReports();
+                }
+            }, 1000);
+        }
+
+        function showArchivedReports() {
+            const archivedReports = JSON.parse(localStorage.getItem('archived_reports') || '[]');
+            
+            let reportsList = '<div class="list-group">';
+            if (archivedReports.length === 0) {
+                reportsList += '<p class="text-muted">Архівних звітів не знайдено</p>';
+            } else {
+                archivedReports.forEach(report => {
+                    const date = new Date(report.archivedAt).toLocaleDateString();
+                    const size = (report.size / 1024).toFixed(1) + ' KB';
+                    reportsList += `
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">${report.fileName}</h6>
+                                <p class="mb-1"><small class="text-muted">Тип: ${report.reportType} | Дата: ${date} | Розмір: ${size}</small></p>
+                            </div>
+                            <div class="btn-group-sm">
+                                <button class="btn btn-outline-danger btn-sm" onclick="deleteArchivedReport('${report.id}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            reportsList += '</div>';
+
+            // Модальне вікно для архіву
+            const archiveModal = `
+                <div class="modal fade" id="archiveModal" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title"><i class="fas fa-archive mr-2"></i>Архів звітів інспекцій</h5>
+                                <button type="button" class="close" data-dismiss="modal">
+                                    <span>&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                ${reportsList}
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                                <button type="button" class="btn btn-warning" onclick="clearArchive()">Очистити архів</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Видаляємо старе модальне вікно якщо є
+            const existingModal = document.getElementById('archiveModal');
+            if (existingModal) existingModal.remove();
+
+            // Додаємо нове модальне вікно
+            document.body.insertAdjacentHTML('beforeend', archiveModal);
+            $('#archiveModal').modal('show');
+        }
+
+        function deleteArchivedReport(reportId) {
+            if (confirm('Видалити цей звіт з архіву назавжди?')) {
+                let archivedReports = JSON.parse(localStorage.getItem('archived_reports') || '[]');
+                archivedReports = archivedReports.filter(report => report.id !== reportId);
+                localStorage.setItem('archived_reports', JSON.stringify(archivedReports));
+                
+                // Оновлюємо модальне вікно
+                showArchivedReports();
+                toastr.success('Звіт видалено з архіву');
+            }
+        }
+
+        function clearArchive() {
+            if (confirm('Очистити весь архів звітів? Ця дія незворотна!')) {
+                localStorage.removeItem('archived_reports');
+                $('#archiveModal').modal('hide');
+                toastr.info('Архів очищено');
+            }
+        }
+
         // Обробник завантаження PDF файлу
         document.addEventListener('DOMContentLoaded', function() {
             const pdfInput = document.getElementById('inspectionReport');
@@ -1908,6 +2063,94 @@
         $('#enhancedModalTitle').text('Додати новий ліфт');
         $('#enhancedLiftModal').modal('show');
     }
+
+    // Обробник кнопки "Зберегти і створити QR код"
+    document.addEventListener('DOMContentLoaded', function() {
+        const saveAndGenerateQrBtn = document.getElementById('saveAndGenerateQrBtn');
+        
+        if (saveAndGenerateQrBtn) {
+            saveAndGenerateQrBtn.addEventListener('click', async function() {
+                // Спочатку валідуємо і зберігаємо ліфт
+                const form = document.getElementById('enhancedLiftForm');
+                if (!form) return;
+                
+                // Збираємо дані з форми
+                const formData = new FormData(form);
+                const liftData = {
+                    name: formData.get('name') || 'Новий ліфт',
+                    address: formData.get('address') || '',
+                    manufacturer: formData.get('manufacturer') || '',
+                    model: formData.get('model') || '',
+                    capacity: formData.get('capacity') || 8,
+                    floors: formData.get('floorsCount') || 2,
+                    doors: formData.get('doorsCount') || 2,
+                    latitude: formData.get('latitude') || 0,
+                    longitude: formData.get('longitude') || 0
+                };
+                
+                try {
+                    // Показуємо індикатор завантаження
+                    saveAndGenerateQrBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Зберігаємо...';
+                    saveAndGenerateQrBtn.disabled = true;
+                    
+                    // Симуляція збереження ліфта (замінити на реальний API)
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    // Генеруємо унікальний ID для ліфта
+                    const liftId = 'LIFT_' + Date.now();
+                    liftData.id = liftId;
+                    
+                    // Зберігаємо ліфт в localStorage (тимчасово)
+                    let savedLifts = JSON.parse(localStorage.getItem('lifts') || '[]');
+                    savedLifts.push(liftData);
+                    localStorage.setItem('lifts', JSON.stringify(savedLifts));
+                    
+                    // Автоматично генеруємо і зберігаємо QR код
+                    const qrData = {
+                        id: 'QR_' + Date.now(),
+                        liftId: liftId,
+                        liftName: liftData.name,
+                        liftAddress: liftData.address,
+                        type: 'lift_access',
+                        data: JSON.stringify(liftData),
+                        createdAt: new Date().toISOString(),
+                        status: 'active'
+                    };
+                    
+                    // Зберігаємо QR код в localStorage
+                    let savedQRCodes = JSON.parse(localStorage.getItem('qr_codes') || '[]');
+                    savedQRCodes.push(qrData);
+                    localStorage.setItem('qr_codes', JSON.stringify(savedQRCodes));
+                    
+                    // Показуємо повідомлення про успіх
+                    toastr.success('Ліфт збережено і QR код автоматично створено!');
+                    
+                    // Закриваємо модальне вікно
+                    $('#enhancedLiftModal').modal('hide');
+                    
+                    // Перезавантажуємо таблицю ліфтів
+                    if (typeof window.loadLifts === 'function') {
+                        window.loadLifts();
+                    }
+                    
+                    // Показуємо повідомлення з посиланням на QR систему
+                    setTimeout(() => {
+                        if (confirm('QR код створено успішно! Хочете переглянути його в QR системі?')) {
+                            window.location.href = 'qr-management.html';
+                        }
+                    }, 1500);
+                    
+                } catch (error) {
+                    console.error('Error saving lift and generating QR:', error);
+                    toastr.error('Помилка збереження ліфта: ' + error.message);
+                } finally {
+                    // Відновлюємо кнопку
+                    saveAndGenerateQrBtn.innerHTML = '<i class="fas fa-save"></i> <i class="fas fa-qrcode ml-1"></i> Зберегти і створити QR код';
+                    saveAndGenerateQrBtn.disabled = false;
+                }
+            });
+        }
+    });
     </script>
 </body>
 </html>
