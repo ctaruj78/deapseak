@@ -48,8 +48,112 @@
             z-index: 10000;
             display: flex;
             align-items: center;
-            gap: 10px;
-            animation: slideIn 0.3s ease;
+        }
+
+        /* Виправлення модальних вікон */
+        #inspectionReportModal {
+            z-index: 1060 !important;
+        }
+        
+        #inspectionReportModal .modal-dialog {
+            margin: 1.75rem auto;
+            max-width: 90%;
+        }
+        
+        #inspectionReportModal .modal-content {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        #inspectionReportModal .modal-body {
+            padding: 1.5rem;
+        }
+        
+        #inspectionReportModal .form-control {
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            transition: border-color 0.3s ease;
+        }
+        
+        #inspectionReportModal .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+        }
+        
+        #inspectionReportModal .card {
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        #inspectionReportModal .card-header {
+            border-radius: 10px 10px 0 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        /* Прокрутка для modal-body */
+        .modal-dialog-scrollable .modal-content {
+            max-height: calc(100vh - 3.5rem);
+            overflow: hidden;
+        }
+        
+        .modal-dialog-scrollable .modal-body {
+            overflow-y: auto;
+        }
+        
+        /* Стилі для кнопок в футері */
+        #inspectionReportModal .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        /* Виправлення для input полів */
+        #inspectorName {
+            position: relative !important;
+            z-index: auto !important;
+            background: white !important;
+            color: #495057 !important;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            padding: 0.375rem 0.75rem;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+        
+        #inspectorName:focus {
+            background: white !important;
+            color: #495057 !important;
+            border-color: #80bdff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        
+        #inspectorName::placeholder {
+            color: #6c757d;
+            opacity: 1;
+        }
+        
+        /* Анімація для модального вікна */
+        #inspectionReportModal.fade .modal-dialog {
+            transform: translate(0, -50px);
+            transition: transform 0.3s ease-out;
+        }
+        
+        #inspectionReportModal.show .modal-dialog {
+            transform: none;
+        }
+        
+        /* Покращення відображення на мобільних */
+        @media (max-width: 768px) {
+            #inspectionReportModal .modal-dialog {
+                margin: 0.5rem;
+                max-width: calc(100% - 1rem);
+            }
+            
+            #inspectionReportModal .modal-body {
+                padding: 1rem;
+            }
         }
         
         .notification-success {
@@ -99,6 +203,54 @@
         .qr-preview-mini .btn-group {
             justify-content: center;
             width: 100%;
+        }
+        
+        /* Поліпшення стилів для всіх input полів в модальному вікні */
+        #inspectionReportModal input, 
+        #inspectionReportModal select, 
+        #inspectionReportModal textarea {
+            background: white !important;
+            border: 1px solid #ddd !important;
+            color: #333 !important;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        
+        #inspectionReportModal input:focus, 
+        #inspectionReportModal select:focus, 
+        #inspectionReportModal textarea:focus {
+            background: white !important;
+            border-color: #80bdff !important;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
+        }
+        
+        /* Покращення відображення модальних вікон один поверх іншого */
+        .modal.fade.show {
+            opacity: 1 !important;
+        }
+        
+        .modal-backdrop {
+            transition: opacity 0.15s linear;
+        }
+        
+        /* Спеціальні стилі для nested modal windows */
+        .modal.show + .modal-backdrop,
+        .modal.show ~ .modal-backdrop {
+            opacity: 0.5;
+        }
+        
+        /* Покращення прокручування в nested modal */
+        #inspectionReportModal .modal-body {
+            max-height: calc(100vh - 250px) !important;
+            overflow-y: auto !important;
+            overscroll-behavior: contain;
+        }
+        
+        /* Забезпечення правильного відображення на мобільних */
+        @media (max-width: 768px) {
+            #inspectionReportModal .modal-body {
+                max-height: calc(100vh - 200px) !important;
+            }
         }
     </style>
 </head>
@@ -1767,9 +1919,10 @@
     </div>
 
     <!-- Inspection Report Modal -->
-    <div class="modal fade" id="inspectionReportModal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
+    <div class="modal fade" id="inspectionReportModal" tabindex="-1" role="dialog" aria-hidden="true" 
+         style="z-index: 1060;">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document" style="max-height: 90vh;">
+            <div class="modal-content" style="max-height: 90vh; display: flex; flex-direction: column;">
                 <div class="modal-header bg-warning">
                     <h5 class="modal-title">
                         <i class="fas fa-clipboard-check mr-2"></i>Додати звіт інспекції
@@ -1778,7 +1931,7 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body" style="flex: 1; overflow-y: auto; max-height: calc(90vh - 120px);">
                     <form id="inspectionReportForm">
                         <!-- Інформація про інспекцію -->
                         <div class="card card-outline card-info mb-3">
@@ -1812,7 +1965,11 @@
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label for="inspectorName">Ім'я інспектора</label>
-                                            <input type="text" id="inspectorName" class="form-control" placeholder="Прізвище Ім'я По-батькові">
+                                            <input type="text" id="inspectorName" class="form-control" 
+                                                   placeholder="Прізвище Ім'я По-батькові" 
+                                                   autocomplete="off" 
+                                                   spellcheck="false"
+                                                   style="z-index: auto;">
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -1901,13 +2058,20 @@
                         </div>
                     </form>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                        <i class="fas fa-times"></i> Скасувати
-                    </button>
-                    <button type="button" class="btn btn-success" id="saveInspectionReportBtn">
-                        <i class="fas fa-save"></i> Зберегти звіт інспекції
-                    </button>
+                <div class="modal-footer" style="flex-shrink: 0; border-top: 1px solid #dee2e6; background: #f8f9fa;">
+                    <div class="w-100 d-flex justify-content-between align-items-center">
+                        <div class="text-muted">
+                            <small><i class="fas fa-info-circle"></i> Переконайтеся, що всі поля заповнені</small>
+                        </div>
+                        <div>
+                            <button type="button" class="btn btn-secondary mr-2" id="cancelInspectionReportBtn">
+                                <i class="fas fa-times"></i> Скасувати
+                            </button>
+                            <button type="button" class="btn btn-success" id="saveInspectionReportBtn" onclick="saveInspectionReport()">
+                                <i class="fas fa-save"></i> Зберегти звіт інспекції
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -2615,7 +2779,35 @@
         const addInspectionReportBtn = document.getElementById('addInspectionReportBtn');
         if (addInspectionReportBtn) {
             addInspectionReportBtn.addEventListener('click', function() {
-                $('#inspectionReportModal').modal('show');
+                // Зберігаємо backdrop попереднього модального вікна
+                const existingModals = document.querySelectorAll('.modal.show');
+                
+                // Відкриваємо нове модальне вікно з вищим z-index
+                const inspectionModal = $('#inspectionReportModal');
+                inspectionModal.modal({
+                    backdrop: 'static', // Не дозволяємо закриття по кліку поза модалом
+                    keyboard: true      // Дозволяємо закриття по ESC
+                });
+                inspectionModal.modal('show');
+                
+                // Налаштовуємо z-index для правильного відображення
+                setTimeout(() => {
+                    const modalElement = document.getElementById('inspectionReportModal');
+                    const modalBackdrop = document.querySelector('.modal-backdrop:last-child');
+                    
+                    if (modalElement) {
+                        modalElement.style.zIndex = '1060';
+                    }
+                    if (modalBackdrop) {
+                        modalBackdrop.style.zIndex = '1059';
+                    }
+                    
+                    // Фокус на поле інспектора після відкриття модального вікна
+                    const inspectorNameField = document.getElementById('inspectorName');
+                    if (inspectorNameField) {
+                        inspectorNameField.focus();
+                    }
+                }, 100);
             });
         }
 
@@ -2642,6 +2834,69 @@
                 saveInspectionReport();
             });
         }
+
+        // Обробник кнопки скасування звіту інспекції
+        const cancelInspectionReportBtn = document.getElementById('cancelInspectionReportBtn');
+        if (cancelInspectionReportBtn) {
+            cancelInspectionReportBtn.addEventListener('click', function() {
+                // Закриваємо модальне вікно
+                const inspectionModal = $('#inspectionReportModal');
+                inspectionModal.modal('hide');
+                
+                // Очищуємо форму
+                const form = document.getElementById('inspectionReportForm');
+                if (form) {
+                    form.reset();
+                }
+                
+                currentInspectionPDFFile = null;
+                const previewContainer = document.getElementById('pdfReportPreviewContainer');
+                if (previewContainer) {
+                    previewContainer.style.display = 'none';
+                }
+            });
+        }
+
+        // Обробник натискання ESC для закриття модального вікна звітів інспекції
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const inspectionModal = document.getElementById('inspectionReportModal');
+                if (inspectionModal && inspectionModal.classList.contains('show')) {
+                    $('#inspectionReportModal').modal('hide');
+                }
+            }
+        });
+
+        // Обробка подій відкриття/закриття модального вікна звітів інспекції
+        $('#inspectionReportModal').on('shown.bs.modal', function () {
+            // Налаштовуємо скролінг та фокус
+            const modalBody = this.querySelector('.modal-body');
+            if (modalBody) {
+                modalBody.scrollTop = 0;
+            }
+            
+            const inspectorNameField = document.getElementById('inspectorName');
+            if (inspectorNameField) {
+                setTimeout(() => {
+                    inspectorNameField.focus();
+                    inspectorNameField.select(); // Виділяємо текст для зручності редагування
+                }, 200);
+            }
+        });
+
+        $('#inspectionReportModal').on('hidden.bs.modal', function () {
+            // Відновлюємо z-index батьківського модального вікна
+            setTimeout(() => {
+                const parentModal = document.querySelector('.modal.show');
+                if (parentModal && parentModal.id !== 'inspectionReportModal') {
+                    parentModal.style.zIndex = '';
+                    const parentBackdrop = document.querySelector('.modal-backdrop');
+                    if (parentBackdrop) {
+                        parentBackdrop.style.zIndex = '';
+                    }
+                }
+            }, 100);
+        });
     });
 
     // Функція збереження звіту інспекції
@@ -2677,10 +2932,28 @@
         toastr.success('Звіт інспекції успішно збережено!');
         
         // Закриваємо модальне вікно і очищуємо форму
-        $('#inspectionReportModal').modal('hide');
-        document.getElementById('inspectionReportForm').reset();
+        const inspectionModal = $('#inspectionReportModal');
+        inspectionModal.modal('hide');
+        
+        // Очищуємо форму та скидаємо стилі
+        const form = document.getElementById('inspectionReportForm');
+        if (form) {
+            form.reset();
+        }
+        
         currentInspectionPDFFile = null;
-        document.getElementById('pdfReportPreviewContainer').style.display = 'none';
+        const previewContainer = document.getElementById('pdfReportPreviewContainer');
+        if (previewContainer) {
+            previewContainer.style.display = 'none';
+        }
+        
+        // Відновлюємо фокус на батьківському модальному вікні, якщо воно є
+        setTimeout(() => {
+            const parentModal = document.querySelector('.modal.show');
+            if (parentModal && parentModal.id !== 'inspectionReportModal') {
+                parentModal.focus();
+            }
+        }, 300);
     }
 
     // Функції для роботи з PDF звітами інспекцій

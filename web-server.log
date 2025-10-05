@@ -321,3 +321,13 @@
 127.0.0.1 - - [05/Oct/2025 11:15:18] "GET /assets/js/modules/ai-assistant.js HTTP/1.1" 200 -
 127.0.0.1 - - [05/Oct/2025 11:15:18] "GET /assets/css/ai-assistant.css HTTP/1.1" 200 -
 127.0.0.1 - - [05/Oct/2025 11:15:18] "GET /assets/js/simple-lift-modal.js HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 11:38:10] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 11:38:11] "GET /assets/js/enhanced-lift-modal.js HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 11:38:11] "GET /assets/js/system-eventbus.js HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 11:38:11] "GET /assets/js/voice-control.js HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 11:38:11] "GET /assets/js/predictive-maintenance.js HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 11:38:11] "GET /assets/js/ar-helper.js HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 11:38:13] "GET /pages/admin/analytics-dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 11:38:14] "GET /assets/js/smart-analytics-engine.js HTTP/1.1" 200 -
+127.0.0.1 - - [05/Oct/2025 11:38:47] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 304 -
+127.0.0.1 - - [05/Oct/2025 11:38:50] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
