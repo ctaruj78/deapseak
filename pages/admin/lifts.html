@@ -250,19 +250,45 @@
             box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
         }
 
-        /* Спеціальні стилі для поля інспектора */
-        #inspectionReportModal #inspectorName {
+        /* РАДИКАЛЬНІ стилі для полів інспекції */
+        #inspectionReportModal #inspectorName,
+        #inspectionReportModal #inspectionComments {
             background: white !important;
             border: 2px solid #007bff !important;
             color: #000 !important;
             font-weight: normal !important;
             pointer-events: auto !important;
             cursor: text !important;
+            user-select: text !important;
+            -webkit-user-select: text !important;
+            -moz-user-select: text !important;
+            z-index: 99999 !important;
+            position: relative !important;
+            opacity: 1 !important;
         }
         
-        #inspectionReportModal #inspectorName:focus {
+        #inspectionReportModal #inspectorName:focus,
+        #inspectionReportModal #inspectionComments:focus {
             border-color: #0056b3 !important;
             box-shadow: 0 0 5px rgba(0, 123, 255, 0.5) !important;
+            outline: none !important;
+        }
+        
+        /* Блокування стилів що можуть перешкоджати */
+        #inspectionReportModal #inspectorName:disabled,
+        #inspectionReportModal #inspectorName[readonly],
+        #inspectionReportModal #inspectionComments:disabled,
+        #inspectionReportModal #inspectionComments[readonly] {
+            background: white !important;
+            color: #000 !important;
+            pointer-events: auto !important;
+            cursor: text !important;
+        }
+        
+        /* Видалення overlay'ів що блокують */
+        #inspectionReportModal::before,
+        #inspectionReportModal::after {
+            display: none !important;
         }
         
         /* Покращення відображення модальних вікон один поверх іншого */
@@ -2931,13 +2957,53 @@
                         modalBackdrop.style.zIndex = '1059';
                     }
                     
-                    // ПРОСТИЙ ФОКУС НА ПОЛЯ
+                    // РАДИКАЛЬНЕ ВИПРАВЛЕННЯ ПОЛІВ
                     setTimeout(() => {
                         const inspectorField = document.getElementById('inspectorName');
+                        const commentsField = document.getElementById('inspectionComments');
+                        
                         if (inspectorField) {
+                            // Видаляємо всі блокування
+                            inspectorField.disabled = false;
+                            inspectorField.readOnly = false;
+                            inspectorField.removeAttribute('disabled');
+                            inspectorField.removeAttribute('readonly');
+                            
+                            // Встановлюємо стилі принудово
+                            inspectorField.style.pointerEvents = 'auto';
+                            inspectorField.style.userSelect = 'text';
+                            inspectorField.style.cursor = 'text';
+                            inspectorField.style.background = 'white';
+                            inspectorField.style.color = 'black';
+                            
+                            // Фокус
                             inspectorField.focus();
-                            console.log('🎯 Фокус встановлено на поле інспектора');
+                            console.log('🎯 Поле інспектора розблоковано та активовано');
                         }
+                        
+                        if (commentsField) {
+                            // Те ж саме для коментарів
+                            commentsField.disabled = false;
+                            commentsField.readOnly = false;
+                            commentsField.removeAttribute('disabled');
+                            commentsField.removeAttribute('readonly');
+                            
+                            commentsField.style.pointerEvents = 'auto';
+                            commentsField.style.userSelect = 'text';
+                            commentsField.style.cursor = 'text';
+                            commentsField.style.background = 'white';
+                            commentsField.style.color = 'black';
+                            
+                            console.log('💬 Поле коментарів розблоковано');
+                        }
+                        
+                        // Видаляємо всі overlay'і що можуть блокувати
+                        const overlays = document.querySelectorAll('.modal-backdrop, .overlay');
+                        overlays.forEach(overlay => {
+                            if (overlay.style.zIndex > 1060) {
+                                overlay.remove();
+                            }
+                        });
                     }, 300);
                 }, 100);
             });
@@ -3035,51 +3101,53 @@
             });
         }
 
-        // Покращена функція закриття модального вікна
+        // РАДИКАЛЬНА функція закриття модального вікна
         function closeInspectionModal() {
-            console.log('🚪 Закриваємо модальне вікно інспекції...');
+            console.log('🚪 РАДИКАЛЬНЕ закриття модального вікна інспекції...');
             
-            // Спочатку видаляємо дублікати модальних вікон
-            const modals = document.querySelectorAll('#inspectionReportModal');
-            console.log('Знайдено модальних вікон:', modals.length);
+            // 1. Видаляємо ВСІ дублікати модальних вікон
+            const allModals = document.querySelectorAll('#inspectionReportModal');
+            console.log('Знайдено модальних вікон:', allModals.length);
             
-            if (modals.length > 1) {
-                console.log('❌ Видаляємо дублікати...');
-                for (let i = 1; i < modals.length; i++) {
-                    modals[i].remove();
+            if (allModals.length > 1) {
+                console.log('❌ Видаляємо ВСІ дублікати...');
+                for (let i = 1; i < allModals.length; i++) {
+                    allModals[i].remove();
                 }
             }
             
-            // Закриваємо основне модальне вікно
+            // 2. Закриваємо основне модальне вікно
             const mainModal = document.getElementById('inspectionReportModal');
             if (mainModal) {
+                // Видаляємо класи Bootstrap
+                mainModal.classList.remove('show', 'fade');
+                mainModal.style.display = 'none';
+                mainModal.setAttribute('aria-hidden', 'true');
+                
+                // jQuery закриття як fallback
                 $('#inspectionReportModal').modal('hide');
             }
             
-            // Видаляємо зайві backdrop'и
+            // 3. Радикально очищуємо backdrop'и
             setTimeout(() => {
                 const backdrops = document.querySelectorAll('.modal-backdrop');
-                if (backdrops.length > 1) {
-                    console.log('🧹 Видаляємо зайві backdrop\'и...');
-                    for (let i = 1; i < backdrops.length; i++) {
-                        backdrops[i].remove();
-                    }
-                }
+                console.log('🧹 Видаляємо ВСІ backdrop\'и:', backdrops.length);
+                backdrops.forEach(backdrop => backdrop.remove());
                 
-                // Перевіряємо чи немає відкритих модальних вікон
-                const openModals = document.querySelectorAll('.modal.show');
-                if (openModals.length === 0) {
-                    $('.modal-backdrop').remove();
-                    $('body').removeClass('modal-open').css('padding-right', '');
-                }
-            }, 300);
+                // Відновлюємо body
+                document.body.classList.remove('modal-open');
+                document.body.style.paddingRight = '';
+                document.body.style.overflow = '';
+                
+            }, 100);
             
-            // Очищуємо форму
+            // 4. Очищуємо форму
             const form = document.getElementById('inspectionReportForm');
             if (form) {
                 form.reset();
             }
             
+            // 5. Скидаємо змінні
             currentInspectionPDFFile = null;
             const previewContainer = document.getElementById('pdfReportPreviewContainer');
             if (previewContainer) {

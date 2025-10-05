@@ -65,11 +65,6 @@ class EnhancedLiftModal {
             this.handleLiftsCountChange();
         });
         
-        // Обробник кнопки додавання звіту інспекції
-        $(document).off('click', '#addInspectionReportBtn').on('click', '#addInspectionReportBtn', () => {
-            this.openInspectionReportModal();
-        });
-        
         console.log('✅ Enhanced event listeners set up');
     }
 
