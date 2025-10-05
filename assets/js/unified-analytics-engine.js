@@ -910,6 +910,228 @@ class UnifiedAnalyticsEngine {
     }
 
     /**
+     * 🔮 Ініціалізація AI прогнозування поломок
+     */
+    async initPredictiveAnalytics() {
+        console.log('🔮 Запуск ініціалізації AI прогнозування...');
+        
+        try {
+            // Ініціалізуємо систему прогнозування
+            if (typeof PredictiveMaintenanceSystem !== 'undefined') {
+                if (!this.predictiveSystem) {
+                    this.predictiveSystem = new PredictiveMaintenanceSystem();
+                }
+                
+                // Чекаємо поки система ініціалізується
+                if (!this.predictiveSystem.isInitialized) {
+                    console.log('⏳ Чекаємо ініціалізації системи прогнозування...');
+                    await this.waitForPredictiveInit();
+                }
+                
+                // Створюємо графіки та оновлюємо дані
+                this.createPredictionChart();
+                this.updateAIRecommendations();
+                this.displayPredictiveMetrics();
+                
+                console.log('✅ AI прогнозування успішно ініціалізовано');
+                
+            } else {
+                console.error('❌ PredictiveMaintenanceSystem не знайдено');
+                this.showPredictiveError('Система AI прогнозування недоступна');
+            }
+            
+        } catch (error) {
+            console.error('❌ Помилка ініціалізації AI прогнозування:', error);
+            this.showPredictiveError('Помилка завантаження AI системи');
+        }
+    }
+
+    /**
+     * ⏳ Очікування ініціалізації системи прогнозування
+     */
+    async waitForPredictiveInit() {
+        return new Promise((resolve) => {
+            const checkInit = () => {
+                if (this.predictiveSystem && this.predictiveSystem.isInitialized) {
+                    resolve();
+                } else {
+                    setTimeout(checkInit, 500);
+                }
+            };
+            checkInit();
+        });
+    }
+
+    /**
+     * 📊 Створення графіка прогнозів поломок
+     */
+    createPredictionChart() {
+        const ctx = document.getElementById('prediction-chart');
+        if (!ctx) {
+            console.warn('⚠️ Елемент prediction-chart не знайдено');
+            return;
+        }
+
+        console.log('📊 Створюємо графік прогнозів...');
+
+        // Отримуємо дані прогнозів від AI системи
+        const predictions = this.predictiveSystem ? 
+            this.predictiveSystem.getSystemPredictions() : 
+            this.generateMockPredictions();
+
+        const labels = ['Тиждень 1', 'Тиждень 2', 'Тиждень 3', 'Тиждень 4', 'Тиждень 5', 'Тиждень 6'];
+        const riskData = predictions.riskLevels || [15, 25, 35, 20, 45, 30];
+
+        this.charts.prediction = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Ризик поломок (%)',
+                    data: riskData,
+                    borderColor: 'rgba(220, 53, 69, 1)',
+                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Ризик: ${context.parsed.y}%`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * 💡 Оновлення AI рекомендацій
+     */
+    updateAIRecommendations() {
+        const container = document.getElementById('ai-recommendations');
+        if (!container) {
+            console.warn('⚠️ Елемент ai-recommendations не знайдено');
+            return;
+        }
+
+        console.log('💡 Оновлюємо AI рекомендації...');
+
+        // Отримуємо рекомендації від AI системи
+        const recommendations = this.predictiveSystem ? 
+            this.predictiveSystem.generateRecommendations() : 
+            this.generateMockRecommendations();
+
+        container.innerHTML = `
+            <div class="recommendation-list">
+                ${recommendations.map(rec => `
+                    <div class="alert alert-${rec.priority} mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="mr-3">
+                                <i class="fas ${rec.icon} fa-2x"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">${rec.title}</h6>
+                                <p class="mb-1">${rec.description}</p>
+                                <small class="text-muted">Точність: ${rec.confidence}%</small>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    /**
+     * 📈 Відображення метрик прогнозування
+     */
+    displayPredictiveMetrics() {
+        // Оновлюємо метрики в заголовку сторінки
+        console.log('📈 Оновлюємо метрики прогнозування...');
+        
+        // Можна додати логіку оновлення основних KPI карток
+        // на основі даних з AI системи
+    }
+
+    /**
+     * ❌ Показ помилки AI прогнозування
+     */
+    showPredictiveError(message) {
+        const container = document.getElementById('ai-recommendations');
+        if (container) {
+            container.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Помилка AI системи:</strong> ${message}
+                </div>
+            `;
+        }
+    }
+
+    /**
+     * 🎲 Генерація тестових прогнозів
+     */
+    generateMockPredictions() {
+        return {
+            riskLevels: [15, 25, 35, 20, 45, 30],
+            totalLifts: 45,
+            highRiskLifts: 8,
+            scheduledMaintenance: 12
+        };
+    }
+
+    /**
+     * 🎲 Генерація тестових рекомендацій
+     */
+    generateMockRecommendations() {
+        return [
+            {
+                title: 'Критичне попередження',
+                description: 'Ліфт #LFT-001 потребує термінової перевірки гальмівної системи',
+                priority: 'danger',
+                icon: 'fa-exclamation-triangle',
+                confidence: 95
+            },
+            {
+                title: 'Планове обслуговування',
+                description: 'Рекомендується провести ТО для ліфтів #LFT-005, #LFT-012 протягом тижня',
+                priority: 'warning',
+                icon: 'fa-wrench',
+                confidence: 78
+            },
+            {
+                title: 'Оптимізація роботи',
+                description: 'Система рекомендує збільшити частоту інспекцій в ТРЦ "Глобус"',
+                priority: 'info',
+                icon: 'fa-lightbulb',
+                confidence: 82
+            }
+        ];
+    }
+
+    /**
      * 💰 Створення фінансового графіка
      */
     createFinancialChart() {
@@ -1289,6 +1511,7 @@ class UnifiedAnalyticsEngine {
             case 'predictive-analytics':
                 // Ініціалізуємо прогнозну аналітику
                 console.log('🧠 Ініціалізація AI прогнозування...');
+                this.initPredictiveAnalytics();
                 break;
             case 'financial-analytics':
                 this.initFinancialAnalytics();
