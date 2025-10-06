@@ -191,6 +191,9 @@
             }
         }
     </style>
+    
+    <!-- Service Integration -->
+    <script src="../../assets/js/service-integration.js"></script>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
     <div class="wrapper">
@@ -707,18 +710,198 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
 
-    <!-- Requests Manager JS -->
-    <script src="../../assets/js/modules/requests-manager.js"></script>
-    <script src="../../assets/js/modules/request-tracking.js"></script>
-    <script src="../../assets/js/modules/feedback-request.js"></script>
     <script>
         let currentRequestId = null;
+        let serviceIntegration;
         
         function logout() {
             if (confirm('Ви впевнені, що хочете вийти з системи?')) {
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('userData');
                 window.location.href = '../../login.html';
+            }
+        }
+
+        // Менеджер заявок для клієнтів (використовує уніфіковану систему)
+        class ClientRequestsManager {
+            constructor() {
+                this.integration = serviceIntegration;
+                this.currentUser = this.getCurrentUser();
+            }
+            
+            getCurrentUser() {
+                return JSON.parse(localStorage.getItem('userData')) || 
+                       { id: 'client_001', firstName: 'Олена', lastName: 'Шевченко', role: 'client' };
+            }
+            
+            // Отримати заявки поточного клієнта
+            getMyRequests() {
+                return this.integration.getFilteredRequests('client', this.currentUser.id);
+            }
+            
+            // Створити нову заявку
+            createRequest(formData) {
+                const request = {
+                    id: this.integration.generateId(),
+                    type: formData.type || 'maintenance',
+                    liftId: formData.liftId,
+                    description: formData.description,
+                    priority: formData.priority || 'medium',
+                    status: 'new',
+                    createdBy: this.currentUser.id,
+                    createdAt: new Date().toISOString(),
+                    clientId: this.currentUser.id,
+                    clientName: `${this.currentUser.firstName} ${this.currentUser.lastName}`
+                };
+                
+                this.integration.createRequest(request);
+                this.loadRequests();
+                
+                toastr.success('Заявку успішно створено!');
+                return request.id;
+            }
+            
+            // Скасувати заявку
+            cancelRequest(requestId) {
+                const request = this.integration.getRequest(requestId);
+                if (request && request.status === 'new') {
+                    request.status = 'cancelled';
+                    request.cancelledAt = new Date().toISOString();
+                    request.cancelledBy = this.currentUser.id;
+                    
+                    this.integration.updateRequest(requestId, request);
+                    this.loadRequests();
+                    
+                    toastr.info('Заявку скасовано');
+                } else {
+                    toastr.error('Неможливо скасувати заявку в поточному статусі');
+                }
+            }
+            
+            // Завантажити та відобразити заявки
+            loadRequests() {
+                const requests = this.getMyRequests();
+                this.displayRequests(requests);
+                this.updateStats(requests);
+            }
+            
+            displayRequests(requests) {
+                const tbody = document.getElementById('requestsTableBody');
+                if (!tbody) return;
+                
+                tbody.innerHTML = '';
+                
+                requests.forEach(request => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>#${request.id}</td>
+                        <td>${request.liftId || 'Загальне'}</td>
+                        <td>${request.type || 'Обслуговування'}</td>
+                        <td>
+                            <span class="status-badge status-${request.status.replace('_', '-')}">
+                                ${this.getStatusText(request.status)}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="priority-badge priority-${request.priority}">
+                                ${this.getPriorityText(request.priority)}
+                            </span>
+                        </td>
+                        <td>${new Date(request.createdAt).toLocaleDateString()}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info btn-icon" onclick="clientRequestsManager.viewRequest('${request.id}')" title="Переглянути">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            ${request.status === 'new' ? `
+                                <button class="btn btn-sm btn-danger btn-icon" onclick="clientRequestsManager.cancelRequest('${request.id}')" title="Скасувати">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            ` : ''}
+                            ${request.status === 'completed' ? `
+                                <button class="btn btn-sm btn-warning btn-icon" onclick="clientRequestsManager.rateTechnician('${request.id}')" title="Оцінити">
+                                    <i class="fas fa-star"></i>
+                                </button>
+                            ` : ''}
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+            
+            updateStats(requests) {
+                const stats = {
+                    total: requests.length,
+                    new: requests.filter(r => r.status === 'new').length,
+                    inProgress: requests.filter(r => r.status === 'in_progress' || r.status === 'assigned').length,
+                    completed: requests.filter(r => r.status === 'completed').length
+                };
+                
+                document.getElementById('totalRequests').textContent = stats.total;
+                document.getElementById('newRequests').textContent = stats.new;
+                document.getElementById('inProgressRequests').textContent = stats.inProgress;
+                document.getElementById('completedRequests').textContent = stats.completed;
+            }
+            
+            viewRequest(requestId) {
+                const request = this.integration.getRequest(requestId);
+                if (request) {
+                    currentRequestId = requestId;
+                    
+                    document.getElementById('requestDetailsContent').innerHTML = `
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Основна інформація</h6>
+                                <p><strong>ID:</strong> #${request.id}</p>
+                                <p><strong>Ліфт:</strong> ${request.liftId || 'Загальне'}</p>
+                                <p><strong>Тип:</strong> ${request.type || 'Обслуговування'}</p>
+                                <p><strong>Пріоритет:</strong> ${this.getPriorityText(request.priority)}</p>
+                                <p><strong>Статус:</strong> ${this.getStatusText(request.status)}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Деталі</h6>
+                                <p><strong>Створено:</strong> ${new Date(request.createdAt).toLocaleString()}</p>
+                                ${request.assignedTo ? `<p><strong>Призначено:</strong> ${request.assignedTo}</p>` : ''}
+                                ${request.deadline ? `<p><strong>Термін:</strong> ${new Date(request.deadline).toLocaleString()}</p>` : ''}
+                                ${request.completedAt ? `<p><strong>Завершено:</strong> ${new Date(request.completedAt).toLocaleString()}</p>` : ''}
+                            </div>
+                            <div class="col-12 mt-3">
+                                <h6>Опис</h6>
+                                <p>${request.description || 'Опис відсутній'}</p>
+                                ${request.resolution ? `
+                                    <h6>Рішення</h6>
+                                    <p>${request.resolution}</p>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                    
+                    $('#viewRequestModal').modal('show');
+                }
+            }
+            
+            rateTechnician(requestId) {
+                // Логіка для оцінки техніка
+                toastr.info('Функція оцінки техніка буде додана пізніше');
+            }
+            
+            getStatusText(status) {
+                const statusMap = {
+                    'new': 'Нова',
+                    'assigned': 'Призначено',
+                    'in_progress': 'В роботі',
+                    'completed': 'Завершено',
+                    'cancelled': 'Скасовано'
+                };
+                return statusMap[status] || status;
+            }
+            
+            getPriorityText(priority) {
+                const priorityMap = {
+                    'high': 'Високий',
+                    'medium': 'Середній',
+                    'low': 'Низький'
+                };
+                return priorityMap[priority] || priority;
             }
         }
 
@@ -748,15 +931,12 @@
                 $('#clientName').text(`${userData.firstName} ${userData.lastName || ''}`);
             }
 
-            // Ініціалізація менеджера заявок
-            window.requestsManager = new RequestsManager();
-
-            // Кнопка для відкриття трекінгу заявки
-            const trackingBtn = document.createElement('button');
-            trackingBtn.className = 'btn btn-info mb-2';
-            trackingBtn.innerHTML = '<i class="fas fa-tasks"></i> Відстежити заявку';
-            trackingBtn.onclick = () => window.requestTracking.render('.content-wrapper');
-            document.querySelector('.content-wrapper')?.prepend(trackingBtn);
+            // Ініціалізація систем
+            serviceIntegration = new ServiceRequestsIntegration();
+            window.clientRequestsManager = new ClientRequestsManager();
+            
+            // Завантажити заявки
+            clientRequestsManager.loadRequests();
         });
 
         document.addEventListener('DOMContentLoaded', function() {

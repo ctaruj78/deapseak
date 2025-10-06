@@ -224,6 +224,9 @@
             }
         }
     </style>
+    
+    <!-- Service Integration -->
+    <script src="../../assets/js/service-integration.js"></script>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
     <div class="wrapper">
@@ -735,17 +738,185 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
 
-    <!-- Task Manager JS -->
-    <script src="../assets/js/modules/task-manager.js"></script>
-
     <script>
         let currentTaskId = null;
+        let serviceIntegration;
         
         function logout() {
             if (confirm('Ви впевнені, що хочете вийти з системи?')) {
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('userData');
                 window.location.href = '../auth/login.html';
+            }
+        }
+
+        // Менеджер завдань для техніків (використовує уніфіковану систему)
+        class TechTaskManager {
+            constructor() {
+                this.integration = serviceIntegration;
+                this.currentUser = this.getCurrentUser();
+            }
+            
+            getCurrentUser() {
+                return JSON.parse(localStorage.getItem('userData')) || 
+                       { id: 'tech_001', firstName: 'Олександр', lastName: 'Іваненко', role: 'technician' };
+            }
+            
+            // Отримати завдання для поточного техніка
+            getMyTasks() {
+                return this.integration.getFilteredRequests('technician', this.currentUser.id);
+            }
+            
+            // Розпочати завдання
+            startTask(requestId) {
+                const request = this.integration.getRequest(requestId);
+                if (request) {
+                    request.status = 'in_progress';
+                    request.startedBy = this.currentUser.id;
+                    request.startedAt = new Date().toISOString();
+                    
+                    this.integration.updateRequest(requestId, request);
+                    this.loadTasks();
+                    
+                    toastr.success('Завдання розпочато!');
+                }
+            }
+            
+            // Завершити завдання
+            completeTask(requestId) {
+                const request = this.integration.getRequest(requestId);
+                if (request) {
+                    request.status = 'completed';
+                    request.completedBy = this.currentUser.id;
+                    request.completedAt = new Date().toISOString();
+                    request.resolution = 'Завершено технічним фахівцем';
+                    
+                    this.integration.updateRequest(requestId, request);
+                    this.loadTasks();
+                    
+                    toastr.success('Завдання успішно завершено!');
+                }
+            }
+            
+            // Завантажити та відобразити завдання
+            loadTasks() {
+                const tasks = this.getMyTasks();
+                this.displayTasks(tasks);
+                this.updateStats(tasks);
+            }
+            
+            displayTasks(tasks) {
+                const tbody = document.getElementById('tasksTableBody');
+                if (!tbody) return;
+                
+                tbody.innerHTML = '';
+                
+                tasks.forEach(task => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>#${task.id}</td>
+                        <td>${task.liftId || 'Загальне'}</td>
+                        <td>${task.type || 'Обслуговування'}</td>
+                        <td>
+                            <span class="status-badge status-${task.status.replace('_', '-')}">
+                                ${this.getStatusText(task.status)}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="priority-badge priority-${task.priority}">
+                                ${this.getPriorityText(task.priority)}
+                            </span>
+                        </td>
+                        <td>${new Date(task.createdAt).toLocaleDateString()}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info btn-icon" onclick="techTaskManager.viewTask('${task.id}')" title="Переглянути">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            ${task.status === 'new' ? `
+                                <button class="btn btn-sm btn-success btn-icon" onclick="techTaskManager.startTask('${task.id}')" title="Розпочати">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                            ` : ''}
+                            ${task.status === 'in_progress' ? `
+                                <button class="btn btn-sm btn-warning btn-icon" onclick="techTaskManager.completeTask('${task.id}')" title="Завершити">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            ` : ''}
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+            
+            updateStats(tasks) {
+                const stats = {
+                    total: tasks.length,
+                    new: tasks.filter(t => t.status === 'new').length,
+                    inProgress: tasks.filter(t => t.status === 'in_progress').length,
+                    completed: tasks.filter(t => t.status === 'completed').length
+                };
+                
+                document.getElementById('totalTasks').textContent = stats.total;
+                document.getElementById('newTasks').textContent = stats.new;
+                document.getElementById('inProgressTasks').textContent = stats.inProgress;
+                document.getElementById('completedTasks').textContent = stats.completed;
+            }
+            
+            viewTask(requestId) {
+                const request = this.integration.getRequest(requestId);
+                if (request) {
+                    currentTaskId = requestId;
+                    
+                    document.getElementById('taskDetailsContent').innerHTML = `
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Основна інформація</h6>
+                                <p><strong>ID:</strong> #${request.id}</p>
+                                <p><strong>Ліфт:</strong> ${request.liftId || 'Загальне'}</p>
+                                <p><strong>Тип:</strong> ${request.type || 'Обслуговування'}</p>
+                                <p><strong>Пріоритет:</strong> ${this.getPriorityText(request.priority)}</p>
+                                <p><strong>Статус:</strong> ${this.getStatusText(request.status)}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Деталі</h6>
+                                <p><strong>Створено:</strong> ${new Date(request.createdAt).toLocaleString()}</p>
+                                <p><strong>Створив:</strong> ${request.createdBy}</p>
+                                ${request.assignedTo ? `<p><strong>Призначено:</strong> ${request.assignedTo}</p>` : ''}
+                                ${request.deadline ? `<p><strong>Термін:</strong> ${new Date(request.deadline).toLocaleString()}</p>` : ''}
+                            </div>
+                            <div class="col-12 mt-3">
+                                <h6>Опис</h6>
+                                <p>${request.description || 'Опис відсутній'}</p>
+                                ${request.resolution ? `
+                                    <h6>Рішення</h6>
+                                    <p>${request.resolution}</p>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                    
+                    $('#viewTaskModal').modal('show');
+                }
+            }
+            
+            getStatusText(status) {
+                const statusMap = {
+                    'new': 'Нове',
+                    'assigned': 'Призначено',
+                    'in_progress': 'В роботі',
+                    'completed': 'Завершено',
+                    'cancelled': 'Скасовано'
+                };
+                return statusMap[status] || status;
+            }
+            
+            getPriorityText(priority) {
+                const priorityMap = {
+                    'high': 'Високий',
+                    'medium': 'Середній',
+                    'low': 'Низький'
+                };
+                return priorityMap[priority] || priority;
             }
         }
 
@@ -775,8 +946,12 @@
                 $('#techName').text(`${userData.firstName} ${userData.lastName || ''}`);
             }
 
-            // Ініціалізація менеджера завдань
-            window.taskManager = new TaskManager();
+            // Ініціалізація систем
+            serviceIntegration = new ServiceRequestsIntegration();
+            window.techTaskManager = new TechTaskManager();
+            
+            // Завантажити завдання
+            techTaskManager.loadTasks();
         });
     </script>
 </body>
