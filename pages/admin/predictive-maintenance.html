@@ -142,6 +142,20 @@
             border-radius: 3px;
             transition: width 0.3s ease;
         }
+
+        .section-content {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .nav-link.active {
+            background-color: #007bff !important;
+            color: white !important;
+        }
     </style>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -178,9 +192,9 @@
             <nav class="mt-2">
                 <ul class="nav nav-pills nav-sidebar flex-column">
                     <li class="nav-item">
-                        <a href="lifts.html" class="nav-link">
+                        <a href="admin-dashboard.html" class="nav-link">
                             <i class="nav-icon fas fa-arrow-left"></i>
-                            <p>Назад до ліфтів</p>
+                            <p>Назад до дашборду</p>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -258,136 +272,233 @@
                 </div>
 
                 <!-- System Overview -->
-                <div class="row" id="overview">
-                    <div class="col-lg-3 col-6">
-                        <div class="small-box bg-danger prediction-card">
-                            <div class="inner">
-                                <h3 id="highRiskCount">0</h3>
-                                <p>Високий ризик</p>
-                            </div>
-                            <div class="icon">
-                                <i class="fas fa-exclamation-triangle"></i>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-lg-3 col-6">
-                        <div class="small-box bg-warning prediction-card">
-                            <div class="inner">
-                                <h3 id="mediumRiskCount">0</h3>
-                                <p>Середній ризик</p>
-                            </div>
-                            <div class="icon">
-                                <i class="fas fa-exclamation-circle"></i>
+                                <!-- System Overview -->
+                <div class="section-content" id="overview">
+                    <div class="row">
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-danger prediction-card">
+                                <div class="inner">
+                                    <h3 id="highRiskCount">0</h3>
+                                    <p>Високий ризик</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="col-lg-3 col-6">
-                        <div class="small-box bg-success prediction-card">
-                            <div class="inner">
-                                <h3 id="lowRiskCount">0</h3>
-                                <p>Низький ризик</p>
-                            </div>
-                            <div class="icon">
-                                <i class="fas fa-check-circle"></i>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-lg-3 col-6">
-                        <div class="small-box bg-info prediction-card">
-                            <div class="inner">
-                                <h3 id="avgAge">0</h3>
-                                <p>Середній вік (роки)</p>
-                            </div>
-                            <div class="icon">
-                                <i class="fas fa-calendar"></i>
+                        
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-warning prediction-card">
+                                <div class="inner">
+                                    <h3 id="mediumRiskCount">0</h3>
+                                    <p>Середній ризик</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Predictions and Alerts -->
-                <div class="row">
-                    <div class="col-md-8">
-                        <div class="card prediction-card">
-                            <div class="card-header">
-                                <h3 class="card-title"><i class="fas fa-crystal-ball"></i> ШІ Прогнози на наступний період</h3>
+                        
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-success prediction-card">
+                                <div class="inner">
+                                    <h3 id="lowRiskCount">0</h3>
+                                    <p>Низький ризик</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
                             </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <div class="cost-estimate">
-                                            <div style="font-size: 2rem; font-weight: bold;" id="nextMonthCost">₴0</div>
-                                            <div>Наступний місяць</div>
-                                            <small id="nextMonthDetails">0 відмов очікується</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="cost-estimate" style="background: linear-gradient(135deg, #ffa500 0%, #ff6347 100%);">
-                                            <div style="font-size: 2rem; font-weight: bold;" id="nextQuarterCost">₴0</div>
-                                            <div>Наступний квартал</div>
-                                            <small id="nextQuarterDetails">0 ТО потрібно</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="cost-estimate" style="background: linear-gradient(135deg, #ff6347 0%, #dc143c 100%);">
-                                            <div style="font-size: 2rem; font-weight: bold;" id="nextYearCost">₴0</div>
-                                            <div>Наступний рік</div>
-                                            <small id="nextYearDetails">0 капремонтів</small>
-                                        </div>
-                                    </div>
+                        </div>
+                        
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-info prediction-card">
+                                <div class="inner">
+                                    <h3 id="avgAge">0</h3>
+                                    <p>Середній вік (роки)</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-calendar"></i>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="col-md-4">
-                        <div class="card prediction-card">
-                            <div class="card-header">
-                                <h3 class="card-title"><i class="fas fa-bell"></i> Критичні алерти</h3>
-                            </div>
-                            <div class="card-body" style="max-height: 300px; overflow-y: auto;">
-                                <div id="criticalAlerts">
-                                    <!-- Алерти будуть додані динамічно -->
+
+                    <!-- Lift Details in Overview -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card prediction-card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-list"></i> Детальний аналіз ліфтів</h3>
+                                    <div class="card-tools">
+                                        <button class="btn btn-sm btn-primary" onclick="showRiskMatrix()">
+                                            <i class="fas fa-table"></i> Матриця ризиків
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div id="liftDetailsList">
+                                        <!-- Список ліфтів буде додано динамічно -->
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Lift Details -->
-                <div class="row">
-                    <div class="col-12">
-                        <div class="card prediction-card">
-                            <div class="card-header">
-                                <h3 class="card-title"><i class="fas fa-list"></i> Детальний аналіз ліфтів</h3>
-                                <div class="card-tools">
-                                    <button class="btn btn-sm btn-primary" onclick="showRiskMatrix()">
-                                        <i class="fas fa-table"></i> Матриця ризиків
-                                    </button>
+                <!-- AI Predictions Section -->
+                <div class="section-content" id="predictions" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="card prediction-card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-crystal-ball"></i> ШІ Прогнози на наступний період</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="cost-estimate">
+                                                <div style="font-size: 2rem; font-weight: bold;" id="nextMonthCost">₴0</div>
+                                                <div>Наступний місяць</div>
+                                                <small id="nextMonthDetails">0 відмов очікується</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="cost-estimate" style="background: linear-gradient(135deg, #ffa500 0%, #ff6347 100%);">
+                                                <div style="font-size: 2rem; font-weight: bold;" id="nextQuarterCost">₴0</div>
+                                                <div>Наступний квартал</div>
+                                                <small id="nextQuarterDetails">0 ТО потрібно</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="cost-estimate" style="background: linear-gradient(135deg, #ff6347 0%, #dc143c 100%);">
+                                                <div style="font-size: 2rem; font-weight: bold;" id="nextYearCost">₴0</div>
+                                                <div>Наступний рік</div>
+                                                <small id="nextYearDetails">0 капремонтів</small>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="card-body">
-                                <div id="liftDetailsList">
-                                    <!-- Список ліфтів буде додано динамічно -->
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card prediction-card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-chart-line"></i> Тренди прогнозування</h3>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="predictionTrendChart" width="400" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Models Performance -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card prediction-card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-brain"></i> Продуктивність моделей ШІ</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <canvas id="modelAccuracyChart" width="400" height="200"></canvas>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <canvas id="predictionDistributionChart" width="400" height="200"></canvas>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Maintenance Schedule -->
-                <div class="row" id="schedule">
-                    <div class="col-12">
-                        <div class="card prediction-card">
-                            <div class="card-header">
-                                <h3 class="card-title"><i class="fas fa-calendar-alt"></i> Оптимізований графік ТО</h3>
+                <!-- Alerts Section -->
+                <div class="section-content" id="alerts" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="card prediction-card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-bell"></i> Всі алерти системи</h3>
+                                    <div class="card-tools">
+                                        <button class="btn btn-sm btn-primary" onclick="acknowledgeAllAlerts()">
+                                            <i class="fas fa-check"></i> Підтвердити всі
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div id="allAlertsList">
+                                        <!-- Всі алерти будуть додані динамічно -->
+                                    </div>
+                                </div>
                             </div>
-                            <div class="card-body">
-                                <div class="maintenance-timeline" id="maintenanceTimeline">
-                                    <!-- Timeline буде додано динамічно -->
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card prediction-card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-exclamation-triangle"></i> Критичні алерти</h3>
+                                </div>
+                                <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                                    <div id="criticalAlerts">
+                                        <!-- Критичні алерти будуть додані динамічно -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alert Statistics -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card prediction-card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-chart-bar"></i> Статистика алертів</h3>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="alertStatisticsChart" width="400" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Maintenance Schedule Section -->
+                <div class="section-content" id="schedule" style="display: none;">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card prediction-card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-calendar-alt"></i> Оптимізований графік ТО</h3>
+                                    <div class="card-tools">
+                                        <button class="btn btn-sm btn-success" onclick="exportSchedule()">
+                                            <i class="fas fa-download"></i> Експорт календаря
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="maintenance-timeline" id="maintenanceTimeline">
+                                        <!-- Timeline буде додано динамічно -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Calendar View -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card prediction-card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-calendar"></i> Календарний вигляд</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div id="maintenanceCalendar">
+                                        <!-- Календар буде додано динамічно -->
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -421,6 +532,7 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
 
 <!-- EventBus and Predictive Maintenance -->
 <script src="/assets/js/system-eventbus.js"></script>
@@ -440,8 +552,88 @@ class PredictiveMaintenanceDashboard {
     init() {
         console.log('🔮 Ініціалізація Predictive Maintenance Dashboard...');
         
+        // Налаштовуємо навігацію
+        this.setupNavigation();
+        
         // Чекаємо готовність системи
         this.waitForSystem();
+    }
+
+    setupNavigation() {
+        // Обробляємо кліки по навігації
+        $('.sidebar .nav-link').on('click', (e) => {
+            const href = $(e.target).closest('a').attr('href');
+            
+            // Пропускаємо зовнішні посилання (дозволяємо їм працювати нормально)
+            if (href.includes('.html')) {
+                return true; // Дозволяємо переход
+            }
+            
+            // Блокуємо тільки якорні посилання для внутрішньої навігації
+            if (href.startsWith('#')) {
+                e.preventDefault();
+                this.showSection(href.substring(1));
+            }
+        });
+
+        // Показуємо перший розділ за замовчуванням
+        this.showSection('overview');
+    }
+
+    showSection(sectionId) {
+        console.log(`📍 Показуємо розділ: ${sectionId}`);
+        
+        // Приховуємо всі розділи
+        $('.section-content').hide();
+        
+        // Показуємо потрібний розділ
+        $(`#${sectionId}`).show();
+        
+        // Оновлюємо активний пункт меню
+        $('.sidebar .nav-link').removeClass('active');
+        $(`.sidebar .nav-link[href="#${sectionId}"]`).addClass('active');
+        
+        // Завантажуємо дані для розділу
+        this.loadSectionData(sectionId);
+    }
+
+    loadSectionData(sectionId) {
+        switch (sectionId) {
+            case 'overview':
+                this.loadOverviewData();
+                break;
+            case 'predictions':
+                this.loadPredictionsData();
+                break;
+            case 'alerts':
+                this.loadAlertsData();
+                break;
+            case 'schedule':
+                this.loadScheduleData();
+                break;
+        }
+    }
+
+    loadOverviewData() {
+        console.log('📊 Завантаження даних огляду...');
+        // Цей метод вже викликається в loadDashboardData
+    }
+
+    loadPredictionsData() {
+        console.log('🔮 Завантаження прогнозів ШІ...');
+        // Додатковий контент для розділу прогнозів
+        this.createPredictionCharts();
+    }
+
+    loadAlertsData() {
+        console.log('🚨 Завантаження алертів...');
+        this.loadAllAlerts();
+        this.createAlertsChart();
+    }
+
+    loadScheduleData() {
+        console.log('📅 Завантаження графіку ТО...');
+        this.createMaintenanceCalendar();
     }
 
     waitForSystem() {
@@ -710,6 +902,255 @@ class PredictiveMaintenanceDashboard {
         };
         return badges[priority] || 'secondary';
     }
+
+    // Нові методи для розділів
+
+    createPredictionCharts() {
+        this.createTrendChart();
+        this.createModelAccuracyChart();
+        this.createPredictionDistributionChart();
+    }
+
+    createTrendChart() {
+        const ctx = document.getElementById('predictionTrendChart');
+        if (!ctx) return;
+
+        const months = ['Січ', 'Лют', 'Бер', 'Квіт', 'Тра', 'Чер'];
+        const predictions = [12000, 15000, 11000, 18000, 16000, 14000];
+        const actual = [11500, 14800, 10800, 17500, null, null];
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: [{
+                    label: 'Прогноз витрат',
+                    data: predictions,
+                    borderColor: '#007bff',
+                    backgroundColor: '#007bff20',
+                    tension: 0.4
+                }, {
+                    label: 'Фактичні витрати',
+                    data: actual,
+                    borderColor: '#28a745',
+                    backgroundColor: '#28a74520',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'top' }
+                }
+            }
+        });
+    }
+
+    createModelAccuracyChart() {
+        const ctx = document.getElementById('modelAccuracyChart');
+        if (!ctx) return;
+
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Точність', 'Помилка'],
+                datasets: [{
+                    data: [85, 15],
+                    backgroundColor: ['#28a745', '#e9ecef'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+
+    createPredictionDistributionChart() {
+        const ctx = document.getElementById('predictionDistributionChart');
+        if (!ctx) return;
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Низький ризик', 'Середній ризик', 'Високий ризик', 'Критичний'],
+                datasets: [{
+                    label: 'Кількість ліфтів',
+                    data: [45, 23, 8, 3],
+                    backgroundColor: ['#28a745', '#ffc107', '#fd7e14', '#dc3545']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+
+    loadAllAlerts() {
+        const alertsContainer = document.getElementById('allAlertsList');
+        if (!alertsContainer) return;
+
+        // Імітуємо різні типи алертів
+        const sampleAlerts = [
+            {
+                id: 1,
+                type: 'critical',
+                lift: 'Ліфт-001',
+                message: 'Критичний знос тросів',
+                timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toLocaleString('uk-UA'),
+                acknowledged: false
+            },
+            {
+                id: 2,
+                type: 'high',
+                lift: 'Ліфт-005',
+                message: 'Перевищення допустимої вібрації двигуна',
+                timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000).toLocaleString('uk-UA'),
+                acknowledged: false
+            },
+            {
+                id: 3,
+                type: 'medium',
+                lift: 'Ліфт-012',
+                message: 'Наближається термін планового ТО',
+                timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toLocaleString('uk-UA'),
+                acknowledged: true
+            },
+            {
+                id: 4,
+                type: 'low',
+                lift: 'Ліфт-008',
+                message: 'Рекомендується заміна фільтрів',
+                timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toLocaleString('uk-UA'),
+                acknowledged: true
+            }
+        ];
+
+        let html = '';
+        sampleAlerts.forEach(alert => {
+            const badgeClass = this.getPriorityBadge(alert.type);
+            const statusIcon = alert.acknowledged ? 
+                '<i class="fas fa-check-circle text-success"></i>' : 
+                '<i class="fas fa-exclamation-circle text-warning"></i>';
+
+            html += `
+                <div class="alert alert-${badgeClass} alert-dismissible" style="margin-bottom: 10px;">
+                    <div class="d-flex align-items-center">
+                        ${statusIcon}
+                        <div class="ml-2 flex-grow-1">
+                            <strong>${alert.lift}</strong> - ${alert.message}
+                            <br>
+                            <small class="text-muted">${alert.timestamp}</small>
+                        </div>
+                        ${!alert.acknowledged ? `
+                            <button class="btn btn-sm btn-outline-success ml-2" onclick="acknowledgeAlert(${alert.id})">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        });
+
+        alertsContainer.innerHTML = html;
+    }
+
+    createAlertsChart() {
+        const ctx = document.getElementById('alertStatisticsChart');
+        if (!ctx) return;
+
+        const days = [];
+        const alertCounts = [];
+        
+        for (let i = 6; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            days.push(date.toLocaleDateString('uk-UA', { weekday: 'short' }));
+            alertCounts.push(Math.floor(Math.random() * 15) + 5);
+        }
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: days,
+                datasets: [{
+                    label: 'Кількість алертів',
+                    data: alertCounts,
+                    borderColor: '#dc3545',
+                    backgroundColor: '#dc354520',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+
+    createMaintenanceCalendar() {
+        const container = document.getElementById('maintenanceCalendar');
+        if (!container) return;
+
+        const today = new Date();
+        const currentMonth = today.getMonth();
+        const currentYear = today.getFullYear();
+        
+        let html = `
+            <div class="calendar-header d-flex justify-content-between align-items-center mb-3">
+                <h4>${today.toLocaleDateString('uk-UA', { month: 'long', year: 'numeric' })}</h4>
+                <div>
+                    <button class="btn btn-sm btn-outline-primary"><i class="fas fa-chevron-left"></i></button>
+                    <button class="btn btn-sm btn-outline-primary"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+            <div class="calendar-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px;">
+        `;
+
+        // Заголовки днів тижня
+        const dayHeaders = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
+        dayHeaders.forEach(day => {
+            html += `<div class="text-center font-weight-bold p-2">${day}</div>`;
+        });
+
+        // Дні місяця
+        const firstDay = new Date(currentYear, currentMonth, 1);
+        const lastDay = new Date(currentYear, currentMonth + 1, 0);
+        const startDate = new Date(firstDay);
+        startDate.setDate(startDate.getDate() - (firstDay.getDay() + 6) % 7);
+
+        for (let i = 0; i < 42; i++) {
+            const currentDate = new Date(startDate);
+            currentDate.setDate(startDate.getDate() + i);
+            
+            const isCurrentMonth = currentDate.getMonth() === currentMonth;
+            const isToday = currentDate.toDateString() === today.toDateString();
+            const hasMaintenanceEvent = Math.random() > 0.8; // 20% шанс події ТО
+
+            let dayClass = 'p-2 text-center border';
+            if (!isCurrentMonth) dayClass += ' text-muted';
+            if (isToday) dayClass += ' bg-primary text-white';
+            if (hasMaintenanceEvent && isCurrentMonth) dayClass += ' bg-warning';
+
+            html += `
+                <div class="${dayClass}" style="min-height: 60px; cursor: pointer;">
+                    <div>${currentDate.getDate()}</div>
+                    ${hasMaintenanceEvent && isCurrentMonth ? '<small class="text-dark">ТО</small>' : ''}
+                </div>
+            `;
+        }
+
+        html += '</div>';
+        container.innerHTML = html;
+    }
 }
 
 // Глобальні функції
@@ -739,6 +1180,51 @@ function exportPredictions() {
         
         toastr.success('Дані експортовано!');
     }
+}
+
+function acknowledgeAllAlerts() {
+    console.log('Підтверджуємо всі алерти...');
+    
+    // Знаходимо всі неприйняті алерти та підтверджуємо їх
+    const alertButtons = document.querySelectorAll('#allAlertsList button[onclick*="acknowledgeAlert"]');
+    alertButtons.forEach(button => {
+        const alertId = button.onclick.toString().match(/acknowledgeAlert\((\d+)\)/)[1];
+        acknowledgeAlert(parseInt(alertId));
+    });
+    
+    toastr.success('Всі алерти підтверджено!');
+}
+
+function exportSchedule() {
+    const scheduleData = {
+        month: new Date().getMonth() + 1,
+        year: new Date().getFullYear(),
+        events: [],
+        exportedAt: new Date().toISOString()
+    };
+    
+    // Генеруємо календарні події
+    const today = new Date();
+    for (let i = 1; i <= 30; i++) {
+        if (Math.random() > 0.8) { // 20% шанс події
+            scheduleData.events.push({
+                date: `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`,
+                lift: `Ліфт-${String(Math.floor(Math.random() * 20) + 1).padStart(3, '0')}`,
+                type: 'maintenance',
+                description: 'Планове технічне обслуговування'
+            });
+        }
+    }
+    
+    const blob = new Blob([JSON.stringify(scheduleData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `maintenance-schedule-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    toastr.success('Графік експортовано!');
 }
 
 function acknowledgeAlert(alertId) {

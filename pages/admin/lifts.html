@@ -489,6 +489,12 @@
                                     </a>
                                 </li>
                                 <li class="nav-item">
+                                    <a href="requests.html" class="nav-link">
+                                        <i class="fas fa-clipboard-list nav-icon"></i>
+                                        <p>Заявки на обслуговування</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
                                     <a href="maps.html" class="nav-link">
                                         <i class="fas fa-map-marked-alt nav-icon"></i>
                                         <p>Мапа ліфтів</p>
@@ -514,7 +520,7 @@
 
                         <!-- Predictive Analytics -->
                         <li class="nav-item">
-                            <a href="unified-analytics.html#predictive-analytics" class="nav-link" id="menu-ai-predictive">
+                            <a href="predictive-maintenance.html" class="nav-link" id="menu-ai-predictive">
                                 <i class="nav-icon fas fa-brain"></i>
                                 <p>AI Прогнозування</p>
                             </a>
@@ -1034,6 +1040,15 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="enhancedAccessCode">Код домофону</label>
+                                            <input type="text" id="enhancedAccessCode" name="accessCode" class="form-control" placeholder="1234" maxlength="10">
+                                            <small class="form-text text-muted">Код доступу до під'їзду або будівлі</small>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             
                             <!-- Технічні дані -->
@@ -1218,6 +1233,10 @@
                                 <tr>
                                     <td><strong>Email:</strong></td>
                                     <td id="detail-email">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Код домофону:</strong></td>
+                                    <td id="detail-access-code">-</td>
                                 </tr>
                                 <tr>
                                     <td><strong>Останнє ТО:</strong></td>
@@ -1529,9 +1548,30 @@
                             </div>
                             <div class="card-body">
                                 <div class="form-group">
-                                    <label for="nextInspectionDue">Наступна інспекція до</label>
-                                    <input type="date" id="nextInspectionDue" class="form-control">
-                                    <small class="text-muted">Рекомендована дата наступної інспекції</small>
+                                    <label>Автоматичне оновлення</label>
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input" id="updateMaintenanceDates" checked>
+                                        <label class="custom-control-label" for="updateMaintenanceDates">
+                                            Оновити дати ТО в основній інформації ліфта
+                                        </label>
+                                    </div>
+                                    <small class="text-muted">
+                                        Автоматично оновить "Останнє ТО" на дату цієї інспекції та розрахує "Наступне ТО"
+                                    </small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="maintenanceFrequencyOverride">Періодичність для наступного ТО</label>
+                                    <select class="form-control" id="maintenanceFrequencyOverride">
+                                        <option value="">Використати стандартну (з налаштувань ліфта)</option>
+                                        <option value="3">Через 3 місяці</option>
+                                        <option value="6">Через 6 місяців</option>
+                                        <option value="12">Через 12 місяців</option>
+                                        <option value="24">Через 24 місяці</option>
+                                    </select>
+                                    <small class="text-muted">
+                                        Залишіть порожнім для використання стандартної періодичності ліфта
+                                    </small>
                                 </div>
                                 
                                 <div class="form-group">
@@ -2647,14 +2687,16 @@
         const dateField = document.getElementById('inspectionDate');
         const statusField = document.getElementById('inspectionStatus');
         const commentsField = document.getElementById('inspectionComments');
-        const nextDateField = document.getElementById('nextInspectionDue');
+        const updateMaintenanceField = document.getElementById('updateMaintenanceDates');
+        const frequencyOverrideField = document.getElementById('maintenanceFrequencyOverride');
         
         console.log('🔍 Перевірка полів:', {
             inspectorField: !!inspectorField,
             dateField: !!dateField,
             statusField: !!statusField,
             commentsField: !!commentsField,
-            nextDateField: !!nextDateField
+            updateMaintenanceField: !!updateMaintenanceField,
+            frequencyOverrideField: !!frequencyOverrideField
         });
         
         if (!inspectorField || !dateField || !statusField) {
@@ -2668,14 +2710,16 @@
         const inspectionDate = dateField.value;
         const inspectionStatus = statusField.value;
         const inspectionComments = commentsField ? commentsField.value.trim() : '';
-        const nextInspectionDue = nextDateField ? nextDateField.value : '';
+        const shouldUpdateMaintenance = updateMaintenanceField ? updateMaintenanceField.checked : false;
+        const frequencyOverride = frequencyOverrideField ? frequencyOverrideField.value : '';
         
         console.log('📋 Дані з полів:', {
             inspectorName,
             inspectionDate,
             inspectionStatus,
             inspectionComments,
-            nextInspectionDue
+            shouldUpdateMaintenance,
+            frequencyOverride
         });
         
         // Валідація обов'язкових полів
@@ -2691,6 +2735,17 @@
             return;
         }
 
+        // Розрахуємо наступну дату ТО якщо потрібно
+        let calculatedNextMaintenance = null;
+        if (shouldUpdateMaintenance) {
+            const inspectionDateObj = new Date(inspectionDate);
+            const frequencyMonths = frequencyOverride ? parseInt(frequencyOverride) : 6; // стандартно 6 місяців
+            
+            calculatedNextMaintenance = new Date(inspectionDateObj);
+            calculatedNextMaintenance.setMonth(calculatedNextMaintenance.getMonth() + frequencyMonths);
+            calculatedNextMaintenance = calculatedNextMaintenance.toISOString().split('T')[0]; // YYYY-MM-DD формат
+        }
+
         // Формуємо дані для збереження
         const reportData = {
             id: 'INSPECTION_' + Date.now(),
@@ -2698,7 +2753,9 @@
             inspectionDate: inspectionDate,
             status: inspectionStatus,
             comments: inspectionComments,
-            nextInspectionDue: nextInspectionDue,
+            shouldUpdateMaintenance: shouldUpdateMaintenance,
+            calculatedNextMaintenance: calculatedNextMaintenance,
+            frequencyOverride: frequencyOverride,
             liftId: window.currentLiftId || window.enhancedLiftModal?.currentLiftId || 'UNKNOWN_LIFT',
             createdAt: new Date().toISOString(),
             reportType: 'inspection'
@@ -2720,11 +2777,21 @@
             
             console.log('✅ Звіт успішно збережено!');
             
+            // Оновлюємо основні дані ліфта якщо потрібно
+            if (shouldUpdateMaintenance && reportData.liftId !== 'UNKNOWN_LIFT') {
+                updateLiftMaintenanceDates(reportData.liftId, inspectionDate, calculatedNextMaintenance);
+            }
+            
             // Показуємо повідомлення про успіх
+            let successMessage = 'Звіт інспекції успішно збережено!';
+            if (shouldUpdateMaintenance) {
+                successMessage += ' Дати ТО оновлено автоматично.';
+            }
+            
             if (typeof toastr !== 'undefined') {
-                toastr.success('Звіт інспекції успішно збережено!');
+                toastr.success(successMessage);
             } else {
-                alert('✅ Звіт інспекції успішно збережено!\n\nІнспектор: ' + inspectorName + '\nДата: ' + inspectionDate);
+                alert('✅ ' + successMessage + '\n\nІнспектор: ' + inspectorName + '\nДата: ' + inspectionDate);
             }
             
             // Закриваємо модальне вікно (використовуємо глобальну функцію)
@@ -2739,6 +2806,56 @@
         } catch (error) {
             console.error('❌ Помилка збереження:', error);
             alert('❌ Помилка збереження звіту: ' + error.message);
+        }
+    }
+
+    // Функція для оновлення дат ТО у основних даних ліфта
+    function updateLiftMaintenanceDates(liftId, lastMaintenanceDate, nextMaintenanceDate) {
+        console.log('🔄 Оновлення дат ТО для ліфта:', liftId);
+        
+        try {
+            // Оновлюємо в localStorage
+            const lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
+            let liftFound = false;
+            
+            for (let i = 0; i < lifts.length; i++) {
+                if (lifts[i].id === liftId) {
+                    lifts[i].lastMaintenance = lastMaintenanceDate;
+                    if (nextMaintenanceDate) {
+                        lifts[i].nextMaintenance = nextMaintenanceDate;
+                    }
+                    lifts[i].updatedAt = new Date().toISOString();
+                    liftFound = true;
+                    console.log('✅ Дати ТО оновлено для ліфта:', lifts[i].municipalNumber);
+                    break;
+                }
+            }
+            
+            if (liftFound) {
+                localStorage.setItem('lifts', JSON.stringify(lifts));
+                
+                // Оновлюємо глобальні змінні якщо вони існують
+                if (typeof window.allLifts !== 'undefined') {
+                    window.allLifts = [...lifts];
+                }
+                if (typeof allLifts !== 'undefined') {
+                    allLifts = [...lifts];
+                }
+                
+                // Перезавантажуємо таблицю ліфтів якщо можливо
+                if (typeof window.simpleLiftModal?.loadLifts === 'function') {
+                    window.simpleLiftModal.loadLifts();
+                } else if (typeof loadLiftsData === 'function') {
+                    loadLiftsData();
+                }
+                
+                console.log('✅ Дані ліфта оновлено успішно');
+            } else {
+                console.warn('⚠️ Ліфт з ID', liftId, 'не знайдено');
+            }
+            
+        } catch (error) {
+            console.error('❌ Помилка оновлення дат ТО:', error);
         }
     }
 
@@ -2987,7 +3104,7 @@
         console.log('🔍 Діагностика навігації AI прогнозування запущена');
         
         // Знаходимо посилання AI прогнозування
-        const aiLink = document.querySelector('a[href="unified-analytics.html#predictive-analytics"]');
+        const aiLink = document.querySelector('a[href="predictive-maintenance.html"]');
         const analyticsLink = document.querySelector('a[href="unified-analytics.html"]');
         
         if (aiLink) {

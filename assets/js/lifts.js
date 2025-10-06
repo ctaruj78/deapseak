@@ -135,6 +135,7 @@ class LiftManager {
                 $('#detail-coordinates').text(lift.lat && lift.lng ? `${lift.lat}, ${lift.lng}` : '-');
                 $('#detail-client').text(lift.clientName || '-');
                 $('#detail-email').text(lift.clientEmail || '-');
+                $('#detail-access-code').text(lift.accessCode || '-');
                 $('#detail-last-maintenance').text(lift.lastMaintenance || '-');
                 $('#detail-next-maintenance').text(lift.nextMaintenance || '-');
                 $('#detail-created').text(lift.createdAt ? new Date(lift.createdAt).toLocaleString('uk-UA') : '-');
@@ -229,21 +230,15 @@ class LiftManager {
             }
         });
 
-        // Створення заявки
+        // Створення заявки на обслуговування
         $('#lifts-table-body').on('click', '.request-btn', function () {
             console.log('Request button clicked for lift:', $(this).data('id'));
             const liftId = $(this).data('id');
             const lift = allLifts.find(l => l.id === liftId);
             if (lift) {
-                const description = prompt('Введіть опис заявки:');
-                if (description) {
-                    this.autoCreateRequest(liftId, lift.status);
-                    const request = allServiceRequests.find(r => r.liftId === liftId && r.status === 'pending');
-                    if (request) {
-                        this.sendEmail(lift.clientEmail, `Нова заявка для ліфта ${liftId}`, description, true);
-                        if (typeof toastr !== 'undefined') toastr.success(`Заявка створена для ліфта ${liftId}`);
-                    }
-                }
+                // Переходимо на сторінку заявок з предзаповненим ліфтом
+                const url = `requests.html?lift=${liftId}&address=${encodeURIComponent(lift.address || '')}`;
+                window.location.href = url;
             }
         });
 
