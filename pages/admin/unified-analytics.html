@@ -347,9 +347,17 @@
 
                     <!-- Predictive Analytics -->
                     <li class="nav-item">
-                        <a href="unified-analytics.html#predictive-analytics" class="nav-link">
+                        <a href="predictive-maintenance.html" class="nav-link">
                             <i class="nav-icon fas fa-brain"></i>
                             <p>AI Прогнозування</p>
+                        </a>
+                    </li>
+
+                    <!-- Service Requests -->
+                    <li class="nav-item">
+                        <a href="requests.html" class="nav-link">
+                            <i class="nav-icon fas fa-clipboard-list"></i>
+                            <p>Заявки на обслуговування</p>
                         </a>
                     </li>
 
@@ -1215,6 +1223,58 @@
 
 <!-- Додатковий скрипт для гарантованої активації AI прогнозування -->
 <script>
+// Функція для активації AI прогнозування
+window.activateAIPredictive = function() {
+    console.log('🤖 Активація AI прогнозування...');
+    
+    try {
+        // Деактивуємо всі таби
+        document.querySelectorAll('.nav-link').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.querySelectorAll('.tab-pane').forEach(pane => {
+            pane.classList.remove('active', 'show');
+        });
+        
+        // Знаходимо і активуємо AI таб
+        const tabButton = document.querySelector('[data-target="#predictive-analytics"]') || 
+                         document.querySelector('#predictive-tab');
+        const tabPane = document.querySelector('#predictive-analytics');
+        
+        console.log('🔍 AI елементи:', { tabButton, tabPane });
+        
+        if (tabButton && tabPane) {
+            // Активуємо кнопку табу
+            tabButton.classList.add('active');
+            tabButton.setAttribute('aria-selected', 'true');
+            
+            // Активуємо панель табу
+            tabPane.classList.add('active', 'show');
+            
+            console.log('✅ AI таб активовано');
+            
+            // Ініціалізуємо AI компоненти
+            setTimeout(() => {
+                if (window.initPredictiveAnalytics && typeof window.initPredictiveAnalytics === 'function') {
+                    console.log('🚀 Запуск ініціалізації AI компонентів...');
+                    window.initPredictiveAnalytics();
+                } else {
+                    console.warn('⚠️ initPredictiveAnalytics не знайдено');
+                }
+            }, 100);
+            
+            return true;
+        } else {
+            console.error('❌ AI таб елементи не знайдено');
+            return false;
+        }
+        
+    } catch (error) {
+        console.error('❌ Помилка активації AI прогнозування:', error);
+        return false;
+    }
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🔍 Перевіряємо хеш при завантаженні сторінки...');
     

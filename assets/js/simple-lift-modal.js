@@ -542,6 +542,7 @@ class SimpleLiftModal {
                                     <p><strong>Бренд:</strong> ${lift.brand || 'Невказано'}</p>
                                     <p><strong>Модель:</strong> ${lift.model || 'Невказано'}</p>
                                     <p><strong>Адреса:</strong> ${lift.address || 'Невказано'}</p>
+                                    <p><strong>Код домофону:</strong> ${lift.accessCode || 'Невказано'}</p>
                                     <p><strong>Статус:</strong> <span class="badge badge-${this.getStatusColor(lift.status)}">${this.getStatusText(lift.status)}</span></p>
                                 </div>
                                 <div class="col-md-6">

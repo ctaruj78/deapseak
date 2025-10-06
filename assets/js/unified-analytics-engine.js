@@ -1695,21 +1695,7 @@ function loadAIRecommendations() {
     console.log('✅ AI рекомендації завантажено');
 }
 
-// Глобальна функція для активації AI прогнозування
-window.activateAIPredictive = function() {
-    console.log('🔮 Глобальна активація AI прогнозування...');
-    if (analyticsEngine) {
-        const success = analyticsEngine.activateTab('predictive-analytics');
-        if (success) {
-            // Оновлюємо URL без перезавантаження сторінки
-            window.history.pushState(null, null, '#predictive-analytics');
-        }
-        return success;
-    } else {
-        console.error('❌ Analytics Engine не ініціалізований');
-        return false;
-    }
-};
+// Функція activateAIPredictive тепер знаходиться в HTML файлі
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('📄 DOM завантажено, ініціалізуємо Analytics Engine...');

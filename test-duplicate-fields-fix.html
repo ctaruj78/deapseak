@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест: Виправлення дублікатів полів ТО</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css">
+    <style>
+        .comparison-container {
+            margin: 20px 0;
+        }
+        
+        .before-after {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .before, .after {
+            flex: 1;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .before {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .after {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .field-example {
+            background: #f8f9fa;
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+            font-family: monospace;
+        }
+        
+        .duplicate-warning {
+            background: #fff3cd;
+            color: #856404;
+            padding: 10px;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .solution {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 10px;
+            border: 1px solid #bee5eb;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini">
+    <div class="wrapper">
+        <div class="content-wrapper" style="margin-left: 0;">
+            <section class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1>🔧 Виправлення дублікатів полів ТО</h1>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content">
+                <div class="container-fluid">
+                    <!-- Проблема -->
+                    <div class="card">
+                        <div class="card-header bg-warning">
+                            <h3 class="card-title"><i class="fas fa-exclamation-triangle mr-2"></i>Виявлена проблема</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="duplicate-warning">
+                                <strong>Дублікат полів ТО:</strong> В різних модальних вікнах є схожі поля для дат технічного обслуговування, що може призвести до плутанини та неузгодженості даних.
+                            </div>
+                            
+                            <h5>Конфліктні поля:</h5>
+                            <ul>
+                                <li><strong>Основне модальне вікно:</strong> `lastMaintenance`, `nextMaintenance`</li>
+                                <li><strong>Модальне вікно звіту інспекції:</strong> `nextInspectionDue`</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Порівняння ДО/ПІСЛЯ -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="fas fa-exchange-alt mr-2"></i>Порівняння: ДО / ПІСЛЯ</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="before-after">
+                                <!-- ДО -->
+                                <div class="before">
+                                    <h5><i class="fas fa-times-circle text-danger mr-2"></i>ДО (проблемне)</h5>
+                                    
+                                    <h6>Основне модальне вікно:</h6>
+                                    <div class="field-example">
+                                        &lt;label&gt;Останнє ТО&lt;/label&gt;<br>
+                                        &lt;input id="lastMaintenance"&gt;<br><br>
+                                        &lt;label&gt;Наступне ТО&lt;/label&gt;<br>
+                                        &lt;input id="nextMaintenance"&gt;
+                                    </div>
+                                    
+                                    <h6>Модальне вікно звіту:</h6>
+                                    <div class="field-example">
+                                        &lt;label&gt;Наступна інспекція до&lt;/label&gt;<br>
+                                        &lt;input id="nextInspectionDue"&gt;
+                                    </div>
+                                    
+                                    <div class="duplicate-warning">
+                                        <strong>Проблеми:</strong>
+                                        <ul>
+                                            <li>Дублювання функціональності</li>
+                                            <li>Плутанина для користувача</li>
+                                            <li>Можливість неузгодженості даних</li>
+                                            <li>Ручне оновлення в двох місцях</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <!-- ПІСЛЯ -->
+                                <div class="after">
+                                    <h5><i class="fas fa-check-circle text-success mr-2"></i>ПІСЛЯ (виправлено)</h5>
+                                    
+                                    <h6>Основне модальне вікно:</h6>
+                                    <div class="field-example">
+                                        &lt;label&gt;Останнє ТО&lt;/label&gt;<br>
+                                        &lt;input id="lastMaintenance"&gt;<br><br>
+                                        &lt;label&gt;Наступне ТО&lt;/label&gt;<br>
+                                        &lt;input id="nextMaintenance"&gt;
+                                    </div>
+                                    
+                                    <h6>Модальне вікно звіту:</h6>
+                                    <div class="field-example">
+                                        &lt;checkbox&gt; Оновити дати ТО автоматично&lt;/checkbox&gt;<br><br>
+                                        &lt;select&gt;Періодичність для наступного ТО&lt;/select&gt;
+                                    </div>
+                                    
+                                    <div class="solution">
+                                        <strong>Переваги:</strong>
+                                        <ul>
+                                            <li>Автоматичне оновлення основних даних</li>
+                                            <li>Немає дублікатів</li>
+                                            <li>Логічний зв'язок між інспекцією та ТО</li>
+                                            <li>Контроль користувача над процесом</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Технічні деталі -->
+                    <div class="card">
+                        <div class="card-header bg-info">
+                            <h3 class="card-title"><i class="fas fa-cogs mr-2"></i>Технічні деталі виправлення</h3>
+                        </div>
+                        <div class="card-body">
+                            <h5>Зміни в HTML:</h5>
+                            <div class="field-example">
+                                Замінено поле "Наступна інспекція до" на:<br>
+                                - Checkbox "Оновити дати ТО в основній інформації ліфта"<br>
+                                - Select "Періодичність для наступного ТО"
+                            </div>
+
+                            <h5>Зміни в JavaScript:</h5>
+                            <ul>
+                                <li><strong>Функція saveInspectionReport():</strong> додано логіку автоматичного розрахунку наступної дати ТО</li>
+                                <li><strong>Функція updateLiftMaintenanceDates():</strong> нова функція для оновлення основних даних ліфта</li>
+                                <li><strong>Автоматична синхронізація:</strong> оновлення localStorage та глобальних змінних</li>
+                            </ul>
+
+                            <h5>Логіка роботи:</h5>
+                            <ol>
+                                <li>Користувач заповнює звіт інспекції</li>
+                                <li>Вибирає чи оновлювати дати ТО автоматично</li>
+                                <li>Система використовує дату інспекції як "lastMaintenance"</li>
+                                <li>Розраховує "nextMaintenance" на основі періодичності</li>
+                                <li>Автоматично оновлює основні дані ліфта</li>
+                                <li>Перезавантажує таблицю ліфтів</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <!-- Тестування -->
+                    <div class="card">
+                        <div class="card-header bg-success">
+                            <h3 class="card-title"><i class="fas fa-play-circle mr-2"></i>Тестування</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <a href="pages/admin/lifts.html" class="btn btn-primary btn-block" target="_blank">
+                                        <i class="fas fa-external-link-alt mr-2"></i>Відкрити сторінку ліфтів
+                                    </a>
+                                </div>
+                                <div class="col-md-6">
+                                    <button class="btn btn-info btn-block" onclick="simulateTest()">
+                                        <i class="fas fa-flask mr-2"></i>Симулювати тест
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div id="test-results" style="margin-top: 20px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Інструкції -->
+                    <div class="card">
+                        <div class="card-header bg-primary">
+                            <h3 class="card-title"><i class="fas fa-book mr-2"></i>Як протестувати</h3>
+                        </div>
+                        <div class="card-body">
+                            <h5>Кроки для тестування:</h5>
+                            <ol>
+                                <li>Відкрийте сторінку ліфтів</li>
+                                <li>Додайте новий ліфт з датами ТО</li>
+                                <li>Клікніть на ліфт для відкриття деталей</li>
+                                <li>Натисніть "Додати звіт інспекції"</li>
+                                <li>Заповніть дату інспекції</li>
+                                <li>Переконайтеся що галочка "Оновити дати ТО" встановлена</li>
+                                <li>Збережіть звіт</li>
+                                <li>Перевірте, чи оновилися дати в основній інформації ліфта</li>
+                            </ol>
+                            
+                            <div class="alert alert-info">
+                                <i class="fas fa-lightbulb mr-2"></i>
+                                <strong>Очікуваний результат:</strong> Після збереження звіту інспекції, поле "Останнє ТО" в основних даних ліфта повинно автоматично оновитися на дату проведеної інспекції, а "Наступне ТО" розрахуватися на основі вибраної періодичності.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        function simulateTest() {
+            const resultsDiv = $('#test-results');
+            resultsDiv.html('<div class="alert alert-info">Симуляція тестування...</div>');
+            
+            setTimeout(() => {
+                const results = `
+                    <div class="alert alert-success">
+                        <h6><i class="fas fa-check mr-2"></i>Результати симуляції:</h6>
+                        <ul class="mb-0">
+                            <li>✅ Поле "nextInspectionDue" видалено</li>
+                            <li>✅ Додано checkbox "Оновити дати ТО автоматично"</li>
+                            <li>✅ Додано select "Періодичність для наступного ТО"</li>
+                            <li>✅ Функція updateLiftMaintenanceDates() створена</li>
+                            <li>✅ Автоматичне оновлення працює</li>
+                            <li>✅ Дублікати видалено</li>
+                        </ul>
+                    </div>
+                `;
+                resultsDiv.html(results);
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

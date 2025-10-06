@@ -309,6 +309,7 @@ class EnhancedLiftModal {
             clientEmail: $('#enhancedClientEmail').val() || '',
             clientPhone: $('#enhancedClientPhone').val() || '',
             contactPerson: $('#enhancedContactPerson').val() || '',
+            accessCode: $('#enhancedAccessCode').val() || '',
             tech: $('#enhancedAssignedTechnician').val() || 'auto',
             status: $('#enhancedLiftStatus').val() || 'operational',
             // Технічні інспекції
@@ -597,6 +598,7 @@ class EnhancedLiftModal {
         $('#enhancedClientEmail').val(liftData.clientEmail || '');
         $('#enhancedClientPhone').val(liftData.clientPhone || '');
         $('#enhancedContactPerson').val(liftData.contactPerson || '');
+        $('#enhancedAccessCode').val(liftData.accessCode || '');
         $('#enhancedAssignedTechnician').val(liftData.tech || '');
         $('#enhancedLiftStatus').val(liftData.status || '');
         // Поля інспекцій
