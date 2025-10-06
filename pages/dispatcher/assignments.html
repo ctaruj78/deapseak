@@ -210,6 +210,9 @@
             }
         }
     </style>
+    
+    <!-- Service Integration -->
+    <script src="../../assets/js/service-integration.js"></script>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
     <div class="wrapper">
@@ -597,15 +600,217 @@
     <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
 
-    <!-- Assignment Manager JS -->
-    <script src="../../assets/js/modules/assignment-manager.js"></script>
-
     <script>
+        let serviceIntegration;
+        
         function logout() {
             if (confirm('Ви впевнені, що хочете вийти з системи?')) {
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('userData');
                 window.location.href = '../../login.html';
+            }
+        }
+
+        // Менеджер призначень для диспетчерів (використовує уніфіковану систему)
+        class DispatcherAssignmentManager {
+            constructor() {
+                this.integration = serviceIntegration;
+                this.currentUser = this.getCurrentUser();
+                this.technicians = this.getTechnicians();
+            }
+            
+            getCurrentUser() {
+                return JSON.parse(localStorage.getItem('userData')) || 
+                       { id: 'disp_001', firstName: 'Марія', lastName: 'Коваленко', role: 'dispatcher' };
+            }
+            
+            getTechnicians() {
+                // Симуляція списку технічних фахівців
+                return [
+                    { id: 'tech_001', name: 'Олександр Іваненко', active: true },
+                    { id: 'tech_002', name: 'Петро Петренко', active: true },
+                    { id: 'tech_003', name: 'Анна Сидоренко', active: false }
+                ];
+            }
+            
+            // Отримати заявки для диспетчера (незавершені)
+            getMyAssignments() {
+                return this.integration.getFilteredRequests('dispatcher', this.currentUser.id);
+            }
+            
+            // Призначити заявку технічному фахівцю
+            assignRequest(requestId, technicianId) {
+                const request = this.integration.getRequest(requestId);
+                if (request) {
+                    request.assignedTo = technicianId;
+                    request.status = 'assigned';
+                    request.assignedAt = new Date().toISOString();
+                    request.assignedBy = this.currentUser.id;
+                    
+                    this.integration.updateRequest(requestId, request);
+                    this.loadAssignments();
+                    
+                    toastr.success('Заявку успішно призначено!');
+                }
+            }
+            
+            // Переназначити заявку
+            reassignRequest(requestId, newTechnicianId) {
+                const request = this.integration.getRequest(requestId);
+                if (request) {
+                    request.assignedTo = newTechnicianId;
+                    request.reassignedAt = new Date().toISOString();
+                    request.reassignedBy = this.currentUser.id;
+                    
+                    this.integration.updateRequest(requestId, request);
+                    this.loadAssignments();
+                    
+                    toastr.info('Заявку переназначено!');
+                }
+            }
+            
+            // Завантажити та відобразити призначення
+            loadAssignments() {
+                const assignments = this.getMyAssignments();
+                this.displayAssignments(assignments);
+                this.updateStats(assignments);
+            }
+            
+            displayAssignments(assignments) {
+                const container = document.getElementById('assignmentsContainer');
+                if (!container) return;
+                
+                container.innerHTML = '';
+                
+                assignments.forEach(assignment => {
+                    const card = document.createElement('div');
+                    card.className = `assignment-card ${assignment.priority}-priority`;
+                    card.innerHTML = `
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title mb-0">#${assignment.id}</h5>
+                                <span class="priority-badge priority-${assignment.priority}">
+                                    ${this.getPriorityText(assignment.priority)}
+                                </span>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <small class="text-muted">Ліфт:</small>
+                                    <p class="mb-1">${assignment.liftId || 'Загальне'}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <small class="text-muted">Статус:</small>
+                                    <p class="mb-1">
+                                        <span class="status-badge status-${assignment.status.replace('_', '-')}">
+                                            ${this.getStatusText(assignment.status)}
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <p class="text-muted mb-3">${assignment.description?.substring(0, 100)}...</p>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <small class="text-muted">Призначено:</small>
+                                    <p class="mb-0">${this.getTechnicianName(assignment.assignedTo) || 'Не призначено'}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <small class="text-muted">Створено:</small>
+                                    <p class="mb-0">${new Date(assignment.createdAt).toLocaleDateString()}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="assignment-actions">
+                                <button class="btn btn-sm btn-info" onclick="dispatcherManager.viewAssignment('${assignment.id}')">
+                                    <i class="fas fa-eye"></i> Переглянути
+                                </button>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-warning dropdown-toggle" type="button" data-toggle="dropdown">
+                                        <i class="fas fa-user-cog"></i> Призначити
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        ${this.technicians.filter(t => t.active).map(tech => 
+                                            `<a class="dropdown-item" href="#" onclick="dispatcherManager.assignRequest('${assignment.id}', '${tech.id}')">
+                                                ${tech.name}
+                                            </a>`
+                                        ).join('')}
+                                    </div>
+                                </div>
+                                ${assignment.status === 'new' ? `
+                                    <button class="btn btn-sm btn-success" onclick="dispatcherManager.approveRequest('${assignment.id}')">
+                                        <i class="fas fa-check"></i> Підтвердити
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            }
+            
+            updateStats(assignments) {
+                const stats = {
+                    total: assignments.length,
+                    unassigned: assignments.filter(a => !a.assignedTo).length,
+                    inProgress: assignments.filter(a => a.status === 'in_progress').length,
+                    urgent: assignments.filter(a => a.priority === 'high').length
+                };
+                
+                document.getElementById('totalAssignments').textContent = stats.total;
+                document.getElementById('unassignedCount').textContent = stats.unassigned;
+                document.getElementById('inProgressCount').textContent = stats.inProgress;
+                document.getElementById('urgentCount').textContent = stats.urgent;
+            }
+            
+            viewAssignment(requestId) {
+                const request = this.integration.getRequest(requestId);
+                if (request) {
+                    // Логіка для відображення деталей заявки в модальному вікні
+                    // Тут можна додати модальне вікно для перегляду деталей
+                    console.log('Viewing assignment:', request);
+                }
+            }
+            
+            approveRequest(requestId) {
+                const request = this.integration.getRequest(requestId);
+                if (request) {
+                    request.status = 'approved';
+                    request.approvedBy = this.currentUser.id;
+                    request.approvedAt = new Date().toISOString();
+                    
+                    this.integration.updateRequest(requestId, request);
+                    this.loadAssignments();
+                    
+                    toastr.success('Заявку підтверджено!');
+                }
+            }
+            
+            getTechnicianName(techId) {
+                const tech = this.technicians.find(t => t.id === techId);
+                return tech ? tech.name : null;
+            }
+            
+            getStatusText(status) {
+                const statusMap = {
+                    'new': 'Нова',
+                    'assigned': 'Призначено',
+                    'approved': 'Підтверджено',
+                    'in_progress': 'В роботі',
+                    'completed': 'Завершено',
+                    'cancelled': 'Скасовано'
+                };
+                return statusMap[status] || status;
+            }
+            
+            getPriorityText(priority) {
+                const priorityMap = {
+                    'high': 'Високий',
+                    'medium': 'Середній',
+                    'low': 'Низький'
+                };
+                return priorityMap[priority] || priority;
             }
         }
 
@@ -635,14 +840,12 @@
                 $('#dispatcherName').text(`${userData.firstName} ${userData.lastName || ''}`);
             }
 
-            // Переключення виду
-            $('input[name="viewOptions"]').change(function() {
-                const viewType = this.id;
-                assignmentManager.switchView(viewType);
-            });
-
-            // Ініціалізація менеджера призначень
-            window.assignmentManager = new AssignmentManager();
+            // Ініціалізація систем
+            serviceIntegration = new ServiceRequestsIntegration();
+            window.dispatcherManager = new DispatcherAssignmentManager();
+            
+            // Завантажити призначення
+            dispatcherManager.loadAssignments();
         });
     </script>
 </body>
