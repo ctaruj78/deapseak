@@ -1,2 +1,76 @@
 nohup: ignoring input
 127.0.0.1 - - [08/Oct/2025 20:54:31] "HEAD / HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 20:58:11] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 20:58:16] code 404, message File not found
+127.0.0.1 - - [08/Oct/2025 20:58:16] "GET /assets/plugins/bootstrap/css/bootstrap.min.css HTTP/1.1" 404 -
+127.0.0.1 - - [08/Oct/2025 20:58:26] "GET /pages/profile-manager/index.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 20:58:27] "GET /assets/js/modules/profile-manager.js HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 20:58:28] code 404, message File not found
+127.0.0.1 - - [08/Oct/2025 20:58:28] "GET /assets/plugins/bootstrap/css/bootstrap.min.css HTTP/1.1" 404 -
+127.0.0.1 - - [08/Oct/2025 20:59:24] code 404, message File not found
+127.0.0.1 - - [08/Oct/2025 20:59:24] "GET /assets/css/chat-system.css HTTP/1.1" 404 -
+127.0.0.1 - - [08/Oct/2025 20:59:24] code 404, message File not found
+127.0.0.1 - - [08/Oct/2025 20:59:24] "GET /assets/js/adminlte.min.js HTTP/1.1" 404 -
+127.0.0.1 - - [08/Oct/2025 20:59:24] code 404, message File not found
+127.0.0.1 - - [08/Oct/2025 20:59:24] "GET /assets/plugins/bootstrap/css/bootstrap.min.css HTTP/1.1" 404 -
+127.0.0.1 - - [08/Oct/2025 20:59:25] "GET /assets/js/modules/chat-system.js HTTP/1.1" 304 -
+127.0.0.1 - - [08/Oct/2025 20:59:36] "GET /pages/ar-helper/index.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 20:59:36] code 404, message File not found
+127.0.0.1 - - [08/Oct/2025 20:59:36] "GET /assets/plugins/bootstrap/css/bootstrap.min.css HTTP/1.1" 404 -
+127.0.0.1 - - [08/Oct/2025 20:59:37] code 404, message File not found
+127.0.0.1 - - [08/Oct/2025 20:59:37] "GET /assets/js/adminlte.min.js HTTP/1.1" 404 -
+127.0.0.1 - - [08/Oct/2025 20:59:37] "GET /assets/js/modules/ar-helper.js HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 21:00:33] code 404, message File not found
+127.0.0.1 - - [08/Oct/2025 21:00:33] "GET /assets/plugins/bootstrap/css/bootstrap.min.css HTTP/1.1" 404 -
+127.0.0.1 - - [08/Oct/2025 21:00:37] "GET /assets/js/modules/chat-system.js HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 21:00:38] code 404, message File not found
+127.0.0.1 - - [08/Oct/2025 21:00:38] "GET /assets/plugins/bootstrap/css/bootstrap.min.css HTTP/1.1" 404 -
+127.0.0.1 - - [08/Oct/2025 21:00:38] code 404, message File not found
+127.0.0.1 - - [08/Oct/2025 21:00:38] "GET /assets/css/chat-system.css HTTP/1.1" 404 -
+127.0.0.1 - - [08/Oct/2025 21:00:38] code 404, message File not found
+127.0.0.1 - - [08/Oct/2025 21:00:38] "GET /assets/js/adminlte.min.js HTTP/1.1" 404 -
+127.0.0.1 - - [08/Oct/2025 21:00:44] code 404, message File not found
+127.0.0.1 - - [08/Oct/2025 21:00:44] "GET /assets/plugins/bootstrap/css/bootstrap.min.css HTTP/1.1" 404 -
+127.0.0.1 - - [08/Oct/2025 21:00:45] code 404, message File not found
+127.0.0.1 - - [08/Oct/2025 21:00:45] "GET /assets/js/adminlte.min.js HTTP/1.1" 404 -
+127.0.0.1 - - [08/Oct/2025 21:00:45] code 404, message File not found
+127.0.0.1 - - [08/Oct/2025 21:00:45] "GET /pages/api/knowledge-base HTTP/1.1" 404 -
+127.0.0.1 - - [08/Oct/2025 21:01:30] code 404, message File not found
+127.0.0.1 - - [08/Oct/2025 21:01:30] "GET /assets/plugins/bootstrap/css/bootstrap.min.css HTTP/1.1" 404 -
+127.0.0.1 - - [08/Oct/2025 21:01:30] "GET /assets/js/modules/profile-manager.js HTTP/1.1" 304 -
+127.0.0.1 - - [08/Oct/2025 21:06:09] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 21:06:16] "GET /pages/profile/profile-manager-redesigned.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 21:06:18] "GET /assets/css/responsive.css HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 21:06:18] "GET /assets/js/modules/profile-manager-redesigned.js HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 21:06:18] "GET /assets/js/websocket-client.js HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 21:06:18] "GET /assets/css/modern-styles.css HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 21:06:57] code 404, message File not found
+127.0.0.1 - - [08/Oct/2025 21:06:57] "GET /assets/plugins/bootstrap/css/bootstrap.min.css HTTP/1.1" 404 -
+127.0.0.1 - - [08/Oct/2025 21:07:03] "GET /pages/support/support-manager-redesigned.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 21:07:04] "GET /assets/js/modules/support-manager-redesigned.js HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 21:10:53] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 21:18:37] code 404, message File not found
+127.0.0.1 - - [08/Oct/2025 21:18:37] "GET /assets/plugins/bootstrap/css/bootstrap.min.css HTTP/1.1" 404 -
+127.0.0.1 - - [08/Oct/2025 21:18:41] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 21:18:46] code 404, message File not found
+127.0.0.1 - - [08/Oct/2025 21:18:46] "GET /assets/plugins/bootstrap/css/bootstrap.min.css HTTP/1.1" 404 -
+127.0.0.1 - - [08/Oct/2025 21:18:50] "GET /assets/js/modules/ar-helper.js HTTP/1.1" 304 -
+127.0.0.1 - - [08/Oct/2025 21:18:54] code 404, message File not found
+127.0.0.1 - - [08/Oct/2025 21:18:54] "GET /assets/js/adminlte.min.js HTTP/1.1" 404 -
+127.0.0.1 - - [08/Oct/2025 21:18:54] code 404, message File not found
+127.0.0.1 - - [08/Oct/2025 21:18:54] "GET /assets/plugins/bootstrap/css/bootstrap.min.css HTTP/1.1" 404 -
+127.0.0.1 - - [08/Oct/2025 21:19:08] "GET /pages/profile/profile-manager-adminlte.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 21:19:08] "GET /assets/js/websocket-client.js HTTP/1.1" 304 -
+127.0.0.1 - - [08/Oct/2025 21:19:10] "GET /assets/js/modules/profile-manager-adminlte.js HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 21:19:26] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 304 -
+127.0.0.1 - - [08/Oct/2025 21:29:39] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 21:29:54] "GET /pages/admin/profile.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 21:29:55] code 404, message File not found
+127.0.0.1 - - [08/Oct/2025 21:29:55] "GET /assets/img/avatars/admin.png HTTP/1.1" 404 -
+127.0.0.1 - - [08/Oct/2025 21:30:09] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 21:30:17] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 21:30:21] "GET /pages/admin/unified-analytics.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 21:30:21] "GET /assets/js/predictive-maintenance.js?v=2025.10.05.1 HTTP/1.1" 304 -
+127.0.0.1 - - [08/Oct/2025 21:30:22] "GET /assets/js/unified-analytics-engine.js?v=2025.10.05.1 HTTP/1.1" 304 -
+127.0.0.1 - - [08/Oct/2025 21:30:40] "GET /pages/admin/email-template.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 21:30:40] "GET /assets/js/modules/email-template.js HTTP/1.1" 200 -
