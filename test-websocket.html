@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Test</title>
+</head>
+<body>
+    <h1>WebSocket Test</h1>
+    <div id="status">Connecting...</div>
+    <div id="messages"></div>
+
+    <script src="assets/js/websocket-client.js"></script>
+    <script>
+        console.log('Testing WebSocket...');
+        
+        try {
+            // Тест простого WebSocket
+            const simpleWs = new WebSocket('ws://localhost:3002');
+            
+            simpleWs.onopen = () => {
+                document.getElementById('status').textContent = '✅ Simple WebSocket Connected';
+                console.log('✅ Simple WebSocket connected');
+            };
+            
+            simpleWs.onerror = (error) => {
+                document.getElementById('status').textContent = '❌ Simple WebSocket Error';
+                console.error('❌ Simple WebSocket error:', error);
+            };
+            
+            // Тест WebSocketClient класу
+            setTimeout(() => {
+                try {
+                    const client = new WebSocketClient('ws://localhost:3002');
+                    console.log('✅ WebSocketClient class works');
+                    
+                    client.on('connected', () => {
+                        console.log('✅ WebSocketClient connected');
+                        const messages = document.getElementById('messages');
+                        messages.innerHTML += '<p>✅ WebSocketClient connected</p>';
+                    });
+                    
+                } catch (clientError) {
+                    console.error('❌ WebSocketClient error:', clientError);
+                    const messages = document.getElementById('messages');
+                    messages.innerHTML += '<p>❌ WebSocketClient error: ' + clientError.message + '</p>';
+                }
+            }, 1000);
+            
+        } catch (error) {
+            console.error('❌ General error:', error);
+            document.getElementById('status').textContent = '❌ Error: ' + error.message;
+        }
+    </script>
+</body>
+</html>
