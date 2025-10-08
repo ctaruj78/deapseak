@@ -254,7 +254,7 @@
                         </li>
 
                         <li class="nav-item">
-                            <a href="../ai-assistant/ai-assistant.html" class="nav-link">
+                            <a href="../ai-assistant/dashboard.html" class="nav-link">
                                 <i class="nav-icon fas fa-robot"></i>
                                 <p>AI Асистент</p>
                             </a>
@@ -430,11 +430,11 @@
                                             </a>
                                         </div>
                                     </div>
-                                    <!-- Quick Actions -->
+                                    <!-- Додаткові дії -->
                                     <div class="row mt-3">
                                         <div class="col-12">
                                             <hr>
-                                            <h6 class="text-muted mb-3">Швидкі дії</h6>
+                                            <h6 class="text-muted mb-3">Додаткові функції</h6>
                                         </div>
                                         <div class="col-md-3 col-sm-6 mb-3">
                                             <a href="profile.html" class="quick-action-btn">
@@ -451,17 +451,17 @@
                                             </a>
                                         </div>
                                         <div class="col-md-3 col-sm-6 mb-3">
-                                            <a href="../qr/qr-management.html" class="quick-action-btn">
+                                            <a href="qr-management.html" class="quick-action-btn">
                                                 <i class="fas fa-qrcode text-success"></i>
                                                 <h6>QR коди</h6>
                                                 <p class="text-muted small mb-0">Управління QR кодами</p>
                                             </a>
                                         </div>
                                         <div class="col-md-3 col-sm-6 mb-3">
-                                            <a href="unified-analytics.html" class="quick-action-btn">
-                                                <i class="fas fa-chart-line text-warning"></i>
-                                                <h6>Аналітика</h6>
-                                                <p class="text-muted small mb-0">Звіти та аналітика системи</p>
+                                            <a href="predictive-maintenance.html" class="quick-action-btn">
+                                                <i class="fas fa-brain text-warning"></i>
+                                                <h6>AI Прогноз</h6>
+                                                <p class="text-muted small mb-0">Прогностичне обслуговування</p>
                                             </a>
                                         </div>
                                     </div>
@@ -613,6 +613,15 @@
 
         // Оновлення даних кожні 30 секунд
         setInterval(loadDashboardData, 30000);
+
+        // Функція виходу
+        function logout() {
+            if (confirm('Ви впевнені, що хочете вийти?')) {
+                localStorage.removeItem('lm_session');
+                sessionStorage.clear();
+                window.location.href = '../../login.html';
+            }
+        }
     </script>
 </body>
 </html>
