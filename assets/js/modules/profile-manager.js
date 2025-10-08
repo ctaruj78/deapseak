@@ -1,17 +1,59 @@
 class ProfileManager {
     constructor() {
+        this.apiUrl = 'http://localhost:3001/api';
+        this.wsClient = null;
         this.userData = null;
         this.userStats = null;
+        this.users = [];
+        this.selectedUser = null;
+        this.userId = localStorage.getItem('userId') || 'profile-admin-001';
         this.init();
     }
 
-    init() {
+    async init() {
         this.loadUserData();
         this.loadUserStats();
+        await this.setupWebSocket();
+        await this.loadUsers();
         this.setupEventListeners();
         this.updateUI();
         this.loadActivity();
         this.loadSessions();
+        this.setupRealTimeFeatures();
+    }
+
+    async setupWebSocket() {
+        if (typeof WebSocketUtils !== 'undefined') {
+            this.wsClient = WebSocketUtils.init(this.userId, localStorage.getItem('authToken'));
+            
+            this.wsClient.on('user_profile_updated', (data) => {
+                this.handleProfileUpdate(data);
+            });
+            
+            this.wsClient.on('user_status_changed', (data) => {
+                this.handleUserStatusChange(data);
+            });
+
+            this.wsClient.on('permission_changed', (data) => {
+                this.handlePermissionChange(data);
+            });
+
+            this.wsClient.on('user_created', (data) => {
+                this.handleUserCreated(data);
+            });
+
+            this.wsClient.on('user_deleted', (data) => {
+                this.handleUserDeleted(data);
+            });
+            
+            console.log('🔌 WebSocket підключено до Profile Manager');
+        }
+    }
+
+    setupRealTimeFeatures() {
+        // Відправка статусу активності
+        this.broadcastUserActivity();
+        setInterval(() => this.broadcastUserActivity(), 60000); // Кожну хвилину
     }
 
     setupEventListeners() {
@@ -451,6 +493,130 @@ class ProfileManager {
         $('#toastContainer').append(toast);
         toast.toast({ delay: 3000 }).toast('show');
         toast.on('hidden.bs.toast', function () { $(this).remove(); });
+    }
+
+    // ===================================
+    // WEBSOCKET REAL-TIME ФУНКЦІОНАЛЬНІСТЬ
+    // ===================================
+
+    broadcastUserActivity() {
+        if (this.wsClient) {
+            this.wsClient.send({
+                type: 'user_activity',
+                data: {
+                    userId: this.userId,
+                    activity: 'profile_management',
+                    timestamp: new Date().toISOString(),
+                    page: window.location.pathname
+                }
+            });
+        }
+    }
+
+    handleProfileUpdate(data) {
+        console.log('👤 Профіль оновлено:', data);
+        
+        if (data.userId === this.userId) {
+            // Оновити свій профіль
+            this.userData = { ...this.userData, ...data.updates };
+            this.updateUI();
+            this.showNotification('Ваш профіль оновлено', 'success');
+        } else {
+            // Оновити інформацію іншого користувача
+            this.showNotification(`Профіль користувача оновлено`, 'info');
+        }
+    }
+
+    handleUserStatusChange(data) {
+        console.log('🔄 Статус користувача змінено:', data);
+        this.showNotification(`Користувач ${data.status === 'online' ? 'онлайн' : 'офлайн'}`, 'info');
+    }
+
+    handlePermissionChange(data) {
+        console.log('🔐 Права доступу змінено:', data);
+        this.showNotification('Права доступу оновлено', 'warning');
+    }
+
+    handleUserCreated(data) {
+        console.log('👤 Новий користувач:', data);
+        this.showNotification(`Новий користувач: ${data.user.firstName}`, 'success');
+    }
+
+    handleUserDeleted(data) {
+        console.log('🗑️ Користувач видалено:', data);
+        this.showNotification('Користувач видалено з системи', 'danger');
+    }
+
+    async loadUsers() {
+        try {
+            const token = localStorage.getItem('authToken');
+            const response = await fetch(`${this.apiUrl}/users`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                this.users = await response.json();
+            } else {
+                this.users = this.getTestUsers();
+            }
+        } catch (error) {
+            console.warn('Використовую тестових користувачів:', error);
+            this.users = this.getTestUsers();
+        }
+    }
+
+    getTestUsers() {
+        return [
+            {
+                id: '1',
+                firstName: 'Олександр',
+                lastName: 'Іваненко',
+                email: 'alex@liftmaster.com',
+                role: 'admin',
+                status: 'active',
+                isOnline: true,
+                department: 'Управління'
+            },
+            {
+                id: '2',
+                firstName: 'Марія',
+                lastName: 'Петренко',
+                email: 'maria@liftmaster.com',
+                role: 'dispatcher',
+                status: 'active',
+                isOnline: true,
+                department: 'Диспетчерська'
+            }
+        ];
+    }
+
+    // Синхронізація профілю
+    async syncProfile() {
+        if (this.wsClient) {
+            this.wsClient.send({
+                type: 'profile_sync_request',
+                data: {
+                    userId: this.userId,
+                    timestamp: new Date().toISOString()
+                }
+            });
+        }
+    }
+
+    // Оповіщення про зміни профілю
+    notifyProfileChange(changes) {
+        if (this.wsClient) {
+            this.wsClient.send({
+                type: 'profile_change_notification',
+                data: {
+                    userId: this.userId,
+                    changes,
+                    timestamp: new Date().toISOString()
+                }
+            });
+        }
     }
 }
 

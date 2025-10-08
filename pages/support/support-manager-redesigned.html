@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support Manager - DeapSeak CRM</title>
+    
+    <!-- Ваші власні CSS стилі -->
+    <link rel="stylesheet" href="../../assets/css/main.css">
+    <link rel="stylesheet" href="../../assets/css/modern-styles.css">
+    <link rel="stylesheet" href="../../assets/css/responsive.css">
+    
+    <!-- Font Awesome для іконок -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Bootstrap для сітки (мінімальна версія) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap-grid.min.css">
+    
+    <style>
+        /* Спеціальні стилі для Support Manager з вашим дизайном */
+        body {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%, #dee2e6 100%);
+        }
+        
+        .main-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 15px 0;
+            box-shadow: var(--shadow-lg);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .main-header h1 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .main-header .breadcrumb {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 15px;
+            border-radius: var(--border-radius);
+            margin: 0;
+        }
+        
+        .main-header .breadcrumb-item {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .main-header .breadcrumb-item.active {
+            color: white;
+        }
+        
+        .main-header .breadcrumb-item a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        
+        .stat-card-header {
+            background: linear-gradient(135deg, var(--info) 0%, #138496 100%);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .stat-card-header.success {
+            background: linear-gradient(135deg, var(--success) 0%, #1e7e34 100%);
+        }
+        
+        .stat-card-header.warning {
+            background: linear-gradient(135deg, var(--warning) 0%, #e0a800 100%);
+        }
+        
+        .stat-card-header.danger {
+            background: linear-gradient(135deg, var(--danger) 0%, #bd2130 100%);
+        }
+        
+        .stat-card-body {
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .stat-label {
+            font-size: 1rem;
+            color: var(--secondary);
+            margin-top: 5px;
+        }
+        
+        .filters-card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 30px;
+        }
+        
+        .filters-card-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+        }
+        
+        .filters-card-body {
+            padding: 20px;
+        }
+        
+        .filter-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+            gap: 15px;
+            align-items: end;
+        }
+        
+        .tickets-container {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+        
+        .ticket-item {
+            border-bottom: 1px solid #eee;
+            padding: 20px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .ticket-item:hover {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+        
+        .ticket-item:last-child {
+            border-bottom: none;
+        }
+        
+        .ticket-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .ticket-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin: 0;
+        }
+        
+        .ticket-meta {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .ticket-description {
+            color: var(--secondary);
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .ticket-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .ticket-tags {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .ticket-tag {
+            background: rgba(0, 123, 255, 0.1);
+            color: var(--primary);
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .ticket-assignee {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: var(--secondary);
+        }
+        
+        .assignee-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid var(--primary);
+        }
+        
+        .priority-high { border-left: 4px solid var(--danger); }
+        .priority-medium { border-left: 4px solid var(--warning); }
+        .priority-low { border-left: 4px solid var(--success); }
+        .priority-urgent { border-left: 4px solid #8B0000; }
+        
+        .faq-section {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            margin-top: 30px;
+        }
+        
+        .faq-header {
+            background: linear-gradient(135deg, var(--elevator-blue) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+        }
+        
+        .faq-item {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            transition: background 0.2s ease;
+        }
+        
+        .faq-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .faq-item:last-child {
+            border-bottom: none;
+        }
+        
+        .faq-question {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .faq-answer {
+            color: var(--secondary);
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        
+        .faq-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--secondary);
+        }
+        
+        .notifications-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            width: 400px;
+        }
+        
+        .notification {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 10px;
+            overflow: hidden;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .notification-header {
+            padding: 10px 15px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .notification-header.info {
+            background: linear-gradient(135deg, var(--info) 0%, #138496 100%);
+            color: white;
+        }
+        
+        .notification-header.success {
+            background: linear-gradient(135deg, var(--success) 0%, #1e7e34 100%);
+            color: white;
+        }
+        
+        .notification-header.warning {
+            background: linear-gradient(135deg, var(--warning) 0%, #e0a800 100%);
+            color: white;
+        }
+        
+        .notification-header.danger {
+            background: linear-gradient(135deg, var(--danger) 0%, #bd2130 100%);
+            color: white;
+        }
+        
+        .notification-body {
+            padding: 15px;
+            color: var(--dark);
+        }
+        
+        .quick-actions {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            margin-top: 30px;
+        }
+        
+        .quick-actions-header {
+            background: linear-gradient(135deg, var(--elevator-green) 0%, var(--success) 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+        }
+        
+        .quick-actions-body {
+            padding: 20px;
+        }
+        
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            border: 2px solid transparent;
+            border-radius: var(--border-radius);
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: var(--dark);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .action-btn:hover {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .filter-row {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .notifications-container {
+                width: calc(100% - 40px);
+                left: 20px;
+            }
+            
+            .ticket-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .ticket-footer {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Головний хедер -->
+    <header class="main-header">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h1>
+                        <i class="fas fa-headset"></i>
+                        Support Manager
+                    </h1>
+                </div>
+                <div class="col-md-6 text-end">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="../admin/admin-dashboard.html">
+                                    <i class="fas fa-home"></i> Головна
+                                </a>
+                            </li>
+                            <li class="breadcrumb-item active">Support Manager</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Основний контент -->
+    <main class="container-fluid py-4">
+        
+        <!-- Статус з'єднання -->
+        <div class="alert alert-info mb-4" role="alert" id="connection-alert">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-info-circle me-3"></i>
+                <div>
+                    <strong>Support Manager</strong> - Real-time система підтримки клієнтів
+                    <br>
+                    <small>
+                        Статус з'єднання: 
+                        <span id="connection-status" class="badge bg-success">Підключено</span>
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Статистика -->
+        <div class="stats-grid" id="stats-section">
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <i class="fas fa-ticket-alt fa-2x"></i>
+                    <span>Всього тікетів</span>
+                </div>
+                <div class="stat-card-body">
+                    <div class="stat-number" id="total-tickets">0</div>
+                    <div class="stat-label">Загальна кількість</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-header warning">
+                    <i class="fas fa-clock fa-2x"></i>
+                    <span>Відкриті</span>
+                </div>
+                <div class="stat-card-body">
+                    <div class="stat-number" id="open-tickets">0</div>
+                    <div class="stat-label">Потребують уваги</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-header danger">
+                    <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    <span>Високий пріоритет</span>
+                </div>
+                <div class="stat-card-body">
+                    <div class="stat-number" id="high-priority-tickets">0</div>
+                    <div class="stat-label">Термінові питання</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-header success">
+                    <i class="fas fa-check-circle fa-2x"></i>
+                    <span>Вирішені</span>
+                </div>
+                <div class="stat-card-body">
+                    <div class="stat-number" id="resolved-tickets">0</div>
+                    <div class="stat-label">Успішно закриті</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Фільтри та пошук -->
+        <div class="filters-card">
+            <div class="filters-card-header">
+                <h3 class="m-0">
+                    <i class="fas fa-filter"></i>
+                    Фільтри та пошук
+                </h3>
+            </div>
+            <div class="filters-card-body">
+                <div class="filter-row">
+                    <div class="form-group">
+                        <label for="ticket-search">Пошук тікетів</label>
+                        <input type="text" id="ticket-search" class="form-control" 
+                               placeholder="Пошук за заголовком або описом...">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="priority-filter">Пріоритет</label>
+                        <select id="priority-filter" class="form-control">
+                            <option value="">Всі пріоритети</option>
+                            <option value="low">Низький</option>
+                            <option value="medium">Середній</option>
+                            <option value="high">Високий</option>
+                            <option value="urgent">Критичний</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="status-filter">Статус</label>
+                        <select id="status-filter" class="form-control">
+                            <option value="">Всі статуси</option>
+                            <option value="open">Відкриті</option>
+                            <option value="in_progress">В роботі</option>
+                            <option value="resolved">Вирішені</option>
+                            <option value="closed">Закриті</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="category-filter">Категорія</label>
+                        <select id="category-filter" class="form-control">
+                            <option value="">Всі категорії</option>
+                            <option value="technical">Технічні</option>
+                            <option value="access">Доступ</option>
+                            <option value="general">Загальні</option>
+                            <option value="billing">Білінг</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-primary" onclick="supportManager.refreshTickets()">
+                                <i class="fas fa-sync"></i>
+                            </button>
+                            <button class="btn btn-secondary" onclick="supportManager.exportTickets()">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Тікети -->
+            <div class="col-lg-8">
+                <div class="tickets-container">
+                    <div class="filters-card-header">
+                        <h3 class="m-0">
+                            <i class="fas fa-list"></i>
+                            Тікети підтримки
+                        </h3>
+                    </div>
+                    <div id="tickets-list">
+                        <!-- Тікети будуть завантажені динамічно -->
+                        <div class="text-center p-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Завантаження...</span>
+                            </div>
+                            <p class="mt-3">Завантаження тікетів...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ та швидкі дії -->
+            <div class="col-lg-4">
+                <!-- FAQ секція -->
+                <div class="faq-section">
+                    <div class="faq-header">
+                        <h4 class="m-0">
+                            <i class="fas fa-question-circle"></i>
+                            Часті питання
+                        </h4>
+                    </div>
+                    <div id="faq-list">
+                        <!-- FAQ будуть завантажені динамічно -->
+                    </div>
+                </div>
+
+                <!-- Швидкі дії -->
+                <div class="quick-actions">
+                    <div class="quick-actions-header">
+                        <h4 class="m-0">
+                            <i class="fas fa-bolt"></i>
+                            Швидкі дії
+                        </h4>
+                    </div>
+                    <div class="quick-actions-body">
+                        <div class="action-grid">
+                            <a href="#" class="action-btn" onclick="supportManager.escalateUrgent(); return false;">
+                                <i class="fas fa-arrow-up"></i>
+                                Ескалація
+                            </a>
+                            <a href="#" class="action-btn" onclick="supportManager.bulkResolve(); return false;">
+                                <i class="fas fa-check-double"></i>
+                                Масове вирішення
+                            </a>
+                            <a href="#" class="action-btn" onclick="supportManager.generateReport(); return false;">
+                                <i class="fas fa-chart-bar"></i>
+                                Звіт
+                            </a>
+                            <a href="#" class="action-btn" onclick="supportManager.sendBroadcast(); return false;">
+                                <i class="fas fa-bullhorn"></i>
+                                Розсилка
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Контейнер для нотифікацій -->
+    <div id="notifications-container" class="notifications-container">
+        <!-- Нотифікації будуть додані динамічно -->
+    </div>
+
+    <!-- Модальне вікно деталей тікета (буде створено динамічно) -->
+    <div id="ticket-modal-container"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- WebSocket клієнт -->
+    <script src="../../assets/js/websocket-client.js"></script>
+    
+    <!-- Support Manager модуль (адаптований) -->
+    <script src="../../assets/js/modules/support-manager-redesigned.js"></script>
+    
+    <script>
+        // Ініціалізація після завантаження сторінки
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎧 Support Manager (Redesigned) завантажено');
+            
+            // Оновлення статусу з'єднання
+            function updateConnectionStatus() {
+                const statusElement = document.getElementById('connection-status');
+                if (typeof supportManager !== 'undefined' && supportManager.wsClient) {
+                    statusElement.className = 'badge bg-success';
+                    statusElement.textContent = 'Підключено';
+                } else {
+                    statusElement.className = 'badge bg-warning';
+                    statusElement.textContent = 'Підключення...';
+                }
+            }
+
+            // Перевіряти статус кожні 5 секунд
+            setInterval(updateConnectionStatus, 5000);
+            
+            // Початкова перевірка через 1 секунду
+            setTimeout(updateConnectionStatus, 1000);
+            
+            // Клавіатурні скорочення
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && e.key === 'r') {
+                    e.preventDefault();
+                    if (typeof supportManager !== 'undefined') {
+                        supportManager.refreshTickets();
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

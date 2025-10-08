@@ -6,6 +6,7 @@
   "dependencies": {
     "bcryptjs": "^3.0.2",
     "chart.js": "^4.5.0",
+    "concurrently": "^9.2.1",
     "cors": "^2.8.5",
     "emailjs-com": "^3.2.0",
     "express": "^5.1.0",
@@ -17,6 +18,13 @@
     "morgan": "^1.10.1",
     "toastr": "^2.1.4",
     "winston": "^3.17.0",
+    "ws": "^8.18.3",
     "xlsx": "^0.18.5"
+  },
+  "scripts": {
+    "start": "node api-server.js",
+    "websocket": "node websocket-server.js",
+    "dev": "concurrently \"npm run start\" \"npm run websocket\"",
+    "test": "jest"
   }
 }
