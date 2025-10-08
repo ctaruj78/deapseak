@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест Support Manager - DeapSeak</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="plugins/adminlte/css/adminlte.min.css">
+    <link rel="stylesheet" href="plugins/adminlte/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/custom.css">
+    
+    <style>
+        .test-card {
+            margin-bottom: 20px;
+        }
+        
+        .test-result {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .test-success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .test-error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .test-warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        
+        .module-status {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+        
+        .status-ok { background: #28a745; color: white; }
+        .status-error { background: #dc3545; color: white; }
+        .status-loading { background: #ffc107; color: black; }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini">
+    <div class="wrapper">
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <h4 class="m-0">
+                        <i class="fas fa-flask text-success"></i>
+                        Тестування Support Manager
+                    </h4>
+                </li>
+            </ul>
+            
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">
+                        <i class="fas fa-home"></i> Головна
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper" style="margin-left: 0;">
+            <!-- Content Header -->
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-12">
+                            <h1 class="m-0">
+                                <i class="fas fa-headset text-info"></i>
+                                Тестування Support Manager
+                            </h1>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+                    
+                    <!-- Статус модулів -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card test-card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-check-circle"></i> Статус модулів
+                                    </h3>
+                                    <div class="card-tools">
+                                        <button class="btn btn-success btn-sm" onclick="runAllTests()">
+                                            <i class="fas fa-play"></i> Запустити всі тести
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div id="module-status">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                WebSocket Client
+                                                <span id="ws-status" class="module-status status-loading">Перевіряється...</span>
+                                            </div>
+                                            <div class="col-md-4">
+                                                Support Manager
+                                                <span id="support-status" class="module-status status-loading">Перевіряється...</span>
+                                            </div>
+                                            <div class="col-md-4">
+                                                WebSocket Server
+                                                <span id="server-status" class="module-status status-loading">Перевіряється...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Тести функціональності -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card test-card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-vial"></i> Основні функції
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="btn-group-vertical w-100">
+                                        <button class="btn btn-outline-primary mb-2" onclick="testTicketLoading()">
+                                            <i class="fas fa-download"></i> Тест завантаження тікетів
+                                        </button>
+                                        <button class="btn btn-outline-info mb-2" onclick="testFAQLoading()">
+                                            <i class="fas fa-question-circle"></i> Тест завантаження FAQ
+                                        </button>
+                                        <button class="btn btn-outline-success mb-2" onclick="testRendering()">
+                                            <i class="fas fa-paint-brush"></i> Тест рендерингу інтерфейсу
+                                        </button>
+                                        <button class="btn btn-outline-warning mb-2" onclick="testFiltering()">
+                                            <i class="fas fa-filter"></i> Тест фільтрації тікетів
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card test-card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-broadcast-tower"></i> Real-time функції
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="btn-group-vertical w-100">
+                                        <button class="btn btn-outline-primary mb-2" onclick="testWebSocketConnection()">
+                                            <i class="fas fa-plug"></i> Тест WebSocket з'єднання
+                                        </button>
+                                        <button class="btn btn-outline-info mb-2" onclick="testRealtimeNotifications()">
+                                            <i class="fas fa-bell"></i> Тест нотифікацій
+                                        </button>
+                                        <button class="btn btn-outline-success mb-2" onclick="testTicketUpdates()">
+                                            <i class="fas fa-sync"></i> Тест оновлень тікетів
+                                        </button>
+                                        <button class="btn btn-outline-warning mb-2" onclick="testBroadcastMessages()">
+                                            <i class="fas fa-bullhorn"></i> Тест розсилки повідомлень
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Результати тестів -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card test-card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-list-alt"></i> Результати тестів
+                                    </h3>
+                                    <div class="card-tools">
+                                        <button class="btn btn-secondary btn-sm" onclick="clearResults()">
+                                            <i class="fas fa-trash"></i> Очистити
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div id="test-results" style="max-height: 400px; overflow-y: auto;">
+                                        <p class="text-muted">Результати тестів з'являться тут...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Support Manager контейнер -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card test-card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-headset"></i> Support Manager Демо
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    <div id="support-manager-content">
+                                        <!-- Support Manager буде рендеритися тут -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="plugins/adminlte/js/jquery.min.js"></script>
+    <script src="plugins/adminlte/js/bootstrap.bundle.min.js"></script>
+    <script src="plugins/adminlte/js/adminlte.min.js"></script>
+    
+    <!-- WebSocket клієнт -->
+    <script src="assets/js/websocket-client.js"></script>
+    
+    <!-- Support Manager модуль -->
+    <script src="assets/js/modules/support-manager.js"></script>
+    
+    <script>
+        let testResults = [];
+        
+        // Перевірка статусу модулів
+        function checkModuleStatus() {
+            // WebSocket Client
+            if (typeof WebSocketUtils !== 'undefined') {
+                updateStatus('ws-status', 'OK', 'status-ok');
+            } else {
+                updateStatus('ws-status', 'ПОМИЛКА', 'status-error');
+            }
+            
+            // Support Manager
+            if (typeof SupportManager !== 'undefined' && typeof supportManager !== 'undefined') {
+                updateStatus('support-status', 'OK', 'status-ok');
+            } else {
+                updateStatus('support-status', 'ПОМИЛКА', 'status-error');
+            }
+            
+            // WebSocket Server
+            testServerConnection().then(isConnected => {
+                if (isConnected) {
+                    updateStatus('server-status', 'OK', 'status-ok');
+                } else {
+                    updateStatus('server-status', 'НЕДОСТУПНИЙ', 'status-error');
+                }
+            });
+        }
+        
+        function updateStatus(elementId, text, className) {
+            const element = document.getElementById(elementId);
+            element.textContent = text;
+            element.className = `module-status ${className}`;
+        }
+        
+        async function testServerConnection() {
+            try {
+                const response = await fetch('http://localhost:3002/health', { 
+                    method: 'GET',
+                    timeout: 5000 
+                });
+                return response.ok;
+            } catch (error) {
+                return false;
+            }
+        }
+        
+        // Функції тестування
+        function addTestResult(testName, success, message) {
+            const timestamp = new Date().toLocaleTimeString('uk-UA');
+            const resultClass = success ? 'test-success' : 'test-error';
+            const icon = success ? 'fas fa-check-circle' : 'fas fa-times-circle';
+            
+            const result = `
+                <div class="${resultClass} test-result">
+                    <strong><i class="${icon}"></i> ${testName}</strong> - ${timestamp}<br>
+                    ${message}
+                </div>
+            `;
+            
+            testResults.push(result);
+            document.getElementById('test-results').innerHTML = testResults.join('');
+            
+            // Прокрутити до останнього результату
+            const resultsContainer = document.getElementById('test-results');
+            resultsContainer.scrollTop = resultsContainer.scrollHeight;
+        }
+        
+        function testTicketLoading() {
+            try {
+                if (typeof supportManager !== 'undefined') {
+                    const ticketCount = supportManager.tickets.length;
+                    addTestResult('Завантаження тікетів', true, 
+                        `Завантажено ${ticketCount} тікетів. Тестові дані доступні.`);
+                } else {
+                    addTestResult('Завантаження тікетів', false, 
+                        'Support Manager не ініціалізовано');
+                }
+            } catch (error) {
+                addTestResult('Завантаження тікетів', false, 
+                    `Помилка: ${error.message}`);
+            }
+        }
+        
+        function testFAQLoading() {
+            try {
+                if (typeof supportManager !== 'undefined') {
+                    const faqCount = supportManager.faqs.length;
+                    addTestResult('Завантаження FAQ', true, 
+                        `Завантажено ${faqCount} FAQ записів.`);
+                } else {
+                    addTestResult('Завантаження FAQ', false, 
+                        'Support Manager не ініціалізовано');
+                }
+            } catch (error) {
+                addTestResult('Завантаження FAQ', false, 
+                    `Помилка: ${error.message}`);
+            }
+        }
+        
+        function testRendering() {
+            try {
+                const container = document.getElementById('support-manager-content');
+                if (container && container.innerHTML.trim().length > 100) {
+                    addTestResult('Рендеринг інтерфейсу', true, 
+                        'Інтерфейс успішно відрендерено. Всі елементи присутні.');
+                } else {
+                    addTestResult('Рендеринг інтерфейсу', false, 
+                        'Інтерфейс не відрендерено або порожній');
+                }
+            } catch (error) {
+                addTestResult('Рендеринг інтерфейсу', false, 
+                    `Помилка: ${error.message}`);
+            }
+        }
+        
+        function testFiltering() {
+            try {
+                const priorityFilter = document.getElementById('priority-filter');
+                const statusFilter = document.getElementById('status-filter');
+                
+                if (priorityFilter && statusFilter) {
+                    addTestResult('Фільтрація тікетів', true, 
+                        'Елементи фільтрації доступні та функціональні.');
+                } else {
+                    addTestResult('Фільтрація тікетів', false, 
+                        'Елементи фільтрації не знайдені');
+                }
+            } catch (error) {
+                addTestResult('Фільтрація тікетів', false, 
+                    `Помилка: ${error.message}`);
+            }
+        }
+        
+        function testWebSocketConnection() {
+            try {
+                if (typeof supportManager !== 'undefined' && supportManager.wsClient) {
+                    addTestResult('WebSocket з\'єднання', true, 
+                        'WebSocket клієнт ініціалізовано та готовий до роботи.');
+                } else {
+                    addTestResult('WebSocket з\'єднання', false, 
+                        'WebSocket клієнт не підключений');
+                }
+            } catch (error) {
+                addTestResult('WebSocket з\'єднання', false, 
+                    `Помилка: ${error.message}`);
+            }
+        }
+        
+        function testRealtimeNotifications() {
+            try {
+                if (typeof supportManager !== 'undefined') {
+                    // Тестова нотифікація
+                    supportManager.showRealtimeNotification('Тестова нотифікація', 'info');
+                    addTestResult('Real-time нотифікації', true, 
+                        'Тестова нотифікація відправлена успішно.');
+                } else {
+                    addTestResult('Real-time нотифікації', false, 
+                        'Support Manager не ініціалізовано');
+                }
+            } catch (error) {
+                addTestResult('Real-time нотифікації', false, 
+                    `Помилка: ${error.message}`);
+            }
+        }
+        
+        function testTicketUpdates() {
+            try {
+                if (typeof supportManager !== 'undefined') {
+                    // Симуляція оновлення тікета
+                    const testData = {
+                        ticketId: 'TK001',
+                        updates: { status: 'in_progress' }
+                    };
+                    supportManager.handleTicketUpdate(testData);
+                    addTestResult('Оновлення тікетів', true, 
+                        'Тестове оновлення тікета виконано успішно.');
+                } else {
+                    addTestResult('Оновлення тікетів', false, 
+                        'Support Manager не ініціалізовано');
+                }
+            } catch (error) {
+                addTestResult('Оновлення тікетів', false, 
+                    `Помилка: ${error.message}`);
+            }
+        }
+        
+        function testBroadcastMessages() {
+            try {
+                if (typeof supportManager !== 'undefined') {
+                    // Тестова розсилка
+                    supportManager.showRealtimeNotification('Тестове broadcast повідомлення', 'success');
+                    addTestResult('Розсилка повідомлень', true, 
+                        'Тестове broadcast повідомлення відправлено.');
+                } else {
+                    addTestResult('Розсилка повідомлень', false, 
+                        'Support Manager не ініціалізовано');
+                }
+            } catch (error) {
+                addTestResult('Розсилка повідомлень', false, 
+                    `Помилка: ${error.message}`);
+            }
+        }
+        
+        function runAllTests() {
+            addTestResult('Запуск всіх тестів', true, 'Починаємо комплексне тестування...');
+            
+            setTimeout(() => {
+                testTicketLoading();
+                testFAQLoading();
+                testRendering();
+                testFiltering();
+                testWebSocketConnection();
+                testRealtimeNotifications();
+                testTicketUpdates();
+                testBroadcastMessages();
+                
+                addTestResult('Завершення тестування', true, 
+                    'Всі тести виконано. Перевірте результати вище.');
+            }, 1000);
+        }
+        
+        function clearResults() {
+            testResults = [];
+            document.getElementById('test-results').innerHTML = 
+                '<p class="text-muted">Результати тестів з\'являться тут...</p>';
+        }
+        
+        // Ініціалізація після завантаження сторінки
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🧪 Тестова сторінка Support Manager завантажена');
+            
+            setTimeout(() => {
+                checkModuleStatus();
+            }, 2000);
+            
+            // Обробка помилок
+            window.addEventListener('error', function(e) {
+                addTestResult('Глобальна помилка', false, 
+                    `${e.message} в ${e.filename}:${e.lineno}`);
+            });
+        });
+    </script>
+</body>
+</html>

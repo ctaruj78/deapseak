@@ -2947,6 +2947,150 @@ app.get("/api/chat/search", authenticateToken, async (req, res) => {
     }
 });
 
+// ===================================
+// FILE SYSTEM API - Upload/Download
+// ===================================
+
+const FileSystemManager = require('./file-system-manager');
+const fileManager = new FileSystemManager();
+
+// Upload файлу
+app.post('/api/files/upload', authenticateToken, async (req, res) => {
+    try {
+        const { fileName, fileData, chatId } = req.body;
+        
+        if (!fileName || !fileData) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Необхідно вказати ім\'я файлу та дані' 
+            });
+        }
+
+        // Декодуємо base64 дані
+        const fileBuffer = Buffer.from(fileData, 'base64');
+        
+        const fileMetadata = await fileManager.uploadFile(
+            fileBuffer, 
+            fileName, 
+            req.user.id, 
+            chatId
+        );
+
+        res.json({
+            success: true,
+            file: fileMetadata
+        });
+
+    } catch (error) {
+        console.error("Помилка завантаження файлу:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
+});
+
+// Download файлу
+app.get('/api/files/download/:fileId', async (req, res) => {
+    try {
+        const { fileId } = req.params;
+        
+        const { buffer, metadata } = await fileManager.downloadFile(fileId);
+        
+        res.setHeader('Content-Type', metadata.mimeType);
+        res.setHeader('Content-Disposition', `attachment; filename="${metadata.originalName}"`);
+        res.setHeader('Content-Length', buffer.length);
+        
+        res.send(buffer);
+
+    } catch (error) {
+        console.error("Помилка завантаження файлу:", error);
+        res.status(404).json({ 
+            success: false, 
+            message: 'Файл не знайдено' 
+        });
+    }
+});
+
+// Перегляд файлу (для зображень)
+app.get('/api/files/view/:fileId', async (req, res) => {
+    try {
+        const { fileId } = req.params;
+        
+        const { buffer, metadata } = await fileManager.downloadFile(fileId);
+        
+        res.setHeader('Content-Type', metadata.mimeType);
+        res.send(buffer);
+
+    } catch (error) {
+        console.error("Помилка перегляду файлу:", error);
+        res.status(404).json({ 
+            success: false, 
+            message: 'Файл не знайдено' 
+        });
+    }
+});
+
+// Видалення файлу
+app.delete('/api/files/:fileId', authenticateToken, async (req, res) => {
+    try {
+        const { fileId } = req.params;
+        
+        await fileManager.deleteFile(fileId, req.user.id);
+        
+        res.json({
+            success: true,
+            message: 'Файл видалено'
+        });
+
+    } catch (error) {
+        console.error("Помилка видалення файлу:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
+});
+
+// Список файлів чату
+app.get('/api/files/chat/:chatId', authenticateToken, async (req, res) => {
+    try {
+        const { chatId } = req.params;
+        const files = await fileManager.getFilesByChat(chatId);
+        
+        res.json({
+            success: true,
+            files
+        });
+
+    } catch (error) {
+        console.error("Помилка отримання файлів чату:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося отримати файли" 
+        });
+    }
+});
+
+// Статистика файлової системи
+app.get('/api/files/stats', authenticateToken, async (req, res) => {
+    try {
+        const stats = await fileManager.getStorageStats();
+        
+        res.json({
+            success: true,
+            stats
+        });
+
+    } catch (error) {
+        console.error("Помилка отримання статистики:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося отримати статистику" 
+        });
+    }
+});
+
 // Запуск сервера на всіх доступних інтерфейсах (для доступу з мобільних пристроїв)
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`API сервер запущено на http://0.0.0.0:${PORT}`);

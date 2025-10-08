@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест - Support Manager</title>
+    
+    <!-- Тестуємо шляхи -->
+    <link rel="stylesheet" href="../../assets/css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Source Sans Pro', sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 20px;
+        }
+        
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            padding: 30px;
+        }
+        
+        .test-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .test-item {
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid #e9ecef;
+            border-radius: var(--border-radius-sm);
+            transition: all 0.3s ease;
+        }
+        
+        .test-item:hover {
+            border-color: var(--primary);
+            background: rgba(0, 123, 255, 0.05);
+        }
+        
+        .test-success {
+            border-color: var(--success);
+            background: rgba(40, 167, 69, 0.1);
+        }
+        
+        .test-error {
+            border-color: var(--danger);
+            background: rgba(220, 53, 69, 0.1);
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .status-ok { background: var(--success); }
+        .status-error { background: var(--danger); }
+        .status-loading { background: var(--warning); }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1><i class="fas fa-vial"></i> Тест Support Manager</h1>
+            <p>Перевірка завантаження ресурсів та функціональності</p>
+        </div>
+
+        <div id="css-test" class="test-item">
+            <span class="status-indicator status-loading"></span>
+            <strong>CSS Стилі:</strong> Перевіряємо завантаження main.css...
+        </div>
+
+        <div id="js-test" class="test-item">
+            <span class="status-indicator status-loading"></span>
+            <strong>JavaScript:</strong> Перевіряємо модуль Support Manager...
+        </div>
+
+        <div id="websocket-test" class="test-item">
+            <span class="status-indicator status-loading"></span>
+            <strong>WebSocket:</strong> Перевіряємо з'єднання...
+        </div>
+
+        <div id="api-test" class="test-item">
+            <span class="status-indicator status-loading"></span>
+            <strong>API Server:</strong> Перевіряємо доступність...
+        </div>
+
+        <div id="console-errors" class="test-item">
+            <span class="status-indicator status-loading"></span>
+            <strong>Консольні помилки:</strong> <span id="error-count">Перевіряємо...</span>
+        </div>
+
+        <div class="mt-4">
+            <button class="btn btn-primary" onclick="runTests()">
+                <i class="fas fa-play"></i> Запустити тести
+            </button>
+            <button class="btn btn-success" onclick="goToSupportManager()">
+                <i class="fas fa-arrow-right"></i> Перейти до Support Manager
+            </button>
+        </div>
+
+        <div id="console-log" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: var(--border-radius-sm); font-family: monospace; font-size: 0.9rem; max-height: 300px; overflow-y: auto;">
+            <strong>Консоль:</strong><br>
+            <div id="log-content">Логи з'являться тут...</div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../../assets/js/websocket-client.js"></script>
+    <script src="../../assets/js/modules/support-manager-redesigned.js"></script>
+    
+    <script>
+        let errorCount = 0;
+        let originalConsoleError = console.error;
+        let originalConsoleWarn = console.warn;
+        let originalConsoleLog = console.log;
+        
+        // Перехоплюємо консольні повідомлення
+        console.error = function(...args) {
+            errorCount++;
+            logToPage('ERROR: ' + args.join(' '), 'error');
+            originalConsoleError.apply(console, args);
+        };
+        
+        console.warn = function(...args) {
+            logToPage('WARN: ' + args.join(' '), 'warn');
+            originalConsoleWarn.apply(console, args);
+        };
+        
+        console.log = function(...args) {
+            logToPage('LOG: ' + args.join(' '), 'log');
+            originalConsoleLog.apply(console, args);
+        };
+
+        function logToPage(message, type) {
+            const logContent = document.getElementById('log-content');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = {
+                'error': '#dc3545',
+                'warn': '#ffc107', 
+                'log': '#007bff'
+            }[type] || '#000';
+            
+            logContent.innerHTML += `<div style="color: ${color}; margin: 2px 0;">[${timestamp}] ${message}</div>`;
+            logContent.scrollTop = logContent.scrollHeight;
+        }
+
+        function updateStatus(elementId, status, message) {
+            const element = document.getElementById(elementId);
+            const indicator = element.querySelector('.status-indicator');
+            const text = element.querySelector('strong').nextSibling;
+            
+            indicator.className = `status-indicator status-${status}`;
+            text.textContent = ' ' + message;
+            
+            if (status === 'ok') {
+                element.classList.add('test-success');
+                element.classList.remove('test-error');
+            } else if (status === 'error') {
+                element.classList.add('test-error');
+                element.classList.remove('test-success');
+            }
+        }
+
+        function runTests() {
+            logToPage('🚀 Початок тестування...', 'log');
+            
+            // Тест 1: CSS
+            setTimeout(() => {
+                const styles = getComputedStyle(document.body);
+                if (styles.fontFamily.includes('Source Sans Pro')) {
+                    updateStatus('css-test', 'ok', 'CSS завантажено успішно ✅');
+                } else {
+                    updateStatus('css-test', 'error', 'Помилка завантаження CSS ❌');
+                }
+            }, 100);
+
+            // Тест 2: JavaScript
+            setTimeout(() => {
+                if (typeof SupportManagerRedesigned !== 'undefined') {
+                    updateStatus('js-test', 'ok', 'JavaScript модуль завантажено ✅');
+                } else {
+                    updateStatus('js-test', 'error', 'JavaScript модуль не завантажено ❌');
+                }
+            }, 200);
+
+            // Тест 3: WebSocket
+            setTimeout(() => {
+                if (typeof WebSocketUtils !== 'undefined') {
+                    updateStatus('websocket-test', 'ok', 'WebSocket клієнт доступний ✅');
+                } else {
+                    updateStatus('websocket-test', 'error', 'WebSocket клієнт недоступний ❌');
+                }
+            }, 300);
+
+            // Тест 4: API
+            setTimeout(async () => {
+                try {
+                    const response = await fetch('http://localhost:3001/api/health', { 
+                        timeout: 5000 
+                    });
+                    if (response.ok) {
+                        updateStatus('api-test', 'ok', 'API Server доступний ✅');
+                    } else {
+                        updateStatus('api-test', 'error', 'API Server недоступний ❌');
+                    }
+                } catch (error) {
+                    updateStatus('api-test', 'error', 'API Server недоступний ❌');
+                }
+            }, 400);
+
+            // Тест 5: Консольні помилки
+            setTimeout(() => {
+                const errorCountElement = document.getElementById('error-count');
+                if (errorCount === 0) {
+                    updateStatus('console-errors', 'ok', `Помилок не знайдено ✅`);
+                    errorCountElement.textContent = '0 помилок';
+                } else {
+                    updateStatus('console-errors', 'error', `Знайдено ${errorCount} помилок ❌`);
+                    errorCountElement.textContent = `${errorCount} помилок`;
+                }
+            }, 1000);
+        }
+
+        function goToSupportManager() {
+            window.location.href = 'support-manager-redesigned.html';
+        }
+
+        // Автоматичний запуск тестів
+        window.addEventListener('load', () => {
+            setTimeout(runTests, 500);
+        });
+
+        // Відстеження помилок завантаження
+        window.addEventListener('error', (e) => {
+            logToPage(`❌ Помилка завантаження: ${e.filename}:${e.lineno} - ${e.message}`, 'error');
+        });
+    </script>
+</body>
+</html>

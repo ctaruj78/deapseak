@@ -29,6 +29,12 @@ class ChatSystem {
         this.typingTimeout = null;
         this.lastSeen = new Date();
         
+        // Файлова система
+        this.maxFileSize = 10 * 1024 * 1024; // 10MB
+        this.allowedFileTypes = ['image/*', 'application/pdf', 'application/msword', 
+                                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                                'text/*', 'audio/*', 'video/*'];
+        
         // Стан
         this.isInitialized = false;
         this.isConnected = false;
@@ -1101,6 +1107,294 @@ class ChatSystem {
         setTimeout(() => {
             this.openDirectChat(userId);
         }, 500);
+    }
+
+    // ===================================
+    // ФАЙЛОВА СИСТЕМА
+    // ===================================
+
+    /**
+     * Обробка вибору файлу
+     */
+    handleFileSelect(event) {
+        const files = event.target.files;
+        if (files.length === 0) return;
+
+        for (let i = 0; i < files.length; i++) {
+            this.uploadFile(files[i]);
+        }
+
+        // Очистити input
+        event.target.value = '';
+    }
+
+    /**
+     * Завантаження файлу
+     */
+    async uploadFile(file) {
+        try {
+            // Валідація файлу
+            if (!this.validateFile(file)) {
+                return;
+            }
+
+            // Показати прогрес
+            const progressId = this.showUploadProgress(file.name);
+
+            // Конвертувати в base64
+            const fileData = await this.fileToBase64(file);
+
+            const token = localStorage.getItem('authToken');
+            const chatId = this.getChatId();
+
+            const response = await fetch(`${this.apiUrl}/files/upload`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    fileName: file.name,
+                    fileData,
+                    chatId
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Надіслати повідомлення з файлом
+                await this.sendFileMessage(result.file);
+                this.hideUploadProgress(progressId);
+                
+                toastr.success(`Файл ${file.name} завантажено`);
+            } else {
+                throw new Error(result.message);
+            }
+
+        } catch (error) {
+            console.error('Помилка завантаження файлу:', error);
+            toastr.error(`Не вдалося завантажити файл: ${error.message}`);
+        }
+    }
+
+    /**
+     * Валідація файлу
+     */
+    validateFile(file) {
+        // Перевірка розміру
+        if (file.size > this.maxFileSize) {
+            toastr.error(`Файл занадто великий. Максимум ${this.maxFileSize / 1024 / 1024}MB`);
+            return false;
+        }
+
+        // Перевірка типу
+        const isAllowed = this.allowedFileTypes.some(type => {
+            if (type.endsWith('/*')) {
+                return file.type.startsWith(type.slice(0, -1));
+            }
+            return file.type === type;
+        });
+
+        if (!isAllowed) {
+            toastr.error('Непідтримуваний тип файлу');
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Конвертація файлу в base64
+     */
+    fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const base64 = reader.result.split(',')[1];
+                resolve(base64);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+
+    /**
+     * Надсилання повідомлення з файлом
+     */
+    async sendFileMessage(fileMetadata) {
+        const messageData = {
+            type: 'file',
+            file: fileMetadata,
+            text: `📎 ${fileMetadata.originalName}`
+        };
+
+        if (this.currentChatType === 'direct') {
+            messageData.to = this.currentChat;
+        } else {
+            messageData.chatId = this.currentChat;
+        }
+
+        await this.sendMessage('', messageData);
+    }
+
+    /**
+     * Рендер файлового повідомлення
+     */
+    renderFileMessage(message) {
+        const file = message.file;
+        const isImage = file.category === 'images';
+        const fileSize = this.formatFileSize(file.size);
+        const fileIcon = this.getFileIcon(file.category);
+
+        let fileContent = '';
+
+        if (isImage) {
+            fileContent = `
+                <div class="file-message image-message">
+                    <img src="${file.url}" alt="${file.originalName}" 
+                         class="chat-image" onclick="chatSystem.openImageModal('${file.url}', '${file.originalName}')">
+                    <div class="file-info">
+                        <small class="text-muted">${file.originalName} (${fileSize})</small>
+                    </div>
+                </div>
+            `;
+        } else {
+            fileContent = `
+                <div class="file-message document-message">
+                    <div class="file-icon">
+                        <i class="fas ${fileIcon}"></i>
+                    </div>
+                    <div class="file-details">
+                        <div class="file-name">${file.originalName}</div>
+                        <div class="file-meta text-muted">${fileSize} • ${file.category}</div>
+                    </div>
+                    <div class="file-actions">
+                        <a href="${file.url}" download="${file.originalName}" 
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-download"></i>
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+
+        return fileContent;
+    }
+
+    /**
+     * Показати прогрес завантаження
+     */
+    showUploadProgress(fileName) {
+        const progressId = `upload-${Date.now()}`;
+        const progressHtml = `
+            <div id="${progressId}" class="upload-progress mb-2">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-upload text-primary mr-2"></i>
+                    <div class="flex-grow-1">
+                        <small>${fileName}</small>
+                        <div class="progress progress-sm">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                 style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const messagesContainer = document.getElementById('messages-container');
+        if (messagesContainer) {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = progressHtml;
+            messagesContainer.appendChild(tempDiv.firstElementChild);
+        }
+
+        return progressId;
+    }
+
+    /**
+     * Приховати прогрес завантаження
+     */
+    hideUploadProgress(progressId) {
+        const progressElement = document.getElementById(progressId);
+        if (progressElement) {
+            progressElement.remove();
+        }
+    }
+
+    /**
+     * Форматування розміру файлу
+     */
+    formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    /**
+     * Отримання іконки файлу
+     */
+    getFileIcon(category) {
+        const icons = {
+            images: 'fa-image',
+            documents: 'fa-file-alt',
+            spreadsheets: 'fa-file-excel',
+            presentations: 'fa-file-powerpoint',
+            archives: 'fa-file-archive',
+            audio: 'fa-file-audio',
+            video: 'fa-file-video',
+            other: 'fa-file'
+        };
+        return icons[category] || icons.other;
+    }
+
+    /**
+     * Відкрити модальне вікно зображення
+     */
+    openImageModal(imageUrl, imageName) {
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.innerHTML = `
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">${imageName}</h5>
+                        <button type="button" class="close" data-dismiss="modal">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <img src="${imageUrl}" alt="${imageName}" class="img-fluid">
+                    </div>
+                    <div class="modal-footer">
+                        <a href="${imageUrl}" download="${imageName}" class="btn btn-primary">
+                            <i class="fas fa-download"></i> Завантажити
+                        </a>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        $(modal).modal('show');
+
+        $(modal).on('hidden.bs.modal', () => {
+            modal.remove();
+        });
+    }
+
+    /**
+     * Отримання ID поточного чату
+     */
+    getChatId() {
+        if (this.currentChatType === 'direct') {
+            return `${this.currentUser._id}_${this.currentChat}`;
+        } else {
+            return this.currentChat;
+        }
     }
 }
 

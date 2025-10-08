@@ -10,15 +10,54 @@ class ARHelper {
         this.init();
     }
 
-    init() {
+    async init() {
         console.log('🏗️ Ініціалізація AR помічника...');
         this.loadUserInfo();
         this.loadLiftModels();
         this.setupEventListeners();
         this.setupComponentControls();
         this.checkARSupport();
+        await this.setupWebSocket();
+        this.setupRealTimeFeatures();
         
         console.log('✅ AR помічник успішно ініціалізовано');
+    }
+
+    async setupWebSocket() {
+        // Підключення до WebSocket для real-time функціональності
+        this.userId = localStorage.getItem('userId') || 'ar-tech-001';
+        
+        if (typeof WebSocketUtils !== 'undefined') {
+            this.wsClient = WebSocketUtils.init(this.userId, localStorage.getItem('authToken'));
+            
+            // Обробники WebSocket подій
+            this.wsClient.on('ar_instruction', (data) => {
+                this.handleRemoteInstruction(data);
+            });
+            
+            this.wsClient.on('lift_status_changed', (data) => {
+                this.handleLiftStatusChange(data);
+            });
+
+            this.wsClient.on('ar_collaboration', (data) => {
+                this.handleCollaboration(data);
+            });
+
+            this.wsClient.on('ar_emergency', (data) => {
+                this.handleEmergencyAlert(data);
+            });
+            
+            console.log('🔌 WebSocket підключено до AR Helper');
+        }
+    }
+
+    setupRealTimeFeatures() {
+        // Real-time статус
+        this.broadcastStatus();
+        setInterval(() => this.broadcastStatus(), 30000); // Кожні 30 секунд
+
+        // Синхронізація аннотацій
+        this.syncAnnotations();
     }
 
     loadUserInfo() {
@@ -1121,6 +1160,84 @@ class ARHelper {
         link.click();
         
         this.showNotification('Дані сесії експортовано', 'success');
+    }
+
+    // ===================================
+    // WEBSOCKET REAL-TIME ФУНКЦІОНАЛЬНІСТЬ
+    // ===================================
+
+    broadcastStatus() {
+        if (this.wsClient) {
+            this.wsClient.send({
+                type: 'ar_status_update',
+                data: {
+                    userId: this.userId,
+                    isARActive: this.isARActive,
+                    currentModel: this.currentModel?.name,
+                    activeTool: this.activeTool,
+                    annotationsCount: this.annotations.length,
+                    timestamp: new Date().toISOString()
+                }
+            });
+        }
+    }
+
+    handleRemoteInstruction(data) {
+        console.log('📱 Отримано віддалену інструкцію:', data);
+        
+        const { action, payload } = data;
+        
+        switch (action) {
+            case 'start_ar_session':
+                this.startARSession(payload.modelId);
+                break;
+            case 'stop_ar_session':
+                this.stopARSession();
+                break;
+            case 'add_annotation':
+                this.addRemoteAnnotation(payload);
+                break;
+            case 'highlight_component':
+                this.highlightComponent(payload.componentId, payload.color);
+                break;
+            case 'emergency_stop':
+                this.handleEmergencyStop();
+                break;
+        }
+    }
+
+    handleLiftStatusChange(data) {
+        console.log('🔄 Статус ліфта змінено:', data);
+        this.showNotification(`Ліфт ${data.liftId}: ${data.status}`, 
+            data.status === 'error' ? 'error' : 'info');
+    }
+
+    handleCollaboration(data) {
+        console.log('👥 Колаборативні дані:', data);
+        const { type, user, payload } = data;
+        
+        if (type === 'annotation_added') {
+            this.addCollaborativeAnnotation(payload, user);
+        }
+    }
+
+    addCollaborativeAnnotation(annotation, user) {
+        const collaborativeAnnotation = {
+            ...annotation,
+            collaborator: user.firstName,
+            isCollaborative: true,
+            timestamp: new Date().toISOString()
+        };
+        
+        this.annotations.push(collaborativeAnnotation);
+        this.showNotification(`${user.firstName} додав аннотацію`, 'info');
+    }
+
+    handleEmergencyStop() {
+        if (this.isARActive) {
+            this.stopARSession();
+        }
+        this.showNotification('Аварійна зупинка AR сесії', 'error');
     }
 }
 
