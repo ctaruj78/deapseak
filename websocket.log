@@ -1,2 +1,6 @@
 nohup: ignoring input
 🚀 WebSocket сервер запущено на порту 3002
+🔌 Новий WebSocket клієнт підключився
+🔌 WebSocket клієнт відключився
+Debugger listening on ws://127.0.0.1:9229/a92f5e4c-b603-4b62-b221-d3a63b96524a
+For help, see: https://nodejs.org/en/docs/inspector
