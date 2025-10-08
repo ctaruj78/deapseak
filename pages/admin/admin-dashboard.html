@@ -499,6 +499,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
     <!-- AdminLTE -->
     <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+    
+    <!-- WebSocket Client -->
+    <script src="../../assets/js/websocket-client.js"></script>
 
     <script>
         // Перевірка авторизації
@@ -556,6 +559,23 @@
 
         // Оновлення даних кожні 30 секунд
         setInterval(loadDashboardData, 30000);
+
+        // Ініціалізація WebSocket для real-time оновлень
+        try {
+            const wsClient = new WebSocketClient('ws://localhost:3002');
+            wsClient.on('connected', () => {
+                console.log('✅ WebSocket підключено до admin dashboard');
+            });
+            
+            wsClient.on('notification', (data) => {
+                // Показати сповіщення
+                if (data.type === 'new_request') {
+                    loadDashboardData(); // Оновити статистику
+                }
+            });
+        } catch (error) {
+            console.log('WebSocket недоступний:', error);
+        }
 
         // Функція виходу
         function logout() {
