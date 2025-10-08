@@ -689,7 +689,7 @@ class LiftAPI {
         if (this.socket) return this.socket;
 
         const wsUrl = IS_DEVELOPMENT ? 
-            'ws://localhost:3001' : 
+            'ws://localhost:3002' : 
             'wss://api.liftmanager.com/ws';
 
         try {

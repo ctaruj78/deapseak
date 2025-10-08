@@ -74,3 +74,23 @@ nohup: ignoring input
 127.0.0.1 - - [08/Oct/2025 21:30:22] "GET /assets/js/unified-analytics-engine.js?v=2025.10.05.1 HTTP/1.1" 304 -
 127.0.0.1 - - [08/Oct/2025 21:30:40] "GET /pages/admin/email-template.html HTTP/1.1" 200 -
 127.0.0.1 - - [08/Oct/2025 21:30:40] "GET /assets/js/modules/email-template.js HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 21:37:07] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 21:37:12] "GET /pages/admin/qr-generator.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 21:37:13] code 404, message File not found
+127.0.0.1 - - [08/Oct/2025 21:37:13] "GET /pages/admin/assets/img/user-avatar.png HTTP/1.1" 404 -
+127.0.0.1 - - [08/Oct/2025 21:37:13] code 404, message File not found
+127.0.0.1 - - [08/Oct/2025 21:37:13] "GET /pages/admin/assets/js/modules/qr-generator.js HTTP/1.1" 404 -
+127.0.0.1 - - [08/Oct/2025 21:37:14] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 21:37:24] code 404, message File not found
+127.0.0.1 - - [08/Oct/2025 21:37:24] "GET /assets/img/avatars/admin.png HTTP/1.1" 404 -
+127.0.0.1 - - [08/Oct/2025 21:37:31] "GET /pages/admin/predictive-maintenance.html HTTP/1.1" 304 -
+127.0.0.1 - - [08/Oct/2025 21:37:38] code 404, message File not found
+127.0.0.1 - - [08/Oct/2025 21:37:38] "GET /assets/img/avatars/admin.png HTTP/1.1" 404 -
+127.0.0.1 - - [08/Oct/2025 21:38:26] code 404, message File not found
+127.0.0.1 - - [08/Oct/2025 21:38:26] "GET /assets/img/avatars/admin.png HTTP/1.1" 404 -
+127.0.0.1 - - [08/Oct/2025 21:38:37] "GET /pages/admin/invoice-template.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 21:38:38] "GET /assets/js/modules/invoice-template.js HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 21:39:17] "GET /pages/admin/inspection-template.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 21:39:18] "GET /assets/js/modules/inspection-template.js HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 21:39:48] "GET /pages/admin/report-template.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 21:39:50] "GET /assets/js/modules/report-template.js HTTP/1.1" 200 -
