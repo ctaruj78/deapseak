@@ -12,6 +12,9 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
+    <!-- Universal WebSocket Manager -->
+    <script src="/assets/js/universal-websocket.js"></script>
+    
     <style>
         .client-dashboard {
             background-color: #f8f9fa;
@@ -682,8 +685,124 @@
                 };
                 $('#clientName').text(currentUser.firstName);
                 $('#userName').text(currentUser.firstName);
+                
+                // Ініціалізація WebSocket для клієнта
+                initClientWebSocket(currentUser);
             } else {
                 window.clientDashboard = new ClientDashboard();
+                
+                // Ініціалізація WebSocket для тестового режиму
+                initClientWebSocket({ id: 'test_client', firstName: 'Тестовий Клієнт' });
+            }
+            
+            /**
+             * Ініціалізація WebSocket для клієнтської панелі
+             */
+            function initClientWebSocket(user) {
+                if (typeof UniversalWebSocketManager === 'undefined') {
+                    console.warn('[Client Dashboard] UniversalWebSocketManager не знайдено');
+                    return;
+                }
+                
+                try {
+                    window.clientWebSocket = new UniversalWebSocketManager('client', user.id || 'client_user');
+                    
+                    // Підписка на події
+                    window.clientWebSocket.on('connected', function() {
+                        console.log('[Client Dashboard] WebSocket підключено');
+                        showNotification('Підключено до системи', 'success');
+                    });
+                    
+                    window.clientWebSocket.on('request_status_update', function(data) {
+                        console.log('[Client Dashboard] Оновлення статусу заявки:', data);
+                        updateRequestStatus(data);
+                        showNotification(`Заявка ${data.requestId}: ${data.status}`, 'info');
+                    });
+                    
+                    window.clientWebSocket.on('lift_availability', function(data) {
+                        console.log('[Client Dashboard] Оновлення доступності ліфтів:', data);
+                        updateLiftStatus(data);
+                    });
+                    
+                    window.clientWebSocket.on('service_notification', function(data) {
+                        console.log('[Client Dashboard] Сервісне повідомлення:', data);
+                        showNotification(data.message, data.type || 'info');
+                    });
+                    
+                    window.clientWebSocket.on('disconnected', function() {
+                        console.log('[Client Dashboard] WebSocket відключено');
+                        showNotification('Відключено від системи', 'warning');
+                    });
+                    
+                    window.clientWebSocket.on('error', function(error) {
+                        console.error('[Client Dashboard] WebSocket помилка:', error);
+                        showNotification('Помилка з\'єднання', 'error');
+                    });
+                    
+                    // Підключення
+                    window.clientWebSocket.connect();
+                    
+                } catch (error) {
+                    console.error('[Client Dashboard] Помилка ініціалізації WebSocket:', error);
+                }
+            }
+            
+            /**
+             * Оновлення статусу заявки в реальному часі
+             */
+            function updateRequestStatus(data) {
+                const requestElement = document.querySelector(`[data-request-id="${data.requestId}"]`);
+                if (requestElement) {
+                    const statusElement = requestElement.querySelector('.status-badge');
+                    if (statusElement) {
+                        statusElement.textContent = data.status;
+                        statusElement.className = `status-badge status-${data.status.toLowerCase()}`;
+                    }
+                }
+            }
+            
+            /**
+             * Оновлення статусу ліфтів
+             */
+            function updateLiftStatus(data) {
+                if (data.liftId) {
+                    const liftElement = document.querySelector(`[data-lift-id="${data.liftId}"]`);
+                    if (liftElement) {
+                        const statusElement = liftElement.querySelector('.lift-status');
+                        if (statusElement) {
+                            statusElement.textContent = data.status;
+                            statusElement.className = `lift-status status-${data.status.toLowerCase()}`;
+                        }
+                    }
+                }
+            }
+            
+            /**
+             * Відображення сповіщень
+             */
+            function showNotification(message, type = 'info') {
+                const alertClass = {
+                    'success': 'alert-success',
+                    'info': 'alert-info',
+                    'warning': 'alert-warning',
+                    'error': 'alert-danger'
+                }[type] || 'alert-info';
+                
+                const notification = $(`
+                    <div class="alert ${alertClass} alert-dismissible fade show" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
+                        ${message}
+                        <button type="button" class="close" data-dismiss="alert">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                `);
+                
+                $('body').append(notification);
+                
+                // Автоматичне видалення через 5 секунд
+                setTimeout(() => {
+                    notification.alert('close');
+                }, 5000);
             }
         });
     </script>

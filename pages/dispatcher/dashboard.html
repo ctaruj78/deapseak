@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css">
     
+    <!-- Universal WebSocket Manager -->
+    <script src="/assets/js/universal-websocket.js"></script>
+    
     <!-- Додаткові стилі -->
     <style>
         .stat-card {
@@ -827,6 +830,9 @@
                 console.error('jQuery not loaded');
             }
             
+            // Ініціалізація WebSocket для диспетчера
+            initDispatcherWebSocket(userData);
+            
             // Фільтрація подій
             $('[data-type]').on('click', function() {
                 const type = $(this).data('type');
@@ -837,6 +843,213 @@
                 }
             });
         });
+        
+        /**
+         * Ініціалізація WebSocket для диспетчерської панелі
+         */
+        function initDispatcherWebSocket(user) {
+            if (typeof UniversalWebSocketManager === 'undefined') {
+                console.warn('[Dispatcher Dashboard] UniversalWebSocketManager не знайдено');
+                return;
+            }
+            
+            try {
+                window.dispatcherWebSocket = new UniversalWebSocketManager('dispatcher', user.id || user.username || 'dispatcher');
+                
+                // Підписка на події
+                window.dispatcherWebSocket.on('connected', function() {
+                    console.log('[Dispatcher Dashboard] WebSocket підключено');
+                    showDispatcherNotification('Підключено до системи', 'success');
+                    updateConnectionStatus(true);
+                });
+                
+                window.dispatcherWebSocket.on('request_update', function(data) {
+                    console.log('[Dispatcher Dashboard] Оновлення заявки:', data);
+                    handleRequestUpdate(data);
+                    showDispatcherNotification(`Заявка ${data.id} оновлена`, 'info');
+                });
+                
+                window.dispatcherWebSocket.on('lift_update', function(data) {
+                    console.log('[Dispatcher Dashboard] Оновлення ліфта:', data);
+                    handleLiftUpdate(data);
+                });
+                
+                window.dispatcherWebSocket.on('tech_assignment', function(data) {
+                    console.log('[Dispatcher Dashboard] Призначення техніка:', data);
+                    handleTechAssignment(data);
+                    showDispatcherNotification(`Технік призначений на заявку ${data.requestId}`, 'success');
+                });
+                
+                window.dispatcherWebSocket.on('emergency_alert', function(data) {
+                    console.log('[Dispatcher Dashboard] Аварійне сповіщення:', data);
+                    handleEmergencyAlert(data);
+                    showDispatcherNotification(`АВАРІЯ: ${data.message}`, 'error');
+                });
+                
+                window.dispatcherWebSocket.on('disconnected', function() {
+                    console.log('[Dispatcher Dashboard] WebSocket відключено');
+                    showDispatcherNotification('Відключено від системи', 'warning');
+                    updateConnectionStatus(false);
+                });
+                
+                window.dispatcherWebSocket.on('error', function(error) {
+                    console.error('[Dispatcher Dashboard] WebSocket помилка:', error);
+                    showDispatcherNotification('Помилка з\'єднання', 'error');
+                    updateConnectionStatus(false);
+                });
+                
+                // Підключення
+                window.dispatcherWebSocket.connect();
+                
+            } catch (error) {
+                console.error('[Dispatcher Dashboard] Помилка ініціалізації WebSocket:', error);
+            }
+        }
+        
+        /**
+         * Обробка оновлення заявки
+         */
+        function handleRequestUpdate(data) {
+            if (window.dispatcherDashboard && typeof window.dispatcherDashboard.updateRequestInTable === 'function') {
+                window.dispatcherDashboard.updateRequestInTable(data);
+            }
+            
+            // Оновлюємо статистику
+            updateRequestStatistics();
+        }
+        
+        /**
+         * Обробка оновлення ліфта
+         */
+        function handleLiftUpdate(data) {
+            // Оновлюємо статус ліфта в інтерфейсі
+            const liftElement = $(`.lift-status[data-lift-id="${data.liftId}"]`);
+            if (liftElement.length) {
+                liftElement.text(data.status);
+                liftElement.removeClass('status-active status-maintenance status-error')
+                         .addClass(`status-${data.status.toLowerCase()}`);
+            }
+            
+            // Оновлюємо загальну статистику ліфтів
+            updateLiftStatistics();
+        }
+        
+        /**
+         * Обробка призначення техніка
+         */
+        function handleTechAssignment(data) {
+            if (window.dispatcherDashboard && typeof window.dispatcherDashboard.updateTechAssignment === 'function') {
+                window.dispatcherDashboard.updateTechAssignment(data);
+            }
+        }
+        
+        /**
+         * Обробка аварійного сповіщення
+         */
+        function handleEmergencyAlert(data) {
+            // Додаємо аварійну заявку в топ списку
+            const emergencyRow = `
+                <tr class="table-danger" data-request-id="${data.requestId}">
+                    <td><span class="badge badge-danger">АВАРІЯ</span> ${data.requestId}</td>
+                    <td>${data.description}</td>
+                    <td><span class="badge badge-danger">Критично</span></td>
+                    <td><span class="badge badge-warning">Новий</span></td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" onclick="assignEmergencyTech('${data.requestId}')">
+                            <i class="fas fa-exclamation-triangle"></i> Терміново
+                        </button>
+                    </td>
+                </tr>
+            `;
+            
+            $('#requestsTableBody').prepend(emergencyRow);
+            
+            // Мигання для привернення уваги
+            $(`.table-danger[data-request-id="${data.requestId}"]`).fadeOut(200).fadeIn(200).fadeOut(200).fadeIn(200);
+        }
+        
+        /**
+         * Оновлення статусу з'єднання
+         */
+        function updateConnectionStatus(isConnected) {
+            const statusElement = $('#connectionStatus');
+            if (statusElement.length) {
+                statusElement.html(
+                    isConnected ? 
+                    '<i class="fas fa-wifi text-success"></i> Online (Real-time)' : 
+                    '<i class="fas fa-wifi-slash text-danger"></i> Offline'
+                );
+            }
+        }
+        
+        /**
+         * Оновлення статистики заявок
+         */
+        function updateRequestStatistics() {
+            // Підраховуємо заявки за статусами
+            const newRequests = $('#requestsTableBody tr .badge-warning').length;
+            const inProgress = $('#requestsTableBody tr .badge-info').length;
+            const completed = $('#requestsTableBody tr .badge-success').length;
+            
+            // Оновлюємо картки статистики
+            $('.stat-card:contains("Нові заявки")').find('.h2').text(newRequests);
+            $('.stat-card:contains("В роботі")').find('.h2').text(inProgress);
+            $('.stat-card:contains("Завершені")').find('.h2').text(completed);
+        }
+        
+        /**
+         * Оновлення статистики ліфтів
+         */
+        function updateLiftStatistics() {
+            const activeLifts = $('.lift-status.status-active').length;
+            const maintenanceLifts = $('.lift-status.status-maintenance').length;
+            const errorLifts = $('.lift-status.status-error').length;
+            
+            // Оновлюємо відповідні картки статистики
+            $('.stat-card:contains("Активні ліфти")').find('.h2').text(activeLifts);
+            $('.stat-card:contains("На обслуговуванні")').find('.h2').text(maintenanceLifts);
+            $('.stat-card:contains("Несправні")').find('.h2').text(errorLifts);
+        }
+        
+        /**
+         * Відображення сповіщень для диспетчера
+         */
+        function showDispatcherNotification(message, type = 'info') {
+            const alertClass = {
+                'success': 'alert-success',
+                'info': 'alert-info',
+                'warning': 'alert-warning', 
+                'error': 'alert-danger'
+            }[type] || 'alert-info';
+            
+            const notification = $(`
+                <div class="alert ${alertClass} alert-dismissible fade show" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 320px;">
+                    <i class="fas fa-headset"></i> <strong>Диспетчер:</strong> ${message}
+                    <button type="button" class="close" data-dismiss="alert">
+                        <span>&times;</span>
+                    </button>
+                </div>
+            `);
+            
+            $('body').append(notification);
+            
+            // Автоматичне видалення
+            const timeout = type === 'error' ? 10000 : 6000; // Помилки показуємо довше
+            setTimeout(() => {
+                notification.alert('close');
+            }, timeout);
+        }
+        
+        /**
+         * Функція для терміного призначення техніка на аварійну заявку
+         */
+        function assignEmergencyTech(requestId) {
+            if (window.dispatcherDashboard && typeof window.dispatcherDashboard.assignEmergencyTech === 'function') {
+                window.dispatcherDashboard.assignEmergencyTech(requestId);
+            } else {
+                alert(`Терміно призначити техніка на заявку ${requestId}`);
+            }
+        }
     </script>
 
     <!-- Модальне вікно для редагування заявки -->

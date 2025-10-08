@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Universal WebSocket Manager -->
+    <script src="/assets/js/universal-websocket.js"></script>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
     <div class="wrapper">
@@ -228,6 +230,9 @@
                 // Завантажуємо дані
                 loadTechData();
                 
+                // Ініціалізація WebSocket для техніка
+                initTechWebSocket(session.user);
+                
             } catch (error) {
                 console.error('Session error:', error);
                 localStorage.removeItem('lm_session');
@@ -240,6 +245,121 @@
             $('#completedToday').text(Math.floor(Math.random() * 5) + 2);
             $('#urgentAssignments').text(Math.floor(Math.random() * 3) + 1);
             $('#overdueAssignments').text(Math.floor(Math.random() * 2));
+        }
+        
+        /**
+         * Ініціалізація WebSocket для технічної панелі
+         */
+        function initTechWebSocket(user) {
+            if (typeof UniversalWebSocketManager === 'undefined') {
+                console.warn('[Tech Dashboard] UniversalWebSocketManager не знайдено');
+                return;
+            }
+            
+            try {
+                window.techWebSocket = new UniversalWebSocketManager('tech', user.id || user.username);
+                
+                // Підписка на події
+                window.techWebSocket.on('connected', function() {
+                    console.log('[Tech Dashboard] WebSocket підключено');
+                    showTechNotification('Підключено до системи', 'success');
+                });
+                
+                window.techWebSocket.on('assignment_update', function(data) {
+                    console.log('[Tech Dashboard] Нове завдання:', data);
+                    handleNewAssignment(data);
+                    showTechNotification(`Нове завдання: ${data.title}`, 'info');
+                });
+                
+                window.techWebSocket.on('priority_alert', function(data) {
+                    console.log('[Tech Dashboard] Термінове завдання:', data);
+                    handlePriorityAlert(data);
+                    showTechNotification(`ТЕРМІНОВО: ${data.message}`, 'warning');
+                });
+                
+                window.techWebSocket.on('lift_diagnostic', function(data) {
+                    console.log('[Tech Dashboard] Діагностика ліфта:', data);
+                    handleLiftDiagnostic(data);
+                });
+                
+                window.techWebSocket.on('disconnected', function() {
+                    console.log('[Tech Dashboard] WebSocket відключено');
+                    showTechNotification('Відключено від системи', 'warning');
+                });
+                
+                window.techWebSocket.on('error', function(error) {
+                    console.error('[Tech Dashboard] WebSocket помилка:', error);
+                    showTechNotification('Помилка з\'єднання', 'error');
+                });
+                
+                // Підключення
+                window.techWebSocket.connect();
+                
+            } catch (error) {
+                console.error('[Tech Dashboard] Помилка ініціалізації WebSocket:', error);
+            }
+        }
+        
+        /**
+         * Обробка нового завдання
+         */
+        function handleNewAssignment(data) {
+            // Оновлюємо лічильник активних завдань
+            const currentActive = parseInt($('#activeAssignments').text()) || 0;
+            $('#activeAssignments').text(currentActive + 1);
+            
+            // Якщо це терміново, оновлюємо лічильник термінових
+            if (data.priority === 'urgent') {
+                const currentUrgent = parseInt($('#urgentAssignments').text()) || 0;
+                $('#urgentAssignments').text(currentUrgent + 1);
+            }
+        }
+        
+        /**
+         * Обробка термінового сповіщення
+         */
+        function handlePriorityAlert(data) {
+            // Міняємо колір статистики на червоний для привернення уваги
+            $('#urgentAssignments').closest('.stat-card').addClass('border-danger');
+            
+            // Додаємо мигання
+            $('#urgentAssignments').closest('.stat-card').fadeOut(300).fadeIn(300).fadeOut(300).fadeIn(300);
+        }
+        
+        /**
+         * Обробка діагностики ліфта
+         */
+        function handleLiftDiagnostic(data) {
+            console.log('[Tech Dashboard] Діагностика ліфта:', data);
+            // Тут можна додати логіку обробки діагностичних даних
+        }
+        
+        /**
+         * Відображення сповіщень для техніка
+         */
+        function showTechNotification(message, type = 'info') {
+            const alertClass = {
+                'success': 'alert-success',
+                'info': 'alert-info', 
+                'warning': 'alert-warning',
+                'error': 'alert-danger'
+            }[type] || 'alert-info';
+            
+            const notification = $(`
+                <div class="alert ${alertClass} alert-dismissible fade show" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
+                    <i class="fas fa-tools"></i> ${message}
+                    <button type="button" class="close" data-dismiss="alert">
+                        <span>&times;</span>
+                    </button>
+                </div>
+            `);
+            
+            $('body').append(notification);
+            
+            // Автоматичне видалення через 7 секунд для техніків (більше часу на реакцію)
+            setTimeout(() => {
+                notification.alert('close');
+            }, 7000);
         }
     </script>
 </body>
