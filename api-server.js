@@ -13,7 +13,38 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 
 // Middleware
 app.use(express.json());
-app.use(cors());
+
+// CORS налаштування для GitHub Codespaces та локальної розробки
+app.use(cors({
+    origin: function (origin, callback) {
+        // Дозволити запити без origin (наприклад, curl, Postman)
+        if (!origin) return callback(null, true);
+        
+        // Дозволені origins
+        const allowedOrigins = [
+            'http://localhost:8080',
+            'http://localhost:8081',
+            'http://127.0.0.1:8080',
+            'http://127.0.0.1:8081'
+        ];
+        
+        // Дозволити всі GitHub Codespaces домени
+        if (origin.includes('.app.github.dev')) {
+            return callback(null, true);
+        }
+        
+        // Перевірка на дозволені origins
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            console.log('⚠️ CORS заблоковано для:', origin);
+            callback(null, true); // Все одно дозволяємо для розробки
+        }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Підключення до MongoDB при запуску
 connectDB()

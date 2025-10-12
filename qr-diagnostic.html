@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>🔬 QR Діагностика</title>
+    <style>
+        body { 
+            font-family: monospace; 
+            padding: 20px; 
+            background: #1e1e1e; 
+            color: #d4d4d4; 
+        }
+        .log { 
+            background: #252526; 
+            padding: 15px; 
+            margin: 10px 0; 
+            border-left: 3px solid #007acc; 
+            border-radius: 3px;
+        }
+        .success { border-left-color: #4ec9b0; color: #4ec9b0; }
+        .error { border-left-color: #f48771; color: #f48771; }
+        .warning { border-left-color: #dcdcaa; color: #dcdcaa; }
+        pre { margin: 5px 0; }
+        #qr { margin: 20px 0; text-align: center; }
+    </style>
+</head>
+<body>
+    <h1>🔬 Діагностика QR бібліотеки</h1>
+    <div id="logs"></div>
+    <div id="qr"></div>
+
+    <!-- Завантаження бібліотеки -->
+    <script src="/assets/libs/qrcode-generator.min.js"></script>
+    
+    <script>
+        const logs = document.getElementById('logs');
+        const qrDiv = document.getElementById('qr');
+
+        function log(msg, type = 'log') {
+            const div = document.createElement('div');
+            div.className = 'log ' + type;
+            div.innerHTML = '<pre>' + msg + '</pre>';
+            logs.appendChild(div);
+            console.log(msg);
+        }
+
+        log('⏳ Починаю діагностику...');
+        
+        let checks = 0;
+        const interval = setInterval(() => {
+            checks++;
+            log(`Перевірка #${checks}...`);
+            
+            // Перевірка глобальних змінних
+            const hasQrcode = typeof qrcode !== 'undefined';
+            const hasQRCode = typeof QRCode !== 'undefined';
+            
+            log(`  typeof qrcode: ${typeof qrcode}`, hasQrcode ? 'success' : 'error');
+            log(`  typeof QRCode: ${typeof QRCode}`, hasQRCode ? 'success' : 'error');
+            
+            if (hasQrcode || hasQRCode) {
+                clearInterval(interval);
+                
+                // Створюємо window.QRCode якщо його немає
+                if (hasQrcode && !hasQRCode) {
+                    window.QRCode = qrcode;
+                    log('✅ Створено window.QRCode = qrcode', 'success');
+                }
+                
+                const QR = typeof QRCode !== 'undefined' ? QRCode : qrcode;
+                
+                log('✅ Бібліотека завантажена!', 'success');
+                log(`  Конструктор: ${typeof QR}`);
+                log(`  CorrectLevel: ${typeof QR.CorrectLevel}`);
+                
+                // Спроба генерації
+                try {
+                    log('🎯 Генерую QR код...', 'warning');
+                    
+                    // qrcode-generator підтримує тільки text, width, height
+                    new QR(qrDiv, {
+                        text: 'TEST-QR-' + Date.now(),
+                        width: 200,
+                        height: 200
+                    });
+                    
+                    log('✅✅✅ QR КОД СТВОРЕНО УСПІШНО! ✅✅✅', 'success');
+                } catch (error) {
+                    log('❌ Помилка генерації: ' + error.message, 'error');
+                    log('Stack: ' + error.stack, 'error');
+                }
+                
+                return;
+            }
+            
+            if (checks >= 20) {
+                clearInterval(interval);
+                log('❌ Бібліотека не завантажилась після 20 спроб', 'error');
+                log('⚠️ Перевірте Network tab (F12)', 'warning');
+            }
+        }, 200);
+    </script>
+</body>
+</html>

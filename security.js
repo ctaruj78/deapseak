@@ -17,11 +17,17 @@ class AuthManager {
         localStorage.removeItem(this.TOKEN_KEY);
         localStorage.removeItem(this.USER_KEY);
         
+        // Також видаляємо старі ключі (для сумісності)
+        localStorage.removeItem('lm_session');
+        localStorage.removeItem('lm_user');
+        
         // Видаляємо cookie
         document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
         
         console.log('👋 Користувач вийшов з системи');
-        window.location.href = 'login.html';
+        
+        // Абсолютний шлях до login.html (працює з будь-якої сторінки)
+        window.location.href = '/login.html';
     }
 
     static isAuthenticated() {
@@ -75,11 +81,18 @@ class AuthManager {
 
     // Метод для формування правильного API URL
     static getApiUrl(endpoint) {
-        // Якщо сайт працює на порту 8080, то API на 3001
-        if (window.location.port === '8080') {
+        const hostname = window.location.hostname;
+        
+        // GitHub Codespaces
+        if (hostname.includes('.app.github.dev')) {
+            const apiHost = hostname.replace('-8080.', '-3001.');
+            return `${window.location.protocol}//${apiHost}${endpoint}`;
+        }
+        // Локальна розробка
+        else if (window.location.port === '8080') {
             return `http://localhost:3001${endpoint}`;
         }
-        // Інакше використовуємо відносний шлях
+        // Відносний шлях
         return endpoint;
     }
 
@@ -117,14 +130,37 @@ class AuthManager {
 
     // Перевірка авторизації при завантаженні сторінки
     static checkAuthOnPageLoad() {
-        // Якщо це сторінка входу, не перевіряємо
-        if (window.location.pathname.includes('login.html')) {
+        const pathname = window.location.pathname;
+        
+        // Список публічних сторінок (не потребують авторизації)
+        const publicPages = [
+            'login.html',
+            'register.html', 
+            'forgot-password.html',
+            'index.html',
+            'demo.html',
+            'test-',  // Всі тестові сторінки
+            'debug-'  // Всі діагностичні сторінки
+        ];
+        
+        // Перевіряємо чи це публічна сторінка
+        const isPublicPage = publicPages.some(page => pathname.includes(page));
+        if (isPublicPage) {
+            console.log('📄 Публічна сторінка, перевірка авторизації пропущена');
+            return;
+        }
+        
+        // Якщо це корінь сайту, також не перевіряємо
+        if (pathname === '/' || pathname === '') {
             return;
         }
         
         if (!this.isAuthenticated()) {
             console.log('🔒 Користувач не авторизований, перенаправляємо на login');
-            window.location.href = 'login.html';
+            // Зберігаємо URL куди хотів потрапити користувач
+            sessionStorage.setItem('redirect_after_login', window.location.href);
+            // Абсолютний шлях до login.html (працює з будь-якої сторінки)
+            window.location.href = '/login.html';
             return;
         }
         

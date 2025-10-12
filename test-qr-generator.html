@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест QR Генератора</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/assets/css/enhanced-lift-modal.css">
+    <style>
+        body {
+            padding: 20px;
+            background: #f8f9fc;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background: #e7f3ff;
+            border-left: 4px solid #007bff;
+        }
+        .success-msg {
+            background: #d4edda;
+            border-left-color: #28a745;
+            color: #155724;
+        }
+        .error-msg {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 class="mb-4"><i class="fas fa-qrcode text-primary"></i> Тест QR Генератора</h1>
+        
+        <!-- Тест 1: Один ліфт -->
+        <div class="test-card">
+            <h3>Тест 1: Генерація QR для одного ліфта</h3>
+            <hr>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Муніципальний номер:</label>
+                        <div class="input-group">
+                            <input type="text" id="test1MunicipalNumber" class="form-control" 
+                                   value="Lift-001" placeholder="Введіть номер ліфта">
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-primary" onclick="testSingleLift()">
+                                    <i class="fas fa-qrcode"></i> Генерувати QR
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Адреса:</label>
+                        <input type="text" id="test1Address" class="form-control" 
+                               value="вул. Хрещатик, 1, Київ" placeholder="Адреса ліфта">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label>Згенерований QR-код:</label>
+                    <div id="test1QrPreview" class="qr-preview-mini d-none">
+                        <!-- QR буде тут -->
+                    </div>
+                </div>
+            </div>
+            <div id="test1Result" class="result d-none"></div>
+        </div>
+
+        <!-- Тест 2: Декілька ліфтів -->
+        <div class="test-card">
+            <h3>Тест 2: Генерація QR для кількох ліфтів</h3>
+            <hr>
+            <div class="form-group">
+                <label>Кількість ліфтів:</label>
+                <input type="number" id="liftsCount" class="form-control" 
+                       value="2" min="1" max="10" onchange="generateLiftFields()">
+            </div>
+            <div id="liftsFields"></div>
+            <button type="button" class="btn btn-success btn-lg mt-3" onclick="testMultipleLifts()">
+                <i class="fas fa-qrcode"></i> Генерувати всі QR-коди
+            </button>
+            <div id="test2Result" class="result d-none mt-3"></div>
+        </div>
+
+        <!-- Тест 3: Перевірка бібліотеки -->
+        <div class="test-card">
+            <h3>Тест 3: Перевірка бібліотек</h3>
+            <hr>
+            <div id="libraryCheck">
+                <p><i class="fas fa-spinner fa-spin"></i> Перевірка...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+
+    <script>
+        // Перевірка бібліотек
+        $(document).ready(function() {
+            checkLibraries();
+            generateLiftFields();
+        });
+
+        function checkLibraries() {
+            let html = '<ul class="list-group">';
+            
+            // jQuery
+            html += '<li class="list-group-item">';
+            html += typeof jQuery !== 'undefined' 
+                ? '<i class="fas fa-check-circle text-success"></i> jQuery: ' + jQuery.fn.jquery 
+                : '<i class="fas fa-times-circle text-danger"></i> jQuery: НЕ ЗНАЙДЕНО';
+            html += '</li>';
+            
+            // QRCode
+            html += '<li class="list-group-item">';
+            html += typeof QRCode !== 'undefined' 
+                ? '<i class="fas fa-check-circle text-success"></i> QRCode: Завантажено' 
+                : '<i class="fas fa-times-circle text-danger"></i> QRCode: НЕ ЗНАЙДЕНО';
+            html += '</li>';
+            
+            // Bootstrap
+            html += '<li class="list-group-item">';
+            html += typeof bootstrap !== 'undefined' || typeof $.fn.modal !== 'undefined'
+                ? '<i class="fas fa-check-circle text-success"></i> Bootstrap: Завантажено' 
+                : '<i class="fas fa-times-circle text-danger"></i> Bootstrap: НЕ ЗНАЙДЕНО';
+            html += '</li>';
+            
+            html += '</ul>';
+            $('#libraryCheck').html(html);
+        }
+
+        function testSingleLift() {
+            console.log('🧪 Testing single lift QR generation...');
+            
+            const municipalNumber = $('#test1MunicipalNumber').val();
+            const address = $('#test1Address').val();
+            const container = $('#test1QrPreview');
+            const resultDiv = $('#test1Result');
+            
+            if (!municipalNumber) {
+                showResult('test1Result', 'error', 'Введіть муніципальний номер!');
+                return;
+            }
+            
+            if (typeof QRCode === 'undefined') {
+                showResult('test1Result', 'error', 'Бібліотека QRCode не завантажена!');
+                return;
+            }
+            
+            // Очищаємо контейнер
+            container.empty().removeClass('d-none');
+            
+            // Створюємо дані для QR
+            const qrData = {
+                municipalNumber: municipalNumber,
+                address: address,
+                liftNumber: 1,
+                createdAt: new Date().toISOString(),
+                accessUrl: `${window.location.origin}/lift-access.html?id=${municipalNumber}`
+            };
+            
+            const qrText = JSON.stringify(qrData);
+            
+            // Створюємо canvas
+            const canvas = document.createElement('canvas');
+            canvas.className = 'qr-canvas';
+            
+            // Генеруємо QR
+            QRCode.toCanvas(canvas, qrText, {
+                width: 150,
+                height: 150,
+                margin: 2,
+                color: {
+                    dark: '#000000',
+                    light: '#FFFFFF'
+                }
+            }, (err) => {
+                if (err) {
+                    console.error('❌ Error:', err);
+                    showResult('test1Result', 'error', 'Помилка генерації: ' + err.message);
+                    return;
+                }
+                
+                console.log('✅ QR generated successfully');
+                container.append(canvas);
+                
+                // Додаємо кнопки
+                const buttons = `
+                    <div class="mt-2">
+                        <div class="btn-group btn-group-sm d-flex">
+                            <button class="btn btn-outline-success" onclick="downloadQR('test1QrPreview', '${municipalNumber}')">
+                                <i class="fas fa-download"></i> PNG
+                            </button>
+                            <button class="btn btn-outline-primary" onclick="printQR('${municipalNumber}', '${address}')">
+                                <i class="fas fa-print"></i> Друк
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.append(buttons);
+                
+                showResult('test1Result', 'success', 'QR-код успішно згенеровано!');
+            });
+        }
+
+        function generateLiftFields() {
+            const count = parseInt($('#liftsCount').val()) || 1;
+            const container = $('#liftsFields');
+            container.empty();
+            
+            for (let i = 1; i <= count; i++) {
+                const field = `
+                    <div class="row mb-3">
+                        <div class="col-md-5">
+                            <label>Ліфт ${i} - Муніципальний номер:</label>
+                            <input type="text" id="lift${i}Number" class="form-control" 
+                                   value="Lift-00${i}" placeholder="Номер ліфта ${i}">
+                        </div>
+                        <div class="col-md-4">
+                            <label>QR-код:</label>
+                            <div id="lift${i}QrPreview" class="qr-preview-mini d-none" style="min-height: 150px;">
+                                <!-- QR тут -->
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label>&nbsp;</label>
+                            <button type="button" class="btn btn-primary btn-block" 
+                                    onclick="generateSingleQR(${i})">
+                                <i class="fas fa-qrcode"></i> Генерувати
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.append(field);
+            }
+        }
+
+        function generateSingleQR(liftNumber) {
+            console.log(`🧪 Generating QR for lift #${liftNumber}...`);
+            
+            const municipalNumber = $(`#lift${liftNumber}Number`).val();
+            const container = $(`#lift${liftNumber}QrPreview`);
+            
+            if (!municipalNumber) {
+                alert('Введіть номер ліфта!');
+                return;
+            }
+            
+            container.empty().removeClass('d-none');
+            
+            const qrData = {
+                municipalNumber: municipalNumber,
+                address: 'Тестова адреса',
+                liftNumber: liftNumber,
+                createdAt: new Date().toISOString()
+            };
+            
+            const canvas = document.createElement('canvas');
+            canvas.className = 'qr-canvas';
+            
+            QRCode.toCanvas(canvas, JSON.stringify(qrData), {
+                width: 120,
+                height: 120,
+                margin: 2
+            }, (err) => {
+                if (err) {
+                    console.error('❌ Error:', err);
+                    container.html(`<div class="text-danger">Помилка</div>`);
+                    return;
+                }
+                
+                container.append(canvas);
+                console.log(`✅ QR generated for lift #${liftNumber}`);
+            });
+        }
+
+        function testMultipleLifts() {
+            const count = parseInt($('#liftsCount').val()) || 1;
+            let successCount = 0;
+            
+            for (let i = 1; i <= count; i++) {
+                generateSingleQR(i);
+                successCount++;
+            }
+            
+            showResult('test2Result', 'success', 
+                `Згенеровано ${successCount} QR-кодів з ${count}`);
+        }
+
+        function downloadQR(containerId, filename) {
+            const canvas = $(`#${containerId}`).find('canvas')[0];
+            if (!canvas) return;
+            
+            const link = document.createElement('a');
+            link.download = `QR-${filename}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        function printQR(municipalNumber, address) {
+            const canvas = $('#test1QrPreview').find('canvas')[0];
+            if (!canvas) return;
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>QR-код ${municipalNumber}</title>
+                    <style>
+                        body { text-align: center; padding: 20px; font-family: Arial; }
+                        h2 { margin-bottom: 10px; }
+                        .info { margin: 10px 0; }
+                    </style>
+                </head>
+                <body>
+                    <h2>QR-код доступу до ліфта</h2>
+                    <div class="info"><strong>Номер:</strong> ${municipalNumber}</div>
+                    <div class="info"><strong>Адреса:</strong> ${address}</div>
+                    <div><img src="${canvas.toDataURL()}" alt="QR код"></div>
+                    <div class="info">Створено: ${new Date().toLocaleString('uk-UA')}</div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.onload = () => printWindow.print();
+        }
+
+        function showResult(elementId, type, message) {
+            const resultDiv = $(`#${elementId}`);
+            resultDiv.removeClass('d-none success-msg error-msg')
+                     .addClass(type === 'success' ? 'success-msg' : 'error-msg')
+                     .html(`<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`);
+        }
+    </script>
+</body>
+</html>

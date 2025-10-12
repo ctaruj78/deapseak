@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔥 QR Generator - Гарантоване завантаження</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+        h1 { text-align: center; color: #333; }
+        .input-group {
+            margin: 20px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        .qr-result {
+            margin: 30px 0;
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            display: none;
+        }
+        canvas {
+            border: 3px solid #667eea;
+            border-radius: 5px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔥 QR Generator</h1>
+        <p style="text-align: center; color: #666;">Гарантоване завантаження бібліотеки</p>
+
+        <div id="status" class="status info">
+            ⏳ Завантаження бібліотеки...
+        </div>
+
+        <div class="input-group">
+            <label for="textInput">📝 Текст для QR-коду:</label>
+            <input type="text" id="textInput" placeholder="Наприклад: LIFT-001" value="LIFT-TEST-001">
+        </div>
+
+        <button id="generateBtn" disabled>🚀 Генерувати QR</button>
+
+        <div class="qr-result" id="qrResult">
+            <h3>✅ QR-код згенеровано:</h3>
+            <canvas id="qrCanvas"></canvas>
+        </div>
+    </div>
+
+    <!-- КРИТИЧНО: Синхронне завантаження БЕЗ async/defer -->
+    <script src="/assets/libs/qrcode-bundle.js"></script>
+    
+    <script>
+        // НЕГАЙНА перевірка
+        (function() {
+            console.log('🔍 Початок перевірки...');
+            
+            const statusDiv = document.getElementById('status');
+            const generateBtn = document.getElementById('generateBtn');
+            
+            // Функція перевірки з затримкою
+            let attempts = 0;
+            const maxAttempts = 100;
+            
+            function checkLibrary() {
+                attempts++;
+                console.log(`Спроба ${attempts}/${maxAttempts}...`);
+                
+                if (typeof QRCode !== 'undefined') {
+                    console.log('✅ QRCode знайдено!');
+                    console.log('Тип:', typeof QRCode);
+                    console.log('toCanvas:', typeof QRCode.toCanvas);
+                    
+                    if (typeof QRCode.toCanvas === 'function') {
+                        statusDiv.className = 'status success';
+                        statusDiv.textContent = '✅ Бібліотека завантажена! Готово.';
+                        generateBtn.disabled = false;
+                        
+                        // Додаємо обробник події
+                        generateBtn.onclick = generateQR;
+                        document.getElementById('textInput').onkeypress = function(e) {
+                            if (e.key === 'Enter') generateQR();
+                        };
+                        
+                        return;
+                    } else {
+                        console.error('❌ toCanvas не знайдено');
+                        console.log('Доступні методи:', Object.keys(QRCode));
+                        statusDiv.className = 'status error';
+                        statusDiv.textContent = '❌ Неправильна версія бібліотеки (немає toCanvas)';
+                        return;
+                    }
+                }
+                
+                if (attempts >= maxAttempts) {
+                    console.error('❌ Не вдалося завантажити після', maxAttempts, 'спроб');
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = '❌ Помилка завантаження. Перевірте консоль (F12).';
+                    return;
+                }
+                
+                // Повторити через 50мс
+                setTimeout(checkLibrary, 50);
+            }
+            
+            // Почати перевірку через 10мс
+            setTimeout(checkLibrary, 10);
+            
+            function generateQR() {
+                const text = document.getElementById('textInput').value.trim();
+                
+                if (!text) {
+                    alert('Введіть текст!');
+                    return;
+                }
+                
+                console.log('🎯 Генерація QR для:', text);
+                
+                const canvas = document.getElementById('qrCanvas');
+                const resultDiv = document.getElementById('qrResult');
+                
+                try {
+                    QRCode.toCanvas(canvas, text, {
+                        width: 300,
+                        margin: 2,
+                        color: {
+                            dark: '#000000',
+                            light: '#ffffff'
+                        },
+                        errorCorrectionLevel: 'H'
+                    }, function(error) {
+                        if (error) {
+                            console.error('❌ Помилка:', error);
+                            statusDiv.className = 'status error';
+                            statusDiv.textContent = '❌ Помилка: ' + error.message;
+                        } else {
+                            console.log('✅ Успіх!');
+                            resultDiv.style.display = 'block';
+                            statusDiv.className = 'status success';
+                            statusDiv.textContent = '✅ QR-код створено!';
+                        }
+                    });
+                } catch (error) {
+                    console.error('❌ Виняток:', error);
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = '❌ Помилка: ' + error.message;
+                }
+            }
+        })();
+    </script>
+</body>
+</html>

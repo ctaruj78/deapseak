@@ -57,18 +57,28 @@
         console.log('🌍 Current location:', window.location);
         console.log('📡 Current port:', window.location.port);
         
-        // Формування URL без кешування
+        // Формування URL для Codespaces
         function getApiUrl() {
-            const port = window.location.port;
-            console.log('🔍 Визначаємо API URL для порту:', port);
+            const hostname = window.location.hostname;
+            console.log('🔍 Визначаємо API URL для hostname:', hostname);
             
-            if (port === '8080' || port === 8080) {
+            // Перевіряємо чи це GitHub Codespaces
+            if (hostname.includes('.app.github.dev')) {
+                // Формуємо URL для Codespaces: замінюємо порт у hostname
+                const apiUrl = window.location.protocol + '//' + 
+                              hostname.replace('-8080.', '-3001.') + 
+                              '/api/auth/login';
+                console.log('✅ GitHub Codespaces URL:', apiUrl);
+                return apiUrl;
+            }
+            // Локальна розробка
+            else if (window.location.port === '8080') {
                 const url = 'http://localhost:3001/api/auth/login';
-                console.log('✅ Використовуємо абсолютний URL:', url);
+                console.log('✅ Локальний URL:', url);
                 return url;
             } else {
                 const url = '/api/auth/login';
-                console.log('✅ Використовуємо відносний URL:', url);
+                console.log('✅ Відносний URL:', url);
                 return url;
             }
         }

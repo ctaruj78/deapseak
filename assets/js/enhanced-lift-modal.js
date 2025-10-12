@@ -47,6 +47,8 @@ class EnhancedLiftModal {
             if (!this.currentLiftId) {
                 console.log('📝 Resetting form for new lift...');
                 this.resetForm();
+                // ВИПРАВЛЕННЯ: Показуємо QR-генератор відразу
+                this.handleLiftsCountChange();
             } else {
                 console.log('📝 Editing mode - keeping existing data');
             }
@@ -649,8 +651,15 @@ class EnhancedLiftModal {
         // Очищуємо контейнер додаткових ліфтів
         $('#additionalLiftsFields').empty();
         
+        // ВИПРАВЛЕННЯ: Завжди показуємо QR-генератор для основного ліфта
+        const mainQrPreview = $('#mainQrPreview');
+        if (mainQrPreview.length) {
+            mainQrPreview.removeClass('d-none');
+            console.log('✅ Main QR preview container shown');
+        }
+        
         if (count > 1) {
-            // Показуємо контейнер
+            // Показуємо контейнер додаткових ліфтів
             $('#additionalLiftsContainer').removeClass('d-none');
             
             // Генеруємо поля для додаткових ліфтів
@@ -695,7 +704,7 @@ class EnhancedLiftModal {
                 $('#additionalLiftsFields').append(liftRow);
             }
         } else {
-            // Ховаємо контейнер
+            // Ховаємо контейнер додаткових ліфтів
             $('#additionalLiftsContainer').addClass('d-none');
         }
     }
@@ -760,64 +769,108 @@ class EnhancedLiftModal {
 
     // Генерація QR-коду для ліфта
     generateQRCode(inputId, liftNumber = 1) {
+        console.log(`🔄 Generating QR code for input: ${inputId}, lift #${liftNumber}`);
+        
         const municipalNumber = $(`#${inputId}`).val();
         
         if (!municipalNumber || !municipalNumber.trim()) {
             this.showMessage('Будь ласка, введіть муніципальний номер ліфта', 'error');
+            console.error('❌ Municipal number is empty');
             return;
         }
         
+        // Перевірка доступності бібліотеки (qrcode або QRCode)
+        if (typeof QRCode === 'undefined' && typeof qrcode === 'undefined') {
+            console.error('❌ QRCode library not loaded');
+            this.showMessage('Помилка: бібліотека QR-коду не завантажена', 'error');
+            return;
+        }
+        
+        // Якщо є qrcode але немає QRCode - створюємо псевдонім
+        if (typeof qrcode !== 'undefined' && typeof QRCode === 'undefined') {
+            window.QRCode = qrcode;
+            console.log('🔧 Створено window.QRCode з qrcode');
+        }
+        
         // Отримуємо адресу для QR-коду
-        const address = $('#enhancedLiftAddress').val() || 'Адреса не вказана';
+        const address = $('#enhancedLiftAddress').val() || '';
         
-        // Створюємо дані для QR-коду
+        // ВАЖЛИВО: QR код має обмеження на розмір даних (~2024 символи)
+        // Тому використовуємо компактний JSON для диспетчера
         const qrData = {
-            municipalNumber: municipalNumber.trim(),
-            address: address,
-            liftNumber: liftNumber,
-            createdAt: new Date().toISOString(),
-            accessUrl: `${window.location.origin}/lift-access.html?id=${municipalNumber.trim()}`
+            id: municipalNumber.trim(),
+            lift: liftNumber,
+            addr: address.substring(0, 80)  // Обрізаємо довгі адреси
         };
-        
         const qrText = JSON.stringify(qrData);
         const previewContainer = liftNumber === 1 ? '#mainQrPreview' : `#qrPreview${liftNumber}`;
         
-        // Очищуємо попередній QR-код
-        $(previewContainer).empty().removeClass('d-none');
+        console.log(`📦 QR text: "${qrText}" (length: ${qrText.length})`);
+        console.log(`📍 Preview container: ${previewContainer}`);
         
-        // Генеруємо QR-код
-        QRCode.toCanvas(qrText, {
-            width: 120,
-            height: 120,
-            margin: 2,
-            color: {
-                dark: '#000000',
-                light: '#FFFFFF'
-            }
-        }, (err, canvas) => {
-            if (err) {
-                console.error('❌ Error generating QR code:', err);
-                this.showMessage('Помилка створення QR-коду', 'error');
-                return;
-            }
+        // Перевіряємо чи існує контейнер
+        const $container = $(previewContainer);
+        if ($container.length === 0) {
+            console.error(`❌ Container ${previewContainer} not found`);
+            this.showMessage('Помилка: контейнер для QR-коду не знайдено', 'error');
+            return;
+        }
+        
+        // Очищуємо попередній QR-код
+        $container.empty().removeClass('d-none').addClass('text-center');
+        console.log('✅ Container cleared and shown');
+        
+        try {
+            // Генеруємо QR-код використовуючи qrcode-generator API
+            console.log('🔧 typeof QRCode:', typeof QRCode);
+            console.log('🔧 Container element:', $container[0]);
+            console.log('🔧 Container id:', $container[0].id);
             
-            // Додаємо canvas до контейнера
-            $(previewContainer).html(canvas);
+            // ВАЖЛИВО: qrcode-generator потребує DIVID або елемент
+            // API: new QRCode(element, {text, width, height})
+            const qrInstance = new QRCode($container[0], {
+                text: qrText,
+                width: 150,
+                height: 150
+            });
+            
+            console.log('✅ QR code generated successfully');
+            console.log('🔧 QR instance:', qrInstance);
+            
+            // Діагностика: що саме створилось
+            setTimeout(() => {
+                console.log('🔍 Container HTML:', $container[0].innerHTML.substring(0, 200));
+                console.log('🔍 Container children count:', $container[0].children.length);
+                
+                const createdElement = $container.find('img, canvas')[0];
+                if (createdElement) {
+                    console.log('✅ Created element:', createdElement.tagName);
+                    console.log('  Element src:', createdElement.src?.substring(0, 50));
+                    console.log('  Element width:', createdElement.width);
+                    console.log('  Element height:', createdElement.height);
+                    console.log('  Element display:', window.getComputedStyle(createdElement).display);
+                    console.log('  Element visibility:', window.getComputedStyle(createdElement).visibility);
+                } else {
+                    console.error('❌ Елемент НЕ СТВОРИВСЯ! Container innerHTML:', $container[0].innerHTML);
+                }
+            }, 200);
             
             // 🚀 EventBus: Повідомляємо про генерацію QR коду
             if (window.eventBus) {
+                const qrCanvas = $container.find('canvas')[0] || $container.find('img')[0];
                 eventBus.emit('qr:generated', {
-                    municipalNumber: qrData.municipalNumber,
-                    liftNumber: liftNumber,
-                    qrData: qrData,
-                    canvas: canvas
+                    municipalNumber: qrData.id,
+                    liftNumber: qrData.lift,
+                    address: qrData.addr,
+                    qrText: qrText,
+                    element: qrCanvas
                 }, { source: 'qr-generator' });
             }
             
             // Додаємо кнопки для дій з QR-кодом
             const actionsHtml = `
                 <div class="mt-2">
-                    <div class="btn-group btn-group-sm" role="group">
+                    <div class="btn-group btn-group-sm d-flex" role="group">
                         <button type="button" class="btn btn-outline-success btn-sm" 
                                 onclick="window.enhancedLiftModal.downloadQRCode('${inputId}', ${liftNumber})">
                             <i class="fas fa-download"></i> PNG
@@ -829,28 +882,47 @@ class EnhancedLiftModal {
                     </div>
                 </div>
             `;
-            $(previewContainer).append(actionsHtml);
+            $container.append(actionsHtml);
             
             console.log(`✅ QR code generated for lift #${liftNumber}: ${municipalNumber}`);
             this.showMessage(`QR-код створено для ліфта №${liftNumber}`, 'success');
-        });
+        } catch (error) {
+            console.error('❌ QR generation error:', error);
+            this.showMessage('Помилка генерації QR-коду: ' + error.message, 'error');
+            $container.html(`<div class="text-danger"><i class="fas fa-exclamation-triangle"></i> Помилка</div>`);
+        }
     }
 
     // Завантаження QR-коду як PNG
     downloadQRCode(inputId, liftNumber = 1) {
         const municipalNumber = $(`#${inputId}`).val().trim();
         const previewContainer = liftNumber === 1 ? '#mainQrPreview' : `#qrPreview${liftNumber}`;
-        const canvas = $(previewContainer).find('canvas')[0];
         
-        if (!canvas) {
+        // qrcode-generator створює IMG, а не canvas!
+        const img = $(previewContainer).find('img')[0];
+        const canvas = $(previewContainer).find('canvas')[0];
+        const qrElement = img || canvas;
+        
+        if (!qrElement) {
             this.showMessage('Спочатку згенеруйте QR-код', 'error');
+            console.error('❌ QR element not found in', previewContainer);
             return;
         }
+        
+        console.log('📥 Downloading QR as PNG:', qrElement.tagName);
         
         // Створюємо посилання для завантаження
         const link = document.createElement('a');
         link.download = `QR-lift-${municipalNumber}-${liftNumber}.png`;
-        link.href = canvas.toDataURL();
+        
+        // Якщо це IMG - використовуємо src напряму
+        if (qrElement.tagName === 'IMG') {
+            link.href = qrElement.src;
+        } else {
+            // Якщо canvas - конвертуємо в dataURL
+            link.href = qrElement.toDataURL();
+        }
+        
         link.click();
         
         this.showMessage('QR-код завантажено', 'success');
@@ -861,12 +933,19 @@ class EnhancedLiftModal {
         const municipalNumber = $(`#${inputId}`).val().trim();
         const address = $('#enhancedLiftAddress').val() || 'Адреса не вказана';
         const previewContainer = liftNumber === 1 ? '#mainQrPreview' : `#qrPreview${liftNumber}`;
-        const canvas = $(previewContainer).find('canvas')[0];
         
-        if (!canvas) {
+        // qrcode-generator створює IMG, а не canvas!
+        const img = $(previewContainer).find('img')[0];
+        const canvas = $(previewContainer).find('canvas')[0];
+        const qrElement = img || canvas;
+        
+        if (!qrElement) {
             this.showMessage('Спочатку згенеруйте QR-код', 'error');
+            console.error('❌ QR element not found in', previewContainer);
             return;
         }
+        
+        console.log('🖨️ Printing QR:', qrElement.tagName);
         
         // Створюємо нове вікно для друку
         const printWindow = window.open('', '_blank');
@@ -889,7 +968,7 @@ class EnhancedLiftModal {
                 <div class="info">Ліфт №${liftNumber}</div>
                 <div class="info">Адреса: ${address}</div>
                 <div class="qr-container">
-                    <img src="${canvas.toDataURL()}" alt="QR код ліфта">
+                    <img src="${qrElement.tagName === 'IMG' ? qrElement.src : qrElement.toDataURL()}" alt="QR код ліфта">
                 </div>
                 <div class="info">Створено: ${new Date().toLocaleString('uk-UA')}</div>
             </body>

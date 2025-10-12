@@ -82,14 +82,19 @@
         document.addEventListener('DOMContentLoaded', () => {
             const loginForm = document.getElementById('login-form');
             
-            // Перевірка чи користувач вже увійшов
-            if (AuthManager.isAuthenticated()) {
+            // Перевіряємо чи користувач вже увійшов через AuthManager
+            if (typeof AuthManager !== 'undefined' && AuthManager.isAuthenticated()) {
                 const user = AuthManager.getCurrentUser();
-                if (user) {
+                if (user && user.role) {
+                    console.log('✅ Користувач вже авторизований, перенаправляємо...');
                     redirectUserByRole(user.role);
                     return;
                 }
             }
+            
+            // Очищуємо старі дані якщо є
+            localStorage.removeItem('lm_session');
+            localStorage.removeItem('lm_user');
             
             // Функція перенаправлення за ролями
             function redirectUserByRole(role) {
@@ -150,7 +155,24 @@
                 
                 try {
                     console.log('🔐 Спроба входу для:', email);
-                    const apiUrl = window.location.port === '8080' ? 'http://localhost:3001/api/auth/login' : '/api/auth/login';
+                    
+                    // Формування API URL для GitHub Codespaces та локальної розробки
+                    let apiUrl;
+                    const hostname = window.location.hostname;
+                    
+                    if (hostname.includes('.app.github.dev')) {
+                        // GitHub Codespaces: замінюємо порт у hostname
+                        apiUrl = window.location.protocol + '//' + 
+                                hostname.replace('-8080.', '-3001.') + 
+                                '/api/auth/login';
+                    } else if (window.location.port === '8080') {
+                        // Локальна розробка
+                        apiUrl = 'http://localhost:3001/api/auth/login';
+                    } else {
+                        // Відносний шлях
+                        apiUrl = '/api/auth/login';
+                    }
+                    
                     console.log('🌐 Запит до:', apiUrl);
                     
                     const response = await fetch(apiUrl, {
@@ -171,15 +193,31 @@
                     console.log('🔢 Status Code:', response.status);
                     
                     if (response.ok && data.success) {
-                        // Збереження токена та користувача
-                        AuthManager.login(data.token, data.user);
+                        // Збереження через AuthManager (новий метод)
+                        if (typeof AuthManager !== 'undefined') {
+                            AuthManager.login(data.token, data.user);
+                        }
+                        
+                        // Також зберігаємо в старому форматі для сумісності
+                        localStorage.setItem('lm_session', JSON.stringify(data.user));
                         
                         showMessage('Успішний вхід! Перенаправлення...', 'success');
                         
-                        // Перенаправлення через 1 секунду
+                        // Перевіряємо чи є збережене перенаправлення
+                        const redirectUrl = sessionStorage.getItem('redirect_after_login');
+                        
+                        // Перенаправлення через 500мс
                         setTimeout(() => {
-                            redirectUserByRole(data.user.role);
-                        }, 1000);
+                            if (redirectUrl) {
+                                // Очищуємо збережений URL
+                                sessionStorage.removeItem('redirect_after_login');
+                                // Перенаправляємо туди куди хотів потрапити користувач
+                                window.location.href = redirectUrl;
+                            } else {
+                                // Стандартне перенаправлення за роллю
+                                redirectUserByRole(data.user.role);
+                            }
+                        }, 500);
                         
                     } else {
                         showMessage(data.message || 'Помилка входу');

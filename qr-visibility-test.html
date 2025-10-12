@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>🔍 QR Visibility Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        .test-container {
+            background: white;
+            padding: 30px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+        h2 { color: #333; margin-top: 0; }
+        #qr1 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            text-align: center;
+        }
+        #qr2 {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            border: 2px dashed #dee2e6;
+        }
+        #qr3 {
+            background: white;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid #000;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover { background: #5568d3; }
+        .log {
+            background: #2d2d2d;
+            color: #0f0;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        img, canvas {
+            border: 3px solid red !important;
+            display: block !important;
+            margin: 10px auto !important;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 QR Код - Тест Видимості</h1>
+
+    <div class="test-container">
+        <h2>Тест 1: Градієнтний фон (як у модалі)</h2>
+        <div id="qr1"></div>
+        <button onclick="generateQR('qr1')">Генерувати</button>
+    </div>
+
+    <div class="test-container">
+        <h2>Тест 2: Світлий фон</h2>
+        <div id="qr2"></div>
+        <button onclick="generateQR('qr2')">Генерувати</button>
+    </div>
+
+    <div class="test-container">
+        <h2>Тест 3: Білий фон з чорним бордером</h2>
+        <div id="qr3"></div>
+        <button onclick="generateQR('qr3')">Генерувати</button>
+    </div>
+
+    <div class="log" id="log">⏳ Завантаження бібліотеки...</div>
+
+    <script src="/assets/libs/qrcode-generator.min.js"></script>
+    <script>
+        const logDiv = document.getElementById('log');
+        
+        function log(msg) {
+            console.log(msg);
+            logDiv.innerHTML += msg + '<br>';
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        // Чекаємо бібліотеку
+        let checks = 0;
+        const checker = setInterval(() => {
+            checks++;
+            if (typeof qrcode !== 'undefined' || typeof QRCode !== 'undefined') {
+                clearInterval(checker);
+                
+                if (typeof qrcode !== 'undefined' && typeof QRCode === 'undefined') {
+                    window.QRCode = qrcode;
+                    log('✅ Створено window.QRCode = qrcode');
+                }
+                
+                log('✅ Бібліотека готова!');
+                log('  qrcode: ' + typeof qrcode);
+                log('  QRCode: ' + typeof QRCode);
+                return;
+            }
+            
+            if (checks > 50) {
+                clearInterval(checker);
+                log('❌ Бібліотека не завантажилась');
+            }
+        }, 100);
+
+        function generateQR(containerId) {
+            log('---');
+            log('🎯 Генерація QR в ' + containerId);
+            
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            try {
+                new QRCode(container, {
+                    text: 'LIFT-' + Date.now(),
+                    width: 200,
+                    height: 200
+                });
+                
+                log('✅ QR створено');
+                
+                setTimeout(() => {
+                    const img = container.querySelector('img');
+                    const canvas = container.querySelector('canvas');
+                    const element = img || canvas;
+                    
+                    if (element) {
+                        log('  Тип елемента: ' + element.tagName);
+                        log('  Width: ' + element.width + ', Height: ' + element.height);
+                        log('  Computed display: ' + window.getComputedStyle(element).display);
+                        log('  Computed visibility: ' + window.getComputedStyle(element).visibility);
+                        log('  Computed opacity: ' + window.getComputedStyle(element).opacity);
+                        
+                        if (element.tagName === 'IMG') {
+                            log('  Src length: ' + (element.src ? element.src.length : 0));
+                            log('  Src preview: ' + (element.src ? element.src.substring(0, 50) : 'EMPTY'));
+                        }
+                    } else {
+                        log('  ❌ Елемент не знайдено в DOM!');
+                        log('  Container children: ' + container.children.length);
+                        log('  Container innerHTML length: ' + container.innerHTML.length);
+                    }
+                }, 200);
+                
+            } catch (error) {
+                log('❌ Помилка: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
