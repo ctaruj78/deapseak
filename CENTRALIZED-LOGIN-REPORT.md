@@ -16,8 +16,8 @@
 - **Результат**: Тепер вся авторизація проходить через один файл
 
 ### 2. Роль-базоване перенаправлення ✅
-- **Admin** → `pages/admin/lifts.html`
-- **Dispatcher** → `pages/dispatcher/assignments.html`  
+- **Admin** → `pages/admin/admin-dashboard.html`
+- **Dispatcher** → `pages/dispatcher/dashboard.html`  
 - **Technician/Tech** → `pages/tech/dashboard.html`
 - **Client** → `pages/client/dashboard.html`
 
@@ -39,8 +39,8 @@ login.html (ЦЕНТРАЛІЗОВАНИЙ)
 AuthManager.login(token, user)
     ↓
 switch(user.role):
-  - admin → pages/admin/lifts.html
-  - dispatcher → pages/dispatcher/assignments.html
+  - admin → pages/admin/admin-dashboard.html
+  - dispatcher → pages/dispatcher/dashboard.html
   - tech → pages/tech/dashboard.html
   - client → pages/client/dashboard.html
 ```
@@ -83,8 +83,8 @@ AuthManager.fetchWithAuth(url)      // Захищені запити
 ```javascript
 function redirectUserByRole(role) {
     switch (role) {
-        case 'admin': window.location.href = 'pages/admin/lifts.html';
-        case 'dispatcher': window.location.href = 'pages/dispatcher/assignments.html';
+        case 'admin': window.location.href = 'pages/admin/admin-dashboard.html';
+        case 'dispatcher': window.location.href = 'pages/dispatcher/dashboard.html';
         case 'technician': window.location.href = 'pages/tech/dashboard.html';
         case 'client': window.location.href = 'pages/client/dashboard.html';
     }
