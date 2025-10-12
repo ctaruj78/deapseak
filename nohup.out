@@ -16,3 +16,4 @@ Traceback (most recent call last):
   File "/home/codespace/.python/current/lib/python3.12/socketserver.py", line 473, in server_bind
     self.socket.bind(self.server_address)
 OSError: [Errno 98] Address already in use
+127.0.0.1 - - [12/Oct/2025 16:41:44] "GET /login.html HTTP/1.1" 200 -
