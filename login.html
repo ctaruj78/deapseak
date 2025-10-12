@@ -70,133 +70,115 @@
             </div>
         </div>
     </div>
-    <!-- AdminLTE JS -->
-    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
-    <!-- jQuery -->
+    <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="assets/js/config.js"></script>
-    <script src="assets/js/auth.js"></script>
-    <script src="assets/js/common.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+    
+    <!-- Система авторизації -->
+    <script src="security.js"></script>
     
     <script>
-        $(document).ready(function() {
-            // Проверяем, авторизован ли пользователь
-            if (localStorage.getItem('lm_session')) {
-                const sessionData = JSON.parse(localStorage.getItem('lm_session'));
-                const user = sessionData.user;
-                if (user && user.role) {
-                    if (user.role === 'dispatcher') {
-                        window.location.href = 'pages/dispatcher/dashboard.html';
-                    } else if (user.role === 'technician' || user.role === 'tech') {
-                        window.location.href = 'pages/tech/dashboard.html';
-                    } else if (user.role === 'admin') {
-                        window.location.href = 'pages/admin/admin-dashboard.html';
-                    } else {
-                        window.location.href = 'pages/client/dashboard.html';
-                    }
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginForm = document.getElementById('login-form');
+            
+            // Перевірка чи користувач вже увійшов
+            if (AuthManager.isAuthenticated()) {
+                const user = AuthManager.getCurrentUser();
+                if (user) {
+                    redirectUserByRole(user.role);
+                    return;
                 }
-                return;
             }
             
-            // Обработка формы входа
-            $('#login-form').on('submit', function(e) {
-                e.preventDefault();
-                
-                const username = $('#username').val();
-                const password = $('#password').val();
-                const rememberMe = $('#remember').is(':checked');
-                
-                // Добавляем элемент для сообщений об ошибках
-                if ($('#login-error').length === 0) {
-                    $(this).prepend('<div class="alert alert-danger" id="login-error" style="display: none;"></div>');
+            // Функція перенаправлення за ролями
+            function redirectUserByRole(role) {
+                switch (role) {
+                    case 'admin':
+                        window.location.href = 'pages/admin/lifts.html';
+                        break;
+                    case 'dispatcher':
+                        window.location.href = 'pages/dispatcher/assignments.html';
+                        break;
+                    case 'technician':
+                    case 'tech':
+                        window.location.href = 'pages/tech/dashboard.html';
+                        break;
+                    case 'client':
+                        window.location.href = 'pages/client/dashboard.html';
+                        break;
+                    default:
+                        window.location.href = 'pages/admin/lifts.html';
+                }
+            }
+            
+            // Показ повідомлень
+            function showMessage(message, type = 'error') {
+                let alertDiv = document.getElementById('login-message');
+                if (!alertDiv) {
+                    alertDiv = document.createElement('div');
+                    alertDiv.id = 'login-message';
+                    alertDiv.className = `alert alert-${type === 'error' ? 'danger' : 'success'}`;
+                    loginForm.insertBefore(alertDiv, loginForm.firstChild);
                 }
                 
-                // Если мы в режиме разработки, используем локальное хранилище
-                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                    // Простая симуляция входа
-                    const users = JSON.parse(localStorage.getItem('users') || '[]');
-                    const user = users.find(u => u.username === username && u.password === password);
+                alertDiv.textContent = message;
+                alertDiv.style.display = 'block';
+                
+                // Автоматично приховати через 5 секунд
+                setTimeout(() => {
+                    alertDiv.style.display = 'none';
+                }, 5000);
+            }
+            
+            // Обробка форми входу
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const email = document.getElementById('email')?.value || document.getElementById('username')?.value;
+                const password = document.getElementById('password').value;
+                
+                if (!email || !password) {
+                    showMessage('Введіть email/логін та пароль');
+                    return;
+                }
+                
+                try {
+                    console.log('🔐 Спроба входу для:', email);
                     
-                    if (!user) {
-                        $('#login-error').text('Неправильний логін або пароль').show();
-                        return;
-                    }
-                    
-                    // Создаем токен авторизации (в реальном приложении это должен делать сервер)
-                    const authToken = btoa(username + ':' + Date.now());
-                    localStorage.setItem('authToken', authToken);
-                    
-                    // Сохраняем данные пользователя
-                    const userData = {
-                        id: user.id,
-                        firstName: user.firstName,
-                        lastName: user.lastName,
-                        email: user.email,
-                        username: user.username,
-                        role: user.role
-                    };
-                    localStorage.setItem('userData', JSON.stringify(userData));
-                    
-                    // Використовуємо AuthManager для створення сесії та перенаправлення
-                    if (window.authManager) {
-                        window.authManager.createSession(user, rememberMe);
-                        window.authManager.redirectToDashboard(user.role);
-                    } else {
-                        // Fallback якщо AuthManager не ініціалізовано
-                        localStorage.setItem('lm_session', JSON.stringify({
-                            user: user,
-                            expiresAt: new Date(Date.now() + (rememberMe ? 30 : 1) * 24 * 60 * 60 * 1000).toISOString()
-                        }));
-                        
-                        if (user.role === 'dispatcher') {
-                            window.location.href = 'pages/dispatcher/dashboard.html';
-                        } else if (user.role === 'technician' || user.role === 'tech') {
-                            window.location.href = 'pages/tech/dashboard.html';
-                        } else if (user.role === 'admin') {
-                            window.location.href = 'pages/admin/admin-dashboard.html';
-                        } else {
-                            window.location.href = 'pages/client/dashboard.html';
-                        }
-                    }
-                } else {
-                    // Реальный API запрос для входа
-                    $.ajax({
-                        url: '/api/login',
+                    const response = await fetch('/api/auth/login', {
                         method: 'POST',
-                        contentType: 'application/json',
-                        data: JSON.stringify({
-                            username: username,
-                            password: password,
-                            remember: rememberMe
-                        }),
-                        success: function(response) {
-                            if (response.success && response.token) {
-                                localStorage.setItem('authToken', response.token);
-                                localStorage.setItem('userData', JSON.stringify(response.user));
-                                
-                                // Перенаправляем пользователя в зависимости от роли
-                                if (response.user.role === 'dispatcher') {
-                                    window.location.href = 'pages/dispatcher/dashboard.html';
-                                } else if (response.user.role === 'technician' || response.user.role === 'tech') {
-                                    window.location.href = 'pages/tech/dashboard.html';
-                                } else if (response.user.role === 'admin') {
-                                    window.location.href = 'pages/admin/admin-dashboard.html';
-                                } else {
-                                    window.location.href = 'pages/client/dashboard.html';
-                                }
-                            } else {
-                                $('#login-error').text(response.message || 'Помилка входу').show();
-                            }
+                        headers: {
+                            'Content-Type': 'application/json'
                         },
-                        error: function(xhr) {
-                            const message = xhr.responseJSON && xhr.responseJSON.message 
-                                ? xhr.responseJSON.message 
-                                : 'Сталася помилка під час входу. Спробуйте пізніше.';
-                            $('#login-error').text(message).show();
-                        }
+                        body: JSON.stringify({ 
+                            email: email,
+                            username: email, // Підтримуємо і email і username
+                            password: password
+                        })
                     });
+                    
+                    const data = await response.json();
+                    console.log('📝 Відповідь сервера:', data);
+                    
+                    if (response.ok && data.success) {
+                        // Збереження токена та користувача
+                        AuthManager.login(data.token, data.user);
+                        
+                        showMessage('Успішний вхід! Перенаправлення...', 'success');
+                        
+                        // Перенаправлення через 1 секунду
+                        setTimeout(() => {
+                            redirectUserByRole(data.user.role);
+                        }, 1000);
+                        
+                    } else {
+                        showMessage(data.message || 'Помилка входу');
+                        console.error('❌ Помилка входу:', data);
+                    }
+                } catch (error) {
+                    console.error('❌ Критична помилка входу:', error);
+                    showMessage('Сталася помилка під час входу. Перевірте з\'єднання з сервером.');
                 }
             });
         });
