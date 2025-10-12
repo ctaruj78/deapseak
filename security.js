@@ -73,9 +73,22 @@ class AuthManager {
         return user && user.role === requiredRole;
     }
 
+    // Метод для формування правильного API URL
+    static getApiUrl(endpoint) {
+        // Якщо сайт працює на порту 8080, то API на 3001
+        if (window.location.port === '8080') {
+            return `http://localhost:3001${endpoint}`;
+        }
+        // Інакше використовуємо відносний шлях
+        return endpoint;
+    }
+
     // Метод для відправки авторизованих запитів
     static async fetchWithAuth(url, options = {}) {
         const headers = this.getAuthHeaders();
+        
+        // Використовуємо правильний URL
+        const apiUrl = this.getApiUrl(url);
         
         const config = {
             ...options,
@@ -86,7 +99,7 @@ class AuthManager {
         };
         
         try {
-            const response = await fetch(url, config);
+            const response = await fetch(apiUrl, config);
             
             // Якщо отримали 401, токен недійсний
             if (response.status === 401) {
@@ -119,3 +132,12 @@ class AuthManager {
         console.log('👤 Поточний користувач:', user);
     }
 }
+
+// Ініціалізація при завантаженні
+console.log('🔒 AuthManager завантажено');
+console.log('📊 Поточний статус авторизації:', AuthManager.isAuthenticated());
+
+// Перевірка авторизації при завантаженні сторінки
+document.addEventListener('DOMContentLoaded', () => {
+    AuthManager.checkAuthOnPageLoad();
+});
