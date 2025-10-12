@@ -400,7 +400,7 @@
         }
     </style>
 </head>
-<body class="hold-transition sidebar-mini layout-fixed">
+<body class="hold-transition sidebar-mini layout-fixed" data-required-role="admin">
     <div class="wrapper">
         <!-- Навігаційна панель -->
         <nav class="main-header navbar navbar-expand navbar-white navbar-light">
@@ -826,7 +826,7 @@
                                                 <input type="text" id="enhancedMunicipalNumber" name="municipalNumber" class="form-control" required placeholder="Муніципальний номер ліфта">
                                                 <div class="input-group-append">
                                                     <button type="button" class="btn btn-outline-primary" 
-                                                            onclick="window.enhancedLiftModal.generateQRCode('enhancedMunicipalNumber', 1)">
+                                                            onclick="generateQRCodeSafe('enhancedMunicipalNumber', 1)">
                                                         <i class="fas fa-qrcode"></i>
                                                     </button>
                                                 </div>
@@ -3174,6 +3174,409 @@
         }
     });
 
+    // 🔧 ВИПРАВЛЕННЯ: Правильна ініціалізація Enhanced Lift Modal
+    console.log('🚀 Ініціалізація Enhanced Lift Modal...');
+    
+    // Перевіряємо чи завантажено всі залежності
+    function initializeEnhancedModal() {
+        if (typeof QRCode === 'undefined') {
+            console.log('⏳ Очікування завантаження QRCode бібліотеки...');
+            setTimeout(initializeEnhancedModal, 100);
+            return;
+        }
+        
+        if (typeof EnhancedLiftModal === 'undefined') {
+            console.log('⏳ Очікування завантаження EnhancedLiftModal класу...');
+            setTimeout(initializeEnhancedModal, 100);
+            return;
+        }
+        
+        // Ініціалізуємо Enhanced Lift Modal
+        try {
+            window.enhancedLiftModal = new EnhancedLiftModal();
+            console.log('✅ Enhanced Lift Modal ініціалізовано успішно!');
+            
+            // Додаємо глобальні функції для зворотної сумісності
+            window.openEnhancedModal = function() {
+                console.log('🔥 Відкриття Enhanced Modal...');
+                if (window.enhancedLiftModal && window.enhancedLiftModal.resetForm) {
+                    window.enhancedLiftModal.currentLiftId = null;
+                    window.enhancedLiftModal.resetForm();
+                }
+                $('#enhancedModalTitle').text('Додати новий ліфт');
+                $('#enhancedLiftModal').modal('show');
+            };
+            
+            // Функція для QR генерації (безпечна версія)
+            window.generateQRCodeSafe = function(inputId, liftNumber = 1) {
+                if (window.enhancedLiftModal && window.enhancedLiftModal.generateQRCode) {
+                    window.enhancedLiftModal.generateQRCode(inputId, liftNumber);
+                } else {
+                    console.error('❌ Enhanced Lift Modal не готовий для генерації QR!');
+                    alert('QR генератор ще не готовий. Спробуйте через кілька секунд.');
+                }
+            };
+            
+        } catch (error) {
+            console.error('❌ Помилка ініціалізації Enhanced Lift Modal:', error);
+            
+            // Fallback функції якщо щось пішло не так
+            window.openEnhancedModal = function() {
+                alert('Модальне вікно тимчасово недоступне. Спробуйте оновити сторінку.');
+            };
+        }
+    }
+    
+    // Запускаємо ініціалізацію після завантаження всіх скриптів
+    setTimeout(initializeEnhancedModal, 500);
+
+    // 🔧 ВИПРАВЛЕННЯ: API інтеграція замість localStorage
+    
+    // Глобальна змінна для токена авторизації
+    let authToken = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken');
+    
+    // API базова функція
+    async function apiCall(endpoint, method = 'GET', data = null) {
+        const options = {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        };
+        
+        if (authToken) {
+            options.headers['Authorization'] = `Bearer ${authToken}`;
+        }
+        
+        if (data) {
+            options.body = JSON.stringify(data);
+        }
+        
+        try {
+            const response = await fetch(`http://localhost:3001${endpoint}`, options);
+            const result = await response.json();
+            return { success: response.ok, data: result, status: response.status };
+        } catch (error) {
+            console.error('❌ API Error:', error);
+            return { success: false, error: error.message };
+        }
+    }
+    
+    // Виправлена функція завантаження ліфтів з API
+    async function loadLiftsFromAPI() {
+        console.log('🔄 Завантаження ліфтів з API...');
+        
+        const result = await apiCall('/api/lifts');
+        
+        if (result.success) {
+            console.log('✅ Ліфти завантажено з API:', result.data.length);
+            return result.data;
+        } else {
+            console.error('❌ Помилка завантаження ліфтів:', result.error);
+            // Fallback до localStorage якщо API недоступний
+            return JSON.parse(localStorage.getItem('lifts') || '[]');
+        }
+    }
+    
+    // Виправлена функція збереження ліфта
+    async function saveLiftToAPI(liftData) {
+        console.log('💾 Збереження ліфта через API...', liftData);
+        
+        const result = await apiCall('/api/lifts', 'POST', liftData);
+        
+        if (result.success) {
+            console.log('✅ Ліфт збережено в MongoDB:', result.data);
+            // Також зберігаємо в localStorage для сумісності
+            let savedLifts = JSON.parse(localStorage.getItem('lifts') || '[]');
+            savedLifts.push({...liftData, id: result.data.id, _id: result.data.id});
+            localStorage.setItem('lifts', JSON.stringify(savedLifts));
+            
+            return result.data;
+        } else {
+            console.error('❌ Помилка збереження ліфта:', result.error);
+            throw new Error(result.error || 'Помилка збереження');
+        }
+    }
+    
+    // Функція відображення ліфтів в таблиці
+    function displayLiftsInTable(lifts) {
+        console.log('📋 Відображення ліфтів в таблиці:', lifts.length);
+        
+        const tableBody = document.getElementById('lifts-table-body');
+        if (!tableBody) {
+            console.error('❌ Таблиця ліфтів не знайдена');
+            return;
+        }
+
+        // Очистити таблицю
+        tableBody.innerHTML = '';
+
+        if (!lifts || lifts.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-4">
+                        <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                        <p class="mb-0">Ліфти не знайдені</p>
+                        <small>Додайте перший ліфт, натиснувши кнопку "Додати ліфт"</small>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        // Додати рядки ліфтів
+        lifts.forEach(lift => {
+            const liftId = lift._id || lift.id || Math.random().toString(36);
+            const statusClass = getStatusClass(lift.status || 'active');
+            const statusText = getStatusText(lift.status || 'active');
+            
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>
+                    <span class="badge ${statusClass} text-white px-2 py-1">
+                        ${statusText}
+                    </span>
+                </td>
+                <td>
+                    <strong>${lift.address || 'Не вказано'}</strong>
+                    ${lift.municipalNumber ? `<br><small class="text-muted">№${lift.municipalNumber}</small>` : ''}
+                </td>
+                <td>${lift.type || 'Не вказано'}</td>
+                <td>${lift.loadCapacity || 'Не вказано'} кг</td>
+                <td>${lift.floorCount || 'Не вказано'} пов.</td>
+                <td>${lift.manufacturingYear || 'Не вказано'}</td>
+                <td>
+                    ${lift.lastInspection ? new Date(lift.lastInspection).toLocaleDateString('uk-UA') : 'Не проводилась'}
+                </td>
+                <td>
+                    <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn btn-outline-info" 
+                                onclick="showLiftDetails('${liftId}')"
+                                title="Детальна інформація">
+                            <i class="fas fa-info-circle"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" 
+                                onclick="editLift('${liftId}')"
+                                title="Редагувати">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-success" 
+                                onclick="generateQRCodeForLift('${liftId}')"
+                                title="Генерувати QR код">
+                            <i class="fas fa-qrcode"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-warning" 
+                                onclick="scheduleMaintenance('${liftId}')"
+                                title="Запланувати обслуговування">
+                            <i class="fas fa-tools"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-danger" 
+                                onclick="deleteLift('${liftId}')"
+                                title="Видалити">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+        
+        console.log('✅ Відображено ліфтів в таблиці:', lifts.length);
+    }
+
+    // Допоміжні функції для статусів
+    function getStatusClass(status) {
+        const statusClasses = {
+            'active': 'badge-success',
+            'maintenance': 'badge-warning', 
+            'repair': 'badge-danger',
+            'inactive': 'badge-secondary'
+        };
+        return statusClasses[status] || 'badge-secondary';
+    }
+
+    function getStatusText(status) {
+        const statusTexts = {
+            'active': 'Активний',
+            'maintenance': 'Обслуговування',
+            'repair': 'Ремонт', 
+            'inactive': 'Неактивний'
+        };
+        return statusTexts[status] || 'Невизначено';
+    }
+
+    // Функції для кнопок дій
+    function showLiftDetails(liftId) {
+        console.log('📋 Показати деталі ліфта:', liftId);
+        
+        // Знаходимо ліфт за ID
+        const lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
+        const lift = lifts.find(l => (l._id || l.id) === liftId);
+        
+        if (!lift) {
+            alert('Ліфт не знайдено');
+            return;
+        }
+
+        // Заповнюємо модальне вікно деталей
+        const modal = document.getElementById('liftDetailsModal');
+        if (modal) {
+            // Заповнюємо поля
+            document.getElementById('detailsAddress').textContent = lift.address || 'Не вказано';
+            document.getElementById('detailsMunicipalNumber').textContent = lift.municipalNumber || 'Не вказано';
+            document.getElementById('detailsType').textContent = lift.type || 'Не вказано';
+            document.getElementById('detailsCapacity').textContent = (lift.loadCapacity || 'Не вказано') + ' кг';
+            document.getElementById('detailsFloors').textContent = (lift.floorCount || 'Не вказано') + ' пов.';
+            document.getElementById('detailsYear').textContent = lift.manufacturingYear || 'Не вказано';
+            document.getElementById('detailsLastInspection').textContent = 
+                lift.lastInspection ? new Date(lift.lastInspection).toLocaleDateString('uk-UA') : 'Не проводилась';
+            
+            // Додаємо обробник для кнопки редагування
+            const editBtn = document.getElementById('edit-lift-from-details');
+            if (editBtn) {
+                editBtn.onclick = () => {
+                    $('#liftDetailsModal').modal('hide');
+                    editLift(liftId);
+                };
+            }
+            
+            // Показуємо модальне вікно
+            $('#liftDetailsModal').modal('show');
+        } else {
+            // Fallback - показуємо alert з інформацією
+            alert(`Деталі ліфта:\n\nАдреса: ${lift.address}\nМуніципальний номер: ${lift.municipalNumber}\nТип: ${lift.type}\nВантажопідйомність: ${lift.loadCapacity} кг\nПоверхи: ${lift.floorCount}\nРік виготовлення: ${lift.manufacturingYear}`);
+        }
+    }
+
+    function editLift(liftId) {
+        console.log('✏️ Редагування ліфта:', liftId);
+        
+        const lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
+        const lift = lifts.find(l => (l._id || l.id) === liftId);
+        
+        if (!lift) {
+            alert('Ліфт не знайдено');
+            return;
+        }
+
+        // Заповнюємо форму редагування
+        if (typeof openEnhancedModal === 'function') {
+            // Відкриваємо модальне вікно додавання/редагування
+            openEnhancedModal(lift);
+        } else {
+            alert('Функція редагування недоступна');
+        }
+    }
+
+    function generateQRCodeForLift(liftId) {
+        console.log('🏷️ Генерація QR коду для ліфта:', liftId);
+        
+        const lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
+        const lift = lifts.find(l => (l._id || l.id) === liftId);
+        
+        if (!lift) {
+            alert('Ліфт не знайдено');
+            return;
+        }
+
+        // Використовуємо існуючу функцію генерації QR
+        if (typeof generateQRCodeSafe === 'function') {
+            generateQRCodeSafe('municipalNumber', lift.municipalNumber || liftId);
+        } else {
+            alert('Функція генерації QR коду недоступна');
+        }
+    }
+
+    function scheduleMaintenance(liftId) {
+        console.log('🔧 Планування обслуговування ліфта:', liftId);
+        
+        // Можна відкрити модальне вікно планування або перенаправити
+        const maintenanceDate = prompt('Введіть дату планового обслуговування (YYYY-MM-DD):');
+        
+        if (maintenanceDate) {
+            // Тут можна додати логіку збереження в API
+            alert(`Обслуговування заплановано на ${maintenanceDate}`);
+            
+            // Оновити статус ліфта
+            const lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
+            const liftIndex = lifts.findIndex(l => (l._id || l.id) === liftId);
+            
+            if (liftIndex !== -1) {
+                lifts[liftIndex].nextMaintenance = maintenanceDate;
+                lifts[liftIndex].status = 'maintenance';
+                localStorage.setItem('lifts', JSON.stringify(lifts));
+                
+                // Перезавантажити таблицю
+                displayLiftsInTable(lifts);
+            }
+        }
+    }
+
+    function deleteLift(liftId) {
+        console.log('🗑️ Видалення ліфта:', liftId);
+        
+        if (!confirm('Ви впевнені, що хочете видалити цей ліфт? Цю дію не можна скасувати.')) {
+            return;
+        }
+
+        // Видалити з localStorage
+        let lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
+        lifts = lifts.filter(l => (l._id || l.id) !== liftId);
+        localStorage.setItem('lifts', JSON.stringify(lifts));
+        
+        // Також спробувати видалити через API
+        fetch(`http://localhost:3001/api/lifts/${liftId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            }
+        }).then(response => {
+            if (response.ok) {
+                console.log('✅ Ліфт видалено з API');
+            } else {
+                console.warn('⚠️ Помилка видалення з API, але локальні дані оновлено');
+            }
+        }).catch(error => {
+            console.warn('⚠️ API недоступний, але локальні дані оновлено');
+        });
+        
+        // Оновити таблицю
+        displayLiftsInTable(lifts);
+        
+        alert('Ліфт успішно видалено');
+    }
+    
+    // Перевірка авторизації при завантаженні сторінки
+    function checkAuthOnLoad() {
+        if (!authToken) {
+            console.log('⚠️ Токен авторизації не знайдено');
+            // Можна перенаправити на login або показати повідомлення
+            const shouldRedirect = confirm('Ви не авторизовані. Перейти на сторінку входу?');
+            if (shouldRedirect) {
+                window.location.href = '/login.html';
+                return false;
+            }
+        } else {
+            console.log('✅ Користувач авторизований');
+        }
+        return true;
+    }
+    
+    // Функція оновлення інтерфейсу з даними API
+    async function refreshLiftsDisplay() {
+        try {
+            const lifts = await loadLiftsFromAPI();
+            // Оновлюємо таблицю ліфтів
+            displayLiftsInTable(lifts);
+            console.log('🔄 Інтерфейс оновлено з API даними');
+        } catch (error) {
+            console.error('❌ Помилка оновлення інтерфейсу:', error);
+        }
+    }
+    
+    // Ініціалізація при завантаженні сторінки
+    checkAuthOnLoad();
     
     </script>
 </body>

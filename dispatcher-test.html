@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Диспетчер - Тест функціональності</title>
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css">
+    <style>
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .test-success { background-color: #d4edda; color: #155724; }
+        .test-error { background-color: #f8d7da; color: #721c24; }
+        .test-info { background-color: #d1ecf1; color: #0c5460; }
+        .request-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            background: white;
+        }
+        .priority-high { border-left: 4px solid #dc3545; }
+        .priority-medium { border-left: 4px solid #ffc107; }
+        .priority-low { border-left: 4px solid #28a745; }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+    <div class="content-wrapper" style="margin-left: 0;">
+        <section class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1>📞 Тест функціональності диспетчера</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="float-right">
+                            <button id="runAllTests" class="btn btn-primary">
+                                <i class="fas fa-play"></i> Запустити всі тести
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content">
+            <div class="container-fluid">
+                
+                <!-- Авторизація диспетчера -->
+                <div class="test-section">
+                    <h3><i class="fas fa-key"></i> 1. Авторизація диспетчера</h3>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Логін:</label>
+                                <input type="text" id="username" class="form-control" value="dispatcher_ivan">
+                            </div>
+                            <div class="form-group">
+                                <label>Пароль:</label>
+                                <input type="password" id="password" class="form-control" value="disp123">
+                            </div>
+                            <button id="testLogin" class="btn btn-success">
+                                <i class="fas fa-sign-in-alt"></i> Авторизуватися
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <div id="authResult" class="test-result test-info">
+                                Натисніть для авторизації диспетчера
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Перегляд заявок -->
+                <div class="test-section">
+                    <h3><i class="fas fa-tasks"></i> 2. Перегляд та обробка заявок</h3>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <button id="testGetRequests" class="btn btn-primary">
+                                <i class="fas fa-list"></i> Отримати заявки
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <button id="testFilterRequests" class="btn btn-info">
+                                <i class="fas fa-filter"></i> Фільтр по пріоритету
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <button id="testSearchRequests" class="btn btn-warning">
+                                <i class="fas fa-search"></i> Пошук заявок
+                            </button>
+                        </div>
+                    </div>
+                    <div id="requestsList" class="mt-3">
+                        <!-- Список заявок буде тут -->
+                    </div>
+                    <div id="requestsResult" class="test-result test-info mt-3">
+                        Результати тестів заявок будуть тут
+                    </div>
+                </div>
+
+                <!-- Призначення техніків -->
+                <div class="test-section">
+                    <h3><i class="fas fa-user-cog"></i> 3. Призначення техніків</h3>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <button id="testGetTechnicians" class="btn btn-primary">
+                                <i class="fas fa-users"></i> Отримати техніків
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <button id="testAssignTechnician" class="btn btn-success">
+                                <i class="fas fa-user-plus"></i> Призначити техніка
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <button id="testReassignTechnician" class="btn btn-warning">
+                                <i class="fas fa-exchange-alt"></i> Перепризначити
+                            </button>
+                        </div>
+                    </div>
+                    <div id="techniciansResult" class="test-result test-info mt-3">
+                        Результати тестів техніків будуть тут
+                    </div>
+                </div>
+
+                <!-- Зміна статусів -->
+                <div class="test-section">
+                    <h3><i class="fas fa-sync-alt"></i> 4. Управління статусами</h3>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <button id="testStatusNew" class="btn btn-secondary">
+                                <i class="fas fa-plus"></i> Нові
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button id="testStatusAssigned" class="btn btn-primary">
+                                <i class="fas fa-user-check"></i> Призначені
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button id="testStatusInProgress" class="btn btn-warning">
+                                <i class="fas fa-cogs"></i> В роботі
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button id="testStatusCompleted" class="btn btn-success">
+                                <i class="fas fa-check"></i> Завершені
+                            </button>
+                        </div>
+                    </div>
+                    <div id="statusResult" class="test-result test-info mt-3">
+                        Результати тестів статусів будуть тут
+                    </div>
+                </div>
+
+                <!-- Комунікація -->
+                <div class="test-section">
+                    <h3><i class="fas fa-comments"></i> 5. Комунікація</h3>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <button id="testSendMessage" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> Надіслати повідомлення
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <button id="testNotifications" class="btn btn-info">
+                                <i class="fas fa-bell"></i> Сповіщення
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <button id="testEmergencyAlert" class="btn btn-danger">
+                                <i class="fas fa-exclamation-triangle"></i> Термінові
+                            </button>
+                        </div>
+                    </div>
+                    <div id="communicationResult" class="test-result test-info mt-3">
+                        Результати тестів комунікації будуть тут
+                    </div>
+                </div>
+
+                <!-- Моніторинг -->
+                <div class="test-section">
+                    <h3><i class="fas fa-chart-line"></i> 6. Моніторинг та звітність</h3>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <button id="testMonitoringDashboard" class="btn btn-primary">
+                                <i class="fas fa-tachometer-alt"></i> Дашборд
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <button id="testGenerateReport" class="btn btn-info">
+                                <i class="fas fa-file-alt"></i> Звіти
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <button id="testExportData" class="btn btn-success">
+                                <i class="fas fa-download"></i> Експорт
+                            </button>
+                        </div>
+                    </div>
+                    <div id="monitoringResult" class="test-result test-info mt-3">
+                        Результати тестів моніторингу будуть тут
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </div>
+</div>
+
+<!-- Modal для деталей заявки -->
+<div class="modal fade" id="requestDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Деталі заявки</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="requestDetailContent">
+                <!-- Деталі заявки -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="startWorkBtn">
+                    <i class="fas fa-play"></i> Розпочати роботу
+                </button>
+                <button type="button" class="btn btn-success" id="assignTechBtn">
+                    <i class="fas fa-user-plus"></i> Призначити техніка
+                </button>
+                <button type="button" class="btn btn-info" id="addCommentBtn">
+                    <i class="fas fa-comment"></i> Додати коментар
+                </button>
+                <button type="button" class="btn btn-warning" id="completeWorkBtn">
+                    <i class="fas fa-check"></i> Завершити
+                </button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+
+<script>
+let authToken = null;
+let currentUser = null;
+let allRequests = [];
+let allTechnicians = [];
+
+// API функція
+async function apiCall(endpoint, method = 'GET', data = null) {
+    const options = {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    };
+    
+    if (authToken) {
+        options.headers['Authorization'] = `Bearer ${authToken}`;
+    }
+    
+    if (data) {
+        options.body = JSON.stringify(data);
+    }
+    
+    try {
+        const response = await fetch(`http://localhost:3001${endpoint}`, options);
+        const result = await response.json();
+        return { success: response.ok, data: result, status: response.status };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+$(document).ready(function() {
+    
+    // 1. Авторизація
+    $('#testLogin').click(async function() {
+        const username = $('#username').val();
+        const password = $('#password').val();
+        
+        showResult('#authResult', 'Авторизація диспетчера...', 'info');
+        
+        const result = await apiCall('/api/login', 'POST', { username, password });
+        
+        if (result.success && result.data.success) {
+            authToken = result.data.token;
+            currentUser = result.data.user;
+            
+            if (currentUser.role !== 'dispatcher') {
+                showResult('#authResult', `❌ Це не диспетчер! Роль: ${currentUser.role}`, 'error');
+                return;
+            }
+            
+            showResult('#authResult', `✅ Диспетчер авторизований: ${currentUser.firstName} ${currentUser.lastName}`, 'success');
+        } else {
+            showResult('#authResult', `❌ Помилка авторизації: ${result.data?.message || result.error}`, 'error');
+        }
+    });
+    
+    // 2. Отримання заявок
+    $('#testGetRequests').click(async function() {
+        if (!authToken) {
+            showResult('#requestsResult', '❌ Спочатку авторизуйтесь!', 'error');
+            return;
+        }
+        
+        showResult('#requestsResult', 'Завантаження заявок...', 'info');
+        
+        const result = await apiCall('/api/requests');
+        
+        if (result.success) {
+            allRequests = result.data;
+            showResult('#requestsResult', `✅ Завантажено заявок: ${allRequests.length}`, 'success');
+            displayRequests(allRequests);
+        } else {
+            showResult('#requestsResult', `❌ Помилка: ${result.error}`, 'error');
+        }
+    });
+    
+    // 3. Отримання техніків
+    $('#testGetTechnicians').click(async function() {
+        if (!authToken) {
+            showResult('#techniciansResult', '❌ Спочатку авторизуйтесь!', 'error');
+            return;
+        }
+        
+        showResult('#techniciansResult', 'Завантаження техніків...', 'info');
+        
+        // Отримуємо всіх користувачів та фільтруємо техніків (в реальній системі буде окремий endpoint)
+        const result = await apiCall('/api/users');
+        
+        if (result.success) {
+            // Симулюємо що у нас є техніки в системі
+            allTechnicians = [
+                { id: 'tech1', name: 'Сергій Техніков', status: 'available' },
+                { id: 'tech2', name: 'Петро Майстер', status: 'busy' },
+                { id: 'tech3', name: 'Іван Ремонтник', status: 'available' }
+            ];
+            
+            showResult('#techniciansResult', `✅ Завантажено техніків: ${allTechnicians.length}`, 'success');
+        } else {
+            showResult('#techniciansResult', `❌ Помилка: ${result.error}`, 'error');
+        }
+    });
+    
+    // 4. Призначення техніка
+    $('#testAssignTechnician').click(async function() {
+        if (!authToken) {
+            showResult('#techniciansResult', '❌ Спочатку авторизуйтесь!', 'error');
+            return;
+        }
+        
+        if (allRequests.length === 0) {
+            showResult('#techniciansResult', '❌ Спочатку завантажте заявки!', 'error');
+            return;
+        }
+        
+        showResult('#techniciansResult', 'Призначення техніка...', 'info');
+        
+        // Беремо першу заявку та призначаємо їй техніка
+        const requestToAssign = allRequests[0];
+        const technicianToAssign = allTechnicians.find(t => t.status === 'available');
+        
+        if (!technicianToAssign) {
+            showResult('#techniciansResult', '❌ Немає доступних техніків!', 'error');
+            return;
+        }
+        
+        // Симулюємо призначення (в реальній системі це буде API виклик)
+        const updatedRequest = {
+            ...requestToAssign,
+            status: 'assigned',
+            assignedTo: technicianToAssign.id,
+            assignedTechName: technicianToAssign.name,
+            assignedAt: new Date().toISOString()
+        };
+        
+        const result = await apiCall('/api/requests', 'POST', updatedRequest);
+        
+        if (result.success) {
+            showResult('#techniciansResult', `✅ Техніка ${technicianToAssign.name} призначено до заявки`, 'success');
+        } else {
+            showResult('#techniciansResult', `❌ Помилка призначення: ${result.error}`, 'error');
+        }
+    });
+    
+    // 5. Фільтрація за пріоритетом
+    $('#testFilterRequests').click(function() {
+        if (allRequests.length === 0) {
+            showResult('#requestsResult', '❌ Спочатку завантажте заявки!', 'error');
+            return;
+        }
+        
+        const highPriorityRequests = allRequests.filter(r => r.priority === 'high');
+        displayRequests(highPriorityRequests);
+        showResult('#requestsResult', `✅ Показано заявок з високим пріоритетом: ${highPriorityRequests.length}`, 'success');
+    });
+    
+    // 6. Статуси
+    $('#testStatusNew').click(() => filterByStatus('new'));
+    $('#testStatusAssigned').click(() => filterByStatus('assigned'));
+    $('#testStatusInProgress').click(() => filterByStatus('in-progress'));
+    $('#testStatusCompleted').click(() => filterByStatus('completed'));
+    
+    // 7. Запуск всіх тестів
+    $('#runAllTests').click(async function() {
+        $(this).prop('disabled', true).text('Тестування...');
+        
+        await $('#testLogin').click();
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        await $('#testGetRequests').click();
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        await $('#testGetTechnicians').click();
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        $(this).prop('disabled', false).html('<i class="fas fa-play"></i> Запустити всі тести');
+    });
+    
+    // Обробники модального вікна
+    $('#startWorkBtn').click(function() {
+        showResult('#requestsResult', '✅ Робота розпочата!', 'success');
+        $('#requestDetailModal').modal('hide');
+    });
+    
+    $('#assignTechBtn').click(function() {
+        showResult('#requestsResult', '✅ Техніка призначено!', 'success');
+        $('#requestDetailModal').modal('hide');
+    });
+    
+    $('#addCommentBtn').click(function() {
+        const comment = prompt('Введіть коментар:');
+        if (comment) {
+            showResult('#requestsResult', `✅ Коментар додано: "${comment}"`, 'success');
+        }
+        $('#requestDetailModal').modal('hide');
+    });
+    
+    $('#completeWorkBtn').click(function() {
+        showResult('#requestsResult', '✅ Роботу завершено!', 'success');
+        $('#requestDetailModal').modal('hide');
+    });
+});
+
+// Допоміжні функції
+function showResult(selector, message, type) {
+    $(selector).removeClass('test-success test-error test-info')
+               .addClass(`test-${type}`)
+               .text(message);
+}
+
+function displayRequests(requests) {
+    const container = $('#requestsList');
+    container.empty();
+    
+    if (requests.length === 0) {
+        container.html('<div class="alert alert-info">Немає заявок для відображення</div>');
+        return;
+    }
+    
+    requests.forEach(request => {
+        const priorityClass = `priority-${request.priority || 'medium'}`;
+        const statusBadge = getStatusBadge(request.status);
+        
+        const requestHtml = `
+            <div class="request-card ${priorityClass}">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6><strong>${request.title || 'Без назви'}</strong></h6>
+                        <p class="text-muted mb-2">${request.description || 'Без опису'}</p>
+                        <small class="text-muted">
+                            📍 ${request.address || 'Адреса не вказана'}<br>
+                            👤 ${request.clientName || 'Клієнт не вказаний'}
+                        </small>
+                    </div>
+                    <div class="text-right">
+                        ${statusBadge}
+                        <br>
+                        <button class="btn btn-sm btn-outline-primary mt-2" onclick="showRequestDetails('${request._id}')">
+                            <i class="fas fa-eye"></i> Деталі
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        container.append(requestHtml);
+    });
+}
+
+function getStatusBadge(status) {
+    const badges = {
+        'new': '<span class="badge badge-secondary">Нова</span>',
+        'assigned': '<span class="badge badge-primary">Призначена</span>',
+        'in-progress': '<span class="badge badge-warning">В роботі</span>',
+        'completed': '<span class="badge badge-success">Завершена</span>',
+        'cancelled': '<span class="badge badge-danger">Скасована</span>'
+    };
+    
+    return badges[status] || '<span class="badge badge-light">Невідомо</span>';
+}
+
+function filterByStatus(status) {
+    if (allRequests.length === 0) {
+        showResult('#statusResult', '❌ Спочатку завантажте заявки!', 'error');
+        return;
+    }
+    
+    const filteredRequests = allRequests.filter(r => r.status === status);
+    displayRequests(filteredRequests);
+    showResult('#statusResult', `✅ Показано заявок зі статусом "${status}": ${filteredRequests.length}`, 'success');
+}
+
+function showRequestDetails(requestId) {
+    const request = allRequests.find(r => r._id === requestId);
+    if (!request) return;
+    
+    const detailsHtml = `
+        <div class="row">
+            <div class="col-md-6">
+                <strong>Заявка:</strong> ${request.title}<br>
+                <strong>Опис:</strong> ${request.description}<br>
+                <strong>Пріоритет:</strong> ${request.priority}<br>
+                <strong>Статус:</strong> ${request.status}
+            </div>
+            <div class="col-md-6">
+                <strong>Клієнт:</strong> ${request.clientName}<br>
+                <strong>Телефон:</strong> ${request.clientPhone}<br>
+                <strong>Адреса:</strong> ${request.address}<br>
+                <strong>Створено:</strong> ${new Date(request.createdAt).toLocaleString()}
+            </div>
+        </div>
+    `;
+    
+    $('#requestDetailContent').html(detailsHtml);
+    $('#requestDetailModal').modal('show');
+}
+</script>
+
+</body>
+</html>

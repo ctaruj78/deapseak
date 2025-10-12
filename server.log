@@ -79,3 +79,5 @@ nohup: ignoring input
 127.0.0.1 - - [08/Oct/2025 21:57:19] "GET /pages/admin/requests.html HTTP/1.1" 200 -
 127.0.0.1 - - [08/Oct/2025 22:03:46] "GET / HTTP/1.1" 200 -
 127.0.0.1 - - [08/Oct/2025 22:12:53] "HEAD /assets/js/websocket-client.js HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 22:27:40] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/Oct/2025 22:27:41] "GET /assets/js/websocket-client.js HTTP/1.1" 200 -
