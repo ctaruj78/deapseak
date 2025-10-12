@@ -1611,6 +1611,9 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+    
+    <!-- Система авторизації -->
+    <script src="../../security.js"></script>
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <!-- QR Code library -->
@@ -3232,30 +3235,32 @@
 
     // 🔧 ВИПРАВЛЕННЯ: API інтеграція замість localStorage
     
-    // Глобальна змінна для токена авторизації
-    let authToken = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken');
-    
-    // API базова функція
+    // API базова функція з використанням AuthManager
     async function apiCall(endpoint, method = 'GET', data = null) {
-        const options = {
-            method: method,
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        };
-        
-        if (authToken) {
-            options.headers['Authorization'] = `Bearer ${authToken}`;
-        }
-        
-        if (data) {
-            options.body = JSON.stringify(data);
+        // Перевірка авторизації
+        if (!AuthManager.isAuthenticated()) {
+            console.warn('⚠️ Користувач не авторизований');
+            AuthManager.logout();
+            return { success: false, error: 'Не авторизований' };
         }
         
         try {
-            const response = await fetch(`http://localhost:3001${endpoint}`, options);
+            const response = await AuthManager.fetchWithAuth(`http://localhost:3001${endpoint}`, {
+                method: method,
+                body: data ? JSON.stringify(data) : null
+            });
+            
+            if (!response) {
+                return { success: false, error: 'Помилка авторизації' };
+            }
+            
             const result = await response.json();
-            return { success: response.ok, data: result, status: response.status };
+            return { 
+                success: response.ok, 
+                data: result, 
+                status: response.status,
+                message: result.message || null
+            };
         } catch (error) {
             console.error('❌ API Error:', error);
             return { success: false, error: error.message };
@@ -3512,7 +3517,7 @@
         }
     }
 
-    function deleteLift(liftId) {
+    async function deleteLift(liftId) {
         console.log('🗑️ Видалення ліфта:', liftId);
         
         if (!confirm('Ви впевнені, що хочете видалити цей ліфт? Цю дію не можна скасувати.')) {
@@ -3525,21 +3530,12 @@
         localStorage.setItem('lifts', JSON.stringify(lifts));
         
         // Також спробувати видалити через API
-        fetch(`http://localhost:3001/api/lifts/${liftId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${authToken}`,
-                'Content-Type': 'application/json'
-            }
-        }).then(response => {
-            if (response.ok) {
-                console.log('✅ Ліфт видалено з API');
-            } else {
-                console.warn('⚠️ Помилка видалення з API, але локальні дані оновлено');
-            }
-        }).catch(error => {
-            console.warn('⚠️ API недоступний, але локальні дані оновлено');
-        });
+        const deleteResult = await apiCall(`/api/lifts/${liftId}`, 'DELETE');
+        if (deleteResult.success) {
+            console.log('✅ Ліфт видалено з API');
+        } else {
+            console.warn('⚠️ Помилка видалення з API, але локальні дані оновлено');
+        }
         
         // Оновити таблицю
         displayLiftsInTable(lifts);
@@ -3549,18 +3545,7 @@
     
     // Перевірка авторизації при завантаженні сторінки
     function checkAuthOnLoad() {
-        if (!authToken) {
-            console.log('⚠️ Токен авторизації не знайдено');
-            // Можна перенаправити на login або показати повідомлення
-            const shouldRedirect = confirm('Ви не авторизовані. Перейти на сторінку входу?');
-            if (shouldRedirect) {
-                window.location.href = '/login.html';
-                return false;
-            }
-        } else {
-            console.log('✅ Користувач авторизований');
-        }
-        return true;
+        return AuthManager.checkAuthOnPageLoad();
     }
     
     // Функція оновлення інтерфейсу з даними API
