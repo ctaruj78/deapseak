@@ -593,6 +593,9 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+
+<!-- Система авторизації -->
+<script src="../../security.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js"></script>
 
@@ -1147,6 +1150,186 @@ function clearFilters() {
 
 function applyFilters() {
     window.serviceManager.applyFilters();
+}
+
+// Функції для роботи з заявками
+function assignTechnician() {
+    // Перевірка авторизації
+    if (!AuthManager.isAuthenticated()) {
+        AuthManager.logout();
+        return;
+    }
+    
+    const currentUser = AuthManager.getCurrentUser();
+    if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'dispatcher')) {
+        alert('У вас немає прав для призначення техніків');
+        return;
+    }
+    
+    // Показуємо модальне вікно призначення техніка
+    showAssignTechnicianModal();
+}
+
+function changeRequestStatus(newStatus) {
+    if (!AuthManager.isAuthenticated()) {
+        AuthManager.logout();
+        return;
+    }
+    
+    // Логіка зміни статусу заявки
+    console.log('Зміна статусу на:', newStatus);
+    // TODO: Імплементувати через API
+}
+
+function addComment() {
+    if (!AuthManager.isAuthenticated()) {
+        AuthManager.logout();
+        return;
+    }
+    
+    const comment = prompt('Введіть коментар:');
+    if (comment) {
+        console.log('Додавання коментару:', comment);
+        // TODO: Імплементувати через API
+    }
+}
+
+function completeRequest() {
+    if (!AuthManager.isAuthenticated()) {
+        AuthManager.logout();
+        return;
+    }
+    
+    if (confirm('Ви впевнені, що хочете завершити цю заявку?')) {
+        changeRequestStatus('completed');
+    }
+}
+
+async function showAssignTechnicianModal() {
+    try {
+        // Завантаження списку техніків
+        const response = await AuthManager.fetchWithAuth('http://localhost:3001/api/users?role=tech');
+        
+        if (!response || !response.ok) {
+            throw new Error('Не вдалося завантажити список техніків');
+        }
+        
+        const allUsers = await response.json();
+        const technicians = allUsers.filter(user => user.role === 'tech');
+        
+        // Створення модального вікна
+        const modalHtml = `
+            <div class="modal fade" id="assignTechnicianModal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Призначити техніка</h5>
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="assignTechForm">
+                                <div class="form-group">
+                                    <label for="selectedTechnician">Оберіть техніка:</label>
+                                    <select class="form-control" id="selectedTechnician" required>
+                                        <option value="">-- Оберіть техніка --</option>
+                                        ${technicians.map(tech => 
+                                            `<option value="${tech._id}">${tech.firstName} ${tech.lastName} (${tech.email})</option>`
+                                        ).join('')}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="techInstructions">Інструкції:</label>
+                                    <textarea class="form-control" id="techInstructions" rows="3" 
+                                              placeholder="Додаткові інструкції для техніка"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="deadline">Термін виконання:</label>
+                                    <input type="datetime-local" class="form-control" id="deadline">
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                            <button type="button" class="btn btn-primary" onclick="submitTechnicianAssignment()">
+                                Призначити
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Видаляємо попереднє модальне вікно якщо є
+        $('#assignTechnicianModal').remove();
+        
+        // Додаємо нове
+        $('body').append(modalHtml);
+        
+        // Показуємо модальне вікно
+        $('#assignTechnicianModal').modal('show');
+        
+    } catch (error) {
+        console.error('Помилка завантаження техніків:', error);
+        alert('Помилка завантаження списку техніків: ' + error.message);
+    }
+}
+
+async function submitTechnicianAssignment() {
+    try {
+        const selectedTechnician = $('#selectedTechnician').val();
+        const instructions = $('#techInstructions').val();
+        const deadline = $('#deadline').val();
+        
+        if (!selectedTechnician) {
+            alert('Оберіть техніка');
+            return;
+        }
+        
+        // TODO: Отримати ID поточної заявки
+        const assignmentId = getCurrentAssignmentId(); // Ця функція має бути реалізована
+        
+        if (!assignmentId) {
+            alert('Не вибрана заявка для призначення');
+            return;
+        }
+        
+        const response = await AuthManager.fetchWithAuth(`/api/assignments/${assignmentId}/assign`, {
+            method: 'PUT',
+            body: JSON.stringify({
+                assignedTo: selectedTechnician,
+                instructions: instructions,
+                deadline: deadline
+            })
+        });
+        
+        if (!response || !response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Помилка призначення техніка');
+        }
+        
+        const result = await response.json();
+        
+        // Закриваємо модальне вікно
+        $('#assignTechnicianModal').modal('hide');
+        
+        // Повідомлення про успіх
+        alert('Техніка успішно призначено!');
+        
+        // Перезавантажуємо дані заявок
+        if (window.serviceManager) {
+            window.serviceManager.loadRequests();
+        }
+        
+    } catch (error) {
+        console.error('Помилка призначення техніка:', error);
+        alert('Помилка призначення техніка: ' + error.message);
+    }
+}
+
+function getCurrentAssignmentId() {
+    // TODO: Логіка для отримання ID поточно обраної заявки
+    // Це може бути збережено в глобальній змінній або отримано з UI
+    return window.currentAssignmentId || null;
 }
 
 function logout() {

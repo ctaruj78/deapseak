@@ -109,3 +109,46 @@
 127.0.0.1 - - [12/Oct/2025 15:48:50] "GET /assets/js/enhanced-lift-modal.js HTTP/1.1" 200 -
 127.0.0.1 - - [12/Oct/2025 15:48:50] "GET /assets/img/logo.png HTTP/1.1" 200 -
 127.0.0.1 - - [12/Oct/2025 15:48:52] "GET /login.html HTTP/1.1" 200 -
+127.0.0.1 - - [12/Oct/2025 16:07:55] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
+127.0.0.1 - - [12/Oct/2025 16:07:56] "GET /assets/js/simple-lift-modal.js HTTP/1.1" 304 -
+127.0.0.1 - - [12/Oct/2025 16:07:56] "GET /assets/js/system-eventbus.js HTTP/1.1" 304 -
+127.0.0.1 - - [12/Oct/2025 16:07:56] "GET /assets/js/lift-utils.js HTTP/1.1" 304 -
+127.0.0.1 - - [12/Oct/2025 16:07:57] "GET /assets/css/enhanced-lift-modal.css HTTP/1.1" 304 -
+127.0.0.1 - - [12/Oct/2025 16:07:57] "GET /assets/js/test-lift-saving.js HTTP/1.1" 304 -
+127.0.0.1 - - [12/Oct/2025 16:07:57] "GET /assets/js/lifts.js HTTP/1.1" 304 -
+127.0.0.1 - - [12/Oct/2025 16:07:57] "GET /assets/js/enhanced-lift-modal.js HTTP/1.1" 304 -
+127.0.0.1 - - [12/Oct/2025 16:07:57] "GET /assets/js/voice-control.js HTTP/1.1" 304 -
+127.0.0.1 - - [12/Oct/2025 16:07:57] "GET /assets/js/predictive-maintenance.js HTTP/1.1" 304 -
+127.0.0.1 - - [12/Oct/2025 16:07:57] "GET /assets/js/ar-helper.js HTTP/1.1" 304 -
+127.0.0.1 - - [12/Oct/2025 16:08:38] code 404, message File not found
+127.0.0.1 - - [12/Oct/2025 16:08:38] "GET /assets/img/avatars/admin.png HTTP/1.1" 404 -
+127.0.0.1 - - [12/Oct/2025 16:08:42] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
+127.0.0.1 - - [12/Oct/2025 16:10:14] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [12/Oct/2025 16:10:16] "GET /login.html HTTP/1.1" 200 -
+127.0.0.1 - - [12/Oct/2025 16:10:17] "GET /assets/js/common.js HTTP/1.1" 200 -
+127.0.0.1 - - [12/Oct/2025 16:10:17] "GET /assets/css/main.css HTTP/1.1" 200 -
+127.0.0.1 - - [12/Oct/2025 16:10:17] "GET /assets/js/config.js HTTP/1.1" 200 -
+127.0.0.1 - - [12/Oct/2025 16:10:17] "GET /assets/js/auth.js HTTP/1.1" 200 -
+127.0.0.1 - - [12/Oct/2025 16:10:17] "GET /assets/css/auth.css HTTP/1.1" 200 -
+127.0.0.1 - - [12/Oct/2025 16:10:18] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [12/Oct/2025 16:10:18] "GET /assets/js/websocket-client.js HTTP/1.1" 200 -
+127.0.0.1 - - [12/Oct/2025 16:10:44] "GET /pages/admin/qr-generator.html HTTP/1.1" 200 -
+127.0.0.1 - - [12/Oct/2025 16:10:45] code 404, message File not found
+127.0.0.1 - - [12/Oct/2025 16:10:45] "GET /pages/admin/assets/img/user-avatar.png HTTP/1.1" 404 -
+127.0.0.1 - - [12/Oct/2025 16:10:45] code 404, message File not found
+127.0.0.1 - - [12/Oct/2025 16:10:45] "GET /pages/admin/assets/js/modules/qr-generator.js HTTP/1.1" 404 -
+127.0.0.1 - - [12/Oct/2025 16:10:56] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
+127.0.0.1 - - [12/Oct/2025 16:10:56] "GET /assets/js/predictive-maintenance.js HTTP/1.1" 200 -
+127.0.0.1 - - [12/Oct/2025 16:10:56] "GET /assets/css/enhanced-lift-modal.css HTTP/1.1" 200 -
+127.0.0.1 - - [12/Oct/2025 16:10:56] "GET /assets/css/ai-assistant.css HTTP/1.1" 200 -
+127.0.0.1 - - [12/Oct/2025 16:10:56] "GET /assets/js/lift-utils.js HTTP/1.1" 200 -
+127.0.0.1 - - [12/Oct/2025 16:10:56] "GET /assets/js/system-eventbus.js HTTP/1.1" 200 -
+127.0.0.1 - - [12/Oct/2025 16:10:56] "GET /assets/js/modules/ai-assistant.js HTTP/1.1" 200 -
+127.0.0.1 - - [12/Oct/2025 16:10:56] "GET /assets/js/test-lift-saving.js HTTP/1.1" 200 -
+127.0.0.1 - - [12/Oct/2025 16:10:56] "GET /assets/js/enhanced-lift-modal.js HTTP/1.1" 200 -
+127.0.0.1 - - [12/Oct/2025 16:10:56] "GET /assets/js/simple-lift-modal.js HTTP/1.1" 200 -
+127.0.0.1 - - [12/Oct/2025 16:10:56] "GET /assets/js/lifts.js HTTP/1.1" 200 -
+127.0.0.1 - - [12/Oct/2025 16:10:57] "GET /assets/js/voice-control.js HTTP/1.1" 200 -
+127.0.0.1 - - [12/Oct/2025 16:10:57] "GET /assets/js/ar-helper.js HTTP/1.1" 200 -
+127.0.0.1 - - [12/Oct/2025 16:12:29] "GET /pages/admin/requests.html HTTP/1.1" 200 -
+127.0.0.1 - - [12/Oct/2025 16:18:39] "GET / HTTP/1.1" 304 -

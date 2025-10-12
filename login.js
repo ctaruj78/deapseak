@@ -8,19 +8,37 @@ document.addEventListener('DOMContentLoaded', () => {
         const password = document.getElementById('password').value;
         
         try {
-            const response = await fetch('https://api.liftmanager.com/v1/auth/login', {
+            const response = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ email, password })
+                body: JSON.stringify({ 
+                    email: email,
+                    password: password
+                })
             });
             
             const data = await response.json();
             
-            if (response.ok) {
+            if (response.ok && data.success) {
+                // Збереження токена та користувача
                 AuthManager.login(data.token, data.user);
-                window.location.href = 'index.html';
+                
+                // Перевірка ролі та перенаправлення
+                const user = data.user;
+                console.log('Успішний вхід:', user);
+                
+                // Перенаправлення згідно ролі
+                if (user.role === 'admin') {
+                    window.location.href = '/';
+                } else if (user.role === 'dispatcher') {
+                    window.location.href = '/dispatcher.html';
+                } else if (user.role === 'technician') {
+                    window.location.href = '/technician.html';
+                } else {
+                    window.location.href = '/';
+                }
             } else {
                 alert(data.message || 'Помилка входу');
             }

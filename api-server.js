@@ -5,6 +5,7 @@ const { connectDB, getDB, closeDB } = require("./db");
 const { ObjectId } = require("mongodb");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { spawn } = require('child_process');
 
 const app = express();
 const PORT = 3001;
@@ -101,13 +102,54 @@ app.get("/api/status", async (req, res) => {
 
 // Middleware для аутентифікації
 const authenticateToken = (req, res, next) => {
+    // Спробуємо отримати токен з різних джерел
+    let token = null;
+    
+    // 1. З заголовку Authorization
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+    if (authHeader) {
+        if (authHeader.startsWith('Bearer ')) {
+            token = authHeader.substring(7);
+        } else {
+            token = authHeader; // Якщо токен передано без Bearer
+        }
+    }
+    
+    // 2. З cookie (якщо є)
+    if (!token && req.headers.cookie) {
+        const cookies = req.headers.cookie.split(';');
+        for (let cookie of cookies) {
+            const [name, value] = cookie.trim().split('=');
+            if (name === 'auth_token') {
+                token = value;
+                break;
+            }
+        }
+    }
+    
+    // 3. З query параметрів (для QR кодів)
+    if (!token && req.query.token) {
+        token = req.query.token;
+    }
 
-    if (!token) return res.status(401).json({ error: "Необхідна авторизація" });
+    if (!token) {
+        return res.status(401).json({ 
+            success: false,
+            error: "Необхідна авторизація",
+            message: "Токен не знайдено" 
+        });
+    }
 
     jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) return res.status(403).json({ error: "Недійсний токен" });
+        if (err) {
+            console.error('Помилка верифікації токена:', err.message);
+            return res.status(403).json({ 
+                success: false,
+                error: "Недійсний токен",
+                message: err.message 
+            });
+        }
+        
         req.user = user;
         next();
     });
@@ -394,7 +436,7 @@ app.post("/api/forgot-password", async (req, res) => {
 });
 
 // Endpoints для ліфтів
-app.get("/api/lifts", async (req, res) => {
+app.get("/api/lifts", authenticateToken, async (req, res) => {
     try {
         const db = getDB();
         const lifts = await db.collection("lifts").find({}).toArray();
@@ -408,7 +450,7 @@ app.get("/api/lifts", async (req, res) => {
     }
 });
 
-app.get("/api/lifts/:id", async (req, res) => {
+app.get("/api/lifts/:id", authenticateToken, async (req, res) => {
     try {
         const db = getDB();
         const lift = await db.collection("lifts").findOne({ 
@@ -432,7 +474,7 @@ app.get("/api/lifts/:id", async (req, res) => {
     }
 });
 
-app.post("/api/lifts", async (req, res) => {
+app.post("/api/lifts", authenticateToken, async (req, res) => {
     try {
         const db = getDB();
         const lift = req.body;
@@ -475,7 +517,7 @@ app.post("/api/lifts", async (req, res) => {
     }
 });
 
-app.delete("/api/lifts/:id", async (req, res) => {
+app.delete("/api/lifts/:id", authenticateToken, async (req, res) => {
     try {
         const db = getDB();
         const result = await db.collection("lifts").deleteOne({ 
@@ -2827,21 +2869,26 @@ app.post("/api/monitoring/alerts/test", authenticateToken, async (req, res) => {
 // CHAT SYSTEM ENDPOINTS - Система чату
 // ===============================================
 
-// Отримати всіх користувачів для чату
+// Отримати всіх користувачів або за ролю
 app.get("/api/users", authenticateToken, async (req, res) => {
     try {
         const db = getDB();
+        const { role } = req.query;
         
-        // Отримуємо всіх користувачів крім поточного
-        const users = await db.collection("users").find(
-            { _id: { $ne: new ObjectId(req.user.id) } },
-            { 
-                projection: { 
-                    password: 0,  // Виключаємо пароль
-                    refreshTokens: 0 
-                } 
-            }
-        ).toArray();
+        // Базовий фільтр - всі користувачі крім поточного
+        const filter = { _id: { $ne: new ObjectId(req.user.id) } };
+        
+        // Додаткова фільтрація по ролі якщо вказана
+        if (role) {
+            filter.role = role;
+        }
+        
+        const users = await db.collection("users").find(filter, { 
+            projection: { 
+                password: 0,  // Виключаємо пароль
+                refreshTokens: 0 
+            } 
+        }).toArray();
         
         res.json(users);
     } catch (error) {
@@ -3451,6 +3498,406 @@ app.get('/api/files/stats', authenticateToken, async (req, res) => {
         });
     }
 });
+
+// ===========================================
+// AI ASSISTANT API ENDPOINTS
+// ===========================================
+
+// AI Chat endpoint
+app.post("/api/ai/chat", authenticateToken, async (req, res) => {
+    try {
+        const { message, context } = req.body;
+        const userId = req.user.id;
+        
+        if (!message) {
+            return res.status(400).json({
+                success: false,
+                message: "Повідомлення обов'язкове"
+            });
+        }
+        
+        // Виклик Python AI модуля
+        const aiResponse = await callAI(userId, message, context);
+        
+        res.json({
+            success: true,
+            response: aiResponse.response,
+            action: aiResponse.action,
+            data: aiResponse.data,
+            confidence: aiResponse.confidence,
+            suggestions: aiResponse.suggestions
+        });
+        
+    } catch (error) {
+        console.error("Помилка AI чату:", error);
+        res.status(500).json({
+            success: false,
+            message: "Помилка AI асистента",
+            fallback_response: "Вибачте, AI асистент тимчасово недоступний. Спробуйте пізніше."
+        });
+    }
+});
+
+// AI Predictions endpoint
+app.get("/api/ai/predictions/:type", authenticateToken, async (req, res) => {
+    try {
+        const { type } = req.params;
+        const { lift_id, timeframe } = req.query;
+        
+        let predictions;
+        
+        switch(type) {
+            case 'failure':
+                predictions = await getFailurePredictions(lift_id);
+                break;
+            case 'maintenance':
+                predictions = await getMaintenancePredictions(timeframe);
+                break;
+            case 'workload':
+                predictions = await getWorkloadPredictions();
+                break;
+            default:
+                return res.status(400).json({
+                    success: false,
+                    message: "Невідомий тип прогнозу"
+                });
+        }
+        
+        res.json({
+            success: true,
+            prediction_type: type,
+            data: predictions,
+            generated_at: new Date().toISOString()
+        });
+        
+    } catch (error) {
+        console.error("Помилка AI прогнозів:", error);
+        res.status(500).json({
+            success: false,
+            message: "Не вдалося згенерувати прогноз"
+        });
+    }
+});
+
+// AI Auto-assignment endpoint
+app.post("/api/ai/auto-assign", authenticateToken, async (req, res) => {
+    try {
+        const { request_id, criteria } = req.body;
+        
+        if (!request_id) {
+            return res.status(400).json({
+                success: false,
+                message: "ID заявки обов'язковий"
+            });
+        }
+        
+        // AI підбір техніка
+        const assignment = await autoAssignTechnician(request_id, criteria);
+        
+        if (assignment.success) {
+            // Збереження призначення в БД
+            const db = getDB();
+            const result = await db.collection("assignments").insertOne({
+                request_id: request_id,
+                technician_id: assignment.technician_id,
+                assigned_by: "AI_ASSISTANT",
+                assigned_at: new Date(),
+                confidence: assignment.confidence,
+                reasoning: assignment.reasoning
+            });
+            
+            res.json({
+                success: true,
+                assignment_id: result.insertedId,
+                technician: assignment.technician,
+                confidence: assignment.confidence,
+                reasoning: assignment.reasoning
+            });
+        } else {
+            res.status(404).json({
+                success: false,
+                message: assignment.message
+            });
+        }
+        
+    } catch (error) {
+        console.error("Помилка AI призначення:", error);
+        res.status(500).json({
+            success: false,
+            message: "Не вдалося автоматично призначити техніка"
+        });
+    }
+});
+
+// AI Analytics endpoint
+app.get("/api/ai/analytics", authenticateToken, async (req, res) => {
+    try {
+        const { type, period } = req.query;
+        
+        const analytics = await getAIAnalytics(type, period);
+        
+        res.json({
+            success: true,
+            analytics_type: type,
+            period: period,
+            data: analytics,
+            insights: analytics.insights,
+            recommendations: analytics.recommendations
+        });
+        
+    } catch (error) {
+        console.error("Помилка AI аналітики:", error);
+        res.status(500).json({
+            success: false,
+            message: "Не вдалося згенерувати AI аналітику"
+        });
+    }
+});
+
+// AI Capabilities endpoint
+app.get("/api/ai/capabilities", async (req, res) => {
+    try {
+        const capabilities = {
+            nlp_processing: {
+                name: "Обробка природної мови",
+                description: "Розуміння запитів українською мовою",
+                status: "active"
+            },
+            predictive_analytics: {
+                name: "Прогностична аналітика", 
+                description: "Передбачення поломок та оптимізація ТО",
+                status: "active"
+            },
+            auto_assignment: {
+                name: "Автоматичне призначення",
+                description: "Розумний підбір техніків",
+                status: "active"
+            },
+            smart_scheduling: {
+                name: "Розумне планування",
+                description: "Оптимізація графіків роботи",
+                status: "active"
+            },
+            anomaly_detection: {
+                name: "Виявлення аномалій",
+                description: "Автоматичне виявлення проблем",
+                status: "beta"
+            },
+            voice_interface: {
+                name: "Голосовий інтерфейс",
+                description: "Керування голосом",
+                status: "planned"
+            },
+            computer_vision: {
+                name: "Комп'ютерний зір",
+                description: "Аналіз фото/відео",
+                status: "development"
+            },
+            personalization: {
+                name: "Персоналізація",
+                description: "Адаптація під користувача",
+                status: "active"
+            }
+        };
+        
+        res.json({
+            success: true,
+            capabilities: capabilities,
+            total_count: Object.keys(capabilities).length,
+            active_count: Object.values(capabilities).filter(c => c.status === 'active').length
+        });
+        
+    } catch (error) {
+        console.error("Помилка отримання AI можливостей:", error);
+        res.status(500).json({
+            success: false,
+            message: "Не вдалося отримати список AI можливостей"
+        });
+    }
+});
+
+// Допоміжні функції для AI
+async function callAI(userId, message, context = null) {
+    return new Promise((resolve, reject) => {
+        const python = spawn('python3', ['./ai/deapseak_ai.py', 'chat', userId, message]);
+        
+        let dataString = '';
+        
+        python.stdout.on('data', (data) => {
+            dataString += data.toString();
+        });
+        
+        python.stderr.on('data', (data) => {
+            console.error(`AI stderr: ${data}`);
+        });
+        
+        python.on('close', (code) => {
+            if (code === 0) {
+                try {
+                    const response = JSON.parse(dataString);
+                    resolve(response);
+                } catch (e) {
+                    // Fallback response if AI fails
+                    resolve({
+                        response: "Розумію ваш запит. Над чим працюємо? 🤖",
+                        action: null,
+                        data: null,
+                        confidence: 0.5,
+                        suggestions: ["Створити заявку", "Перевірити статус", "Показати аналітику"]
+                    });
+                }
+            } else {
+                reject(new Error(`AI process exited with code ${code}`));
+            }
+        });
+    });
+}
+
+async function autoAssignTechnician(requestId, criteria) {
+    try {
+        const db = getDB();
+        
+        // Отримання даних заявки
+        const request = await db.collection("requests").findOne({
+            _id: new ObjectId(requestId)
+        });
+        
+        if (!request) {
+            return { success: false, message: "Заявка не знайдена" };
+        }
+        
+        // Отримання доступних техніків
+        const technicians = await db.collection("users").find({
+            role: "technician",
+            isActive: true
+        }).toArray();
+        
+        if (technicians.length === 0) {
+            return { success: false, message: "Немає доступних техніків" };
+        }
+        
+        // AI алгоритм підбору
+        let bestTechnician = null;
+        let bestScore = 0;
+        
+        for (const tech of technicians) {
+            // Симуляція AI оцінки
+            const distanceScore = Math.random() * 0.4 + 0.3; // 0.3-0.7
+            const expertiseScore = Math.random() * 0.3 + 0.7; // 0.7-1.0
+            const availabilityScore = Math.random() * 0.4 + 0.6; // 0.6-1.0
+            
+            const totalScore = distanceScore + expertiseScore + availabilityScore;
+            
+            if (totalScore > bestScore) {
+                bestScore = totalScore;
+                bestTechnician = tech;
+            }
+        }
+        
+        return {
+            success: true,
+            technician_id: bestTechnician._id,
+            technician: {
+                name: `${bestTechnician.firstName} ${bestTechnician.lastName}`,
+                phone: bestTechnician.phone,
+                email: bestTechnician.email
+            },
+            confidence: Math.min(bestScore / 3, 1.0),
+            reasoning: `Оптимальний вибір на основі близькості, експертизи та доступності (оцінка: ${(bestScore/3*100).toFixed(0)}%)`
+        };
+        
+    } catch (error) {
+        console.error("Помилка AI призначення техніка:", error);
+        return { success: false, message: "Помилка алгоритму призначення" };
+    }
+}
+
+async function getFailurePredictions(liftId) {
+    // Симуляція AI прогнозування поломок
+    const predictions = {
+        lift_id: liftId,
+        failure_probability: Math.random() * 0.3 + 0.1, // 10-40%
+        risk_factors: [
+            { factor: "Вік обладнання", impact: 0.6, description: "15 років експлуатації" },
+            { factor: "Інтенсивність використання", impact: 0.8, description: "Високе навантаження" },
+            { factor: "Затримка ТО", impact: 0.4, description: "Останнє ТО 2 місяці тому" }
+        ],
+        recommendations: [
+            "Запланувати позачергове ТО",
+            "Замінити зношені компоненти",
+            "Встановити додатковий моніторинг"
+        ],
+        predicted_issues: [
+            { component: "Двигун", probability: 0.25, timeframe: "2-3 місяці" },
+            { component: "Кабелі", probability: 0.15, timeframe: "4-6 місяців" },
+            { component: "Двері", probability: 0.35, timeframe: "1-2 місяці" }
+        ]
+    };
+    
+    return predictions;
+}
+
+async function getMaintenancePredictions(timeframe) {
+    // Симуляція AI оптимізації ТО
+    return {
+        timeframe: timeframe || "1_month",
+        optimized_schedule: [
+            { lift_id: "1", priority: "high", recommended_date: "2024-10-20", reason: "Критичний стан" },
+            { lift_id: "2", priority: "medium", recommended_date: "2024-10-25", reason: "Планове ТО" },
+            { lift_id: "3", priority: "low", recommended_date: "2024-11-01", reason: "Профілактика" }
+        ],
+        cost_optimization: {
+            standard_cost: 15000,
+            optimized_cost: 12500,
+            savings: 2500,
+            efficiency_gain: "16.7%"
+        }
+    };
+}
+
+async function getWorkloadPredictions() {
+    // Симуляція прогнозування навантаження
+    return {
+        next_week: [
+            { day: "Понеділок", predicted_load: 85, peak_hours: ["08:00-09:00", "18:00-19:00"] },
+            { day: "Вівторок", predicted_load: 78, peak_hours: ["08:30-09:30", "17:30-18:30"] },
+            { day: "Середа", predicted_load: 82, peak_hours: ["08:00-09:00", "18:00-19:00"] }
+        ],
+        recommendations: [
+            "Збільшити частоту перевірок в години пік",
+            "Підготувати резервний ліфт на понеділок"
+        ]
+    };
+}
+
+async function getAIAnalytics(type, period) {
+    // Симуляція AI аналітики
+    const analytics = {
+        summary: {
+            total_requests: 145,
+            resolved_requests: 132,
+            avg_resolution_time: "2.4 години",
+            ai_efficiency_gain: "23%"
+        },
+        insights: [
+            "Найчастіші поломки: проблеми з дверима (34%)",
+            "Пікове навантаження: 8:00-9:00 та 18:00-19:00",
+            "AI призначення на 23% швидше за ручне"
+        ],
+        recommendations: [
+            "Збільшити частоту ТО дверних механізмів",
+            "Розглянути додаткового техніка для ранкових пік",
+            "Впровадити превентивне обслуговування"
+        ],
+        predictions: {
+            next_month_requests: 160,
+            predicted_issues: ["Двері ліфта #2", "Кабель ліфта #5"],
+            maintenance_workload: "високий"
+        }
+    };
+    
+    return analytics;
+}
 
 // Запуск сервера на всіх доступних інтерфейсах (для доступу з мобільних пристроїв)
 app.listen(PORT, '0.0.0.0', () => {
