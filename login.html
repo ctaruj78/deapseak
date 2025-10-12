@@ -138,6 +138,11 @@
                 const email = document.getElementById('email')?.value || document.getElementById('username')?.value;
                 const password = document.getElementById('password').value;
                 
+                console.log('🔐 Форма логіну відправлена - v2.0 ' + new Date().toISOString());
+                console.log('📝 Email/Username:', email);
+                console.log('� Password length:', password ? password.length : 0);
+                console.log('🌍 Current port:', window.location.port);
+                
                 if (!email || !password) {
                     showMessage('Введіть email/логін та пароль');
                     return;
@@ -145,8 +150,10 @@
                 
                 try {
                     console.log('🔐 Спроба входу для:', email);
+                    const apiUrl = window.location.port === '8080' ? 'http://localhost:3001/api/auth/login' : '/api/auth/login';
+                    console.log('🌐 Запит до:', apiUrl);
                     
-                    const response = await fetch('/api/auth/login', {
+                    const response = await fetch(apiUrl, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -160,6 +167,8 @@
                     
                     const data = await response.json();
                     console.log('📝 Відповідь сервера:', data);
+                    console.log('✅ Response OK:', response.ok);
+                    console.log('🔢 Status Code:', response.status);
                     
                     if (response.ok && data.success) {
                         // Збереження токена та користувача

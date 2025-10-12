@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔬 Мінімальний тест логіну</title>
+</head>
+<body>
+    <h1>🔬 Мінімальний тест логіну</h1>
+    
+    <div style="background: #f0f0f0; padding: 20px; margin: 20px 0; border-radius: 8px;">
+        <h3>Форма входу:</h3>
+        <input type="text" id="username" placeholder="Username (admin)" value="admin" style="padding: 8px; margin: 5px;">
+        <input type="password" id="password" placeholder="Password (admin123)" value="admin123" style="padding: 8px; margin: 5px;">
+        <button onclick="testLogin()" style="padding: 8px 16px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            🚀 Тест логіну
+        </button>
+    </div>
+    
+    <div id="results" style="background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #ddd;"></div>
+
+    <script>
+        async function testLogin() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<h3>🔄 Тестування...</h3>';
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            console.log('🧪 Початок тесту логіну');
+            console.log('📝 Username:', username);
+            console.log('🔑 Password length:', password.length);
+            
+            try {
+                console.log('📡 Відправляємо запит...');
+                
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                });
+                
+                console.log('📨 Отримали відповідь:', response.status);
+                
+                const data = await response.json();
+                console.log('📄 Дані відповіді:', data);
+                
+                let html = '<h3>📊 Результат тесту:</h3>';
+                html += `<p><strong>Status:</strong> ${response.status}</p>`;
+                html += `<p><strong>OK:</strong> ${response.ok}</p>`;
+                html += `<p><strong>Success:</strong> ${data.success}</p>`;
+                
+                if (data.success) {
+                    html += `<div style="color: green; font-weight: bold;">✅ ЛОГІН УСПІШНИЙ!</div>`;
+                    html += `<p><strong>User:</strong> ${data.user.username} (${data.user.role})</p>`;
+                    html += `<p><strong>Token:</strong> ${data.token.substring(0, 30)}...</p>`;
+                    
+                    // Тестуємо перенаправлення
+                    const redirects = {
+                        'admin': 'pages/admin/admin-dashboard.html',
+                        'dispatcher': 'pages/dispatcher/dashboard.html',
+                        'tech': 'pages/tech/dashboard.html',
+                        'client': 'pages/client/dashboard.html'
+                    };
+                    
+                    const expectedRedirect = redirects[data.user.role] || redirects['admin'];
+                    html += `<p><strong>Очікуване перенаправлення:</strong> ${expectedRedirect}</p>`;
+                    
+                    // Симулюємо перенаправлення через 3 секунди
+                    setTimeout(() => {
+                        console.log('🎯 Перенаправлення на:', expectedRedirect);
+                        if (confirm(`Перейти на ${expectedRedirect}?`)) {
+                            window.location.href = expectedRedirect;
+                        }
+                    }, 3000);
+                    
+                    html += `<p style="color: orange;">⏱️ Автоматичне перенаправлення через 3 секунди...</p>`;
+                } else {
+                    html += `<div style="color: red; font-weight: bold;">❌ ПОМИЛКА ЛОГІНУ!</div>`;
+                    html += `<p><strong>Message:</strong> ${data.message}</p>`;
+                }
+                
+                html += '<hr><h4>🔍 Повна відповідь:</h4>';
+                html += `<pre style="background: #f8f9fa; padding: 10px; border-radius: 4px; overflow: auto;">${JSON.stringify(data, null, 2)}</pre>`;
+                
+                results.innerHTML = html;
+                
+            } catch (error) {
+                console.error('❌ Помилка:', error);
+                
+                results.innerHTML = `
+                    <h3>❌ Помилка запиту</h3>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                    <p>Перевірте:</p>
+                    <ul>
+                        <li>Чи працює API сервер на порту 3001</li>
+                        <li>Чи правильний URL (/api/auth/login)</li>
+                        <li>Чи немає проблем з CORS</li>
+                    </ul>
+                `;
+            }
+        }
+        
+        // Автоматичний тест при завантаженні (через 2 секунди)
+        setTimeout(() => {
+            console.log('🚀 Автоматичний запуск тесту через 2 секунди...');
+            // testLogin(); // Розкоментуйте для автотесту
+        }, 2000);
+        
+        console.log('🔬 Мінімальний тест логіну завантажено');
+    </script>
+</body>
+</html>
