@@ -15,25 +15,88 @@ app.use(express.json());
 app.use(cors());
 
 // Підключення до MongoDB при запуску
-connectDB().catch(err => {
-    console.error("Помилка підключення до MongoDB:", err);
-    process.exit(1);
-});
+connectDB()
+    .then(async () => {
+        // Створення адмін користувача за замовчуванням
+        await createDefaultAdmin();
+    })
+    .catch(err => {
+        console.error("Помилка підключення до MongoDB:", err);
+        process.exit(1);
+    });
+
+// Функція створення адміністратора за замовчуванням
+async function createDefaultAdmin() {
+    try {
+        const db = getDB();
+        const adminExists = await db.collection("users").findOne({ 
+            $or: [
+                { email: "admin@deapseak.com" },
+                { username: "admin" }
+            ]
+        });
+        
+        if (!adminExists) {
+            const hashedPassword = await bcrypt.hash("admin123", 10);
+            
+            await db.collection("users").insertOne({
+                username: "admin",
+                email: "admin@deapseak.com",
+                password: hashedPassword,
+                role: "admin",
+                fullName: "Системний Адміністратор",
+                createdAt: new Date(),
+                isActive: true
+            });
+            
+            console.log("✅ Створено адмін користувача: admin@deapseak.com / admin123");
+        }
+    } catch (error) {
+        console.error("❌ Помилка створення адмін користувача:", error);
+    }
+}
 
 // Status endpoint (без авторизації)
-app.get("/api/status", (req, res) => {
-    res.json({
-        status: "online",
-        timestamp: new Date(),
-        version: "2.0.0",
-        uptime: process.uptime(),
-        modules: {
-            assignments: true,
-            monitoring: true,
-            chat: true,
-            qr: true
+app.get("/api/status", async (req, res) => {
+    try {
+        // Перевірка з'єднання з MongoDB
+        const db = getDB();
+        let mongoStatus = false;
+        
+        try {
+            await db.admin().ping();
+            mongoStatus = true;
+        } catch (mongoError) {
+            console.warn("MongoDB недоступна:", mongoError.message);
+            mongoStatus = false;
         }
-    });
+        
+        res.json({
+            status: "online",
+            timestamp: new Date(),
+            version: "2.0.0",
+            uptime: process.uptime(),
+            mongodb: mongoStatus,
+            modules: {
+                assignments: true,
+                monitoring: true,
+                chat: true,
+                qr: true,
+                auth: true,
+                database: mongoStatus
+            }
+        });
+    } catch (error) {
+        console.error("Помилка статусу:", error);
+        res.status(500).json({
+            status: "error",
+            timestamp: new Date(),
+            version: "2.0.0",
+            uptime: process.uptime(),
+            mongodb: false,
+            error: error.message
+        });
+    }
 });
 
 // Middleware для аутентифікації
@@ -50,7 +113,154 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
-// Endpoints для аутентифікації
+// Auth endpoints (нові маршрути)
+app.post("/api/auth/login", async (req, res) => {
+    try {
+        const { email, username, password } = req.body;
+        const loginField = email || username;
+        
+        if (!loginField || !password) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Логін/email та пароль обов'язкові" 
+            });
+        }
+        
+        const db = getDB();
+        const user = await db.collection("users").findOne({ 
+            $or: [
+                { email: loginField }, 
+                { username: loginField }
+            ] 
+        });
+        
+        if (!user) {
+            return res.status(401).json({ 
+                success: false, 
+                message: "Невірний логін або пароль" 
+            });
+        }
+        
+        const isValidPassword = await bcrypt.compare(password, user.password);
+        
+        if (!isValidPassword) {
+            return res.status(401).json({ 
+                success: false, 
+                message: "Невірний логін або пароль" 
+            });
+        }
+        
+        const token = jwt.sign(
+            { id: user._id, username: user.username, role: user.role },
+            JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+        
+        res.json({
+            success: true,
+            message: "Успішна авторизація",
+            token,
+            user: {
+                id: user._id,
+                username: user.username,
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                role: user.role
+            }
+        });
+    } catch (error) {
+        console.error("Помилка авторизації:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Внутрішня помилка сервера" 
+        });
+    }
+});
+
+app.post("/api/auth/register", async (req, res) => {
+    try {
+        const { username, password, email, firstName, lastName, role, phone } = req.body;
+        
+        if (!username || !password || !email) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Логін, пароль та email обов'язкові" 
+            });
+        }
+        
+        const db = getDB();
+        
+        // Перевірка існуючого користувача
+        const existingUser = await db.collection("users").findOne({ 
+            $or: [{ username }, { email }] 
+        });
+        
+        if (existingUser) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Користувач з таким логіном або email вже існує" 
+            });
+        }
+        
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+        
+        const newUser = {
+            username,
+            password: hashedPassword,
+            email,
+            firstName: firstName || "",
+            lastName: lastName || "",
+            role: role || "client",
+            phone: phone || "",
+            createdAt: new Date(),
+            active: true
+        };
+        
+        const result = await db.collection("users").insertOne(newUser);
+        
+        if (result.acknowledged) {
+            const token = jwt.sign(
+                { id: result.insertedId, username, role: newUser.role },
+                JWT_SECRET,
+                { expiresIn: '24h' }
+            );
+            
+            res.status(201).json({
+                success: true,
+                message: "Користувача створено",
+                token,
+                user: {
+                    id: result.insertedId,
+                    username,
+                    email,
+                    firstName: firstName || "",
+                    lastName: lastName || "",
+                    role: newUser.role
+                }
+            });
+        } else {
+            throw new Error("Помилка створення користувача");
+        }
+    } catch (error) {
+        console.error("Помилка реєстрації:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Внутрішня помилка сервера" 
+        });
+    }
+});
+
+app.get("/api/verify-token", authenticateToken, (req, res) => {
+    res.json({
+        success: true,
+        message: "Токен дійсний",
+        user: req.user
+    });
+});
+
+// Endpoints для аутентифікації (старі маршрути для зворотної сумісності)
 app.post("/api/register", async (req, res) => {
     try {
         const { username, password, email, firstName, lastName, role, phone } = req.body;
@@ -227,6 +437,14 @@ app.post("/api/lifts", async (req, res) => {
         const db = getDB();
         const lift = req.body;
         
+        // Валідація обов'язкових полів для нового ліфта
+        if (!lift._id && (!lift.name || !lift.address)) {
+            return res.status(400).json({
+                success: false,
+                message: "Назва та адреса ліфта обов'язкові"
+            });
+        }
+        
         if (lift._id) {
             // Оновлення
             const { _id, ...update } = lift;
@@ -327,6 +545,14 @@ app.post("/api/requests", async (req, res) => {
     try {
         const db = getDB();
         const request = req.body;
+        
+        // Валідація обов'язкових полів для нової заявки
+        if (!request._id && (!request.liftId || !request.description)) {
+            return res.status(400).json({
+                success: false,
+                message: "ID ліфта та опис заявки обов'язкові"
+            });
+        }
         
         if (request._id) {
             // Оновлення
@@ -433,6 +659,14 @@ app.post("/api/assignments", async (req, res) => {
         const db = getDB();
         const assignment = req.body;
         
+        // Валідація обов'язкових полів для нового призначення
+        if (!assignment._id && (!assignment.requestId || !assignment.technicianId)) {
+            return res.status(400).json({
+                success: false,
+                message: "ID заявки та ID техніка обов'язкові"
+            });
+        }
+        
         if (assignment._id) {
             // Оновлення
             const { _id, ...update } = assignment;
@@ -526,6 +760,133 @@ app.get("/api/stats", async (req, res) => {
         res.status(500).json({ 
             success: false, 
             message: "Не вдалося завантажити статистичні дані" 
+        });
+    }
+});
+
+// Dashboard статистика
+app.get("/api/stats/dashboard", async (req, res) => {
+    try {
+        const db = getDB();
+        
+        const [
+            totalLifts,
+            activeLifts,
+            maintenanceLifts,
+            totalRequests,
+            openRequests,
+            inProgressRequests,
+            completedRequests,
+            totalUsers,
+            activeUsers
+        ] = await Promise.all([
+            db.collection("lifts").countDocuments(),
+            db.collection("lifts").countDocuments({ status: "active" }),
+            db.collection("lifts").countDocuments({ status: "maintenance" }),
+            db.collection("requests").countDocuments(),
+            db.collection("requests").countDocuments({ status: "open" }),
+            db.collection("requests").countDocuments({ status: "in_progress" }),
+            db.collection("requests").countDocuments({ status: "completed" }),
+            db.collection("users").countDocuments(),
+            db.collection("users").countDocuments({ active: true })
+        ]);
+        
+        res.json({
+            success: true,
+            data: {
+                lifts: {
+                    total: totalLifts,
+                    active: activeLifts,
+                    maintenance: maintenanceLifts,
+                    inactive: totalLifts - activeLifts - maintenanceLifts
+                },
+                requests: {
+                    total: totalRequests,
+                    open: openRequests,
+                    inProgress: inProgressRequests,
+                    completed: completedRequests
+                },
+                users: {
+                    total: totalUsers,
+                    active: activeUsers
+                },
+                systemHealth: {
+                    database: true,
+                    api: true,
+                    timestamp: new Date()
+                }
+            }
+        });
+    } catch (error) {
+        console.error("Помилка dashboard статистики:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Помилка завантаження dashboard статистики" 
+        });
+    }
+});
+
+// Звіти endpoints
+app.get("/api/reports/lifts", async (req, res) => {
+    try {
+        const db = getDB();
+        const lifts = await db.collection("lifts").find({}).toArray();
+        
+        res.json({
+            success: true,
+            reportType: "lifts",
+            generatedAt: new Date(),
+            totalCount: lifts.length,
+            data: lifts.map(lift => ({
+                id: lift._id,
+                address: lift.address,
+                municipalNumber: lift.municipalNumber,
+                type: lift.type,
+                status: lift.status,
+                loadCapacity: lift.loadCapacity,
+                floorCount: lift.floorCount,
+                manufacturingYear: lift.manufacturingYear,
+                lastInspection: lift.lastInspection,
+                createdAt: lift.createdAt
+            }))
+        });
+    } catch (error) {
+        console.error("Помилка звіту ліфтів:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Помилка генерації звіту ліфтів" 
+        });
+    }
+});
+
+app.get("/api/reports/requests", async (req, res) => {
+    try {
+        const db = getDB();
+        const requests = await db.collection("requests").find({}).toArray();
+        
+        res.json({
+            success: true,
+            reportType: "requests",
+            generatedAt: new Date(),
+            totalCount: requests.length,
+            data: requests.map(request => ({
+                id: request._id,
+                title: request.title,
+                description: request.description,
+                status: request.status,
+                priority: request.priority,
+                type: request.type,
+                clientId: request.clientId,
+                technicianId: request.technicianId,
+                createdAt: request.createdAt,
+                updatedAt: request.updatedAt
+            }))
+        });
+    } catch (error) {
+        console.error("Помилка звіту заявок:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Помилка генерації звіту заявок" 
         });
     }
 });

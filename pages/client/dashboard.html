@@ -14,6 +14,8 @@
     
     <!-- Universal WebSocket Manager -->
     <script src="/assets/js/universal-websocket.js"></script>
+    <!-- Auth Manager -->
+    <script src="../../assets/js/auth.js"></script>
     
     <style>
         .client-dashboard {
@@ -233,7 +235,7 @@
         }
     </style>
 </head>
-<body class="hold-transition sidebar-mini layout-fixed client-dashboard">
+<body class="hold-transition sidebar-mini layout-fixed client-dashboard" data-required-role="client">
     <div class="wrapper">
 
         <!-- Навігаційна панель -->
@@ -675,24 +677,285 @@
                 );
             }, 30000);
 
+            // Ініціалізація клієнтських даних з API
+            initializeClientDashboard();
+
             // Перевірка чи завантажено client-dashboard.js
             if (typeof ClientDashboard === 'undefined') {
                 console.error('ClientDashboard клас не завантажено!');
-                
-                // Резервна ініціалізація
-                const currentUser = JSON.parse(localStorage.getItem('currentUser')) || { 
-                    firstName: 'Клієнт' 
-                };
-                $('#clientName').text(currentUser.firstName);
-                $('#userName').text(currentUser.firstName);
-                
-                // Ініціалізація WebSocket для клієнта
-                initClientWebSocket(currentUser);
             } else {
                 window.clientDashboard = new ClientDashboard();
+            }
+
+            /**
+             * Ініціалізація клієнтської панелі з даними API
+             */
+            async function initializeClientDashboard() {
+                console.log('🔄 Ініціалізація клієнтської панелі...');
                 
-                // Ініціалізація WebSocket для тестового режиму
-                initClientWebSocket({ id: 'test_client', firstName: 'Тестовий Клієнт' });
+                try {
+                    // Завантажуємо дані користувача
+                    const userData = await loadClientProfile();
+                    
+                    // Оновлюємо інтерфейс користувача
+                    updateClientInterface(userData);
+                    
+                    // Завантажуємо дані дашборду
+                    const [myLifts, myRequests, notifications] = await Promise.all([
+                        loadClientLifts(),
+                        loadClientRequests(),
+                        loadClientNotifications()
+                    ]);
+
+                    // Оновлюємо статистику
+                    updateClientStats(myLifts, myRequests);
+                    
+                    // Показуємо останні заявки
+                    displayRecentRequests(myRequests);
+                    
+                    // Ініціалізуємо WebSocket
+                    initClientWebSocket(userData);
+                    
+                    console.log('✅ Клієнтська панель ініціалізована');
+
+                } catch (error) {
+                    console.error('❌ Помилка ініціалізації клієнтської панелі:', error);
+                    
+                    // Fallback до локальних даних
+                    const fallbackUser = JSON.parse(localStorage.getItem('currentUser')) || { 
+                        firstName: 'Клієнт' 
+                    };
+                    updateClientInterface(fallbackUser);
+                    initClientWebSocket(fallbackUser);
+                }
+            }
+
+            /**
+             * Завантаження профілю клієнта
+             */
+            async function loadClientProfile() {
+                try {
+                    const response = await window.authManager.apiRequest('/users/profile');
+                    
+                    if (response.ok) {
+                        const userData = await response.json();
+                        
+                        // Зберігаємо в localStorage для офлайн доступу
+                        localStorage.setItem('currentUser', JSON.stringify(userData));
+                        
+                        return userData;
+                    }
+                    
+                    throw new Error('Помилка завантаження профілю');
+                } catch (error) {
+                    console.warn('API недоступний, використовуємо локальні дані');
+                    return JSON.parse(localStorage.getItem('currentUser')) || { firstName: 'Клієнт' };
+                }
+            }
+
+            /**
+             * Завантаження ліфтів клієнта
+             */
+            async function loadClientLifts() {
+                try {
+                    const response = await window.authManager.apiRequest('/lifts/client/my');
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        const lifts = Array.isArray(data) ? data : data.lifts || [];
+                        
+                        // Зберігаємо локально
+                        localStorage.setItem('client_lifts', JSON.stringify(lifts));
+                        
+                        return lifts;
+                    }
+                    
+                    return [];
+                } catch (error) {
+                    console.warn('API недоступний для ліфтів');
+                    return JSON.parse(localStorage.getItem('client_lifts') || '[]');
+                }
+            }
+
+            /**
+             * Завантаження заявок клієнта
+             */
+            async function loadClientRequests() {
+                try {
+                    const response = await window.authManager.apiRequest('/requests/client/my');
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        const requests = Array.isArray(data) ? data : data.requests || [];
+                        
+                        // Зберігаємо локально
+                        localStorage.setItem('client_requests', JSON.stringify(requests));
+                        
+                        return requests;
+                    }
+                    
+                    return [];
+                } catch (error) {
+                    console.warn('API недоступний для заявок');
+                    return JSON.parse(localStorage.getItem('client_requests') || '[]');
+                }
+            }
+
+            /**
+             * Завантаження сповіщень клієнта
+             */
+            async function loadClientNotifications() {
+                try {
+                    const response = await window.authManager.apiRequest('/notifications/client/my');
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        const notifications = Array.isArray(data) ? data : data.notifications || [];
+                        
+                        // Оновлюємо лічильник сповіщень
+                        const unreadCount = notifications.filter(n => !n.read).length;
+                        $('#notificationCount').text(unreadCount);
+                        
+                        return notifications;
+                    }
+                    
+                    return [];
+                } catch (error) {
+                    console.warn('API недоступний для сповіщень');
+                    return [];
+                }
+            }
+
+            /**
+             * Оновлення інтерфейсу клієнта
+             */
+            function updateClientInterface(userData) {
+                const fullName = `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Клієнт';
+                
+                $('#clientName').text(fullName);
+                $('#userName').text(fullName);
+                
+                if (userData.email) {
+                    $('.user-email').text(userData.email);
+                }
+                
+                if (userData.phone) {
+                    $('.user-phone').text(userData.phone);
+                }
+            }
+
+            /**
+             * Оновлення статистики клієнта
+             */
+            function updateClientStats(lifts, requests) {
+                // Загальна кількість ліфтів
+                $('#totalLifts').text(lifts.length);
+                
+                // Активні заявки
+                const activeRequests = requests.filter(r => r.status === 'open' || r.status === 'in_progress').length;
+                $('#activeRequests').text(activeRequests);
+                
+                // Завершені за місяць
+                const oneMonthAgo = new Date();
+                oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+                
+                const completedThisMonth = requests.filter(r => {
+                    return r.status === 'completed' && 
+                           new Date(r.updatedAt) > oneMonthAgo;
+                }).length;
+                $('#completedThisMonth').text(completedThisMonth);
+                
+                // Ліфти на обслуговуванні
+                const liftsInMaintenance = lifts.filter(l => l.status === 'maintenance').length;
+                $('#liftsInMaintenance').text(liftsInMaintenance);
+            }
+
+            /**
+             * Відображення останніх заявок
+             */
+            function displayRecentRequests(requests) {
+                const container = $('#recentRequestsContainer');
+                
+                if (!container.length) {
+                    console.log('Контейнер для заявок не знайдено');
+                    return;
+                }
+
+                container.empty();
+                
+                if (!requests || requests.length === 0) {
+                    container.html(`
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            У вас поки немає заявок
+                        </div>
+                    `);
+                    return;
+                }
+
+                // Показуємо останні 5 заявок
+                const recentRequests = requests
+                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                    .slice(0, 5);
+
+                recentRequests.forEach(request => {
+                    const statusBadge = getRequestStatusBadge(request.status);
+                    const priorityBadge = getRequestPriorityBadge(request.priority);
+                    
+                    const requestCard = $(`
+                        <div class="card mb-2">
+                            <div class="card-body py-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">${request.title || 'Заявка на обслуговування'}</h6>
+                                        <small class="text-muted">
+                                            ${request.lift?.address || 'Адреса не вказана'} • 
+                                            ${new Date(request.createdAt).toLocaleDateString('uk-UA')}
+                                        </small>
+                                    </div>
+                                    <div class="text-right">
+                                        ${statusBadge}
+                                        ${priorityBadge}
+                                    </div>
+                                </div>
+                                ${request.description ? `<p class="mb-1 text-muted small">${request.description.substring(0, 100)}${request.description.length > 100 ? '...' : ''}</p>` : ''}
+                            </div>
+                        </div>
+                    `);
+                    
+                    container.append(requestCard);
+                });
+            }
+
+            /**
+             * Допоміжні функції для статусів
+             */
+            function getRequestStatusBadge(status) {
+                switch (status) {
+                    case 'open':
+                        return '<span class="badge badge-primary">Відкрита</span>';
+                    case 'in_progress':
+                        return '<span class="badge badge-warning">В роботі</span>';
+                    case 'completed':
+                        return '<span class="badge badge-success">Завершена</span>';
+                    case 'cancelled':
+                        return '<span class="badge badge-danger">Скасована</span>';
+                    default:
+                        return '<span class="badge badge-secondary">Невідомо</span>';
+                }
+            }
+
+            function getRequestPriorityBadge(priority) {
+                switch (priority) {
+                    case 'high':
+                        return '<span class="badge badge-danger ml-1">Високий</span>';
+                    case 'medium':
+                        return '<span class="badge badge-warning ml-1">Середній</span>';
+                    case 'low':
+                        return '<span class="badge badge-info ml-1">Низький</span>';
+                    default:
+                        return '';
+                }
             }
             
             /**

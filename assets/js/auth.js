@@ -209,14 +209,304 @@ class AuthManager {
     hasAnyRole(roles) {
         return this.isAuthenticated() && roles.includes(this.currentUser.role);
     }
+
+    /**
+     * Проверка авторизации пользователя с API
+     * @param {string|array} requiredRole - требуемая роль или массив ролей
+     * @returns {Promise<boolean>} - результат проверки
+     */
+    async checkAuth(requiredRole = null) {
+        try {
+            // Получаем токен из разных источников
+            const token = this.getAuthToken();
+            
+            if (!token) {
+                this.redirectToLogin();
+                return false;
+            }
+
+            // Проверяем токен на сервере
+            const response = await fetch('http://localhost:3001/api/verify-token', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                this.clearAuth();
+                this.redirectToLogin();
+                return false;
+            }
+
+            const userData = await response.json();
+            
+            // Проверяем роль если требуется
+            if (requiredRole) {
+                const userRole = userData.role || userData.user?.role;
+                const roles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
+                
+                if (!roles.includes(userRole)) {
+                    this.showError('У вас нет прав доступа к этой странице');
+                    this.redirectToDashboard(userRole);
+                    return false;
+                }
+            }
+
+            // Сохраняем данные пользователя
+            this.currentUser = userData.user || userData;
+            return true;
+
+        } catch (error) {
+            console.error('Ошибка проверки авторизации:', error);
+            this.clearAuth();
+            this.redirectToLogin();
+            return false;
+        }
+    }
+
+    /**
+     * Получение токена из localStorage
+     * @returns {string|null}
+     */
+    getAuthToken() {
+        // Проверяем разные возможные ключи токена
+        return localStorage.getItem('liftmanager_jwt') || 
+               localStorage.getItem('authToken') || 
+               localStorage.getItem('token') ||
+               this.getTokenFromSession();
+    }
+
+    /**
+     * Извлечение токена из сессии (совместимость с старой системой)
+     * @returns {string|null}
+     */
+    getTokenFromSession() {
+        try {
+            const sessionData = localStorage.getItem('lm_session');
+            if (sessionData) {
+                const session = JSON.parse(sessionData);
+                return session.token || session.jwt;
+            }
+        } catch (error) {
+            console.warn('Ошибка чтения сессии:', error);
+        }
+        return null;
+    }
+
+    /**
+     * Очистка данных авторизации
+     */
+    clearAuth() {
+        this.currentUser = null;
+        localStorage.removeItem('liftmanager_jwt');
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('token');
+        localStorage.removeItem('userData');
+        localStorage.removeItem('lm_session');
+    }
+
+    /**
+     * Перенаправление на страницу входа
+     */
+    redirectToLogin() {
+        const currentPath = window.location.pathname;
+        
+        // Определяем относительный путь к login.html
+        let redirectPath;
+        if (currentPath.includes('/pages/')) {
+            // Если мы в подпапке pages, идем на два уровня вверх
+            redirectPath = '../../login.html';
+        } else if (currentPath.includes('/assets/')) {
+            redirectPath = '../login.html';
+        } else {
+            redirectPath = './login.html';
+        }
+        
+        // Сохраняем текущую страницу для возврата после авторизации
+        localStorage.setItem('returnUrl', window.location.href);
+        
+        window.location.href = redirectPath;
+    }
+
+    /**
+     * Перенаправление на дашборд в зависимости от роли
+     * @param {string} userRole
+     */
+    redirectToDashboard(userRole) {
+        let dashboardPath;
+        
+        switch (userRole) {
+            case 'admin':
+                dashboardPath = '../admin/lifts.html';
+                break;
+            case 'dispatcher':
+                dashboardPath = '../dispatcher/assignments.html';
+                break;
+            case 'tech':
+            case 'technician':
+                dashboardPath = '../tech/dashboard.html';
+                break;
+            case 'client':
+                dashboardPath = '../client/dashboard.html';
+                break;
+            default:
+                dashboardPath = '../../index.html';
+        }
+        
+        window.location.href = dashboardPath;
+    }
+
+    /**
+     * Показать сообщение об ошибке
+     * @param {string} message
+     */
+    showError(message) {
+        // Проверяем наличие Bootstrap для показа alert
+        if (typeof bootstrap !== 'undefined') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+            alertDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            
+            // Автоматически скрыть через 5 секунд
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        } else {
+            // Fallback для старых браузеров
+            alert(message);
+        }
+    }
+
+    /**
+     * Выполнение API запроса с автоматическим добавлением токена
+     * @param {string} endpoint
+     * @param {object} options
+     * @returns {Promise<Response>}
+     */
+    async apiRequest(endpoint, options = {}) {
+        const token = this.getAuthToken();
+        
+        const defaultOptions = {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        };
+
+        if (token) {
+            defaultOptions.headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const finalOptions = {
+            ...defaultOptions,
+            ...options,
+            headers: {
+                ...defaultOptions.headers,
+                ...options.headers
+            }
+        };
+
+        try {
+            const response = await fetch(`http://localhost:3001/api${endpoint}`, finalOptions);
+            
+            if (response.status === 401) {
+                // Токен истек или недействителен
+                this.clearAuth();
+                this.redirectToLogin();
+                throw new Error('Требуется авторизация');
+            }
+            
+            return response;
+        } catch (error) {
+            console.error('Ошибка API запроса:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Инициализация защиты страницы
+     * Вызывается автоматически при загрузке страницы
+     * @param {string|array} requiredRole
+     */
+    async initPageProtection(requiredRole = null) {
+        try {
+            const isAuthorized = await this.checkAuth(requiredRole);
+            
+            if (isAuthorized && this.currentUser) {
+                // Авторизация успешна, обновляем интерфейс
+                this.updateUserInterface();
+            }
+        } catch (error) {
+            console.error('Ошибка инициализации защиты страницы:', error);
+            this.redirectToLogin();
+        }
+    }
+
+    /**
+     * Обновление пользовательского интерфейса
+     */
+    updateUserInterface() {
+        if (!this.currentUser) return;
+
+        // Обновляем имя пользователя
+        const nameElements = document.querySelectorAll('[data-user="name"], .user-name');
+        nameElements.forEach(el => {
+            el.textContent = `${this.currentUser.firstName || ''} ${this.currentUser.lastName || ''}`.trim() || 
+                           this.currentUser.username || 'Пользователь';
+        });
+
+        // Обновляем роль пользователя
+        const roleElements = document.querySelectorAll('[data-user="role"], .user-role');
+        roleElements.forEach(el => {
+            const roleNames = {
+                'admin': 'Администратор',
+                'dispatcher': 'Диспетчер',
+                'tech': 'Техник',
+                'technician': 'Техник',
+                'client': 'Клиент'
+            };
+            el.textContent = roleNames[this.currentUser.role] || this.currentUser.role || 'Пользователь';
+        });
+
+        // Обновляем email
+        const emailElements = document.querySelectorAll('[data-user="email"], .user-email');
+        emailElements.forEach(el => {
+            el.textContent = this.currentUser.email || '';
+        });
+    }
 }
 
 // Initialize auth manager
 if (typeof document !== 'undefined') {
     document.addEventListener('DOMContentLoaded', function() {
         window.authManager = new AuthManager();
+        
+        // Получаем требуемую роль из атрибута body
+        const body = document.body;
+        const requiredRole = body.getAttribute('data-required-role');
+        
+        // Если страница требует авторизации, инициализируем защиту
+        if (requiredRole !== null) {
+            window.authManager.initPageProtection(requiredRole === '' ? null : requiredRole);
+        }
     });
 }
+
+// Функция быстрой проверки авторизации (для обратной совместимости)
+window.checkAuth = (requiredRole) => {
+    if (window.authManager) {
+        return window.authManager.checkAuth(requiredRole);
+    }
+    return false;
+};
 
 // Експорт для автотестів (Node.js)
 if (typeof module !== 'undefined' && module.exports) {

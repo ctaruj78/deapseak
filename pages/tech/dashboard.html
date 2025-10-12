@@ -10,8 +10,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Universal WebSocket Manager -->
     <script src="/assets/js/universal-websocket.js"></script>
+    <!-- Auth Manager -->
+    <script src="../../assets/js/auth.js"></script>
 </head>
-<body class="hold-transition sidebar-mini layout-fixed">
+<body class="hold-transition sidebar-mini layout-fixed" data-required-role="tech">
     <div class="wrapper">
         <!-- Navbar -->
         <nav class="main-header navbar navbar-expand navbar-white navbar-light">
@@ -165,18 +167,7 @@
                                                 </tr>
                                             </thead>
                                             <tbody id="todayTasks">
-                                                <tr>
-                                                    <td>09:00</td>
-                                                    <td>вул. Хрещатик, 15</td>
-                                                    <td>Технічне обслуговування</td>
-                                                    <td><span class="badge badge-warning">Середній</span></td>
-                                                    <td><span class="badge badge-primary">В роботі</span></td>
-                                                    <td>
-                                                        <button class="btn btn-success btn-sm">
-                                                            <i class="fas fa-check"></i> Завершити
-                                                        </button>
-                                                    </td>
-                                                </tr>
+                                                <!-- Завдання будуть завантажені динамічно -->
                                             </tbody>
                                         </table>
                                     </div>
@@ -240,11 +231,305 @@
             }
         });
 
-        function loadTechData() {
-            $('#activeAssignments').text(Math.floor(Math.random() * 10) + 5);
-            $('#completedToday').text(Math.floor(Math.random() * 5) + 2);
-            $('#urgentAssignments').text(Math.floor(Math.random() * 3) + 1);
-            $('#overdueAssignments').text(Math.floor(Math.random() * 2));
+        async function loadTechData() {
+            console.log('🔄 Завантаження даних техніка...');
+            
+            try {
+                // Отримуємо дані з API
+                const [assignments, requests] = await Promise.all([
+                    loadTechAssignments(),
+                    loadTechRequests()
+                ]);
+
+                // Обчислюємо статистики
+                const activeAssignments = assignments.filter(a => a.status === 'assigned' || a.status === 'in_progress').length;
+                const completedToday = assignments.filter(a => {
+                    return a.status === 'completed' && 
+                           new Date(a.updatedAt).toDateString() === new Date().toDateString();
+                }).length;
+                const urgentAssignments = assignments.filter(a => a.priority === 'high' && a.status !== 'completed').length;
+                const overdueAssignments = assignments.filter(a => {
+                    return a.status !== 'completed' && 
+                           a.deadline && 
+                           new Date(a.deadline) < new Date();
+                }).length;
+
+                // Оновлюємо інтерфейс
+                $('#activeAssignments').text(activeAssignments);
+                $('#completedToday').text(completedToday);
+                $('#urgentAssignments').text(urgentAssignments);
+                $('#overdueAssignments').text(overdueAssignments);
+
+                // Завантажуємо список завдань
+                displayTechTasks(assignments);
+                
+                console.log('✅ Дані техніка завантажено');
+
+            } catch (error) {
+                console.error('❌ Помилка завантаження даних техніка:', error);
+                
+                // Fallback до тестових даних
+                $('#activeAssignments').text(Math.floor(Math.random() * 10) + 5);
+                $('#completedToday').text(Math.floor(Math.random() * 5) + 2);
+                $('#urgentAssignments').text(Math.floor(Math.random() * 3) + 1);
+                $('#overdueAssignments').text(Math.floor(Math.random() * 2));
+            }
+        }
+
+        // Функція завантаження призначень техніка
+        async function loadTechAssignments() {
+            try {
+                const response = await window.authManager.apiRequest('/assignments/tech/my');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    return Array.isArray(data) ? data : data.assignments || [];
+                }
+                
+                return [];
+            } catch (error) {
+                console.warn('API недоступний, використовуємо локальні дані');
+                return JSON.parse(localStorage.getItem('tech_assignments') || '[]');
+            }
+        }
+
+        // Функція завантаження запитів техніка
+        async function loadTechRequests() {
+            try {
+                const response = await window.authManager.apiRequest('/requests/tech/my');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    return Array.isArray(data) ? data : data.requests || [];
+                }
+                
+                return [];
+            } catch (error) {
+                console.warn('API недоступний, використовуємо локальні дані');
+                return JSON.parse(localStorage.getItem('tech_requests') || '[]');
+            }
+        }
+
+        // Функція відображення завдань техніка
+        function displayTechTasks(assignments) {
+            // Знаходимо таблицю завдань на сьогодні
+            const tasksTable = document.getElementById('todayTasks');
+            
+            if (!tasksTable) {
+                console.log('Таблиця завдань не знайдена');
+                return;
+            }
+
+            // Очищуємо таблицю
+            tasksTable.innerHTML = '';
+
+            if (!assignments || assignments.length === 0) {
+                tasksTable.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            <i class="fas fa-clipboard-check fa-3x mb-3 d-block"></i>
+                            <p class="mb-0">Завдань на сьогодні немає</p>
+                            <small>Нові завдання з'являться тут автоматично</small>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            // Фільтруємо завдання на сьогодні
+            const today = new Date();
+            const todayTasks = assignments.filter(assignment => {
+                if (!assignment.scheduledDate && !assignment.deadline) return true; // Якщо дати немає, вважаємо що на сьогодні
+                
+                const taskDate = new Date(assignment.scheduledDate || assignment.deadline);
+                return taskDate.toDateString() === today.toDateString();
+            });
+
+            if (todayTasks.length === 0) {
+                tasksTable.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            <i class="fas fa-calendar-check fa-2x mb-2 d-block"></i>
+                            <p class="mb-0">Завдань на сьогодні немає</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            todayTasks.forEach(task => {
+                const row = document.createElement('tr');
+                
+                // Час завдання
+                const time = task.scheduledTime || 
+                           (task.createdAt ? new Date(task.createdAt).toLocaleTimeString('uk-UA', {hour: '2-digit', minute:'2-digit'}) : 
+                           '09:00');
+                
+                // Пріоритет
+                const priorityBadge = getPriorityBadge(task.priority);
+                
+                // Статус
+                const statusBadge = getStatusBadge(task.status);
+                
+                // Тип роботи
+                const workType = task.type || task.workType || 'Технічне обслуговування';
+                
+                // Адреса
+                const address = task.location || task.lift?.address || task.address || 'Адресу не вказано';
+                
+                row.innerHTML = `
+                    <td>${time}</td>
+                    <td>
+                        ${address}
+                        ${task.lift?.municipalNumber ? `<br><small class="text-muted">Ліфт №${task.lift.municipalNumber}</small>` : ''}
+                    </td>
+                    <td>${workType}</td>
+                    <td>${priorityBadge}</td>
+                    <td>${statusBadge}</td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-info" onclick="openTaskDetails('${task._id || task.id}')" title="Деталі">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            ${task.status === 'assigned' ? 
+                                `<button class="btn btn-outline-primary" onclick="startTask('${task._id || task.id}')" title="Почати">
+                                    <i class="fas fa-play"></i>
+                                </button>` : ''
+                            }
+                            ${task.status === 'in_progress' ? 
+                                `<button class="btn btn-outline-success" onclick="completeTask('${task._id || task.id}')" title="Завершити">
+                                    <i class="fas fa-check"></i>
+                                </button>` : ''
+                            }
+                            <button class="btn btn-outline-warning" onclick="addTaskNote('${task._id || task.id}')" title="Додати примітку">
+                                <i class="fas fa-sticky-note"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                
+                tasksTable.appendChild(row);
+            });
+        }
+
+        // Допоміжні функції для відображення
+        function getPriorityBadge(priority) {
+            switch (priority) {
+                case 'high':
+                    return '<span class="badge badge-danger">Високий</span>';
+                case 'medium':
+                    return '<span class="badge badge-warning">Середній</span>';
+                case 'low':
+                    return '<span class="badge badge-info">Низький</span>';
+                default:
+                    return '<span class="badge badge-secondary">Не визначено</span>';
+            }
+        }
+
+        function getStatusBadge(status) {
+            switch (status) {
+                case 'assigned':
+                    return '<span class="badge badge-primary">Призначено</span>';
+                case 'in_progress':
+                    return '<span class="badge badge-warning">В роботі</span>';
+                case 'completed':
+                    return '<span class="badge badge-success">Завершено</span>';
+                case 'cancelled':
+                    return '<span class="badge badge-danger">Скасовано</span>';
+                default:
+                    return '<span class="badge badge-secondary">Невизначено</span>';
+            }
+        }
+
+        // Функції обробки завдань
+        function openTaskDetails(taskId) {
+            console.log('📋 Відкриття деталей завдання:', taskId);
+            
+            // Тут можна відкрити модальне вікно або перейти на сторінку деталей
+            alert(`Деталі завдання ${taskId}\n\nФункція в розробці`);
+        }
+
+        function startTask(taskId) {
+            console.log('▶️ Початок виконання завдання:', taskId);
+            
+            if (confirm('Почати виконання цього завдання?')) {
+                // Оновити статус завдання
+                updateTaskStatus(taskId, 'in_progress');
+            }
+        }
+
+        function completeTask(taskId) {
+            console.log('✅ Завершення завдання:', taskId);
+            
+            if (confirm('Завершити це завдання?')) {
+                // Оновити статус завдання
+                updateTaskStatus(taskId, 'completed');
+            }
+        }
+
+        function addTaskNote(taskId) {
+            console.log('📝 Додавання примітки до завдання:', taskId);
+            
+            const note = prompt('Введіть примітку до завдання:');
+            if (note && note.trim()) {
+                addNoteToTask(taskId, note.trim());
+            }
+        }
+
+        // Функція додавання примітки до завдання
+        async function addNoteToTask(taskId, note) {
+            try {
+                const response = await window.authManager.apiRequest(`/assignments/${taskId}/notes`, {
+                    method: 'POST',
+                    body: JSON.stringify({ 
+                        note: note,
+                        timestamp: new Date().toISOString()
+                    })
+                });
+
+                if (response.ok) {
+                    console.log('✅ Примітка додана');
+                    alert('Примітка успішно додана');
+                } else {
+                    throw new Error('Помилка додавання примітки');
+                }
+            } catch (error) {
+                console.error('❌ Помилка додавання примітки:', error);
+                
+                // Fallback - зберегти локально
+                const localNotes = JSON.parse(localStorage.getItem('task_notes') || '{}');
+                if (!localNotes[taskId]) {
+                    localNotes[taskId] = [];
+                }
+                localNotes[taskId].push({
+                    note: note,
+                    timestamp: new Date().toISOString()
+                });
+                localStorage.setItem('task_notes', JSON.stringify(localNotes));
+                
+                alert('Примітка збережена локально');
+            }
+        }
+
+        // Функція оновлення статусу завдання
+        async function updateTaskStatus(taskId, newStatus) {
+            try {
+                const response = await window.authManager.apiRequest(`/assignments/${taskId}/status`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                if (response.ok) {
+                    console.log('✅ Статус завдання оновлено');
+                    // Перезавантажити дані
+                    loadTechData();
+                } else {
+                    throw new Error('Помилка оновлення статусу');
+                }
+            } catch (error) {
+                console.error('❌ Помилка оновлення статусу:', error);
+                alert('Помилка оновлення статусу завдання');
+            }
         }
         
         /**

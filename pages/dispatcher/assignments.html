@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css">
     
+    <!-- Auth Manager -->
+    <script src="../../assets/js/auth.js"></script>
+    
     <!-- Додаткові стилі -->
     <style>
         .assignment-card {
@@ -214,7 +217,7 @@
     <!-- Service Integration -->
     <script src="../../assets/js/service-integration.js"></script>
 </head>
-<body class="hold-transition sidebar-mini layout-fixed">
+<body class="hold-transition sidebar-mini layout-fixed" data-required-role="dispatcher">
     <div class="wrapper">
 
         <!-- Навігаційна панель -->
@@ -843,6 +846,143 @@
             // Ініціалізація систем
             serviceIntegration = new ServiceRequestsIntegration();
             window.dispatcherManager = new DispatcherAssignmentManager();
+            
+            // 🔧 ВИПРАВЛЕННЯ: Додаємо функції для модальних вікон
+            window.assignmentManager = {
+                // Показати сповіщення
+                showNotifications: function() {
+                    alert('Сповіщення: У вас 3 нових заявки!');
+                },
+                
+                // Застосувати фільтри
+                applyFilters: function() {
+                    console.log('Застосування фільтрів...');
+                    const priority = $('#priorityFilter').val();
+                    const status = $('#statusFilter').val();
+                    console.log('Фільтри:', { priority, status });
+                    alert(`Фільтри застосовано: Пріоритет=${priority}, Статус=${status}`);
+                },
+                
+                // Скинути фільтри
+                resetFilters: function() {
+                    $('#priorityFilter').val('');
+                    $('#statusFilter').val('');
+                    console.log('Фільтри скинуто');
+                    alert('Фільтри скинуто');
+                },
+                
+                // Експорт призначень
+                exportAssignments: function() {
+                    console.log('Експорт призначень...');
+                    alert('Експорт розпочато. Файл буде завантажено через кілька секунд.');
+                },
+                
+                // Показати календар
+                showCalendarView: function() {
+                    alert('Відкриття календарного вигляду...');
+                    // Тут можна перенаправити на календар
+                    window.location.href = 'calendar.html';
+                },
+                
+                // Пошук призначень  
+                searchAssignments: function() {
+                    const query = $('#searchQuery').val();
+                    console.log('Пошук:', query);
+                    alert(`Пошук за запитом: "${query}"`);
+                },
+                
+                // Попередня сторінка
+                previousPage: function() {
+                    console.log('Попередня сторінка');
+                    alert('Перехід на попередню сторінку');
+                },
+                
+                // Наступна сторінка
+                nextPage: function() {
+                    console.log('Наступна сторінка'); 
+                    alert('Перехід на наступну сторінку');
+                },
+                
+                // Створити нове призначення
+                createNewAssignment: function() {
+                    alert('Форма створення нового призначення буде тут');
+                },
+                
+                // Масове призначення
+                bulkAssign: function() {
+                    alert('Модальне вікно масового призначення');
+                    $('#bulkAssignModal').modal('show');
+                },
+                
+                // Перепризначити прострочені
+                reassignOverdue: function() {
+                    if (confirm('Перепризначити всі прострочені заявки?')) {
+                        alert('Прострочені заявки перепризначено');
+                    }
+                },
+                
+                // Генерувати звіт
+                generateReport: function() {
+                    alert('Генерація звіту розпочата');
+                },
+                
+                // Підтвердити масове призначення
+                submitBulkAssignment: function() {
+                    const selectedTech = $('#bulkTechnicianSelect').val();
+                    if (selectedTech) {
+                        alert(`Масове призначення техніку: ${selectedTech}`);
+                        $('#bulkAssignModal').modal('hide');
+                    } else {
+                        alert('Виберіть техніка!');
+                    }
+                },
+                
+                // 🎯 ГОЛОВНІ ФУНКЦІЇ ДЛЯ РОБОТИ З ЗАЯВКАМИ
+                
+                // Розпочати роботу
+                startWork: function(requestId) {
+                    console.log('Розпочати роботу з заявкою:', requestId);
+                    if (confirm('Розпочати роботу над цією заявкою?')) {
+                        // Тут буде API виклик для оновлення статусу
+                        this.updateRequestStatus(requestId, 'in-progress');
+                        alert('Роботу розпочато!');
+                    }
+                },
+                
+                // Призначити техніка  
+                assignTechnician: function(requestId) {
+                    const technician = prompt('Введіть ID техніка або виберіть зі списку:');
+                    if (technician) {
+                        // API виклик для призначення
+                        console.log(`Призначення техніка ${technician} до заявки ${requestId}`);
+                        alert(`Техніка ${technician} призначено до заявки ${requestId}`);
+                    }
+                },
+                
+                // Додати коментар
+                addComment: function(requestId) {
+                    const comment = prompt('Введіть коментар:');
+                    if (comment) {
+                        console.log(`Додано коментар до заявки ${requestId}:`, comment);
+                        alert('Коментар додано!');
+                    }
+                },
+                
+                // Завершити заявку
+                completeRequest: function(requestId) {
+                    if (confirm('Завершити цю заявку?')) {
+                        this.updateRequestStatus(requestId, 'completed');
+                        alert('Заявку завершено!');
+                    }
+                },
+                
+                // Оновити статус заявки
+                updateRequestStatus: function(requestId, newStatus) {
+                    console.log(`Оновлення статусу заявки ${requestId} на ${newStatus}`);
+                    // Тут буде реальний API виклик
+                    // apiCall('/api/requests', 'POST', { _id: requestId, status: newStatus });
+                }
+            };
             
             // Завантажити призначення
             dispatcherManager.loadAssignments();

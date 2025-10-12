@@ -1,4 +1,38 @@
-(node:2781) [MONGODB DRIVER] Warning: useUnifiedTopology is a deprecated option: useUnifiedTopology has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
+(node:47201) [MONGODB DRIVER] Warning: useUnifiedTopology is a deprecated option: useUnifiedTopology has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
 (Use `node --trace-warnings ...` to show where the warning was created)
 API сервер запущено на http://0.0.0.0:3001
 MongoDB connected: mongodb://localhost:27017 DB: deapseak
+📁 Файлові директорії ініціалізовано
+Помилка отримання ліфта: BSONError: input must be a 24 character hex string, 12 byte Uint8Array, or an integer
+    at new ObjectId (/workspaces/deapseak/node_modules/bson/lib/bson.cjs:2538:23)
+    at /workspaces/deapseak/api-server.js:415:18
+    at Layer.handleRequest (/workspaces/deapseak/node_modules/router/lib/layer.js:152:17)
+    at next (/workspaces/deapseak/node_modules/router/lib/route.js:157:13)
+    at Route.dispatch (/workspaces/deapseak/node_modules/router/lib/route.js:117:3)
+    at handle (/workspaces/deapseak/node_modules/router/index.js:435:11)
+    at Layer.handleRequest (/workspaces/deapseak/node_modules/router/lib/layer.js:152:17)
+    at /workspaces/deapseak/node_modules/router/index.js:295:15
+    at param (/workspaces/deapseak/node_modules/router/index.js:600:14)
+    at param (/workspaces/deapseak/node_modules/router/index.js:610:14)
+Помилка отримання ліфта: BSONError: input must be a 24 character hex string, 12 byte Uint8Array, or an integer
+    at new ObjectId (/workspaces/deapseak/node_modules/bson/lib/bson.cjs:2538:23)
+    at /workspaces/deapseak/api-server.js:415:18
+    at Layer.handleRequest (/workspaces/deapseak/node_modules/router/lib/layer.js:152:17)
+    at next (/workspaces/deapseak/node_modules/router/lib/route.js:157:13)
+    at Route.dispatch (/workspaces/deapseak/node_modules/router/lib/route.js:117:3)
+    at handle (/workspaces/deapseak/node_modules/router/index.js:435:11)
+    at Layer.handleRequest (/workspaces/deapseak/node_modules/router/lib/layer.js:152:17)
+    at /workspaces/deapseak/node_modules/router/index.js:295:15
+    at param (/workspaces/deapseak/node_modules/router/index.js:600:14)
+    at param (/workspaces/deapseak/node_modules/router/index.js:610:14)
+Помилка отримання ліфта: BSONError: input must be a 24 character hex string, 12 byte Uint8Array, or an integer
+    at new ObjectId (/workspaces/deapseak/node_modules/bson/lib/bson.cjs:2538:23)
+    at /workspaces/deapseak/api-server.js:415:18
+    at Layer.handleRequest (/workspaces/deapseak/node_modules/router/lib/layer.js:152:17)
+    at next (/workspaces/deapseak/node_modules/router/lib/route.js:157:13)
+    at Route.dispatch (/workspaces/deapseak/node_modules/router/lib/route.js:117:3)
+    at handle (/workspaces/deapseak/node_modules/router/index.js:435:11)
+    at Layer.handleRequest (/workspaces/deapseak/node_modules/router/lib/layer.js:152:17)
+    at /workspaces/deapseak/node_modules/router/index.js:295:15
+    at param (/workspaces/deapseak/node_modules/router/index.js:600:14)
+    at param (/workspaces/deapseak/node_modules/router/index.js:610:14)
