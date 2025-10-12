@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Тест QR для одного ліфта</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/assets/css/enhanced-lift-modal.css">
+    <style>
+        body {
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        .console-log {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        .console-log div {
+            margin: 3px 0;
+        }
+        .qr-result {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            min-height: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h2 class="text-center mb-4">
+            <i class="fas fa-qrcode text-primary"></i> 
+            Тест генерації QR для одного ліфта
+        </h2>
+        
+        <div class="alert alert-info">
+            <strong>📋 Крок 1:</strong> Введіть муніципальний номер<br>
+            <strong>📋 Крок 2:</strong> Натисніть кнопку генерації<br>
+            <strong>📋 Крок 3:</strong> Перевірте консоль і результат
+        </div>
+
+        <div class="form-group">
+            <label><strong>Муніципальний номер ліфта:</strong></label>
+            <div class="input-group">
+                <input type="text" id="testMunicipalNumber" class="form-control form-control-lg" 
+                       value="LIFT-TEST-001" placeholder="Введіть номер">
+                <div class="input-group-append">
+                    <button type="button" class="btn btn-primary btn-lg" onclick="testQRGeneration()">
+                        <i class="fas fa-qrcode"></i> Генерувати QR
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label><strong>Адреса (опціонально):</strong></label>
+            <input type="text" id="testAddress" class="form-control" 
+                   value="вул. Тестова 1, Київ" placeholder="Адреса ліфта">
+        </div>
+
+        <div id="qrResult" class="qr-result text-center">
+            <p class="text-muted">QR-код з'явиться тут...</p>
+        </div>
+
+        <div class="console-log" id="consoleLog">
+            <div style="color: #ffff00;">🖥️ Консоль системи:</div>
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- QRCode Smart Loader -->
+    <script src="/assets/libs/qrcode-loader.js"></script>
+
+    <script>
+        // Перехоплення console.log
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        function addToConsole(message, color = '#00ff00') {
+            const consoleDiv = document.getElementById('consoleLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.style.color = color;
+            entry.textContent = `[${timestamp}] ${message}`;
+            consoleDiv.appendChild(entry);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addToConsole(args.join(' '), '#00ff00');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addToConsole('❌ ' + args.join(' '), '#ff4444');
+        };
+        
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            addToConsole('⚠️ ' + args.join(' '), '#ffaa00');
+        };
+
+        // Перевірка завантаження бібліотек
+        $(document).ready(function() {
+            console.log('✅ Сторінка завантажена');
+            console.log('📚 jQuery версія: ' + jQuery.fn.jquery);
+            console.log('📚 QRCode доступний: ' + (typeof QRCode !== 'undefined' ? 'ТАК' : 'НІ'));
+            console.log('📚 Bootstrap доступний: ' + (typeof $.fn.modal !== 'undefined' ? 'ТАК' : 'НІ'));
+        });
+
+        // Головна функція тестування
+        function testQRGeneration() {
+            console.log('🚀 Початок генерації QR-коду...');
+            
+            const municipalNumber = $('#testMunicipalNumber').val();
+            const address = $('#testAddress').val();
+            const container = $('#qrResult');
+            
+            // Крок 1: Перевірка введення
+            if (!municipalNumber || municipalNumber.trim() === '') {
+                console.error('Муніципальний номер не введено!');
+                container.html('<div class="alert alert-danger">❌ Введіть муніципальний номер!</div>');
+                return;
+            }
+            console.log('✅ Муніципальний номер: ' + municipalNumber);
+            
+            // Крок 2: Перевірка QRCode бібліотеки
+            if (typeof QRCode === 'undefined') {
+                console.error('Бібліотека QRCode не завантажена!');
+                container.html('<div class="alert alert-danger">❌ Бібліотека QRCode не завантажена!</div>');
+                return;
+            }
+            console.log('✅ Бібліотека QRCode доступна');
+            
+            // Крок 3: Очищення контейнера
+            container.empty();
+            console.log('🧹 Контейнер очищено');
+            
+            // Крок 4: Підготовка даних для QR
+            const qrData = {
+                municipalNumber: municipalNumber,
+                address: address,
+                liftNumber: 1,
+                createdAt: new Date().toISOString(),
+                accessUrl: `${window.location.origin}/lift-access.html?id=${municipalNumber}`
+            };
+            
+            const qrText = JSON.stringify(qrData);
+            console.log('📦 Дані QR підготовано:', qrData);
+            
+            // Крок 5: Створення canvas елемента
+            const canvas = document.createElement('canvas');
+            canvas.className = 'qr-canvas';
+            console.log('🎨 Canvas створено');
+            
+            // Крок 6: Генерація QR-коду
+            try {
+                QRCode.toCanvas(canvas, qrText, {
+                    width: 200,
+                    height: 200,
+                    margin: 2,
+                    color: {
+                        dark: '#000000',
+                        light: '#FFFFFF'
+                    },
+                    errorCorrectionLevel: 'M'
+                }, function(error) {
+                    if (error) {
+                        console.error('Помилка генерації QR:', error);
+                        container.html(`
+                            <div class="alert alert-danger">
+                                <strong>❌ Помилка генерації:</strong><br>
+                                ${error.message || error}
+                            </div>
+                        `);
+                        return;
+                    }
+                    
+                    console.log('✅ QR-код успішно згенеровано!');
+                    
+                    // Додаємо canvas до контейнера
+                    container.append(canvas);
+                    
+                    // Додаємо інформацію
+                    const info = `
+                        <div class="mt-3">
+                            <div class="alert alert-success">
+                                <strong>✅ QR-код успішно створено!</strong>
+                            </div>
+                            <p><strong>Номер:</strong> ${municipalNumber}</p>
+                            <p><strong>Адреса:</strong> ${address || 'Не вказано'}</p>
+                            <p><strong>Створено:</strong> ${new Date().toLocaleString('uk-UA')}</p>
+                        </div>
+                        <div class="btn-group btn-group-lg d-flex mt-3">
+                            <button class="btn btn-success" onclick="downloadQR('${municipalNumber}')">
+                                <i class="fas fa-download"></i> Завантажити PNG
+                            </button>
+                            <button class="btn btn-primary" onclick="printQR('${municipalNumber}', '${address}')">
+                                <i class="fas fa-print"></i> Друк
+                            </button>
+                        </div>
+                    `;
+                    
+                    container.append(info);
+                    console.log('📄 Інформація додана');
+                });
+                
+            } catch (err) {
+                console.error('Виняток при генерації:', err);
+                container.html(`
+                    <div class="alert alert-danger">
+                        <strong>❌ Критична помилка:</strong><br>
+                        ${err.message || err}
+                    </div>
+                `);
+            }
+        }
+
+        // Завантаження QR як PNG
+        function downloadQR(municipalNumber) {
+            console.log('💾 Завантаження QR...');
+            const canvas = $('#qrResult').find('canvas')[0];
+            if (!canvas) {
+                console.error('Canvas не знайдено!');
+                return;
+            }
+            
+            try {
+                const link = document.createElement('a');
+                link.download = `QR-${municipalNumber}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                console.log('✅ QR завантажено');
+            } catch (err) {
+                console.error('Помилка завантаження:', err);
+            }
+        }
+
+        // Друк QR
+        function printQR(municipalNumber, address) {
+            console.log('🖨️ Підготовка до друку...');
+            const canvas = $('#qrResult').find('canvas')[0];
+            if (!canvas) {
+                console.error('Canvas не знайдено!');
+                return;
+            }
+            
+            try {
+                const printWindow = window.open('', '_blank', 'width=800,height=600');
+                printWindow.document.write(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>QR-код ${municipalNumber}</title>
+                        <style>
+                            body { 
+                                text-align: center; 
+                                padding: 40px; 
+                                font-family: Arial, sans-serif;
+                            }
+                            h1 { color: #333; margin-bottom: 20px; }
+                            .info { 
+                                margin: 15px 0; 
+                                font-size: 16px;
+                            }
+                            img { 
+                                border: 3px solid #333;
+                                padding: 10px;
+                                background: white;
+                                margin: 20px 0;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <h1>QR-код доступу до ліфта</h1>
+                        <div class="info"><strong>Муніципальний номер:</strong> ${municipalNumber}</div>
+                        <div class="info"><strong>Адреса:</strong> ${address || 'Не вказано'}</div>
+                        <div>
+                            <img src="${canvas.toDataURL()}" alt="QR код" width="300" height="300">
+                        </div>
+                        <div class="info">Створено: ${new Date().toLocaleString('uk-UA')}</div>
+                    </body>
+                    </html>
+                `);
+                printWindow.document.close();
+                
+                printWindow.onload = function() {
+                    printWindow.focus();
+                    printWindow.print();
+                    console.log('✅ Діалог друку відкрито');
+                };
+            } catch (err) {
+                console.error('Помилка друку:', err);
+            }
+        }
+    </script>
+</body>
+</html>

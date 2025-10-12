@@ -1,0 +1,58 @@
+{
+  "name": "DeapSeaK Development Environment",
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  
+  // Налаштування портів
+  "forwardPorts": [8080, 3001, 27017],
+  
+  "portsAttributes": {
+    "8080": {
+      "visibility": "public",
+      "label": "Web Server (DeapSeaK UI)"
+    },
+    "3001": {
+      "visibility": "public",
+      "label": "API Server (DeapSeaK Backend)"
+    },
+    "27017": {
+      "visibility": "private",
+      "label": "MongoDB Database"
+    }
+  },
+  
+  // Команди після створення контейнера
+  "postCreateCommand": "npm install",
+  
+  // Налаштування VS Code
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.vscode-json",
+        "bradlc.vscode-tailwindcss",
+        "ms-vscode.vscode-typescript-next",
+        "mongodb.mongodb-vscode"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  },
+  
+  // Змінні середовища
+  "containerEnv": {
+    "NODE_ENV": "development",
+    "PORT": "3001",
+    "WEB_PORT": "8080"
+  },
+  
+  // Встановлення додаткових пакетів
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "18"
+    },
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.11"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  }
+}

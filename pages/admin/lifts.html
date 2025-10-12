@@ -1616,8 +1616,9 @@
     <script src="../../security.js"></script>
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <!-- QR Code library -->
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    
+    <!-- QR Code Smart Loader - Спробує завантажити з кількох CDN джерел -->
+    <script src="../../assets/libs/qrcode-loader.js"></script>
     <!-- Custom scripts -->
     <script src="../../assets/js/system-eventbus.js"></script>
     <script src="../../assets/js/predictive-maintenance.js"></script>
@@ -3181,15 +3182,29 @@
     console.log('🚀 Ініціалізація Enhanced Lift Modal...');
     
     // Перевіряємо чи завантажено всі залежності
+    let initAttempts = 0;
+    const maxAttempts = 50; // Максимум 5 секунд очікування
+    
     function initializeEnhancedModal() {
+        initAttempts++;
+        
         if (typeof QRCode === 'undefined') {
-            console.log('⏳ Очікування завантаження QRCode бібліотеки...');
+            if (initAttempts >= maxAttempts) {
+                console.error('❌ QRCode library failed to load after ' + (maxAttempts/10) + ' seconds');
+                alert('⚠️ Бібліотека QR-кодів не завантажилася. Спробуйте оновити сторінку (Ctrl+Shift+R)');
+                return;
+            }
+            console.log('⏳ Очікування завантаження QRCode бібліотеки... (спроба ' + initAttempts + '/' + maxAttempts + ')');
             setTimeout(initializeEnhancedModal, 100);
             return;
         }
         
         if (typeof EnhancedLiftModal === 'undefined') {
-            console.log('⏳ Очікування завантаження EnhancedLiftModal класу...');
+            if (initAttempts >= maxAttempts) {
+                console.error('❌ EnhancedLiftModal class failed to load');
+                return;
+            }
+            console.log('⏳ Очікування завантаження EnhancedLiftModal класу... (спроба ' + initAttempts + '/' + maxAttempts + ')');
             setTimeout(initializeEnhancedModal, 100);
             return;
         }
@@ -3229,6 +3244,14 @@
             };
         }
     }
+    
+    // Показуємо статус завантаження
+    console.log('📚 Перевірка бібліотек:');
+    console.log('  - jQuery:', typeof jQuery !== 'undefined' ? '✅ ' + jQuery.fn.jquery : '❌');
+    console.log('  - Bootstrap:', typeof bootstrap !== 'undefined' || typeof $.fn.modal !== 'undefined' ? '✅' : '❌');
+    console.log('  - Leaflet:', typeof L !== 'undefined' ? '✅' : '❌');
+    console.log('  - QRCode:', typeof QRCode !== 'undefined' ? '✅' : '⏳ завантажується...');
+    console.log('  - EnhancedLiftModal:', typeof EnhancedLiftModal !== 'undefined' ? '✅' : '⏳ завантажується...');
     
     // Запускаємо ініціалізацію після завантаження всіх скриптів
     setTimeout(initializeEnhancedModal, 500);
