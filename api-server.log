@@ -1,17 +1,8 @@
-(node:3664) [MONGODB DRIVER] Warning: useUnifiedTopology is a deprecated option: useUnifiedTopology has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
-(Use `node --trace-warnings ...` to show where the warning was created)
+nohup: ignoring input
+🛡️  Rate limiting активовано:
+   - Загальний API ліміт: 100 запитів/15хв
+   - Авторизація: 5 спроб/15хв
+   - Інші API: 200 запитів/15хв
 API сервер запущено на http://0.0.0.0:3001
 MongoDB connected: mongodb://localhost:27017 DB: deapseak
 📁 Файлові директорії ініціалізовано
-SyntaxError: Expected ',' or '}' after property value in JSON at position 15 (line 1 column 16)
-    at JSON.parse (<anonymous>)
-    at parse (/workspaces/deapseak/node_modules/body-parser/lib/types/json.js:77:19)
-    at /workspaces/deapseak/node_modules/body-parser/lib/read.js:123:18
-    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)
-    at invokeCallback (/workspaces/deapseak/node_modules/raw-body/index.js:238:16)
-    at done (/workspaces/deapseak/node_modules/raw-body/index.js:227:7)
-    at IncomingMessage.onEnd (/workspaces/deapseak/node_modules/raw-body/index.js:287:7)
-    at IncomingMessage.emit (node:events:518:28)
-    at endReadableNT (node:internal/streams/readable:1698:12)
-    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
-Помилка верифікації токена: jwt malformed

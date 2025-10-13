@@ -1,6 +1,7 @@
 
 const express = require("express");
 const cors = require("cors");
+const rateLimit = require("express-rate-limit");
 const { connectDB, getDB, closeDB } = require("./db");
 const { ObjectId } = require("mongodb");
 const bcrypt = require("bcryptjs");
@@ -11,8 +12,132 @@ const app = express();
 const PORT = 3001;
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 
+// Глобальний обробник необроблених помилок
+process.on('uncaughtException', (error) => {
+    console.error('❌ Необроблена помилка:', error);
+    process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('❌ Необроблена відмова:', reason);
+    process.exit(1);
+});
+
+// Клас для структурованих помилок API
+class APIError extends Error {
+    constructor(message, statusCode = 500, errorCode = 'INTERNAL_ERROR') {
+        super(message);
+        this.statusCode = statusCode;
+        this.errorCode = errorCode;
+        this.isOperational = true; // Операційна помилка (не програмна)
+
+        Error.captureStackTrace(this, this.constructor);
+    }
+}
+
+// Error handling middleware
+const errorHandler = (err, req, res, next) => {
+    let error = { ...err };
+    error.message = err.message;
+
+    // Логування помилки
+    console.error(`❌ API Error [${req.method} ${req.path}]:`, {
+        message: err.message,
+        statusCode: err.statusCode || 500,
+        errorCode: err.errorCode || 'UNKNOWN_ERROR',
+        stack: err.stack,
+        ip: req.ip,
+        userAgent: req.get('User-Agent')
+    });
+
+    // MongoDB помилки
+    if (err.name === 'CastError') {
+        const message = 'Невірний формат даних';
+        error = new APIError(message, 400, 'INVALID_DATA_FORMAT');
+    }
+
+    // Duplicate key error
+    if (err.code === 11000) {
+        const field = Object.keys(err.keyValue)[0];
+        const message = `Поле ${field} вже існує`;
+        error = new APIError(message, 400, 'DUPLICATE_FIELD');
+    }
+
+    // JWT помилки
+    if (err.name === 'JsonWebTokenError') {
+        const message = 'Недійсний токен';
+        error = new APIError(message, 401, 'INVALID_TOKEN');
+    }
+
+    if (err.name === 'TokenExpiredError') {
+        const message = 'Токен прострочений';
+        error = new APIError(message, 401, 'TOKEN_EXPIRED');
+    }
+
+    // Відповідь клієнту
+    res.status(error.statusCode || 500).json({
+        success: false,
+        error: error.errorCode || 'INTERNAL_ERROR',
+        message: error.message || 'Внутрішня помилка сервера',
+        ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    });
+};
+
 // Middleware
 app.use(express.json());
+
+// Rate limiting - захист від DDoS та brute force атак
+const generalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 хвилин
+    max: 100, // Максимум 100 запитів з однієї IP за 15 хвилин
+    message: {
+        success: false,
+        error: "Занадто багато запитів",
+        message: "Перевищено ліміт запитів. Спробуйте пізніше."
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 хвилин
+    max: 5, // Максимум 5 спроб авторизації за 15 хвилин
+    message: {
+        success: false,
+        error: "Занадто багато спроб авторизації",
+        message: "Перевищено ліміт спроб входу. Спробуйте через 15 хвилин."
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 хвилин
+    max: 200, // Максимум 200 API запитів за 15 хвилин
+    message: {
+        success: false,
+        error: "Занадто багато API запитів",
+        message: "Перевищено ліміт API запитів. Спробуйте пізніше."
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+// Застосування rate limiting
+app.use('/api/', generalLimiter); // Загальний ліміт для всіх API
+app.use('/api/auth/login', authLimiter); // Строгий ліміт для логіну
+app.use('/api/auth/register', authLimiter); // Строгий ліміт для реєстрації
+app.use('/api/', apiLimiter); // API ліміт для інших запитів
+
+console.log('🛡️  Rate limiting активовано:');
+console.log('   - Загальний API ліміт: 100 запитів/15хв');
+console.log('   - Авторизація: 5 спроб/15хв');
+console.log('   - Інші API: 200 запитів/15хв');
+
+console.log('🚨 Centralized error handling активовано:');
+console.log('   - Структуровані API помилки');
+console.log('   - Автоматичне логування');
+console.log('   - Стандартизовані відповіді');
 
 // CORS налаштування для GitHub Codespaces та локальної розробки
 app.use(cors({
@@ -45,6 +170,9 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// Статичні файли - обслуговування HTML, CSS, JS
+app.use(express.static('.'));
 
 // Підключення до MongoDB при запуску
 connectDB()
@@ -119,15 +247,7 @@ app.get("/api/status", async (req, res) => {
             }
         });
     } catch (error) {
-        console.error("Помилка статусу:", error);
-        res.status(500).json({
-            status: "error",
-            timestamp: new Date(),
-            version: "2.0.0",
-            uptime: process.uptime(),
-            mongodb: false,
-            error: error.message
-        });
+        throw new APIError("Помилка отримання статусу системи", 500, "STATUS_ERROR");
     }
 });
 
@@ -164,21 +284,13 @@ const authenticateToken = (req, res, next) => {
     }
 
     if (!token) {
-        return res.status(401).json({ 
-            success: false,
-            error: "Необхідна авторизація",
-            message: "Токен не знайдено" 
-        });
+        throw new APIError("Необхідна авторизація", 401, "AUTH_REQUIRED");
     }
 
     jwt.verify(token, JWT_SECRET, (err, user) => {
         if (err) {
             console.error('Помилка верифікації токена:', err.message);
-            return res.status(403).json({ 
-                success: false,
-                error: "Недійсний токен",
-                message: err.message 
-            });
+            throw new APIError("Недійсний токен", 403, "INVALID_TOKEN");
         }
         
         req.user = user;
@@ -385,53 +497,39 @@ app.post("/api/register", async (req, res) => {
 });
 
 app.post("/api/login", async (req, res) => {
-    try {
-        const { username, password } = req.body;
-        
-        const db = getDB();
-        
-        // Пошук користувача
-        const user = await db.collection("users").findOne({ username });
-        
-        if (!user) {
-            return res.status(401).json({ 
-                success: false, 
-                message: "Неправильний логін або пароль" 
-            });
-        }
-        
-        // Перевірка пароля
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-        
-        if (!isPasswordValid) {
-            return res.status(401).json({ 
-                success: false, 
-                message: "Неправильний логін або пароль" 
-            });
-        }
-        
-        // Створення JWT токена
-        const token = jwt.sign(
-            { id: user._id, username: user.username, role: user.role }, 
-            JWT_SECRET, 
-            { expiresIn: req.body.remember ? '30d' : '24h' }
-        );
-        
-        // Відправка токена та даних користувача (без пароля)
-        const { password: userPass, ...userData } = user;
-        
-        res.status(200).json({ 
-            success: true, 
-            token, 
-            user: userData 
-        });
-    } catch (error) {
-        console.error("Помилка входу:", error);
-        res.status(500).json({ 
-            success: false, 
-            message: "Помилка входу в систему" 
-        });
+    const { username, password } = req.body;
+    
+    const db = getDB();
+    
+    // Пошук користувача
+    const user = await db.collection("users").findOne({ username });
+    
+    if (!user) {
+        throw new APIError("Неправильний логін або пароль", 401, "INVALID_CREDENTIALS");
     }
+    
+    // Перевірка пароля
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    
+    if (!isPasswordValid) {
+        throw new APIError("Неправильний логін або пароль", 401, "INVALID_CREDENTIALS");
+    }
+    
+    // Створення JWT токена
+    const token = jwt.sign(
+        { id: user._id, username: user.username, role: user.role }, 
+        JWT_SECRET, 
+        { expiresIn: req.body.remember ? '30d' : '24h' }
+    );
+    
+    // Відправка токена та даних користувача (без пароля)
+    const { password: userPass, ...userData } = user;
+    
+    res.status(200).json({ 
+        success: true, 
+        token, 
+        user: userData 
+    });
 });
 
 app.post("/api/forgot-password", async (req, res) => {
@@ -1546,7 +1644,15 @@ app.get("/api/qr/scans", authenticateToken, async (req, res) => {
 });
 
 // Обробник для ініціалізації тестових даних
-app.post("/api/init-test-data", async (req, res) => {
+app.post("/api/init-test-data", authenticateToken, async (req, res) => {
+    // Перевірка прав доступу - тільки адміни
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({
+            success: false,
+            message: "Недостатньо прав для ініціалізації тестових даних"
+        });
+    }
+    
     try {
         const db = getDB();
         
@@ -3929,6 +4035,245 @@ async function getAIAnalytics(type, period) {
     
     return analytics;
 }
+
+// ============================================
+// ДОДАТКОВІ API ENDPOINTS
+// ============================================
+
+// Email система
+app.get("/api/emails", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        const emails = await db.collection("emails")
+            .find({ sentBy: req.user.id })
+            .sort({ sentAt: -1 })
+            .toArray();
+        
+        res.json(emails);
+    } catch (error) {
+        console.error("Помилка отримання email:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося отримати email" 
+        });
+    }
+});
+
+app.post("/api/emails", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        const emailData = req.body;
+        
+        // Валідація обов'язкових полів
+        if (!emailData.to || !emailData.subject || !emailData.message) {
+            return res.status(400).json({
+                success: false,
+                message: "Одержувач, тема та повідомлення обов'язкові"
+            });
+        }
+        
+        // Створення запису про email
+        const emailRecord = {
+            ...emailData,
+            from: req.user.email,
+            sentBy: req.user.id,
+            sentAt: new Date().toISOString(),
+            status: "sent"
+        };
+        
+        const result = await db.collection("emails").insertOne(emailRecord);
+        
+        res.status(201).json({
+            success: true,
+            message: "Email успішно надіслано",
+            id: result.insertedId
+        });
+    } catch (error) {
+        console.error("Помилка відправки email:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося надіслати email" 
+        });
+    }
+});
+
+// Інспекції ліфтів
+app.get("/api/inspections", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        const inspections = await db.collection("inspections")
+            .find({ inspectedBy: req.user.id })
+            .sort({ inspectedAt: -1 })
+            .toArray();
+        
+        res.json(inspections);
+    } catch (error) {
+        console.error("Помилка отримання інспекцій:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося отримати інспекції" 
+        });
+    }
+});
+
+app.post("/api/inspections", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        const inspectionData = req.body;
+        
+        // Валідація обов'язкових полів
+        if (!inspectionData.liftId || !inspectionData.inspectionType) {
+            return res.status(400).json({
+                success: false,
+                message: "ID ліфта та тип інспекції обов'язкові"
+            });
+        }
+        
+        // Створення запису про інспекцію
+        const inspectionRecord = {
+            ...inspectionData,
+            inspectedBy: req.user.id,
+            inspectedAt: new Date().toISOString(),
+            status: "completed"
+        };
+        
+        const result = await db.collection("inspections").insertOne(inspectionRecord);
+        
+        res.status(201).json({
+            success: true,
+            message: "Інспекцію успішно збережено",
+            id: result.insertedId
+        });
+    } catch (error) {
+        console.error("Помилка збереження інспекції:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося зберегти інспекцію" 
+        });
+    }
+});
+
+// Рахунки
+app.get("/api/invoices", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        const invoices = await db.collection("invoices")
+            .find({ createdBy: req.user.id })
+            .sort({ createdAt: -1 })
+            .toArray();
+        
+        res.json(invoices);
+    } catch (error) {
+        console.error("Помилка отримання рахунків:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося отримати рахунки" 
+        });
+    }
+});
+
+app.post("/api/invoices", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        const invoiceData = req.body;
+        
+        // Валідація обов'язкових полів
+        if (!invoiceData.clientId || !invoiceData.amount || !invoiceData.description) {
+            return res.status(400).json({
+                success: false,
+                message: "ID клієнта, сума та опис обов'язкові"
+            });
+        }
+        
+        // Генерація номера рахунку
+        const count = await db.collection("invoices").countDocuments();
+        const year = new Date().getFullYear();
+        const invoiceNumber = `INV-${year}-${String(count + 1).padStart(4, '0')}`;
+        
+        // Створення запису про рахунок
+        const invoiceRecord = {
+            ...invoiceData,
+            invoiceNumber,
+            createdBy: req.user.id,
+            createdAt: new Date().toISOString(),
+            status: "pending"
+        };
+        
+        const result = await db.collection("invoices").insertOne(invoiceRecord);
+        
+        res.status(201).json({
+            success: true,
+            message: "Рахунок успішно створено",
+            id: result.insertedId,
+            invoiceNumber
+        });
+    } catch (error) {
+        console.error("Помилка створення рахунку:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося створити рахунок" 
+        });
+    }
+});
+
+// Звіти
+app.get("/api/reports", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        const reports = await db.collection("reports")
+            .find({ createdBy: req.user.id })
+            .sort({ createdAt: -1 })
+            .toArray();
+        
+        res.json(reports);
+    } catch (error) {
+        console.error("Помилка отримання звітів:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося отримати звіти" 
+        });
+    }
+});
+
+app.post("/api/reports", authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        const reportData = req.body;
+        
+        // Валідація обов'язкових полів
+        if (!reportData.title || !reportData.type || !reportData.data) {
+            return res.status(400).json({
+                success: false,
+                message: "Заголовок, тип та дані звіту обов'язкові"
+            });
+        }
+        
+        // Створення запису про звіт
+        const reportRecord = {
+            ...reportData,
+            createdBy: req.user.id,
+            createdAt: new Date().toISOString(),
+            status: "generated"
+        };
+        
+        const result = await db.collection("reports").insertOne(reportRecord);
+        
+        res.status(201).json({
+            success: true,
+            message: "Звіт успішно збережено",
+            id: result.insertedId
+        });
+    } catch (error) {
+        console.error("Помилка збереження звіту:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Не вдалося зберегти звіт" 
+        });
+    }
+});
+
+// Error handling middleware (повинен бути останнім)
+app.use(errorHandler);
 
 // Запуск сервера на всіх доступних інтерфейсах (для доступу з мобільних пристроїв)
 app.listen(PORT, '0.0.0.0', () => {
