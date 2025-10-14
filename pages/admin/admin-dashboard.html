@@ -102,120 +102,18 @@
 
             <!-- Sidebar -->
             <div class="sidebar">
-                <!-- Sidebar Menu -->
-                <nav class="mt-2">
-                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-                        <li class="nav-item">
-                            <a href="admin-dashboard.html" class="nav-link active">
-                                <i class="nav-icon fas fa-tachometer-alt"></i>
-                                <p>Дашборд</p>
-                            </a>
-                        </li>
+                <!-- Sidebar user panel (optional) -->
+                <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                    <div class="image">
+                        <img src="../../assets/img/logo.png" alt="Logo" class="img-circle elevation-2" style="opacity: .8">
+                    </div>
+                    <div class="info">
+                        <a href="#" class="d-block">Адміністратор</a>
+                    </div>
+                </div>
 
-                        <!-- QR System Menu -->
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="nav-icon fas fa-qrcode"></i>
-                                <p>
-                                    QR Система
-                                    <i class="right fas fa-angle-left"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <a href="unified-analytics.html#qr-analytics" class="nav-link">
-                                        <i class="fas fa-chart-line nav-icon"></i>
-                                        <p>Аналітика QR-кодів</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        <!-- Lifts Menu -->
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="nav-icon fas fa-elevator"></i>
-                                <p>
-                                    Ліфти
-                                    <i class="right fas fa-angle-left"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <a href="lifts.html" class="nav-link">
-                                        <i class="fas fa-list nav-icon"></i>
-                                        <p>Управління ліфтами</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="requests.html" class="nav-link">
-                                        <i class="fas fa-clipboard-list nav-icon"></i>
-                                        <p>Заявки на обслуговування</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        <li class="nav-item">
-                            <a href="users.html" class="nav-link">
-                                <i class="nav-icon fas fa-users"></i>
-                                <p>Користувачі</p>
-                            </a>
-                        </li>
-
-                        <!-- Analytics Menu -->
-                        <li class="nav-item">
-                            <a href="unified-analytics.html" class="nav-link">
-                                <i class="nav-icon fas fa-chart-line"></i>
-                                <p>Аналітика</p>
-                            </a>
-                        </li>
-
-                        <!-- AI Features -->
-                        <li class="nav-item">
-                            <a href="predictive-maintenance.html" class="nav-link">
-                                <i class="nav-icon fas fa-brain"></i>
-                                <p>AI Прогнозування</p>
-                            </a>
-                        </li>
-
-                        <!-- Support Menu -->
-                        <li class="nav-item">
-                            <a href="notifications.html" class="nav-link">
-                                <i class="nav-icon fas fa-bell"></i>
-                                <p>Сповіщення</p>
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a href="../ai-assistant/ai-assistant.html" class="nav-link">
-                                <i class="nav-icon fas fa-robot"></i>
-                                <p>AI Асистент</p>
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a href="profile.html" class="nav-link">
-                                <i class="nav-icon fas fa-user"></i>
-                                <p>Профіль</p>
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a href="settings.html" class="nav-link">
-                                <i class="nav-icon fas fa-cog"></i>
-                                <p>Налаштування</p>
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" onclick="logout()">
-                                <i class="nav-icon fas fa-sign-out-alt"></i>
-                                <p>Вийти</p>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
+                <!-- Include unified admin sidebar menu -->
+                <!--#include file="../../templates/admin-sidebar-menu.html" -->
             </div>
         </aside>
 
@@ -427,7 +325,8 @@
     <script src="../../assets/js/websocket-client.js" onload="console.log('✅ WebSocket Client завантажено')" onerror="console.error('❌ Помилка завантаження WebSocket Client')"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
             // Перевірка авторизації (старий метод lm_session)
             const userSession = localStorage.getItem('lm_session');
             if (!userSession) {
@@ -457,6 +356,9 @@
             
             // Ініціалізація WebSocket після успішної авторизації
             initWebSocket();
+
+            // Set active menu item
+            setActiveMenuItem();
         });
 
         function loadDashboardData() {
@@ -497,11 +399,46 @@
             }
         }
 
-        // Функція виходу
-        function logout() {
-            if (confirm('Ви впевнені, що хочете вийти?')) {
-                localStorage.removeItem('lm_session');
-                window.location.href = '../../login.html';
+        // Function to set active menu item based on current page
+        function setActiveMenuItem() {
+            const currentPath = window.location.pathname;
+            const currentPage = currentPath.split('/').pop().replace('.html', '');
+
+            // Remove all active classes
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+
+            // Set active based on current page
+            const activeMappings = {
+                'admin-dashboard': 'nav-dashboard',
+                'maps': 'nav-lifts-map',
+                'lifts': 'nav-lifts-management',
+                'requests': 'nav-lifts-requests',
+                'users': 'nav-users',
+                'unified-analytics': 'nav-analytics',
+                'predictive-maintenance': 'nav-ai-maintenance',
+                'reports': 'nav-reports',
+                'notifications': 'nav-notifications',
+                'profile': 'nav-profile',
+                'settings': 'nav-settings'
+            };
+
+            const activeId = activeMappings[currentPage];
+            if (activeId) {
+                const activeElement = document.getElementById(activeId);
+                if (activeElement) {
+                    activeElement.classList.add('active');
+                    // Open parent menu if it's a submenu item
+                    const parentMenu = activeElement.closest('.nav-treeview');
+                    if (parentMenu) {
+                        parentMenu.style.display = 'block';
+                        const parentLink = parentMenu.previousElementSibling;
+                        if (parentLink) {
+                            parentLink.classList.add('active');
+                        }
+                    }
+                }
             }
         }
     </script>
