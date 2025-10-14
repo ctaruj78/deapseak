@@ -257,152 +257,9 @@
                 </div>
 
                 <nav class="mt-2">
-                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-                        <li class="nav-item">
-                            <a href="admin-dashboard.html" class="nav-link">
-                                <i class="nav-icon fas fa-tachometer-alt"></i>
-                                <p>Дашборд</p>
-                            </a>
-                        </li>
-                        
-                        <!-- QR System Menu -->
-                        <li class="nav-item menu-open">
-                            <a href="#" class="nav-link active">
-                                <i class="nav-icon fas fa-qrcode"></i>
-                                <p>
-                                    QR Система
-                                    <i class="right fas fa-angle-left"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <a href="qr-generator.html" class="nav-link">
-                                        <i class="fas fa-plus-circle nav-icon"></i>
-                                        <p>Генератор QR-кодів</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="qr-management.html" class="nav-link active">
-                                        <i class="fas fa-cog nav-icon"></i>
-                                        <p>Керування QR-кодами</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="unified-analytics.html#qr-analytics" class="nav-link">
-                                        <i class="fas fa-chart-line nav-icon"></i>
-                                        <p>Аналітика QR-кодів</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="qr-history.html" class="nav-link">
-                                        <i class="fas fa-history nav-icon"></i>
-                                        <p>Історія QR-кодів</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        <!-- Lifts Menu -->
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="nav-icon fas fa-elevator"></i>
-                                <p>
-                                    Ліфти
-                                    <i class="right fas fa-angle-left"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <a href="lifts.html" class="nav-link">
-                                        <i class="fas fa-list nav-icon"></i>
-                                        <p>Управління ліфтами</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="maps.html" class="nav-link">
-                                        <i class="fas fa-map-marked-alt nav-icon"></i>
-                                        <p>Мапа ліфтів</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        <li class="nav-item">
-                            <a href="users.html" class="nav-link">
-                                <i class="nav-icon fas fa-users"></i>
-                                <p>Користувачі</p>
-                            </a>
-                        </li>
-
-                        <!-- Analytics Menu -->
-                        <li class="nav-item">
-                            <a href="unified-analytics.html" class="nav-link">
-                                <i class="nav-icon fas fa-chart-line"></i>
-                                <p>Аналітика</p>
-                            </a>
-                        </li>
-
-                        <!-- Predictive Analytics -->
-                        <li class="nav-item">
-                            <a href="predictive-maintenance.html" class="nav-link">
-                                <i class="nav-icon fas fa-brain"></i>
-                                <p>AI Прогнозування</p>
-                            </a>
-                        </li>
-
-                        <!-- Support Menu -->
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="nav-icon fas fa-headset"></i>
-                                <p>
-                                    Підтримка
-                                    <i class="right fas fa-angle-left"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <a href="support.html" class="nav-link">
-                                        <i class="fas fa-ticket-alt nav-icon"></i>
-                                        <p>Технічна підтримка</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="notifications.html" class="nav-link">
-                                        <i class="fas fa-bell nav-icon"></i>
-                                        <p>Сповіщення</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        <li class="nav-item">
-                            <a href="settings.html" class="nav-link">
-                                <i class="nav-icon fas fa-cog"></i>
-                                <p>Налаштування</p>
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a href="../ai-assistant/ai-assistant.html" class="nav-link">
-                                <i class="nav-icon fas fa-robot"></i>
-                                <p>AI Асистент</p>
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a href="profile.html" class="nav-link">
-                                <i class="nav-icon fas fa-user"></i>
-                                <p>Профіль</p>
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" onclick="logout()">
-                                <i class="nav-icon fas fa-sign-out-alt"></i>
-                                <p>Вийти</p>
-                            </a>
-                        </li>
-                    </ul>
+                    <div id="sidebar-menu-container">
+                        <!-- Menu will be loaded dynamically -->
+                    </div>
                 </nav>
             </div>
         </aside>
@@ -1166,6 +1023,9 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <script src="assets/js/modules/qr-manager.js"></script>
+
+    <!-- Admin Menu Loader -->
+    <script src="../../assets/js/admin-menu-loader.js"></script>
     <script>
     // Ініціалізація QR Manager одразу після завантаження скрипта
     console.log('Initializing QR Manager...');
@@ -1234,6 +1094,38 @@
     const modal = document.getElementById('ai-assistant-modal');
     fabBtn.onclick = () => { modal.style.display = 'block'; };
     document.querySelector('.ai-chat-close').onclick = () => { modal.style.display = 'none'; };
+
+    // Initialize admin menu loader
+    document.addEventListener('DOMContentLoaded', function() {
+        // Перевірка авторизації
+        const userSession = localStorage.getItem('lm_session');
+        if (!userSession) {
+            window.location.href = '../../login.html';
+            return;
+        }
+
+        try {
+            const userData = JSON.parse(userSession);
+            if (!userData || userData.role !== 'admin') {
+                localStorage.removeItem('lm_session');
+                window.location.href = '../../login.html';
+                return;
+            }
+            console.log('✅ Адмін сесія валідна для qr-management.html');
+            
+            // Показуємо ім'я користувача
+            const userPanelLink = document.querySelector('.user-panel .info a');
+            if (userPanelLink) {
+                userPanelLink.textContent = `${userData.firstName || userData.username} ${userData.lastName || ''}`;
+            }
+        } catch (e) {
+            localStorage.removeItem('lm_session');
+            window.location.href = '../../login.html';
+            return;
+        }
+
+        AdminMenuLoader.init('qr-management.html');
+    });
     </script>
 </body>
 </html>

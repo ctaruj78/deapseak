@@ -2,36 +2,98 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <title>Керування ролями</title>
-    <link rel="stylesheet" href="../../assets/css/adminlte.min.css">
-    <link rel="stylesheet" href="../../assets/css/bootstrap.min.css">
-    <script src="../../plugins/jquery/jquery.min.js"></script>
-    <script src="../../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="../../assets/js/modules/role-manager.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Керування ролями - Lift Management</title>
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="hold-transition sidebar-mini">
-    <div class="wrapper">
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <!-- Left navbar links -->
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <!-- Brand Logo -->
+        <a href="admin-dashboard.html" class="brand-link">
+            <img src="../../assets/img/logo.png" alt="Lift Management Logo" class="brand-image img-circle elevation-3">
+            <span class="brand-text font-weight-light">Lift Management</span>
+        </a>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Sidebar user panel -->
+            <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                <div class="image">
+                    <img src="../../assets/img/avatars/admin.png" class="img-circle elevation-2" alt="Admin Avatar">
+                </div>
+                <div class="info">
+                    <a href="profile.html" class="d-block">Адміністратор</a>
+                </div>
+            </div>
+
+            <!-- Sidebar Menu -->
+            <nav class="mt-2">
+                <div id="sidebar-menu-container">
+                    <!-- Меню буде завантажено динамічно -->
+                </div>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Content Wrapper -->
+    <div class="content-wrapper">
+        <!-- Content Header -->
         <section class="content-header">
             <div class="container-fluid">
-                <h1>Керування ролями та правами</h1>
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1>Керування ролями та правами</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="admin-dashboard.html">Головна</a></li>
+                            <li class="breadcrumb-item active">Ролі</li>
+                        </ol>
+                    </div>
+                </div>
             </div>
         </section>
+
+        <!-- Main content -->
         <section class="content">
             <div class="container-fluid">
                 <div class="card">
                     <div class="card-header">
-                        <button class="btn btn-success" id="addRoleBtn">Додати роль</button>
-                        <button class="btn btn-info" id="exportRolesBtn">Експортувати ролі</button>
+                        <h3 class="card-title">Системні ролі та їх права доступу</h3>
+                        <div class="card-tools">
+                            <button class="btn btn-success btn-sm" id="addRoleBtn">
+                                <i class="fas fa-plus mr-1"></i> Додати роль
+                            </button>
+                            <button class="btn btn-info btn-sm" id="exportRolesBtn">
+                                <i class="fas fa-download mr-1"></i> Експортувати
+                            </button>
+                        </div>
                     </div>
                     <div class="card-body">
-                        <table class="table table-bordered" id="rolesTable">
+                        <table class="table table-bordered table-hover" id="rolesTable">
                             <thead>
                                 <tr>
-                                    <th>Назва ролі</th>
-                                    <th>Права</th>
-                                    <th>UI-елементи</th>
-                                    <th>Обмеження</th>
-                                    <th>Дії</th>
+                                    <th><i class="fas fa-tag mr-1"></i> Назва ролі</th>
+                                    <th><i class="fas fa-key mr-1"></i> Права</th>
+                                    <th><i class="fas fa-desktop mr-1"></i> UI-елементи</th>
+                                    <th><i class="fas fa-ban mr-1"></i> Обмеження</th>
+                                    <th><i class="fas fa-cogs mr-1"></i> Дії</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -40,118 +102,230 @@
                         </table>
                     </div>
                 </div>
+                
                 <!-- Модальне вікно для редагування ролі -->
                 <div class="modal fade" id="roleModal" tabindex="-1" role="dialog">
-                  <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                      <div class="modal-header">
-                        <h5 class="modal-title">Редагування ролі</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                          <span aria-hidden="true">&times;</span>
-                        </button>
-                      </div>
-                      <div class="modal-body">
-                        <form id="roleForm">
-                          <div class="form-group">
-                            <label for="roleName">Назва ролі</label>
-                            <input type="text" class="form-control" id="roleName" required>
-                          </div>
-                          <div class="form-group">
-                            <label for="rolePermissions">Права (через кому)</label>
-                            <input type="text" class="form-control" id="rolePermissions">
-                          </div>
-                          <div class="form-group">
-                            <label for="roleUI">UI-елементи (через кому)</label>
-                            <input type="text" class="form-control" id="roleUI">
-                          </div>
-                          <div class="form-group">
-                            <label for="roleRestrictions">Обмеження (через кому)</label>
-                            <input type="text" class="form-control" id="roleRestrictions">
-                          </div>
-                          <button type="submit" class="btn btn-primary">Зберегти</button>
-                        </form>
-                      </div>
+                    <div class="modal-dialog modal-lg" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">
+                                    <i class="fas fa-edit mr-2"></i> Редагування ролі
+                                </h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="roleForm">
+                                    <div class="form-group">
+                                        <label for="roleName">
+                                            <i class="fas fa-tag mr-1"></i> Назва ролі *
+                                        </label>
+                                        <input type="text" class="form-control" id="roleName" required placeholder="Наприклад: supervisor">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="rolePermissions">
+                                            <i class="fas fa-key mr-1"></i> Права доступу (через кому)
+                                        </label>
+                                        <input type="text" class="form-control" id="rolePermissions" 
+                                               placeholder="read_users, write_reports, manage_lifts">
+                                        <small class="form-text text-muted">Перелічіть права через кому</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="roleUI">
+                                            <i class="fas fa-desktop mr-1"></i> UI-елементи (через кому)
+                                        </label>
+                                        <input type="text" class="form-control" id="roleUI" 
+                                               placeholder="admin_panel, reports_tab, settings_menu">
+                                        <small class="form-text text-muted">Елементи інтерфейсу, доступні для цієї ролі</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="roleRestrictions">
+                                            <i class="fas fa-ban mr-1"></i> Обмеження (через кому)
+                                        </label>
+                                        <input type="text" class="form-control" id="roleRestrictions" 
+                                               placeholder="no_delete, read_only, limited_time">
+                                        <small class="form-text text-muted">Обмеження для цієї ролі</small>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                    <i class="fas fa-times mr-1"></i> Скасувати
+                                </button>
+                                <button type="submit" form="roleForm" class="btn btn-primary">
+                                    <i class="fas fa-save mr-1"></i> Зберегти
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                  </div>
                 </div>
             </div>
         </section>
     </div>
-    <script>
-    // ...existing code...
-    $(document).ready(function() {
-        function renderRolesTable() {
-            const roles = window.roleManager.roles;
-            const tbody = $('#rolesTable tbody');
-            tbody.empty();
-            Object.keys(roles).forEach(roleName => {
-                const role = roles[roleName];
-                tbody.append(`
-                    <tr>
-                        <td>${roleName}</td>
-                        <td>${(role.permissions || []).join(', ')}</td>
-                        <td>${(role.uiElements || []).join(', ')}</td>
-                        <td>${(role.restrictions || []).join(', ')}</td>
-                        <td>
-                            <button class="btn btn-sm btn-info editRoleBtn" data-role="${roleName}">Редагувати</button>
-                            <button class="btn btn-sm btn-danger deleteRoleBtn" data-role="${roleName}">Видалити</button>
-                        </td>
-                    </tr>
-                `);
-            });
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <strong>Copyright &copy; 2024 <a href="#">Lift Management System</a>.</strong>
+        Всі права захищені.
+    </footer>
+</div>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+<!-- Custom JavaScript -->
+<script src="../../assets/js/modules/role-manager.js"></script>
+<script src="../../assets/js/admin-menu-loader.js"></script>
+
+<script>
+$(document).ready(function() {
+    // Перевірка авторизації
+    const userSession = localStorage.getItem('lm_session');
+    if (!userSession) {
+        window.location.href = '../../login.html';
+        return;
+    }
+
+    try {
+        const userData = JSON.parse(userSession);
+        if (!userData || userData.role !== 'admin') {
+            localStorage.removeItem('lm_session');
+            window.location.href = '../../login.html';
+            return;
         }
+        console.log('✅ Адмін сесія валідна для role-manager.html');
+        
+        // Показуємо ім'я користувача
+        $('.user-panel .info a').text(`${userData.firstName || userData.username} ${userData.lastName || ''}`);
+    } catch (e) {
+        localStorage.removeItem('lm_session');
+        window.location.href = '../../login.html';
+        return;
+    }
 
-        renderRolesTable();
+    // Initialize admin menu loader
+    AdminMenuLoader.init('role-manager.html');
 
-        $('#addRoleBtn').click(function() {
-            $('#roleForm')[0].reset();
-            $('#roleModal').modal('show');
-            $('#roleModal').data('editRole', null);
+    // Initialize AdminLTE components manually
+    $('[data-widget="pushmenu"]').PushMenu();
+
+    // Initialize role manager functionality
+    initializeRoleManager();
+});
+
+function initializeRoleManager() {
+    function renderRolesTable() {
+        const roles = window.roleManager ? window.roleManager.roles : {};
+        const tbody = $('#rolesTable tbody');
+        tbody.empty();
+        
+        if (Object.keys(roles).length === 0) {
+            tbody.append(`
+                <tr>
+                    <td colspan="5" class="text-center text-muted">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        Немає налаштованих ролей
+                    </td>
+                </tr>
+            `);
+            return;
+        }
+        
+        Object.keys(roles).forEach(roleName => {
+            const role = roles[roleName];
+            tbody.append(`
+                <tr>
+                    <td><strong>${roleName}</strong></td>
+                    <td>${(role.permissions || []).join(', ') || '<em class="text-muted">немає</em>'}</td>
+                    <td>${(role.uiElements || []).join(', ') || '<em class="text-muted">немає</em>'}</td>
+                    <td>${(role.restrictions || []).join(', ') || '<em class="text-muted">немає</em>'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-info editRoleBtn" data-role="${roleName}" title="Редагувати">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger deleteRoleBtn" data-role="${roleName}" title="Видалити">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `);
         });
+    }
 
-        $(document).on('click', '.editRoleBtn', function() {
-            const roleName = $(this).data('role');
-            const role = window.roleManager.roles[roleName];
-            $('#roleName').val(roleName);
-            $('#rolePermissions').val((role.permissions || []).join(', '));
-            $('#roleUI').val((role.uiElements || []).join(', '));
-            $('#roleRestrictions').val((role.restrictions || []).join(', '));
-            $('#roleModal').modal('show');
-            $('#roleModal').data('editRole', roleName);
-        });
+    renderRolesTable();
 
-        $(document).on('click', '.deleteRoleBtn', function() {
-            const roleName = $(this).data('role');
-            if (confirm(`Видалити роль ${roleName}?`)) {
+    $('#addRoleBtn').click(function() {
+        $('#roleForm')[0].reset();
+        $('#roleModal .modal-title').html('<i class="fas fa-plus mr-2"></i> Додати нову роль');
+        $('#roleModal').modal('show');
+        $('#roleModal').data('editRole', null);
+    });
+
+    $(document).on('click', '.editRoleBtn', function() {
+        const roleName = $(this).data('role');
+        const role = window.roleManager ? window.roleManager.roles[roleName] : {};
+        $('#roleName').val(roleName);
+        $('#rolePermissions').val((role.permissions || []).join(', '));
+        $('#roleUI').val((role.uiElements || []).join(', '));
+        $('#roleRestrictions').val((role.restrictions || []).join(', '));
+        $('#roleModal .modal-title').html('<i class="fas fa-edit mr-2"></i> Редагувати роль');
+        $('#roleModal').modal('show');
+        $('#roleModal').data('editRole', roleName);
+    });
+
+    $(document).on('click', '.deleteRoleBtn', function() {
+        const roleName = $(this).data('role');
+        if (confirm(`Видалити роль "${roleName}"?`)) {
+            if (window.roleManager && window.roleManager.roles) {
                 delete window.roleManager.roles[roleName];
                 renderRolesTable();
             }
-        });
-
-        $('#roleForm').submit(function(e) {
-            e.preventDefault();
-            const name = $('#roleName').val().trim();
-            const permissions = $('#rolePermissions').val().split(',').map(s => s.trim()).filter(Boolean);
-            const uiElements = $('#roleUI').val().split(',').map(s => s.trim()).filter(Boolean);
-            const restrictions = $('#roleRestrictions').val().split(',').map(s => s.trim()).filter(Boolean);
-            window.roleManager.roles[name] = {
-                permissions,
-                uiElements,
-                restrictions
-            };
-            $('#roleModal').modal('hide');
-            renderRolesTable();
-        });
-
-        $('#exportRolesBtn').click(function() {
-            const dataStr = JSON.stringify(window.roleManager.roles, null, 2);
-            const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-            const linkElement = document.createElement('a');
-            linkElement.setAttribute('href', dataUri);
-            linkElement.setAttribute('download', 'roles-export.json');
-            linkElement.click();
-        });
+        }
     });
-    </script>
+
+    $('#roleForm').submit(function(e) {
+        e.preventDefault();
+        const name = $('#roleName').val().trim();
+        if (!name) {
+            alert('Введіть назву ролі');
+            return;
+        }
+        
+        const permissions = $('#rolePermissions').val().split(',').map(s => s.trim()).filter(Boolean);
+        const uiElements = $('#roleUI').val().split(',').map(s => s.trim()).filter(Boolean);
+        const restrictions = $('#roleRestrictions').val().split(',').map(s => s.trim()).filter(Boolean);
+        
+        if (!window.roleManager) {
+            window.roleManager = { roles: {} };
+        }
+        if (!window.roleManager.roles) {
+            window.roleManager.roles = {};
+        }
+        
+        window.roleManager.roles[name] = {
+            permissions,
+            uiElements,
+            restrictions
+        };
+        
+        $('#roleModal').modal('hide');
+        renderRolesTable();
+    });
+
+    $('#exportRolesBtn').click(function() {
+        const roles = window.roleManager ? window.roleManager.roles : {};
+        const dataStr = JSON.stringify(roles, null, 2);
+        const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+        const linkElement = document.createElement('a');
+        linkElement.setAttribute('href', dataUri);
+        linkElement.setAttribute('download', `roles-export-${new Date().toISOString().split('T')[0]}.json`);
+        linkElement.click();
+    });
+}
+</script>
 </body>
 </html>

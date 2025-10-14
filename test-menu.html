@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест AdminMenuLoader</title>
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="hold-transition sidebar-mini">
+    <div class="wrapper">
+        <!-- Sidebar -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <div class="sidebar">
+                <div id="sidebar-menu-container">
+                    <!-- Меню буде вставлено сюди -->
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- AdminLTE JS -->
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+    <!-- AdminMenuLoader -->
+    <script src="../assets/js/admin-menu-loader.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            console.log('Тест AdminMenuLoader');
+            AdminMenuLoader.init('admin-dashboard.html');
+        });
+    </script>
+</body>
+</html></content>
+<parameter name="filePath">/workspaces/deapseak/test-menu.html

@@ -12,6 +12,8 @@
     <link rel="stylesheet" href="../../assets/css/adminlte.min.css">
     <!-- Toastr -->
     <link rel="stylesheet" href="../../plugins/toastr/toastr.min.css">
+    <!-- UI Enhancements -->
+    <link rel="stylesheet" href="../../assets/css/ui-enhancements.css">
     <style>
         /* AdminLTE Integration Styles */
         .content-wrapper {
@@ -409,6 +411,9 @@
 </div>
 <!-- ./wrapper -->
 
+<!-- Toast Container -->
+<div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;"></div>
+
 <!-- jQuery -->
 <script src="../../plugins/jquery/jquery.min.js"></script>
 <!-- Bootstrap 4 -->
@@ -426,8 +431,20 @@
 <!-- Наши скрипты -->
 <script src="../../api.js"></script>
 <script src="../../qr.js"></script>
+<!-- UI Enhancements -->
+<script src="../../assets/js/modules/ui-enhancements.js"></script>
+<script src="../../assets/js/modules/admin-menu-loader.js"></script>
 <script>
     $(document).ready(function() {
+        // Initialize UI Enhancements
+        if (typeof UIEnhancements !== 'undefined') {
+            window.uiEnhancements = new UIEnhancements();
+        }
+        if (typeof AdminMenuLoader !== 'undefined') {
+            window.adminMenuLoader = new AdminMenuLoader();
+            window.adminMenuLoader.init();
+        }
+
         // Инициализация bs-custom-file-input
         bsCustomFileInput.init();
         
@@ -606,14 +623,22 @@
             $('.viewLiftDetails').on('click', function() {
                 const liftId = $(this).data('id');
                 // Перенаправление на страницу с деталями лифта
-                alert(`Переход на страницу лифта ${liftId}`);
+                if (window.uiEnhancements) {
+                    window.uiEnhancements.showToast(`Переход на страницу лифта ${liftId}`, 'info');
+                } else {
+                    alert(`Переход на страницу лифта ${liftId}`);
+                }
                 // window.location.href = `/pages/lifts/details.html?id=${liftId}`;
             });
             
             $('.viewRequestDetails').on('click', function() {
                 const requestId = $(this).data('id');
                 // Перенаправление на страницу с деталями заявки
-                alert(`Переход на страницу заявки ${requestId}`);
+                if (window.uiEnhancements) {
+                    window.uiEnhancements.showToast(`Переход на страницу заявки ${requestId}`, 'info');
+                } else {
+                    alert(`Переход на страницу заявки ${requestId}`);
+                }
                 // window.location.href = `/pages/requests/details.html?id=${requestId}`;
             });
         }
@@ -693,14 +718,22 @@
                     $('.viewLiftDetails').on('click', function() {
                         const liftId = $(this).data('id');
                         // Перенаправление на страницу с деталями лифта
-                        alert(`Переход на страницу лифта ${liftId}`);
+                        if (window.uiEnhancements) {
+                            window.uiEnhancements.showToast(`Переход на страницу лифта ${liftId}`, 'info');
+                        } else {
+                            alert(`Переход на страницу лифта ${liftId}`);
+                        }
                         // window.location.href = `/pages/lifts/details.html?id=${liftId}`;
                     });
                     
                     $('.viewRequestDetails').on('click', function() {
                         const requestId = $(this).data('id');
                         // Перенаправление на страницу с деталями заявки
-                        alert(`Переход на страницу заявки ${requestId}`);
+                        if (window.uiEnhancements) {
+                            window.uiEnhancements.showToast(`Переход на страницу заявки ${requestId}`, 'info');
+                        } else {
+                            alert(`Переход на страницу заявки ${requestId}`);
+                        }
                         // window.location.href = `/pages/requests/details.html?id=${requestId}`;
                     });
                     
@@ -842,12 +875,20 @@
                             // Добавляем обработчики для кнопок
                             $('.viewLiftDetails').on('click', function() {
                                 const liftId = $(this).data('id');
-                                alert(`Переход на страницу лифта ${liftId}`);
+                                if (window.uiEnhancements) {
+                                    window.uiEnhancements.showToast(`Переход на страницу лифта ${liftId}`, 'info');
+                                } else {
+                                    alert(`Переход на страницу лифта ${liftId}`);
+                                }
                             });
                             
                             $('.viewRequestDetails').on('click', function() {
                                 const requestId = $(this).data('id');
-                                alert(`Переход на страницу заявки ${requestId}`);
+                                if (window.uiEnhancements) {
+                                    window.uiEnhancements.showToast(`Переход на страницу заявки ${requestId}`, 'info');
+                                } else {
+                                    alert(`Переход на страницу заявки ${requestId}`);
+                                }
                             });
                             
                             toastr.success('QR-код успешно обработан');

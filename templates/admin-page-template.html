@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{PAGE_TITLE}} - LiftMaster Pro</title>
+
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Custom styles -->
+    <style>
+        {{CUSTOM_STYLES}}
+    </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper">
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button">
+                        <i class="fas fa-bars"></i>
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="navbar-search" href="#" role="button">
+                        <i class="fas fa-search"></i>
+                    </a>
+                    <div class="navbar-search-block">
+                        <form class="form-inline">
+                            <div class="input-group input-group-sm">
+                                <input class="form-control form-control-navbar" type="search" placeholder="Пошук" aria-label="Search">
+                                <div class="input-group-append">
+                                    <button class="btn btn-navbar" type="submit">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../login.html" role="button">
+                        <i class="fas fa-sign-out-alt"></i> Вийти
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Sidebar Container -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <!-- Brand Logo -->
+            <a href="admin-dashboard.html" class="brand-link">
+                <i class="brand-image fas fa-elevator"></i>
+                <span class="brand-text font-weight-light">LiftMaster Pro</span>
+            </a>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Sidebar user panel -->
+                <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                    <div class="image">
+                        <img src="../../assets/img/logo.png" alt="Logo" class="img-circle elevation-2" style="opacity: .8">
+                    </div>
+                    <div class="info">
+                        <a href="#" class="d-block">Адміністратор</a>
+                    </div>
+                </div>
+
+                <!-- Sidebar Menu Container -->
+                <div class="sidebar-menu-container">
+                    <!-- Menu will be loaded here by JavaScript -->
+                </div>
+            </div>
+        </aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <!-- Content Header -->
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">{{PAGE_HEADING}}</h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="admin-dashboard.html">Головна</a></li>
+                                <li class="breadcrumb-item active">{{BREADCRUMB}}</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+                    {{MAIN_CONTENT}}
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer class="main-footer">
+            <strong>&copy; 2024 <a href="#">LiftMaster Pro</a>.</strong>
+            Всі права захищені.
+            <div class="float-right d-none d-sm-inline-block">
+                <b>Версія</b> 3.2.0
+            </div>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+
+    <!-- Admin Menu Loader -->
+    <script src="../../assets/js/admin-menu-loader.js"></script>
+
+    <!-- Security Manager -->
+    <script src="../../security.js" onload="console.log('✅ AuthManager завантажено')" onerror="console.error('❌ Помилка завантаження AuthManager')"></script>
+
+    <!-- WebSocket Client -->
+    <script src="../../assets/js/websocket-client.js" onload="console.log('✅ WebSocket Client завантажено')" onerror="console.error('❌ Помилка завантаження WebSocket Client')"></script>
+
+    <!-- Page specific scripts -->
+    {{PAGE_SCRIPTS}}
+</body>
+</html>

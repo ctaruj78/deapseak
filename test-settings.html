@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест налаштувань</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/ui-enhancements.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Тест функцій налаштувань</h1>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Тестові кнопки</h3>
+                    </div>
+                    <div class="card-body">
+                        <button class="btn btn-danger btn-block mb-2" id="resetSettingsBtn">
+                            <i class="fas fa-undo mr-2"></i> Скинути налаштування
+                        </button>
+                        <button class="btn btn-info btn-block mb-2" id="exportSettingsBtn">
+                            <i class="fas fa-download mr-2"></i> Експорт налаштувань
+                        </button>
+                        <button class="btn btn-primary btn-block mb-2" id="saveNotificationSettingsBtn">
+                            <i class="fas fa-save mr-2"></i> Зберегти сповіщення
+                        </button>
+                        <button class="btn btn-success btn-block" id="createBackupBtn">
+                            <i class="fas fa-database mr-2"></i> Створити резервну копію
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Dark Mode Toggle -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h3 class="card-title">Тема</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="darkModeToggle">
+                            <label class="custom-control-label" for="darkModeToggle">
+                                <i class="fas fa-moon mr-2"></i> Темний режим
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Тестові поля</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="companyName">Назва компанії</label>
+                            <input type="text" class="form-control" id="companyName" value="Lift Management System">
+                        </div>
+                        <div class="form-group">
+                            <label for="timezone">Часовий пояс</label>
+                            <select class="form-control" id="timezone">
+                                <option value="Europe/Kiev" selected>Київ (UTC+2)</option>
+                                <option value="Europe/London">Лондон (UTC+0)</option>
+                            </select>
+                        </div>
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="autoRefresh" checked>
+                            <label class="custom-control-label" for="autoRefresh">Автоматичне оновлення</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast container -->
+        <div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;"></div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../assets/js/modules/ui-enhancements.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            console.log('✅ Тестова сторінка завантажена');
+
+            // Initialize UI enhancements
+            if (typeof UIEnhancements !== 'undefined') {
+                window.uiEnhancements = new UIEnhancements();
+                console.log('✅ UIEnhancements ініціалізовано');
+            } else {
+                console.error('❌ UIEnhancements не знайдено');
+            }
+
+            // Test button handlers
+            $('#resetSettingsBtn').click(function() {
+                console.log('🔄 Викликаю resetToDefaults');
+                resetToDefaults();
+            });
+
+            $('#exportSettingsBtn').click(function() {
+                console.log('📤 Викликаю exportSettings');
+                exportSettings();
+            });
+
+            $('#saveNotificationSettingsBtn').click(function() {
+                console.log('💾 Викликаю saveNotificationSettings');
+                saveNotificationSettings();
+            });
+
+            $('#createBackupBtn').click(function() {
+                console.log('💾 Викликаю createBackup');
+                createBackup();
+            });
+
+            // Dark mode toggle
+            $('#darkModeToggle').change(function() {
+                const isDark = $(this).is(':checked');
+                toggleDarkMode(isDark);
+                console.log('🌓 Темний режим:', isDark ? 'увімкнено' : 'вимкнено');
+            });
+        });
+
+        // Include functions from settings.html
+        function resetToDefaults() {
+            const btn = document.querySelector('#resetSettingsBtn');
+            setLoadingState(btn, true);
+
+            setTimeout(() => {
+                $('#companyName').val('Lift Management System');
+                $('#timezone').val('Europe/Kiev');
+                $('#autoRefresh').prop('checked', true);
+
+                setLoadingState(btn, false);
+                showToast('Налаштування скинуто до значень за замовчуванням', 'success', 'Скидання');
+                console.log('✅ resetToDefaults виконано');
+            }, 1000);
+        }
+
+        function exportSettings() {
+            const btn = document.querySelector('#exportSettingsBtn');
+            setLoadingState(btn, true);
+
+            setTimeout(() => {
+                const settings = {
+                    companyName: $('#companyName').val(),
+                    timezone: $('#timezone').val(),
+                    autoRefresh: $('#autoRefresh').is(':checked')
+                };
+
+                const dataStr = JSON.stringify(settings, null, 2);
+                const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+                const linkElement = document.createElement('a');
+                linkElement.setAttribute('href', dataUri);
+                linkElement.setAttribute('download', `settings-test-${new Date().toISOString().split('T')[0]}.json`);
+                linkElement.click();
+
+                setLoadingState(btn, false);
+                showToast('Налаштування експортовано', 'success', 'Експорт');
+                console.log('✅ exportSettings виконано');
+            }, 500);
+        }
+
+        function saveNotificationSettings() {
+            const btn = document.querySelector('#saveNotificationSettingsBtn');
+            setLoadingState(btn, true);
+
+            setTimeout(() => {
+                const settings = {
+                    autoRefresh: $('#autoRefresh').is(':checked')
+                };
+
+                localStorage.setItem('testSettings', JSON.stringify(settings));
+
+                setLoadingState(btn, false);
+                showToast('Налаштування збережено', 'success', 'Збереження');
+                console.log('✅ saveNotificationSettings виконано');
+            }, 500);
+        }
+
+        function createBackup() {
+            const btn = document.querySelector('#createBackupBtn');
+            setLoadingState(btn, true);
+
+            setTimeout(() => {
+                const backup = {
+                    timestamp: new Date().toISOString(),
+                    settings: {
+                        companyName: $('#companyName').val(),
+                        timezone: $('#timezone').val()
+                    }
+                };
+
+                const dataStr = JSON.stringify(backup, null, 2);
+                const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+                const linkElement = document.createElement('a');
+                linkElement.setAttribute('href', dataUri);
+                linkElement.setAttribute('download', `backup-test-${new Date().toISOString().split('T')[0]}.json`);
+                linkElement.click();
+
+                setLoadingState(btn, false);
+                showToast('Резервну копію створено', 'success', 'Резервне копіювання');
+                console.log('✅ createBackup виконано');
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

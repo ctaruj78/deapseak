@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест AdminMenuLoader без авторизації</title>
+    <style>
+        .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #fff !important;
+        }
+        .sidebar-dark-primary .nav-sidebar .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+        /* Стилі для treeview підменю */
+        .nav-treeview {
+            display: none;
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+        .nav-treeview .nav-item {
+            margin-left: 20px;
+        }
+        .nav-treeview .nav-link {
+            padding-left: 30px;
+        }
+        /* Анімація для підменю */
+        .nav-treeview {
+            transition: all 0.3s ease;
+        }
+        /* Стилі для іконок treeview */
+        .nav-link .right {
+            transition: transform 0.3s ease;
+        }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini">
+    <div class="wrapper">
+        <!-- Sidebar -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <div class="sidebar">
+                <div id="sidebar-menu-container">
+                    <!-- Меню буде вставлено сюди -->
+                </div>
+            </div>
+        </aside>
+
+        <!-- Content -->
+        <div class="content-wrapper">
+            <div class="content">
+                <div class="container-fluid">
+                    <h1>Тест AdminMenuLoader</h1>
+                    <p>Меню повинно відображатися в sidebar</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- AdminLTE JS -->
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+    <!-- AdminMenuLoader -->
+    <script src="assets/js/admin-menu-loader.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            console.log('Тест AdminMenuLoader без авторизації');
+            AdminMenuLoader.init('admin-dashboard.html');
+        });
+    </script>
+</body>
+</html></content>
+<parameter name="filePath">/workspaces/deapseak/test-menu-no-auth.html
