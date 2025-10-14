@@ -8,6 +8,30 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { spawn } = require('child_process');
 
+// Завантаження змінних середовища
+require('dotenv').config();
+
+// Імпорт модулів валідації
+const { validateRequest } = require("./validation");
+const {
+    validateLogin,
+    validateRegister,
+    validateLift,
+    validateRequest: validateRequestSchema,
+    validateAssignment,
+    validateQRCode,
+    validateAlert,
+    validateChatMessage,
+    validateFileUpload,
+    validateInspection,
+    validateInvoice,
+    validateReport,
+    validateEmail,
+    validateQRScan,
+    validateAssignmentTemplate,
+    validateChatChannel
+} = require("./validation-schemas");
+
 const app = express();
 const PORT = 3001;
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
@@ -189,27 +213,30 @@ connectDB()
 async function createDefaultAdmin() {
     try {
         const db = getDB();
-        const adminExists = await db.collection("users").findOne({ 
+        const adminExists = await db.collection("users").findOne({
             $or: [
-                { email: "admin@deapseak.com" },
-                { username: "admin" }
+                { email: process.env.DEFAULT_ADMIN_EMAIL || "admin@deapseak.com" },
+                { username: process.env.DEFAULT_ADMIN_USERNAME || "admin" }
             ]
         });
-        
+
         if (!adminExists) {
-            const hashedPassword = await bcrypt.hash("admin123", 10);
-            
+            const hashedPassword = await bcrypt.hash(
+                process.env.DEFAULT_ADMIN_PASSWORD || "admin123",
+                parseInt(process.env.BCRYPT_ROUNDS) || 10
+            );
+
             await db.collection("users").insertOne({
-                username: "admin",
-                email: "admin@deapseak.com",
+                username: process.env.DEFAULT_ADMIN_USERNAME || "admin",
+                email: process.env.DEFAULT_ADMIN_EMAIL || "admin@deapseak.com",
                 password: hashedPassword,
                 role: "admin",
-                fullName: "Системний Адміністратор",
+                fullName: process.env.DEFAULT_ADMIN_FULLNAME || "Системний Адміністратор",
                 createdAt: new Date(),
                 isActive: true
             });
-            
-            console.log("✅ Створено адмін користувача: admin@deapseak.com / admin123");
+
+            console.log("✅ Створено адмін користувача:", process.env.DEFAULT_ADMIN_EMAIL || "admin@deapseak.com");
         }
     } catch (error) {
         console.error("❌ Помилка створення адмін користувача:", error);
@@ -299,7 +326,7 @@ const authenticateToken = (req, res, next) => {
 };
 
 // Auth endpoints (нові маршрути)
-app.post("/api/auth/login", async (req, res) => {
+app.post("/api/auth/login", validateLogin, async (req, res) => {
     try {
         const { email, username, password } = req.body;
         const loginField = email || username;
@@ -363,7 +390,7 @@ app.post("/api/auth/login", async (req, res) => {
     }
 });
 
-app.post("/api/auth/register", async (req, res) => {
+app.post("/api/auth/register", validateRegister, async (req, res) => {
     try {
         const { username, password, email, firstName, lastName, role, phone } = req.body;
         
@@ -603,7 +630,7 @@ app.get("/api/lifts/:id", authenticateToken, async (req, res) => {
     }
 });
 
-app.post("/api/lifts", authenticateToken, async (req, res) => {
+app.post("/api/lifts", authenticateToken, validateLift, async (req, res) => {
     try {
         const db = getDB();
         const lift = req.body;
@@ -712,7 +739,7 @@ app.get("/api/requests/:id", async (req, res) => {
     }
 });
 
-app.post("/api/requests", async (req, res) => {
+app.post("/api/requests", validateRequestSchema, async (req, res) => {
     try {
         const db = getDB();
         const request = req.body;
@@ -1161,7 +1188,7 @@ app.get("/api/qr/codes/:id", authenticateToken, async (req, res) => {
 });
 
 // Створення або оновлення QR-коду
-app.post("/api/qr/codes", authenticateToken, async (req, res) => {
+app.post("/api/qr/codes", authenticateToken, validateQRCode, async (req, res) => {
     try {
         const db = getDB();
         const qrCode = req.body;
@@ -1336,7 +1363,7 @@ app.post("/api/qr/bulk-create-lift-codes", authenticateToken, async (req, res) =
 });
 
 // Реєстрація сканування QR-коду
-app.post("/api/qr/scan", async (req, res) => {
+app.post("/api/qr/scan", validateQRScan, async (req, res) => {
     try {
         const db = getDB();
         const { qrData, scannedBy, deviceInfo } = req.body;
@@ -1663,10 +1690,10 @@ app.post("/api/init-test-data", authenticateToken, async (req, res) => {
         await db.collection("assignments").deleteMany({});
         
         // Створення тестових користувачів
-        const adminPassword = await bcrypt.hash("admin123", 10);
-        const techPassword = await bcrypt.hash("tech123", 10);
-        const clientPassword = await bcrypt.hash("client123", 10);
-        const dispatcherPassword = await bcrypt.hash("dispatcher123", 10);
+        const adminPassword = await bcrypt.hash(process.env.TEST_ADMIN_PASSWORD || "admin123", parseInt(process.env.BCRYPT_ROUNDS) || 10);
+        const techPassword = await bcrypt.hash(process.env.TEST_TECH_PASSWORD || "tech123", parseInt(process.env.BCRYPT_ROUNDS) || 10);
+        const clientPassword = await bcrypt.hash(process.env.TEST_CLIENT_PASSWORD || "client123", parseInt(process.env.BCRYPT_ROUNDS) || 10);
+        const dispatcherPassword = await bcrypt.hash(process.env.TEST_DISPATCHER_PASSWORD || "dispatcher123", parseInt(process.env.BCRYPT_ROUNDS) || 10);
         
         await db.collection("users").insertMany([
             {
@@ -1872,7 +1899,7 @@ app.get("/api/assignments", authenticateToken, async (req, res) => {
 });
 
 // Створення нової заявки
-app.post("/api/assignments", authenticateToken, async (req, res) => {
+app.post("/api/assignments", authenticateToken, validateAssignment, async (req, res) => {
     try {
         const db = getDB();
         const assignmentData = req.body;
@@ -2253,7 +2280,7 @@ app.get("/api/assignment-templates", authenticateToken, async (req, res) => {
 });
 
 // Створення шаблону заявки
-app.post("/api/assignment-templates", authenticateToken, async (req, res) => {
+app.post("/api/assignment-templates", authenticateToken, validateAssignmentTemplate, async (req, res) => {
     try {
         const db = getDB();
         
@@ -2523,7 +2550,7 @@ app.get("/api/monitoring/alerts", authenticateToken, async (req, res) => {
 });
 
 // Створення нового сповіщення
-app.post("/api/monitoring/alerts", authenticateToken, async (req, res) => {
+app.post("/api/monitoring/alerts", authenticateToken, validateAlert, async (req, res) => {
     try {
         const db = getDB();
         const { type, title, description, liftId, severity, metadata } = req.body;
@@ -3063,7 +3090,7 @@ app.get("/api/chat/channels", authenticateToken, async (req, res) => {
 });
 
 // Створити новий канал
-app.post("/api/chat/channels", authenticateToken, async (req, res) => {
+app.post("/api/chat/channels", authenticateToken, validateChatChannel, async (req, res) => {
     try {
         const { name, description, type, members } = req.body;
         const db = getDB();
@@ -3155,7 +3182,7 @@ app.get("/api/chat/messages", authenticateToken, async (req, res) => {
 });
 
 // Надіслати повідомлення
-app.post("/api/chat/messages", authenticateToken, async (req, res) => {
+app.post("/api/chat/messages", authenticateToken, validateChatMessage, async (req, res) => {
     try {
         const { text, chatId, type, attachments = [] } = req.body;
         const db = getDB();
@@ -3500,7 +3527,7 @@ const FileSystemManager = require('./file-system-manager');
 const fileManager = new FileSystemManager();
 
 // Upload файлу
-app.post('/api/files/upload', authenticateToken, async (req, res) => {
+app.post('/api/files/upload', authenticateToken, validateFileUpload, async (req, res) => {
     try {
         const { fileName, fileData, chatId } = req.body;
         
@@ -4059,7 +4086,7 @@ app.get("/api/emails", authenticateToken, async (req, res) => {
     }
 });
 
-app.post("/api/emails", authenticateToken, async (req, res) => {
+app.post("/api/emails", authenticateToken, validateEmail, async (req, res) => {
     try {
         const db = getDB();
         const emailData = req.body;
@@ -4116,7 +4143,7 @@ app.get("/api/inspections", authenticateToken, async (req, res) => {
     }
 });
 
-app.post("/api/inspections", authenticateToken, async (req, res) => {
+app.post("/api/inspections", authenticateToken, validateInspection, async (req, res) => {
     try {
         const db = getDB();
         const inspectionData = req.body;
@@ -4172,7 +4199,7 @@ app.get("/api/invoices", authenticateToken, async (req, res) => {
     }
 });
 
-app.post("/api/invoices", authenticateToken, async (req, res) => {
+app.post("/api/invoices", authenticateToken, validateInvoice, async (req, res) => {
     try {
         const db = getDB();
         const invoiceData = req.body;
@@ -4235,7 +4262,7 @@ app.get("/api/reports", authenticateToken, async (req, res) => {
     }
 });
 
-app.post("/api/reports", authenticateToken, async (req, res) => {
+app.post("/api/reports", authenticateToken, validateReport, async (req, res) => {
     try {
         const db = getDB();
         const reportData = req.body;
