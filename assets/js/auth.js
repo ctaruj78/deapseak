@@ -482,6 +482,36 @@ class AuthManager {
             el.textContent = this.currentUser.email || '';
         });
     }
+
+    /**
+     * Fetch з автоматичним додаванням JWT токена
+     */
+    async fetchWithAuth(url, options = {}) {
+        try {
+            const token = this.getAuthToken();
+            
+            if (!token) {
+                console.warn('⚠️ Токен не знайдено');
+                return null;
+            }
+
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                ...(options.headers || {})
+            };
+
+            const response = await fetch(url, {
+                ...options,
+                headers
+            });
+
+            return response;
+        } catch (error) {
+            console.error('❌ Помилка fetchWithAuth:', error);
+            return null;
+        }
+    }
 }
 
 // Initialize auth manager

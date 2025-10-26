@@ -3209,6 +3209,11 @@
         if (typeof UIEnhancements !== 'undefined') {
             window.uiEnhancements = new UIEnhancements();
         }
+        
+        // Завантажити ліфти
+        setTimeout(() => {
+            refreshLiftsDisplay();
+        }, 500);
     });
     
     </script>

@@ -122,3 +122,19 @@ nohup: ignoring input
 127.0.0.1 - - [26/Oct/2025 22:20:43] code 404, message File not found
 127.0.0.1 - - [26/Oct/2025 22:20:43] "GET /api/lifts HTTP/1.1" 404 -
 127.0.0.1 - - [26/Oct/2025 22:20:43] "GET /assets/libs/qrcode-wrapper.js HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 22:21:23] "GET /pages/admin/lifts.html HTTP/1.1" 304 -
+127.0.0.1 - - [26/Oct/2025 22:21:23] code 404, message File not found
+127.0.0.1 - - [26/Oct/2025 22:21:23] "GET /api/lifts HTTP/1.1" 404 -
+127.0.0.1 - - [26/Oct/2025 22:21:58] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 22:21:58] code 404, message File not found
+127.0.0.1 - - [26/Oct/2025 22:21:58] "GET /api/lifts HTTP/1.1" 404 -
+127.0.0.1 - - [26/Oct/2025 22:22:08] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 22:22:08] code 404, message File not found
+127.0.0.1 - - [26/Oct/2025 22:22:08] "GET /api/lifts HTTP/1.1" 404 -
+127.0.0.1 - - [26/Oct/2025 22:23:56] "GET /pages/admin/lifts.html HTTP/1.1" 304 -
+127.0.0.1 - - [26/Oct/2025 22:23:57] code 404, message File not found
+127.0.0.1 - - [26/Oct/2025 22:23:57] "GET /api/lifts HTTP/1.1" 404 -
+127.0.0.1 - - [26/Oct/2025 22:23:59] "GET /pages/admin/maps.html HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 22:24:00] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 22:24:01] code 404, message File not found
+127.0.0.1 - - [26/Oct/2025 22:24:01] "GET /api/lifts HTTP/1.1" 404 -

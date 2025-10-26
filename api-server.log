@@ -184,3 +184,58 @@ ValidationError: The 'X-Forwarded-For' header is set but the Express 'trust prox
   isValid: true
 }
 ✅ Пароль коректний, генеруємо токен
+Помилка верифікації токена: jwt malformed
+❌ API Error [GET /api/lifts]: {
+  message: 'Недійсний токен',
+  statusCode: 403,
+  errorCode: 'INVALID_TOKEN',
+  stack: 'Error: Недійсний токен\n' +
+    '    at /workspaces/deapseak/api-server.js:320:19\n' +
+    '    at module.exports [as verify] (/workspaces/deapseak/node_modules/jsonwebtoken/verify.js:70:12)\n' +
+    '    at authenticateToken (/workspaces/deapseak/api-server.js:317:9)\n' +
+    '    at Layer.handleRequest (/workspaces/deapseak/node_modules/router/lib/layer.js:152:17)\n' +
+    '    at next (/workspaces/deapseak/node_modules/router/lib/route.js:157:13)\n' +
+    '    at Route.dispatch (/workspaces/deapseak/node_modules/router/lib/route.js:117:3)\n' +
+    '    at handle (/workspaces/deapseak/node_modules/router/index.js:435:11)\n' +
+    '    at Layer.handleRequest (/workspaces/deapseak/node_modules/router/lib/layer.js:152:17)\n' +
+    '    at /workspaces/deapseak/node_modules/router/index.js:295:15\n' +
+    '    at processParams (/workspaces/deapseak/node_modules/router/index.js:582:12)',
+  ip: '127.0.0.1',
+  userAgent: 'curl/8.5.0'
+}
+🔐 Спроба входу: {
+  email: 'admin@example.com',
+  username: undefined,
+  loginField: 'admin@example.com',
+  hasPassword: true
+}
+📊 Результат пошуку користувача: {
+  found: true,
+  username: 'admin',
+  email: 'admin@example.com',
+  role: 'admin'
+}
+🔑 Перевірка пароля: {
+  password: 'admin123',
+  hashedInDB: '$2b$10$FhoH1hl1cCRAT...',
+  isValid: true
+}
+✅ Пароль коректний, генеруємо токен
+🔐 Спроба входу: {
+  email: 'admin@example.com',
+  username: undefined,
+  loginField: 'admin@example.com',
+  hasPassword: true
+}
+📊 Результат пошуку користувача: {
+  found: true,
+  username: 'admin',
+  email: 'admin@example.com',
+  role: 'admin'
+}
+🔑 Перевірка пароля: {
+  password: 'admin123',
+  hashedInDB: '$2b$10$FhoH1hl1cCRAT...',
+  isValid: true
+}
+✅ Пароль коректний, генеруємо токен
