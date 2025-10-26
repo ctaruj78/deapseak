@@ -1,105 +1,12 @@
-127.0.0.1 - - [26/Oct/2025 21:11:25] "GET /pages/admin/reports.html HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:11:26] "GET /pages/admin/unified-analytics.html HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:11:26] "GET /assets/js/predictive-maintenance.js?v=2025.10.05.1 HTTP/1.1" 304 -
-127.0.0.1 - - [26/Oct/2025 21:11:26] "GET /assets/js/unified-analytics-engine.js?v=2025.10.05.1 HTTP/1.1" 304 -
-127.0.0.1 - - [26/Oct/2025 21:11:28] "GET /pages/admin/settings.html HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:11:29] code 404, message File not found
-127.0.0.1 - - [26/Oct/2025 21:11:29] "GET /assets/img/avatars/admin.png HTTP/1.1" 404 -
-127.0.0.1 - - [26/Oct/2025 21:11:29] "GET /assets/js/modules/ui-enhancements.js HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:11:29] "GET /assets/js/modules/settings-manager.js HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:11:29] code 404, message File not found
-127.0.0.1 - - [26/Oct/2025 21:11:29] "GET /assets/img/icons/google-calendar.png HTTP/1.1" 404 -
-127.0.0.1 - - [26/Oct/2025 21:11:29] code 404, message File not found
-127.0.0.1 - - [26/Oct/2025 21:11:29] "GET /assets/img/icons/quickbooks.png HTTP/1.1" 404 -
-127.0.0.1 - - [26/Oct/2025 21:11:29] code 404, message File not found
-127.0.0.1 - - [26/Oct/2025 21:11:29] "GET /assets/img/icons/slack.png HTTP/1.1" 404 -
-127.0.0.1 - - [26/Oct/2025 21:11:29] "GET /assets/css/ui-enhancements.css HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:11:33] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:11:33] "GET /assets/css/admin-lifts.css HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:11:33] "GET /assets/css/enhanced-lift-modal.css HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:11:33] "GET /assets/css/admin-lifts-full.css HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:11:33] "GET /assets/libs/qrcode-loader.js HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:11:33] "GET /assets/js/enhanced-lift-modal.js HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:11:33] "GET /assets/js/system-eventbus.js HTTP/1.1" 304 -
-127.0.0.1 - - [26/Oct/2025 21:11:33] "GET /assets/js/utils/api.js HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:11:33] "GET /assets/js/utils/notifications.js HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:11:33] "GET /assets/js/voice-control.js HTTP/1.1" 304 -
-127.0.0.1 - - [26/Oct/2025 21:11:33] "GET /assets/js/lifts.js HTTP/1.1" 304 -
-127.0.0.1 - - [26/Oct/2025 21:11:33] "GET /assets/js/simple-lift-modal.js HTTP/1.1" 304 -
-127.0.0.1 - - [26/Oct/2025 21:11:33] "GET /assets/js/predictive-maintenance.js HTTP/1.1" 304 -
-127.0.0.1 - - [26/Oct/2025 21:11:33] "GET /assets/js/modules/ai-assistant.js HTTP/1.1" 304 -
-127.0.0.1 - - [26/Oct/2025 21:11:33] "GET /assets/js/lift-utils.js HTTP/1.1" 304 -
-127.0.0.1 - - [26/Oct/2025 21:11:33] "GET /assets/js/ar-helper.js HTTP/1.1" 304 -
-127.0.0.1 - - [26/Oct/2025 21:11:33] "GET /assets/css/ai-assistant.css HTTP/1.1" 304 -
-127.0.0.1 - - [26/Oct/2025 21:11:33] "GET /assets/js/test-lift-saving.js HTTP/1.1" 304 -
-127.0.0.1 - - [26/Oct/2025 21:11:34] "GET /assets/js/common.js HTTP/1.1" 304 -
-127.0.0.1 - - [26/Oct/2025 21:11:34] "GET /assets/libs/qrcodejs.min.js HTTP/1.1" 304 -
-127.0.0.1 - - [26/Oct/2025 21:11:34] "GET /assets/js/modules/lifts-manager.js HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:11:34] "GET /assets/libs/qrcode-wrapper.js HTTP/1.1" 304 -
-127.0.0.1 - - [26/Oct/2025 21:11:34] code 404, message File not found
-127.0.0.1 - - [26/Oct/2025 21:11:34] "GET /api/lifts HTTP/1.1" 404 -
-127.0.0.1 - - [26/Oct/2025 21:11:41] "GET /pages/admin/users.html HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:11:44] code 404, message File not found
-127.0.0.1 - - [26/Oct/2025 21:11:44] "GET /api/lifts HTTP/1.1" 404 -
-127.0.0.1 - - [26/Oct/2025 21:12:04] "GET /pages/admin/qr-generator.html HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:12:04] code 404, message File not found
-127.0.0.1 - - [26/Oct/2025 21:12:04] "GET /pages/admin/assets/img/user-avatar.png HTTP/1.1" 404 -
-127.0.0.1 - - [26/Oct/2025 21:12:04] code 404, message File not found
-127.0.0.1 - - [26/Oct/2025 21:12:04] "GET /pages/admin/assets/js/modules/qr-generator.js HTTP/1.1" 404 -
-127.0.0.1 - - [26/Oct/2025 21:12:09] code 404, message File not found
-127.0.0.1 - - [26/Oct/2025 21:12:09] "GET /api/lifts HTTP/1.1" 404 -
-127.0.0.1 - - [26/Oct/2025 21:12:18] "GET /pages/admin/maps.html HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:12:21] code 404, message File not found
-127.0.0.1 - - [26/Oct/2025 21:12:21] "GET /api/lifts HTTP/1.1" 404 -
-127.0.0.1 - - [26/Oct/2025 21:15:32] code 404, message File not found
-127.0.0.1 - - [26/Oct/2025 21:15:32] "GET /api/lifts HTTP/1.1" 404 -
-127.0.0.1 - - [26/Oct/2025 21:16:16] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:16:19] "GET /login.html HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:16:19] "GET /assets/css/auth.css HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:16:20] "GET /assets/css/main.css HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:16:20] "GET /security.js HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:23:20] "HEAD / HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:28:29] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:28:31] "GET /login.html HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:28:31] "GET /security.js HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:28:32] "GET /assets/css/main.css HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:28:33] "GET /assets/css/auth.css HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:35:16] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:35:19] "GET /login.html HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:35:19] "GET /assets/css/main.css HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:35:19] "GET /assets/css/auth.css HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:35:19] "GET /security.js HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:37:36] "GET /login.html HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:37:40] "GET /login.html HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:39:57] "GET /login.html HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:39:57] "GET /assets/css/main.css HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:39:57] "GET /assets/css/auth.css HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:39:57] "GET /security.js HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:42:47] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:42:49] "GET /login.html HTTP/1.1" 304 -
-127.0.0.1 - - [26/Oct/2025 21:43:02] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:43:03] "GET /assets/js/token-manager.js HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:43:03] "GET /assets/img/logo.png HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:43:03] "GET /assets/js/admin-menu-loader.js HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:43:03] "GET /assets/js/auth-interceptor.js HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:43:03] "GET /assets/js/websocket-client.js HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:43:04] code 404, message File not found
-127.0.0.1 - - [26/Oct/2025 21:43:04] "GET /pages/login.html?redirect=/pages/admin/admin-dashboard.html HTTP/1.1" 404 -
-127.0.0.1 - - [26/Oct/2025 21:44:24] "HEAD /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:44:28] "HEAD /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:45:16] code 404, message File not found
-127.0.0.1 - - [26/Oct/2025 21:45:16] "GET /pages/login.html?redirect=/pages/admin/admin-dashboard.html HTTP/1.1" 404 -
-127.0.0.1 - - [26/Oct/2025 21:45:23] code 404, message File not found
-127.0.0.1 - - [26/Oct/2025 21:45:23] "GET /pages/login.html?redirect=/pages/admin/admin-dashboard.html HTTP/1.1" 404 -
-127.0.0.1 - - [26/Oct/2025 21:46:02] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:46:05] "GET /login.html HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:46:05] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 304 -
-127.0.0.1 - - [26/Oct/2025 21:46:05] "GET /assets/js/auth-interceptor.js HTTP/1.1" 304 -
-127.0.0.1 - - [26/Oct/2025 21:46:05] "GET /assets/js/token-manager.js HTTP/1.1" 304 -
-127.0.0.1 - - [26/Oct/2025 21:46:07] code 404, message File not found
-127.0.0.1 - - [26/Oct/2025 21:46:07] "GET /pages/login.html?redirect=/pages/admin/admin-dashboard.html HTTP/1.1" 404 -
-127.0.0.1 - - [26/Oct/2025 21:46:49] "GET /codespaces-diagnostic.html?id=6b9636bc-95af-4a9d-8cd7-644646b31dc0&vscodeBrowserReqId=1761515208759 HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:48:54] "GET /redirect-test.html?id=6b9636bc-95af-4a9d-8cd7-644646b31dc0&vscodeBrowserReqId=1761515333813 HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:49:10] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
-127.0.0.1 - - [26/Oct/2025 21:49:11] code 404, message File not found
-127.0.0.1 - - [26/Oct/2025 21:49:11] "GET /pages/login.html?redirect=/pages/admin/admin-dashboard.html HTTP/1.1" 404 -
+nohup: ignoring input
+127.0.0.1 - - [26/Oct/2025 21:53:47] "GET /login.html HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 21:53:47] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 304 -
+127.0.0.1 - - [26/Oct/2025 21:53:49] code 404, message File not found
+127.0.0.1 - - [26/Oct/2025 21:53:49] "GET /pages/login.html?redirect=/pages/admin/admin-dashboard.html HTTP/1.1" 404 -
+127.0.0.1 - - [26/Oct/2025 21:55:02] "GET /login.html?id=e5e8d93d-f217-424e-ad95-e3c0928008eb&vscodeBrowserReqId=1761515701208 HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 21:55:02] "GET /assets/js/auth-check.js HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 21:55:02] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 304 -
+127.0.0.1 - - [26/Oct/2025 21:55:03] "GET /assets/js/auth-interceptor.js HTTP/1.1" 304 -
+127.0.0.1 - - [26/Oct/2025 21:55:03] "GET /assets/js/token-manager.js HTTP/1.1" 304 -
+127.0.0.1 - - [26/Oct/2025 21:55:04] code 404, message File not found
+127.0.0.1 - - [26/Oct/2025 21:55:04] "GET /pages/login.html?redirect=/pages/admin/admin-dashboard.html HTTP/1.1" 404 -

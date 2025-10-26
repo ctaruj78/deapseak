@@ -112,3 +112,21 @@ ValidationError: The 'X-Forwarded-For' header is set but the Express 'trust prox
   isValid: true
 }
 ✅ Пароль коректний, генеруємо токен
+🔐 Спроба входу: {
+  email: 'admin@example.com',
+  username: undefined,
+  loginField: 'admin@example.com',
+  hasPassword: true
+}
+📊 Результат пошуку користувача: {
+  found: true,
+  username: 'admin',
+  email: 'admin@example.com',
+  role: 'admin'
+}
+🔑 Перевірка пароля: {
+  password: 'admin123',
+  hashedInDB: '$2b$10$FhoH1hl1cCRAT...',
+  isValid: true
+}
+✅ Пароль коректний, генеруємо токен
