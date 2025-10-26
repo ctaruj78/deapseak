@@ -1,4 +1,9 @@
 class AppConfig {
+    // Версія програми
+    static VERSION = '1.0.0';
+    static APP_NAME = 'DeapSeaK';
+    static APP_DESCRIPTION = 'Elevator Management System';
+    
     static config = {
         // Базові налаштування API
         api: {
