@@ -51,3 +51,23 @@
 127.0.0.1 - - [26/Oct/2025 21:12:18] "GET /pages/admin/maps.html HTTP/1.1" 200 -
 127.0.0.1 - - [26/Oct/2025 21:12:21] code 404, message File not found
 127.0.0.1 - - [26/Oct/2025 21:12:21] "GET /api/lifts HTTP/1.1" 404 -
+127.0.0.1 - - [26/Oct/2025 21:15:32] code 404, message File not found
+127.0.0.1 - - [26/Oct/2025 21:15:32] "GET /api/lifts HTTP/1.1" 404 -
+127.0.0.1 - - [26/Oct/2025 21:16:16] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 21:16:19] "GET /login.html HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 21:16:19] "GET /assets/css/auth.css HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 21:16:20] "GET /assets/css/main.css HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 21:16:20] "GET /security.js HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 21:23:20] "HEAD / HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 21:28:29] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 21:28:31] "GET /login.html HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 21:28:31] "GET /security.js HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 21:28:32] "GET /assets/css/main.css HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 21:28:33] "GET /assets/css/auth.css HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 21:35:16] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 21:35:19] "GET /login.html HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 21:35:19] "GET /assets/css/main.css HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 21:35:19] "GET /assets/css/auth.css HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 21:35:19] "GET /security.js HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 21:37:36] "GET /login.html HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 21:37:40] "GET /login.html HTTP/1.1" 200 -

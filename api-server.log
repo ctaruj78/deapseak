@@ -1,3 +1,4 @@
+nohup: ignoring input
 🛡️  Rate limiting активовано:
    - Загальний API ліміт: 100 запитів/15хв
    - Авторизація: 5 спроб/15хв
@@ -9,3 +10,93 @@
 API сервер запущено на http://0.0.0.0:3001
 MongoDB connected: mongodb://localhost:27017 DB: deapseak
 📁 Файлові директорії ініціалізовано
+🔐 Спроба входу: {
+  email: 'admin@example.com',
+  username: undefined,
+  loginField: 'admin@example.com',
+  hasPassword: true
+}
+📊 Результат пошуку користувача: {
+  found: true,
+  username: 'admin',
+  email: 'admin@example.com',
+  role: 'admin'
+}
+🔑 Перевірка пароля: {
+  password: 'admin123',
+  hashedInDB: '$2b$10$FhoH1hl1cCRAT...',
+  isValid: true
+}
+✅ Пароль коректний, генеруємо токен
+🔐 Спроба входу: {
+  email: 'admin@example.com',
+  username: undefined,
+  loginField: 'admin@example.com',
+  hasPassword: true
+}
+📊 Результат пошуку користувача: {
+  found: true,
+  username: 'admin',
+  email: 'admin@example.com',
+  role: 'admin'
+}
+🔑 Перевірка пароля: {
+  password: 'admin123',
+  hashedInDB: '$2b$10$FhoH1hl1cCRAT...',
+  isValid: true
+}
+✅ Пароль коректний, генеруємо токен
+🔐 Спроба входу: {
+  email: 'dispatcher1@example.com',
+  username: undefined,
+  loginField: 'dispatcher1@example.com',
+  hasPassword: true
+}
+📊 Результат пошуку користувача: {
+  found: true,
+  username: 'dispatcher1',
+  email: 'dispatcher1@example.com',
+  role: 'dispatcher'
+}
+🔑 Перевірка пароля: {
+  password: 'dispatcher123',
+  hashedInDB: '$2b$10$2KgrxP33iv9ZD...',
+  isValid: true
+}
+✅ Пароль коректний, генеруємо токен
+🔐 Спроба входу: {
+  email: 'tech1@example.com',
+  username: undefined,
+  loginField: 'tech1@example.com',
+  hasPassword: true
+}
+📊 Результат пошуку користувача: {
+  found: true,
+  username: 'tech1',
+  email: 'tech1@example.com',
+  role: 'technician'
+}
+🔑 Перевірка пароля: {
+  password: 'tech123',
+  hashedInDB: '$2b$10$jL9W0JQb6UmPw...',
+  isValid: true
+}
+✅ Пароль коректний, генеруємо токен
+🔐 Спроба входу: {
+  email: 'client1@example.com',
+  username: undefined,
+  loginField: 'client1@example.com',
+  hasPassword: true
+}
+📊 Результат пошуку користувача: {
+  found: true,
+  username: 'client1',
+  email: 'client1@example.com',
+  role: 'client'
+}
+🔑 Перевірка пароля: {
+  password: 'client123',
+  hashedInDB: '$2b$10$B4JYmvpnfnNcl...',
+  isValid: true
+}
+✅ Пароль коректний, генеруємо токен

@@ -84,14 +84,14 @@ nohup python3 -m http.server 8080 > web-server.log 2>&1 &
 - 🎛️ **QR інтерфейс**: http://localhost:8080/qr-interface.html
 - 🔍 **Тестування API**: http://localhost:8080/test-qr-api.html
 
-### Тестові користувачі
+### Тестові користувачи
 
 | Роль | Логін | Пароль |
 |------|-------|--------|
-| Адміністратор | `admin` | `admin123` |
-| Диспетчер | `dispatcher1` | `dispatcher123` |
-| Технік | `tech1` | `tech123` |
-| Клієнт | `client1` | `client123` |
+| Адміністратор | `admin@example.com` | `admin123` |
+| Диспетчер | `dispatcher1@example.com` | `dispatcher123` |
+| Технік | `tech1@example.com` | `tech123` |
+| Клієнт | `client1@example.com` | `client123` |
 
 ### Порти серверів
 

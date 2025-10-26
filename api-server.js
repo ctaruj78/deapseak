@@ -331,7 +331,15 @@ app.post("/api/auth/login", validateLogin, async (req, res) => {
         const { email, username, password } = req.body;
         const loginField = email || username;
         
+        console.log('🔐 Спроба входу:', {
+            email,
+            username,
+            loginField,
+            hasPassword: !!password
+        });
+        
         if (!loginField || !password) {
+            console.log('❌ Bідсутні необхідні поля входу');
             return res.status(400).json({ 
                 success: false, 
                 message: "Логін/email та пароль обов'язкові" 
@@ -346,7 +354,15 @@ app.post("/api/auth/login", validateLogin, async (req, res) => {
             ] 
         });
         
+        console.log('📊 Результат пошуку користувача:', {
+            found: !!user,
+            username: user?.username,
+            email: user?.email,
+            role: user?.role
+        });
+        
         if (!user) {
+            console.log('❌ Користувач не знайдено за:', loginField);
             return res.status(401).json({ 
                 success: false, 
                 message: "Невірний логін або пароль" 
@@ -355,12 +371,21 @@ app.post("/api/auth/login", validateLogin, async (req, res) => {
         
         const isValidPassword = await bcrypt.compare(password, user.password);
         
+        console.log('🔑 Перевірка пароля:', {
+            password,
+            hashedInDB: user.password?.substring(0, 20) + '...',
+            isValid: isValidPassword
+        });
+        
         if (!isValidPassword) {
+            console.log('❌ Неправильний пароль для користувача:', loginField);
             return res.status(401).json({ 
                 success: false, 
                 message: "Невірний логін або пароль" 
             });
         }
+        
+        console.log('✅ Пароль коректний, генеруємо токен');
         
         const token = jwt.sign(
             { id: user._id, username: user.username, role: user.role },

@@ -6,7 +6,7 @@ const { validateRequest } = require('./validation');
 const validationSchemas = {
     // Аутентифікація
     login: {
-        email: { type: 'string', required: true, format: 'email', maxLength: 100 },
+        email: { type: 'string', required: false, format: 'email', maxLength: 100 },
         username: { type: 'string', required: false, minLength: 3, maxLength: 50 },
         password: { type: 'string', required: true, minLength: 6, maxLength: 100 }
     },
