@@ -1,17 +1,21 @@
 module.exports = {
-  testEnvironment: 'jsdom',
-  setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
-  testMatch: [
-    '<rootDir>/tests/**/*.test.js'
-  ],
+  testEnvironment: 'jsdom',  // Змінено з 'node' на 'jsdom'
+  coveragePathIgnorePatterns: ['/node_modules/'],
+  testMatch: ['**/__tests__/**/*.test.js', '**/?(*.)+(spec|test).js'],
   collectCoverageFrom: [
+    'routes/**/*.js',
+    'middleware/**/*.js',
     'assets/js/**/*.js',
-    'api-server.js',
-    'db.js',
-    '!node_modules/**'
+    '!**/*.config.js',
+    '!**/node_modules/**'
   ],
-  coverageDirectory: 'coverage',
-  coverageReporters: ['text', 'lcov', 'html'],
-  verbose: true,
-  testTimeout: 10000
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  coverageThreshold: {
+    global: {
+      branches: 30,
+      functions: 30,
+      lines: 30,
+      statements: 30
+    }
+  }
 };
