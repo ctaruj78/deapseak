@@ -151,7 +151,7 @@ class TokenManager {
     redirectToLogin() {
         console.warn('🔄 Redirecting to login...');
         setTimeout(() => {
-            window.location.href = '/login.html?redirect=' + window.location.pathname;
+            window.location.href = '/login.html';
         }, 1000);
     }
 
