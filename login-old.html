@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="assets/css/auth.css">
 </head>
 <body class="hold-transition login-page bg-light">
-    <div id="login-container" class="login-box">
+    <div class="login-box">
         <div class="login-logo mb-4">
             <a href="index.html"><i class="fas fa-elevator text-primary"></i> <b>LiftMaster Pro</b></a>
         </div>
@@ -70,10 +70,6 @@
             </div>
         </div>
     </div>
-    
-    <!-- Контейнер для дашборду (буде завантажено через AJAX) -->
-    <div id="dashboard-container" style="display: none;"></div>
-    
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -81,6 +77,7 @@
     
     <!-- Система авторизації -->
     <script src="security.js"></script>
+    <script src="assets/js/auth-check.js"></script>
     
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -90,8 +87,8 @@
             if (typeof AuthManager !== 'undefined' && AuthManager.isAuthenticated()) {
                 const user = AuthManager.getCurrentUser();
                 if (user && user.role) {
-                    console.log('✅ Користувач вже авторизований, завантажуємо дашборд...');
-                    loadDashboard(user.role);
+                    console.log('✅ Користувач вже авторизований, перенаправляємо...');
+                    redirectUserByRole(user.role);
                     return;
                 }
             }
@@ -100,61 +97,31 @@
             localStorage.removeItem('lm_session');
             localStorage.removeItem('lm_user');
             
-            // Функція завантаження дашборду через AJAX
-            function loadDashboard(role) {
-                let dashboardPath = 'pages/admin/admin-dashboard.html';
+            // Функція перенаправлення за ролями
+            function redirectUserByRole(role) {
+                console.log('🔄 Перенаправлення користувача з роллю:', role);
+                let redirectPath = 'pages/admin/admin-dashboard.html'; // За замовчуванням адмін
                 
                 switch (role) {
                     case 'admin':
-                        dashboardPath = 'pages/admin/admin-dashboard.html';
+                        redirectPath = '/pages/admin/admin-dashboard.html';
                         break;
                     case 'dispatcher':
-                        dashboardPath = 'pages/dispatcher/dashboard.html';
+                        redirectPath = '/pages/dispatcher/dashboard.html';
                         break;
                     case 'technician':
                     case 'tech':
-                        dashboardPath = 'pages/tech/dashboard.html';
+                        redirectPath = '/pages/tech/dashboard.html';
                         break;
                     case 'client':
-                        dashboardPath = 'pages/client/dashboard.html';
+                        redirectPath = '/pages/client/dashboard.html';
                         break;
                     default:
-                        dashboardPath = 'pages/admin/admin-dashboard.html';
+                        redirectPath = '/pages/admin/admin-dashboard.html';
                 }
                 
-                console.log('📍 Завантажуємо дашборд з:', dashboardPath);
-                
-                // Завантажуємо дашборд через fetch
-                fetch(dashboardPath)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP ${response.status}`);
-                        }
-                        return response.text();
-                    })
-                    .then(html => {
-                        console.log('✅ Дашборд завантажено');
-                        
-                        // Ховаємо форму входу
-                        document.getElementById('login-container').style.display = 'none';
-                        
-                        // Показуємо дашборд
-                        const dashboardContainer = document.getElementById('dashboard-container');
-                        dashboardContainer.innerHTML = html;
-                        dashboardContainer.style.display = 'block';
-                        
-                        // Виконуємо скрипти в дашборді
-                        const scripts = dashboardContainer.querySelectorAll('script');
-                        scripts.forEach(script => {
-                            const newScript = document.createElement('script');
-                            newScript.textContent = script.textContent;
-                            document.body.appendChild(newScript);
-                        });
-                    })
-                    .catch(error => {
-                        console.error('❌ Помилка завантаження дашборду:', error);
-                        showMessage(`Помилка завантаження дашборду: ${error.message}`);
-                    });
+                console.log('📍 Шлях перенаправлення:', redirectPath);
+                window.location.href = redirectPath;
             }
             
             // Показ повідомлень
@@ -168,6 +135,12 @@
                 }
                 
                 alertDiv.textContent = message;
+                alertDiv.style.display = 'block';
+                
+                // Автоматично приховати через 5 секунд
+                setTimeout(() => {
+                    alertDiv.style.display = 'none';
+                }, 5000);
             }
             
             // Обробка форми входу
@@ -177,9 +150,10 @@
                 const email = document.getElementById('email')?.value || document.getElementById('username')?.value;
                 const password = document.getElementById('password').value;
                 
-                console.log('🔐 Форма логіну відправлена');
+                console.log('🔐 Форма логіну відправлена - v2.0 ' + new Date().toISOString());
                 console.log('📝 Email/Username:', email);
-                console.log('🔑 Password length:', password ? password.length : 0);
+                console.log('� Password length:', password ? password.length : 0);
+                console.log('🌍 Current port:', window.location.port);
                 
                 if (!email || !password) {
                     showMessage('Введіть email/логін та пароль');
@@ -235,12 +209,42 @@
                         localStorage.setItem('lm_session', JSON.stringify(data.user));
                         localStorage.setItem('auth_token', data.token);
                         
-                        showMessage('Успішний вхід! Завантажуємо дашборд...', 'success');
+                        showMessage('Успішний вхід! Перенаправлення...', 'success');
                         
-                        // Завантажуємо дашборд через AJAX
+                        // Визначаємо шлях редиректу
+                        const user = data.user;
+                        let redirectPath = '/pages/admin/admin-dashboard.html';
+                        
+                        console.log('🔄 Визначення редиректу для ролі:', user.role);
+                        
+                        switch (user.role) {
+                            case 'admin':
+                                redirectPath = '/pages/admin/admin-dashboard.html';
+                                break;
+                            case 'dispatcher':
+                                redirectPath = '/pages/dispatcher/dashboard.html';
+                                break;
+                            case 'technician':
+                            case 'tech':
+                                redirectPath = '/pages/tech/dashboard.html';
+                                break;
+                            case 'client':
+                                redirectPath = '/pages/client/dashboard.html';
+                                break;
+                            default:
+                                redirectPath = '/pages/admin/admin-dashboard.html';
+                        }
+                        
+                        console.log('📍 Редирект на:', redirectPath);
+                        
+                        // Перевіряємо чи є збережене перенаправлення
+                        const redirectUrl = sessionStorage.getItem('redirect_after_login');
+                        
+                        // Перенаправлення через 1 сек (з подвійною спробою)
                         setTimeout(() => {
-                            loadDashboard(data.user.role);
-                        }, 800);
+                            console.log('🔀 Спроба 1: window.location.href');
+                            window.location.href = redirectPath;
+                        }, 1000);
                         
                     } else {
                         showMessage(data.message || 'Помилка входу');

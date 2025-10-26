@@ -10,3 +10,9 @@ nohup: ignoring input
 127.0.0.1 - - [26/Oct/2025 21:55:03] "GET /assets/js/token-manager.js HTTP/1.1" 304 -
 127.0.0.1 - - [26/Oct/2025 21:55:04] code 404, message File not found
 127.0.0.1 - - [26/Oct/2025 21:55:04] "GET /pages/login.html?redirect=/pages/admin/admin-dashboard.html HTTP/1.1" 404 -
+127.0.0.1 - - [26/Oct/2025 21:55:31] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 21:55:33] "GET /login.html HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 21:55:33] "GET /assets/js/auth-check.js HTTP/1.1" 304 -
+127.0.0.1 - - [26/Oct/2025 21:55:34] code 404, message File not found
+127.0.0.1 - - [26/Oct/2025 21:55:34] "GET /pages/login.html?redirect=/pages/admin/admin-dashboard.html HTTP/1.1" 404 -
+127.0.0.1 - - [26/Oct/2025 21:56:29] "GET /login-ajax.html?id=79adc971-0476-478d-823c-e339568c2bd4&vscodeBrowserReqId=1761515787861 HTTP/1.1" 200 -
