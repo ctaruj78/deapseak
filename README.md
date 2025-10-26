@@ -201,6 +201,17 @@ pkill -f http.server      # Веб-сервер
 - 🔗 [API документація](docs/api-documentation.md)
 - 📖 [Технічний посібник](docs/technical-guide.md)
 
+## 📋 Аудити та Звіти
+
+### Аудит порожніх елементів
+- 📊 [AUDIT-EMPTY-ELEMENTS-REPORT.md](AUDIT-EMPTY-ELEMENTS-REPORT.md) - Комплексний аналіз порожніх кнопок, посилань та іконок
+- 🔧 [EMPTY-ELEMENTS-FILLING-PLAN.md](EMPTY-ELEMENTS-FILLING-PLAN.md) - Детальний план наповнення з кодом
+
+**Результати аудиту:**
+- ✅ 250+ AdminLTE компоненти (нормально)
+- ⚠️ 10-15 елементів потребують функціональності
+- 🎯 Пріоритет: profile.html, users.html, register.html, technicians.html, qr-management.html
+
 ## Підтримка
 
 Для вирішення проблем:
