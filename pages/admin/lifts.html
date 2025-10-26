@@ -19,8 +19,6 @@
     
     <link rel="stylesheet" href="/assets/css/admin-lifts.css">
     <link rel="stylesheet" href="/assets/css/admin-lifts-full.css">
-    <script src="/assets/js/token-manager.js"></script>
-    <script src="/assets/js/auth-interceptor.js"></script>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed" data-required-role="admin">
     <div class="wrapper">
@@ -3203,29 +3201,15 @@
     // Ініціалізація при завантаженні сторінки
     checkAuthOnLoad();
     
-    // Додаткова перевірка авторизації для admin меню
-    const userSession = localStorage.getItem('lm_session');
-    if (userSession) {
-        try {
-            const userData = JSON.parse(userSession);
-            if (userData && userData.role === 'admin') {
-                // Показуємо ім'я користувача
-                const userPanelLink = document.querySelector('.user-panel .info a');
-                if (userPanelLink) {
-                    userPanelLink.textContent = `${userData.firstName || userData.username} ${userData.lastName || ''}`;
-                }
-                // Initialize admin menu loader
-                AdminMenuLoader.init('lifts.html');
-                
-                // Initialize UI Enhancements
-                if (typeof UIEnhancements !== 'undefined') {
-                    window.uiEnhancements = new UIEnhancements();
-                }
-            }
-        } catch (e) {
-            console.warn('Помилка перевірки сесії в lifts.html');
+    // Initialize admin menu loader
+    document.addEventListener('DOMContentLoaded', function() {
+        AdminMenuLoader.init('lifts.html');
+        
+        // Initialize UI Enhancements
+        if (typeof UIEnhancements !== 'undefined') {
+            window.uiEnhancements = new UIEnhancements();
         }
-    }
+    });
     
     </script>
     <!-- API Client -->

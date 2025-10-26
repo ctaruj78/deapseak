@@ -204,8 +204,6 @@
             }
         }
     </style>
-    <script src="/assets/js/token-manager.js"></script>
-    <script src="/assets/js/auth-interceptor.js"></script>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
     <div class="wrapper">
@@ -1100,31 +1098,6 @@
     // Initialize admin menu loader
     document.addEventListener('DOMContentLoaded', function() {
         // Перевірка авторизації
-        const userSession = localStorage.getItem('lm_session');
-        if (!userSession) {
-            window.location.href = '../../login.html';
-            return;
-        }
-
-        try {
-            const userData = JSON.parse(userSession);
-            if (!userData || userData.role !== 'admin') {
-                localStorage.removeItem('lm_session');
-                window.location.href = '../../login.html';
-                return;
-            }
-            console.log('✅ Адмін сесія валідна для qr-management.html');
-            
-            // Показуємо ім'я користувача
-            const userPanelLink = document.querySelector('.user-panel .info a');
-            if (userPanelLink) {
-                userPanelLink.textContent = `${userData.firstName || userData.username} ${userData.lastName || ''}`;
-            }
-        } catch (e) {
-            localStorage.removeItem('lm_session');
-            window.location.href = '../../login.html';
-            return;
-        }
 
         AdminMenuLoader.init('qr-management.html');
     });

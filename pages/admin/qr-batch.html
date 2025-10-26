@@ -124,8 +124,6 @@
             left: -35px;
         }
     </style>
-    <script src="/assets/js/token-manager.js"></script>
-    <script src="/assets/js/auth-interceptor.js"></script>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
     <div class="wrapper">
@@ -652,26 +650,7 @@
     <script src="../../assets/js/admin-menu-loader.js"></script>
     <script src="assets/js/modules/batch-manager.js"></script>
     <script>
-        // Перевірка авторизації
-        const userSession = localStorage.getItem('lm_session');
-        if (!userSession) {
-            window.location.href = '../../login.html';
-        } else {
-            try {
-                const userData = JSON.parse(userSession);
-                if (!userData || userData.role !== 'admin') {
-                    localStorage.removeItem('lm_session');
-                    window.location.href = '../../login.html';
-                } else {
-                    console.log('✅ Адмін сесія валідна для qr-batch.html');
-                    
-                    // Показуємо ім'я користувача
-                    const userPanelLink = document.querySelector('.user-panel .info a');
-                    if (userPanelLink) {
-                        userPanelLink.textContent = `${userData.firstName || userData.username} ${userData.lastName || ''}`;
-                    }
-                    
-                    // Initialize admin menu loader
+        // Перевірка авторизації                    // Initialize admin menu loader
                     AdminMenuLoader.init('qr-batch.html');
                 }
             } catch (e) {

@@ -125,8 +125,6 @@
             color: white;
         }
     </style>
-    <script src="/assets/js/token-manager.js"></script>
-    <script src="/assets/js/auth-interceptor.js"></script>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
 <div class="wrapper">
@@ -1240,28 +1238,6 @@ $(document).ready(function() {
     console.log('🚀 Запуск системи заявок на обслуговування...');
     
     // Перевірка авторизації
-    const userSession = localStorage.getItem('lm_session');
-    if (!userSession) {
-        window.location.href = '../../login.html';
-        return;
-    }
-
-    try {
-        const userData = JSON.parse(userSession);
-        if (!userData || userData.role !== 'admin') {
-            localStorage.removeItem('lm_session');
-            window.location.href = '../../login.html';
-            return;
-        }
-        console.log('✅ Адмін сесія валідна для requests.html');
-        
-        // Показуємо ім'я користувача
-        $('.user-panel .info a').text(`${userData.firstName || userData.username} ${userData.lastName || ''}`);
-    } catch (e) {
-        localStorage.removeItem('lm_session');
-        window.location.href = '../../login.html';
-        return;
-    }
     
     // Initialize admin menu loader
     AdminMenuLoader.init('requests.html');
