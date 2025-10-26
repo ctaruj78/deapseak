@@ -91,3 +91,15 @@
 127.0.0.1 - - [26/Oct/2025 21:45:16] "GET /pages/login.html?redirect=/pages/admin/admin-dashboard.html HTTP/1.1" 404 -
 127.0.0.1 - - [26/Oct/2025 21:45:23] code 404, message File not found
 127.0.0.1 - - [26/Oct/2025 21:45:23] "GET /pages/login.html?redirect=/pages/admin/admin-dashboard.html HTTP/1.1" 404 -
+127.0.0.1 - - [26/Oct/2025 21:46:02] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 21:46:05] "GET /login.html HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 21:46:05] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 304 -
+127.0.0.1 - - [26/Oct/2025 21:46:05] "GET /assets/js/auth-interceptor.js HTTP/1.1" 304 -
+127.0.0.1 - - [26/Oct/2025 21:46:05] "GET /assets/js/token-manager.js HTTP/1.1" 304 -
+127.0.0.1 - - [26/Oct/2025 21:46:07] code 404, message File not found
+127.0.0.1 - - [26/Oct/2025 21:46:07] "GET /pages/login.html?redirect=/pages/admin/admin-dashboard.html HTTP/1.1" 404 -
+127.0.0.1 - - [26/Oct/2025 21:46:49] "GET /codespaces-diagnostic.html?id=6b9636bc-95af-4a9d-8cd7-644646b31dc0&vscodeBrowserReqId=1761515208759 HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 21:48:54] "GET /redirect-test.html?id=6b9636bc-95af-4a9d-8cd7-644646b31dc0&vscodeBrowserReqId=1761515333813 HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 21:49:10] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 21:49:11] code 404, message File not found
+127.0.0.1 - - [26/Oct/2025 21:49:11] "GET /pages/login.html?redirect=/pages/admin/admin-dashboard.html HTTP/1.1" 404 -
