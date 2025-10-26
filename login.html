@@ -98,23 +98,29 @@
             
             // Функція перенаправлення за ролями
             function redirectUserByRole(role) {
+                console.log('🔄 Перенаправлення користувача з роллю:', role);
+                let redirectPath = 'pages/admin/admin-dashboard.html'; // За замовчуванням адмін
+                
                 switch (role) {
                     case 'admin':
-                        window.location.href = 'pages/admin/admin-dashboard.html';
+                        redirectPath = '/pages/admin/admin-dashboard.html';
                         break;
                     case 'dispatcher':
-                        window.location.href = 'pages/dispatcher/dashboard.html';
+                        redirectPath = '/pages/dispatcher/dashboard.html';
                         break;
                     case 'technician':
                     case 'tech':
-                        window.location.href = 'pages/tech/dashboard.html';
+                        redirectPath = '/pages/tech/dashboard.html';
                         break;
                     case 'client':
-                        window.location.href = 'pages/client/dashboard.html';
+                        redirectPath = '/pages/client/dashboard.html';
                         break;
                     default:
-                        window.location.href = 'pages/admin/admin-dashboard.html';
+                        redirectPath = '/pages/admin/admin-dashboard.html';
                 }
+                
+                console.log('📍 Шлях перенаправлення:', redirectPath);
+                window.location.href = redirectPath;
             }
             
             // Показ повідомлень

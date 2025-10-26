@@ -125,7 +125,7 @@ const generalLimiter = rateLimit({
 
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 хвилин
-    max: 5, // Максимум 5 спроб авторизації за 15 хвилин
+    max: 50, // Максимум 50 спроб авторизації за 15 хвилин (збільшено для розробки)
     message: {
         success: false,
         error: "Занадто багато спроб авторизації",

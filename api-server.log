@@ -10,9 +10,39 @@ nohup: ignoring input
 API сервер запущено на http://0.0.0.0:3001
 MongoDB connected: mongodb://localhost:27017 DB: deapseak
 📁 Файлові директорії ініціалізовано
+ValidationError: The 'X-Forwarded-For' header is set but the Express 'trust proxy' setting is false (default). This could indicate a misconfiguration which would prevent express-rate-limit from accurately identifying users. See https://express-rate-limit.github.io/ERR_ERL_UNEXPECTED_X_FORWARDED_FOR/ for more information.
+    at Object.xForwardedForHeader (/workspaces/deapseak/node_modules/express-rate-limit/dist/index.cjs:366:13)
+    at wrappedValidations.<computed> [as xForwardedForHeader] (/workspaces/deapseak/node_modules/express-rate-limit/dist/index.cjs:638:22)
+    at Object.keyGenerator (/workspaces/deapseak/node_modules/express-rate-limit/dist/index.cjs:740:20)
+    at /workspaces/deapseak/node_modules/express-rate-limit/dist/index.cjs:801:32
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async /workspaces/deapseak/node_modules/express-rate-limit/dist/index.cjs:782:5 {
+  code: 'ERR_ERL_UNEXPECTED_X_FORWARDED_FOR',
+  help: 'https://express-rate-limit.github.io/ERR_ERL_UNEXPECTED_X_FORWARDED_FOR/'
+}
+ValidationError: The 'X-Forwarded-For' header is set but the Express 'trust proxy' setting is false (default). This could indicate a misconfiguration which would prevent express-rate-limit from accurately identifying users. See https://express-rate-limit.github.io/ERR_ERL_UNEXPECTED_X_FORWARDED_FOR/ for more information.
+    at Object.xForwardedForHeader (/workspaces/deapseak/node_modules/express-rate-limit/dist/index.cjs:366:13)
+    at wrappedValidations.<computed> [as xForwardedForHeader] (/workspaces/deapseak/node_modules/express-rate-limit/dist/index.cjs:638:22)
+    at Object.keyGenerator (/workspaces/deapseak/node_modules/express-rate-limit/dist/index.cjs:740:20)
+    at /workspaces/deapseak/node_modules/express-rate-limit/dist/index.cjs:801:32
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async /workspaces/deapseak/node_modules/express-rate-limit/dist/index.cjs:782:5 {
+  code: 'ERR_ERL_UNEXPECTED_X_FORWARDED_FOR',
+  help: 'https://express-rate-limit.github.io/ERR_ERL_UNEXPECTED_X_FORWARDED_FOR/'
+}
+ValidationError: The 'X-Forwarded-For' header is set but the Express 'trust proxy' setting is false (default). This could indicate a misconfiguration which would prevent express-rate-limit from accurately identifying users. See https://express-rate-limit.github.io/ERR_ERL_UNEXPECTED_X_FORWARDED_FOR/ for more information.
+    at Object.xForwardedForHeader (/workspaces/deapseak/node_modules/express-rate-limit/dist/index.cjs:366:13)
+    at wrappedValidations.<computed> [as xForwardedForHeader] (/workspaces/deapseak/node_modules/express-rate-limit/dist/index.cjs:638:22)
+    at Object.keyGenerator (/workspaces/deapseak/node_modules/express-rate-limit/dist/index.cjs:740:20)
+    at /workspaces/deapseak/node_modules/express-rate-limit/dist/index.cjs:801:32
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async /workspaces/deapseak/node_modules/express-rate-limit/dist/index.cjs:782:5 {
+  code: 'ERR_ERL_UNEXPECTED_X_FORWARDED_FOR',
+  help: 'https://express-rate-limit.github.io/ERR_ERL_UNEXPECTED_X_FORWARDED_FOR/'
+}
 🔐 Спроба входу: {
   email: 'admin@example.com',
-  username: undefined,
+  username: 'admin@example.com',
   loginField: 'admin@example.com',
   hasPassword: true
 }
@@ -47,56 +77,20 @@ MongoDB connected: mongodb://localhost:27017 DB: deapseak
 }
 ✅ Пароль коректний, генеруємо токен
 🔐 Спроба входу: {
-  email: 'dispatcher1@example.com',
-  username: undefined,
-  loginField: 'dispatcher1@example.com',
+  email: 'admin@example.com',
+  username: 'admin@example.com',
+  loginField: 'admin@example.com',
   hasPassword: true
 }
 📊 Результат пошуку користувача: {
   found: true,
-  username: 'dispatcher1',
-  email: 'dispatcher1@example.com',
-  role: 'dispatcher'
+  username: 'admin',
+  email: 'admin@example.com',
+  role: 'admin'
 }
 🔑 Перевірка пароля: {
-  password: 'dispatcher123',
-  hashedInDB: '$2b$10$2KgrxP33iv9ZD...',
-  isValid: true
-}
-✅ Пароль коректний, генеруємо токен
-🔐 Спроба входу: {
-  email: 'tech1@example.com',
-  username: undefined,
-  loginField: 'tech1@example.com',
-  hasPassword: true
-}
-📊 Результат пошуку користувача: {
-  found: true,
-  username: 'tech1',
-  email: 'tech1@example.com',
-  role: 'technician'
-}
-🔑 Перевірка пароля: {
-  password: 'tech123',
-  hashedInDB: '$2b$10$jL9W0JQb6UmPw...',
-  isValid: true
-}
-✅ Пароль коректний, генеруємо токен
-🔐 Спроба входу: {
-  email: 'client1@example.com',
-  username: undefined,
-  loginField: 'client1@example.com',
-  hasPassword: true
-}
-📊 Результат пошуку користувача: {
-  found: true,
-  username: 'client1',
-  email: 'client1@example.com',
-  role: 'client'
-}
-🔑 Перевірка пароля: {
-  password: 'client123',
-  hashedInDB: '$2b$10$B4JYmvpnfnNcl...',
+  password: 'admin123',
+  hashedInDB: '$2b$10$FhoH1hl1cCRAT...',
   isValid: true
 }
 ✅ Пароль коректний, генеруємо токен
