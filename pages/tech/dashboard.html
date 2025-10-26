@@ -239,39 +239,13 @@
 
     <script>
         $(document).ready(function() {
-            // Перевірка авторизації
-            const sessionData = localStorage.getItem('lm_session');
-            if (!sessionData) {
-                window.location.href = '../../login.html';
-                return;
-            }
-
-            try {
-                const session = JSON.parse(sessionData);
-                const now = new Date();
-                
-                if (new Date(session.expiresAt) <= now) {
-                    localStorage.removeItem('lm_session');
-                    window.location.href = '../../login.html';
-                    return;
-                }
-
-                if (session.user && (session.user.role !== 'tech' && session.user.role !== 'technician')) {
-                    alert('Доступ заборонено. Необхідні права техніка.');
-                    window.location.href = '../../login.html';
-                    return;
-                }
-
-                // Завантажуємо дані
-                loadTechData();
-                
-                // Ініціалізація WebSocket для техніка
-                initTechWebSocket(session.user);
-                
-            } catch (error) {
-                console.error('Session error:', error);
-                localStorage.removeItem('lm_session');
-                window.location.href = '../../login.html';
+            // Завантажуємо дані
+            loadTechData();
+            
+            // Ініціалізація WebSocket для техніка
+            // Отримуємо дані користувача з AuthManager
+            if (typeof AuthManager !== 'undefined' && AuthManager.currentUser) {
+                initTechWebSocket(AuthManager.currentUser);
             }
         });
 
