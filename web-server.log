@@ -16,3 +16,12 @@ nohup: ignoring input
 127.0.0.1 - - [26/Oct/2025 21:55:34] code 404, message File not found
 127.0.0.1 - - [26/Oct/2025 21:55:34] "GET /pages/login.html?redirect=/pages/admin/admin-dashboard.html HTTP/1.1" 404 -
 127.0.0.1 - - [26/Oct/2025 21:56:29] "GET /login-ajax.html?id=79adc971-0476-478d-823c-e339568c2bd4&vscodeBrowserReqId=1761515787861 HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 21:58:10] "GET /login.html HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 21:58:10] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 304 -
+127.0.0.1 - - [26/Oct/2025 21:59:26] "GET /login.html?id=7aaec7cc-62ec-4a7e-99a2-3ee272f5741f&vscodeBrowserReqId=1761515965530 HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 21:59:26] "GET /assets/js/auth-check.js HTTP/1.1" 200 -
+127.0.0.1 - - [26/Oct/2025 21:59:27] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 304 -
+127.0.0.1 - - [26/Oct/2025 21:59:27] "GET /assets/js/auth-interceptor.js HTTP/1.1" 304 -
+127.0.0.1 - - [26/Oct/2025 21:59:27] "GET /assets/js/token-manager.js HTTP/1.1" 304 -
+127.0.0.1 - - [26/Oct/2025 21:59:29] code 404, message File not found
+127.0.0.1 - - [26/Oct/2025 21:59:29] "GET /pages/login.html?redirect=/pages/admin/admin-dashboard.html HTTP/1.1" 404 -

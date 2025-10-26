@@ -44,7 +44,7 @@ class AuthInterceptor {
                     console.error('❌ 401 Unauthorized - redirecting to login');
                     localStorage.removeItem('auth_token');
                     localStorage.removeItem('token');
-                    window.location.href = '/pages/login.html';
+                    window.location.href = '/login.html';
                     return;
                 }
                 
