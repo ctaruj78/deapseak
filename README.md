@@ -69,7 +69,7 @@ nohup node api-server.js > api-server.log 2>&1 &
 
 #### 3. Запуск веб-сервера
 ```bash
-cd /workspaces/deapseak
+cd /workspaces/deapseak && bash
 python3 -m http.server 8080
 # Або у фоновому режимі:
 nohup python3 -m http.server 8080 > web-server.log 2>&1 &
@@ -84,7 +84,7 @@ nohup python3 -m http.server 8080 > web-server.log 2>&1 &
 - 🎛️ **QR інтерфейс**: http://localhost:8080/qr-interface.html
 - 🔍 **Тестування API**: http://localhost:8080/test-qr-api.html
 
-### Тестові користувачи
+### Тестові користувачі
 
 | Роль | Логін | Пароль |
 |------|-------|--------|
