@@ -1,8 +1,25 @@
-nohup: ignoring input
-🛡️  Rate limiting активовано:
-   - Загальний API ліміт: 100 запитів/15хв
-   - Авторизація: 5 спроб/15хв
-   - Інші API: 200 запитів/15хв
-API сервер запущено на http://0.0.0.0:3001
-MongoDB connected: mongodb://localhost:27017 DB: deapseak
-📁 Файлові директорії ініціалізовано
+2025-11-02 09:09:29 [32minfo[39m: 🚀 Starting DeapSeak API Server...
+2025-11-02 09:09:29 [32minfo[39m: 📡 Connecting to database...
+2025-11-02 09:09:29 [32minfo[39m: Connecting to MongoDB...
+2025-11-02 09:09:29 [32minfo[39m: MongoDB connected successfully
+2025-11-02 09:09:29 [32minfo[39m: ✅ Database connected
+2025-11-02 09:09:29 [32minfo[39m: 🔧 Initializing services...
+2025-11-02 09:09:29 [32minfo[39m: User indexes created
+2025-11-02 09:09:29 [32minfo[39m: Lift indexes created
+2025-11-02 09:09:29 [32minfo[39m: Request indexes created
+2025-11-02 09:09:29 [32minfo[39m: ✅ Services initialized
+
+========================================
+🎉 DeapSeak API Server Started!
+========================================
+
+🌐 Server URL:  http://localhost:3000
+📊 API Health:  http://localhost:3000/api/health
+📚 API Docs:    http://localhost:3000/api
+
+Environment:    development
+Node Version:   v22.17.0
+
+========================================
+
+2025-11-02 09:09:29 [32minfo[39m: Server started successfully

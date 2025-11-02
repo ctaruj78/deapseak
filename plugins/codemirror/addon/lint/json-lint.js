@@ -19,7 +19,7 @@ CodeMirror.registerHelper("lint", "json", function(text) {
   var found = [];
   if (!window.jsonlint) {
     if (window.console) {
-      window.console.error("Error: window.jsonlint not defined, CodeMirror JSON linting cannot run.");
+      window.// logger.error("Error: window.jsonlint not defined, CodeMirror JSON linting cannot run.");
     }
     return found;
   }

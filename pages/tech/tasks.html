@@ -10,223 +10,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css">
     
     <!-- Додаткові стилі -->
-    <style>
-        .task-card {
-            transition: all 0.3s ease;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-        
-        .task-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
-        
-        .stat-card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-            height: 100%;
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
-        
-        .stat-icon {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-            display: block;
-        }
-        
-        .task-table {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        
-        .task-table th {
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            color: white;
-            font-weight: 600;
-            padding: 15px;
-        }
-        
-        .task-table td {
-            padding: 15px;
-            vertical-align: middle;
-        }
-        
-        .status-badge {
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 0.85rem;
-        }
-        
-        .status-pending {
-            background: linear-gradient(135deg, #17a2b8, #6f42c1);
-            color: white;
-        }
-        
-        .status-in-progress {
-            background: linear-gradient(135deg, #ffc107, #fd7e14);
-            color: #212529;
-        }
-        
-        .status-completed {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
-        }
-        
-        .status-cancelled {
-            background: linear-gradient(135deg, #6c757d, #adb5bd);
-            color: white;
-        }
-        
-        .status-urgent {
-            background: linear-gradient(135deg, #dc3545, #e83e8c);
-            color: white;
-            animation: pulse 2s infinite;
-        }
-        
-        .priority-high {
-            background: linear-gradient(135deg, #dc3545, #e83e8c);
-            color: white;
-        }
-        
-        .priority-medium {
-            background: linear-gradient(135deg, #ffc107, #fd7e14);
-            color: #212529;
-        }
-        
-        .priority-low {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
-        }
-        
-        .btn-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 3px;
-        }
-        
-        .task-details {
-            border-left: 4px solid #007bff;
-            margin-bottom: 10px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 5px;
-        }
-        
-        .task-details.completed {
-            border-left-color: #28a745;
-            background: #e8f5e8;
-        }
-        
-        .task-details.urgent {
-            border-left-color: #dc3545;
-            background: #f8d7da;
-        }
-        
-        .progress-sm {
-            height: 8px;
-        }
-        
-        .pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-            margin-top: 20px;
-        }
-        
-        .search-box {
-            position: relative;
-            max-width: 300px;
-        }
-        
-        .search-box input {
-            padding-right: 40px;
-            border-radius: 25px;
-        }
-        
-        .search-box .btn {
-            position: absolute;
-            right: 5px;
-            top: 5px;
-            border-radius: 50%;
-            width: 34px;
-            height: 34px;
-        }
-        
-        .task-timeline {
-            position: relative;
-            padding-left: 30px;
-        }
-        
-        .task-timeline::before {
-            content: '';
-            position: absolute;
-            left: 15px;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: #dee2e6;
-        }
-        
-        .timeline-item {
-            position: relative;
-            margin-bottom: 20px;
-        }
-        
-        .timeline-item::before {
-            content: '';
-            position: absolute;
-            left: -25px;
-            top: 5px;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #007bff;
-            border: 2px solid white;
-        }
-        
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.7; }
-            100% { opacity: 1; }
-        }
-        
-        @media (max-width: 768px) {
-            .stat-icon {
-                font-size: 2rem;
-            }
-            
-            .task-table {
-                font-size: 0.9rem;
-            }
-            
-            .btn-icon {
-                width: 35px;
-                height: 35px;
-                margin: 2px;
-            }
-        }
-    </style>
     
     <!-- Service Integration -->
     <script src="../../assets/js/service-integration.js"></script>
+    <link rel="stylesheet" href="/assets/css/tech-tasks.css">
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
     <div class="wrapper">
@@ -954,8 +741,20 @@
             techTaskManager.loadTasks();
         });
     </script>
+    <!-- API Client -->
+    <script src="/assets/js/utils/api.js"></script>
+    <!-- Notifications -->
+    <script src="/assets/js/utils/notifications.js"></script>
+    <!-- Tech Manager -->
+    <script src="/assets/js/modules/tech-manager.js"></script>
 </body>
 </html>
 <!-- AI Assistant Include -->
 <!--#include file="../../templates/ai-assistant-include.html" -->
+    <!-- API Client -->
+    <script src="/assets/js/utils/api.js"></script>
+    <!-- Notifications -->
+    <script src="/assets/js/utils/notifications.js"></script>
+    <!-- Tech Manager -->
+    <script src="/assets/js/modules/tech-manager.js"></script>
 <!-- Якщо сервер не підтримує include, вставте вміст ai-assistant-include.html вручну перед </body> -->

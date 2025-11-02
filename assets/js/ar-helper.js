@@ -17,10 +17,10 @@ class DeapSeaKARHelper {
     }
 
     async init() {
-        console.log('🥽 Ініціалізація AR Helper системи...');
+        // logger.log('🥽 Ініціалізація AR Helper системи...');
         
         if (!this.checkARSupport()) {
-            console.warn('⚠️ AR не підтримується цим пристроєм/браузером');
+            // logger.warn('⚠️ AR не підтримується цим пристроєм/браузером');
             this.initFallbackMode();
             return false;
         }
@@ -30,7 +30,7 @@ class DeapSeaKARHelper {
         this.createARInterface();
         
         this.isInitialized = true;
-        console.log('✅ AR Helper готовий!');
+        // logger.log('✅ AR Helper готовий!');
         return true;
     }
 
@@ -53,10 +53,10 @@ class DeapSeaKARHelper {
                 audio: false
             });
             
-            console.log('📹 Камера підключена для AR');
+            // logger.log('📹 Камера підключена для AR');
             return true;
         } catch (error) {
-            console.error('❌ Помилка доступу до камери:', error);
+            // logger.error('❌ Помилка доступу до камери:', error);
             return false;
         }
     }
@@ -272,7 +272,7 @@ class DeapSeaKARHelper {
     // Запуск AR режимів
     async startAR(mode = 'guide') {
         if (!this.isInitialized) {
-            console.warn('⚠️ AR Helper не ініціалізований');
+            // logger.warn('⚠️ AR Helper не ініціалізований');
             return false;
         }
 
@@ -383,7 +383,7 @@ class DeapSeaKARHelper {
     }
 
     handleARElementClick(id, type) {
-        console.log('🎯 AR елемент натиснуто:', id, type);
+        // logger.log('🎯 AR елемент натиснуто:', id, type);
         
         if (window.eventBus) {
             eventBus.emit('ar:element-clicked', { 
@@ -594,12 +594,12 @@ class DeapSeaKARHelper {
             eventBus.emit('ar:closed', { mode: this.arMode }, { source: 'ar-helper' });
         }
 
-        console.log('🥽 AR режим закрито');
+        // logger.log('🥽 AR режим закрито');
     }
 
     // Fallback режим для пристроїв без AR
     initFallbackMode() {
-        console.log('📱 Ініціалізація fallback режиму (без AR)');
+        // logger.log('📱 Ініціалізація fallback режиму (без AR)');
         
         // Створюємо спрощений інтерфейс
         this.createFallbackInterface();
@@ -711,7 +711,7 @@ class DeapSeaKARHelper {
     setupEventBusIntegration() {
         if (!window.eventBus) return;
 
-        console.log('📡 Налаштування EventBus для AR Helper...');
+        // logger.log('📡 Налаштування EventBus для AR Helper...');
 
         // Слухаємо створення ліфтів для AR сповіщень
         eventBus.on('lift:created', (data) => {
@@ -728,11 +728,11 @@ class DeapSeaKARHelper {
         // Слухаємо QR події
         eventBus.on('qr:generated', (data) => {
             if (this.isARActive && this.arMode === 'qr-scan') {
-                this.updateInstructions(`QR код для ліфта ${data.municipalNumber} згенеровано!`, 1, 1);
+                this.updateInstructions(`QR код для ліфта ${data.municipalNumber || 'невідомо'} згенеровано!`, 1, 1);
             }
         }, { module: 'ar-helper' });
 
-        console.log('✅ EventBus інтеграція для AR Helper налаштована');
+        // logger.log('✅ EventBus інтеграція для AR Helper налаштована');
     }
 }
 
@@ -747,12 +747,12 @@ class ARHelperManager {
     checkUserSettings() {
         // Перевіряємо налаштування користувача
         const settings = this.loadSettings();
-        console.log('⚙️ Перевірка налаштувань AR Helper:', settings);
+        // logger.log('⚙️ Перевірка налаштувань AR Helper:', settings);
         
         if (settings.arHelper) {
             this.initializeAR();
         } else {
-            console.log('🥽 AR Helper вимкнено в налаштуваннях');
+            // logger.log('🥽 AR Helper вимкнено в налаштуваннях');
             this.createDisabledState();
         }
     }
@@ -764,14 +764,14 @@ class ARHelperManager {
             const saved = localStorage.getItem('deapseak_settings');
             return saved ? { ...defaultSettings, ...JSON.parse(saved) } : defaultSettings;
         } catch (error) {
-            console.warn('⚠️ Помилка читання налаштувань:', error);
+            // logger.warn('⚠️ Помилка читання налаштувань:', error);
             return defaultSettings;
         }
     }
     
     async initializeAR() {
         try {
-            console.log('🥽 Ініціалізація AR Helper...');
+            // logger.log('🥽 Ініціалізація AR Helper...');
             this.arHelper = new DeapSeaKARHelper();
             window.arHelper = this.arHelper;
             
@@ -780,7 +780,7 @@ class ARHelperManager {
                 this.updateARButton(true);
             }
         } catch (error) {
-            console.error('❌ Помилка ініціалізації AR Helper:', error);
+            // logger.error('❌ Помилка ініціалізації AR Helper:', error);
             this.createFallbackState();
         }
     }
@@ -878,4 +878,4 @@ if (typeof window !== 'undefined') {
     }, 1000);
 }
 
-console.log('🥽 AR Helper модуль завантажено! (Controlled by settings)');
+// logger.log('🥽 AR Helper модуль завантажено! (Controlled by settings)');

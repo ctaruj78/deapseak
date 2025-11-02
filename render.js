@@ -330,7 +330,7 @@ class Renderer {
                     break;
             }
         } catch (error) {
-            console.error('Помилка оновлення контенту:', error);
+            // logger.error('Помилка оновлення контенту:', error);
             this.showError('Не вдалося завантажити дані');
         }
     }
@@ -591,7 +591,7 @@ class Renderer {
 
     static showError(message) {
         // Реалізація відображення помилок
-        console.error(message);
+        // logger.error(message);
     }
 }
 

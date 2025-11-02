@@ -189,40 +189,9 @@
         </a>
         
         <div class="sidebar">
-            <nav class="mt-2">
-                <ul class="nav nav-pills nav-sidebar flex-column">
-                    <li class="nav-item">
-                        <a href="admin-dashboard.html" class="nav-link">
-                            <i class="nav-icon fas fa-arrow-left"></i>
-                            <p>Назад до дашборду</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#overview" class="nav-link active">
-                            <i class="nav-icon fas fa-tachometer-alt"></i>
-                            <p>Огляд системи</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#predictions" class="nav-link">
-                            <i class="nav-icon fas fa-crystal-ball"></i>
-                            <p>Прогнози ШІ</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#alerts" class="nav-link">
-                            <i class="nav-icon fas fa-exclamation-triangle"></i>
-                            <p>Алерти</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#schedule" class="nav-link">
-                            <i class="nav-icon fas fa-calendar-alt"></i>
-                            <p>Графік ТО</p>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
+            <div id="sidebar-menu-container">
+                <!-- Menu will be loaded dynamically -->
+            </div>
         </div>
     </aside>
 
@@ -537,6 +506,9 @@
 <!-- EventBus and Predictive Maintenance -->
 <script src="/assets/js/system-eventbus.js"></script>
 <script src="/assets/js/predictive-maintenance.js"></script>
+
+<!-- Admin Menu Loader -->
+<script src="../../assets/js/admin-menu-loader.js"></script>
 
 <script>
 /**
@@ -1271,6 +1243,11 @@ function showRiskMatrix() {
 // Ініціалізація при завантаженні
 $(document).ready(function() {
     console.log('🔮 Завантаження Predictive Maintenance Dashboard...');
+    
+    // Перевірка авторизації
+    
+    // Initialize admin menu loader
+    AdminMenuLoader.init('predictive-maintenance.html');
     
     setTimeout(() => {
         window.dashboardController = new PredictiveMaintenanceDashboard();

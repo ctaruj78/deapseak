@@ -130,7 +130,7 @@ var windowIsDefined = (typeof window === "undefined" ? "undefined" : _typeof(win
 			// helper function for logging errors
 			// $.error breaks jQuery chaining
 			var logError = typeof console === 'undefined' ? noop : function (message) {
-				console.error(message);
+				// logger.error(message);
 			};
 
 			/**
@@ -1654,7 +1654,7 @@ var windowIsDefined = (typeof window === "undefined" ? "undefined" : _typeof(win
 					if (index === -1) {
 						// Set default to first tick
 						index = 0;
-						window.console.warn('(lock_to_ticks) _keydown: index should not be -1');
+						window.// logger.warn('(lock_to_ticks) _keydown: index should not be -1');
 					}
 					index += dir;
 					index = Math.max(0, Math.min(this.options.ticks.length - 1, index));
@@ -2044,7 +2044,7 @@ var windowIsDefined = (typeof window === "undefined" ? "undefined" : _typeof(win
 				autoRegisterNamespace = NAMESPACE_MAIN;
 			} else {
 				if (windowIsDefined) {
-					window.console.warn("bootstrap-slider.js - WARNING: $.fn.slider namespace is already bound. Use the $.fn.bootstrapSlider namespace instead.");
+					window.// logger.warn("bootstrap-slider.js - WARNING: $.fn.slider namespace is already bound. Use the $.fn.bootstrapSlider namespace instead.");
 				}
 				autoRegisterNamespace = NAMESPACE_ALTERNATE;
 			}

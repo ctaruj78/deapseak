@@ -488,7 +488,7 @@ S2.define('jquery',[],function () {
   var _$ = jQuery || $;
 
   if (_$ == null && console && console.error) {
-    console.error(
+    // logger.error(
       'Select2: An instance of jQuery or a jQuery-compatible library was not ' +
       'found. Make sure that you are including jQuery before Select2 on your ' +
       'web page.'
@@ -1869,7 +1869,7 @@ S2.define('select2/selection/allowClear',[
 
     if (this.placeholder == null) {
       if (this.options.get('debug') && window.console && console.error) {
-        console.error(
+        // logger.error(
           'Select2: The `allowClear` option should be used in combination ' +
           'with the `placeholder` option.'
         );
@@ -3627,7 +3627,7 @@ S2.define('select2/data/ajax',[
         if (self.options.get('debug') && window.console && console.error) {
           // Check to make sure that the response included a `results` key.
           if (!results || !results.results || !$.isArray(results.results)) {
-            console.error(
+            // logger.error(
               'Select2: The AJAX results did not return an array in the ' +
               '`results` key of the response.'
             );
@@ -5178,7 +5178,7 @@ S2.define('select2/defaults',[
             // because of a configuration problem, other times this can be
             // because of how Select2 helps load all possible translation files
             if (debug && window.console && console.warn) {
-              console.warn(
+              // logger.warn(
                 'Select2: The language file for "' + language + '" could ' +
                 'not be automatically loaded. A fallback will be used instead.'
               );
@@ -5268,7 +5268,7 @@ S2.define('select2/options',[
 
     if (Utils.GetData($e[0], 'select2Tags')) {
       if (this.options.debug && window.console && console.warn) {
-        console.warn(
+        // logger.warn(
           'Select2: The `data-select2-tags` attribute has been changed to ' +
           'use the `data-data` and `data-tags="true"` attributes and will be ' +
           'removed in future versions of Select2.'
@@ -5281,7 +5281,7 @@ S2.define('select2/options',[
 
     if (Utils.GetData($e[0], 'ajaxUrl')) {
       if (this.options.debug && window.console && console.warn) {
-        console.warn(
+        // logger.warn(
           'Select2: The `data-ajax-url` attribute has been changed to ' +
           '`data-ajax--url` and support for the old attribute will be removed' +
           ' in future versions of Select2.'
@@ -5900,7 +5900,7 @@ S2.define('select2/core',[
 
   Select2.prototype.enable = function (args) {
     if (this.options.get('debug') && window.console && console.warn) {
-      console.warn(
+      // logger.warn(
         'Select2: The `select2("enable")` method has been deprecated and will' +
         ' be removed in later Select2 versions. Use $element.prop("disabled")' +
         ' instead.'
@@ -5919,7 +5919,7 @@ S2.define('select2/core',[
   Select2.prototype.data = function () {
     if (this.options.get('debug') &&
         arguments.length > 0 && window.console && console.warn) {
-      console.warn(
+      // logger.warn(
         'Select2: Data can no longer be set using `select2("data")`. You ' +
         'should consider setting the value instead using `$element.val()`.'
       );
@@ -5936,7 +5936,7 @@ S2.define('select2/core',[
 
   Select2.prototype.val = function (args) {
     if (this.options.get('debug') && window.console && console.warn) {
-      console.warn(
+      // logger.warn(
         'Select2: The `select2("val")` method has been deprecated and will be' +
         ' removed in later Select2 versions. Use $element.val() instead.'
       );
@@ -6184,7 +6184,7 @@ S2.define('select2/compat/initSelection',[
 ], function ($) {
   function InitSelection (decorated, $element, options) {
     if (options.get('debug') && window.console && console.warn) {
-      console.warn(
+      // logger.warn(
         'Select2: The `initSelection` option has been deprecated in favor' +
         ' of a custom data adapter that overrides the `current` method. ' +
         'This method is now called multiple times instead of a single ' +
@@ -6232,7 +6232,7 @@ S2.define('select2/compat/inputData',[
 
     if ($element.prop('type') === 'hidden') {
       if (options.get('debug') && console && console.warn) {
-        console.warn(
+        // logger.warn(
           'Select2: Using a hidden input with Select2 is no longer ' +
           'supported and may stop working in the future. It is recommended ' +
           'to use a `<select>` element instead.'
@@ -6399,7 +6399,7 @@ S2.define('select2/compat/query',[
 ], function () {
   function Query (decorated, $element, options) {
     if (options.get('debug') && window.console && console.warn) {
-      console.warn(
+      // logger.warn(
         'Select2: The `query` option has been deprecated in favor of a ' +
         'custom data adapter that overrides the `query` method. Support ' +
         'will be removed for the `query` option in future versions of ' +
@@ -6771,7 +6771,7 @@ S2.define('jquery.select2',[
           var instance = Utils.GetData(this, 'select2');
 
           if (instance == null && window.console && console.error) {
-            console.error(
+            // logger.error(
               'The select2(\'' + options + '\') method was called on an ' +
               'element that is not using Select2.'
             );

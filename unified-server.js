@@ -27,10 +27,10 @@ let db;
 MongoClient.connect(MONGODB_URI, { 
     useUnifiedTopology: true 
 }).then(client => {
-    console.log('MongoDB connected:', MONGODB_URI, 'DB:', DB_NAME);
+    // logger.log('MongoDB connected:', MONGODB_URI, 'DB:', DB_NAME);
     db = client.db(DB_NAME);
 }).catch(err => {
-    console.error('MongoDB connection error:', err);
+    // logger.error('MongoDB connection error:', err);
 });
 
 // JWT secret
@@ -51,7 +51,7 @@ app.post('/api/auth/login', async (req, res) => {
     try {
         const { email, username, password } = req.body;
         
-        console.log('🔐 Запит на логін:', { email, username, passwordLength: password?.length });
+        // logger.log('🔐 Запит на логін:', { email, username, passwordLength: password?.length });
         
         if (!password) {
             return res.status(400).json({
@@ -78,7 +78,7 @@ app.post('/api/auth/login', async (req, res) => {
         });
 
         if (!user) {
-            console.log('❌ Користувач не знайдений:', loginField);
+            // logger.log('❌ Користувач не знайдений:', loginField);
             return res.status(401).json({
                 success: false,
                 message: 'Користувач не знайдений'
@@ -89,7 +89,7 @@ app.post('/api/auth/login', async (req, res) => {
         const isPasswordValid = await bcrypt.compare(password, user.password);
         
         if (!isPasswordValid) {
-            console.log('❌ Неправильний пароль для:', loginField);
+            // logger.log('❌ Неправильний пароль для:', loginField);
             return res.status(401).json({
                 success: false,
                 message: 'Неправильний пароль'
@@ -107,7 +107,7 @@ app.post('/api/auth/login', async (req, res) => {
             { expiresIn: '24h' }
         );
 
-        console.log('✅ Успішний логін:', user.username, user.role);
+        // logger.log('✅ Успішний логін:', user.username, user.role);
 
         res.json({
             success: true,
@@ -124,7 +124,7 @@ app.post('/api/auth/login', async (req, res) => {
         });
 
     } catch (error) {
-        console.error('❌ Помилка логіну:', error);
+        // logger.error('❌ Помилка логіну:', error);
         res.status(500).json({
             success: false,
             message: 'Внутрішня помилка сервера'
@@ -148,7 +148,7 @@ function authenticateToken(req, res, next) {
 
     jwt.verify(token, JWT_SECRET, (err, user) => {
         if (err) {
-            console.log('❌ Невалідний токен:', err.message);
+            // logger.log('❌ Невалідний токен:', err.message);
             return res.status(403).json({
                 success: false,
                 message: 'Невалідний токен'
@@ -165,7 +165,7 @@ app.get('/api/lifts', authenticateToken, async (req, res) => {
         const lifts = await db.collection('lifts').find({}).toArray();
         res.json(lifts);
     } catch (error) {
-        console.error('❌ Помилка отримання ліфтів:', error);
+        // logger.error('❌ Помилка отримання ліфтів:', error);
         res.status(500).json({
             success: false,
             message: 'Помилка отримання ліфтів'
@@ -180,9 +180,9 @@ app.get('/', (req, res) => {
 
 // Запуск сервера
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Unified сервер запущено на http://0.0.0.0:${PORT}`);
-    console.log(`📁 Статичні файли: ${__dirname}`);
-    console.log(`🔐 API endpoints: /api/*`);
+    // logger.log(`🚀 Unified сервер запущено на http://0.0.0.0:${PORT}`);
+    // logger.log(`📁 Статичні файли: ${__dirname}`);
+    // logger.log(`🔐 API endpoints: /api/*`);
 });
 
 module.exports = app;

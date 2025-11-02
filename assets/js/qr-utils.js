@@ -33,7 +33,7 @@ const qrUtils = (function() {
             
             return await response.json();
         } catch (error) {
-            console.error('Помилка отримання QR-кодів:', error);
+            // logger.error('Помилка отримання QR-кодів:', error);
             throw error;
         }
     }
@@ -55,7 +55,7 @@ const qrUtils = (function() {
             
             return await response.json();
         } catch (error) {
-            console.error(`Помилка отримання QR-коду з ID ${id}:`, error);
+            // logger.error(`Помилка отримання QR-коду з ID ${id}:`, error);
             throw error;
         }
     }
@@ -78,7 +78,7 @@ const qrUtils = (function() {
             
             return await response.json();
         } catch (error) {
-            console.error('Помилка збереження QR-коду:', error);
+            // logger.error('Помилка збереження QR-коду:', error);
             throw error;
         }
     }
@@ -100,7 +100,7 @@ const qrUtils = (function() {
             
             return await response.json();
         } catch (error) {
-            console.error(`Помилка видалення QR-коду з ID ${id}:`, error);
+            // logger.error(`Помилка видалення QR-коду з ID ${id}:`, error);
             throw error;
         }
     }
@@ -123,7 +123,7 @@ const qrUtils = (function() {
             
             return await response.json();
         } catch (error) {
-            console.error('Помилка масового створення QR-кодів для ліфтів:', error);
+            // logger.error('Помилка масового створення QR-кодів для ліфтів:', error);
             throw error;
         }
     }
@@ -156,7 +156,7 @@ const qrUtils = (function() {
             
             return await response.json();
         } catch (error) {
-            console.error('Помилка сканування QR-коду:', error);
+            // logger.error('Помилка сканування QR-коду:', error);
             throw error;
         }
     }
@@ -177,7 +177,7 @@ const qrUtils = (function() {
             
             return await response.json();
         } catch (error) {
-            console.error('Помилка отримання статистики QR-кодів:', error);
+            // logger.error('Помилка отримання статистики QR-кодів:', error);
             throw error;
         }
     }
@@ -211,7 +211,7 @@ const qrUtils = (function() {
             
             return await response.json();
         } catch (error) {
-            console.error('Помилка отримання історії сканувань:', error);
+            // logger.error('Помилка отримання історії сканувань:', error);
             throw error;
         }
     }
@@ -312,7 +312,7 @@ const qrUtils = (function() {
                 await scanner.stop();
                 isScanning = false;
             } catch (error) {
-                console.error('Помилка зупинки сканера QR-кодів:', error);
+                // logger.error('Помилка зупинки сканера QR-кодів:', error);
             }
         }
         

@@ -13,12 +13,12 @@ class UserManager {
     }
 
     init() {
-        console.log('👥 Ініціалізація менеджера користувачів...');
+        // logger.log('👥 Ініціалізація менеджера користувачів...');
         this.loadUsers();
         this.setupEventListeners();
         this.setupSearch();
         this.setupFilters();
-        console.log('✅ Менеджер користувачів успішно ініціалізовано');
+        // logger.log('✅ Менеджер користувачів успішно ініціалізовано');
     }
 
     loadUsers() {
@@ -51,7 +51,7 @@ class UserManager {
                 this.afterLoad();
             }
         } catch (error) {
-            console.error('Помилка завантаження користувачів:', error);
+            // logger.error('Помилка завантаження користувачів:', error);
             this.showNotification('Помилка завантаження даних', 'error');
         }
     }
@@ -130,7 +130,7 @@ class UserManager {
                 localStorage.setItem('users', JSON.stringify(this.allUsers));
             }
         } catch (error) {
-            console.error('Помилка збереження даних:', error);
+            // logger.error('Помилка збереження даних:', error);
             this.showNotification('Помилка збереження даних', 'error');
         }
     }
@@ -448,7 +448,7 @@ class UserManager {
             this.showNotification('Користувача успішно збережено', 'success');
             
         } catch (error) {
-            console.error('Помилка збереження користувача:', error);
+            // logger.error('Помилка збереження користувача:', error);
             this.showNotification('Помилка збереження користувача', 'error');
         }
     }

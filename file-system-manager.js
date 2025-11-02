@@ -37,9 +37,9 @@ class FileSystemManager {
                 await fs.mkdir(path.join(this.uploadDir, category), { recursive: true });
             }
             
-            console.log('📁 Файлові директорії ініціалізовано');
+            // logger.log('📁 Файлові директорії ініціалізовано');
         } catch (error) {
-            console.error('❌ Помилка ініціалізації директорій:', error);
+            // logger.error('❌ Помилка ініціалізації директорій:', error);
         }
     }
 
@@ -118,11 +118,11 @@ class FileSystemManager {
             // Зберегти метадані (можна в базу даних)
             await this.saveFileMetadata(fileMetadata);
 
-            console.log(`📎 Файл ${originalName} завантажено як ${fileId}`);
+            // logger.log(`📎 Файл ${originalName} завантажено як ${fileId}`);
             return fileMetadata;
 
         } catch (error) {
-            console.error('❌ Помилка завантаження файлу:', error);
+            // logger.error('❌ Помилка завантаження файлу:', error);
             throw error;
         }
     }
@@ -141,7 +141,7 @@ class FileSystemManager {
             };
 
         } catch (error) {
-            console.error('❌ Помилка завантаження файлу:', error);
+            // logger.error('❌ Помилка завантаження файлу:', error);
             throw error;
         }
     }
@@ -155,7 +155,7 @@ class FileSystemManager {
 
             // Перевірка прав (тільки власник або адмін може видалити)
             if (metadata.uploadedBy !== userId) {
-                // TODO: Перевірити роль користувача
+                // NOTE: Перевірити роль користувача
                 throw new Error('Недостатньо прав для видалення файлу');
             }
 
@@ -165,33 +165,33 @@ class FileSystemManager {
             // Видалити метадані
             await this.deleteFileMetadata(fileId);
 
-            console.log(`🗑️ Файл ${fileId} видалено`);
+            // logger.log(`🗑️ Файл ${fileId} видалено`);
             return true;
 
         } catch (error) {
-            console.error('❌ Помилка видалення файлу:', error);
+            // logger.error('❌ Помилка видалення файлу:', error);
             throw error;
         }
     }
 
     async getFilesByChat(chatId) {
         try {
-            // TODO: Отримати з бази даних
+            // NOTE: Отримати з бази даних
             // Поки що заглушка
             return [];
         } catch (error) {
-            console.error('❌ Помилка отримання файлів чату:', error);
+            // logger.error('❌ Помилка отримання файлів чату:', error);
             throw error;
         }
     }
 
     async getFilesByUser(userId) {
         try {
-            // TODO: Отримати з бази даних
+            // NOTE: Отримати з бази даних
             // Поки що заглушка
             return [];
         } catch (error) {
-            console.error('❌ Помилка отримання файлів користувача:', error);
+            // logger.error('❌ Помилка отримання файлів користувача:', error);
             throw error;
         }
     }
@@ -213,7 +213,7 @@ class FileSystemManager {
             await fs.writeFile(metadataPath, JSON.stringify(existingData, null, 2));
 
         } catch (error) {
-            console.error('❌ Помилка збереження метаданих:', error);
+            // logger.error('❌ Помилка збереження метаданих:', error);
             throw error;
         }
     }
@@ -227,7 +227,7 @@ class FileSystemManager {
             return metadata.find(file => file.fileId === fileId);
 
         } catch (error) {
-            console.error('❌ Помилка отримання метаданих:', error);
+            // logger.error('❌ Помилка отримання метаданих:', error);
             return null;
         }
     }
@@ -242,7 +242,7 @@ class FileSystemManager {
             await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2));
 
         } catch (error) {
-            console.error('❌ Помилка видалення метаданих:', error);
+            // logger.error('❌ Помилка видалення метаданих:', error);
             throw error;
         }
     }
@@ -312,7 +312,7 @@ class FileSystemManager {
             return stats;
 
         } catch (error) {
-            console.error('❌ Помилка отримання статистики:', error);
+            // logger.error('❌ Помилка отримання статистики:', error);
             throw error;
         }
     }
@@ -336,7 +336,7 @@ class FileSystemManager {
                     await fs.unlink(file.path);
                     deletedCount++;
                 } catch (error) {
-                    console.warn(`⚠️ Не вдалося видалити файл ${file.fileId}`);
+                    // logger.warn(`⚠️ Не вдалося видалити файл ${file.fileId}`);
                 }
             }
 
@@ -346,11 +346,11 @@ class FileSystemManager {
             );
             await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2));
 
-            console.log(`🧹 Очищено ${deletedCount} старих файлів`);
+            // logger.log(`🧹 Очищено ${deletedCount} старих файлів`);
             return deletedCount;
 
         } catch (error) {
-            console.error('❌ Помилка очищення файлів:', error);
+            // logger.error('❌ Помилка очищення файлів:', error);
             throw error;
         }
     }

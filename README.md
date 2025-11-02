@@ -1,3 +1,9 @@
+# DeapSeak Project
+
+[![CI/CD Pipeline](https://github.com/ctaruj78/deapseak/actions/workflows/ci.yml/badge.svg)](https://github.com/ctaruj78/deapseak/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-17%20passed-success)](https://github.com/ctaruj78/deapseak/actions)
+[![Coverage](https://img.shields.io/badge/coverage-check%20CI-blue)](https://github.com/ctaruj78/deapseak/actions)
+
 # DeapSeaK - Система управління ліфтами
 
 ## Опис проекту
@@ -84,14 +90,14 @@ nohup python3 -m http.server 8080 > web-server.log 2>&1 &
 - 🎛️ **QR інтерфейс**: http://localhost:8080/qr-interface.html
 - 🔍 **Тестування API**: http://localhost:8080/test-qr-api.html
 
-### Тестові користувачі
+### Тестові користувачи
 
 | Роль | Логін | Пароль |
 |------|-------|--------|
-| Адміністратор | `admin` | `admin123` |
-| Диспетчер | `dispatcher1` | `dispatcher123` |
-| Технік | `tech1` | `tech123` |
-| Клієнт | `client1` | `client123` |
+| Адміністратор | `admin@example.com` | `admin123` |
+| Диспетчер | `dispatcher1@example.com` | `dispatcher123` |
+| Технік | `tech1@example.com` | `tech123` |
+| Клієнт | `client1@example.com` | `client123` |
 
 ### Порти серверів
 
@@ -200,6 +206,17 @@ pkill -f http.server      # Веб-сервер
 - 📊 [Звіт про QR-інтеграцію](QR-SYSTEM-INTEGRATION-REPORT.md)
 - 🔗 [API документація](docs/api-documentation.md)
 - 📖 [Технічний посібник](docs/technical-guide.md)
+
+## 📋 Аудити та Звіти
+
+### Аудит порожніх елементів
+- 📊 [AUDIT-EMPTY-ELEMENTS-REPORT.md](AUDIT-EMPTY-ELEMENTS-REPORT.md) - Комплексний аналіз порожніх кнопок, посилань та іконок
+- 🔧 [EMPTY-ELEMENTS-FILLING-PLAN.md](EMPTY-ELEMENTS-FILLING-PLAN.md) - Детальний план наповнення з кодом
+
+**Результати аудиту:**
+- ✅ 250+ AdminLTE компоненти (нормально)
+- ⚠️ 10-15 елементів потребують функціональності
+- 🎯 Пріоритет: profile.html, users.html, register.html, technicians.html, qr-management.html
 
 ## Підтримка
 

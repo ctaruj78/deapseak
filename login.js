@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // Перевірка ролі та перенаправлення
                 const user = data.user;
-                console.log('Успішний вхід:', user);
+                // logger.log('Успішний вхід:', user);
                 
                 // Перенаправлення згідно ролі
                 if (user.role === 'admin') {
@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert(data.message || 'Помилка входу');
             }
         } catch (error) {
-            console.error('Помилка входу:', error);
+            // logger.error('Помилка входу:', error);
             alert('Сталася помилка під час входу');
         }
     });

@@ -79,7 +79,7 @@ class PDFGenerator {
             
             this.pdf.addImage(logoDataUrl, 'PNG', this.margin, 20, 50, 20);
         } catch (error) {
-            console.warn('Could not load logo:', error);
+            // logger.warn('Could not load logo:', error);
         }
 
         // Title

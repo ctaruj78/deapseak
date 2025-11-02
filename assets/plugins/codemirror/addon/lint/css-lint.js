@@ -19,7 +19,7 @@ CodeMirror.registerHelper("lint", "css", function(text, options) {
   var found = [];
   if (!window.CSSLint) {
     if (window.console) {
-        window.console.error("Error: window.CSSLint not defined, CodeMirror CSS linting cannot run.");
+        window.// logger.error("Error: window.CSSLint not defined, CodeMirror CSS linting cannot run.");
     }
     return found;
   }

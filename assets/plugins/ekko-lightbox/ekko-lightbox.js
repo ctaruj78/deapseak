@@ -505,7 +505,7 @@ var Lightbox = (function ($) {
 		}, {
 			key: '_error',
 			value: function _error(message) {
-				console.error(message);
+				// logger.error(message);
 				this._containerToUse().html(message);
 				this._resize(300, 300);
 				return this;

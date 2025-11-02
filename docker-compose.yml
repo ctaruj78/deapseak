@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    ports:
+      - "3001:3001"
+      - "8080:8080"
+      - "8081:8081"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - WEB_PORT_1=8080
+      - WEB_PORT_2=8081
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+  # Optional: Database service (якщо потребується MongoDB)
+  # mongo:
+  #   image: mongo:6-alpine
+  #   ports:
+  #     - "27017:27017"
+  #   volumes:
+  #     - mongo_data:/data/db
+  #   restart: unless-stopped
+
+# volumes:
+#   mongo_data:

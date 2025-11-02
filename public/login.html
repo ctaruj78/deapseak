@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeapSeak - Вхід</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 450px;
+        }
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        button:hover { transform: translateY(-2px); }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .quick-login {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+        .quick-login h3 {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .quick-btns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .quick-btn {
+            padding: 10px;
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        .quick-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .error { background: #fee; color: #c00; }
+        .success { background: #efe; color: #060; }
+        .info { background: #e3f2fd; color: #1976d2; }
+        
+        .user-info {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        .user-info h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #ddd;
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { font-weight: 600; color: #666; }
+        .info-value { color: #333; }
+        
+        .actions {
+            margin-top: 20px;
+            display: grid;
+            gap: 10px;
+        }
+        .action-btn {
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .action-btn:hover { background: #5568d3; }
+        .action-btn.secondary {
+            background: #6c757d;
+        }
+        .action-btn.secondary:hover {
+            background: #5a6268;
+        }
+        
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 DeapSeak</h1>
+        <p class="subtitle">Система управління ліфтами v2.0</p>
+        
+        <div id="message"></div>
+        
+        <!-- Форма входу -->
+        <div id="loginForm" class="form-container">
+            <form id="loginFormElement">
+                <div class="form-group">
+                    <label for="email">📧 Email:</label>
+                    <input type="email" id="email" placeholder="admin@deapseak.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">🔑 Пароль:</label>
+                    <input type="password" id="password" value="password123" required>
+                </div>
+                
+                <button type="submit" id="loginBtn">Увійти</button>
+            </form>
+            
+            <div class="quick-login">
+                <h3>Швидкий вхід:</h3>
+                <div class="quick-btns">
+                    <button class="quick-btn" onclick="quickLogin('admin@deapseak.com')">👑 Admin</button>
+                    <button class="quick-btn" onclick="quickLogin('dispatcher@deapseak.com')">📋 Dispatcher</button>
+                    <button class="quick-btn" onclick="quickLogin('technician@deapseak.com')">🔧 Technician</button>
+                    <button class="quick-btn" onclick="quickLogin('client@deapseak.com')">👤 Client</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Інформація про користувача (показується після входу) -->
+        <div id="userInfo" class="user-info hidden">
+            <h2>✅ Ви увійшли!</h2>
+            <div id="userDetails"></div>
+            
+            <div class="actions">
+                <button class="action-btn" onclick="viewAPI()">📚 Переглянути API</button>
+                <button class="action-btn" onclick="testAPI()">🧪 Тестувати API</button>
+                <button class="action-btn secondary" onclick="logout()">🚪 Вийти</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentToken = null;
+        let currentUser = null;
+        
+        function showMessage(text, type = 'info') {
+            const msg = document.getElementById('message');
+            msg.innerHTML = `<div class="message ${type}">${text}</div>`;
+            setTimeout(() => { msg.innerHTML = ''; }, 5000);
+        }
+        
+        function quickLogin(email) {
+            document.getElementById('email').value = email;
+            document.getElementById('password').value = 'password123';
+            document.getElementById('loginFormElement').dispatchEvent(new Event('submit'));
+        }
+        
+        function showUserInfo(user, token) {
+            currentToken = token;
+            currentUser = user;
+            
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('userInfo').classList.remove('hidden');
+            
+            const roleEmojis = {
+                'admin': '👑',
+                'dispatcher': '📋',
+                'technician': '🔧',
+                'client': '👤'
+            };
+            
+            document.getElementById('userDetails').innerHTML = `
+                <div class="info-row">
+                    <span class="info-label">Ім'я:</span>
+                    <span class="info-value">${user.name}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Email:</span>
+                    <span class="info-value">${user.email}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Роль:</span>
+                    <span class="info-value">${roleEmojis[user.role]} ${user.role}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Токен:</span>
+                    <span class="info-value" style="font-size: 10px; word-break: break-all;">${token.substring(0, 30)}...</span>
+                </div>
+            `;
+        }
+        
+        function logout() {
+            localStorage.clear();
+            currentToken = null;
+            currentUser = null;
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('userInfo').classList.add('hidden');
+            showMessage('👋 Ви вийшли з системи', 'info');
+        }
+        
+        function viewAPI() {
+            window.open('/API-DOCUMENTATION.md', '_blank');
+        }
+        
+        async function testAPI() {
+            if (!currentToken) {
+                showMessage('❌ Немає токена', 'error');
+                return;
+            }
+            
+            showMessage('🔄 Тестування API...', 'info');
+            
+            try {
+                const response = await fetch('/api/auth/me', {
+                    headers: { 'Authorization': `Bearer ${currentToken}` }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage(`✅ API працює! Привіт, ${data.name}`, 'success');
+                } else {
+                    showMessage(`⚠️ ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showMessage('❌ Помилка з\'єднання', 'error');
+            }
+        }
+        
+        document.getElementById('loginFormElement').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            
+            loginBtn.disabled = true;
+            loginBtn.textContent = '🔄 Вхід...';
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.token) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    showMessage('✅ Вхід успішний!', 'success');
+                    showUserInfo(data.user, data.token);
+                } else {
+                    showMessage(`❌ ${data.error || 'Помилка входу'}`, 'error');
+                }
+            } catch (error) {
+                showMessage('❌ Помилка з\'єднання з сервером', 'error');
+                console.error(error);
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Увійти';
+            }
+        });
+        
+        // Перевірка при завантаженні
+        window.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('token');
+            const userStr = localStorage.getItem('user');
+            
+            if (token && userStr) {
+                try {
+                    const user = JSON.parse(userStr);
+                    
+                    // Перевіряємо чи токен дійсний
+                    const response = await fetch('/api/auth/me', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        showUserInfo(data, token);
+                        showMessage('ℹ️ Ви вже авторизовані', 'info');
+                    } else {
+                        localStorage.clear();
+                    }
+                } catch (error) {
+                    localStorage.clear();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

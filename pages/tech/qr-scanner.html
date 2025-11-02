@@ -12,55 +12,7 @@
   <!-- Theme style -->
   <link rel="stylesheet" href="../../plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
   <link rel="stylesheet" href="../../assets/css/adminlte.min.css">
-  <style>
-    #qr-reader {
-      width: 100%;
-      max-width: 600px;
-      margin: 0 auto;
-    }
-    .scan-history-item {
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-    .scan-history-item:hover {
-      background-color: #f8f9fa;
-    }
-    .history-item-details {
-      display: none;
-      padding: 10px;
-      background-color: #f8f9fa;
-      border-radius: 5px;
-      margin-top: 10px;
-      border-left: 4px solid #007bff;
-    }
-    .scan-actions {
-      display: flex;
-      gap: 10px;
-      margin-top: 15px;
-    }
-    .camera-options {
-      margin: 15px 0;
-    }
-    #loadingOverlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(255, 255, 255, 0.8);
-      z-index: 9999;
-      justify-content: center;
-      align-items: center;
-    }
-    .qr-code-details {
-      margin-top: 20px;
-      padding: 15px;
-      background-color: #f8f9fa;
-      border-radius: 5px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-  </style>
+    <link rel="stylesheet" href="/assets/css/tech-qr-scanner.css">
 </head>
 <body class="hold-transition sidebar-mini">
 <div class="wrapper">
@@ -1102,5 +1054,11 @@ document.addEventListener("DOMContentLoaded", function() {
     loadStatistics();
 });
 </script>
+    <!-- API Client -->
+    <script src="/assets/js/utils/api.js"></script>
+    <!-- Notifications -->
+    <script src="/assets/js/utils/notifications.js"></script>
+    <!-- QR Scanner Manager -->
+    <script src="/assets/js/modules/qr-scanner-manager.js"></script>
 </body>
 </html>

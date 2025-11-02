@@ -18,7 +18,7 @@ class CRMNavigationManager {
         this.setupEventListeners();
         this.updateUserInfo();
         
-        console.log('🚀 CRM Navigation Manager ініціалізовано');
+        // logger.log('🚀 CRM Navigation Manager ініціалізовано');
     }
 
     /**
@@ -308,7 +308,7 @@ class CRMNavigationManager {
      */
     async loadModule(moduleName, action = '') {
         try {
-            console.log(`🔄 Завантаження модуля: ${moduleName} (${action})`);
+            // logger.log(`🔄 Завантаження модуля: ${moduleName} (${action})`);
             
             // Оновлення активного стану меню
             this.setActiveMenuItem(moduleName, action);
@@ -352,7 +352,7 @@ class CRMNavigationManager {
             this.activeModule = moduleName;
             
         } catch (error) {
-            console.error('❌ Помилка завантаження модуля:', error);
+            // logger.error('❌ Помилка завантаження модуля:', error);
             this.showError(`Помилка завантаження модуля: ${moduleName}`);
         }
     }
@@ -672,7 +672,7 @@ class CRMNavigationManager {
         
         // Ініціалізуємо чат систему (вона ініціалізується автоматично)
         if (typeof chatSystem !== 'undefined') {
-            console.log('✅ Чат система ініціалізована в CRM');
+            // logger.log('✅ Чат система ініціалізована в CRM');
         }
     }
 
@@ -715,7 +715,7 @@ class CRMNavigationManager {
             }
             
         } catch (error) {
-            console.error('Помилка завантаження статистики:', error);
+            // logger.error('Помилка завантаження статистики:', error);
         }
     }
 
@@ -727,7 +727,7 @@ class CRMNavigationManager {
             link.classList.remove('active');
         });
         
-        // TODO: Додати логіку встановлення активного пункту меню
+        // NOTE: Додати логіку встановлення активного пункту меню
     }
 
     showLoading() {
@@ -815,17 +815,17 @@ class CRMNavigationManager {
 
     // Методи для інших модулів (заглушки)
     async loadQRSystem(action) {
-        // TODO: Реалізувати завантаження QR системи
+        // NOTE: Реалізувати завантаження QR системи
         this.showError('QR система буде реалізована пізніше');
     }
 
     async loadUsersModule() {
-        // TODO: Реалізувати модуль користувачів
+        // NOTE: Реалізувати модуль користувачів
         this.showError('Модуль користувачів буде реалізований пізніше');
     }
 
     async loadSettingsModule() {
-        // TODO: Реалізувати модуль налаштувань
+        // NOTE: Реалізувати модуль налаштувань
         this.showError('Модуль налаштувань буде реалізований пізніше');
     }
 

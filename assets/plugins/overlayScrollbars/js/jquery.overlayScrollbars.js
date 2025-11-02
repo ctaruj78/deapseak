@@ -592,7 +592,7 @@
                                                 validatedOptionsPrepared[prop] = isRestrictedValue ? mainPossibility : dataValue;
                                         }
                                         else if (writeErrors) {
-                                            console.warn(error + " it doesn't accept the type [ " + dataValueType.toUpperCase() + " ] with the value of \"" + dataValue + "\".\r\n" +
+                                            // logger.warn(error + " it doesn't accept the type [ " + dataValueType.toUpperCase() + " ] with the value of \"" + dataValue + "\".\r\n" +
                                                 "Accepted types are: [ " + errorPossibleTypes.join(', ').toUpperCase() + " ]." +
                                                 (errorRestrictedStrings[length] > 0 ? "\r\nValid strings are: [ " + errorRestrictedStrings.join(', ').split(restrictedStringsPossibilitiesSplit).join(', ') + " ]." : ''));
                                         }
@@ -612,7 +612,7 @@
                         */
 
                         if (!isEmptyObj(objectCopy) && writeErrors)
-                            console.warn('The following options are discarded due to invalidity:\r\n' + window.JSON.stringify(objectCopy, null, 2));
+                            // logger.warn('The following options are discarded due to invalidity:\r\n' + window.JSON.stringify(objectCopy, null, 2));
 
                         return {
                             _default: validatedOptions,
@@ -5203,7 +5203,7 @@
                             return _base.ext(extName);
                     }
                     else
-                        console.warn("A extension with the name \"" + extName + "\" isn't registered.");
+                        // logger.warn("A extension with the name \"" + extName + "\" isn't registered.");
                 };
 
                 /**

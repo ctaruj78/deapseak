@@ -4,7 +4,7 @@
  * 
  * Приклади використання:
  * eventBus.emit('lift:created', { liftId: 'LIFT_123', data: liftData });
- * eventBus.on('qr:generated', (data) => { console.log('QR код створено', data); });
+ * eventBus.on('qr:generated', (data) => { // logger.log('QR код створено', data); });
  */
 
 class DeapSeaKEventBus {
@@ -13,7 +13,7 @@ class DeapSeaKEventBus {
         this.history = [];
         this.maxHistorySize = 1000;
         
-        console.log('🚀 DeapSeaK EventBus ініціалізовано');
+        // logger.log('🚀 DeapSeaK EventBus ініціалізовано');
         this.setupSystemEvents();
     }
 
@@ -41,7 +41,7 @@ class DeapSeaKEventBus {
         // Сортуємо за пріоритетом (вищий пріоритет = першим виконується)
         this.listeners.get(event).sort((a, b) => b.priority - a.priority);
         
-        console.log(`📡 Підписка на подію "${event}" від модуля "${listener.module}"`);
+        // logger.log(`📡 Підписка на подію "${event}" від модуля "${listener.module}"`);
         return listener.id;
     }
 
@@ -73,7 +73,7 @@ class DeapSeaKEventBus {
         // Додаємо в історію
         this.addToHistory(eventData);
 
-        console.log(`📢 Подія "${event}" відправлена:`, eventData);
+        // logger.log(`📢 Подія "${event}" відправлена:`, eventData);
 
         // Виконуємо обробники
         if (this.listeners.has(event)) {
@@ -88,7 +88,7 @@ class DeapSeaKEventBus {
                         this.off(event, listener.id);
                     }
                 } catch (error) {
-                    console.error(`❌ Помилка в обробнику події "${event}":`, error);
+                    // logger.error(`❌ Помилка в обробнику події "${event}":`, error);
                 }
             });
         }
@@ -106,7 +106,7 @@ class DeapSeaKEventBus {
             const index = listeners.findIndex(l => l.id === listenerId);
             if (index > -1) {
                 listeners.splice(index, 1);
-                console.log(`📡 Відписка від події "${event}" (ID: ${listenerId})`);
+                // logger.log(`📡 Відписка від події "${event}" (ID: ${listenerId})`);
             }
         }
     }
@@ -117,7 +117,7 @@ class DeapSeaKEventBus {
     setupSystemEvents() {
         // Ліфт створено → Автоматично генеруємо QR код
         this.on('lift:created', (data) => {
-            console.log('🏢 Ліфт створено, генеруємо QR код...');
+            // logger.log('🏢 Ліфт створено, генеруємо QR код...');
             
             setTimeout(() => {
                 const qrData = {
@@ -133,13 +133,13 @@ class DeapSeaKEventBus {
 
         // QR код згенеровано → Оновлюємо статистику
         this.on('qr:generated', (data) => {
-            console.log('🏷️ QR код створено, оновлюємо статистику...');
+            // logger.log('🏷️ QR код створено, оновлюємо статистику...');
             this.emit('analytics:qr-created', data, { source: 'qr-system' });
         });
 
         // Інспекція заплановано → Налаштовуємо email сповіщення
         this.on('inspection:scheduled', (data) => {
-            console.log('📅 Інспекція заплановано, налаштовуємо сповіщення...');
+            // logger.log('📅 Інспекція заплановано, налаштовуємо сповіщення...');
             
             if (data.autoEmails) {
                 this.emit('email:schedule-notification', {
@@ -153,7 +153,7 @@ class DeapSeaKEventBus {
 
         // Email надіслано → Логуємо в систему
         this.on('email:sent', (data) => {
-            console.log('📧 Email надіслано, логуємо подію...');
+            // logger.log('📧 Email надіслано, логуємо подію...');
             this.emit('analytics:email-sent', data, { source: 'email-system' });
         });
     }
@@ -279,9 +279,9 @@ class DeapSeaKEventBus {
      */
     debug() {
         console.group('🔍 DeapSeaK EventBus Debug');
-        console.log('📊 Статистика:', this.getSystemStats());
-        console.log('📡 Активні підписки:', Object.fromEntries(this.listeners));
-        console.log('📜 Остання історія (10 подій):', this.getHistory({ limit: 10 }));
+        // logger.log('📊 Статистика:', this.getSystemStats());
+        // logger.log('📡 Активні підписки:', Object.fromEntries(this.listeners));
+        // logger.log('📜 Остання історія (10 подій):', this.getHistory({ limit: 10 }));
         console.groupEnd();
     }
 }
@@ -292,4 +292,4 @@ window.DeapSeaKEventBus = new DeapSeaKEventBus();
 // Alias для зручності
 window.eventBus = window.DeapSeaKEventBus;
 
-console.log('✅ DeapSeaK EventBus готовий до роботи!');
+// logger.log('✅ DeapSeaK EventBus готовий до роботи!');

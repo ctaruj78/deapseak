@@ -16,10 +16,10 @@ class DeapSeaKVoiceControl {
     }
 
     init() {
-        console.log('🎤 Ініціалізація системи голосового управління...');
+        // logger.log('🎤 Ініціалізація системи голосового управління...');
         
         if (!this.checkBrowserSupport()) {
-            console.warn('⚠️ Браузер не підтримує голосове управління');
+            // logger.warn('⚠️ Браузер не підтримує голосове управління');
             return false;
         }
 
@@ -27,7 +27,7 @@ class DeapSeaKVoiceControl {
         this.registerVoiceCommands();
         this.setupEventBusIntegration();
         
-        console.log('✅ Voice Control готовий!');
+        // logger.log('✅ Voice Control готовий!');
         return true;
     }
 
@@ -44,7 +44,7 @@ class DeapSeaKVoiceControl {
         this.recognition.lang = this.currentLanguage;
         
         this.recognition.onstart = () => {
-            console.log('🎤 Голосове управління активне');
+            // logger.log('🎤 Голосове управління активне');
             this.isListening = true;
             this.showListeningIndicator();
             
@@ -74,19 +74,19 @@ class DeapSeaKVoiceControl {
         };
 
         this.recognition.onerror = (event) => {
-            console.error('❌ Помилка розпізнавання мови:', event.error);
+            // logger.error('❌ Помилка розпізнавання мови:', event.error);
             this.speak('Виникла помилка розпізнавання мови');
         };
 
         this.recognition.onend = () => {
-            console.log('🔇 Голосове управління зупинено');
+            // logger.log('🔇 Голосове управління зупинено');
             this.isListening = false;
             this.hideListeningIndicator();
         };
     }
 
     registerVoiceCommands() {
-        console.log('📝 Реєстрація голосових команд...');
+        // logger.log('📝 Реєстрація голосових команд...');
 
         // Загальні команди управління
         this.commands.set('почати слухати', () => this.startListening());
@@ -120,11 +120,11 @@ class DeapSeaKVoiceControl {
         this.commands.set('змінити мову', () => this.changeLanguage());
         this.commands.set('налаштування', () => this.openSettings());
 
-        console.log(`✅ Зареєстровано ${this.commands.size} голосових команд`);
+        // logger.log(`✅ Зареєстровано ${this.commands.size} голосових команд`);
     }
 
     processVoiceCommand(transcript) {
-        console.log('🎙️ Обробка команди:', transcript);
+        // logger.log('🎙️ Обробка команди:', transcript);
 
         // Перевіряємо точні збіги
         if (this.commands.has(transcript)) {
@@ -150,7 +150,7 @@ class DeapSeaKVoiceControl {
 
         // Команда не знайдена
         this.speak('Команда не розпізнана. Скажіть "допомога" для списку команд');
-        console.log('❓ Невідома команда:', transcript);
+        // logger.log('❓ Невідома команда:', transcript);
         
         if (window.eventBus) {
             eventBus.emit('voice:command-not-recognized', { 
@@ -302,7 +302,7 @@ class DeapSeaKVoiceControl {
         utterance.pitch = options.pitch || 1;
         utterance.volume = options.volume || 0.8;
 
-        console.log('🔊 Промовляю:', text);
+        // logger.log('🔊 Промовляю:', text);
         this.synthesis.speak(utterance);
 
         if (window.eventBus) {
@@ -454,7 +454,7 @@ class DeapSeaKVoiceControl {
     setupEventBusIntegration() {
         if (!window.eventBus) return;
 
-        console.log('📡 Налаштування EventBus для Voice Control...');
+        // logger.log('📡 Налаштування EventBus для Voice Control...');
 
         // Слухаємо створення ліфтів для голосового підтвердження
         eventBus.on('lift:created', (data) => {
@@ -471,7 +471,7 @@ class DeapSeaKVoiceControl {
             this.speak(`Інспекцію заплановано на ${new Date(data.date).toLocaleDateString('uk-UA')}`);
         }, { module: 'voice-control' });
 
-        console.log('✅ EventBus інтеграція для Voice Control налаштована');
+        // logger.log('✅ EventBus інтеграція для Voice Control налаштована');
     }
 
     // Додаткові методи
@@ -491,17 +491,17 @@ class DeapSeaKVoiceControl {
     // Публічні методи для інтеграції
     addCustomCommand(command, handler) {
         this.commands.set(command.toLowerCase(), handler);
-        console.log(`➕ Додано голосову команду: "${command}"`);
+        // logger.log(`➕ Додано голосову команду: "${command}"`);
     }
 
     removeCommand(command) {
         this.commands.delete(command.toLowerCase());
-        console.log(`➖ Видалено голосову команду: "${command}"`);
+        // logger.log(`➖ Видалено голосову команду: "${command}"`);
     }
 
     setContext(context) {
         this.contextMode = context;
-        console.log(`🎯 Контекст змінено на: ${context}`);
+        // logger.log(`🎯 Контекст змінено на: ${context}`);
     }
 
     getCurrentCommands() {
@@ -526,4 +526,4 @@ if (typeof window !== 'undefined') {
     }
 }
 
-console.log('🎤 Voice Control модуль завантажено!');
+// logger.log('🎤 Voice Control модуль завантажено!');

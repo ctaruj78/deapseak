@@ -129,7 +129,7 @@
       return JSON.parse(data);
     } catch (error) {
       e = error;
-      return typeof console !== "undefined" && console !== null ? console.error("Error parsing inline pace options", e) : void 0;
+      return typeof console !== "undefined" && console !== null ? // logger.error("Error parsing inline pace options", e) : void 0;
     }
   };
 

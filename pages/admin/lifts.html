@@ -7,6 +7,9 @@
     <!-- Enhanced Lift Modal CSS -->
     <link rel="stylesheet" href="/assets/css/enhanced-lift-modal.css">
     
+    <!-- UI Enhancements CSS -->
+    <link rel="stylesheet" href="/assets/css/ui-enhancements.css">
+    
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css">
@@ -14,391 +17,8 @@
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
-    <style>
-        .lift-status {
-            padding: 0.25rem 0.5rem;
-            border-radius: 0.25rem;
-            font-size: 0.875rem;
-            font-weight: 600;
-        }
-        .status-active { background-color: #d4edda; color: #155724; }
-        .status-maintenance { background-color: #fff3cd; color: #856404; }
-        .status-inactive { background-color: #f8d7da; color: #721c24; }
-        
-        .btn-action {
-            margin: 0 2px;
-            padding: 0.25rem 0.5rem;
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #6c757d;
-            font-style: italic;
-        }
-        
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: white;
-            padding: 15px 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-        }
-
-        /* Виправлення модальних вікон */
-        #inspectionReportModal {
-            z-index: 1060 !important;
-        }
-        
-        #inspectionReportModal .modal-dialog {
-            margin: 1.75rem auto;
-            max-width: 90%;
-        }
-        
-        #inspectionReportModal .modal-content {
-            border-radius: 15px;
-            border: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-        
-        #inspectionReportModal .modal-body {
-            padding: 1.5rem;
-        }
-        
-        #inspectionReportModal .form-control {
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            transition: border-color 0.3s ease;
-        }
-        
-        #inspectionReportModal .form-control:focus {
-            border-color: #007bff;
-            box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
-        }
-        
-        #inspectionReportModal .card {
-            border-radius: 10px;
-            border: 1px solid #e0e0e0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        
-        #inspectionReportModal .card-header {
-            border-radius: 10px 10px 0 0;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        
-        /* Прокрутка для modal-body */
-        .modal-dialog-scrollable .modal-content {
-            max-height: calc(100vh - 3.5rem);
-            overflow: hidden;
-        }
-        
-        .modal-dialog-scrollable .modal-body {
-            overflow-y: auto;
-        }
-        
-        /* Стилі для кнопок в футері */
-        #inspectionReportModal .modal-footer {
-            padding: 1rem 1.5rem;
-            border-top: 1px solid #e0e0e0;
-        }
-        
-        /* Виправлення для input полів */
-        #inspectorName {
-            position: relative !important;
-            z-index: auto !important;
-            background: white !important;
-            background-color: white !important;
-            color: #495057 !important;
-            border: 1px solid #ced4da !important;
-            border-radius: 0.375rem;
-            padding: 0.375rem 0.75rem;
-            font-size: 1rem;
-            line-height: 1.5;
-            pointer-events: auto !important;
-            -webkit-user-select: text !important;
-            -moz-user-select: text !important;
-            -ms-user-select: text !important;
-            user-select: text !important;
-            touch-action: manipulation !important;
-            -webkit-appearance: none !important;
-            -moz-appearance: textfield !important;
-            appearance: none !important;
-        }
-        
-        #inspectorName:focus {
-            background: white !important;
-            background-color: white !important;
-            color: #495057 !important;
-            border-color: #80bdff !important;
-            outline: 0 !important;
-            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
-        }
-        
-        #inspectorName:hover {
-            background: white !important;
-            background-color: white !important;
-        }
-        
-        #inspectorName::placeholder {
-            color: #6c757d !important;
-            opacity: 1 !important;
-        }
-        
-        /* Забезпечуємо, що input не блокується overlay'ами */
-        #inspectionReportModal .form-control {
-            position: relative !important;
-            z-index: 1 !important;
-        }
-        
-        /* Анімація для модального вікна */
-        #inspectionReportModal.fade .modal-dialog {
-            transform: translate(0, -50px);
-            transition: transform 0.3s ease-out;
-        }
-        
-        #inspectionReportModal.show .modal-dialog {
-            transform: none;
-        }
-        
-        /* Покращення відображення на мобільних */
-        @media (max-width: 768px) {
-            #inspectionReportModal .modal-dialog {
-                margin: 0.5rem;
-                max-width: calc(100% - 1rem);
-            }
-            
-            #inspectionReportModal .modal-body {
-                padding: 1rem;
-            }
-        }
-        
-        .notification-success {
-            border-left: 4px solid #28a745;
-        }
-        
-        .notification-error {
-            border-left: 4px solid #dc3545;
-        }
-        
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-        
-        /* Стилі для модального вікна */
-        .modal-content {
-            border-radius: 0.3rem;
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-        }
-        
-        /* Виправлення для таблиці */
-        .table-responsive {
-            overflow-x: auto;
-        }
-        
-        /* Стилі для QR-кодів */
-        .qr-preview-mini {
-            padding: 15px;
-            background: #f8f9fa;
-            border: 2px dashed #dee2e6;
-            border-radius: 8px;
-            margin-top: 10px;
-        }
-        
-        .qr-preview-mini canvas {
-            border: 1px solid #dee2e6;
-            border-radius: 4px;
-        }
-        
-        .qr-preview-mini .btn-group {
-            justify-content: center;
-            width: 100%;
-        }
-        
-        /* Поліпшення стилів для всіх input полів в модальному вікні */
-        #inspectionReportModal input, 
-        #inspectionReportModal select, 
-        #inspectionReportModal textarea {
-            background: white !important;
-            border: 1px solid #ddd !important;
-            color: #333 !important;
-            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-            pointer-events: auto !important;
-            -webkit-user-select: text !important;
-            user-select: text !important;
-            z-index: 9999 !important;
-        }
-        
-        #inspectionReportModal input:focus, 
-        #inspectionReportModal select:focus, 
-        #inspectionReportModal textarea:focus {
-            background: white !important;
-            border-color: #80bdff !important;
-            outline: 0;
-            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
-        }
-
-        /* РАДИКАЛЬНІ стилі для полів інспекції */
-        #inspectionReportModal #inspectorName,
-        #inspectionReportModal #inspectionComments {
-            background: white !important;
-            border: 2px solid #007bff !important;
-            color: #000 !important;
-            font-weight: normal !important;
-            pointer-events: auto !important;
-            cursor: text !important;
-            user-select: text !important;
-            -webkit-user-select: text !important;
-            -moz-user-select: text !important;
-            z-index: 99999 !important;
-            position: relative !important;
-            opacity: 1 !important;
-        }
-        
-        #inspectionReportModal #inspectorName:focus,
-        #inspectionReportModal #inspectionComments:focus {
-            border-color: #0056b3 !important;
-            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5) !important;
-            outline: none !important;
-        }
-        
-        /* Блокування стилів що можуть перешкоджати */
-        #inspectionReportModal #inspectorName:disabled,
-        #inspectionReportModal #inspectorName[readonly],
-        #inspectionReportModal #inspectionComments:disabled,
-        #inspectionReportModal #inspectionComments[readonly] {
-            background: white !important;
-            color: #000 !important;
-            pointer-events: auto !important;
-            cursor: text !important;
-        }
-        
-        /* Видалення overlay'ів що блокують */
-        #inspectionReportModal::before,
-        #inspectionReportModal::after {
-            display: none !important;
-        }
-        
-        /* Покращення відображення модальних вікон один поверх іншого */
-        .modal.fade.show {
-            opacity: 1 !important;
-        }
-        
-        .modal-backdrop {
-            transition: opacity 0.15s linear;
-        }
-        
-        /* Спеціальні стилі для nested modal windows */
-        .modal.show + .modal-backdrop,
-        .modal.show ~ .modal-backdrop {
-            opacity: 0.5;
-        }
-        
-        /* Покращення прокручування в nested modal */
-        #inspectionReportModal .modal-body {
-            max-height: calc(100vh - 250px) !important;
-            overflow-y: auto !important;
-            overscroll-behavior: contain;
-        }
-        
-        /* Забезпечення правильного відображення на мобільних */
-        @media (max-width: 768px) {
-            #inspectionReportModal .modal-body {
-                max-height: calc(100vh - 200px) !important;
-            }
-        }
-        
-        /* Нові чисті стилі для поля інспектора */
-        .inspector-input {
-            background-color: #fff !important;
-            color: #495057 !important;
-            border: 1px solid #ced4da !important;
-            border-radius: 0.375rem !important;
-            padding: 0.375rem 0.75rem !important;
-            font-size: 1rem !important;
-            line-height: 1.5 !important;
-            width: 100% !important;
-            display: block !important;
-            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
-        }
-        
-        .inspector-input:focus {
-            background-color: #fff !important;
-            border-color: #80bdff !important;
-            outline: 0 !important;
-            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
-        }
-        
-        .inspector-input:disabled,
-        .inspector-input[readonly] {
-            background-color: #e9ecef !important;
-            opacity: 1 !important;
-        }
-        
-        /* Стилі для нового динамічно створеного input поля */
-        .fresh-inspector-input {
-            background-color: white !important;
-            color: #333 !important;
-            border: 2px solid #007bff !important;
-            border-radius: 5px !important;
-            padding: 8px 12px !important;
-            font-size: 14px !important;
-            width: 100% !important;
-            box-sizing: border-box !important;
-            outline: none !important;
-            font-family: inherit !important;
-            line-height: 1.5 !important;
-        }
-        
-        .fresh-inspector-input:focus {
-            border-color: #007bff !important;
-            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
-            background-color: white !important;
-        }
-        
-        .fresh-inspector-input:hover {
-            border-color: #0056b3 !important;
-        }
-        
-        /* Стилі для нового динамічно створеного textarea коментарів */
-        .fresh-comments-textarea {
-            background-color: white !important;
-            color: #333 !important;
-            border: 2px solid #28a745 !important;
-            border-radius: 5px !important;
-            padding: 8px 12px !important;
-            font-size: 14px !important;
-            width: 100% !important;
-            min-height: 100px !important;
-            resize: vertical !important;
-            box-sizing: border-box !important;
-            outline: none !important;
-            font-family: inherit !important;
-            line-height: 1.5 !important;
-        }
-        
-        .fresh-comments-textarea:focus {
-            border-color: #28a745 !important;
-            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25) !important;
-            background-color: white !important;
-        }
-        
-        .fresh-comments-textarea:hover {
-            border-color: #218838 !important;
-        }
-    </style>
+    <link rel="stylesheet" href="/assets/css/admin-lifts.css">
+    <link rel="stylesheet" href="/assets/css/admin-lifts-full.css">
 </head>
 <body class="hold-transition sidebar-mini layout-fixed" data-required-role="admin">
     <div class="wrapper">
@@ -427,158 +47,9 @@
                 </div>
                 
                 <nav class="mt-2">
-                    <ul class="nav nav-pills nav-sidebar flex-column" role="menu" data-accordion="false">
-                        <li class="nav-item">
-                            <a href="admin-dashboard.html" class="nav-link">
-                                <i class="nav-icon fas fa-tachometer-alt"></i>
-                                <p>Дашборд</p>
-                            </a>
-                        </li>
-                        
-                        <!-- QR System Menu -->
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="nav-icon fas fa-qrcode"></i>
-                                <p>
-                                    QR Система
-                                    <i class="right fas fa-angle-left"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <a href="qr-generator.html" class="nav-link">
-                                        <i class="fas fa-plus-circle nav-icon"></i>
-                                        <p>Генератор QR-кодів</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="qr-management.html" class="nav-link">
-                                        <i class="fas fa-cog nav-icon"></i>
-                                        <p>Керування QR-кодами</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="qr-analytics.html" class="nav-link">
-                                        <i class="fas fa-chart-line nav-icon"></i>
-                                        <p>Аналітика сканувань</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="qr-history.html" class="nav-link">
-                                        <i class="fas fa-history nav-icon"></i>
-                                        <p>Історія сканувань</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        <!-- Lifts Menu -->
-                        <li class="nav-item menu-open">
-                            <a href="#" class="nav-link active">
-                                <i class="nav-icon fas fa-elevator"></i>
-                                <p>
-                                    Ліфти
-                                    <i class="right fas fa-angle-left"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <a href="lifts.html" class="nav-link active">
-                                        <i class="fas fa-list nav-icon"></i>
-                                        <p>Управління ліфтами</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="requests.html" class="nav-link">
-                                        <i class="fas fa-clipboard-list nav-icon"></i>
-                                        <p>Заявки на обслуговування</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="maps.html" class="nav-link">
-                                        <i class="fas fa-map-marked-alt nav-icon"></i>
-                                        <p>Мапа ліфтів</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        <li class="nav-item">
-                            <a href="users.html" class="nav-link">
-                                <i class="nav-icon fas fa-users"></i>
-                                <p>Користувачі</p>
-                            </a>
-                        </li>
-
-                        <!-- Analytics Menu -->
-                        <li class="nav-item">
-                            <a href="unified-analytics.html" class="nav-link" id="menu-analytics">
-                                <i class="nav-icon fas fa-chart-line"></i>
-                                <p>Аналітика</p>
-                            </a>
-                        </li>
-
-                        <!-- Predictive Analytics -->
-                        <li class="nav-item">
-                            <a href="predictive-maintenance.html" class="nav-link" id="menu-ai-predictive">
-                                <i class="nav-icon fas fa-brain"></i>
-                                <p>AI Прогнозування</p>
-                            </a>
-                        </li>
-
-                        <!-- Support Menu -->
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="nav-icon fas fa-headset"></i>
-                                <p>
-                                    Підтримка
-                                    <i class="right fas fa-angle-left"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <a href="support.html" class="nav-link">
-                                        <i class="fas fa-ticket-alt nav-icon"></i>
-                                        <p>Технічна підтримка</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="notifications.html" class="nav-link">
-                                        <i class="fas fa-bell nav-icon"></i>
-                                        <p>Сповіщення</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        <li class="nav-item">
-                            <a href="settings.html" class="nav-link">
-                                <i class="nav-icon fas fa-cog"></i>
-                                <p>Налаштування</p>
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a href="../ai-assistant/ai-assistant.html" class="nav-link">
-                                <i class="nav-icon fas fa-robot"></i>
-                                <p>AI Асистент</p>
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a href="profile.html" class="nav-link">
-                                <i class="nav-icon fas fa-user"></i>
-                                <p>Профіль</p>
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" onclick="logout()">
-                                <i class="nav-icon fas fa-sign-out-alt"></i>
-                                <p>Вийти</p>
-                            </a>
-                        </li>
-                    </ul>
+                    <div id="sidebar-menu-container">
+                        <!-- Меню буде завантажено динамічно -->
+                    </div>
                 </nav>
             </div>
         </aside>
@@ -1276,6 +747,9 @@
     <!-- Toast Container -->
     <div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
 
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
     <!-- Intervention Modal -->
     <div class="modal fade" id="interventionModal" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
@@ -1630,6 +1104,10 @@
     <script src="../../assets/js/simple-lift-modal.js"></script>
     <script src="../../assets/js/enhanced-lift-modal.js"></script>
     <script src="../../assets/js/test-lift-saving.js"></script>
+    <script src="../../assets/js/admin-menu-loader.js"></script>
+    
+    <!-- UI Enhancements JS -->
+    <script src="../../assets/js/modules/ui-enhancements.js"></script>
 
     <script>
         // Глобальна змінна для збереження PDF файлу
@@ -1655,7 +1133,11 @@
 
         function emailPDF() {
             if (!currentPDFFile) {
-                alert('Спочатку завантажте PDF файл');
+                if (window.uiEnhancements) {
+                    window.uiEnhancements.showToast('Спочатку завантажте PDF файл', 'warning');
+                } else {
+                    window.uiEnhancements.showToast('Спочатку завантажте PDF файл', 'warning');
+                }
                 return;
             }
 
@@ -1717,7 +1199,11 @@
             const message = document.getElementById('emailMessage').value;
 
             if (!email) {
-                alert('Будь ласка, введіть email клієнта');
+                if (window.uiEnhancements) {
+                    window.uiEnhancements.showToast('Будь ласка, введіть email клієнта', 'warning');
+                } else {
+                    window.uiEnhancements.showToast('Будь ласка, введіть email клієнта', 'warning');
+                }
                 return;
             }
 
@@ -1745,7 +1231,11 @@
                 }, { source: 'email-system' });
             }
 
-            alert('Звіт успішно надіслано на email: ' + email);
+            if (window.uiEnhancements) {
+                window.uiEnhancements.showToast('Звіт успішно надіслано на email: ' + email, 'success');
+            } else {
+                window.uiEnhancements.showToast('Звіт успішно надіслано на email: ' + email, 'success');
+            }
             $('#emailModal').modal('hide');
         }
 
@@ -1754,13 +1244,16 @@
                 currentPDFFile = null;
                 document.getElementById('inspectionReport').value = '';
                 document.getElementById('pdfPreviewContainer').style.display = 'none';
+                if (window.uiEnhancements) {
+                    window.uiEnhancements.showToast('Звіт видалено', 'info');
+                }
             }
         }
 
         // Нові функції для розширеної роботи з PDF
         function downloadPDF() {
             if (!currentPDFFile) {
-                alert('Спочатку завантажте PDF файл');
+                window.uiEnhancements.showToast('Спочатку завантажте PDF файл', 'warning');
                 return;
             }
 
@@ -1781,7 +1274,7 @@
 
         function archivePDF() {
             if (!currentPDFFile) {
-                alert('Спочатку завантажте PDF файл');
+                window.uiEnhancements.showToast('Спочатку завантажте PDF файл', 'warning');
                 return;
             }
 
@@ -1903,7 +1396,11 @@
                         document.getElementById('pdfFileName').textContent = file.name;
                         document.getElementById('pdfPreviewContainer').style.display = 'block';
                     } else if (file) {
-                        alert('Будь ласка, оберіть тільки PDF файли');
+                        if (window.uiEnhancements) {
+                            window.uiEnhancements.showToast('Будь ласка, оберіть тільки PDF файли', 'warning');
+                        } else {
+                            window.uiEnhancements.showToast('Будь ласка, оберіть тільки PDF файли', 'warning');
+                        }
                         e.target.value = '';
                     }
                 });
@@ -2028,7 +1525,11 @@
         if (typeof window.enhancedLiftModal === 'undefined') {
             console.error('Enhanced lift modal not available');
             // Показуємо повідомлення користувачу
-            alert('Модальне вікно з картою ще не завантажилось. Спробуйте через кілька секунд.');
+            if (window.uiEnhancements) {
+                window.uiEnhancements.showToast('Модальне вікно з картою ще не завантажилось. Спробуйте через кілька секунд.', 'warning');
+            } else {
+                window.uiEnhancements.showToast('Модальне вікно з картою ще не завантажилось. Спробуйте через кілька секунд.', 'warning');
+            }
             return;
         }
         
@@ -2147,12 +1648,20 @@
         const autoEmails = document.getElementById('enableAutoEmails').checked;
 
         if (!inspectionDate) {
-            alert('Будь ласка, вкажіть дату інспекції');
+            if (window.uiEnhancements) {
+                window.uiEnhancements.showToast('Будь ласка, вкажіть дату інспекції', 'warning');
+            } else {
+                window.uiEnhancements.showToast('Будь ласка, вкажіть дату інспекції', 'warning');
+            }
             return;
         }
 
         if (!clientEmail) {
-            alert('Будь ласка, вкажіть email клієнта для сповіщень');
+            if (window.uiEnhancements) {
+                window.uiEnhancements.showToast('Будь ласка, вкажіть email клієнта для сповіщень', 'warning');
+            } else {
+                window.uiEnhancements.showToast('Будь ласка, вкажіть email клієнта для сповіщень', 'warning');
+            }
             return;
         }
 
@@ -2486,7 +1995,7 @@
                     document.getElementById('pdfReportFileName').textContent = file.name;
                     document.getElementById('pdfReportPreviewContainer').style.display = 'block';
                 } else if (file) {
-                    alert('Будь ласка, оберіть тільки PDF файли');
+                    window.uiEnhancements.showToast('Будь ласка, оберіть тільки PDF файли', 'warning');
                     e.target.value = '';
                 }
             });
@@ -2517,7 +2026,11 @@
                     saveInspectionReport();
                 } catch (error) {
                     console.error('❌ Помилка при виклику saveInspectionReport:', error);
-                    alert('❌ Помилка збереження: ' + error.message);
+                    if (window.uiEnhancements) {
+                        window.uiEnhancements.showToast('❌ Помилка збереження: ' + error.message, 'error');
+                    } else {
+                        window.uiEnhancements.showToast('❌ Помилка збереження: ' + error.message, 'error');
+                    }
                 }
             });
         } else {
@@ -2643,7 +2156,11 @@
         for (const [key, field] of Object.entries(fields)) {
             if (!field) {
                 console.error(`Поле ${key} не знайдено в DOM`);
-                alert(`Помилка: поле ${key} не знайдено`);
+                if (window.uiEnhancements) {
+                    window.uiEnhancements.showToast(`Помилка: поле ${key} не знайдено`, 'error');
+                } else {
+                    window.uiEnhancements.showToast(`Помилка: поле ${key} не знайдено`, 'error');
+                }
                 return false;
             }
             console.log(`${key}: "${field.value}" (element exists: ${!!field})`);
@@ -2651,19 +2168,31 @@
 
         // Валідація значень
         if (!fields.date.value.trim()) {
-            alert('Будь ласка, вкажіть дату інспекції');
+            if (window.uiEnhancements) {
+                window.uiEnhancements.showToast('Будь ласка, вкажіть дату інспекції', 'warning');
+            } else {
+                window.uiEnhancements.showToast('Будь ласка, вкажіть дату інспекції', 'warning');
+            }
             fields.date.focus();
             return false;
         }
 
         if (!fields.type.value.trim()) {
-            alert('Будь ласка, оберіть тип інспекції');
+            if (window.uiEnhancements) {
+                window.uiEnhancements.showToast('Будь ласка, оберіть тип інспекції', 'warning');
+            } else {
+                window.uiEnhancements.showToast('Будь ласка, оберіть тип інспекції', 'warning');
+            }
             fields.type.focus();
             return false;
         }
 
         if (!fields.inspector.value.trim()) {
-            alert('Будь ласка, вкажіть ім\'я інспектора');
+            if (window.uiEnhancements) {
+                window.uiEnhancements.showToast('Будь ласка, вкажіть ім\'я інспектора', 'warning');
+            } else {
+                window.uiEnhancements.showToast('Будь ласка, вкажіть ім\'я інспектора', 'warning');
+            }
             fields.inspector.focus();
             fields.inspector.style.backgroundColor = '#ffebee'; // Підсвічуємо червоним
             setTimeout(() => {
@@ -2673,7 +2202,11 @@
         }
 
         if (!currentInspectionPDFFile) {
-            alert('Будь ласка, завантажте PDF звіт інспекції');
+            if (window.uiEnhancements) {
+                window.uiEnhancements.showToast('Будь ласка, завантажте PDF звіт інспекції', 'warning');
+            } else {
+                window.uiEnhancements.showToast('Будь ласка, завантажте PDF звіт інспекції', 'warning');
+            }
             document.getElementById('inspectionReportPDF').focus();
             return false;
         }
@@ -2705,7 +2238,11 @@
         
         if (!inspectorField || !dateField || !statusField) {
             console.error('❌ Не всі поля форми знайдені!');
-            alert('❌ Помилка: Не всі поля форми знайдені!');
+            if (window.uiEnhancements) {
+                window.uiEnhancements.showToast('❌ Помилка: Не всі поля форми знайдені!', 'error');
+            } else {
+                window.uiEnhancements.showToast('❌ Помилка: Не всі поля форми знайдені!', 'error');
+            }
             return;
         }
         
@@ -2728,13 +2265,21 @@
         
         // Валідація обов'язкових полів
         if (!inspectorName) {
-            alert('❌ Помилка: Введіть ім\'я інспектора');
+            if (window.uiEnhancements) {
+                window.uiEnhancements.showToast('❌ Помилка: Введіть ім\'я інспектора', 'error');
+            } else {
+                window.uiEnhancements.showToast('❌ Помилка: Введіть ім\'я інспектора', 'error');
+            }
             document.getElementById('inspectorName').focus();
             return;
         }
         
         if (!inspectionDate) {
-            alert('❌ Помилка: Оберіть дату інспекції');
+            if (window.uiEnhancements) {
+                window.uiEnhancements.showToast('❌ Помилка: Оберіть дату інспекції', 'error');
+            } else {
+                window.uiEnhancements.showToast('❌ Помилка: Оберіть дату інспекції', 'error');
+            }
             document.getElementById('inspectionDate').focus();
             return;
         }
@@ -2794,8 +2339,10 @@
             
             if (typeof toastr !== 'undefined') {
                 toastr.success(successMessage);
+            } else if (window.uiEnhancements) {
+                window.uiEnhancements.showToast(successMessage, 'success');
             } else {
-                alert('✅ ' + successMessage + '\n\nІнспектор: ' + inspectorName + '\nДата: ' + inspectionDate);
+                window.uiEnhancements.showToast(successMessage, 'success');
             }
             
             // Закриваємо модальне вікно (використовуємо глобальну функцію)
@@ -2809,7 +2356,11 @@
             
         } catch (error) {
             console.error('❌ Помилка збереження:', error);
-            alert('❌ Помилка збереження звіту: ' + error.message);
+            if (window.uiEnhancements) {
+                window.uiEnhancements.showToast('❌ Помилка збереження звіту: ' + error.message, 'error');
+            } else {
+                window.uiEnhancements.showToast('❌ Помилка збереження звіту: ' + error.message, 'error');
+            }
         }
     }
 
@@ -2883,7 +2434,11 @@
 
     function downloadInspectionPDF() {
         if (!currentInspectionPDFFile) {
-            alert('Спочатку завантажте PDF файл');
+            if (window.uiEnhancements) {
+                window.uiEnhancements.showToast('Спочатку завантажте PDF файл', 'warning');
+            } else {
+                window.uiEnhancements.showToast('Спочатку завантажте PDF файл', 'warning');
+            }
             return;
         }
 
@@ -2902,7 +2457,11 @@
 
     function emailInspectionPDF() {
         if (!currentInspectionPDFFile) {
-            alert('Спочатку завантажте PDF файл');
+            if (window.uiEnhancements) {
+                window.uiEnhancements.showToast('Спочатку завантажте PDF файл', 'warning');
+            } else {
+                window.uiEnhancements.showToast('Спочатку завантажте PDF файл', 'warning');
+            }
             return;
         }
 
@@ -2966,7 +2525,11 @@
         const message = document.getElementById('emailInspectionMessage').value;
 
         if (!email) {
-            alert('Будь ласка, введіть email клієнта');
+            if (window.uiEnhancements) {
+                window.uiEnhancements.showToast('Будь ласка, введіть email клієнта', 'warning');
+            } else {
+                window.uiEnhancements.showToast('Будь ласка, введіть email клієнта', 'warning');
+            }
             return;
         }
 
@@ -2976,13 +2539,21 @@
         console.log('Message:', message);
         console.log('PDF file:', currentInspectionPDFFile.name);
 
-        alert('Звіт інспекції успішно надіслано на email: ' + email);
+        if (window.uiEnhancements) {
+            window.uiEnhancements.showToast('Звіт інспекції успішно надіслано на email: ' + email, 'success');
+        } else {
+            window.uiEnhancements.showToast('Звіт інспекції успішно надіслано на email: ' + email, 'success');
+        }
         $('#emailInspectionModal').modal('hide');
     }
 
     function archiveInspectionPDF() {
         if (!currentInspectionPDFFile) {
-            alert('Спочатку завантажте PDF файл');
+            if (window.uiEnhancements) {
+                window.uiEnhancements.showToast('Спочатку завантажте PDF файл', 'warning');
+            } else {
+                window.uiEnhancements.showToast('Спочатку завантажте PDF файл', 'warning');
+            }
             return;
         }
 
@@ -3191,7 +2762,11 @@
         if (typeof QRCode === 'undefined') {
             if (initAttempts >= maxAttempts) {
                 console.error('❌ QRCode library failed to load after ' + (maxAttempts/10) + ' seconds');
-                alert('⚠️ Бібліотека QR-кодів не завантажилася. Спробуйте оновити сторінку (Ctrl+Shift+R)');
+                if (window.uiEnhancements) {
+                    window.uiEnhancements.showToast('⚠️ Бібліотека QR-кодів не завантажилася. Спробуйте оновити сторінку (Ctrl+Shift+R)', 'warning');
+                } else {
+                    window.uiEnhancements.showToast('⚠️ Бібліотека QR-кодів не завантажилася. Спробуйте оновити сторінку (Ctrl+Shift+R)', 'warning');
+                }
                 return;
             }
             console.log('⏳ Очікування завантаження QRCode бібліотеки... (спроба ' + initAttempts + '/' + maxAttempts + ')');
@@ -3231,7 +2806,11 @@
                     window.enhancedLiftModal.generateQRCode(inputId, liftNumber);
                 } else {
                     console.error('❌ Enhanced Lift Modal не готовий для генерації QR!');
-                    alert('QR генератор ще не готовий. Спробуйте через кілька секунд.');
+                    if (window.uiEnhancements) {
+                        window.uiEnhancements.showToast('QR генератор ще не готовий. Спробуйте через кілька секунд.', 'warning');
+                    } else {
+                        window.uiEnhancements.showToast('QR генератор ще не готовий. Спробуйте через кілька секунд.', 'warning');
+                    }
                 }
             };
             
@@ -3240,7 +2819,11 @@
             
             // Fallback функції якщо щось пішло не так
             window.openEnhancedModal = function() {
-                alert('Модальне вікно тимчасово недоступне. Спробуйте оновити сторінку.');
+                if (window.uiEnhancements) {
+                    window.uiEnhancements.showToast('Модальне вікно тимчасово недоступне. Спробуйте оновити сторінку.', 'error');
+                } else {
+                    window.uiEnhancements.showToast('Модальне вікно тимчасово недоступне. Спробуйте оновити сторінку.', 'error');
+                }
             };
         }
     }
@@ -3442,7 +3025,11 @@
         const lift = lifts.find(l => (l._id || l.id) === liftId);
         
         if (!lift) {
-            alert('Ліфт не знайдено');
+            if (window.uiEnhancements) {
+                window.uiEnhancements.showToast('Ліфт не знайдено', 'error');
+            } else {
+                window.uiEnhancements.showToast('Ліфт не знайдено', 'error');
+            }
             return;
         }
 
@@ -3472,7 +3059,11 @@
             $('#liftDetailsModal').modal('show');
         } else {
             // Fallback - показуємо alert з інформацією
-            alert(`Деталі ліфта:\n\nАдреса: ${lift.address}\nМуніципальний номер: ${lift.municipalNumber}\nТип: ${lift.type}\nВантажопідйомність: ${lift.loadCapacity} кг\nПоверхи: ${lift.floorCount}\nРік виготовлення: ${lift.manufacturingYear}`);
+            if (window.uiEnhancements) {
+                window.uiEnhancements.showToast(`Деталі ліфта: Адреса: ${lift.address}, Муніципальний номер: ${lift.municipalNumber}, Тип: ${lift.type}`, 'info');
+            } else {
+                window.uiEnhancements.showToast(`Деталі ліфта: Адреса: ${lift.address}, Муніципальний номер: ${lift.municipalNumber}, Тип: ${lift.type}`, 'info');
+            }
         }
     }
 
@@ -3483,7 +3074,11 @@
         const lift = lifts.find(l => (l._id || l.id) === liftId);
         
         if (!lift) {
-            alert('Ліфт не знайдено');
+            if (window.uiEnhancements) {
+                window.uiEnhancements.showToast('Ліфт не знайдено', 'error');
+            } else {
+                window.uiEnhancements.showToast('Ліфт не знайдено', 'error');
+            }
             return;
         }
 
@@ -3492,7 +3087,11 @@
             // Відкриваємо модальне вікно додавання/редагування
             openEnhancedModal(lift);
         } else {
-            alert('Функція редагування недоступна');
+            if (window.uiEnhancements) {
+                window.uiEnhancements.showToast('Функція редагування недоступна', 'error');
+            } else {
+                window.uiEnhancements.showToast('Функція редагування недоступна', 'error');
+            }
         }
     }
 
@@ -3503,7 +3102,11 @@
         const lift = lifts.find(l => (l._id || l.id) === liftId);
         
         if (!lift) {
-            alert('Ліфт не знайдено');
+            if (window.uiEnhancements) {
+                window.uiEnhancements.showToast('Ліфт не знайдено', 'error');
+            } else {
+                window.uiEnhancements.showToast('Ліфт не знайдено', 'error');
+            }
             return;
         }
 
@@ -3511,7 +3114,11 @@
         if (typeof generateQRCodeSafe === 'function') {
             generateQRCodeSafe('municipalNumber', lift.municipalNumber || liftId);
         } else {
-            alert('Функція генерації QR коду недоступна');
+            if (window.uiEnhancements) {
+                window.uiEnhancements.showToast('Функція генерації QR коду недоступна', 'error');
+            } else {
+                window.uiEnhancements.showToast('Функція генерації QR коду недоступна', 'error');
+            }
         }
     }
 
@@ -3523,7 +3130,11 @@
         
         if (maintenanceDate) {
             // Тут можна додати логіку збереження в API
-            alert(`Обслуговування заплановано на ${maintenanceDate}`);
+            if (window.uiEnhancements) {
+                window.uiEnhancements.showToast(`Обслуговування заплановано на ${maintenanceDate}`, 'success');
+            } else {
+                window.uiEnhancements.showToast(`Обслуговування заплановано на ${maintenanceDate}`, 'success');
+            }
             
             // Оновити статус ліфта
             const lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
@@ -3563,7 +3174,11 @@
         // Оновити таблицю
         displayLiftsInTable(lifts);
         
-        alert('Ліфт успішно видалено');
+        if (window.uiEnhancements) {
+            window.uiEnhancements.showToast('Ліфт успішно видалено', 'success');
+        } else {
+            window.uiEnhancements.showToast('Ліфт успішно видалено', 'success');
+        }
     }
     
     // Перевірка авторизації при завантаженні сторінки
@@ -3586,6 +3201,27 @@
     // Ініціалізація при завантаженні сторінки
     checkAuthOnLoad();
     
+    // Initialize admin menu loader
+    document.addEventListener('DOMContentLoaded', function() {
+        AdminMenuLoader.init('lifts.html');
+        
+        // Initialize UI Enhancements
+        if (typeof UIEnhancements !== 'undefined') {
+            window.uiEnhancements = new UIEnhancements();
+        }
+        
+        // Завантажити ліфти
+        setTimeout(() => {
+            refreshLiftsDisplay();
+        }, 500);
+    });
+    
     </script>
+    <!-- API Client -->
+    <script src="/assets/js/utils/api.js"></script>
+    <!-- Notifications -->
+    <script src="/assets/js/utils/notifications.js"></script>
+    <!-- Lifts Manager -->
+    <script src="/assets/js/modules/lifts-manager.js"></script>
 </body>
 </html>

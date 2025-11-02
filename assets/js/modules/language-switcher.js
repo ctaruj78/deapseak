@@ -59,7 +59,7 @@ class LanguageSwitcher {
   applyTranslations() {
     const t = this.translations[this.current];
     if (!t) return;
-    document.querySelector('h1')?.textContent = t.lifts;
+    const h1 = document.querySelector('h1'); if (h1) h1.textContent = t.lifts;
     document.querySelector('.card-title')?.textContent = t.map;
     document.querySelectorAll('.overview-card')[0]?.querySelector('p')?.textContent = t.lifts;
     document.querySelectorAll('.card-title').forEach(card => {

@@ -34,7 +34,7 @@ class MonitoringManager {
      */
     async init() {
         try {
-            console.log('🔧 Ініціалізація Monitoring Manager...');
+            // logger.log('🔧 Ініціалізація Monitoring Manager...');
             
             await this.loadData();
             this.setupEventListeners();
@@ -44,10 +44,10 @@ class MonitoringManager {
             this.startRealTimeUpdates();
             
             this.isInitialized = true;
-            console.log('✅ Monitoring Manager ініціалізовано');
+            // logger.log('✅ Monitoring Manager ініціалізовано');
             
         } catch (error) {
-            console.error('❌ Помилка ініціалізації Monitoring Manager:', error);
+            // logger.error('❌ Помилка ініціалізації Monitoring Manager:', error);
             this.loadFromLocalStorage();
         }
     }
@@ -86,7 +86,7 @@ class MonitoringManager {
             
             return true;
         } catch (error) {
-            console.warn('⚠️ Помилка завантаження даних:', error);
+            // logger.warn('⚠️ Помилка завантаження даних:', error);
             return false;
         }
     }
@@ -130,7 +130,7 @@ class MonitoringManager {
                 this.generateTestData();
             }
         } catch (error) {
-            console.error('Помилка завантаження з localStorage:', error);
+            // logger.error('Помилка завантаження з localStorage:', error);
             this.generateTestData();
         }
     }
@@ -499,7 +499,7 @@ class MonitoringManager {
      */
     setupWebSocket() {
         // В реальному проекті тут буде WebSocket підключення
-        console.log('📡 WebSocket підключення налаштовано (симуляція)');
+        // logger.log('📡 WebSocket підключення налаштовано (симуляція)');
         
         // Симуляція WebSocket повідомлень
         this.simulateRealtimeUpdates();
@@ -707,7 +707,7 @@ class MonitoringManager {
      */
     initializeCharts() {
         // Тут буде код для ініціалізації Chart.js графіків
-        console.log('📊 Графіки ініціалізовано');
+        // logger.log('📊 Графіки ініціалізовано');
     }
 
     /**
@@ -715,7 +715,7 @@ class MonitoringManager {
      */
     updateCharts() {
         // Оновлення даних графіків
-        console.log('📊 Графіки оновлено');
+        // logger.log('📊 Графіки оновлено');
     }
 
     /**
@@ -724,25 +724,25 @@ class MonitoringManager {
     
     // Перегляд деталей ліфта
     viewLiftDetails(liftId) {
-        console.log('Перегляд деталей ліфта:', liftId);
+        // logger.log('Перегляд деталей ліфта:', liftId);
         // Тут буде код для відкриття модального вікна з деталями
     }
 
     // Історія ліфта
     showLiftHistory(liftId) {
-        console.log('Історія ліфта:', liftId);
+        // logger.log('Історія ліфта:', liftId);
         // Тут буде код для відображення історії
     }
 
     // Створення заявки на ТО
     createMaintenanceRequest(liftId) {
-        console.log('Створення заявки на ТО для ліфта:', liftId);
+        // logger.log('Створення заявки на ТО для ліфта:', liftId);
         // Тут буде інтеграція з assignment-manager
     }
 
     // Показ QR коду
     showQRCode(liftId) {
-        console.log('QR код ліфта:', liftId);
+        // logger.log('QR код ліфта:', liftId);
         // Тут буде код для відображення QR коду
     }
 
@@ -764,10 +764,10 @@ class MonitoringManager {
                     }
                 });
                 
-                console.log('✅ Сповіщення підтверджено:', alertId);
+                // logger.log('✅ Сповіщення підтверджено:', alertId);
             }
         } catch (error) {
-            console.error('❌ Помилка підтвердження сповіщення:', error);
+            // logger.error('❌ Помилка підтвердження сповіщення:', error);
         }
     }
 
@@ -790,10 +790,10 @@ class MonitoringManager {
                     }
                 });
                 
-                console.log('✅ Сповіщення вирішено:', alertId);
+                // logger.log('✅ Сповіщення вирішено:', alertId);
             }
         } catch (error) {
-            console.error('❌ Помилка вирішення сповіщення:', error);
+            // logger.error('❌ Помилка вирішення сповіщення:', error);
         }
     }
 
@@ -826,7 +826,7 @@ class MonitoringManager {
      * Початок реального моніторингу
      */
     startRealTimeUpdates() {
-        console.log('🚀 Реальний моніторинг запущено');
+        // logger.log('🚀 Реальний моніторинг запущено');
         
         // Оновлення статусу підключення
         setInterval(() => {
@@ -841,7 +841,7 @@ class MonitoringManager {
         action = action || 'dashboard';
         const container = document.getElementById(containerId);
         if (!container) {
-            console.error(`Container ${containerId} not found`);
+            // logger.error(`Container ${containerId} not found`);
             return;
         }
 

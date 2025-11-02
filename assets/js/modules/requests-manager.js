@@ -34,7 +34,7 @@ class RequestsManager {
                 throw new Error('API недоступне');
             }
         } catch (error) {
-            console.warn('Використання локальних даних:', error);
+            // logger.warn('Використання локальних даних:', error);
             this.requests = JSON.parse(localStorage.getItem('maintenanceRequests')) || [];
             
             if (this.requests.length === 0) {

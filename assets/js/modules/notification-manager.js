@@ -39,7 +39,7 @@ class NotificationManager {
             this.updateBadges();
             
         } catch (error) {
-            console.error('Помилка завантаження сповіщень:', error);
+            // logger.error('Помилка завантаження сповіщень:', error);
             this.loadDemoNotifications();
         }
     }

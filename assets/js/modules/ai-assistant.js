@@ -41,7 +41,7 @@ class AIAssistant {
             };
 
             this.recognition.onerror = (event) => {
-                console.error('Помилка розпізнавання мови:', event.error);
+                // logger.error('Помилка розпізнавання мови:', event.error);
                 this.showNotification('Помилка розпізнавання мови: ' + event.error, 'error');
                 this.updateUIStatus('idle');
             };
@@ -261,7 +261,7 @@ class AIAssistant {
             this.showNotification('Слухаю... Говоріть', 'info');
             this.playSound('start');
         } catch (error) {
-            console.error('Помилка запуску розпізнавання:', error);
+            // logger.error('Помилка запуску розпізнавання:', error);
         }
     }
 
@@ -272,12 +272,12 @@ class AIAssistant {
             this.updateUIStatus('idle');
             this.playSound('stop');
         } catch (error) {
-            console.error('Помилка зупинки розпізнавання:', error);
+            // logger.error('Помилка зупинки розпізнавання:', error);
         }
     }
 
     processCommand(command) {
-        console.log('Отримано команду:', command);
+        // logger.log('Отримано команду:', command);
         this.addMessage('user', command);
         this.updateUIStatus('processing');
         

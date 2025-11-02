@@ -6,7 +6,7 @@
 (function() {
     'use strict';
     
-    console.log('🔄 QRCode Loader: Starting...');
+    // logger.log('🔄 QRCode Loader: Starting...');
     
     // Список джерел для завантаження qrcodejs (та сама що в common.js!)
     const cdnSources = [
@@ -20,26 +20,26 @@
     
     function tryLoadQRCode() {
         if (loadAttempt >= maxAttempts) {
-            console.error('❌ QRCode Loader: All sources (local + CDN) failed');
+            // logger.error('❌ QRCode Loader: All sources (local + CDN) failed');
             showErrorMessage();
             return;
         }
 
         const currentSource = cdnSources[loadAttempt];
         const sourceType = currentSource.startsWith('/') ? 'локальна' : 'CDN';
-        console.log(`🔄 QRCode Loader: Trying ${sourceType} source ${loadAttempt + 1}/${maxAttempts}: ${currentSource}`);
+        // logger.log(`🔄 QRCode Loader: Trying ${sourceType} source ${loadAttempt + 1}/${maxAttempts}: ${currentSource}`);
         
         const script = document.createElement('script');
         script.src = currentSource;
         
         script.onload = function() {
-            console.log('✅ QRCode Loader: Successfully loaded from ' + currentSource);
+            // logger.log('✅ QRCode Loader: Successfully loaded from ' + currentSource);
             // Завантажуємо wrapper який створить window.QRCode
             loadWrapper();
         };
         
         script.onerror = function() {
-            console.warn(`⚠️ QRCode Loader: Failed to load from ${currentSource}`);
+            // logger.warn(`⚠️ QRCode Loader: Failed to load from ${currentSource}`);
             loadAttempt++;
             setTimeout(tryLoadQRCode, 500); // Спробувати наступне джерело через 0.5 сек
         };
@@ -48,22 +48,22 @@
     }
     
     function loadWrapper() {
-        console.log('🔧 Loading QRCode wrapper...');
+        // logger.log('🔧 Loading QRCode wrapper...');
         const wrapperScript = document.createElement('script');
         wrapperScript.src = '/assets/libs/qrcode-wrapper.js';
         
         wrapperScript.onload = function() {
-            console.log('✅ Wrapper loaded');
+            // logger.log('✅ Wrapper loaded');
             checkQRCodeAvailability();
         };
         
         wrapperScript.onerror = function() {
-            console.warn('⚠️ Wrapper failed to load, trying direct setup...');
+            // logger.warn('⚠️ Wrapper failed to load, trying direct setup...');
             // Якщо wrapper не завантажився, спробуємо встановити напряму
             setTimeout(function() {
                 if (typeof qrcode !== 'undefined' && typeof QRCode === 'undefined') {
                     window.QRCode = qrcode;
-                    console.log('✅ QRCode створено напряму з qrcode');
+                    // logger.log('✅ QRCode створено напряму з qrcode');
                 }
                 checkQRCodeAvailability();
             }, 100);
@@ -75,13 +75,13 @@
     function checkQRCodeAvailability() {
         setTimeout(function() {
             if (typeof QRCode !== 'undefined') {
-                console.log('✅ QRCode is available:', typeof QRCode);
+                // logger.log('✅ QRCode is available:', typeof QRCode);
                 
                 // Перевірка наявності методу toCanvas
                 if (typeof QRCode.toCanvas === 'function') {
-                    console.log('✅ QRCode.toCanvas method available');
+                    // logger.log('✅ QRCode.toCanvas method available');
                 } else {
-                    console.warn('⚠️ QRCode.toCanvas method not found, may need alternative library');
+                    // logger.warn('⚠️ QRCode.toCanvas method not found, may need alternative library');
                 }
                 
                 // Викликаємо подію що бібліотека завантажена
@@ -95,7 +95,7 @@
                     window.dispatchEvent(event);
                 }
             } else {
-                console.error('❌ QRCode still not available after loading script');
+                // logger.error('❌ QRCode still not available after loading script');
                 loadAttempt++;
                 tryLoadQRCode();
             }
@@ -139,10 +139,10 @@
     
     // Початок завантаження
     if (typeof QRCode === 'undefined') {
-        console.log('🚀 QRCode Loader: QRCode not found, starting load sequence...');
+        // logger.log('🚀 QRCode Loader: QRCode not found, starting load sequence...');
         tryLoadQRCode();
     } else {
-        console.log('✅ QRCode Loader: QRCode already loaded');
+        // logger.log('✅ QRCode Loader: QRCode already loaded');
     }
     
 })();

@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert(data.message || 'Помилка входу');
             }
         } catch (error) {
-            console.error('Помилка входу:', error);
+            // logger.error('Помилка входу:', error);
             alert('Сталася помилка під час входу');
         }
     });

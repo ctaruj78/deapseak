@@ -6,7 +6,7 @@
 const qrScanner = (function() {
     // Initialize the module
     function init() {
-        console.log("QR Scanner initialized");
+        // logger.log("QR Scanner initialized");
         // Implementation here
     }
 

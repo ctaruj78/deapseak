@@ -1,16 +1,16 @@
 // Test Lift Saving Functionality
 function testLiftSaving() {
-    console.log('=== TESTING LIFT SAVING ===');
+    // logger.log('=== TESTING LIFT SAVING ===');
     
     // Перевіряємо наявність необхідних компонентів
-    console.log('1. Checking dependencies...');
-    console.log('allLifts available:', typeof allLifts !== 'undefined');
-    console.log('CommonUtils available:', typeof CommonUtils !== 'undefined');
-    console.log('enhancedLiftModal available:', typeof window.enhancedLiftModal !== 'undefined');
+    // logger.log('1. Checking dependencies...');
+    // logger.log('allLifts available:', typeof allLifts !== 'undefined');
+    // logger.log('CommonUtils available:', typeof CommonUtils !== 'undefined');
+    // logger.log('enhancedLiftModal available:', typeof window.enhancedLiftModal !== 'undefined');
     
     if (typeof allLifts !== 'undefined') {
-        console.log('Current lifts count:', allLifts.length);
-        console.log('Current lifts:', allLifts);
+        // logger.log('Current lifts count:', allLifts.length);
+        // logger.log('Current lifts:', allLifts);
     }
     
     // Тестові дані ліфта
@@ -31,37 +31,37 @@ function testLiftSaving() {
         status: 'active'
     };
     
-    console.log('2. Test lift data:', testLiftData);
+    // logger.log('2. Test lift data:', testLiftData);
     
     // Спробуємо зберегти ліфт
     try {
         if (window.enhancedLiftModal) {
-            console.log('3. Converting to lift format...');
+            // logger.log('3. Converting to lift format...');
             const convertedData = window.enhancedLiftModal.convertToLiftFormat(testLiftData);
-            console.log('Converted data:', convertedData);
+            // logger.log('Converted data:', convertedData);
             
-            console.log('4. Attempting to save...');
+            // logger.log('4. Attempting to save...');
             window.enhancedLiftModal.saveLiftData(convertedData).then(() => {
-                console.log('✅ SAVE SUCCESSFUL!');
-                console.log('New lifts count:', allLifts.length);
-                console.log('Last lift:', allLifts[allLifts.length - 1]);
+                // logger.log('✅ SAVE SUCCESSFUL!');
+                // logger.log('New lifts count:', allLifts.length);
+                // logger.log('Last lift:', allLifts[allLifts.length - 1]);
                 
                 // Оновлюємо інтерфейс
                 if (window.liftManager && window.liftManager.loadLifts) {
                     window.liftManager.loadLifts();
-                    console.log('✅ Interface updated');
+                    // logger.log('✅ Interface updated');
                 }
             }).catch(error => {
-                console.error('❌ SAVE FAILED:', error);
+                // logger.error('❌ SAVE FAILED:', error);
             });
         } else {
-            console.error('❌ Enhanced Lift Modal not available');
+            // logger.error('❌ Enhanced Lift Modal not available');
         }
     } catch (error) {
-        console.error('❌ TEST FAILED:', error);
+        // logger.error('❌ TEST FAILED:', error);
     }
     
-    console.log('=== TEST COMPLETED ===');
+    // logger.log('=== TEST COMPLETED ===');
 }
 
 // Функція для очищення тестових даних
@@ -79,7 +79,7 @@ function clearTestLifts() {
             localStorage.setItem('lifts', JSON.stringify(allLifts));
         }
         
-        console.log(`Cleared ${originalCount - allLifts.length} test lifts`);
+        // logger.log(`Cleared ${originalCount - allLifts.length} test lifts`);
         
         // Оновлюємо інтерфейс
         if (window.liftManager && window.liftManager.loadLifts) {
@@ -90,36 +90,36 @@ function clearTestLifts() {
 
 // Функція для показу поточного стану localStorage
 function showStorageState() {
-    console.log('=== STORAGE STATE ===');
+    // logger.log('=== STORAGE STATE ===');
     
     try {
         const stored = localStorage.getItem('lifts');
         if (stored) {
             const parsed = JSON.parse(stored);
-            console.log('Lifts in localStorage:', parsed.length);
+            // logger.log('Lifts in localStorage:', parsed.length);
             parsed.forEach((lift, index) => {
-                console.log(`${index + 1}. ${lift.municipalNumber || lift.id} - ${lift.address || 'No address'}`);
+                // logger.log(`${index + 1}. ${lift.municipalNumber || lift.id} - ${lift.address || 'No address'}`);
             });
         } else {
-            console.log('No lifts in localStorage');
+            // logger.log('No lifts in localStorage');
         }
     } catch (error) {
-        console.error('Error reading localStorage:', error);
+        // logger.error('Error reading localStorage:', error);
     }
     
     if (typeof allLifts !== 'undefined') {
-        console.log('Lifts in memory:', allLifts.length);
+        // logger.log('Lifts in memory:', allLifts.length);
     }
     
-    console.log('===================');
+    // logger.log('===================');
 }
 
 // Автоматично викликаємо при завантаженні сторінки (тільки в режимі розробки)
 if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    console.log('🔧 Development mode detected. Test functions available:');
-    console.log('- testLiftSaving() - Test saving functionality');
-    console.log('- clearTestLifts() - Remove test lifts');
-    console.log('- showStorageState() - Show current storage state');
+    // logger.log('🔧 Development mode detected. Test functions available:');
+    // logger.log('- testLiftSaving() - Test saving functionality');
+    // logger.log('- clearTestLifts() - Remove test lifts');
+    // logger.log('- showStorageState() - Show current storage state');
     
     // Показуємо стан при завантаженні
     setTimeout(showStorageState, 1000);

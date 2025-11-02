@@ -1,0 +1,259 @@
+    <style>
+        .support-page {
+            background-color: #f8f9fa;
+        }
+        
+        .support-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .support-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .support-category {
+            text-align: center;
+            padding: 30px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .support-category:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .category-technical {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+        }
+        
+        .category-billing {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
+        .category-emergency {
+            background: linear-gradient(135deg, #fd7e14 0%, #fcc419 100%);
+            color: #212529;
+        }
+        
+        .category-general {
+            background: linear-gradient(135deg, #20c997 0%, #38d39f 100%);
+            color: white;
+        }
+        
+        .category-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        
+        .ticket-card {
+            border-left: 4px solid #007bff;
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+        
+        .ticket-card.pending {
+            border-left-color: #ffc107;
+        }
+        
+        .ticket-card.in-progress {
+            border-left-color: #17a2b8;
+        }
+        
+        .ticket-card.resolved {
+            border-left-color: #28a745;
+        }
+        
+        .ticket-card.closed {
+            border-left-color: #6c757d;
+        }
+        
+        .chat-container {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .chat-message {
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 12px;
+            max-width: 80%;
+        }
+        
+        .message-support {
+            background: #e3f2fd;
+            margin-right: auto;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .message-client {
+            background: #f8f9fa;
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .message-time {
+            font-size: 0.75rem;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        .knowledge-base-item {
+            border-left: 3px solid #007bff;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .knowledge-base-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .faq-item {
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+        
+        .contact-method {
+            text-align: center;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .contact-method:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .contact-phone {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        
+        .contact-email {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: #212529;
+        }
+        
+        .contact-chat {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #212529;
+        }
+        
+        .contact-form {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .support-status {
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-pending {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .status-in-progress {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .status-resolved {
+            background: #28a745;
+            color: white;
+        }
+        
+        .status-closed {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .dark-mode .support-card {
+            background-color: #2d3748;
+            color: white;
+        }
+        
+        .dark-mode .chat-message.message-support {
+            background: #2d3748;
+            color: white;
+        }
+        
+        .dark-mode .chat-message.message-client {
+            background: #4a5568;
+            color: white;
+        }
+        
+        .dark-mode .knowledge-base-item {
+            background-color: #2d3748;
+            color: white;
+        }
+        
+        @media (max-width: 768px) {
+            .support-category {
+                padding: 20px 15px;
+            }
+            
+            .category-icon {
+                font-size: 2.5rem;
+            }
+            
+            .chat-message {
+                max-width: 90%;
+            }
+            
+            .contact-method {
+                padding: 15px;
+            }
+        }
+        
+        /* Анімації */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        /* Спеціальні стилі для форми */
+        .form-floating {
+            position: relative;
+        }
+        
+        .form-floating label {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            padding: 1rem 0.75rem;
+            pointer-events: none;
+            border: 1px solid transparent;
+            transform-origin: 0 0;
+            transition: opacity 0.1s ease-in-out, transform 0.1s ease-in-out;
+        }
+        
+        .form-floating > .form-control:focus ~ label,
+        .form-floating > .form-control:not(:placeholder-shown) ~ label {
+            transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+            opacity: 0.65;
+        }
+    </style>

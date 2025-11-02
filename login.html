@@ -60,10 +60,10 @@
                     <div class="alert alert-info">
                         <h6><i class="fas fa-info-circle"></i> Демо акаунти для тестування:</h6>
                         <small>
-                            <strong>Адмін:</strong> admin / admin123<br>
-                            <strong>Технік:</strong> tech1 / tech123<br>
-                            <strong>Диспетчер:</strong> dispatcher1 / dispatcher123<br>
-                            <strong>Клієнт:</strong> client1 / client123
+                            <strong>Адмін:</strong> admin@example.com / admin123<br>
+                            <strong>Технік:</strong> tech1@example.com / tech123<br>
+                            <strong>Диспетчер:</strong> dispatcher1@example.com / dispatcher123<br>
+                            <strong>Клієнт:</strong> client1@example.com / client123
                         </small>
                     </div>
                 </div>
@@ -98,23 +98,29 @@
             
             // Функція перенаправлення за ролями
             function redirectUserByRole(role) {
+                console.log('🔄 Перенаправлення користувача з роллю:', role);
+                let redirectPath = 'pages/admin/admin-dashboard.html'; // За замовчуванням адмін
+                
                 switch (role) {
                     case 'admin':
-                        window.location.href = 'pages/admin/admin-dashboard.html';
+                        redirectPath = '/pages/admin/admin-dashboard.html';
                         break;
                     case 'dispatcher':
-                        window.location.href = 'pages/dispatcher/dashboard.html';
+                        redirectPath = '/pages/dispatcher/dashboard.html';
                         break;
                     case 'technician':
                     case 'tech':
-                        window.location.href = 'pages/tech/dashboard.html';
+                        redirectPath = '/pages/tech/dashboard.html';
                         break;
                     case 'client':
-                        window.location.href = 'pages/client/dashboard.html';
+                        redirectPath = '/pages/client/dashboard.html';
                         break;
                     default:
-                        window.location.href = 'pages/admin/admin-dashboard.html';
+                        redirectPath = '/pages/admin/admin-dashboard.html';
                 }
+                
+                console.log('📍 Шлях перенаправлення:', redirectPath);
+                window.location.href = redirectPath;
             }
             
             // Показ повідомлень
@@ -200,24 +206,52 @@
                         
                         // Також зберігаємо в старому форматі для сумісності
                         localStorage.setItem('lm_session', JSON.stringify(data.user));
+                        localStorage.setItem('auth_token', data.token);
                         
                         showMessage('Успішний вхід! Перенаправлення...', 'success');
+                        
+                        // Визначаємо шлях редиректу
+                        const user = data.user;
+                        let redirectPath = '/pages/admin/admin-dashboard.html';
+                        
+                        console.log('🔄 Визначення редиректу для ролі:', user.role);
+                        
+                        switch (user.role) {
+                            case 'admin':
+                                redirectPath = '/pages/admin/admin-dashboard.html';
+                                break;
+                            case 'dispatcher':
+                                redirectPath = '/pages/dispatcher/dashboard.html';
+                                break;
+                            case 'technician':
+                            case 'tech':
+                                redirectPath = '/pages/tech/dashboard.html';
+                                break;
+                            case 'client':
+                                redirectPath = '/pages/client/dashboard.html';
+                                break;
+                            default:
+                                redirectPath = '/pages/admin/admin-dashboard.html';
+                        }
+                        
+                        console.log('📍 Редирект на:', redirectPath);
                         
                         // Перевіряємо чи є збережене перенаправлення
                         const redirectUrl = sessionStorage.getItem('redirect_after_login');
                         
-                        // Перенаправлення через 500мс
+                        // Перенаправлення через 1.5 сек (з гарантованою затримкою)
                         setTimeout(() => {
-                            if (redirectUrl) {
-                                // Очищуємо збережений URL
-                                sessionStorage.removeItem('redirect_after_login');
-                                // Перенаправляємо туди куди хотів потрапити користувач
+                            const redirectUrl = redirectPath;
+                            console.log('🔀 Виконуємо редирект на:', redirectUrl);
+                            
+                            // Спробуємо replace замість href
+                            window.location.replace(redirectUrl);
+                            
+                            // Як резерв - звичайний href
+                            setTimeout(() => {
                                 window.location.href = redirectUrl;
-                            } else {
-                                // Стандартне перенаправлення за роллю
-                                redirectUserByRole(data.user.role);
-                            }
-                        }, 500);
+                            }, 500);
+                        }, 1500);
                         
                     } else {
                         showMessage(data.message || 'Помилка входу');
@@ -230,5 +264,7 @@
             });
         });
     </script>
+    <!-- Version Management -->
+    <script src="/assets/js/app-version.js"></script>
 </body>
 </html>

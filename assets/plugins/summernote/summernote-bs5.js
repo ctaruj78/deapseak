@@ -9706,7 +9706,7 @@ var HintPopover = /*#__PURE__*/function () {
       'statusbar': Statusbar,
       'fullscreen': Fullscreen,
       'handle': Handle,
-      // FIXME: HintPopover must be front of autolink
+      // NOTE: HintPopover must be front of autolink
       //  - Script error about range when Enter key is pressed on hint popover
       'hintPopover': HintPopover,
       'autoLink': AutoLink,
@@ -9763,12 +9763,12 @@ var HintPopover = /*#__PURE__*/function () {
     disableGrammar: false,
     placeholder: null,
     inheritPlaceholder: false,
-    // TODO: need to be documented
+    // NOTE: need to be documented
     recordEveryKeystroke: false,
     historyLimit: 200,
-    // TODO: need to be documented
+    // NOTE: need to be documented
     showDomainOnlyForAutolink: false,
-    // TODO: need to be documented
+    // NOTE: need to be documented
     hintMode: 'word',
     hintSelect: 'after',
     hintDirection: 'bottom',

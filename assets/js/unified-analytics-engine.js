@@ -43,7 +43,7 @@ class UnifiedAnalyticsEngine {
     }
 
     async init() {
-        console.log('🚀 Ініціалізація Unified Analytics Engine...');
+        // logger.log('🚀 Ініціалізація Unified Analytics Engine...');
         
         try {
             // Завантажуємо дані
@@ -81,10 +81,10 @@ class UnifiedAnalyticsEngine {
                 this.handleUrlHash();
             });
             
-            console.log('✅ Unified Analytics Engine готовий!');
+            // logger.log('✅ Unified Analytics Engine готовий!');
             
         } catch (error) {
-            console.error('❌ Помилка ініціалізації Analytics Engine:', error);
+            // logger.error('❌ Помилка ініціалізації Analytics Engine:', error);
             this.showError('Помилка завантаження аналітичних даних');
         }
     }
@@ -93,7 +93,7 @@ class UnifiedAnalyticsEngine {
      * 📥 Завантаження всіх даних з різних джерел
      */
     async loadAllData() {
-        console.log('📚 Завантаження аналітичних даних...');
+        // logger.log('📚 Завантаження аналітичних даних...');
         
         // Завантажуємо основні дані
         const lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
@@ -151,14 +151,14 @@ class UnifiedAnalyticsEngine {
         this.cache.set('analytics_data', this.data);
         this.cache.set('last_update', Date.now());
         
-        console.log('📊 Дані завантажено:', this.data);
+        // logger.log('📊 Дані завантажено:', this.data);
     }
 
     /**
      * 📈 Ініціалізація всіх графіків
      */
     initializeCharts() {
-        console.log('📊 Ініціалізація графіків...');
+        // logger.log('📊 Ініціалізація графіків...');
         
         // Overview Chart - загальна активність
         this.initOverviewChart();
@@ -605,10 +605,10 @@ class UnifiedAnalyticsEngine {
                 this.checkAlerts();
                 this.updateCharts();
                 
-                console.log('🔄 Дані оновлено:', new Date().toLocaleTimeString());
+                // logger.log('🔄 Дані оновлено:', new Date().toLocaleTimeString());
                 
             } catch (error) {
-                console.error('❌ Помилка оновлення даних:', error);
+                // logger.error('❌ Помилка оновлення даних:', error);
             }
         }, this.config.updateInterval);
     }
@@ -842,7 +842,7 @@ class UnifiedAnalyticsEngine {
         if (typeof toastr !== 'undefined') {
             toastr.error(message);
         } else {
-            console.error(message);
+            // logger.error(message);
         }
     }
 
@@ -913,7 +913,7 @@ class UnifiedAnalyticsEngine {
      * 🔮 Ініціалізація AI прогнозування поломок
      */
     async initPredictiveAnalytics() {
-        console.log('🔮 Запуск ініціалізації AI прогнозування...');
+        // logger.log('🔮 Запуск ініціалізації AI прогнозування...');
         
         try {
             // Ініціалізуємо систему прогнозування
@@ -924,7 +924,7 @@ class UnifiedAnalyticsEngine {
                 
                 // Чекаємо поки система ініціалізується
                 if (!this.predictiveSystem.isInitialized) {
-                    console.log('⏳ Чекаємо ініціалізації системи прогнозування...');
+                    // logger.log('⏳ Чекаємо ініціалізації системи прогнозування...');
                     await this.waitForPredictiveInit();
                 }
                 
@@ -933,15 +933,15 @@ class UnifiedAnalyticsEngine {
                 this.updateAIRecommendations();
                 this.displayPredictiveMetrics();
                 
-                console.log('✅ AI прогнозування успішно ініціалізовано');
+                // logger.log('✅ AI прогнозування успішно ініціалізовано');
                 
             } else {
-                console.error('❌ PredictiveMaintenanceSystem не знайдено');
+                // logger.error('❌ PredictiveMaintenanceSystem не знайдено');
                 this.showPredictiveError('Система AI прогнозування недоступна');
             }
             
         } catch (error) {
-            console.error('❌ Помилка ініціалізації AI прогнозування:', error);
+            // logger.error('❌ Помилка ініціалізації AI прогнозування:', error);
             this.showPredictiveError('Помилка завантаження AI системи');
         }
     }
@@ -968,11 +968,11 @@ class UnifiedAnalyticsEngine {
     createPredictionChart() {
         const ctx = document.getElementById('prediction-chart');
         if (!ctx) {
-            console.warn('⚠️ Елемент prediction-chart не знайдено');
+            // logger.warn('⚠️ Елемент prediction-chart не знайдено');
             return;
         }
 
-        console.log('📊 Створюємо графік прогнозів...');
+        // logger.log('📊 Створюємо графік прогнозів...');
 
         // Отримуємо дані прогнозів від AI системи
         const predictions = this.predictiveSystem ? 
@@ -1033,11 +1033,11 @@ class UnifiedAnalyticsEngine {
     updateAIRecommendations() {
         const container = document.getElementById('ai-recommendations');
         if (!container) {
-            console.warn('⚠️ Елемент ai-recommendations не знайдено');
+            // logger.warn('⚠️ Елемент ai-recommendations не знайдено');
             return;
         }
 
-        console.log('💡 Оновлюємо AI рекомендації...');
+        // logger.log('💡 Оновлюємо AI рекомендації...');
 
         // Отримуємо рекомендації від AI системи
         const recommendations = this.predictiveSystem ? 
@@ -1069,7 +1069,7 @@ class UnifiedAnalyticsEngine {
      */
     displayPredictiveMetrics() {
         // Оновлюємо метрики в заголовку сторінки
-        console.log('📈 Оновлюємо метрики прогнозування...');
+        // logger.log('📈 Оновлюємо метрики прогнозування...');
         
         // Можна додати логіку оновлення основних KPI карток
         // на основі даних з AI системи
@@ -1380,7 +1380,7 @@ class UnifiedAnalyticsEngine {
      */
     bindReportButtons() {
         // Логіка для кнопок швидких звітів буде додана пізніше
-        console.log('Звіти ініціалізовані');
+        // logger.log('Звіти ініціалізовані');
     }
 
     /**
@@ -1434,10 +1434,10 @@ class UnifiedAnalyticsEngine {
         const checkDOM = () => {
             const tabsExist = document.querySelectorAll('[data-target]').length > 0;
             if (tabsExist) {
-                console.log('✅ DOM готовий, таби знайдено');
+                // logger.log('✅ DOM готовий, таби знайдено');
                 callback();
             } else {
-                console.log('⏳ Чекаємо готовності DOM...');
+                // logger.log('⏳ Чекаємо готовності DOM...');
                 setTimeout(checkDOM, 500);
             }
         };
@@ -1451,12 +1451,12 @@ class UnifiedAnalyticsEngine {
      */
     handleUrlHash() {
         const hash = window.location.hash;
-        console.log(`🔍 Поточний хеш: "${hash}"`);
+        // logger.log(`🔍 Поточний хеш: "${hash}"`);
         
         if (hash) {
             // Очищаємо хеш від #
             const tabId = hash.substring(1);
-            console.log(`🔍 Шукаємо таб: ${tabId}`);
+            // logger.log(`🔍 Шукаємо таб: ${tabId}`);
             
             // Використовуємо нашу універсальну функцію активації
             this.activateTab(tabId);
@@ -1467,36 +1467,36 @@ class UnifiedAnalyticsEngine {
      * 🎯 Універсальна функція активації таба
      */
     activateTab(tabId) {
-        console.log(`🎯 Активуємо таб: ${tabId}`);
+        // logger.log(`🎯 Активуємо таб: ${tabId}`);
         
         // Перевіряємо чи є взагалі таби на сторінці
         const allTabs = document.querySelectorAll('[data-target]');
-        console.log(`📋 Знайдено ${allTabs.length} табів на сторінці`);
+        // logger.log(`📋 Знайдено ${allTabs.length} табів на сторінці`);
         
         if (allTabs.length === 0) {
-            console.warn('⚠️ На сторінці немає табів для навігації');
+            // logger.warn('⚠️ На сторінці немає табів для навігації');
             return false;
         }
         
         // Знаходимо відповідну кнопку таба
         const tabButton = document.querySelector(`[data-target="#${tabId}"]`);
-        console.log(`🎯 Результат пошуку кнопки таба:`, tabButton);
+        // logger.log(`🎯 Результат пошуку кнопки таба:`, tabButton);
         
         if (!tabButton) {
-            console.warn(`⚠️ Таб з ID "${tabId}" не знайдено. Доступні таби:`, 
+            // logger.warn(`⚠️ Таб з ID "${tabId}" не знайдено. Доступні таби:`, 
                 Array.from(document.querySelectorAll('[data-target]')).map(btn => btn.dataset.target));
             return false;
         }
 
         // Спробуємо кілька способів активації
-        console.log(`🎯 Знайдено кнопку таба: ${tabButton.textContent.trim()}`);
+        // logger.log(`🎯 Знайдено кнопку таба: ${tabButton.textContent.trim()}`);
         
         // Спосіб 1: Bootstrap API (якщо доступний)
         if (typeof $ !== 'undefined' && $.fn.tab) {
-            console.log('📋 Використовуємо Bootstrap API');
+            // logger.log('📋 Використовуємо Bootstrap API');
             try {
                 $(tabButton).tab('show');
-                console.log('✅ Bootstrap API активація успішна');
+                // logger.log('✅ Bootstrap API активація успішна');
                 
                 // Ініціалізуємо контент таба
                 if (!tabButton.dataset.initialized) {
@@ -1505,12 +1505,12 @@ class UnifiedAnalyticsEngine {
                 }
                 return true;
             } catch (error) {
-                console.warn('⚠️ Bootstrap API не спрацював, використовуємо DOM маніпуляції');
+                // logger.warn('⚠️ Bootstrap API не спрацював, використовуємо DOM маніпуляції');
             }
         }
         
         // Спосіб 2: Прямі DOM маніпуляції
-        console.log('📋 Використовуємо DOM маніпуляції');
+        // logger.log('📋 Використовуємо DOM маніпуляції');
         
         // Прибираємо активний клас з усіх табів
         document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('active'));
@@ -1531,10 +1531,10 @@ class UnifiedAnalyticsEngine {
                 tabButton.dataset.initialized = 'true';
             }
             
-            console.log(`✅ Таб "${tabId}" успішно активовано через DOM`);
+            // logger.log(`✅ Таб "${tabId}" успішно активовано через DOM`);
             return true;
         } else {
-            console.error(`❌ Не вдалося знайти панель для таба "${tabId}"`);
+            // logger.error(`❌ Не вдалося знайти панель для таба "${tabId}"`);
             return false;
         }
     }
@@ -1546,7 +1546,7 @@ class UnifiedAnalyticsEngine {
         switch(tabId) {
             case 'predictive-analytics':
                 // Ініціалізуємо прогнозну аналітику
-                console.log('🧠 Ініціалізація AI прогнозування...');
+                // logger.log('🧠 Ініціалізація AI прогнозування...');
                 this.initPredictiveAnalytics();
                 break;
             case 'financial-analytics':
@@ -1570,12 +1570,12 @@ let analyticsEngine;
 
 // Функція для ініціалізації AI прогнозування
 window.initPredictiveAnalytics = function() {
-    console.log('🤖 Ініціалізація AI прогнозування...');
+    // logger.log('🤖 Ініціалізація AI прогнозування...');
     
     try {
         // Перевіряємо чи є система прогнозування
         if (!window.predictiveMaintenanceSystem) {
-            console.warn('⚠️ PredictiveMaintenanceSystem не знайдена, створюємо...');
+            // logger.warn('⚠️ PredictiveMaintenanceSystem не знайдена, створюємо...');
             window.predictiveMaintenanceSystem = new PredictiveMaintenanceSystem();
         }
         
@@ -1585,11 +1585,11 @@ window.initPredictiveAnalytics = function() {
             loadAIRecommendations();
         }, 500);
         
-        console.log('✅ AI прогнозування ініціалізовано');
+        // logger.log('✅ AI прогнозування ініціалізовано');
         return true;
         
     } catch (error) {
-        console.error('❌ Помилка ініціалізації AI прогнозування:', error);
+        // logger.error('❌ Помилка ініціалізації AI прогнозування:', error);
         return false;
     }
 };
@@ -1598,7 +1598,7 @@ window.initPredictiveAnalytics = function() {
 function initPredictionChart() {
     const canvas = document.getElementById('prediction-chart');
     if (!canvas) {
-        console.warn('⚠️ Canvas prediction-chart не знайдено');
+        // logger.warn('⚠️ Canvas prediction-chart не знайдено');
         return;
     }
     
@@ -1645,14 +1645,14 @@ function initPredictionChart() {
         }
     });
     
-    console.log('✅ Графік прогнозів створено');
+    // logger.log('✅ Графік прогнозів створено');
 }
 
 // Функція для завантаження AI рекомендацій
 function loadAIRecommendations() {
     const container = document.getElementById('ai-recommendations');
     if (!container) {
-        console.warn('⚠️ Контейнер ai-recommendations не знайдено');
+        // logger.warn('⚠️ Контейнер ai-recommendations не знайдено');
         return;
     }
     
@@ -1692,45 +1692,45 @@ function loadAIRecommendations() {
     `).join('');
     
     container.innerHTML = html;
-    console.log('✅ AI рекомендації завантажено');
+    // logger.log('✅ AI рекомендації завантажено');
 }
 
 // Функція activateAIPredictive тепер знаходиться в HTML файлі
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('📄 DOM завантажено, ініціалізуємо Analytics Engine...');
+    // logger.log('📄 DOM завантажено, ініціалізуємо Analytics Engine...');
     
     try {
         analyticsEngine = new UnifiedAnalyticsEngine();
         
         // Додатковий debug для хешу
         if (window.location.hash) {
-            console.log(`🔗 Знайдено хеш при завантаженні: ${window.location.hash}`);
+            // logger.log(`🔗 Знайдено хеш при завантаженні: ${window.location.hash}`);
         }
         
-        console.log('✅ Analytics Engine успішно ініціалізовано');
+        // logger.log('✅ Analytics Engine успішно ініціалізовано');
         
     } catch (error) {
-        console.error('❌ Critical error initializing Analytics Engine:', error);
+        // logger.error('❌ Critical error initializing Analytics Engine:', error);
         
         // Fallback обробка хешу без повного engine
         if (window.location.hash === '#predictive-analytics') {
-            console.log('🔄 Пробуємо fallback активацію AI прогнозування...');
+            // logger.log('🔄 Пробуємо fallback активацію AI прогнозування...');
             
             const activatePredictiveTab = () => {
                 const tabButton = document.querySelector('[data-target="#predictive-analytics"]');
                 const tabPane = document.querySelector('#predictive-analytics');
                 
                 if (tabButton && tabPane) {
-                    console.log('🎯 Знайдено елементи для fallback активації');
+                    // logger.log('🎯 Знайдено елементи для fallback активації');
                     
                     // Спробуємо використати Bootstrap 4 API якщо він доступний
                     if (typeof $ !== 'undefined' && $.fn.tab) {
-                        console.log('📋 Використовуємо Bootstrap 4 API для активації таба');
+                        // logger.log('📋 Використовуємо Bootstrap 4 API для активації таба');
                         $(tabButton).tab('show');
-                        console.log('✅ Bootstrap API активація завершена');
+                        // logger.log('✅ Bootstrap API активація завершена');
                     } else {
-                        console.log('📋 Використовуємо прямі DOM маніпуляції');
+                        // logger.log('📋 Використовуємо прямі DOM маніпуляції');
                         // Вимикаємо всі таби
                         document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('active'));
                         document.querySelectorAll('.tab-pane').forEach(pane => {
@@ -1740,13 +1740,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         // Включаємо потрібний таб
                         tabButton.classList.add('active');
                         tabPane.classList.add('active', 'show');
-                        console.log('✅ DOM маніпуляції завершені');
+                        // logger.log('✅ DOM маніпуляції завершені');
                     }
                     
-                    console.log('✅ Fallback активація AI прогнозування успішна');
+                    // logger.log('✅ Fallback активація AI прогнозування успішна');
                 } else {
-                    console.error('❌ Не вдалося знайти елементи для fallback активації');
-                    console.log('🔍 Доступні data-target елементи:', 
+                    // logger.error('❌ Не вдалося знайти елементи для fallback активації');
+                    // logger.log('🔍 Доступні data-target елементи:', 
                         Array.from(document.querySelectorAll('[data-target]')).map(el => el.dataset.target));
                 }
             };
@@ -1756,14 +1756,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const maxAttempts = 5;
             const tryActivate = () => {
                 attempts++;
-                console.log(`🔄 Спроба активації ${attempts}/${maxAttempts}`);
+                // logger.log(`🔄 Спроба активації ${attempts}/${maxAttempts}`);
                 
                 if (document.querySelector('[data-target="#predictive-analytics"]')) {
                     activatePredictiveTab();
                 } else if (attempts < maxAttempts) {
                     setTimeout(tryActivate, 1000);
                 } else {
-                    console.error('❌ Не вдалося знайти таб після всіх спроб');
+                    // logger.error('❌ Не вдалося знайти таб після всіх спроб');
                 }
             };
             

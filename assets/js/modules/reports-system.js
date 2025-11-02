@@ -12,11 +12,11 @@ class ReportsSystem {
     }
 
     init() {
-        console.log('📊 Ініціалізація системи звітів...');
+        // logger.log('📊 Ініціалізація системи звітів...');
         this.loadReportTemplates();
         this.setupEventListeners();
         this.setupDefaultDates();
-        console.log('✅ Система звітів успішно ініціалізована');
+        // logger.log('✅ Система звітів успішно ініціалізована');
     }
 
     loadReportTemplates() {
@@ -107,7 +107,7 @@ class ReportsSystem {
         this.currentReportType = reportType;
         this.updateUI();
         
-        console.log(`Обрано тип звіту: ${reportType}`);
+        // logger.log(`Обрано тип звіту: ${reportType}`);
     }
 
     setQuickPeriod(days) {
@@ -143,7 +143,7 @@ class ReportsSystem {
             this.showNotification('Звіт успішно згенеровано', 'success');
 
         } catch (error) {
-            console.error('Помилка генерації звіту:', error);
+            // logger.error('Помилка генерації звіту:', error);
             this.showNotification('Помилка генерації звіту', 'error');
         } finally {
             this.showLoading(false);
@@ -547,7 +547,7 @@ class ReportsSystem {
 
     updateStatsCards(summary) {
         // Додаткова логіка оновлення статистики
-        console.log('Оновлення статистичних карток:', summary);
+        // logger.log('Оновлення статистичних карток:', summary);
     }
 
     applyFilters() {
@@ -557,7 +557,7 @@ class ReportsSystem {
             priority: $('#priorityFilter').val()
         };
 
-        console.log('Застосовано фільтри:', filters);
+        // logger.log('Застосовано фільтри:', filters);
         this.showNotification('Фільтри застосовано', 'info');
     }
 

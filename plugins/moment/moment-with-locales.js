@@ -274,7 +274,7 @@
             typeof console !== 'undefined' &&
             console.warn
         ) {
-            console.warn('Deprecation warning: ' + msg);
+            // logger.warn('Deprecation warning: ' + msg);
         }
     }
 
@@ -355,7 +355,7 @@
         this._config = config;
         // Lenient ordinal parsing accepts just a number in addition to
         // number + (possibly) stuff coming from _dayOfMonthOrdinalParse.
-        // TODO: Remove "ordinalParse" fallback in next major release.
+        // NOTE: Remove "ordinalParse" fallback in next major release.
         this._dayOfMonthOrdinalParseLenient = new RegExp(
             (this._dayOfMonthOrdinalParse.source || this._ordinalParse.source) +
                 '|' +
@@ -1039,7 +1039,7 @@
             this._shortMonthsParse = [];
         }
 
-        // TODO: add sorting
+        // NOTE: add sorting
         // Sorting makes sure if one month (or abbr) is a prefix of another
         // see sorting in computeMonthsParse
         for (i = 0; i < 12; i++) {
@@ -1094,7 +1094,7 @@
                 value = toInt(value);
             } else {
                 value = mom.localeData().monthsParse(value);
-                // TODO: Another silent failure?
+                // NOTE: Another silent failure?
                 if (!isNumber(value)) {
                     return mom;
                 }
@@ -2073,7 +2073,7 @@
     function loadLocale(name) {
         var oldLocale = null,
             aliasedRequire;
-        // TODO: Find a better way to register and load all the locales in Node
+        // NOTE: Find a better way to register and load all the locales in Node
         if (
             locales[name] === undefined &&
             typeof module !== 'undefined' &&
@@ -2112,7 +2112,7 @@
             } else {
                 if (typeof console !== 'undefined' && console.warn) {
                     //warn user if arguments are passed but the locale could not be set
-                    console.warn(
+                    // logger.warn(
                         'Locale ' + key + ' not found. Did you forget to load it?'
                     );
                 }
@@ -2442,7 +2442,7 @@
 
     function checkWeekday(weekdayStr, parsedInput, config) {
         if (weekdayStr) {
-            // TODO: Replace the vanilla JS Date object with an independent day-of-week check.
+            // NOTE: Replace the vanilla JS Date object with an independent day-of-week check.
             var weekdayProvided = defaultLocaleWeekdaysShort.indexOf(weekdayStr),
                 weekdayActual = new Date(
                     parsedInput[0],
@@ -2665,7 +2665,7 @@
             dow = 1;
             doy = 4;
 
-            // TODO: We need to take the current isoWeekYear, but that depends on
+            // NOTE: We need to take the current isoWeekYear, but that depends on
             // how we interpret now (local, utc, fixed offset). So create
             // a now version of current config (take local/utc/offset flags, and
             // create now).
@@ -2726,7 +2726,7 @@
 
     // date from string and format string
     function configFromStringAndFormat(config) {
-        // TODO: Move this to another part of the creation flow to prevent circular deps
+        // NOTE: Move this to another part of the creation flow to prevent circular deps
         if (config._f === hooks.ISO_8601) {
             configFromISO(config);
             return;
@@ -3064,7 +3064,7 @@
         return res;
     }
 
-    // TODO: Use [].sort instead?
+    // NOTE: Use [].sort instead?
     function min() {
         var args = [].slice.call(arguments, 0);
 
@@ -3552,7 +3552,7 @@
         return res;
     }
 
-    // TODO: remove 'name' arg after deprecation is removed
+    // NOTE: remove 'name' arg after deprecation is removed
     function createAdder(direction, name) {
         return function (val, period) {
             var dur, tmp;
@@ -4705,7 +4705,7 @@
     addRegexToken('D', match1to2);
     addRegexToken('DD', match1to2, match2);
     addRegexToken('Do', function (isStrict, locale) {
-        // TODO: Remove "ordinalParse" fallback in next major release.
+        // NOTE: Remove "ordinalParse" fallback in next major release.
         return isStrict
             ? locale._dayOfMonthOrdinalParse || locale._ordinalParse
             : locale._dayOfMonthOrdinalParseLenient;
@@ -5318,7 +5318,7 @@
         }
     }
 
-    // TODO: Use this.as('ms')?
+    // NOTE: Use this.as('ms')?
     function valueOf$1() {
         if (!this.isValid()) {
             return NaN;
@@ -10045,7 +10045,7 @@
         dayOfMonthOrdinalParse: /\d{1,2}(er|)/,
         ordinal: function (number, period) {
             switch (period) {
-                // TODO: Return 'e' when day of month > 1. Move this case inside
+                // NOTE: Return 'e' when day of month > 1. Move this case inside
                 // block for masculine words below.
                 // See https://github.com/moment/moment/issues/3375
                 case 'D':

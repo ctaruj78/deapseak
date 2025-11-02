@@ -12,6 +12,8 @@
     <script src="/assets/js/universal-websocket.js"></script>
     <!-- Auth Manager -->
     <script src="../../assets/js/auth.js"></script>
+    <link rel="stylesheet" href="/assets/css/tech-dashboard.css">
+    <link rel="stylesheet" href="/assets/css/tech-dashboard.css">
 </head>
 <body class="hold-transition sidebar-mini layout-fixed" data-required-role="tech">
     <div class="wrapper">
@@ -56,7 +58,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="assignments.html" class="nav-link">
+                            <a href="tasks.html" class="nav-link">
                                 <i class="nav-icon fas fa-clipboard-list"></i>
                                 <p>Мої заявки</p>
                             </a>
@@ -68,9 +70,51 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a href="inspections.html" class="nav-link">
+                                <i class="nav-icon fas fa-search"></i>
+                                <p>Інспекції</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="qr-scanner.html" class="nav-link">
+                                <i class="nav-icon fas fa-qrcode"></i>
+                                <p>QR сканер</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a href="reports.html" class="nav-link">
                                 <i class="nav-icon fas fa-file-alt"></i>
                                 <p>Звіти робіт</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="tools.html" class="nav-link">
+                                <i class="nav-icon fas fa-wrench"></i>
+                                <p>Інструменти</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="knowledge-base.html" class="nav-link">
+                                <i class="nav-icon fas fa-book"></i>
+                                <p>База знань</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="notifications.html" class="nav-link">
+                                <i class="nav-icon fas fa-bell"></i>
+                                <p>Сповіщення</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="profile.html" class="nav-link">
+                                <i class="nav-icon fas fa-user"></i>
+                                <p>Профіль</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="support.html" class="nav-link">
+                                <i class="nav-icon fas fa-life-ring"></i>
+                                <p>Підтримка</p>
                             </a>
                         </li>
                     </ul>
@@ -195,39 +239,13 @@
 
     <script>
         $(document).ready(function() {
-            // Перевірка авторизації
-            const sessionData = localStorage.getItem('lm_session');
-            if (!sessionData) {
-                window.location.href = '../../login.html';
-                return;
-            }
-
-            try {
-                const session = JSON.parse(sessionData);
-                const now = new Date();
-                
-                if (new Date(session.expiresAt) <= now) {
-                    localStorage.removeItem('lm_session');
-                    window.location.href = '../../login.html';
-                    return;
-                }
-
-                if (session.user && (session.user.role !== 'tech' && session.user.role !== 'technician')) {
-                    alert('Доступ заборонено. Необхідні права техніка.');
-                    window.location.href = '../../login.html';
-                    return;
-                }
-
-                // Завантажуємо дані
-                loadTechData();
-                
-                // Ініціалізація WebSocket для техніка
-                initTechWebSocket(session.user);
-                
-            } catch (error) {
-                console.error('Session error:', error);
-                localStorage.removeItem('lm_session');
-                window.location.href = '../../login.html';
+            // Завантажуємо дані
+            loadTechData();
+            
+            // Ініціалізація WebSocket для техніка
+            // Отримуємо дані користувача з AuthManager
+            if (typeof AuthManager !== 'undefined' && AuthManager.currentUser) {
+                initTechWebSocket(AuthManager.currentUser);
             }
         });
 
@@ -647,5 +665,13 @@
             }, 7000);
         }
     </script>
+    <!-- API Client -->
+    <script src="/assets/js/utils/api.js"></script>
+    <!-- Notifications -->
+    <script src="/assets/js/utils/notifications.js"></script>
+    <!-- Tech Manager -->
+    <script src="/assets/js/modules/tech-manager.js"></script>
+    <!-- Version Management -->
+    <script src="/assets/js/app-version.js"></script>
 </body>
 </html>

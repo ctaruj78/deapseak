@@ -23,7 +23,7 @@ class WebSocketServer {
         this.wss = new WebSocket.Server({ server: this.server });
 
         this.wss.on('connection', (ws, req) => {
-            console.log('🔌 Новий WebSocket клієнт підключився');
+            // logger.log('🔌 Новий WebSocket клієнт підключився');
             
             ws.isAlive = true;
             ws.on('pong', () => {
@@ -35,23 +35,23 @@ class WebSocketServer {
                     const message = JSON.parse(data);
                     this.handleMessage(ws, message);
                 } catch (error) {
-                    console.error('❌ Помилка обробки повідомлення:', error);
+                    // logger.error('❌ Помилка обробки повідомлення:', error);
                     this.sendError(ws, 'Invalid JSON format');
                 }
             });
 
             ws.on('close', () => {
                 this.handleDisconnection(ws);
-                console.log('🔌 WebSocket клієнт відключився');
+                // logger.log('🔌 WebSocket клієнт відключився');
             });
 
             ws.on('error', (error) => {
-                console.error('❌ WebSocket помилка:', error);
+                // logger.error('❌ WebSocket помилка:', error);
             });
         });
 
         this.server.listen(this.port, () => {
-            console.log(`🚀 WebSocket сервер запущено на порту ${this.port}`);
+            // logger.log(`🚀 WebSocket сервер запущено на порту ${this.port}`);
         });
     }
 
@@ -106,7 +106,7 @@ class WebSocketServer {
     handleAuth(ws, data) {
         const { userId, token } = data;
         
-        // TODO: Перевірка JWT токена
+        // NOTE: Перевірка JWT токена
         if (userId && token) {
             ws.userId = userId;
             this.clients.set(userId, ws);
@@ -119,7 +119,7 @@ class WebSocketServer {
             // Повідомити інших про онлайн статус
             this.broadcastUserStatus(userId, 'online');
             
-            console.log(`✅ Користувач ${userId} авторизовано`);
+            // logger.log(`✅ Користувач ${userId} авторизовано`);
         } else {
             this.sendError(ws, 'Authentication failed');
         }
@@ -150,7 +150,7 @@ class WebSocketServer {
             data: { userId, roomId, timestamp: new Date().toISOString() }
         }, userId);
 
-        console.log(`📢 Користувач ${userId} приєднався до кімнати ${roomId}`);
+        // logger.log(`📢 Користувач ${userId} приєднався до кімнати ${roomId}`);
     }
 
     handleLeaveRoom(ws, roomId, userId) {
@@ -188,7 +188,7 @@ class WebSocketServer {
         };
 
         this.broadcastToRoom(roomId, messageData);
-        console.log(`💬 Повідомлення в кімнаті ${roomId} від ${userId}`);
+        // logger.log(`💬 Повідомлення в кімнаті ${roomId} від ${userId}`);
     }
 
     handleAssignmentUpdate(ws, data) {
@@ -207,7 +207,7 @@ class WebSocketServer {
 
         // Відправити всім адміністраторам та диспетчерам
         this.broadcastToRole(['admin', 'dispatcher'], updateData);
-        console.log(`📋 Оновлення заявки ${assignmentId}: ${status}`);
+        // logger.log(`📋 Оновлення заявки ${assignmentId}: ${status}`);
     }
 
     handleMonitoringAlert(ws, data) {
@@ -231,7 +231,7 @@ class WebSocketServer {
             : ['admin', 'tech'];
             
         this.broadcastToRole(targetRoles, alertData);
-        console.log(`🚨 ${severity.toUpperCase()} алерт: ${message}`);
+        // logger.log(`🚨 ${severity.toUpperCase()} алерт: ${message}`);
     }
 
     handleTypingStatus(ws, data) {
@@ -279,7 +279,7 @@ class WebSocketServer {
     }
 
     broadcastToRole(roles, message) {
-        // TODO: Отримати список користувачів по ролях з бази даних
+        // NOTE: Отримати список користувачів по ролях з бази даних
         // Поки що відправляємо всім підключеним клієнтам
         this.clients.forEach((ws, userId) => {
             this.send(ws, message);

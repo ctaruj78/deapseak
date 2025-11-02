@@ -101,7 +101,7 @@ class AuthManager {
             }
         } catch (error) {
             CommonUtils.showNotification('Помилка авторизації', 'error');
-            console.error('Login error:', error);
+            // logger.error('Login error:', error);
         }
     }
 
@@ -156,7 +156,7 @@ class AuthManager {
         };
 
         const targetUrl = dashboards[role] || 'pages/client/dashboard.html';
-        console.log(`Redirecting user with role '${role}' to: ${targetUrl}`);
+        // logger.log(`Redirecting user with role '${role}' to: ${targetUrl}`);
         window.location.href = targetUrl;
     }
 
@@ -186,7 +186,7 @@ class AuthManager {
                 }
             }
         } catch (error) {
-            console.error('Error loading session:', error);
+            // logger.error('Error loading session:', error);
             this.logout();
         }
         return false;
@@ -259,7 +259,7 @@ class AuthManager {
             return true;
 
         } catch (error) {
-            console.error('Ошибка проверки авторизации:', error);
+            // logger.error('Ошибка проверки авторизации:', error);
             this.clearAuth();
             this.redirectToLogin();
             return false;
@@ -290,7 +290,7 @@ class AuthManager {
                 return session.token || session.jwt;
             }
         } catch (error) {
-            console.warn('Ошибка чтения сессии:', error);
+            // logger.warn('Ошибка чтения сессии:', error);
         }
         return null;
     }
@@ -426,7 +426,7 @@ class AuthManager {
             
             return response;
         } catch (error) {
-            console.error('Ошибка API запроса:', error);
+            // logger.error('Ошибка API запроса:', error);
             throw error;
         }
     }
@@ -445,7 +445,7 @@ class AuthManager {
                 this.updateUserInterface();
             }
         } catch (error) {
-            console.error('Ошибка инициализации защиты страницы:', error);
+            // logger.error('Ошибка инициализации защиты страницы:', error);
             this.redirectToLogin();
         }
     }
@@ -481,6 +481,36 @@ class AuthManager {
         emailElements.forEach(el => {
             el.textContent = this.currentUser.email || '';
         });
+    }
+
+    /**
+     * Fetch з автоматичним додаванням JWT токена
+     */
+    async fetchWithAuth(url, options = {}) {
+        try {
+            const token = this.getAuthToken();
+            
+            if (!token) {
+                // logger.warn('⚠️ Токен не знайдено');
+                return null;
+            }
+
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                ...(options.headers || {})
+            };
+
+            const response = await fetch(url, {
+                ...options,
+                headers
+            });
+
+            return response;
+        } catch (error) {
+            // logger.error('❌ Помилка fetchWithAuth:', error);
+            return null;
+        }
     }
 }
 

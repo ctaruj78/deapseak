@@ -6,7 +6,7 @@ $(document).ready(function() {
             const lifts = JSON.parse(localStorage.getItem('lifts')) || [];
             return lifts.filter(lift => lift.lat && lift.lng); // Тільки ліфти з координатами
         } catch (error) {
-            console.error('Помилка завантаження ліфтів:', error);
+            // logger.error('Помилка завантаження ліфтів:', error);
             return [];
         }
     }
@@ -56,7 +56,7 @@ $(document).ready(function() {
         const lifts = loadLiftsFromStorage();
 
         if (lifts.length === 0) {
-            console.log('Немає ліфтів з координатами для відображення на карті');
+            // logger.log('Немає ліфтів з координатами для відображення на карті');
             return;
         }
 
@@ -91,7 +91,7 @@ $(document).ready(function() {
             map.setView([lifts[0].lat, lifts[0].lng], 15);
         }
 
-        console.log(`Відображено ${markers.length} ліфтів на карті`);
+        // logger.log(`Відображено ${markers.length} ліфтів на карті`);
     }
 
     // Початкове завантаження маркерів
@@ -196,7 +196,7 @@ $(document).ready(function() {
 
             btn.html(originalText).prop('disabled', false);
         }, function(error) {
-            console.error('Помилка геолокації:', error);
+            // logger.error('Помилка геолокації:', error);
             let errorMessage = 'Не вдалося отримати ваше місцезнаходження';
             switch(error.code) {
                 case error.PERMISSION_DENIED:
@@ -232,7 +232,7 @@ $(document).ready(function() {
     // Прослуховування змін у localStorage (для синхронізації між сторінками)
     $(window).on('storage', function(e) {
         if (e.originalEvent.key === 'lifts') {
-            console.log('Дані ліфтів оновлено в іншій вкладці, оновлюємо карту...');
+            // logger.log('Дані ліфтів оновлено в іншій вкладці, оновлюємо карту...');
             updateMapMarkers();
             updateLastUpdateTime();
         }
@@ -244,7 +244,7 @@ $(document).ready(function() {
         const currentMarkersCount = markers.length;
 
         if (lifts.length !== currentMarkersCount) {
-            console.log('Кількість ліфтів змінилася, оновлюємо карту...');
+            // logger.log('Кількість ліфтів змінилася, оновлюємо карту...');
             updateMapMarkers();
             updateLastUpdateTime();
         }

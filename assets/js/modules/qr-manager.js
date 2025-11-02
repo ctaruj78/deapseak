@@ -60,7 +60,7 @@ const qrManager = (function() {
 
     // Initialize the module
     function init() {
-        console.log("QR Manager initialized");
+        // logger.log("QR Manager initialized");
         loadInitialData();
         setupEventListeners();
         setupFormHandlers();
@@ -209,9 +209,9 @@ const qrManager = (function() {
 
     // Handle type change in generate modal
     function onTypeChange() {
-        console.log('onTypeChange called');
+        // logger.log('onTypeChange called');
         const type = $('#qrType').val();
-        console.log('Selected type:', type);
+        // logger.log('Selected type:', type);
 
         $('#dynamicFields').hide();
         $('.dynamic-section').hide();
@@ -222,7 +222,7 @@ const qrManager = (function() {
         targetSelect.append('<option value="">Оберіть призначення...</option>');
 
         if (type) {
-            console.log('Showing dynamic fields for type:', type);
+            // logger.log('Showing dynamic fields for type:', type);
             $('#dynamicFields').show();
             $(`#${type}Fields`).show();
 
@@ -233,22 +233,22 @@ const qrManager = (function() {
             // Додати обробник події для оновлення preview при виборі призначення
             $('#qrTarget').off('change').on('change', updateQRPreview);
         } else {
-            console.log('No type selected, hiding fields');
+            // logger.log('No type selected, hiding fields');
         }
     }
 
     // Заповнення списку призначень залежно від типу
     function populateTargetOptions(type) {
-        console.log('populateTargetOptions called with type:', type);
+        // logger.log('populateTargetOptions called with type:', type);
         const targetSelect = $('#qrTarget');
         let options = [];
 
         switch (type) {
             case 'lift':
-                console.log('Processing lift type');
+                // logger.log('Processing lift type');
                 // Отримати список ліфтів з localStorage
                 const lifts = JSON.parse(localStorage.getItem('lifts')) || [];
-                console.log('Found lifts:', lifts.length);
+                // logger.log('Found lifts:', lifts.length);
 
                 if (lifts.length > 0) {
                     lifts.forEach(lift => {
@@ -260,7 +260,7 @@ const qrManager = (function() {
                         });
                     });
                 } else {
-                    console.log('No lifts found, using samples');
+                    // logger.log('No lifts found, using samples');
                     // Додати приклад, якщо немає ліфтів
                     options.push({ value: 'lift_sample_1', text: 'Ліфт №101 - вул. Шевченка, 10' });
                     options.push({ value: 'lift_sample_2', text: 'Ліфт №102 - вул. Франка, 25' });
@@ -304,11 +304,11 @@ const qrManager = (function() {
         }
 
         // Додати опції до селекта
-        console.log('Adding options to select:', options.length);
+        // logger.log('Adding options to select:', options.length);
         options.forEach(option => {
             targetSelect.append(`<option value="${option.value}">${option.text}</option>`);
         });
-        console.log('Options added successfully');
+        // logger.log('Options added successfully');
     }
 
     // Update QR preview
@@ -341,10 +341,10 @@ const qrManager = (function() {
             if (settings) {
                 $('#apiEndpoint').val(settings.endpoint || '');
                 $('#apiKey').val(settings.apiKey || '');
-                console.log('API settings loaded from storage');
+                // logger.log('API settings loaded from storage');
             }
         } catch (error) {
-            console.error('Error loading API settings:', error);
+            // logger.error('Error loading API settings:', error);
         }
     }
         // Edit form submission
@@ -363,7 +363,7 @@ const qrManager = (function() {
         // Create form submission
         $('#generateQRForm').on('submit', function(e) {
             e.preventDefault();
-            console.log('Generate QR form submitted');
+            // logger.log('Generate QR form submitted');
 
             // Validate expiry date
             const expiryDate = new Date($('#qrExpiry').val());
@@ -376,7 +376,7 @@ const qrManager = (function() {
             }
 
             const formData = new FormData(this);
-            console.log('Form data collected, calling createNewQR');
+            // logger.log('Form data collected, calling createNewQR');
 
             createNewQR(formData);
             $('#generateQRModal').modal('hide');
@@ -709,15 +709,15 @@ const qrManager = (function() {
 
     // Create new QR code
     function createNewQR(formData) {
-        console.log('createNewQR called');
+        // logger.log('createNewQR called');
         const newId = 'QR' + String(currentQRs.length + 1).padStart(4, '0');
         const type = $('#qrType').val();
         const target = $('#qrTarget').val();
 
-        console.log('Creating QR with:', { newId, type, target });
+        // logger.log('Creating QR with:', { newId, type, target });
 
         if (!type || !target) {
-            console.error('Missing required fields:', { type, target });
+            // logger.error('Missing required fields:', { type, target });
             showNotification('Заповніть всі обов\'язкові поля', 'error');
             return;
         }
@@ -1344,13 +1344,13 @@ const qrManager = (function() {
     // API Integration Functions
     function importFromLifts() {
         try {
-            console.log('Starting import from lifts...');
+            // logger.log('Starting import from lifts...');
             const lifts = JSON.parse(localStorage.getItem('lifts')) || [];
-            console.log('Found lifts in storage:', lifts.length);
+            // logger.log('Found lifts in storage:', lifts.length);
 
             if (lifts.length === 0) {
                 // Якщо немає ліфтів, створити тестові дані
-                console.log('No lifts found, creating sample data...');
+                // logger.log('No lifts found, creating sample data...');
                 const sampleLifts = [
                     { id: 'LIFT-001', model: 'Otis Gen2', location: 'вул. Шевченка, 10', address: 'вул. Шевченка, 10' },
                     { id: 'LIFT-002', model: 'Schindler 3300', location: 'вул. Франка, 25', address: 'вул. Франка, 25' },
@@ -1405,20 +1405,20 @@ const qrManager = (function() {
             }
 
         } catch (error) {
-            console.error('Error importing from lifts:', error);
+            // logger.error('Error importing from lifts:', error);
             showNotification('Помилка імпорту з ліфтів: ' + error.message, 'error');
         }
     }
 
     function importFromLocations() {
         try {
-            console.log('Starting import from locations...');
+            // logger.log('Starting import from locations...');
             const locations = JSON.parse(localStorage.getItem('locations')) || [];
-            console.log('Found locations in storage:', locations.length);
+            // logger.log('Found locations in storage:', locations.length);
 
             if (locations.length === 0) {
                 // Якщо немає локацій, створити тестові дані
-                console.log('No locations found, creating sample data...');
+                // logger.log('No locations found, creating sample data...');
                 const sampleLocations = [
                     { id: 'LOC-001', name: 'ЖК Сонячний', address: 'вул. Сонячна, 15', city: 'Київ' },
                     { id: 'LOC-002', name: 'Офісний центр', address: 'пр. Перемоги, 100', city: 'Київ' },
@@ -1473,14 +1473,14 @@ const qrManager = (function() {
             }
 
         } catch (error) {
-            console.error('Error importing from locations:', error);
+            // logger.error('Error importing from locations:', error);
             showNotification('Помилка імпорту з локацій: ' + error.message, 'error');
         }
     }
 
     function exportToCloud() {
         try {
-            console.log('Starting export to cloud...');
+            // logger.log('Starting export to cloud...');
             const exportData = {
                 qrs: currentQRs,
                 exportedAt: new Date().toISOString(),
@@ -1505,14 +1505,14 @@ const qrManager = (function() {
             addAuditLogEntry('Експорт', `Експортовано ${currentQRs.length} QR-кодів у хмарне сховище`);
             showNotification(`QR-коди експортовано в хмарне сховище (${currentQRs.length} записів)`, 'success');
         } catch (error) {
-            console.error('Error exporting to cloud:', error);
+            // logger.error('Error exporting to cloud:', error);
             showNotification('Помилка експорту в хмару: ' + error.message, 'error');
         }
     }
 
     function syncWithMobile() {
         try {
-            console.log('Starting sync with mobile app...');
+            // logger.log('Starting sync with mobile app...');
             showNotification('Синхронізація з мобільним додатком розпочата...', 'info');
 
             // Імітація процесу синхронізації
@@ -1539,7 +1539,7 @@ const qrManager = (function() {
             }, 800);
 
         } catch (error) {
-            console.error('Error syncing with mobile:', error);
+            // logger.error('Error syncing with mobile:', error);
             showNotification('Помилка синхронізації з мобільним додатком: ' + error.message, 'error');
         }
     }
@@ -1553,7 +1553,7 @@ const qrManager = (function() {
             return;
         }
 
-        console.log('Testing API connection to:', endpoint);
+        // logger.log('Testing API connection to:', endpoint);
         $('#apiStatusAlert').show();
         $('#apiStatusAlert').removeClass('alert-success alert-danger').addClass('alert-info');
         $('#apiStatusMessage').html('<i class="fas fa-spinner fa-spin"></i> Перевірка з\'єднання з API...');
@@ -1611,7 +1611,7 @@ const qrManager = (function() {
         }
 
         try {
-            console.log('Saving API settings...');
+            // logger.log('Saving API settings...');
             const settings = {
                 endpoint: endpoint.trim(),
                 apiKey: apiKey.trim(),
@@ -1630,7 +1630,7 @@ const qrManager = (function() {
             }, 500);
 
         } catch (error) {
-            console.error('Error saving API settings:', error);
+            // logger.error('Error saving API settings:', error);
             showNotification('Помилка збереження API налаштувань: ' + error.message, 'error');
         }
     }

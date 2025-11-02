@@ -23,9 +23,9 @@ class ExportManager {
                 await this.loadScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
             }
 
-            console.log('Export dependencies loaded');
+            // logger.log('Export dependencies loaded');
         } catch (error) {
-            console.error('Failed to load export dependencies:', error);
+            // logger.error('Failed to load export dependencies:', error);
         }
     }
 
@@ -85,7 +85,7 @@ class ExportManager {
             NotificationManager.success('Експорт завершено', `PDF файл ${filename} збережено`);
 
         } catch (error) {
-            console.error('PDF export failed:', error);
+            // logger.error('PDF export failed:', error);
             NotificationManager.error('Помилка експорту', 'Не вдалося експортувати PDF');
         }
     }
@@ -111,7 +111,7 @@ class ExportManager {
             NotificationManager.success('Експорт завершено', `Excel файл ${filename} збережено`);
 
         } catch (error) {
-            console.error('Excel export failed:', error);
+            // logger.error('Excel export failed:', error);
             NotificationManager.error('Помилка експорту', 'Не вдалося експортувати Excel');
         }
     }
@@ -152,7 +152,7 @@ class ExportManager {
             NotificationManager.success('Експорт завершено', `CSV файл ${filename} збережено`);
 
         } catch (error) {
-            console.error('CSV export failed:', error);
+            // logger.error('CSV export failed:', error);
             NotificationManager.error('Помилка експорту', 'Не вдалося експортувати CSV');
         }
     }
@@ -192,7 +192,7 @@ class ExportManager {
             await this.exportToExcel(lifts, `${filename}.xlsx`, 'Lifts');
 
         } catch (error) {
-            console.error('Dashboard export failed:', error);
+            // logger.error('Dashboard export failed:', error);
             NotificationManager.error('Помилка експорту звіту', 'Не вдалося експортувати звіт дашборду');
         }
     }

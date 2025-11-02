@@ -11,7 +11,7 @@ class AuthManager {
     static logout() {
         localStorage.removeItem(this.TOKEN_KEY);
         localStorage.removeItem(this.USER_KEY);
-        window.location.href = 'login.html';
+        window.location.href = '/login.html';
     }
 
     static isAuthenticated() {

@@ -32,7 +32,7 @@ window.LiftMaster = {
     
     // Ініціалізація додатку
     init: function() {
-        console.log('🚀 LiftMaster Pro ініціалізація...');
+        // logger.log('🚀 LiftMaster Pro ініціалізація...');
         
         this.initAdminLTE();
         this.checkAuthentication();
@@ -41,7 +41,7 @@ window.LiftMaster = {
         this.setupInterceptors();
         this.setupServiceWorker();
         
-        console.log('✅ LiftMaster Pro успішно ініціалізовано');
+        // logger.log('✅ LiftMaster Pro успішно ініціалізовано');
     },
     
     // Ініціалізація AdminLTE
@@ -158,10 +158,10 @@ window.LiftMaster = {
             navigator.serviceWorker
                 .register('/sw.js')
                 .then(function(registration) {
-                    console.log('✅ Service Worker зареєстровано:', registration);
+                    // logger.log('✅ Service Worker зареєстровано:', registration);
                 })
                 .catch(function(error) {
-                    console.log('❌ Помилка реєстрації Service Worker:', error);
+                    // logger.log('❌ Помилка реєстрації Service Worker:', error);
                 });
         }
     },
@@ -174,7 +174,7 @@ window.LiftMaster = {
                 this.state.user = JSON.parse(userData);
                 this.updateUserInterface();
             } catch (error) {
-                console.error('Помилка парсингу даних користувача:', error);
+                // logger.error('Помилка парсингу даних користувача:', error);
                 localStorage.removeItem('userData');
             }
         }
@@ -610,7 +610,7 @@ window.LiftMaster = {
             });
         }
         
-        console.log(`📊 Analytics: ${category} - ${action} - ${label}`);
+        // logger.log(`📊 Analytics: ${category} - ${action} - ${label}`);
     }
 };
 
@@ -618,12 +618,12 @@ window.LiftMaster = {
 $(document).ready(function() {
     // Перевірка підключених бібліотек
     if (typeof $ === 'undefined') {
-        console.error('jQuery не підключено!');
+        // logger.error('jQuery не підключено!');
         return;
     }
     
     if (typeof bootstrap === 'undefined') {
-        console.error('Bootstrap не підключено!');
+        // logger.error('Bootstrap не підключено!');
         return;
     }
     
@@ -643,12 +643,12 @@ $(document).ready(function() {
 
 // Глобальні обробники помилок
 window.addEventListener('error', function(e) {
-    console.error('Global error:', e.error);
+    // logger.error('Global error:', e.error);
     LiftMaster.showNotification('Сталася неочікувана помилка', 'error');
 });
 
 window.addEventListener('unhandledrejection', function(e) {
-    console.error('Unhandled promise rejection:', e.reason);
+    // logger.error('Unhandled promise rejection:', e.reason);
     LiftMaster.showNotification('Помилка виконання операції', 'error');
 });
 
@@ -671,7 +671,7 @@ class CommonUtils {
             return liftsData ? JSON.parse(liftsData) : [];
             
         } catch (error) {
-            console.error('Помилка отримання ліфтів:', error);
+            // logger.error('Помилка отримання ліфтів:', error);
             return [];
         }
     }

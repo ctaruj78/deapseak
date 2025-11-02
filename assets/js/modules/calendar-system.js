@@ -123,12 +123,12 @@ class CalendarSystem {
 
     renderWeekView() {
         // Реалізація тижневого виду
-        console.log('Render week view');
+        // logger.log('Render week view');
     }
 
     renderDayView() {
         // Реалізація денного виду
-        console.log('Render day view');
+        // logger.log('Render day view');
     }
 
     renderDayEvents(dayElement, date) {

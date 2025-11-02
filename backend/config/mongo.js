@@ -7,9 +7,9 @@ module.exports = async function mongoConnect() {
       useNewUrlParser: true,
       useUnifiedTopology: true
     });
-    console.log('MongoDB connected');
+    // logger.log('MongoDB connected');
   } catch (err) {
-    console.error('MongoDB connection error:', err);
+    // logger.error('MongoDB connection error:', err);
     throw err;
   }
 };

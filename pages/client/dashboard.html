@@ -17,223 +17,7 @@
     <!-- Auth Manager -->
     <script src="../../assets/js/auth.js"></script>
     
-    <style>
-        .client-dashboard {
-            background-color: #f8f9fa;
-        }
-        
-        .welcome-banner {
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            color: white;
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 25px;
-            box-shadow: 0 8px 25px rgba(106, 17, 203, 0.3);
-        }
-        
-        .stat-card {
-            transition: all 0.3s ease;
-            border: none;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
-        
-        .stat-icon {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-            opacity: 0.8;
-        }
-        
-        .status-badge {
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-        
-        .all-operational {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
-        }
-        
-        .maintenance-needed {
-            background: linear-gradient(135deg, #ffc107, #fd7e14);
-            color: #212529;
-        }
-        
-        .critical {
-            background: linear-gradient(135deg, #dc3545, #e83e8c);
-            color: white;
-        }
-        
-        .activity-item {
-            border-left: 4px solid #6a11cb;
-            transition: all 0.3s ease;
-            border-radius: 8px;
-        }
-        
-        .activity-item:hover {
-            transform: translateX(5px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        
-        .activity-item.pending {
-            border-left-color: #ffc107;
-        }
-        
-        .activity-item.in-progress {
-            border-left-color: #17a2b8;
-        }
-        
-        .activity-item.completed {
-            border-left-color: #28a745;
-        }
-        
-        .activity-item.cancelled {
-            border-left-color: #dc3545;
-        }
-        
-        .schedule-card {
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-        }
-        
-        .schedule-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
-        
-        .schedule-card.urgent {
-            background: linear-gradient(135deg, #dc3545, #e83e8c);
-            color: white;
-        }
-        
-        .schedule-card.soon {
-            background: linear-gradient(135deg, #ffc107, #fd7e14);
-            color: #212529;
-        }
-        
-        .schedule-card.normal {
-            background: linear-gradient(135deg, #17a2b8, #6f42c1);
-            color: white;
-        }
-        
-        .action-button {
-            transition: all 0.3s ease;
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            height: 100%;
-            border: none;
-        }
-        
-        .action-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
-        
-        .action-icon {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-            display: block;
-        }
-        
-        .chart-container {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        
-        .notification-bell {
-            position: relative;
-        }
-        
-        .notification-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #dc3545;
-            color: white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            font-size: 0.7rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        /* Анімації */
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-        
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .fade-in {
-            animation: fadeIn 0.6s ease;
-        }
-        
-        /* Спеціальні стилі для карток */
-        .card-client {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            transition: all 0.3s ease;
-        }
-        
-        .card-client:hover {
-            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-        }
-        
-        /* Стилі для темного режиму */
-        .dark-mode .card-client {
-            background-color: #2d3748;
-            color: white;
-        }
-        
-        .dark-mode .chart-container {
-            background-color: #2d3748;
-            color: white;
-        }
-        
-        /* Адаптивність */
-        @media (max-width: 768px) {
-            .welcome-banner {
-                padding: 20px;
-            }
-            
-            .stat-icon {
-                font-size: 2rem;
-            }
-            
-            .action-button {
-                padding: 15px;
-            }
-            
-            .action-icon {
-                font-size: 2rem;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="/assets/css/client-dashboard.css">
 </head>
 <body class="hold-transition sidebar-mini layout-fixed client-dashboard" data-required-role="client">
     <div class="wrapper">
@@ -343,6 +127,12 @@
                             <a href="support.html" class="nav-link">
                                 <i class="nav-icon fas fa-headset"></i>
                                 <p>Підтримка</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="settings.html" class="nav-link">
+                                <i class="nav-icon fas fa-cog"></i>
+                                <p>Налаштування</p>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -1108,8 +898,22 @@
         fabBtn.onclick = () => { modal.style.display = 'block'; };
         document.querySelector('.ai-chat-close').onclick = () => { modal.style.display = 'none'; };
     </script>
+    <!-- API Client -->
+    <script src="/assets/js/utils/api.js"></script>
+    <!-- Notifications -->
+    <script src="/assets/js/utils/notifications.js"></script>
+    <!-- Client Manager -->
+    <script src="/assets/js/modules/client-manager.js"></script>
     </body>
 </html>
 <!-- AI Assistant Include -->
 <!--#include file="../../templates/ai-assistant-include.html" -->
+    <!-- API Client -->
+    <script src="/assets/js/utils/api.js"></script>
+    <!-- Notifications -->
+    <script src="/assets/js/utils/notifications.js"></script>
+    <!-- Client Manager -->
+    <script src="/assets/js/modules/client-manager.js"></script>
+    <!-- Version Management -->
+    <script src="/assets/js/app-version.js"></script>
 <!-- Якщо сервер не підтримує include, вставте вміст ai-assistant-include.html вручну перед </body> -->

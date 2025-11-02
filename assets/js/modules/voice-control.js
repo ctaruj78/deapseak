@@ -27,7 +27,7 @@ class VoiceControl {
             this.recognition.onend = () => this.handleRecognitionEnd();
 
         } else {
-            console.warn('Web Speech API не підтримується в цьому браузері');
+            // logger.warn('Web Speech API не підтримується в цьому браузері');
         }
     }
 
@@ -94,7 +94,7 @@ class VoiceControl {
             this.updateUIStatus();
             this.showMessage('Слухаю...', 'listening');
         } catch (error) {
-            console.error('Помилка запуску розпізнавання мови:', error);
+            // logger.error('Помилка запуску розпізнавання мови:', error);
         }
     }
 
@@ -127,7 +127,7 @@ class VoiceControl {
     }
 
     processCommand(command) {
-        console.log('Розпізнана команда:', command);
+        // logger.log('Розпізнана команда:', command);
 
         let matched = false;
         for (const [pattern, handler] of this.commands) {
@@ -152,7 +152,7 @@ class VoiceControl {
     }
 
     handleRecognitionError(event) {
-        console.error('Помилка розпізнавання мови:', event.error);
+        // logger.error('Помилка розпізнавання мови:', event.error);
         
         if (event.error === 'not-allowed') {
             this.showMessage('Дозвіл на використання мікрофона не надано', 'error');

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Тест AdminMenuLoader</title>
+</head>
+<body>
+    <h1>Тестування AdminMenuLoader</h1>
+    <div id="sidebar-menu-container">Тут буде меню</div>
+
+    <script src="../../assets/js/admin-menu-loader.js"></script>
+    <script>
+        // Тестуємо завантаження меню
+        console.log('🚀 Початок тестування AdminMenuLoader');
+        AdminMenuLoader.init('admin-dashboard.html').then(() => {
+            console.log('✅ Меню завантажено успішно');
+        }).catch(error => {
+            console.error('❌ Помилка завантаження меню:', error);
+        });
+    </script>
+</body>
+</html>

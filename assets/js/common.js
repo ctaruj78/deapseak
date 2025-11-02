@@ -130,7 +130,7 @@ class CommonUtils {
             const mergedOptions = { ...defaultOptions, ...options };
             return new QRCode(container, mergedOptions);
         } catch (error) {
-            console.error('Помилка генерації QR-коду:', error);
+            // logger.error('Помилка генерації QR-коду:', error);
             this.showNotification('Помилка генерації QR-коду', 'error');
             throw error;
         }
@@ -149,7 +149,7 @@ class CommonUtils {
             link.click();
             this.showNotification('QR-код успішно завантажено', 'success');
         } catch (error) {
-            console.error('Помилка завантаження QR-коду:', error);
+            // logger.error('Помилка завантаження QR-коду:', error);
             this.showNotification('Помилка завантаження QR-коду', 'error');
         }
     }
@@ -222,7 +222,7 @@ class CommonUtils {
             }
             return lifts;
         } catch (error) {
-            console.error('Помилка читання ліфтів з localStorage:', error);
+            // logger.error('Помилка читання ліфтів з localStorage:', error);
             return this.loadTestLiftsData();
         }
     }
@@ -301,7 +301,7 @@ class CommonUtils {
             ];
             return testData;
         } catch (error) {
-            console.error('Помилка завантаження тестових даних:', error);
+            // logger.error('Помилка завантаження тестових даних:', error);
             return [];
         }
     }
@@ -311,7 +311,7 @@ class CommonUtils {
             localStorage.setItem('lifts', JSON.stringify(lifts));
             return true;
         } catch (error) {
-            console.error('Помилка збереження ліфтів:', error);
+            // logger.error('Помилка збереження ліфтів:', error);
             this.showNotification('Помилка збереження даних', 'error');
             return false;
         }
@@ -321,7 +321,7 @@ class CommonUtils {
         try {
             return JSON.parse(localStorage.getItem('currentUser')) || null;
         } catch (error) {
-            console.error('Помилка читання поточного користувача:', error);
+            // logger.error('Помилка читання поточного користувача:', error);
             return null;
         }
     }
@@ -337,7 +337,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Додаємо глобальний обробник помилок
     window.addEventListener('error', function(e) {
-        console.error('Global error:', e.error);
+        // logger.error('Global error:', e.error);
         CommonUtils.showNotification('Сталася помилка в роботі системи', 'error');
     });
 
@@ -451,7 +451,7 @@ class CommonUtils {
         try {
             return JSON.parse(localStorage.getItem('lifts')) || [];
         } catch (error) {
-            console.error('Помилка читання ліфтів з localStorage:', error);
+            // logger.error('Помилка читання ліфтів з localStorage:', error);
             return [];
         }
     }
@@ -461,7 +461,7 @@ class CommonUtils {
             localStorage.setItem('lifts', JSON.stringify(lifts));
             return true;
         } catch (error) {
-            console.error('Помилка збереження ліфтів:', error);
+            // logger.error('Помилка збереження ліфтів:', error);
             this.showNotification('Помилка збереження даних', 'error');
             return false;
         }
@@ -471,7 +471,7 @@ class CommonUtils {
         try {
             return JSON.parse(localStorage.getItem('currentUser')) || null;
         } catch (error) {
-            console.error('Помилка читання поточного користувача:', error);
+            // logger.error('Помилка читання поточного користувача:', error);
             return null;
         }
     }
@@ -481,7 +481,7 @@ class CommonUtils {
             localStorage.setItem('currentUser', JSON.stringify(user));
             return true;
         } catch (error) {
-            console.error('Помилка збереження користувача:', error);
+            // logger.error('Помилка збереження користувача:', error);
             return false;
         }
     }
@@ -490,7 +490,7 @@ class CommonUtils {
         try {
             return JSON.parse(localStorage.getItem('serviceRequests')) || [];
         } catch (error) {
-            console.error('Помилка читання заявок:', error);
+            // logger.error('Помилка читання заявок:', error);
             return [];
         }
     }
@@ -500,7 +500,7 @@ class CommonUtils {
             localStorage.setItem('serviceRequests', JSON.stringify(requests));
             return true;
         } catch (error) {
-            console.error('Помилка збереження заявок:', error);
+            // logger.error('Помилка збереження заявок:', error);
             return false;
         }
     }
@@ -520,7 +520,7 @@ class CommonUtils {
             }
             return null;
         } catch (error) {
-            console.error('Помилка геокодування:', error);
+            // logger.error('Помилка геокодування:', error);
             this.showNotification('Помилка отримання координат', 'error');
             return null;
         }
@@ -651,7 +651,7 @@ class CommonUtils {
             
             this.showNotification('Дані експортовано успішно', 'success');
         } catch (error) {
-            console.error('Помилка експорту CSV:', error);
+            // logger.error('Помилка експорту CSV:', error);
             this.showNotification('Помилка експорту даних', 'error');
         }
     }
@@ -678,7 +678,7 @@ class CommonUtils {
             
             this.showNotification('Дані експортовано успішно', 'success');
         } catch (error) {
-            console.error('Помилка експорту JSON:', error);
+            // logger.error('Помилка експорту JSON:', error);
             this.showNotification('Помилка експорту даних', 'error');
         }
     }
@@ -740,7 +740,7 @@ class CommonUtils {
 
             return await this.generateQRCode(elementId, qrData, { ...defaultOptions, ...options });
         } catch (error) {
-            console.error('Помилка генерації QR коду для ліфта:', error);
+            // logger.error('Помилка генерації QR коду для ліфта:', error);
             throw error;
         }
     }
@@ -787,7 +787,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Додаємо глобальний обробник помилок
     window.addEventListener('error', function(e) {
-        console.error('Global error:', e.error);
+        // logger.error('Global error:', e.error);
         CommonUtils.showNotification('Сталася помилка в роботі системи', 'error');
     });
 
@@ -804,7 +804,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setInterval(() => {
         CommonUtils.saveLifts(allLifts);
         CommonUtils.saveServiceRequests(allServiceRequests);
-        console.log('Автозбереження виконано');
+        // logger.log('Автозбереження виконано');
     }, 30000);
 
     // Ініціалізація всіх тултіпів

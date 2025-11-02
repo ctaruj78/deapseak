@@ -20,20 +20,20 @@ class WebSocketClient {
     }
 
     connect() {
-        console.log('🔌 Підключення до WebSocket сервера...');
+        // logger.log('🔌 Підключення до WebSocket сервера...');
         
         try {
             this.ws = new WebSocket(this.serverUrl);
             this.setupEventHandlers();
         } catch (error) {
-            console.error('❌ Помилка підключення WebSocket:', error);
+            // logger.error('❌ Помилка підключення WebSocket:', error);
             this.scheduleReconnect();
         }
     }
 
     setupEventHandlers() {
         this.ws.onopen = () => {
-            console.log('✅ WebSocket підключено');
+            // logger.log('✅ WebSocket підключено');
             this.isConnected = true;
             this.reconnectAttempts = 0;
             
@@ -49,12 +49,12 @@ class WebSocketClient {
                 const message = JSON.parse(event.data);
                 this.handleMessage(message);
             } catch (error) {
-                console.error('❌ Помилка парсингу повідомлення:', error);
+                // logger.error('❌ Помилка парсингу повідомлення:', error);
             }
         };
 
         this.ws.onclose = (event) => {
-            console.log('🔌 WebSocket відключено:', event.reason);
+            // logger.log('🔌 WebSocket відключено:', event.reason);
             this.isConnected = false;
             this.emit('disconnected', event);
             
@@ -64,7 +64,7 @@ class WebSocketClient {
         };
 
         this.ws.onerror = (error) => {
-            console.error('❌ WebSocket помилка:', error);
+            // logger.error('❌ WebSocket помилка:', error);
             this.emit('error', error);
         };
     }
@@ -74,38 +74,38 @@ class WebSocketClient {
 
         switch (type) {
             case 'auth_success':
-                console.log('✅ Авторизація успішна');
+                // logger.log('✅ Авторизація успішна');
                 this.emit('authenticated', data);
                 break;
                 
             case 'room_joined':
-                console.log(`📢 Приєдналися до кімнати: ${data.roomId}`);
+                // logger.log(`📢 Приєдналися до кімнати: ${data.roomId}`);
                 this.currentRoom = data.roomId;
                 this.emit('room_joined', data);
                 break;
                 
             case 'user_joined_room':
-                console.log(`👤 Користувач ${data.userId} приєднався до кімнати`);
+                // logger.log(`👤 Користувач ${data.userId} приєднався до кімнати`);
                 this.emit('user_joined', data);
                 break;
                 
             case 'user_left_room':
-                console.log(`👤 Користувач ${data.userId} покинув кімнату`);
+                // logger.log(`👤 Користувач ${data.userId} покинув кімнату`);
                 this.emit('user_left', data);
                 break;
                 
             case 'new_message':
-                console.log(`💬 Нове повідомлення від ${data.userId}`);
+                // logger.log(`💬 Нове повідомлення від ${data.userId}`);
                 this.emit('message', data);
                 break;
                 
             case 'assignment_updated':
-                console.log(`📋 Оновлення заявки ${data.assignmentId}`);
+                // logger.log(`📋 Оновлення заявки ${data.assignmentId}`);
                 this.emit('assignment_update', data);
                 break;
                 
             case 'monitoring_alert':
-                console.log(`🚨 ${data.severity.toUpperCase()} алерт: ${data.message}`);
+                // logger.log(`🚨 ${data.severity.toUpperCase()} алерт: ${data.message}`);
                 this.emit('monitoring_alert', data);
                 break;
                 
@@ -114,30 +114,30 @@ class WebSocketClient {
                 break;
                 
             case 'user_status_changed':
-                console.log(`👤 ${data.userId} тепер ${data.status}`);
+                // logger.log(`👤 ${data.userId} тепер ${data.status}`);
                 this.emit('user_status', data);
                 break;
                 
             case 'error':
-                console.error('❌ Серверна помилка:', data.error);
+                // logger.error('❌ Серверна помилка:', data.error);
                 this.emit('server_error', data);
                 break;
                 
             default:
-                console.warn('⚠️ Невідомий тип повідомлення:', type);
+                // logger.warn('⚠️ Невідомий тип повідомлення:', type);
         }
     }
 
     scheduleReconnect() {
         if (this.reconnectAttempts < this.maxReconnectAttempts) {
             this.reconnectAttempts++;
-            console.log(`🔄 Спроба перепідключення ${this.reconnectAttempts}/${this.maxReconnectAttempts} через ${this.reconnectInterval}мс`);
+            // logger.log(`🔄 Спроба перепідключення ${this.reconnectAttempts}/${this.maxReconnectAttempts} через ${this.reconnectInterval}мс`);
             
             setTimeout(() => {
                 this.connect();
             }, this.reconnectInterval);
         } else {
-            console.error('❌ Досягнуто максимум спроб перепідключення');
+            // logger.error('❌ Досягнуто максимум спроб перепідключення');
             this.emit('max_reconnect_attempts');
         }
     }
@@ -266,7 +266,7 @@ class WebSocketClient {
                 try {
                     handler(data);
                 } catch (error) {
-                    console.error(`❌ Помилка в обробнику події ${event}:`, error);
+                    // logger.error(`❌ Помилка в обробнику події ${event}:`, error);
                 }
             });
         }
@@ -350,4 +350,4 @@ window.WebSocketUtils = {
     }
 };
 
-console.log('🔌 WebSocket Client завантажено');
+// logger.log('🔌 WebSocket Client завантажено');

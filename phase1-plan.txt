@@ -1,0 +1,103 @@
+# Фаза 1: Файли для видалення (чисті редиректи)
+# Ці файли тільки перенаправляють на інші сторінки
+
+## Admin файли-редиректи:
+pages/admin/analytics-dashboard.html  # -> unified-analytics.html
+pages/admin/analytics.html           # -> unified-analytics.html  
+pages/admin/qr-analytics.html        # -> unified-analytics.html#qr-analytics
+pages/admin/reports.html             # -> unified-analytics.html#reports-analytics
+
+## Перевірка чи є чисті редиректи:
+
+
+# Аналіз дублювань - Фаза 1
+
+## Admin роль:
+- admin-dashboard.html (основна, має повний контент)
+- analytics-dashboard.html (redirect -> unified-analytics.html, але має власний контент)
+- analytics.html (redirect -> unified-analytics.html, але має власний контент)  
+- unified-analytics.html (основна сторінка аналітики)
+- qr-analytics.html (redirect -> unified-analytics.html#qr-analytics)
+
+## Висновок: 
+Ці файли не є 'чистими редиректами' - вони мають повний HTML контент.
+Але вони дублюють функціонал unified-analytics.html.
+
+## План дій:
+1. Залишити тільки unified-analytics.html як єдину сторінку аналітики
+2. Оновити навігацію в admin-dashboard.html щоб посилатися на unified-analytics.html
+3. Видалити дублюючі файли після тестування
+
+
+# Фаза 1: Видалення дублюючих файлів
+
+## Крок 1: Видалити файли з мінімальним контентом (< 100 рядків)
+# Ці файли мають тільки базову структуру і редирект
+
+## Крок 2: Об'єднати навігацію
+# В admin-dashboard.html залишити тільки посилання на основні сторінки:
+# - unified-analytics.html (аналітика)
+# - users.html (користувачі)  
+# - lifts.html (ліфти)
+# - settings.html (налаштування)
+
+## Крок 3: Видалити після тестування
+# analytics-dashboard.html
+# analytics.html
+# qr-analytics.html
+# reports.html
+
+## Переваги:
+# - Зменшення кількості файлів з 201 до ~20-30
+# - Легше підтримувати
+# - Швидше завантаження (менше дублювання стилів/скриптів)
+
+
+# Файли для негайного видалення (Фаза 1а):
+
+## Чисті редиректи:
+pages/admin/login.html (21 рядок - тільки перенаправлення)
+
+## Тестові файли без функціоналу:
+pages/admin/simple-nav-test.html (66 рядків - тест навігації)
+pages/admin/audit-log.html (77 рядків - можливо порожній)
+pages/admin/import-checklists.html (79 рядків - можливо тестовий)
+
+## Перевірити перед видаленням:
+pages/admin/report-template.html (75 рядків)
+pages/dispatcher/calendar.html (68 рядків)
+pages/tech/task-map.html (97 рядків)
+
+
+# Фаза 1: ✅ Завершено - Спрощення навігації admin
+
+## Що зроблено:
+- Видалено зайві пункти меню QR системи
+- Спростжено меню ліфтів (видалено мапи)
+- Об'єднано підтримку в один пункт
+- Видалено меню документів (шаблони доступні окремо)
+- Залишено тільки основні навігаційні пункти
+
+## Результат:
+- Навігація стала чистішою та зрозумілішою
+- Менше візуального шуму
+- Легше орієнтуватися
+
+# Фаза 2: Стандартизація інших ролей
+
+## Наступні кроки:
+1. Спростити навігацію dispatcher (аналогічно admin)
+2. Спростити навігацію tech 
+3. Спростити навігацію client
+4. Стандартизувати стилі навігації
+
+## Фаза 3: Видалення дублюючих файлів
+Після тестування всіх ролей видалити файли-редиректи:
+- analytics-dashboard.html → unified-analytics.html
+- analytics.html → unified-analytics.html
+- qr-analytics.html → unified-analytics.html#qr-analytics
+- reports.html → unified-analytics.html#reports-analytics
+
+## Фаза 4: Модульна архітектура
+Перейти на використання assets/modules/ для контенту
+

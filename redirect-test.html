@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест Редиректу - DeapSeaK</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 { color: #333; margin-bottom: 20px; }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 5px;
+        }
+        .test-section h2 {
+            color: #667eea;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .test-btn {
+            display: inline-block;
+            margin: 5px;
+            padding: 10px 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .test-btn:hover { background: #764ba2; }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            background: #fff9e6;
+            border-left: 4px solid #ffc107;
+            border-radius: 5px;
+            display: none;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            word-break: break-all;
+        }
+        .result.show { display: block; }
+        .result.success {
+            background: #d4edda;
+            border-left-color: #28a745;
+            color: #155724;
+        }
+        .result.error {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+            color: #721c24;
+        }
+        code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 Тест Редиректу Дашборду</h1>
+        
+        <div class="test-section">
+            <h2>1️⃣ Перевірка доступності дашбордів</h2>
+            <button class="test-btn" onclick="checkDashboard('/pages/admin/admin-dashboard.html')">
+                👨‍💼 Admin Dashboard
+            </button>
+            <button class="test-btn" onclick="checkDashboard('/pages/dispatcher/dashboard.html')">
+                📞 Dispatcher
+            </button>
+            <button class="test-btn" onclick="checkDashboard('/pages/tech/dashboard.html')">
+                🔧 Tech
+            </button>
+            <button class="test-btn" onclick="checkDashboard('/pages/client/dashboard.html')">
+                👤 Client
+            </button>
+            <div id="dashboard-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>2️⃣ Повний тест входу та редиректу</h2>
+            <button class="test-btn" onclick="fullLoginTest()">
+                🔐 Повний Тест Входу
+            </button>
+            <div id="login-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>3️⃣ Перевірка LocalStorage</h2>
+            <button class="test-btn" onclick="checkStorage()">
+                💾 Перевірити дані
+            </button>
+            <div id="storage-result" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        function showResult(elementId, text, isSuccess = true) {
+            const result = document.getElementById(elementId);
+            result.textContent = text;
+            result.className = `result show ${isSuccess ? 'success' : 'error'}`;
+        }
+
+        async function checkDashboard(path) {
+            const protocol = window.location.protocol;
+            const hostname = window.location.hostname;
+            
+            let url = '';
+            if (hostname.includes('.app.github.dev')) {
+                url = protocol + '//' + hostname + path;
+            } else {
+                url = 'http://localhost:8080' + path;
+            }
+            
+            try {
+                const response = await fetch(url);
+                showResult('dashboard-result', 
+                    `✅ ${path}\nСтатус: ${response.status}\nURL: ${url}`, 
+                    response.ok);
+            } catch (error) {
+                showResult('dashboard-result', 
+                    `❌ ${path}\nПомилка: ${error.message}`, 
+                    false);
+            }
+        }
+
+        async function fullLoginTest() {
+            showResult('login-result', 'Тестування входу...', true);
+            
+            try {
+                const hostname = window.location.hostname;
+                const protocol = window.location.protocol;
+                let apiUrl = '';
+                
+                if (hostname.includes('.app.github.dev')) {
+                    apiUrl = protocol + '//' + hostname.replace('-8080.', '-3001.') + '/api/auth/login';
+                } else {
+                    apiUrl = 'http://localhost:3001/api/auth/login';
+                }
+                
+                console.log('📍 API URL:', apiUrl);
+                
+                // Крок 1: Вхід
+                showResult('login-result', 'Крок 1: Відправка запиту входу...');
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@example.com',
+                        password: 'admin123'
+                    })
+                });
+                
+                const data = await response.json();
+                console.log('📝 Відповідь:', data);
+                
+                if (!response.ok || !data.success) {
+                    showResult('login-result', 
+                        `❌ Помилка входу\nСтатус: ${response.status}\nПовідомлення: ${data.message || data.error}`, 
+                        false);
+                    return;
+                }
+                
+                // Крок 2: Збереження даних
+                showResult('login-result', 'Крок 2: Збереження даних...');
+                localStorage.setItem('auth_token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+                
+                // Крок 3: Визначення редиректу
+                showResult('login-result', 'Крок 3: Визначення шляху редиректу...');
+                const role = data.user.role;
+                let redirectPath = '';
+                
+                switch(role) {
+                    case 'admin':
+                        redirectPath = '/pages/admin/admin-dashboard.html';
+                        break;
+                    case 'dispatcher':
+                        redirectPath = '/pages/dispatcher/dashboard.html';
+                        break;
+                    case 'technician':
+                    case 'tech':
+                        redirectPath = '/pages/tech/dashboard.html';
+                        break;
+                    case 'client':
+                        redirectPath = '/pages/client/dashboard.html';
+                        break;
+                    default:
+                        redirectPath = '/pages/admin/admin-dashboard.html';
+                }
+                
+                // Крок 4: Перевірка доступності дашборду
+                showResult('login-result', 'Крок 4: Перевірка доступності дашборду...');
+                const dashboardUrl = hostname.includes('.app.github.dev') 
+                    ? protocol + '//' + hostname + redirectPath
+                    : 'http://localhost:8080' + redirectPath;
+                
+                const dashResponse = await fetch(dashboardUrl);
+                
+                if (!dashResponse.ok) {
+                    showResult('login-result', 
+                        `❌ Дашборд недоступний\nСтатус: ${dashResponse.status}\nURL: ${dashboardUrl}`, 
+                        false);
+                    return;
+                }
+                
+                // Все OK
+                showResult('login-result', 
+                    `✅ Всі перевірки пройшли успішно!\n\n` +
+                    `Користувач: ${data.user.username}\n` +
+                    `Роль: ${data.user.role}\n` +
+                    `Токен: ${data.token.substring(0, 30)}...\n` +
+                    `Редирект на: ${redirectPath}\n` +
+                    `\nТепер браузер повинен перенаправити на:\n${dashboardUrl}`, 
+                    true);
+                
+                // Після 2 секунди виконаємо редирект
+                setTimeout(() => {
+                    showResult('login-result', 
+                        `✅ Перенаправляємо на дашборд...\n${dashboardUrl}`, 
+                        true);
+                    window.location.href = redirectPath;
+                }, 2000);
+                
+            } catch (error) {
+                showResult('login-result', 
+                    `❌ Критична помилка\n${error.message}\n${error.stack}`, 
+                    false);
+                console.error('Помилка:', error);
+            }
+        }
+
+        function checkStorage() {
+            try {
+                const token = localStorage.getItem('auth_token');
+                const user = localStorage.getItem('user');
+                
+                let result = '💾 LocalStorage:\n';
+                if (token) {
+                    result += `✅ auth_token: ${token.substring(0, 30)}...\n`;
+                } else {
+                    result += `❌ auth_token: не знайдено\n`;
+                }
+                
+                if (user) {
+                    const userData = JSON.parse(user);
+                    result += `✅ user: ${userData.username} (${userData.role})\n`;
+                } else {
+                    result += `❌ user: не знайдено\n`;
+                }
+                
+                showResult('storage-result', result, token && user);
+            } catch (error) {
+                showResult('storage-result', `❌ Помилка: ${error.message}`, false);
+            }
+        }
+    </script>
+</body>
+</html>

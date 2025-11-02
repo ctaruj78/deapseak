@@ -195,12 +195,12 @@ class DispatcherSettingsManager {
 
     setupAutoRefresh() {
         // Логіка автооновлення даних
-        console.log('Автооновлення активовано');
+        // logger.log('Автооновлення активовано');
     }
 
     clearAutoRefresh() {
         // Логіка вимкнення автооновлення
-        console.log('Автооновлення вимкнено');
+        // logger.log('Автооновлення вимкнено');
     }
 
     updateUI() {

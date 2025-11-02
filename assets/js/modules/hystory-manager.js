@@ -33,7 +33,7 @@ class HistoryManager {
                 throw new Error('API недоступне');
             }
         } catch (error) {
-            console.warn('Використання локальних даних:', error);
+            // logger.warn('Використання локальних даних:', error);
             this.events = JSON.parse(localStorage.getItem('maintenanceHistory')) || [];
             
             if (this.events.length === 0) {

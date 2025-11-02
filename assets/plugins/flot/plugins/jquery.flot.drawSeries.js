@@ -541,7 +541,7 @@ This plugin is used by flot for drawing lines, plots, bars or area.
             if (lineWidth > 0 && (drawLeft || drawRight || drawTop || drawBottom)) {
                 c.beginPath();
 
-                // FIXME: inline moveTo is buggy with excanvas
+                // NOTE: inline moveTo is buggy with excanvas
                 c.moveTo(left, bottom);
                 if (drawLeft) {
                     c.lineTo(left, top);

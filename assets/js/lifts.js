@@ -3,7 +3,7 @@
 // Клас для управління ліфтами
 class LiftManager {
     constructor() {
-        console.log('LiftManager constructor called');
+        // logger.log('LiftManager constructor called');
         this.currentPage = 1;
         this.itemsPerPage = 10;
         this.filteredLifts = [];
@@ -13,17 +13,17 @@ class LiftManager {
     }
 
     init() {
-        console.log('LiftManager init() called');
+        // logger.log('LiftManager init() called');
         this.loadLifts();
         this.initMap();
         this.initEventListeners();
-        console.log('LiftManager initialized successfully');
+        // logger.log('LiftManager initialized successfully');
     }
 
     initEventListeners() {
         // Додавання ліфта
         $('#add-lift-button').on('click', () => {
-            console.log('Add lift button clicked');
+            // logger.log('Add lift button clicked');
             this.resetForm();
             $('#modalTitle').text('Додати ліфт');
             $('#liftModal').modal('show');
@@ -45,7 +45,7 @@ class LiftManager {
 
         // Геокодування
         $('#geocode-button').on('click', () => {
-            console.log('Geocode button clicked');
+            // logger.log('Geocode button clicked');
             const address = $('#lift-address').val();
             if (address) {
                 this.geocodeAddress(address).then(coords => {
@@ -62,7 +62,7 @@ class LiftManager {
 
         // Збереження нового ліфта
         $('#save-lift-button').on('click', () => {
-            console.log('Save lift button clicked - Validating inputs...');
+            // logger.log('Save lift button clicked - Validating inputs...');
             const address = $('#lift-address').val().trim();
             const postalCode = $('#lift-postal-code').val().trim();
             const liftCount = parseInt($('#lift-lift-count').val());
@@ -73,10 +73,10 @@ class LiftManager {
             const lat = $('#lift-lat').val().trim();
             const lng = $('#lift-lng').val().trim();
 
-            console.log('Input values:', { address, postalCode, liftCount, serials, brand, client, clientEmail, lat, lng });
+            // logger.log('Input values:', { address, postalCode, liftCount, serials, brand, client, clientEmail, lat, lng });
 
             if (!address || !postalCode || !liftCount || serials.some(s => !s) || !client || !clientEmail) {
-                console.log('Validation failed - Required fields missing');
+                // logger.log('Validation failed - Required fields missing');
                 if (typeof toastr !== 'undefined') toastr.error('Заповніть усі обов’язкові поля.');
                 return;
             }
@@ -104,19 +104,19 @@ class LiftManager {
                     lng: lng ? parseFloat(lng) : null
                 };
                 allLifts.push(newLift);
-                console.log('Added lift:', newLift);
+                // logger.log('Added lift:', newLift);
             }
 
             saveDataToLocalStorage();
             $('#liftModal').modal('hide');
             this.updateLiftTable();
             if (typeof toastr !== 'undefined') toastr.success('Ліфт(и) додано.');
-            console.log('Lift saved successfully - Total lifts:', allLifts.length);
+            // logger.log('Lift saved successfully - Total lifts:', allLifts.length);
         });
 
         // Перегляд деталей ліфта
         $('#lifts-table-body').on('click', '.details-btn', function () {
-            console.log('Details button clicked for lift:', $(this).data('id'));
+            // logger.log('Details button clicked for lift:', $(this).data('id'));
             const liftId = $(this).data('id');
             const lift = allLifts.find(l => l.id === liftId);
             if (lift) {
@@ -154,7 +154,7 @@ class LiftManager {
 
         // Редагування ліфта
         $('#lifts-table-body').on('click', '.edit-btn', function () {
-            console.log('Edit button clicked for lift:', $(this).data('id'));
+            // logger.log('Edit button clicked for lift:', $(this).data('id'));
             const liftId = $(this).data('id');
             const lift = allLifts.find(l => l.id === liftId);
             if (lift) {
@@ -175,7 +175,7 @@ class LiftManager {
         });
 
         $('#save-edit-lift-button').on('click', () => {
-            console.log('Save edit lift button clicked');
+            // logger.log('Save edit lift button clicked');
             const liftId = $('#edit-lift-id').val();
             const lift = allLifts.find(l => l.id === liftId);
             if (lift) {
@@ -205,7 +205,7 @@ class LiftManager {
 
         // Призначення техніка
         $('#lifts-table-body').on('click', '.assign-tech-btn', function () {
-            console.log('Assign tech button clicked for lift:', $(this).data('id'));
+            // logger.log('Assign tech button clicked for lift:', $(this).data('id'));
             const liftId = $(this).data('id');
             $('#assign-lift-id').val(liftId);
             const techSelect = $('#assign-tech');
@@ -217,7 +217,7 @@ class LiftManager {
         });
 
         $('#save-assign-tech-button').on('click', () => {
-            console.log('Save assign tech button clicked');
+            // logger.log('Save assign tech button clicked');
             const liftId = $('#assign-lift-id').val();
             const tech = $('#assign-tech').val();
             const lift = allLifts.find(l => l.id === liftId);
@@ -232,7 +232,7 @@ class LiftManager {
 
         // Створення заявки на обслуговування
         $('#lifts-table-body').on('click', '.request-btn', function () {
-            console.log('Request button clicked for lift:', $(this).data('id'));
+            // logger.log('Request button clicked for lift:', $(this).data('id'));
             const liftId = $(this).data('id');
             const lift = allLifts.find(l => l.id === liftId);
             if (lift) {
@@ -244,7 +244,7 @@ class LiftManager {
 
         // Генерація QR-коду
         $('#lifts-table-body').on('click', '.qrcode-btn', function () {
-            console.log('QR code button clicked for lift:', $(this).data('id'));
+            // logger.log('QR code button clicked for lift:', $(this).data('id'));
             const liftId = $(this).data('id');
             $('#qr-lift-id').val(liftId);
             $('#qrModal').modal('show');
@@ -252,7 +252,7 @@ class LiftManager {
         });
 
         $('#save-qr-button').on('click', () => {
-            console.log('Save QR button clicked');
+            // logger.log('Save QR button clicked');
             const liftId = $('#qr-lift-id').val();
             const qrCodeUrl = $('#qrcode').find('img').attr('src');
             if (qrCodeUrl) {
@@ -264,14 +264,14 @@ class LiftManager {
         });
 
         $('#clear-qr-button').on('click', () => {
-            console.log('Clear QR button clicked');
+            // logger.log('Clear QR button clicked');
             $('#qrcode').empty();
             if (typeof toastr !== 'undefined') toastr.info('QR-код очищено.');
         });
 
         // Чат
         $('#send-chat-button').on('click', () => {
-            console.log('Send chat button clicked');
+            // logger.log('Send chat button clicked');
             const liftId = $('#chat-lift-id').val();
             const lift = allLifts.find(l => l.id === liftId);
             const message = $('#chat-input').val().trim();
@@ -287,7 +287,7 @@ class LiftManager {
 
         // Обробник submit для форми liftForm
         $('#liftForm').on('submit', (e) => {
-            console.log('Form submit event triggered');
+            // logger.log('Form submit event triggered');
             e.preventDefault();
             this.saveLift();
         });
@@ -299,7 +299,7 @@ class LiftManager {
     initMap() {
         try {
             if (typeof L === 'undefined') {
-                console.error('Leaflet library not loaded');
+                // logger.error('Leaflet library not loaded');
                 return;
             }
             const mapContainer = document.getElementById('liftMap');
@@ -320,9 +320,9 @@ class LiftManager {
                     .bindPopup('Вибрано координати')
                     .openPopup();
             });
-            console.log('Map initialized successfully');
+            // logger.log('Map initialized successfully');
         } catch (error) {
-            console.error('Map initialization error:', error);
+            // logger.error('Map initialization error:', error);
         }
     }
 
@@ -353,7 +353,7 @@ class LiftManager {
                 CommonUtils.showNotification('Адресу не знайдено', 'error');
             }
         } catch (error) {
-            console.error('Geocoding error:', error);
+            // logger.error('Geocoding error:', error);
             CommonUtils.showNotification('Помилка отримання координат', 'error');
         }
     }
@@ -474,7 +474,7 @@ class LiftManager {
     }
 
     saveLift() {
-        console.log('saveLift() called');
+        // logger.log('saveLift() called');
         try {
             // Валідація обов'язкових полів
             const requiredFields = [
@@ -555,7 +555,7 @@ class LiftManager {
             CommonUtils.showNotification('Ліфт успішно збережено', 'success');
 
         } catch (error) {
-            console.error('Error saving lift:', error);
+            // logger.error('Error saving lift:', error);
             CommonUtils.showNotification('Помилка збереження ліфта', 'error');
         }
     }
@@ -685,7 +685,7 @@ class LiftManager {
             $('#qrModal').modal('show');
 
         } catch (error) {
-            console.error('QR generation error:', error);
+            // logger.error('QR generation error:', error);
             CommonUtils.showNotification('Помилка генерації QR коду', 'error');
         }
     }
@@ -707,7 +707,7 @@ class LiftManager {
                 CommonUtils.showNotification('QR код завантажено', 'success');
             }
         } catch (error) {
-            console.error('QR download error:', error);
+            // logger.error('QR download error:', error);
             CommonUtils.showNotification('Помилка завантаження QR коду', 'error');
         }
     }
@@ -737,7 +737,7 @@ class LiftManager {
             CommonUtils.showNotification('Дані експортовано в Excel', 'success');
 
         } catch (error) {
-            console.error('Excel export error:', error);
+            // logger.error('Excel export error:', error);
             CommonUtils.showNotification('Помилка експорту в Excel', 'error');
         }
     }
@@ -932,7 +932,7 @@ class LiftManager {
 
     // Оновлені методи для роботи з новими функціями
     updateLiftTable() {
-        console.log('Updating lift table...');
+        // logger.log('Updating lift table...');
         const liftsTableBody = $('#lifts-table-body');
         if (!liftsTableBody.length) {
             this.renderLiftsTable();
@@ -1011,7 +1011,7 @@ class LiftManager {
 
     sendEmail(to, subject, body, isHtml = false) {
         // Заглушка для відправки email
-        console.log('Email sent:', { to, subject, body, isHtml });
+        // logger.log('Email sent:', { to, subject, body, isHtml });
         // Тут можна додати реальну логіку відправки email через API
     }
 

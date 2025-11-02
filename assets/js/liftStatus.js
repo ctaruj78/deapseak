@@ -25,7 +25,7 @@ class LiftStatusManager {
             DOMHelper.showNotification(`Статус ліфта оновлено на: ${this.STATUS_LABELS[newStatus]}`);
             Renderer.updateDynamicContent();
         } catch (error) {
-            console.error('Помилка оновлення статусу:', error);
+            // logger.error('Помилка оновлення статусу:', error);
             DOMHelper.showNotification('Помилка оновлення статусу', 'error');
         }
     }

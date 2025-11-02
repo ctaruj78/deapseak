@@ -17,7 +17,7 @@
   function validator(text, options) {
     if (!window.JSHINT) {
       if (window.console) {
-        window.console.error("Error: window.JSHINT not defined, CodeMirror JavaScript linting cannot run.");
+        window.// logger.error("Error: window.JSHINT not defined, CodeMirror JavaScript linting cannot run.");
       }
       return [];
     }
@@ -37,7 +37,7 @@
       if (error) {
         if (error.line <= 0) {
           if (window.console) {
-            window.console.warn("Cannot display JSHint error (invalid line " + error.line + ")", error);
+            window.// logger.warn("Cannot display JSHint error (invalid line " + error.line + ")", error);
           }
           continue;
         }

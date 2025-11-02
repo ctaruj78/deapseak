@@ -34,7 +34,7 @@ class InvoiceManager {
                 throw new Error('API недоступне');
             }
         } catch (error) {
-            console.warn('Використання локальних даних:', error);
+            // logger.warn('Використання локальних даних:', error);
             this.invoices = JSON.parse(localStorage.getItem('invoices')) || [];
             
             if (this.invoices.length === 0) {

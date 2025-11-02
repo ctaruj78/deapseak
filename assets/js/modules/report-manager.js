@@ -45,7 +45,7 @@ class ReportManager {
                 throw new Error('API недоступне');
             }
         } catch (error) {
-            console.warn('Використання локальних даних:', error);
+            // logger.warn('Використання локальних даних:', error);
             this.loadFromLocalStorage();
         }
 

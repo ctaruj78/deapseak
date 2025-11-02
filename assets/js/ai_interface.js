@@ -17,7 +17,7 @@ class AIInterfaceController {
         // Ініціалізація
         this.init();
         
-        console.log('🤖 AI Interface Controller ініціалізовано');
+        // logger.log('🤖 AI Interface Controller ініціалізовано');
     }
     
     async init() {
@@ -38,7 +38,7 @@ class AIInterfaceController {
             this.startAdaptiveFeatures();
             
         } catch (error) {
-            console.error('Помилка ініціалізації AI інтерфейсу:', error);
+            // logger.error('Помилка ініціалізації AI інтерфейсу:', error);
         }
     }
     
@@ -50,10 +50,10 @@ class AIInterfaceController {
             this.userId = userInfo.id;
             this.userRole = userInfo.role;
             
-            console.log(`👤 Користувач: ${this.userId} (${this.userRole})`);
+            // logger.log(`👤 Користувач: ${this.userId} (${this.userRole})`);
             
         } catch (error) {
-            console.error('Помилка завантаження інформації користувача:', error);
+            // logger.error('Помилка завантаження інформації користувача:', error);
         }
     }
     
@@ -67,10 +67,10 @@ class AIInterfaceController {
             // Застосування персоналізованих налаштувань
             this.applyInterfaceSettings(interfaceData);
             
-            console.log('🎨 Персоналізований інтерфейс завантажено');
+            // logger.log('🎨 Персоналізований інтерфейс завантажено');
             
         } catch (error) {
-            console.error('Помилка завантаження інтерфейсу:', error);
+            // logger.error('Помилка завантаження інтерфейсу:', error);
             // Використання інтерфейсу за замовчуванням
             this.applyDefaultInterface();
         }
@@ -94,7 +94,7 @@ class AIInterfaceController {
             this.setupShortcuts(interfaceData.shortcuts);
             
         } catch (error) {
-            console.error('Помилка застосування налаштувань інтерфейсу:', error);
+            // logger.error('Помилка застосування налаштувань інтерфейсу:', error);
         }
     }
     
@@ -109,7 +109,7 @@ class AIInterfaceController {
             body.classList.add(theme);
         }
         
-        console.log(`🎨 Тема застосована: ${theme}`);
+        // logger.log(`🎨 Тема застосована: ${theme}`);
     }
     
     applyLayoutSettings(layoutSettings) {
@@ -140,10 +140,10 @@ class AIInterfaceController {
                 content.classList.add(`density-${layoutSettings.density}`);
             }
             
-            console.log('📐 Layout налаштований:', layoutSettings);
+            // logger.log('📐 Layout налаштований:', layoutSettings);
             
         } catch (error) {
-            console.error('Помилка застосування layout:', error);
+            // logger.error('Помилка застосування layout:', error);
         }
     }
     
@@ -168,10 +168,10 @@ class AIInterfaceController {
                 }
             });
             
-            console.log(`📊 Віджети налаштовані: ${sortedWidgets.length}`);
+            // logger.log(`📊 Віджети налаштовані: ${sortedWidgets.length}`);
             
         } catch (error) {
-            console.error('Помилка конфігурації віджетів:', error);
+            // logger.error('Помилка конфігурації віджетів:', error);
         }
     }
     
@@ -192,7 +192,7 @@ class AIInterfaceController {
             return widgetContainer;
             
         } catch (error) {
-            console.error(`Помилка створення віджета ${widgetConfig.widget}:`, error);
+            // logger.error(`Помилка створення віджета ${widgetConfig.widget}:`, error);
             return null;
         }
     }
@@ -228,7 +228,7 @@ class AIInterfaceController {
             }
             
         } catch (error) {
-            console.error(`Помилка завантаження вмісту віджета ${widgetName}:`, error);
+            // logger.error(`Помилка завантаження вмісту віджета ${widgetName}:`, error);
             container.innerHTML = '<div class="widget-error">Помилка завантаження віджета</div>';
         }
     }
@@ -312,10 +312,10 @@ class AIInterfaceController {
                 this.setupKeyboardNavigation();
             }
             
-            console.log('♿ Налаштування доступності застосовані');
+            // logger.log('♿ Налаштування доступності застосовані');
             
         } catch (error) {
-            console.error('Помилка застосування налаштувань доступності:', error);
+            // logger.error('Помилка застосування налаштувань доступності:', error);
         }
     }
     
@@ -343,10 +343,10 @@ class AIInterfaceController {
                 this.shortcutListeners.push(listener);
             });
             
-            console.log(`⌨️ Ярлики налаштовані: ${Object.keys(shortcuts).length}`);
+            // logger.log(`⌨️ Ярлики налаштовані: ${Object.keys(shortcuts).length}`);
             
         } catch (error) {
-            console.error('Помилка налаштування ярликів:', error);
+            // logger.error('Помилка налаштування ярликів:', error);
         }
     }
     
@@ -360,10 +360,10 @@ class AIInterfaceController {
             // Показ рекомендацій
             this.displayRecommendations(recommendations);
             
-            console.log(`💡 Рекомендацій завантажено: ${recommendations.length}`);
+            // logger.log(`💡 Рекомендацій завантажено: ${recommendations.length}`);
             
         } catch (error) {
-            console.error('Помилка завантаження рекомендацій:', error);
+            // logger.error('Помилка завантаження рекомендацій:', error);
         }
     }
     
@@ -400,7 +400,7 @@ class AIInterfaceController {
             });
             
         } catch (error) {
-            console.error('Помилка відображення рекомендацій:', error);
+            // logger.error('Помилка відображення рекомендацій:', error);
         }
     }
     
@@ -433,10 +433,10 @@ class AIInterfaceController {
                 });
             });
             
-            console.log('📊 Відстеження поведінки налаштовано');
+            // logger.log('📊 Відстеження поведінки налаштовано');
             
         } catch (error) {
-            console.error('Помилка налаштування відстеження:', error);
+            // logger.error('Помилка налаштування відстеження:', error);
         }
     }
     
@@ -461,11 +461,11 @@ class AIInterfaceController {
                 },
                 body: JSON.stringify(behavior)
             }).catch(error => {
-                console.error('Помилка відстеження поведінки:', error);
+                // logger.error('Помилка відстеження поведінки:', error);
             });
             
         } catch (error) {
-            console.error('Помилка трекінгу поведінки:', error);
+            // logger.error('Помилка трекінгу поведінки:', error);
         }
     }
     
@@ -479,10 +479,10 @@ class AIInterfaceController {
             // Автоматичне збереження налаштувань при зміні
             this.setupAutoSave();
             
-            console.log('🔄 Адаптивні функції запущені');
+            // logger.log('🔄 Адаптивні функції запущені');
             
         } catch (error) {
-            console.error('Помилка запуску адаптивних функцій:', error);
+            // logger.error('Помилка запуску адаптивних функцій:', error);
         }
     }
     
@@ -508,7 +508,7 @@ class AIInterfaceController {
             showNotification('Рекомендацію застосовано!', 'success');
             
         } catch (error) {
-            console.error('Помилка прийняття рекомендації:', error);
+            // logger.error('Помилка прийняття рекомендації:', error);
             showNotification('Помилка застосування рекомендації', 'error');
         }
     }
@@ -529,11 +529,11 @@ class AIInterfaceController {
                     break;
                     
                 default:
-                    console.log('Невідомий тип рекомендації:', recommendation.type);
+                    // logger.log('Невідомий тип рекомендації:', recommendation.type);
             }
             
         } catch (error) {
-            console.error('Помилка виконання рекомендації:', error);
+            // logger.error('Помилка виконання рекомендації:', error);
         }
     }
     
@@ -550,7 +550,7 @@ class AIInterfaceController {
         // Налаштування нагадування для пікового часу
         if (Notification.permission === 'granted') {
             // Створення нагадування
-            console.log(`Налаштовано нагадування на ${peakHour}:00`);
+            // logger.log(`Налаштовано нагадування на ${peakHour}:00`);
         }
     }
     
@@ -575,7 +575,7 @@ class AIInterfaceController {
             });
             
         } catch (error) {
-            console.error('Помилка оновлення налаштувань:', error);
+            // logger.error('Помилка оновлення налаштувань:', error);
         }
     }
     
@@ -593,12 +593,12 @@ class AIInterfaceController {
             });
             
         } catch (error) {
-            console.error('Помилка позначення рекомендації:', error);
+            // logger.error('Помилка позначення рекомендації:', error);
         }
     }
     
     applyDefaultInterface() {
-        console.log('Застосування інтерфейсу за замовчуванням');
+        // logger.log('Застосування інтерфейсу за замовчуванням');
         // Базові налаштування
         this.applyColorTheme('client_light');
         this.applyLayoutSettings({ sidebar: 'expanded', density: 'normal' });
@@ -623,7 +623,7 @@ function showNotification(message, type = 'info') {
     if (window.showAlert) {
         window.showAlert(message, type);
     } else {
-        console.log(`[${type.toUpperCase()}] ${message}`);
+        // logger.log(`[${type.toUpperCase()}] ${message}`);
     }
 }
 

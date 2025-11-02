@@ -36,7 +36,7 @@ class ToolManager {
                 throw new Error('API недоступне');
             }
         } catch (error) {
-            console.warn('Використання локальних даних:', error);
+            // logger.warn('Використання локальних даних:', error);
             this.tools = JSON.parse(localStorage.getItem('tools')) || [];
             
             if (this.tools.length === 0) {

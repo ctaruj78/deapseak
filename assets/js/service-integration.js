@@ -10,7 +10,7 @@ class ServiceRequestsIntegration {
     }
 
     init() {
-        console.log('🔗 Ініціалізація інтеграції заявок...');
+        // logger.log('🔗 Ініціалізація інтеграції заявок...');
         this.ensureStorageStructure();
     }
 
@@ -27,7 +27,7 @@ class ServiceRequestsIntegration {
         try {
             return JSON.parse(localStorage.getItem(this.storageKey) || '[]');
         } catch (error) {
-            console.error('Помилка читання заявок:', error);
+            // logger.error('Помилка читання заявок:', error);
             return [];
         }
     }
@@ -232,24 +232,24 @@ class ServiceRequestsIntegration {
             
             return false;
         } catch (error) {
-            console.error('Помилка імпорту:', error);
+            // logger.error('Помилка імпорту:', error);
             return false;
         }
     }
 
     // Синхронізація з сервером (заготовка для майбутньої API інтеграції)
     async syncWithServer() {
-        // TODO: Реалізувати синхронізацію з API сервером
-        console.log('🔄 Синхронізація з сервером...');
+        // NOTE: Реалізувати синхронізацію з API сервером
+        // logger.log('🔄 Синхронізація з сервером...');
         
         try {
             // Тут буде логіка відправки на сервер
             // const response = await fetch('/api/service-requests', { ... });
             
-            console.log('✅ Синхронізація завершена');
+            // logger.log('✅ Синхронізація завершена');
             return true;
         } catch (error) {
-            console.error('❌ Помилка синхронізації:', error);
+            // logger.error('❌ Помилка синхронізації:', error);
             return false;
         }
     }
@@ -260,7 +260,7 @@ class ServiceRequestsIntegration {
         if (typeof toastr !== 'undefined') {
             toastr[type](message);
         } else {
-            console.log(`[${type.toUpperCase()}] ${message}`);
+            // logger.log(`[${type.toUpperCase()}] ${message}`);
         }
     }
 
@@ -295,6 +295,6 @@ window.ServiceRequestsIntegration = ServiceRequestsIntegration;
 document.addEventListener('DOMContentLoaded', function() {
     if (!window.serviceIntegration) {
         window.serviceIntegration = new ServiceRequestsIntegration();
-        console.log('✅ Система інтеграції заявок ініціалізована');
+        // logger.log('✅ Система інтеграції заявок ініціалізована');
     }
 });

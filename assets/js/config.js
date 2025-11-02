@@ -137,5 +137,5 @@ function initializeTestData() {
 document.addEventListener('DOMContentLoaded', function() {
     initializeSettings();
     initializeTestData();
-    console.log(`${CONFIG.APP.NAME} v${CONFIG.APP.VERSION} initialized`);
+    // logger.log(`${CONFIG.APP.NAME} v${CONFIG.APP.VERSION} initialized`);
 });

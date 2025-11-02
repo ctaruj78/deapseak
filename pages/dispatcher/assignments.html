@@ -13,209 +13,10 @@
     <script src="../../assets/js/auth.js"></script>
     
     <!-- Додаткові стилі -->
-    <style>
-        .assignment-card {
-            transition: all 0.3s ease;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            border-left: 4px solid #007bff;
-        }
-        
-        .assignment-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
-        
-        .assignment-card.high-priority {
-            border-left-color: #dc3545;
-            background: linear-gradient(135deg, #fff, #f8d7da);
-        }
-        
-        .assignment-card.medium-priority {
-            border-left-color: #ffc107;
-            background: linear-gradient(135deg, #fff, #fff8e1);
-        }
-        
-        .assignment-card.low-priority {
-            border-left-color: #28a745;
-            background: linear-gradient(135deg, #fff, #e8f5e8);
-        }
-        
-        .assignment-card.overdue {
-            border-left-color: #6c757d;
-            background: linear-gradient(135deg, #fff, #f8f9fa);
-            animation: pulse-warning 2s infinite;
-        }
-        
-        .priority-badge {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-        
-        .priority-high {
-            background: linear-gradient(135deg, #dc3545, #e83e8c);
-            color: white;
-        }
-        
-        .priority-medium {
-            background: linear-gradient(135deg, #ffc107, #fd7e14);
-            color: #212529;
-        }
-        
-        .priority-low {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
-        }
-        
-        .status-badge {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-        
-        .timeline {
-            position: relative;
-            padding-left: 30px;
-            margin: 20px 0;
-        }
-        
-        .timeline::before {
-            content: '';
-            position: absolute;
-            left: 15px;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: #dee2e6;
-        }
-        
-        .timeline-item {
-            position: relative;
-            margin-bottom: 20px;
-        }
-        
-        .timeline-item::before {
-            content: '';
-            position: absolute;
-            left: -25px;
-            top: 5px;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #007bff;
-            border: 2px solid white;
-        }
-        
-        .progress-sm {
-            height: 8px;
-        }
-        
-        .tech-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 2px solid #e9ecef;
-        }
-        
-        .assignment-actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .btn-icon {
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .filter-bar {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        
-        .stats-overview {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .stat-item {
-            background: white;
-            border-radius: 8px;
-            padding: 15px;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        
-        .stat-number {
-            font-size: 1.8rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        .stat-label {
-            font-size: 0.9rem;
-            color: #6c757d;
-        }
-        
-        .calendar-view {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        
-        @keyframes pulse-warning {
-            0% { box-shadow: 0 0 0 rgba(220, 53, 69, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
-        }
-        
-        .drag-handle {
-            cursor: move;
-            opacity: 0.6;
-            transition: opacity 0.3s ease;
-        }
-        
-        .drag-handle:hover {
-            opacity: 1;
-        }
-        
-        .assignment-dragging {
-            opacity: 0.8;
-            transform: rotate(2deg);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-        }
-        
-        @media (max-width: 768px) {
-            .assignment-actions {
-                flex-direction: column;
-            }
-            
-            .stats-overview {
-                grid-template-columns: 1fr;
-            }
-            
-            .filter-bar .row > div {
-                margin-bottom: 15px;
-            }
-        }
-    </style>
     
     <!-- Service Integration -->
     <script src="../../assets/js/service-integration.js"></script>
+    <link rel="stylesheet" href="/assets/css/dispatcher-assignments.css">
 </head>
 <body class="hold-transition sidebar-mini layout-fixed" data-required-role="dispatcher">
     <div class="wrapper">
@@ -988,8 +789,20 @@
             dispatcherManager.loadAssignments();
         });
     </script>
+    <!-- API Client -->
+    <script src="/assets/js/utils/api.js"></script>
+    <!-- Notifications -->
+    <script src="/assets/js/utils/notifications.js"></script>
+    <!-- Assignments Manager -->
+    <script src="/assets/js/modules/assignments-manager.js"></script>
 </body>
 </html>
 <!-- AI Assistant Include -->
 <!--#include file="../../templates/ai-assistant-include.html" -->
+    <!-- API Client -->
+    <script src="/assets/js/utils/api.js"></script>
+    <!-- Notifications -->
+    <script src="/assets/js/utils/notifications.js"></script>
+    <!-- Assignments Manager -->
+    <script src="/assets/js/modules/assignments-manager.js"></script>
 <!-- Якщо сервер не підтримує include, вставте вміст ai-assistant-include.html вручну перед </body> -->
