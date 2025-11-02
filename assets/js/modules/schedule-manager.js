@@ -30,7 +30,7 @@ class ScheduleManager {
                 throw new Error('API недоступне');
             }
         } catch (error) {
-            console.warn('Використання локальних даних:', error);
+            // logger.warn('Використання локальних даних:', error);
             this.events = JSON.parse(localStorage.getItem('scheduleEvents')) || [];
             
             if (this.events.length === 0) {

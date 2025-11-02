@@ -12,20 +12,20 @@ class APIError extends Error {
 try {
     throw new APIError("Тестова помилка", 400, "TEST_ERROR");
 } catch (error) {
-    console.log("✅ APIError працює:");
-    console.log("Повідомлення:", error.message);
-    console.log("Статус код:", error.statusCode);
-    console.log("Код помилки:", error.errorCode);
-    console.log("Назва:", error.name);
+    // logger.log("✅ APIError працює:");
+    // logger.log("Повідомлення:", error.message);
+    // logger.log("Статус код:", error.statusCode);
+    // logger.log("Код помилки:", error.errorCode);
+    // logger.log("Назва:", error.name);
 }
 
 // Тестування звичайної помилки
 try {
     throw new Error("Звичайна помилка");
 } catch (error) {
-    console.log("\n✅ Звичайна помилка:");
-    console.log("Повідомлення:", error.message);
-    console.log("Назва:", error.name);
+    // logger.log("\n✅ Звичайна помилка:");
+    // logger.log("Повідомлення:", error.message);
+    // logger.log("Назва:", error.name);
 }
 
-console.log("\n🎉 Тестування завершено успішно!");
+// logger.log("\n🎉 Тестування завершено успішно!");

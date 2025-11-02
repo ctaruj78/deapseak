@@ -1,0 +1,32 @@
+nohup: ignoring input
+2025-11-01 18:00:34 [32minfo[39m: 🚀 Starting DeapSeak API Server...
+2025-11-01 18:00:34 [32minfo[39m: 📡 Connecting to database...
+2025-11-01 18:00:34 [32minfo[39m: Connecting to MongoDB...
+2025-11-01 18:00:34 [32minfo[39m: MongoDB connected successfully
+2025-11-01 18:00:34 [32minfo[39m: ✅ Database connected
+2025-11-01 18:00:34 [32minfo[39m: 🔧 Initializing services...
+2025-11-01 18:00:34 [32minfo[39m: User indexes created
+2025-11-01 18:00:34 [32minfo[39m: Lift indexes created
+2025-11-01 18:00:34 [32minfo[39m: Request indexes created
+2025-11-01 18:00:34 [32minfo[39m: ✅ Services initialized
+
+========================================
+🎉 DeapSeak API Server Started!
+========================================
+
+🌐 Server URL:  http://localhost:3000
+📊 API Health:  http://localhost:3000/api/health
+📚 API Docs:    http://localhost:3000/api
+
+Environment:    development
+Node Version:   v22.17.0
+
+========================================
+
+2025-11-01 18:00:34 [32minfo[39m: Server started successfully
+2025-11-01 18:00:50 [32minfo[39m: Login attempt
+2025-11-01 18:00:50 [33mwarn[39m: Authentication failed: user not found
+2025-11-01 18:01:46 [32minfo[39m: Login attempt
+2025-11-01 18:01:46 [32minfo[39m: User authenticated
+2025-11-01 18:01:52 [33mwarn[39m: Route not found
+2025-11-01 18:03:48 [33mwarn[39m: Route not found

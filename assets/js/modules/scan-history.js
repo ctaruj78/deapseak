@@ -6,7 +6,7 @@
 const scanHistory = (function() {
     // Initialize the module
     function init() {
-        console.log("Scan History initialized");
+        // logger.log("Scan History initialized");
         // Implementation here
     }
 

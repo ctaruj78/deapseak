@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeapSeak - Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .user-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        .btn {
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-icon {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        .content {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #667eea;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge.operational { background: #d4edda; color: #155724; }
+        .badge.maintenance { background: #fff3cd; color: #856404; }
+        .badge.broken { background: #f8d7da; color: #721c24; }
+        .badge.pending { background: #cce5ff; color: #004085; }
+        .badge.in_progress { background: #fff3cd; color: #856404; }
+        .badge.completed { background: #d4edda; color: #155724; }
+        .badge.cancelled { background: #f8d7da; color: #721c24; }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .action-btn {
+            padding: 6px 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .action-btn:hover {
+            background: #5568d3;
+        }
+        .search-box {
+            margin-bottom: 20px;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>
+                <span>🚀</span>
+                <span>DeapSeak Dashboard</span>
+            </h1>
+            <div class="user-info">
+                <div class="user-badge" id="userBadge"></div>
+                <button class="btn" onclick="logout()">🚪 Вийти</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <!-- Statistics -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-icon">��</div>
+                <div class="stat-value" id="liftsTotal">-</div>
+                <div class="stat-label">Всього ліфтів</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-value" id="liftsOperational">-</div>
+                <div class="stat-label">В роботі</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📋</div>
+                <div class="stat-value" id="requestsTotal">-</div>
+                <div class="stat-label">Всього заявок</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⏳</div>
+                <div class="stat-value" id="requestsPending">-</div>
+                <div class="stat-label">В очікуванні</div>
+            </div>
+        </div>
+        
+        <div id="errorMessage" class="error" style="display: none;"></div>
+        
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('lifts')">🏢 Ліфти</button>
+            <button class="tab" onclick="switchTab('requests')">📋 Заявки</button>
+            <button class="tab" onclick="switchTab('users')">👥 Користувачі</button>
+        </div>
+        
+        <div class="content">
+            <!-- Lifts Tab -->
+            <div id="lifts-tab" class="tab-content active">
+                <div class="search-box">
+                    <input type="text" id="liftsSearch" placeholder="🔍 Пошук ліфтів..." oninput="searchLifts()">
+                </div>
+                <div id="liftsContent" class="loading">⏳ Завантаження...</div>
+            </div>
+            
+            <!-- Requests Tab -->
+            <div id="requests-tab" class="tab-content">
+                <div class="search-box">
+                    <input type="text" id="requestsSearch" placeholder="🔍 Пошук заявок..." oninput="searchRequests()">
+                </div>
+                <div id="requestsContent" class="loading">⏳ Завантаження...</div>
+            </div>
+            
+            <!-- Users Tab -->
+            <div id="users-tab" class="tab-content">
+                <div class="search-box">
+                    <input type="text" id="usersSearch" placeholder="🔍 Пошук користувачів..." oninput="searchUsers()">
+                </div>
+                <div id="usersContent" class="loading">⏳ Завантаження...</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let token = localStorage.getItem('token');
+        let user = JSON.parse(localStorage.getItem('user') || '{}');
+        
+        if (!token) {
+            window.location.href = '/login.html';
+        }
+        
+        // Display user info
+        document.getElementById('userBadge').textContent = `${user.name} (${user.role})`;
+        
+        // API helper
+        async function apiCall(endpoint) {
+            try {
+                const response = await fetch(endpoint, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.status === 401) {
+                    logout();
+                    return null;
+                }
+                
+                return await response.json();
+            } catch (error) {
+                showError('Помилка з\'єднання з сервером');
+                console.error(error);
+                return null;
+            }
+        }
+        
+        function showError(message) {
+            const el = document.getElementById('errorMessage');
+            el.textContent = message;
+            el.style.display = 'block';
+            setTimeout(() => { el.style.display = 'none'; }, 5000);
+        }
+        
+        // Load statistics
+        async function loadStats() {
+            const liftsStats = await apiCall('/api/lifts/stats');
+            const requestsStats = await apiCall('/api/requests/stats');
+            
+            if (liftsStats) {
+                document.getElementById('liftsTotal').textContent = liftsStats.total || 0;
+                document.getElementById('liftsOperational').textContent = liftsStats.operational || 0;
+            }
+            
+            if (requestsStats) {
+                document.getElementById('requestsTotal').textContent = requestsStats.total || 0;
+                document.getElementById('requestsPending').textContent = requestsStats.pending || 0;
+            }
+        }
+        
+        // Load lifts
+        async function loadLifts() {
+            const data = await apiCall('/api/lifts?limit=50');
+            const container = document.getElementById('liftsContent');
+            
+            if (!data || !data.data || data.data.length === 0) {
+                container.innerHTML = '<div class="empty">📭 Немає ліфтів</div>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Номер</th>
+                            <th>Адреса</th>
+                            <th>Виробник</th>
+                            <th>Модель</th>
+                            <th>Статус</th>
+                            <th>Дії</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.data.map(lift => `
+                            <tr>
+                                <td>${lift.liftNumber || '-'}</td>
+                                <td>${lift.address || '-'}</td>
+                                <td>${lift.manufacturer || '-'}</td>
+                                <td>${lift.model || '-'}</td>
+                                <td><span class="badge ${lift.status}">${lift.status}</span></td>
+                                <td><button class="action-btn" onclick="viewLift('${lift._id}')">👁️ Деталі</button></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+        
+        // Load requests
+        async function loadRequests() {
+            const data = await apiCall('/api/requests?limit=50');
+            const container = document.getElementById('requestsContent');
+            
+            if (!data || !data.data || data.data.length === 0) {
+                container.innerHTML = '<div class="empty">📭 Немає заявок</div>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Дата</th>
+                            <th>Ліфт</th>
+                            <th>Тип</th>
+                            <th>Пріоритет</th>
+                            <th>Статус</th>
+                            <th>Дії</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.data.map(req => `
+                            <tr>
+                                <td>${new Date(req.createdAt).toLocaleDateString('uk-UA')}</td>
+                                <td>${req.lift?.liftNumber || req.liftId}</td>
+                                <td>${req.type}</td>
+                                <td>${req.priority}</td>
+                                <td><span class="badge ${req.status}">${req.status}</span></td>
+                                <td><button class="action-btn" onclick="viewRequest('${req._id}')">👁️ Деталі</button></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+        
+        // Load users
+        async function loadUsers() {
+            const data = await apiCall('/api/users?limit=50');
+            const container = document.getElementById('usersContent');
+            
+            if (!data || !data.data || data.data.length === 0) {
+                container.innerHTML = '<div class="empty">📭 Немає користувачів</div>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Ім'я</th>
+                            <th>Email</th>
+                            <th>Роль</th>
+                            <th>Телефон</th>
+                            <th>Дата реєстрації</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.data.map(usr => `
+                            <tr>
+                                <td>${usr.name}</td>
+                                <td>${usr.email}</td>
+                                <td><span class="badge">${usr.role}</span></td>
+                                <td>${usr.phone || '-'}</td>
+                                <td>${new Date(usr.createdAt).toLocaleDateString('uk-UA')}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+        
+        function switchTab(tab) {
+            // Update tabs
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(`${tab}-tab`).classList.add('active');
+            
+            // Load data
+            if (tab === 'lifts') loadLifts();
+            else if (tab === 'requests') loadRequests();
+            else if (tab === 'users') loadUsers();
+        }
+        
+        function searchLifts() {
+            // TODO: Implement search
+        }
+        
+        function searchRequests() {
+            // TODO: Implement search
+        }
+        
+        function searchUsers() {
+            // TODO: Implement search
+        }
+        
+        function viewLift(id) {
+            alert(`Перегляд ліфта: ${id}`);
+        }
+        
+        function viewRequest(id) {
+            alert(`Перегляд заявки: ${id}`);
+        }
+        
+        function logout() {
+            localStorage.clear();
+            window.location.href = '/login.html';
+        }
+        
+        // Initialize
+        loadStats();
+        loadLifts();
+    </script>
+</body>
+</html>

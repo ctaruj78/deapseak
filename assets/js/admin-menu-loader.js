@@ -180,16 +180,16 @@ class AdminMenuLoader {
     // Ініціалізація меню - статичний метод
     static init(pageName = null) {
         try {
-            console.log('� Ініціалізація AdminMenuLoader для сторінки:', pageName);
+            // logger.log('� Ініціалізація AdminMenuLoader для сторінки:', pageName);
 
             // Знаходимо контейнер для меню
             this.menuContainer = document.getElementById('sidebar-menu-container');
             if (!this.menuContainer) {
-                console.error('❌ Menu container #sidebar-menu-container not found');
+                // logger.error('❌ Menu container #sidebar-menu-container not found');
                 return false;
             }
 
-            console.log('✅ Знайдено контейнер меню');
+            // logger.log('✅ Знайдено контейнер меню');
 
             // Використовуємо інлайн HTML замість fetch
             this.menuData = this.menuHTML;
@@ -200,11 +200,11 @@ class AdminMenuLoader {
             // Налаштовуємо активний пункт меню
             this.setActiveMenuItem(pageName);
 
-            console.log('✅ Меню успішно завантажено та ініціалізовано');
+            // logger.log('✅ Меню успішно завантажено та ініціалізовано');
             return true;
 
         } catch (error) {
-            console.error('❌ Помилка ініціалізації admin menu:', error);
+            // logger.error('❌ Помилка ініціалізації admin menu:', error);
             return false;
         }
     }
@@ -212,7 +212,7 @@ class AdminMenuLoader {
     // Завантажуємо HTML меню (зарезервовано для майбутнього використання)
     static async loadMenu() {
         // Цей метод більше не використовується, але залишається для сумісності
-        console.log('📝 Використовується інлайн HTML меню');
+        // logger.log('📝 Використовується інлайн HTML меню');
         return this.menuHTML;
     }
 
@@ -220,21 +220,21 @@ class AdminMenuLoader {
     static insertMenu() {
         if (this.menuContainer && this.menuData) {
             this.menuContainer.innerHTML = this.menuData;
-            console.log('✅ Меню вставлено в DOM');
+            // logger.log('✅ Меню вставлено в DOM');
             
             // Ініціалізуємо treeview після вставки меню
             setTimeout(() => {
                 this.initTreeview();
             }, 50);
         } else {
-            console.error('❌ Не вдалося вставити меню - контейнер або дані відсутні');
+            // logger.error('❌ Не вдалося вставити меню - контейнер або дані відсутні');
         }
     }
 
     // Ініціалізація AdminLTE treeview
     static initTreeview() {
         // Відключаємо AdminLTE treeview і використовуємо тільки наш fallback
-        console.log('🔧 Використовуємо власну treeview ініціалізацію');
+        // logger.log('🔧 Використовуємо власну treeview ініціалізацію');
         this.initTreeviewFallback();
     }
 
@@ -284,16 +284,16 @@ class AdminMenuLoader {
                 }
             });
             
-            console.log('✅ Fallback Treeview ініціалізовано');
+            // logger.log('✅ Fallback Treeview ініціалізовано');
         } catch (error) {
-            console.error('❌ Помилка fallback ініціалізації Treeview:', error);
+            // logger.error('❌ Помилка fallback ініціалізації Treeview:', error);
         }
     }
 
     // Налаштовуємо активний пункт меню
     static setActiveMenuItem(pageName = null) {
         const currentPage = pageName ? pageName.replace('.html', '') : window.location.pathname.split('/').pop().replace('.html', '');
-        console.log('🎯 Налаштування активного пункту для сторінки:', currentPage);
+        // logger.log('🎯 Налаштування активного пункту для сторінки:', currentPage);
 
         // Мапінг сторінок до ID елементів меню
         const activeMappings = {
@@ -322,7 +322,7 @@ class AdminMenuLoader {
                 const activeElement = document.getElementById(activeId);
                 if (activeElement) {
                     activeElement.classList.add('active');
-                    console.log('✅ Активний пункт меню встановлено:', activeId);
+                    // logger.log('✅ Активний пункт меню встановлено:', activeId);
 
                     // Розкриваємо батьківське меню якщо це підменю
                     const parentMenu = activeElement.closest('.nav-treeview');
@@ -334,11 +334,11 @@ class AdminMenuLoader {
                         }
                     }
                 } else {
-                    console.warn('⚠️ Елемент меню не знайдено:', activeId);
+                    // logger.warn('⚠️ Елемент меню не знайдено:', activeId);
                 }
             }, 100);
         } else {
-            console.warn('⚠️ Немає мапінгу для сторінки:', currentPage);
+            // logger.warn('⚠️ Немає мапінгу для сторінки:', currentPage);
         }
     }
 }

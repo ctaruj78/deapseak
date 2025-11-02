@@ -6,7 +6,7 @@ describe('AI Assistant Logic Tests', () => {
     // Створюємо мок об'єкт AI Assistant для тестування логіки
     const aiAssistant = {
       init: function() {
-        console.log('AI Assistant initialized');
+        // logger.log('AI Assistant initialized');
         return true;
       },
       generateResponse: function(command) {

@@ -32,7 +32,7 @@ class QRManager {
                 resolve(true);
             };
             script.onerror = (error) => {
-                console.error('Ошибка загрузки библиотеки QRCode:', error);
+                // logger.error('Ошибка загрузки библиотеки QRCode:', error);
                 reject(error);
             };
             
@@ -60,7 +60,7 @@ class QRManager {
                 resolve(true);
             };
             script.onerror = (error) => {
-                console.error('Ошибка загрузки библиотеки jsQR:', error);
+                // logger.error('Ошибка загрузки библиотеки jsQR:', error);
                 reject(error);
             };
             
@@ -78,7 +78,7 @@ class QRManager {
     static generateQRCode(containerId, data, options = {}) {
         const container = document.getElementById(containerId);
         if (!container) {
-            console.error(`Контейнер с ID ${containerId} не найден`);
+            // logger.error(`Контейнер с ID ${containerId} не найден`);
             return null;
         }
         
@@ -105,7 +105,7 @@ class QRManager {
             // Создаем QR-код
             return new QRCode(container, finalOptions);
         } catch (error) {
-            console.error('Ошибка при создании QR-кода:', error);
+            // logger.error('Ошибка при создании QR-кода:', error);
             return null;
         }
     }
@@ -121,7 +121,7 @@ class QRManager {
         
         const container = document.getElementById(containerId);
         if (!container) {
-            console.error(`Контейнер с ID ${containerId} не найден`);
+            // logger.error(`Контейнер с ID ${containerId} не найден`);
             return;
         }
         
@@ -189,13 +189,13 @@ class QRManager {
     static downloadQRCode(containerId) {
         const container = document.getElementById(containerId);
         if (!container) {
-            console.error(`Контейнер с ID ${containerId} не найден`);
+            // logger.error(`Контейнер с ID ${containerId} не найден`);
             return;
         }
         
         const canvas = container.querySelector('canvas');
         if (!canvas) {
-            console.error(`Canvas не найден в контейнере ${containerId}`);
+            // logger.error(`Canvas не найден в контейнере ${containerId}`);
             return;
         }
         
@@ -211,7 +211,7 @@ class QRManager {
                 toastr.success('QR-код успешно скачан');
             }
         } catch (error) {
-            console.error('Ошибка при скачивании QR-кода:', error);
+            // logger.error('Ошибка при скачивании QR-кода:', error);
             if (typeof toastr !== 'undefined') {
                 toastr.error('Ошибка при скачивании QR-кода');
             }
@@ -225,13 +225,13 @@ class QRManager {
     static printQRCode(containerId) {
         const container = document.getElementById(containerId);
         if (!container) {
-            console.error(`Контейнер с ID ${containerId} не найден`);
+            // logger.error(`Контейнер с ID ${containerId} не найден`);
             return;
         }
         
         const canvas = container.querySelector('canvas');
         if (!canvas) {
-            console.error(`Canvas не найден в контейнере ${containerId}`);
+            // logger.error(`Canvas не найден в контейнере ${containerId}`);
             return;
         }
         
@@ -288,7 +288,7 @@ class QRManager {
             `);
             printWindow.document.close();
         } catch (error) {
-            console.error('Ошибка при печати QR-кода:', error);
+            // logger.error('Ошибка при печати QR-кода:', error);
             if (typeof toastr !== 'undefined') {
                 toastr.error('Ошибка при печати QR-кода');
             }
@@ -350,7 +350,7 @@ class QRManager {
             
             return true;
         } catch (error) {
-            console.error('Ошибка генерации QR-кода:', error);
+            // logger.error('Ошибка генерации QR-кода:', error);
             return false;
         }
     }
@@ -386,7 +386,7 @@ class QRManager {
                 toastr.success('QR-код успешно скачан');
             }
         } catch (error) {
-            console.error('Ошибка скачивания QR-кода:', error);
+            // logger.error('Ошибка скачивания QR-кода:', error);
             if (typeof toastr !== 'undefined') {
                 toastr.error('Ошибка скачивания QR-кода: ' + error.message);
             } else {
@@ -467,7 +467,7 @@ class QRManager {
             `);
             printWindow.document.close();
         } catch (error) {
-            console.error('Ошибка печати QR-кода:', error);
+            // logger.error('Ошибка печати QR-кода:', error);
             if (typeof toastr !== 'undefined') {
                 toastr.error('Ошибка печати QR-кода: ' + error.message);
             } else {
@@ -549,7 +549,7 @@ class QRManager {
                 scanFrame();
             };
         } catch (error) {
-            console.error('Ошибка сканирования QR-кода:', error);
+            // logger.error('Ошибка сканирования QR-кода:', error);
             
             if (typeof toastr !== 'undefined') {
                 toastr.error('Ошибка сканирования: ' + error.message);
@@ -609,7 +609,7 @@ class QRManager {
             
             return { type: 'json', data: parsedData };
         } catch (error) {
-            console.error('Ошибка обработки QR-кода:', error);
+            // logger.error('Ошибка обработки QR-кода:', error);
             return { type: 'error', error: error.message };
         }
     }

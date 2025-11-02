@@ -1,0 +1,134 @@
+{"level":"info","message":"Connecting to MongoDB...","service":"deapseak-api","timestamp":"2025-11-01 17:35:38","uri":"mongodb://localhost:27017/deapseak"}
+{"database":"deapseak","level":"info","message":"MongoDB connected successfully","service":"deapseak-api","timestamp":"2025-11-01 17:35:38"}
+{"level":"info","message":"MongoDB disconnected","service":"deapseak-api","timestamp":"2025-11-01 17:35:38"}
+{"level":"info","message":"Connecting to MongoDB...","service":"deapseak-api","timestamp":"2025-11-01 17:35:38","uri":"mongodb://localhost:27017/deapseak"}
+{"database":"deapseak","level":"info","message":"MongoDB connected successfully","service":"deapseak-api","timestamp":"2025-11-01 17:35:38"}
+{"level":"info","message":"MongoDB disconnected","service":"deapseak-api","timestamp":"2025-11-01 17:35:38"}
+{"level":"info","message":"🚀 Starting DeapSeak API Server...","service":"deapseak-api","timestamp":"2025-11-01 17:37:05"}
+{"level":"info","message":"📡 Connecting to database...","service":"deapseak-api","timestamp":"2025-11-01 17:37:05"}
+{"level":"info","message":"Connecting to MongoDB...","service":"deapseak-api","timestamp":"2025-11-01 17:37:05","uri":"mongodb://localhost:27017/deapseak"}
+{"database":"deapseak","level":"info","message":"MongoDB connected successfully","service":"deapseak-api","timestamp":"2025-11-01 17:37:05"}
+{"level":"info","message":"✅ Database connected","service":"deapseak-api","timestamp":"2025-11-01 17:37:05"}
+{"level":"info","message":"🔧 Initializing services...","service":"deapseak-api","timestamp":"2025-11-01 17:37:05"}
+{"level":"info","message":"User indexes created","service":"deapseak-api","timestamp":"2025-11-01 17:37:05"}
+{"level":"info","message":"Lift indexes created","service":"deapseak-api","timestamp":"2025-11-01 17:37:05"}
+{"level":"info","message":"Request indexes created","service":"deapseak-api","timestamp":"2025-11-01 17:37:05"}
+{"level":"info","message":"✅ Services initialized","service":"deapseak-api","timestamp":"2025-11-01 17:37:05"}
+{"environment":"development","level":"info","message":"Server started successfully","port":"3000","service":"deapseak-api","timestamp":"2025-11-01 17:37:05"}
+{"level":"info","message":"SIGINT received: closing server...","service":"deapseak-api","timestamp":"2025-11-01 17:37:57"}
+{"level":"info","message":"Connecting to MongoDB...","service":"deapseak-api","timestamp":"2025-11-01 17:40:15","uri":"mongodb://localhost:27017/deapseak"}
+{"database":"deapseak","level":"info","message":"MongoDB connected successfully","service":"deapseak-api","timestamp":"2025-11-01 17:40:15"}
+{"level":"info","message":"MongoDB disconnected","service":"deapseak-api","timestamp":"2025-11-01 17:40:16"}
+{"level":"info","message":"🚀 Starting DeapSeak API Server...","service":"deapseak-api","timestamp":"2025-11-01 17:41:58"}
+{"level":"info","message":"📡 Connecting to database...","service":"deapseak-api","timestamp":"2025-11-01 17:41:58"}
+{"level":"info","message":"Connecting to MongoDB...","service":"deapseak-api","timestamp":"2025-11-01 17:41:58","uri":"mongodb://localhost:27017/deapseak"}
+{"database":"deapseak","level":"info","message":"MongoDB connected successfully","service":"deapseak-api","timestamp":"2025-11-01 17:41:59"}
+{"level":"info","message":"✅ Database connected","service":"deapseak-api","timestamp":"2025-11-01 17:41:59"}
+{"level":"info","message":"🔧 Initializing services...","service":"deapseak-api","timestamp":"2025-11-01 17:41:59"}
+{"level":"info","message":"User indexes created","service":"deapseak-api","timestamp":"2025-11-01 17:41:59"}
+{"level":"info","message":"Lift indexes created","service":"deapseak-api","timestamp":"2025-11-01 17:41:59"}
+{"level":"info","message":"Request indexes created","service":"deapseak-api","timestamp":"2025-11-01 17:41:59"}
+{"level":"info","message":"✅ Services initialized","service":"deapseak-api","timestamp":"2025-11-01 17:41:59"}
+{"environment":"development","level":"info","message":"Server started successfully","port":"3000","service":"deapseak-api","timestamp":"2025-11-01 17:41:59"}
+{"level":"info","message":"Connecting to MongoDB...","service":"deapseak-api","timestamp":"2025-11-01 17:42:09","uri":"mongodb://localhost:27017/deapseak"}
+{"database":"deapseak","level":"info","message":"MongoDB connected successfully","service":"deapseak-api","timestamp":"2025-11-01 17:42:09"}
+{"level":"info","message":"MongoDB disconnected","service":"deapseak-api","timestamp":"2025-11-01 17:42:09"}
+{"email":"admin@deapseak.com","ip":"127.0.0.1","level":"info","message":"Login attempt","service":"deapseak-api","timestamp":"2025-11-01 17:42:09"}
+{"email":"admin@deapseak.com","level":"info","message":"User authenticated","service":"deapseak-api","timestamp":"2025-11-01 17:42:09","userId":"690646718f41d0d59ea940f7"}
+{"level":"info","message":"SIGTERM received: closing server...","service":"deapseak-api","timestamp":"2025-11-01 17:42:16"}
+{"level":"info","message":"🚀 Starting DeapSeak API Server...","service":"deapseak-api","timestamp":"2025-11-01 17:42:17"}
+{"level":"info","message":"📡 Connecting to database...","service":"deapseak-api","timestamp":"2025-11-01 17:42:17"}
+{"level":"info","message":"Connecting to MongoDB...","service":"deapseak-api","timestamp":"2025-11-01 17:42:17","uri":"mongodb://localhost:27017/deapseak"}
+{"database":"deapseak","level":"info","message":"MongoDB connected successfully","service":"deapseak-api","timestamp":"2025-11-01 17:42:17"}
+{"level":"info","message":"✅ Database connected","service":"deapseak-api","timestamp":"2025-11-01 17:42:17"}
+{"level":"info","message":"🔧 Initializing services...","service":"deapseak-api","timestamp":"2025-11-01 17:42:17"}
+{"level":"info","message":"User indexes created","service":"deapseak-api","timestamp":"2025-11-01 17:42:17"}
+{"level":"info","message":"Lift indexes created","service":"deapseak-api","timestamp":"2025-11-01 17:42:17"}
+{"level":"info","message":"Request indexes created","service":"deapseak-api","timestamp":"2025-11-01 17:42:17"}
+{"level":"info","message":"✅ Services initialized","service":"deapseak-api","timestamp":"2025-11-01 17:42:17"}
+{"environment":"development","level":"info","message":"Server started successfully","port":"3000","service":"deapseak-api","timestamp":"2025-11-01 17:42:17"}
+{"email":"admin@deapseak.com","ip":"127.0.0.1","level":"info","message":"Login attempt","service":"deapseak-api","timestamp":"2025-11-01 17:42:30"}
+{"email":"admin@deapseak.com","level":"info","message":"User authenticated","service":"deapseak-api","timestamp":"2025-11-01 17:42:30","userId":"690646718f41d0d59ea940f7"}
+{"ip":"127.0.0.1","level":"warn","message":"Route not found","method":"GET","path":"/favicon.ico","service":"deapseak-api","timestamp":"2025-11-01 17:43:52"}
+{"level":"info","message":"SIGTERM received: closing server...","service":"deapseak-api","timestamp":"2025-11-01 17:48:05"}
+{"level":"info","message":"🚀 Starting DeapSeak API Server...","service":"deapseak-api","timestamp":"2025-11-01 17:48:06"}
+{"level":"info","message":"📡 Connecting to database...","service":"deapseak-api","timestamp":"2025-11-01 17:48:06"}
+{"level":"info","message":"Connecting to MongoDB...","service":"deapseak-api","timestamp":"2025-11-01 17:48:06","uri":"mongodb://localhost:27017/deapseak"}
+{"database":"deapseak","level":"info","message":"MongoDB connected successfully","service":"deapseak-api","timestamp":"2025-11-01 17:48:06"}
+{"level":"info","message":"✅ Database connected","service":"deapseak-api","timestamp":"2025-11-01 17:48:06"}
+{"level":"info","message":"🔧 Initializing services...","service":"deapseak-api","timestamp":"2025-11-01 17:48:06"}
+{"level":"info","message":"User indexes created","service":"deapseak-api","timestamp":"2025-11-01 17:48:06"}
+{"level":"info","message":"Lift indexes created","service":"deapseak-api","timestamp":"2025-11-01 17:48:06"}
+{"level":"info","message":"Request indexes created","service":"deapseak-api","timestamp":"2025-11-01 17:48:06"}
+{"level":"info","message":"✅ Services initialized","service":"deapseak-api","timestamp":"2025-11-01 17:48:06"}
+{"environment":"development","level":"info","message":"Server started successfully","port":"3000","service":"deapseak-api","timestamp":"2025-11-01 17:48:06"}
+{"level":"info","message":"Connecting to MongoDB...","service":"deapseak-api","timestamp":"2025-11-01 17:48:12","uri":"mongodb://localhost:27017/deapseak"}
+{"database":"deapseak","level":"info","message":"MongoDB connected successfully","service":"deapseak-api","timestamp":"2025-11-01 17:48:12"}
+{"level":"info","message":"MongoDB disconnected","service":"deapseak-api","timestamp":"2025-11-01 17:48:12"}
+{"email":"admin@deapseak.com","ip":"127.0.0.1","level":"info","message":"Login attempt","service":"deapseak-api","timestamp":"2025-11-01 17:48:14"}
+{"email":"admin@deapseak.com","level":"info","message":"User authenticated","service":"deapseak-api","timestamp":"2025-11-01 17:48:14","userId":"690647dc0bcbfd64f000e580"}
+{"level":"info","message":"SIGINT received: closing server...","service":"deapseak-api","timestamp":"2025-11-01 17:48:24"}
+{"level":"info","message":"Connecting to MongoDB...","service":"deapseak-api","timestamp":"2025-11-01 17:50:58","uri":"mongodb://localhost:27017/deapseak"}
+{"database":"deapseak","level":"info","message":"MongoDB connected successfully","service":"deapseak-api","timestamp":"2025-11-01 17:50:58"}
+{"level":"info","message":"MongoDB disconnected","service":"deapseak-api","timestamp":"2025-11-01 17:50:58"}
+{"level":"info","message":"🚀 Starting DeapSeak API Server...","service":"deapseak-api","timestamp":"2025-11-01 17:52:55"}
+{"level":"info","message":"📡 Connecting to database...","service":"deapseak-api","timestamp":"2025-11-01 17:52:55"}
+{"level":"info","message":"Connecting to MongoDB...","service":"deapseak-api","timestamp":"2025-11-01 17:52:55","uri":"mongodb://localhost:27017/deapseak"}
+{"database":"deapseak","level":"info","message":"MongoDB connected successfully","service":"deapseak-api","timestamp":"2025-11-01 17:52:55"}
+{"level":"info","message":"✅ Database connected","service":"deapseak-api","timestamp":"2025-11-01 17:52:55"}
+{"level":"info","message":"🔧 Initializing services...","service":"deapseak-api","timestamp":"2025-11-01 17:52:55"}
+{"level":"info","message":"User indexes created","service":"deapseak-api","timestamp":"2025-11-01 17:52:55"}
+{"level":"info","message":"Lift indexes created","service":"deapseak-api","timestamp":"2025-11-01 17:52:55"}
+{"level":"info","message":"Request indexes created","service":"deapseak-api","timestamp":"2025-11-01 17:52:55"}
+{"level":"info","message":"✅ Services initialized","service":"deapseak-api","timestamp":"2025-11-01 17:52:55"}
+{"environment":"development","level":"info","message":"Server started successfully","port":"3000","service":"deapseak-api","timestamp":"2025-11-01 17:52:55"}
+{"level":"info","message":"Connecting to MongoDB...","service":"deapseak-api","timestamp":"2025-11-01 17:52:58","uri":"mongodb://localhost:27017/deapseak"}
+{"database":"deapseak","level":"info","message":"MongoDB connected successfully","service":"deapseak-api","timestamp":"2025-11-01 17:52:59"}
+{"level":"info","message":"MongoDB disconnected","service":"deapseak-api","timestamp":"2025-11-01 17:52:59"}
+{"level":"info","message":"Connecting to MongoDB...","service":"deapseak-api","timestamp":"2025-11-01 17:55:48","uri":"mongodb://localhost:27017/deapseak"}
+{"database":"deapseak","level":"info","message":"MongoDB connected successfully","service":"deapseak-api","timestamp":"2025-11-01 17:55:48"}
+{"level":"info","message":"MongoDB disconnected","service":"deapseak-api","timestamp":"2025-11-01 17:55:48"}
+{"level":"info","message":"SIGTERM received: closing server...","service":"deapseak-api","timestamp":"2025-11-01 17:56:09"}
+{"level":"info","message":"🚀 Starting DeapSeak API Server...","service":"deapseak-api","timestamp":"2025-11-01 17:56:09"}
+{"level":"info","message":"📡 Connecting to database...","service":"deapseak-api","timestamp":"2025-11-01 17:56:09"}
+{"level":"info","message":"Connecting to MongoDB...","service":"deapseak-api","timestamp":"2025-11-01 17:56:09","uri":"mongodb://localhost:27017/deapseak"}
+{"database":"deapseak","level":"info","message":"MongoDB connected successfully","service":"deapseak-api","timestamp":"2025-11-01 17:56:09"}
+{"level":"info","message":"✅ Database connected","service":"deapseak-api","timestamp":"2025-11-01 17:56:09"}
+{"level":"info","message":"🔧 Initializing services...","service":"deapseak-api","timestamp":"2025-11-01 17:56:09"}
+{"level":"info","message":"User indexes created","service":"deapseak-api","timestamp":"2025-11-01 17:56:09"}
+{"level":"info","message":"Lift indexes created","service":"deapseak-api","timestamp":"2025-11-01 17:56:09"}
+{"level":"info","message":"Request indexes created","service":"deapseak-api","timestamp":"2025-11-01 17:56:10"}
+{"level":"info","message":"✅ Services initialized","service":"deapseak-api","timestamp":"2025-11-01 17:56:10"}
+{"environment":"development","level":"info","message":"Server started successfully","port":"3000","service":"deapseak-api","timestamp":"2025-11-01 17:56:10"}
+{"level":"info","message":"SIGINT received: closing server...","service":"deapseak-api","timestamp":"2025-11-01 17:57:39"}
+{"level":"info","message":"Connecting to MongoDB...","service":"deapseak-api","timestamp":"2025-11-01 17:57:40","uri":"mongodb://localhost:27017/deapseak"}
+{"database":"deapseak","level":"info","message":"MongoDB connected successfully","service":"deapseak-api","timestamp":"2025-11-01 17:57:40"}
+{"level":"info","message":"MongoDB disconnected","service":"deapseak-api","timestamp":"2025-11-01 17:57:40"}
+{"level":"info","message":"🚀 Starting DeapSeak API Server...","service":"deapseak-api","timestamp":"2025-11-01 18:00:34"}
+{"level":"info","message":"📡 Connecting to database...","service":"deapseak-api","timestamp":"2025-11-01 18:00:34"}
+{"level":"info","message":"Connecting to MongoDB...","service":"deapseak-api","timestamp":"2025-11-01 18:00:34","uri":"mongodb://localhost:27017/deapseak"}
+{"database":"deapseak","level":"info","message":"MongoDB connected successfully","service":"deapseak-api","timestamp":"2025-11-01 18:00:34"}
+{"level":"info","message":"✅ Database connected","service":"deapseak-api","timestamp":"2025-11-01 18:00:34"}
+{"level":"info","message":"🔧 Initializing services...","service":"deapseak-api","timestamp":"2025-11-01 18:00:34"}
+{"level":"info","message":"User indexes created","service":"deapseak-api","timestamp":"2025-11-01 18:00:34"}
+{"level":"info","message":"Lift indexes created","service":"deapseak-api","timestamp":"2025-11-01 18:00:34"}
+{"level":"info","message":"Request indexes created","service":"deapseak-api","timestamp":"2025-11-01 18:00:34"}
+{"level":"info","message":"✅ Services initialized","service":"deapseak-api","timestamp":"2025-11-01 18:00:34"}
+{"environment":"development","level":"info","message":"Server started successfully","port":"3000","service":"deapseak-api","timestamp":"2025-11-01 18:00:34"}
+{"email":"admin@example.com","ip":"127.0.0.1","level":"info","message":"Login attempt","service":"deapseak-api","timestamp":"2025-11-01 18:00:50"}
+{"email":"admin@example.com","level":"warn","message":"Authentication failed: user not found","service":"deapseak-api","timestamp":"2025-11-01 18:00:50"}
+{"email":"admin@deapseak.com","ip":"127.0.0.1","level":"info","message":"Login attempt","service":"deapseak-api","timestamp":"2025-11-01 18:01:46"}
+{"email":"admin@deapseak.com","level":"info","message":"User authenticated","service":"deapseak-api","timestamp":"2025-11-01 18:01:46","userId":"69064a140d3cee14e11f59d9"}
+{"ip":"127.0.0.1","level":"warn","message":"Route not found","method":"GET","path":"/API-DOCUMENTATION.md","service":"deapseak-api","timestamp":"2025-11-01 18:01:52"}
+{"ip":"127.0.0.1","level":"warn","message":"Route not found","method":"GET","path":"/API-DOCUMENTATION.md","service":"deapseak-api","timestamp":"2025-11-01 18:03:48"}
+{"level":"info","message":"🚀 Starting DeapSeak API Server...","service":"deapseak-api","timestamp":"2025-11-02 09:09:29"}
+{"level":"info","message":"📡 Connecting to database...","service":"deapseak-api","timestamp":"2025-11-02 09:09:29"}
+{"level":"info","message":"Connecting to MongoDB...","service":"deapseak-api","timestamp":"2025-11-02 09:09:29","uri":"mongodb://localhost:27017/deapseak"}
+{"database":"deapseak","level":"info","message":"MongoDB connected successfully","service":"deapseak-api","timestamp":"2025-11-02 09:09:29"}
+{"level":"info","message":"✅ Database connected","service":"deapseak-api","timestamp":"2025-11-02 09:09:29"}
+{"level":"info","message":"🔧 Initializing services...","service":"deapseak-api","timestamp":"2025-11-02 09:09:29"}
+{"level":"info","message":"User indexes created","service":"deapseak-api","timestamp":"2025-11-02 09:09:29"}
+{"level":"info","message":"Lift indexes created","service":"deapseak-api","timestamp":"2025-11-02 09:09:29"}
+{"level":"info","message":"Request indexes created","service":"deapseak-api","timestamp":"2025-11-02 09:09:29"}
+{"level":"info","message":"✅ Services initialized","service":"deapseak-api","timestamp":"2025-11-02 09:09:29"}
+{"environment":"development","level":"info","message":"Server started successfully","port":"3000","service":"deapseak-api","timestamp":"2025-11-02 09:09:29"}

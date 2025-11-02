@@ -180,7 +180,7 @@ class RoleManager {
     logRoleActivity() {
         const user = authManager.currentUser;
         if (user) {
-            console.log(`Користувач ${user.username} (${user.role}) увійшов у систему`);
+            // logger.log(`Користувач ${user.username} (${user.role}) увійшов у систему`);
             
             // Log role-specific activity
             setInterval(() => {
@@ -193,7 +193,7 @@ class RoleManager {
         const activeElement = document.activeElement;
         const currentView = window.location.pathname;
         
-        console.log(`Активність: ${currentView}, фокус на: ${activeElement.tagName}`);
+        // logger.log(`Активність: ${currentView}, фокус на: ${activeElement.tagName}`);
     }
 
     // Role-specific data filtering
@@ -304,7 +304,7 @@ class RoleManager {
         auditLog.push(logEntry);
         localStorage.setItem('audit_log', JSON.stringify(auditLog));
 
-        console.log('Audit log:', logEntry);
+        // logger.log('Audit log:', logEntry);
     }
 
     async getClientIP() {

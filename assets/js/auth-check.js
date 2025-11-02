@@ -1,16 +1,16 @@
 // Перевірка авторизації та редирект на правильний дашборд
 (function() {
-    console.log('🔐 Завантаження auth-check.js');
+    // logger.log('🔐 Завантаження auth-check.js');
     
     // Перевіряємо чи користувач авторизований
     const token = localStorage.getItem('auth_token');
     const userStr = localStorage.getItem('user');
     
     if (!token || !userStr) {
-        console.log('❌ Користувач не авторизований');
+        // logger.log('❌ Користувач не авторизований');
         // Перенаправляємо на login якщо це не login.html
         if (!window.location.pathname.includes('login')) {
-            console.log('📍 Перенаправляємо на login');
+            // logger.log('📍 Перенаправляємо на login');
             window.location.href = '/login.html';
         }
         return;
@@ -18,11 +18,11 @@
     
     try {
         const user = JSON.parse(userStr);
-        console.log('✅ Користувач авторизований:', user.username, 'Роль:', user.role);
+        // logger.log('✅ Користувач авторизований:', user.username, 'Роль:', user.role);
         
         // Якщо це сторінка входу, перенаправляємо на дашборд
         if (window.location.pathname === '/login.html') {
-            console.log('📍 Користувач вже авторизований, перенаправляємо на дашборд');
+            // logger.log('📍 Користувач вже авторизований, перенаправляємо на дашборд');
             let dashboardPath = '/pages/admin/admin-dashboard.html';
             
             switch(user.role) {
@@ -38,6 +38,6 @@
             }, 500);
         }
     } catch (e) {
-        console.error('❌ Помилка при розборі user:', e);
+        // logger.error('❌ Помилка при розборі user:', e);
     }
 })();

@@ -22,7 +22,7 @@ class LiftsManager {
       this.lifts = data.lifts || [];
       this.renderLifts();
     } catch (error) {
-      console.error('Error loading lifts:', error);
+      // logger.error('Error loading lifts:', error);
       throw error;
     }
   }

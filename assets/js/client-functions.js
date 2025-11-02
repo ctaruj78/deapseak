@@ -8,13 +8,13 @@
 // ============================================
 
 function createRequest() {
-    console.log('📝 Creating new request...');
+    // logger.log('📝 Creating new request...');
     const modal = new bootstrap.Modal(document.getElementById('requestModal'));
     modal.show();
 }
 
 function submitRequest() {
-    console.log('📤 Submitting request...');
+    // logger.log('📤 Submitting request...');
     
     const requestData = {
         liftId: document.getElementById('liftId')?.value,
@@ -49,7 +49,7 @@ function submitRequest() {
             loadRequests();
         })
         .catch(error => {
-            console.error('Error:', error);
+            // logger.error('Error:', error);
             Notifier.error('Failed to submit request');
         });
     } catch (error) {
@@ -58,7 +58,7 @@ function submitRequest() {
 }
 
 function loadRequests() {
-    console.log('📂 Loading requests...');
+    // logger.log('📂 Loading requests...');
     
     try {
         fetch('/api/requests', {
@@ -74,7 +74,7 @@ function loadRequests() {
             displayRequests(data);
         })
         .catch(error => {
-            console.error('Error:', error);
+            // logger.error('Error:', error);
             Notifier.error('Failed to load requests');
         });
     } catch (error) {
@@ -108,7 +108,7 @@ function displayRequests(requests) {
 // ============================================
 
 function loadInvoices() {
-    console.log('📂 Loading invoices...');
+    // logger.log('📂 Loading invoices...');
     
     try {
         fetch('/api/invoices', {
@@ -124,7 +124,7 @@ function loadInvoices() {
             displayInvoices(data);
         })
         .catch(error => {
-            console.error('Error:', error);
+            // logger.error('Error:', error);
             Notifier.error('Failed to load invoices');
         });
     } catch (error) {
@@ -154,7 +154,7 @@ function displayInvoices(invoices) {
 }
 
 function downloadInvoicePDF(invoiceId) {
-    console.log('📥 Downloading invoice PDF:', invoiceId);
+    // logger.log('📥 Downloading invoice PDF:', invoiceId);
     Notifier.info('Preparing PDF...');
     
     try {
@@ -176,7 +176,7 @@ function downloadInvoicePDF(invoiceId) {
             Notifier.success('Invoice downloaded');
         })
         .catch(error => {
-            console.error('Error:', error);
+            // logger.error('Error:', error);
             Notifier.error('Failed to download PDF');
         });
     } catch (error) {
@@ -189,7 +189,7 @@ function downloadInvoicePDF(invoiceId) {
 // ============================================
 
 function loadMyLifts() {
-    console.log('📂 Loading my lifts...');
+    // logger.log('📂 Loading my lifts...');
     
     try {
         fetch('/api/my-lifts', {
@@ -205,7 +205,7 @@ function loadMyLifts() {
             displayMyLifts(data);
         })
         .catch(error => {
-            console.error('Error:', error);
+            // logger.error('Error:', error);
             Notifier.error('Failed to load lifts');
         });
     } catch (error) {
@@ -239,12 +239,12 @@ function displayMyLifts(lifts) {
 // ============================================
 
 function viewRequest(requestId) {
-    console.log('👁️ Viewing request:', requestId);
+    // logger.log('👁️ Viewing request:', requestId);
     Notifier.info('Opening request details...');
 }
 
 function cancelRequest(requestId) {
-    console.log('❌ Cancelling request:', requestId);
+    // logger.log('❌ Cancelling request:', requestId);
     if (confirm('Cancel this request?')) {
         Notifier.success('Request cancelled');
         loadRequests();
@@ -252,12 +252,12 @@ function cancelRequest(requestId) {
 }
 
 function viewInvoice(invoiceId) {
-    console.log('👁️ Viewing invoice:', invoiceId);
+    // logger.log('👁️ Viewing invoice:', invoiceId);
     Notifier.info('Opening invoice details...');
 }
 
 function viewLift(liftId) {
-    console.log('👁️ Viewing lift:', liftId);
+    // logger.log('👁️ Viewing lift:', liftId);
     Notifier.info('Opening lift details...');
 }
 

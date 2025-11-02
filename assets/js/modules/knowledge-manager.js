@@ -34,7 +34,7 @@ class KnowledgeManager {
                 throw new Error('API недоступне');
             }
         } catch (error) {
-            console.warn('Використання локальних даних:', error);
+            // logger.warn('Використання локальних даних:', error);
             this.articles = JSON.parse(localStorage.getItem('knowledgeArticles')) || [];
             
             if (this.articles.length === 0) {
@@ -733,7 +733,7 @@ class KnowledgeManager {
             };
             $('#userName').text(currentUser.firstName);
         } catch (error) {
-            console.error('Помилка завантаження даних користувача:', error);
+            // logger.error('Помилка завантаження даних користувача:', error);
         }
     }
 

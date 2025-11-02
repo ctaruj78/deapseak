@@ -37,9 +37,9 @@ class AssignmentManager {
             this.setupAutoRefresh();
             this.isInitialized = true;
             
-            console.log('✅ Assignment Manager ініціалізовано з QR підтримкою');
+            // logger.log('✅ Assignment Manager ініціалізовано з QR підтримкою');
         } catch (error) {
-            console.error('❌ Помилка ініціалізації Assignment Manager:', error);
+            // logger.error('❌ Помилка ініціалізації Assignment Manager:', error);
             this.loadFromLocalStorage(); // Fallback на локальні дані
         }
     }
@@ -82,7 +82,7 @@ class AssignmentManager {
                 throw new Error('Помилка завантаження з API');
             }
         } catch (error) {
-            console.warn('⚠️ Використання локальних даних:', error.message);
+            // logger.warn('⚠️ Використання локальних даних:', error.message);
             this.loadFromLocalStorage();
         }
     }
@@ -257,7 +257,7 @@ class AssignmentManager {
                 throw new Error('Помилка створення заявки');
             }
         } catch (error) {
-            console.error('Помилка створення заявки:', error);
+            // logger.error('Помилка створення заявки:', error);
             this.showNotification('❌ Помилка створення заявки', 'error');
         }
     }
@@ -303,7 +303,7 @@ class AssignmentManager {
                 throw new Error('Помилка призначення заявки');
             }
         } catch (error) {
-            console.error('Помилка призначення заявки:', error);
+            // logger.error('Помилка призначення заявки:', error);
             this.showNotification('❌ Помилка призначення заявки', 'error');
         }
     }
@@ -339,7 +339,7 @@ class AssignmentManager {
                 this.showQRNotFoundDialog(qrCode);
             }
         } catch (error) {
-            console.error('Помилка обробки QR:', error);
+            // logger.error('Помилка обробки QR:', error);
             this.showNotification('❌ Помилка сканування QR коду', 'error');
         }
     }
@@ -368,7 +368,7 @@ class AssignmentManager {
                 body: JSON.stringify(scanData)
             });
         } catch (error) {
-            console.error('Помилка реєстрації QR сканування:', error);
+            // logger.error('Помилка реєстрації QR сканування:', error);
         }
     }
 
@@ -381,7 +381,7 @@ class AssignmentManager {
                          document.querySelector('.assignments-list');
                          
         if (!container) {
-            console.warn('Контейнер для заявок не знайдено');
+            // logger.warn('Контейнер для заявок не знайдено');
             return;
         }
 
@@ -694,7 +694,7 @@ class AssignmentManager {
                 this.templates = await response.json();
             }
         } catch (error) {
-            console.error('Помилка завантаження шаблонів:', error);
+            // logger.error('Помилка завантаження шаблонів:', error);
         }
     }
 
@@ -712,7 +712,7 @@ class AssignmentManager {
                 position: 'top-end'
             });
         } else {
-            console.log(`${type.toUpperCase()}: ${message}`);
+            // logger.log(`${type.toUpperCase()}: ${message}`);
         }
     }
 
@@ -722,37 +722,37 @@ class AssignmentManager {
     
     // Перегляд деталей заявки
     viewAssignment(id) {
-        console.log('Перегляд заявки:', id);
+        // logger.log('Перегляд заявки:', id);
         // Тут буде код для відкриття модального вікна з деталями
     }
 
     // Редагування заявки
     editAssignment(id) {
-        console.log('Редагування заявки:', id);
+        // logger.log('Редагування заявки:', id);
         // Тут буде код для відкриття форми редагування
     }
 
     // Показ діалогу призначення
     showAssignDialog(id) {
-        console.log('Призначення заявки:', id);
+        // logger.log('Призначення заявки:', id);
         // Тут буде код для відкриття діалогу призначення техніку
     }
 
     // Початок роботи техніком
     startWork(id) {
-        console.log('Початок роботи над заявкою:', id);
+        // logger.log('Початок роботи над заявкою:', id);
         this.updateAssignmentStatus(id, 'in-progress');
     }
 
     // Показ QR коду
     showQR(qrCode) {
-        console.log('Показ QR коду:', qrCode);
+        // logger.log('Показ QR коду:', qrCode);
         // Тут буде код для відображення QR коду
     }
 
     // Діалог створення заявки
     showCreateDialog() {
-        console.log('Створення нової заявки');
+        // logger.log('Створення нової заявки');
         // Тут буде код для відкриття форми створення заявки
     }
 
@@ -789,7 +789,7 @@ class AssignmentManager {
                 throw new Error('Помилка оновлення статусу');
             }
         } catch (error) {
-            console.error('Помилка оновлення статусу:', error);
+            // logger.error('Помилка оновлення статусу:', error);
             this.showNotification('❌ Помилка оновлення статусу', 'error');
         }
     }
@@ -801,7 +801,7 @@ class AssignmentManager {
         action = action || '';
         const container = document.getElementById(containerId);
         if (!container) {
-            console.error(`Container ${containerId} not found`);
+            // logger.error(`Container ${containerId} not found`);
             return;
         }
 

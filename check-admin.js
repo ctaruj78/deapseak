@@ -7,16 +7,16 @@ async function checkAdmin() {
     const db = client.db('deapseak');
     const admin = await db.collection('users').findOne({ username: 'admin' });
     if (admin) {
-      console.log('✅ Admin user created successfully:');
-      console.log('Email:', admin.email);
-      console.log('Username:', admin.username);
-      console.log('Role:', admin.role);
-      console.log('Password hash exists:', !!admin.password);
+      // logger.log('✅ Admin user created successfully:');
+      // logger.log('Email:', admin.email);
+      // logger.log('Username:', admin.username);
+      // logger.log('Role:', admin.role);
+      // logger.log('Password hash exists:', !!admin.password);
     } else {
-      console.log('❌ Admin user not found');
+      // logger.log('❌ Admin user not found');
     }
   } catch (error) {
-    console.error('Error:', error);
+    // logger.error('Error:', error);
   } finally {
     await client.close();
   }

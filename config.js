@@ -60,7 +60,7 @@ class AppConfig {
             StorageManager.encryptionKey = this.config.security.encryptionKey;
         }
 
-        console.log('Конфігурація застосована:', this.config);
+        // logger.log('Конфігурація застосована:', this.config);
     }
 
     static get(key) {

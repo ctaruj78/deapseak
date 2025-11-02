@@ -6,17 +6,17 @@ class SimpleLiftModal {
     }
 
     init() {
-        console.log('🚀 Initializing Simple Lift Modal (no map)...');
+        // logger.log('🚀 Initializing Simple Lift Modal (no map)...');
         this.initEventListeners();
-        console.log('✅ Simple Lift Modal initialized');
+        // logger.log('✅ Simple Lift Modal initialized');
     }
 
     initEventListeners() {
-        console.log('🔧 Setting up event listeners...');
+        // logger.log('🔧 Setting up event listeners...');
         
         // Основний обробник форми
         $(document).off('submit', '#liftForm').on('submit', '#liftForm', (e) => {
-            console.log('🔥 Form submit triggered!');
+            // logger.log('🔥 Form submit triggered!');
             e.preventDefault();
             this.handleFormSubmit();
         });
@@ -24,7 +24,7 @@ class SimpleLiftModal {
         // Додатковий обробник для кнопки
         $(document).off('click', 'button[type="submit"]').on('click', 'button[type="submit"]', (e) => {
             if ($(e.target).closest('#liftForm').length > 0) {
-                console.log('🔥 Submit button clicked!');
+                // logger.log('🔥 Submit button clicked!');
                 e.preventDefault();
                 this.handleFormSubmit();
             }
@@ -32,7 +32,7 @@ class SimpleLiftModal {
         
         // Скидання форми при відкритті модалки
         $('#liftModal').on('show.bs.modal', () => {
-            console.log('📝 Modal opening, resetting form...');
+            // logger.log('📝 Modal opening, resetting form...');
             this.resetForm();
         });
         
@@ -57,28 +57,28 @@ class SimpleLiftModal {
             this.createTicket(liftId);
         });
         
-        console.log('✅ Event listeners set up');
+        // logger.log('✅ Event listeners set up');
     }
 
     handleFormSubmit() {
-        console.log('📋 Processing form submission...');
+        // logger.log('📋 Processing form submission...');
         
         try {
             // Збираємо дані з форми
             const formData = this.collectFormData();
-            console.log('📄 Form data collected:', formData);
+            // logger.log('📄 Form data collected:', formData);
             
             // Простий валідація
             if (!this.validateBasicFields(formData)) {
                 return;
             }
-            console.log('✅ Validation passed');
+            // logger.log('✅ Validation passed');
             
             // Зберігаємо ліфт
             this.saveLift(formData);
             
         } catch (error) {
-            console.error('❌ Error in form submission:', error);
+            // logger.error('❌ Error in form submission:', error);
             this.showMessage('Помилка обробки форми: ' + error.message, 'error');
         }
     }
@@ -142,7 +142,7 @@ class SimpleLiftModal {
         }
         
         if (missing.length > 0) {
-            console.log('❌ Missing required fields:', missing);
+            // logger.log('❌ Missing required fields:', missing);
             this.showMessage('Заповніть обов\'язкові поля: ' + missing.join(', '), 'warning');
             return false;
         }
@@ -151,34 +151,34 @@ class SimpleLiftModal {
     }
     
     saveLift(liftData) {
-        console.log('💾 Saving lift data...');
+        // logger.log('💾 Saving lift data...');
         
         try {
             // Ініціалізуємо масив якщо потрібно
             if (typeof window.allLifts === 'undefined') {
-                console.log('⚠️ window.allLifts not found, creating new array');
+                // logger.log('⚠️ window.allLifts not found, creating new array');
                 window.allLifts = [];
             }
             
             // Перевіряємо чи це оновлення існуючого ліфта
             const existingIndex = window.allLifts.findIndex(l => l.id === liftData.id);
-            console.log('📊 Current lifts count:', window.allLifts.length);
-            console.log('🔍 Checking for existing lift with ID:', liftData.id, 'Found at index:', existingIndex);
+            // logger.log('📊 Current lifts count:', window.allLifts.length);
+            // logger.log('🔍 Checking for existing lift with ID:', liftData.id, 'Found at index:', existingIndex);
             
             if (existingIndex !== -1) {
                 // Оновлюємо існуючий ліфт
                 window.allLifts[existingIndex] = { ...window.allLifts[existingIndex], ...liftData };
-                console.log('✏️ Updated existing lift at index:', existingIndex);
+                // logger.log('✏️ Updated existing lift at index:', existingIndex);
             } else {
                 // Додаємо новий ліфт ТІЛЬКИ один раз
                 window.allLifts.push(liftData);
-                console.log('➕ Added new lift. Total count now:', window.allLifts.length);
+                // logger.log('➕ Added new lift. Total count now:', window.allLifts.length);
             }
             
             // Синхронізуємо з глобальною змінною ТІЛЬКИ ОДИН РАЗ
             if (typeof allLifts !== 'undefined') {
                 allLifts = [...window.allLifts]; // Повністю копіюємо масив
-                console.log('🔄 Synchronized global allLifts variable, count:', allLifts.length);
+                // logger.log('🔄 Synchronized global allLifts variable, count:', allLifts.length);
             }
             
             // Зберігаємо в localStorage
@@ -189,25 +189,25 @@ class SimpleLiftModal {
             $('#liftModal').modal('hide');
             
             // Оновлюємо таблицю якщо є
-            console.log('🔄 Attempting to refresh lift table...');
+            // logger.log('🔄 Attempting to refresh lift table...');
             if (typeof window.liftManager !== 'undefined') {
                 if (window.liftManager.loadLifts) {
-                    console.log('✅ Found liftManager.loadLifts, calling it...');
+                    // logger.log('✅ Found liftManager.loadLifts, calling it...');
                     setTimeout(() => {
                         window.liftManager.loadLifts();
-                        console.log('✅ liftManager.loadLifts() called');
+                        // logger.log('✅ liftManager.loadLifts() called');
                     }, 200);
                 } else {
-                    console.log('❌ liftManager.loadLifts not found');
+                    // logger.log('❌ liftManager.loadLifts not found');
                 }
             } else {
-                console.log('❌ window.liftManager not found');
+                // logger.log('❌ window.liftManager not found');
                 // Спробуємо знайти таблицю і оновити її вручну
                 this.manualRefreshTable();
             }
             
         } catch (error) {
-            console.error('❌ Error saving lift:', error);
+            // logger.error('❌ Error saving lift:', error);
             this.showMessage('Помилка збереження: ' + error.message, 'error');
         }
     }
@@ -217,31 +217,31 @@ class SimpleLiftModal {
             // Спробуємо CommonUtils спочатку
             if (typeof CommonUtils !== 'undefined' && CommonUtils.saveLifts) {
                 const saved = CommonUtils.saveLifts(window.allLifts);
-                console.log('💾 CommonUtils.saveLifts result:', saved);
+                // logger.log('💾 CommonUtils.saveLifts result:', saved);
                 if (!saved) {
                     throw new Error('CommonUtils.saveLifts failed');
                 }
             } else {
                 // Fallback до прямого збереження
                 localStorage.setItem('lifts', JSON.stringify(window.allLifts));
-                console.log('💾 Direct localStorage save completed');
+                // logger.log('💾 Direct localStorage save completed');
             }
             
             // Перевіряємо збереження
             const stored = localStorage.getItem('lifts');
             if (stored) {
                 const parsed = JSON.parse(stored);
-                console.log('✅ Verification: localStorage contains', parsed.length, 'lifts');
+                // logger.log('✅ Verification: localStorage contains', parsed.length, 'lifts');
             }
             
         } catch (error) {
-            console.error('❌ Storage save error:', error);
+            // logger.error('❌ Storage save error:', error);
             throw error;
         }
     }
     
     resetForm() {
-        console.log('🔄 Resetting form...');
+        // logger.log('🔄 Resetting form...');
         $('#liftForm')[0].reset();
         $('#liftId').val('');
         $('.is-invalid').removeClass('is-invalid');
@@ -250,7 +250,7 @@ class SimpleLiftModal {
     }
     
     loadLiftForEdit(liftData) {
-        console.log('📝 Loading lift for edit:', liftData);
+        // logger.log('📝 Loading lift for edit:', liftData);
         
         // Заповнюємо форму даними ліфта
         $('#liftId').val(liftData.id);
@@ -290,7 +290,7 @@ class SimpleLiftModal {
         }
         
         this.currentLiftId = liftData.id;
-        console.log('✅ Lift data loaded for editing');
+        // logger.log('✅ Lift data loaded for editing');
     }
     
     showMessage(message, type = 'info') {
@@ -317,12 +317,12 @@ class SimpleLiftModal {
             $('.simple-modal-alert').fadeOut();
         }, 5000);
         
-        console.log(`📢 Message shown: ${message}`);
+        // logger.log(`📢 Message shown: ${message}`);
     }
     
     // Додамо можливість тестування
     testSave() {
-        console.log('🧪 Running test save...');
+        // logger.log('🧪 Running test save...');
         
         const testData = {
             municipalNumber: 'TEST-' + Date.now(),
@@ -342,7 +342,7 @@ class SimpleLiftModal {
     }
     
     manualRefreshTable() {
-        console.log('🔄 Attempting manual table refresh...');
+        // logger.log('🔄 Attempting manual table refresh...');
         
         // Знаходимо таблицю ліфтів (спробуємо обидва можливих селектори)
         let tbody = $('#liftsTable tbody');
@@ -350,11 +350,11 @@ class SimpleLiftModal {
             tbody = $('#lifts-table-body');
         }
         if (tbody.length === 0) {
-            console.log('❌ Table tbody not found');
+            // logger.log('❌ Table tbody not found');
             return;
         }
         
-        console.log('📋 Found table, updating with', window.allLifts.length, 'lifts');
+        // logger.log('📋 Found table, updating with', window.allLifts.length, 'lifts');
         
         // Очищаємо таблицю
         tbody.empty();
@@ -411,10 +411,10 @@ class SimpleLiftModal {
                 `;
                 tbody.append(row);
             });
-            console.log('✅ Manual table refresh completed');
+            // logger.log('✅ Manual table refresh completed');
         } else {
             tbody.append('<tr><td colspan="10" class="text-center">Немає ліфтів</td></tr>');
-            console.log('ℹ️ No lifts to display');
+            // logger.log('ℹ️ No lifts to display');
         }
     }
     
@@ -440,7 +440,7 @@ class SimpleLiftModal {
     
     // Функції дій для кнопок таблиці
     editLift(liftId) {
-        console.log('✏️ Edit lift:', liftId);
+        // logger.log('✏️ Edit lift:', liftId);
         const lift = this.findLiftById(liftId);
         if (lift) {
             // Використовуємо enhanced модальне вікно для редагування
@@ -460,7 +460,7 @@ class SimpleLiftModal {
     }
     
     viewLift(liftId) {
-        console.log('👁️ View lift:', liftId);
+        // logger.log('👁️ View lift:', liftId);
         const lift = this.findLiftById(liftId);
         if (lift) {
             this.showLiftDetails(lift);
@@ -470,7 +470,7 @@ class SimpleLiftModal {
     }
     
     deleteLift(liftId) {
-        console.log('🗑️ Delete lift:', liftId);
+        // logger.log('🗑️ Delete lift:', liftId);
         const lift = this.findLiftById(liftId);
         if (lift) {
             if (confirm(`Ви впевнені, що хочете видалити ліфт ${lift.municipalNumber}?`)) {
@@ -482,7 +482,7 @@ class SimpleLiftModal {
     }
     
     createTicket(liftId) {
-        console.log('🎫 Create ticket for lift:', liftId);
+        // logger.log('🎫 Create ticket for lift:', liftId);
         const lift = this.findLiftById(liftId);
         if (lift) {
             this.openTicketModal(lift);
@@ -499,7 +499,7 @@ class SimpleLiftModal {
     }
     
     loadLiftForEdit(lift) {
-        console.log('📝 Loading lift for edit:', lift);
+        // logger.log('📝 Loading lift for edit:', lift);
         // Заповнюємо поля форми
         $('#liftId').val(lift.id);
         $('#municipalNumber').val(lift.municipalNumber || '');
@@ -522,7 +522,7 @@ class SimpleLiftModal {
     }
     
     showLiftDetails(lift) {
-        console.log('📋 Showing lift details:', lift);
+        // logger.log('📋 Showing lift details:', lift);
         const modalHtml = `
             <div class="modal fade" id="liftDetailsModal" tabindex="-1">
                 <div class="modal-dialog modal-lg">
@@ -584,13 +584,13 @@ class SimpleLiftModal {
                 this.showMessage('Ліфт успішно видалено', 'success');
             }
         } catch (error) {
-            console.error('❌ Error deleting lift:', error);
+            // logger.error('❌ Error deleting lift:', error);
             this.showMessage('Помилка видалення: ' + error.message, 'error');
         }
     }
     
     openTicketModal(lift) {
-        console.log('🎫 Opening ticket modal for lift:', lift);
+        // logger.log('🎫 Opening ticket modal for lift:', lift);
         const modalHtml = `
             <div class="modal fade" id="ticketModal" tabindex="-1">
                 <div class="modal-dialog">
@@ -674,13 +674,13 @@ class SimpleLiftModal {
         $('#ticketModal').modal('hide');
         this.showMessage('Заявку створено успішно!', 'success');
         
-        console.log('✅ Ticket created:', ticket);
+        // logger.log('✅ Ticket created:', ticket);
     }
 }
 
 // Глобальна ініціалізація
 $(document).ready(function() {
-    console.log('📱 Initializing Simple Lift Modal...');
+    // logger.log('📱 Initializing Simple Lift Modal...');
     window.simpleLiftModal = new SimpleLiftModal();
     
     // Тестові кнопки
@@ -722,5 +722,5 @@ $(document).ready(function() {
         }, 1000);
     }
     
-    console.log('✅ Simple Lift Modal ready');
+    // logger.log('✅ Simple Lift Modal ready');
 });

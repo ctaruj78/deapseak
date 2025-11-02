@@ -6,7 +6,7 @@
 const qrGenerator = (function() {
     // Initialize the module
     function init() {
-        console.log("QR Generator initialized");
+        // logger.log("QR Generator initialized");
         // Implementation here
     }
 

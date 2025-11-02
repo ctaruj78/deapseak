@@ -9,7 +9,7 @@ class AuthManager {
         // Також встановлюємо cookie для кросс-доменних запитів
         document.cookie = `auth_token=${token}; path=/; max-age=86400`; // 24 години
         
-        console.log('✅ Користувач увійшов в систему:', user);
+        // logger.log('✅ Користувач увійшов в систему:', user);
         return true;
     }
 
@@ -24,7 +24,7 @@ class AuthManager {
         // Видаляємо cookie
         document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
         
-        console.log('👋 Користувач вийшов з системи');
+        // logger.log('👋 Користувач вийшов з системи');
         
         // Абсолютний шлях до login.html (працює з будь-якої сторінки)
         window.location.href = '/login.html';
@@ -40,14 +40,14 @@ class AuthManager {
             const now = Math.floor(Date.now() / 1000);
             
             if (payload.exp && payload.exp < now) {
-                console.warn('⚠️ Токен застарілий, виходимо з системи');
+                // logger.warn('⚠️ Токен застарілий, виходимо з системи');
                 this.logout();
                 return false;
             }
             
             return true;
         } catch (error) {
-            console.error('❌ Помилка перевірки токена:', error);
+            // logger.error('❌ Помилка перевірки токена:', error);
             this.logout();
             return false;
         }
@@ -116,14 +116,14 @@ class AuthManager {
             
             // Якщо отримали 401, токен недійсний
             if (response.status === 401) {
-                console.warn('⚠️ Отримано 401, перенаправляємо на login');
+                // logger.warn('⚠️ Отримано 401, перенаправляємо на login');
                 this.logout();
                 return null;
             }
             
             return response;
         } catch (error) {
-            console.error('❌ Помилка авторизованого запиту:', error);
+            // logger.error('❌ Помилка авторизованого запиту:', error);
             throw error;
         }
     }
@@ -146,7 +146,7 @@ class AuthManager {
         // Перевіряємо чи це публічна сторінка
         const isPublicPage = publicPages.some(page => pathname.includes(page));
         if (isPublicPage) {
-            console.log('📄 Публічна сторінка, перевірка авторизації пропущена');
+            // logger.log('📄 Публічна сторінка, перевірка авторизації пропущена');
             return;
         }
         
@@ -156,7 +156,7 @@ class AuthManager {
         }
         
         if (!this.isAuthenticated()) {
-            console.log('🔒 Користувач не авторизований, перенаправляємо на login');
+            // logger.log('🔒 Користувач не авторизований, перенаправляємо на login');
             // Зберігаємо URL куди хотів потрапити користувач
             sessionStorage.setItem('redirect_after_login', window.location.href);
             // Абсолютний шлях до login.html (працює з будь-якої сторінки)
@@ -165,13 +165,13 @@ class AuthManager {
         }
         
         const user = this.getCurrentUser();
-        console.log('👤 Поточний користувач:', user);
+        // logger.log('👤 Поточний користувач:', user);
     }
 }
 
 // Ініціалізація при завантаженні
-console.log('🔒 AuthManager завантажено');
-console.log('📊 Поточний статус авторизації:', AuthManager.isAuthenticated());
+// logger.log('🔒 AuthManager завантажено');
+// logger.log('📊 Поточний статус авторизації:', AuthManager.isAuthenticated());
 
 // Перевірка авторизації при завантаженні сторінки
 document.addEventListener('DOMContentLoaded', () => {

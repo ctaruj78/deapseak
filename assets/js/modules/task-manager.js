@@ -34,7 +34,7 @@ class TaskManager {
                 throw new Error('API недоступне');
             }
         } catch (error) {
-            console.warn('Використання локальних даних:', error);
+            // logger.warn('Використання локальних даних:', error);
             this.tasks = JSON.parse(localStorage.getItem('tasks')) || [];
             
             if (this.tasks.length === 0) {

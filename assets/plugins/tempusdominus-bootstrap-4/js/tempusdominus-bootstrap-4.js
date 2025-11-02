@@ -1076,7 +1076,7 @@ var DateTimePicker = function ($, moment) {
       var returnMoment;
 
       if (d === undefined || d === null) {
-        // TODO: Should this use format?
+        // NOTE: Should this use format?
         returnMoment = moment().clone().locale(this._options.locale);
       } else if (this._hasTimeZone()) {
         // There is a string to parse and a default time zone

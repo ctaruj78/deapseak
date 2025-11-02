@@ -34,5 +34,5 @@ app.post('/api/upload', upload.array('files', 5), (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Upload server running on http://localhost:${PORT}`);
+  // logger.log(`Upload server running on http://localhost:${PORT}`);
 });

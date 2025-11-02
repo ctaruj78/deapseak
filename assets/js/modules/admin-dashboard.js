@@ -39,7 +39,7 @@ class AdminDashboard {
 
             this.updateStatsUI(stats);
         } catch (error) {
-            console.error('Помилка завантаження статистики:', error);
+            // logger.error('Помилка завантаження статистики:', error);
         }
     }
 
@@ -75,7 +75,7 @@ class AdminDashboard {
             
             this.renderScansTable(recentScans);
         } catch (error) {
-            console.error('Помилка завантаження сканувань:', error);
+            // logger.error('Помилка завантаження сканувань:', error);
         }
     }
 
@@ -205,7 +205,7 @@ class AdminDashboard {
         });
 
         // Використовуємо Chart.js або іншу бібліотеку для графіків
-        console.log('Графік сканувань:', dailyScans);
+        // logger.log('Графік сканувань:', dailyScans);
     }
 
     initLiftStatusChart() {
@@ -218,7 +218,7 @@ class AdminDashboard {
             inactive: lifts.filter(lift => lift.status === 'inactive').length
         };
 
-        console.log('Статуси ліфтів:', statusCount);
+        // logger.log('Статуси ліфтів:', statusCount);
     }
 
     getLast7Days() {
@@ -238,7 +238,7 @@ class AdminDashboard {
             
             this.renderPendingTasks(pendingTasks);
         } catch (error) {
-            console.error('Помилка завантаження завдань:', error);
+            // logger.error('Помилка завантаження завдань:', error);
         }
     }
 

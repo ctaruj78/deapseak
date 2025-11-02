@@ -1,0 +1,183 @@
+📊 АНАЛІЗ ПРОЕКТУ DeapSeak
+Дата: Sun Nov  2 09:15:03 UTC 2025
+
+════════════════════════════════════════════════════
+
+1. СТРУКТУРА ПРОЕКТУ
+════════════════════════════════════════════════════
+.
+./.devcontainer
+./.git
+./.github
+./.github/workflows
+./.vscode
+./ai
+./assets
+./assets/css
+./assets/img
+./assets/js
+./assets/libs
+./assets/modules
+./assets/plugins
+./backend
+./backend/config
+./backend/controllers
+./backend/models
+./backend/routes
+./backup
+./backup/old-dashboards
+./backups
+./config
+./controllers
+./data
+./data/mongodb
+./docs
+./logs
+./middleware
+./models
+./node_modules
+./pages
+./pages/admin
+./pages/ai-assistant
+./pages/auth
+./pages/client
+./pages/dispatcher
+./pages/qr
+./pages/tech
+./plugins
+./plugins/adminlte
+./plugins/bootstrap
+./plugins/bootstrap-colorpicker
+./plugins/bootstrap-slider
+./plugins/bootstrap-switch
+./plugins/bootstrap4-duallistbox
+./plugins/bs-custom-file-input
+./plugins/bs-stepper
+./plugins/chart.js
+./plugins/codemirror
+./plugins/datatables
+./plugins/datatables-autofill
+./plugins/datatables-bs4
+./plugins/datatables-buttons
+./plugins/datatables-colreorder
+./plugins/datatables-fixedcolumns
+./plugins/datatables-fixedheader
+./plugins/datatables-keytable
+./plugins/datatables-responsive
+./plugins/datatables-rowgroup
+./plugins/datatables-rowreorder
+./plugins/datatables-scroller
+./plugins/datatables-searchbuilder
+./plugins/datatables-searchpanes
+./plugins/datatables-select
+./plugins/daterangepicker
+./plugins/dropzone
+./plugins/ekko-lightbox
+./plugins/fastclick
+./plugins/filterizr
+./plugins/flag-icon-css
+./plugins/flot
+./plugins/fontawesome-free
+./plugins/fullcalendar
+./plugins/icheck-bootstrap
+./plugins/inputmask
+./plugins/ion-rangeslider
+./plugins/jquery
+./plugins/jquery-knob
+./plugins/jquery-mapael
+./plugins/jquery-mousewheel
+./plugins/jquery-ui
+./plugins/jquery-validation
+./plugins/jqvmap
+./plugins/jsgrid
+./plugins/jszip
+./plugins/leaflet
+./plugins/moment
+./plugins/overlayScrollbars
+./plugins/pace-progress
+./plugins/pdfmake
+./plugins/popper
+./plugins/qrcode
+./plugins/raphael
+./plugins/select2
+./plugins/select2-bootstrap4-theme
+./plugins/sparklines
+./plugins/summernote
+./plugins/sweetalert2
+./plugins/sweetalert2-theme-bootstrap-4
+./plugins/tempusdominus-bootstrap-4
+./plugins/toastr
+./plugins/uplot
+./public
+./routes
+./scripts
+./security-audit
+./services
+./templates
+./tests
+./tests/__tests__
+./tests/integration
+./tests/unit
+./uploads
+./uploads/archives
+./uploads/audio
+./uploads/documents
+./uploads/images
+./uploads/other
+./uploads/presentations
+./uploads/spreadsheets
+./uploads/video
+./utils
+
+2. АКТИВНІ ФАЙЛИ
+════════════════════════════════════════════════════
+✅ ЯДРО:
+  ✅ api-server.js (227 рядків)
+  ✅ package.json
+  ✅ .env
+
+✅ BACKEND:
+  ✅ models/ (6 файлів):
+     - Lift.js
+     - Request.js
+     - User.js
+     - assignment-schema.js
+     - chat-schema.js
+     - qr-schema.js
+  ✅ routes/ (7 файлів):
+     - auth.routes.js
+     - index.js
+     - lift.routes.js
+     - lifts.routes.js
+     - monitoring.routes.js
+     - request.routes.js
+     - user.routes.js
+  ✅ middleware/ (7 файлів):
+     - auth.js
+     - auth.middleware.js
+     - errorHandler.js
+     - errorHandler.middleware.js
+     - rateLimit.middleware.js
+     - validation.js
+     - validation.middleware.js
+
+✅ FRONTEND:
+  ✅ public/ (3 файлів):
+     - dashboard.html
+     - index.html
+     - login.html
+
+3. ЗАЛИШОВІ ФАЙЛИ
+════════════════════════════════════════════════════
+  🗑️  setup-codespaces-ports.sh
+  🗑️  system-test.sh
+  🗑️  start-servers.sh
+  🗑️  run-full-setup.sh
+  🗑️  full-system-recovery.sh
+  🗑️  test-qr-system.sh
+  🗑️  start-codespaces.sh
+  🗑️  stop-servers.sh
+  🗑️  test-all-pages.sh
+  🗑️  start-all-servers.sh
+  🗑️  
+  🗑️  test-all-system.sh

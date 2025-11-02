@@ -12,7 +12,7 @@ class CRMUnified {
         this.dataManager = null;
         this.currentModule = null;
         
-        console.log('CRMUnified constructor викликано');
+        // logger.log('CRMUnified constructor викликано');
         
         // Ініціалізація після завантаження DOM
         this.init();
@@ -20,7 +20,7 @@ class CRMUnified {
     
     async init() {
         try {
-            console.log('Ініціалізація CRM системи...');
+            // logger.log('Ініціалізація CRM системи...');
             
             // Перевіряємо, чи DOM готовий
             if (document.readyState !== 'complete') {
@@ -37,7 +37,7 @@ class CRMUnified {
             if (typeof CRMDataManager !== 'undefined') {
                 this.dataManager = window.dataManager || new CRMDataManager();
             } else {
-                console.warn('CRMDataManager не доступний, використовуємо базову функціональність');
+                // logger.warn('CRMDataManager не доступний, використовуємо базову функціональність');
             }
             
             // Завантаження даних користувача
@@ -55,9 +55,9 @@ class CRMUnified {
             // Налаштовуємо інтерактивність
             this.setupInteractivity();
             
-            console.log(`CRM ініціалізовано для ролі: ${this.userRole}`);
+            // logger.log(`CRM ініціалізовано для ролі: ${this.userRole}`);
         } catch (error) {
-            console.error('Критична помилка ініціалізації CRM:', error);
+            // logger.error('Критична помилка ініціалізації CRM:', error);
             this.handleCriticalError(error);
         }
     }
@@ -74,18 +74,18 @@ class CRMUnified {
             this.updateUserInterface();
             
         } catch (error) {
-            console.error('Помилка завантаження даних користувача:', error);
+            // logger.error('Помилка завантаження даних користувача:', error);
             this.handleAuthError();
         }
     }
     
     handleAuthError() {
-        console.warn('Помилка автентифікації, перенаправлення на логін');
+        // logger.warn('Помилка автентифікації, перенаправлення на логін');
         window.location.href = '/login.html';
     }
     
     handleCriticalError(error) {
-        console.error('Критична помилка CRM системи:', error);
+        // logger.error('Критична помилка CRM системи:', error);
         
         const errorContainer = document.body;
         if (errorContainer) {
@@ -175,7 +175,7 @@ class CRMUnified {
                     element.textContent = value;
                 }
             } else {
-                console.warn(`Елемент з ID "${id}" не знайдено`);
+                // logger.warn(`Елемент з ID "${id}" не знайдено`);
             }
         });
     }
@@ -316,7 +316,7 @@ class CRMUnified {
         this.availableModules = modulesByRole[this.userRole] || [];
         this.permissions = permissionsByRole[this.userRole] || {};
         
-        console.log(`Завантажуємо модулі для ролі: ${this.userRole}`, this.availableModules);
+        // logger.log(`Завантажуємо модулі для ролі: ${this.userRole}`, this.availableModules);
     }
     
     setupRolePermissions() {
@@ -989,7 +989,7 @@ class CRMUnified {
     }
     
     async loadModule(moduleId) {
-        console.log(`Завантаження модуля: ${moduleId}`);
+        // logger.log(`Завантаження модуля: ${moduleId}`);
         
         // Спеціальний випадок для dashboard - використовуємо власну функцію
         if (moduleId === 'dashboard') {
@@ -1037,7 +1037,7 @@ class CRMUnified {
             this.initModuleAfterLoad(moduleId);
             
         } catch (error) {
-            console.error(`Помилка завантаження модуля ${moduleId}:`, error);
+            // logger.error(`Помилка завантаження модуля ${moduleId}:`, error);
             document.getElementById('main-content').innerHTML = this.getDefaultModuleContent(moduleId);
         }
         
@@ -1046,14 +1046,14 @@ class CRMUnified {
     }
 
     async generateInteractiveModule(moduleId) {
-        console.log(`Генерація інтерактивного модуля: ${moduleId}`);
+        // logger.log(`Генерація інтерактивного модуля: ${moduleId}`);
         
         // Спробуємо завантажити існуючий файл, якщо не знайдемо - створимо динамічно
         try {
             const content = await this.getModuleContent(moduleId);
             return content;
         } catch (error) {
-            console.log(`Файл для ${moduleId} не знайдено, генеруємо динамічно`);
+            // logger.log(`Файл для ${moduleId} не знайдено, генеруємо динамічно`);
             return this.generateDynamicModule(moduleId);
         }
     }
@@ -1359,32 +1359,32 @@ class CRMUnified {
     
     // Методи ініціалізації для специфічних модулів
     initQRGenerator() {
-        console.log('Ініціалізація генератора QR кодів');
+        // logger.log('Ініціалізація генератора QR кодів');
         // Тут може бути додаткова логіка
     }
     
     initQRScanner() {
-        console.log('Ініціалізація QR сканера');
+        // logger.log('Ініціалізація QR сканера');
         // Тут може бути додаткова логіка
     }
     
     initQRAnalytics() {
-        console.log('Ініціалізація аналітики QR');
+        // logger.log('Ініціалізація аналітики QR');
         // Тут може бути додаткова логіка
     }
     
     initTasks() {
-        console.log('Ініціалізація модуля завдань');
+        // logger.log('Ініціалізація модуля завдань');
         // Тут може бути додаткова логіка
     }
     
     hasAccessToModule(moduleId) {
-        console.log(`Перевірка доступу до модуля: ${moduleId}`);
-        console.log(`Доступні модулі для ролі ${this.userRole}:`, this.availableModules);
+        // logger.log(`Перевірка доступу до модуля: ${moduleId}`);
+        // logger.log(`Доступні модулі для ролі ${this.userRole}:`, this.availableModules);
         
         // Пряма перевірка доступу
         if (this.availableModules.includes(moduleId)) {
-            console.log(`Модуль ${moduleId} знайдено в availableModules`);
+            // logger.log(`Модуль ${moduleId} знайдено в availableModules`);
             return true;
         }
         
@@ -1434,33 +1434,33 @@ class CRMUnified {
     }
     
     async getModuleContent(moduleId) {
-        console.log(`Завантаження модуля: ${moduleId}`);
+        // logger.log(`Завантаження модуля: ${moduleId}`);
         
         try {
             // Визначаємо шлях до файлу залежно від модуля та ролі
             const modulePath = this.getModulePath(moduleId);
-            console.log(`Шлях до модуля ${moduleId}: ${modulePath}`);
+            // logger.log(`Шлях до модуля ${moduleId}: ${modulePath}`);
             
             if (modulePath) {
                 const response = await fetch(modulePath);
-                console.log(`Відповідь сервера для ${moduleId}: ${response.status}`);
+                // logger.log(`Відповідь сервера для ${moduleId}: ${response.status}`);
                 
                 if (response.ok) {
                     const htmlContent = await response.text();
-                    console.log(`Модуль ${moduleId} успішно завантажено`);
+                    // logger.log(`Модуль ${moduleId} успішно завантажено`);
                     return this.extractContentFromHtml(htmlContent);
                 } else {
-                    console.error(`Помилка HTTP ${response.status} для модуля ${moduleId}`);
+                    // logger.error(`Помилка HTTP ${response.status} для модуля ${moduleId}`);
                 }
             } else {
-                console.error(`Шлях для модуля ${moduleId} не знайдено`);
+                // logger.error(`Шлях для модуля ${moduleId} не знайдено`);
             }
         } catch (error) {
-            console.error(`Помилка завантаження модуля ${moduleId}:`, error);
+            // logger.error(`Помилка завантаження модуля ${moduleId}:`, error);
         }
         
         // Якщо не вдалося завантажити - показуємо заглушку
-        console.log(`Показуємо заглушку для модуля ${moduleId}`);
+        // logger.log(`Показуємо заглушку для модуля ${moduleId}`);
         return this.getDefaultModuleContent(moduleId);
     }
     
@@ -1641,7 +1641,7 @@ class CRMUnified {
     // === ІНТЕРАКТИВНІ МЕТОДИ ===
 
     setupInteractivity() {
-        console.log('Налаштування інтерактивності...');
+        // logger.log('Налаштування інтерактивності...');
         
         // Налаштування глобальних обробників подій
         this.setupGlobalEventHandlers();
@@ -1655,7 +1655,7 @@ class CRMUnified {
         // Налаштування таблиць з інтерактивністю
         this.setupInteractiveTables();
         
-        console.log('Інтерактивність налаштовано');
+        // logger.log('Інтерактивність налаштовано');
     }
 
     setupGlobalEventHandlers() {
@@ -1741,10 +1741,10 @@ class CRMUnified {
                     await this.viewDetails(data.type, data.id);
                     break;
                 default:
-                    console.warn(`Невідома дія: ${action}`);
+                    // logger.warn(`Невідома дія: ${action}`);
             }
         } catch (error) {
-            console.error(`Помилка виконання дії ${action}:`, error);
+            // logger.error(`Помилка виконання дії ${action}:`, error);
             this.showErrorMessage(`Помилка: ${error.message}`);
         } finally {
             element.disabled = false;
@@ -1762,7 +1762,7 @@ class CRMUnified {
                 buttonsStyling: false
             });
         } else {
-            console.warn('SweetAlert2 не доступний, використовуємо стандартні діалоги');
+            // logger.warn('SweetAlert2 не доступний, використовуємо стандартні діалоги');
             this.swal = {
                 fire: async (options) => {
                     if (options.input) {
@@ -1998,14 +1998,14 @@ class CRMUnified {
         if (this.dataManager) {
             return this.dataManager.addUser(userData);
         }
-        console.log('Створення користувача:', userData);
+        // logger.log('Створення користувача:', userData);
     }
 
     async updateUser(id, userData) {
         if (this.dataManager) {
             return this.dataManager.updateUser(id, userData);
         }
-        console.log('Оновлення користувача:', id, userData);
+        // logger.log('Оновлення користувача:', id, userData);
     }
 
     async deleteUser(id) {
@@ -2047,14 +2047,14 @@ class CRMUnified {
         if (this.dataManager) {
             return this.dataManager.addLift(liftData);
         }
-        console.log('Створення ліфта:', liftData);
+        // logger.log('Створення ліфта:', liftData);
     }
 
     async updateLift(id, liftData) {
         if (this.dataManager) {
             return this.dataManager.updateLift(id, liftData);
         }
-        console.log('Оновлення ліфта:', id, liftData);
+        // logger.log('Оновлення ліфта:', id, liftData);
     }
 
     async deleteLift(id) {
@@ -2479,10 +2479,10 @@ function logout() {
 // Ініціалізація системи після завантаження сторінки
 function initializeCRM() {
     try {
-        console.log('Початок ініціалізації CRM...');
+        // logger.log('Початок ініціалізації CRM...');
         window.crmSystem = new CRMUnified();
     } catch (error) {
-        console.error('Помилка при створенні CRM системи:', error);
+        // logger.error('Помилка при створенні CRM системи:', error);
     }
 }
 

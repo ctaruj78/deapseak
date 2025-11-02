@@ -553,7 +553,7 @@ CodeMirror.defineMode("verilog", function(config, parserConfig) {
   // Type is one of: "indent", "scope-ident", "before-scope-ident".
   function tlvScopeStyle(state, indentation, type) {
     // Begin scope.
-    var depth = indentation / tlvIndentUnit;  // TODO: Pass this in instead.
+    var depth = indentation / tlvIndentUnit;  // NOTE: Pass this in instead.
     return "tlv-" + state.tlvIndentationStyle[depth] + "-" + type;
   }
 

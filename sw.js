@@ -21,11 +21,11 @@ const urlsToCache = [
 
 // Install event - кешування ресурсів
 self.addEventListener('install', event => {
-    console.log('Service Worker installing.');
+    // logger.log('Service Worker installing.');
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then(cache => {
-                console.log('Opened cache');
+                // logger.log('Opened cache');
                 return cache.addAll(urlsToCache);
             })
     );
@@ -34,13 +34,13 @@ self.addEventListener('install', event => {
 
 // Activate event - очищення старого кешу
 self.addEventListener('activate', event => {
-    console.log('Service Worker activating.');
+    // logger.log('Service Worker activating.');
     event.waitUntil(
         caches.keys().then(cacheNames => {
             return Promise.all(
                 cacheNames.map(cacheName => {
                     if (cacheName !== CACHE_NAME) {
-                        console.log('Deleting old cache:', cacheName);
+                        // logger.log('Deleting old cache:', cacheName);
                         return caches.delete(cacheName);
                     }
                 })
@@ -85,7 +85,7 @@ self.addEventListener('fetch', event => {
 
 // Push event - обробка push повідомлень
 self.addEventListener('push', event => {
-    console.log('Push received:', event);
+    // logger.log('Push received:', event);
 
     let data = {};
     if (event.data) {
@@ -117,7 +117,7 @@ self.addEventListener('push', event => {
 
 // Notification click event
 self.addEventListener('notificationclick', event => {
-    console.log('Notification click received:', event);
+    // logger.log('Notification click received:', event);
 
     event.notification.close();
 
@@ -133,7 +133,7 @@ self.addEventListener('notificationclick', event => {
 
 // Background sync для офлайн дій
 self.addEventListener('sync', event => {
-    console.log('Background sync triggered:', event.tag);
+    // logger.log('Background sync triggered:', event.tag);
 
     if (event.tag === 'background-sync') {
         event.waitUntil(syncOfflineData());
@@ -144,7 +144,7 @@ self.addEventListener('sync', event => {
 async function syncOfflineData() {
     try {
         // Тут можна додати логіку синхронізації офлайн даних
-        console.log('Syncing offline data...');
+        // logger.log('Syncing offline data...');
 
         // Повідомляємо клієнтів про успішну синхронізацію
         const clients = await self.clients.matchAll();
@@ -155,7 +155,7 @@ async function syncOfflineData() {
             });
         });
     } catch (error) {
-        console.error('Sync failed:', error);
+        // logger.error('Sync failed:', error);
 
         const clients = await self.clients.matchAll();
         clients.forEach(client => {
@@ -169,7 +169,7 @@ async function syncOfflineData() {
 
 // Message event - комунікація з main thread
 self.addEventListener('message', event => {
-    console.log('Message received in SW:', event.data);
+    // logger.log('Message received in SW:', event.data);
 
     if (event.data && event.data.type === 'SKIP_WAITING') {
         self.skipWaiting();

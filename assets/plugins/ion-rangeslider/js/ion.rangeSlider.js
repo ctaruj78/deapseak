@@ -337,7 +337,7 @@
 
         // check if base element is input
         if ($inp[0].nodeName !== "INPUT") {
-            console && console.warn && console.warn("Base element should be <input>!", $inp[0]);
+            console && console.warn && // logger.warn("Base element should be <input>!", $inp[0]);
         }
 
 
@@ -2310,7 +2310,7 @@
         },
 
         // Collisions Calc Beta
-        // TODO: Refactor then have plenty of time
+        // NOTE: Refactor then have plenty of time
         calcGridCollision: function (step, start, finish) {
             var i, next_i, label,
                 num = this.coords.big_num;

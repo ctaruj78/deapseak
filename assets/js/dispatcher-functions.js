@@ -8,14 +8,14 @@
 // ============================================
 
 function createNewTask() {
-    console.log('➕ Creating new task...');
+    // logger.log('➕ Creating new task...');
     const modal = new bootstrap.Modal(document.getElementById('taskModal'));
     modal.show();
     Notifier.info('Creating new task');
 }
 
 function saveTask() {
-    console.log('💾 Saving task...');
+    // logger.log('💾 Saving task...');
     
     const taskData = {
         title: document.getElementById('taskTitle')?.value,
@@ -46,23 +46,23 @@ function saveTask() {
             return r.json();
         })
         .then(data => {
-            console.log('✅ Task saved:', data);
+            // logger.log('✅ Task saved:', data);
             Notifier.success('Task created successfully');
             bootstrap.Modal.getInstance(document.getElementById('taskModal')).hide();
             loadTasks(); // Перезавантажити список
         })
         .catch(error => {
-            console.error('Error:', error);
+            // logger.error('Error:', error);
             Notifier.error('Failed to create task: ' + error.message);
         });
     } catch (error) {
-        console.error('Error:', error);
+        // logger.error('Error:', error);
         Notifier.error('Failed to save task');
     }
 }
 
 function deleteTask(taskId) {
-    console.log('🗑️ Deleting task:', taskId);
+    // logger.log('🗑️ Deleting task:', taskId);
     
     if (!confirm('Are you sure?')) return;
     
@@ -82,7 +82,7 @@ function deleteTask(taskId) {
             loadTasks();
         })
         .catch(error => {
-            console.error('Error:', error);
+            // logger.error('Error:', error);
             Notifier.error('Failed to delete task');
         });
     } catch (error) {
@@ -91,7 +91,7 @@ function deleteTask(taskId) {
 }
 
 function loadTasks() {
-    console.log('📂 Loading tasks...');
+    // logger.log('📂 Loading tasks...');
     
     try {
         fetch('/api/tasks', {
@@ -104,11 +104,11 @@ function loadTasks() {
             return r.json();
         })
         .then(data => {
-            console.log('✅ Tasks loaded:', data);
+            // logger.log('✅ Tasks loaded:', data);
             displayTasks(data);
         })
         .catch(error => {
-            console.error('Error:', error);
+            // logger.error('Error:', error);
             Notifier.error('Failed to load tasks');
         });
     } catch (error) {
@@ -153,7 +153,7 @@ function getStatusColor(status) {
 // ============================================
 
 function assignTask(taskId) {
-    console.log('👤 Assigning task:', taskId);
+    // logger.log('👤 Assigning task:', taskId);
     
     const technicianId = prompt('Enter Technician ID:');
     if (!technicianId) return;
@@ -176,7 +176,7 @@ function assignTask(taskId) {
             loadTasks();
         })
         .catch(error => {
-            console.error('Error:', error);
+            // logger.error('Error:', error);
             Notifier.error('Failed to assign task');
         });
     } catch (error) {
@@ -185,7 +185,7 @@ function assignTask(taskId) {
 }
 
 function changeTaskStatus(taskId, newStatus) {
-    console.log(`🔄 Changing task status to: ${newStatus}`);
+    // logger.log(`🔄 Changing task status to: ${newStatus}`);
     
     try {
         fetch(`/api/tasks/${taskId}`, {
@@ -205,7 +205,7 @@ function changeTaskStatus(taskId, newStatus) {
             loadTasks();
         })
         .catch(error => {
-            console.error('Error:', error);
+            // logger.error('Error:', error);
             Notifier.error('Failed to change status');
         });
     } catch (error) {
@@ -218,11 +218,11 @@ function changeTaskStatus(taskId, newStatus) {
 // ============================================
 
 function initMap() {
-    console.log('🗺️ Initializing map...');
+    // logger.log('🗺️ Initializing map...');
     
     try {
         if (typeof L === 'undefined') {
-            console.warn('Leaflet not loaded');
+            // logger.warn('Leaflet not loaded');
             Notifier.warning('Map library not available');
             return;
         }
@@ -235,7 +235,7 @@ function initMap() {
         
         Notifier.success('Map initialized');
     } catch (error) {
-        console.error('Error initializing map:', error);
+        // logger.error('Error initializing map:', error);
         Notifier.error('Failed to initialize map');
     }
 }

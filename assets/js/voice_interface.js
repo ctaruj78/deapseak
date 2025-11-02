@@ -37,13 +37,13 @@ class VoiceInterface {
                 this.initSpeechSynthesis();
                 this.initVoiceCommands();
                 
-                console.log('🎤 Голосовий інтерфейс ініціалізовано');
+                // logger.log('🎤 Голосовий інтерфейс ініціалізовано');
             } else {
-                console.warn('⚠️ Голосовий інтерфейс не підтримується браузером');
+                // logger.warn('⚠️ Голосовий інтерфейс не підтримується браузером');
             }
             
         } catch (error) {
-            console.error('Помилка ініціалізації голосового інтерфейсу:', error);
+            // logger.error('Помилка ініціалізації голосового інтерфейсу:', error);
         }
     }
     
@@ -63,7 +63,7 @@ class VoiceInterface {
             this.isSupported = false;
         }
         
-        console.log(`🔍 Підтримка голосового інтерфейсу: ${this.isSupported ? 'ТАК' : 'НІ'}`);
+        // logger.log(`🔍 Підтримка голосового інтерфейсу: ${this.isSupported ? 'ТАК' : 'НІ'}`);
     }
     
     initSpeechRecognition() {
@@ -79,7 +79,7 @@ class VoiceInterface {
         this.recognition.onstart = () => {
             this.isListening = true;
             this.onListeningStart();
-            console.log('🎤 Слухаю...');
+            // logger.log('🎤 Слухаю...');
         };
         
         this.recognition.onresult = (event) => {
@@ -87,14 +87,14 @@ class VoiceInterface {
         };
         
         this.recognition.onerror = (event) => {
-            console.error('Помилка розпізнавання мови:', event.error);
+            // logger.error('Помилка розпізнавання мови:', event.error);
             this.onError(event.error);
         };
         
         this.recognition.onend = () => {
             this.isListening = false;
             this.onListeningEnd();
-            console.log('🔇 Припинено слухання');
+            // logger.log('🔇 Припинено слухання');
         };
     }
     
@@ -134,7 +134,7 @@ class VoiceInterface {
             );
         }
         
-        console.log(`🗣️ Обрано голос: ${this.ukrainianVoice?.name || 'За замовчуванням'}`);
+        // logger.log(`🗣️ Обрано голос: ${this.ukrainianVoice?.name || 'За замовчуванням'}`);
     }
     
     initVoiceCommands() {
@@ -181,7 +181,7 @@ class VoiceInterface {
             this.speak('Будь ласка! Завжди радий допомогти.');
         });
         
-        console.log(`🎯 Зареєстровано ${this.voiceCommands.size} голосових команд`);
+        // logger.log(`🎯 Зареєстровано ${this.voiceCommands.size} голосових команд`);
     }
     
     addVoiceCommand(phrases, callback) {
@@ -217,7 +217,7 @@ class VoiceInterface {
     }
     
     processFinalResult(text) {
-        console.log(`🎤 Розпізнано: "${text}"`);
+        // logger.log(`🎤 Розпізнано: "${text}"`);
         
         // Відображення результату
         this.displayFinalResult(text);
@@ -226,7 +226,7 @@ class VoiceInterface {
         const command = this.findMatchingCommand(text.toLowerCase());
         
         if (command) {
-            console.log(`⚡ Виконання команди для: "${text}"`);
+            // logger.log(`⚡ Виконання команди для: "${text}"`);
             command();
         } else {
             // Відправка до AI асистента
@@ -275,14 +275,14 @@ class VoiceInterface {
             }
             
         } catch (error) {
-            console.error('Помилка відправки до AI:', error);
+            // logger.error('Помилка відправки до AI:', error);
             this.speak('Помилка зв\'язку з AI асистентом');
         }
     }
     
     speak(text, options = {}) {
         if (!this.synthesis) {
-            console.log(`🗣️ [Голос відключено] ${text}`);
+            // logger.log(`🗣️ [Голос відключено] ${text}`);
             return;
         }
         
@@ -312,16 +312,16 @@ class VoiceInterface {
             };
             
             utterance.onerror = (error) => {
-                console.error('Помилка синтезу мови:', error);
+                // logger.error('Помилка синтезу мови:', error);
             };
             
             // Запуск синтезу
             this.synthesis.speak(utterance);
             
-            console.log(`🗣️ Промовляю: "${text}"`);
+            // logger.log(`🗣️ Промовляю: "${text}"`);
             
         } catch (error) {
-            console.error('Помилка голосового синтезу:', error);
+            // logger.error('Помилка голосового синтезу:', error);
         }
     }
     
@@ -332,14 +332,14 @@ class VoiceInterface {
         }
         
         if (this.isListening) {
-            console.log('🎤 Вже слухаю');
+            // logger.log('🎤 Вже слухаю');
             return;
         }
         
         try {
             this.recognition.start();
         } catch (error) {
-            console.error('Помилка запуску розпізнавання:', error);
+            // logger.error('Помилка запуску розпізнавання:', error);
         }
     }
     
@@ -351,7 +351,7 @@ class VoiceInterface {
         try {
             this.recognition.stop();
         } catch (error) {
-            console.error('Помилка зупинки розпізнавання:', error);
+            // logger.error('Помилка зупинки розпізнавання:', error);
         }
     }
     
@@ -396,7 +396,7 @@ class VoiceInterface {
                 break;
                 
             default:
-                console.log('Невідома команда:', commandType);
+                // logger.log('Невідома команда:', commandType);
         }
     }
     
@@ -468,7 +468,7 @@ class VoiceInterface {
                 break;
         }
         
-        console.error(`❌ ${message}`);
+        // logger.error(`❌ ${message}`);
         
         if (typeof showNotification === 'function') {
             showNotification(message, 'error');
@@ -485,7 +485,7 @@ class VoiceInterface {
             this.recognition.maxAlternatives = this.settings.maxAlternatives;
         }
         
-        console.log('🔧 Налаштування голосового інтерфейсу оновлено');
+        // logger.log('🔧 Налаштування голосового інтерфейсу оновлено');
     }
     
     // Отримання статистики
@@ -610,7 +610,7 @@ function addVoiceControlButton() {
         }
     });
     
-    console.log('🎤 Кнопка голосового управління додана');
+    // logger.log('🎤 Кнопка голосового управління додана');
 }
 
 // Експорт для використання в інших модулях

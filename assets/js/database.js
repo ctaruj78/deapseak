@@ -33,7 +33,7 @@ class DatabaseManager {
 
             return users;
         } catch (error) {
-            console.error('Error getting users:', error);
+            // logger.error('Error getting users:', error);
             throw new Error('Failed to retrieve users');
         }
     }
@@ -59,7 +59,7 @@ class DatabaseManager {
 
             return newUser;
         } catch (error) {
-            console.error('Error creating user:', error);
+            // logger.error('Error creating user:', error);
             throw new Error('Failed to create user');
         }
     }
@@ -82,7 +82,7 @@ class DatabaseManager {
             await this.saveUsers(users);
             return users[index];
         } catch (error) {
-            console.error('Error updating user:', error);
+            // logger.error('Error updating user:', error);
             throw new Error('Failed to update user');
         }
     }
@@ -93,7 +93,7 @@ class DatabaseManager {
             const filteredUsers = users.filter(user => user.id !== id);
             await this.saveUsers(filteredUsers);
         } catch (error) {
-            console.error('Error deleting user:', error);
+            // logger.error('Error deleting user:', error);
             throw new Error('Failed to delete user');
         }
     }
@@ -123,7 +123,7 @@ class DatabaseManager {
 
             return lifts;
         } catch (error) {
-            console.error('Error getting lifts:', error);
+            // logger.error('Error getting lifts:', error);
             throw new Error('Failed to retrieve lifts');
         }
     }
@@ -143,7 +143,7 @@ class DatabaseManager {
 
             return newLift;
         } catch (error) {
-            console.error('Error creating lift:', error);
+            // logger.error('Error creating lift:', error);
             throw new Error('Failed to create lift');
         }
     }
@@ -165,7 +165,7 @@ class DatabaseManager {
 
             return requests;
         } catch (error) {
-            console.error('Error getting requests:', error);
+            // logger.error('Error getting requests:', error);
             throw new Error('Failed to retrieve requests');
         }
     }
@@ -191,7 +191,7 @@ class DatabaseManager {
 
             return newRequest;
         } catch (error) {
-            console.error('Error creating request:', error);
+            // logger.error('Error creating request:', error);
             throw new Error('Failed to create request');
         }
     }
@@ -213,7 +213,7 @@ class DatabaseManager {
             localStorage.setItem('lm_backup', JSON.stringify(backup));
             return backup;
         } catch (error) {
-            console.error('Error creating backup:', error);
+            // logger.error('Error creating backup:', error);
             throw new Error('Failed to create backup');
         }
     }
@@ -231,7 +231,7 @@ class DatabaseManager {
 
             return true;
         } catch (error) {
-            console.error('Error restoring backup:', error);
+            // logger.error('Error restoring backup:', error);
             throw new Error('Failed to restore backup');
         }
     }
@@ -257,7 +257,7 @@ class DatabaseManager {
         // Auto backup every hour
         setInterval(async () => {
             await this.createBackup();
-            console.log('Auto backup created');
+            // logger.log('Auto backup created');
         }, 3600000);
     }
 
@@ -292,7 +292,7 @@ class DatabaseManager {
             });
 
         } catch (error) {
-            console.error('Data validation failed:', error);
+            // logger.error('Data validation failed:', error);
             await this.restoreFromBackup();
         }
     }
@@ -307,7 +307,7 @@ class DatabaseManager {
 
     async notifyTechnician(technicianId, request) {
         // In a real app, this would send push notification or email
-        console.log(`Notifying technician ${technicianId} about request ${request.id}`);
+        // logger.log(`Notifying technician ${technicianId} about request ${request.id}`);
         
         const technician = await this.getUserById(technicianId);
         if (technician) {

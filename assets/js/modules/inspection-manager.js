@@ -22,7 +22,7 @@ class InspectionManager {
       this.inspections = data.inspections || [];
       this.render();
     } catch (error) {
-      console.error('Error:', error);
+      // logger.error('Error:', error);
     }
   }
 
@@ -57,7 +57,7 @@ class InspectionManager {
   editInspection(id) {
     const insp = this.inspections.find(i => i._id === id);
     if (insp) {
-      console.log('Редагування інспекції:', insp);
+      // logger.log('Редагування інспекції:', insp);
     }
   }
 

@@ -28,7 +28,7 @@ class APIClient {
 
       return data;
     } catch (error) {
-      console.error('API Error:', error);
+      // logger.error('API Error:', error);
       throw error;
     }
   }

@@ -8,27 +8,27 @@
 // ============================================
 
 function checkClasses() {
-    console.log('🔍 Checking CSS classes...');
+    // logger.log('🔍 Checking CSS classes...');
     const classes = document.querySelectorAll('[class]');
-    console.log(`Found ${classes.length} elements with classes`);
+    // logger.log(`Found ${classes.length} elements with classes`);
     Notifier.success('Classes check completed');
 }
 
 function checkScripts() {
-    console.log('🔍 Checking loaded scripts...');
+    // logger.log('🔍 Checking loaded scripts...');
     const scripts = document.querySelectorAll('script[src]');
-    console.log(`Found ${scripts.length} scripts loaded`);
+    // logger.log(`Found ${scripts.length} scripts loaded`);
     Notifier.success('Scripts check completed');
 }
 
 function clearConsole() {
     console.clear();
-    console.log('✅ Console cleared');
+    // logger.log('✅ Console cleared');
     Notifier.info('Console cleared');
 }
 
 function simulateOriginalPage() {
-    console.log('⏱️ Simulating original page...');
+    // logger.log('⏱️ Simulating original page...');
     Notifier.info('Simulation started...');
     setTimeout(() => {
         Notifier.success('Page simulation completed');
@@ -36,7 +36,7 @@ function simulateOriginalPage() {
 }
 
 function testChart() {
-    console.log('📊 Testing chart...');
+    // logger.log('📊 Testing chart...');
     Notifier.info('Chart test started...');
     setTimeout(() => {
         Notifier.success('Chart test completed');
@@ -44,7 +44,7 @@ function testChart() {
 }
 
 function testInitialization() {
-    console.log('🚀 Testing initialization...');
+    // logger.log('🚀 Testing initialization...');
     Notifier.info('Initialization test started...');
     setTimeout(() => {
         Notifier.success('Initialization test completed');
@@ -56,7 +56,7 @@ function testInitialization() {
 // ============================================
 
 function editTemplate(templateType) {
-    console.log(`✏️ Editing template: ${templateType}`);
+    // logger.log(`✏️ Editing template: ${templateType}`);
     
     const modal = new bootstrap.Modal(document.getElementById('templateEditModal'));
     
@@ -75,7 +75,7 @@ function editTemplate(templateType) {
 }
 
 function previewTemplate(templateType) {
-    console.log(`👁️ Previewing template: ${templateType}`);
+    // logger.log(`👁️ Previewing template: ${templateType}`);
     
     const previews = {
         'assignment': 'Task assigned to technician {{technician_name}} at {{location}}',
@@ -89,7 +89,7 @@ function previewTemplate(templateType) {
 }
 
 function saveTemplate() {
-    console.log('💾 Saving template...');
+    // logger.log('💾 Saving template...');
     
     const templateType = document.getElementById('templateType').value;
     const templateTitle = document.getElementById('templateTitle').value;
@@ -112,7 +112,7 @@ function saveTemplate() {
 }
 
 function insertVariable(variable) {
-    console.log(`📝 Inserting variable: ${variable}`);
+    // logger.log(`📝 Inserting variable: ${variable}`);
     
     const textarea = document.getElementById('templateContent');
     const startPos = textarea.selectionStart;
@@ -126,7 +126,7 @@ function insertVariable(variable) {
 }
 
 function testSendTemplate(templateType) {
-    console.log(`📧 Sending test template: ${templateType}`);
+    // logger.log(`📧 Sending test template: ${templateType}`);
     
     Notifier.info('Sending test email...');
     
@@ -148,7 +148,7 @@ function testSendTemplate(templateType) {
             
             Notifier.success('Test email sent successfully');
         } catch (error) {
-            console.error('Error:', error);
+            // logger.error('Error:', error);
             Notifier.error('Failed to send test email');
         }
     }, 1000);
@@ -159,7 +159,7 @@ function testSendTemplate(templateType) {
 // ============================================
 
 function loadTemplate() {
-    console.log('📂 Loading inspection template...');
+    // logger.log('📂 Loading inspection template...');
     
     try {
         const inspectionData = JSON.parse(localStorage.getItem('currentInspection') || '{}');
@@ -175,13 +175,13 @@ function loadTemplate() {
         
         Notifier.success('Template loaded');
     } catch (error) {
-        console.error('Error loading template:', error);
+        // logger.error('Error loading template:', error);
         Notifier.error('Failed to load template');
     }
 }
 
 function saveInspection() {
-    console.log('💾 Saving inspection...');
+    // logger.log('💾 Saving inspection...');
     
     const inspectionData = {
         id: document.getElementById('inspectionId').value,
@@ -200,7 +200,7 @@ function saveInspection() {
 }
 
 function downloadPDF() {
-    console.log('📥 Downloading PDF...');
+    // logger.log('📥 Downloading PDF...');
     Notifier.info('Preparing PDF...');
     
     setTimeout(() => {
@@ -219,7 +219,7 @@ function downloadPDF() {
 }
 
 function printReport() {
-    console.log('🖨️ Printing report...');
+    // logger.log('🖨️ Printing report...');
     
     const element = document.getElementById('inspectionReport');
     const printWindow = window.open('', '', 'height=400,width=600');
@@ -231,7 +231,7 @@ function printReport() {
 }
 
 function sendReport() {
-    console.log('📧 Sending report...');
+    // logger.log('📧 Sending report...');
     
     const email = prompt('Enter email address:');
     if (!email) return;
@@ -256,7 +256,7 @@ function sendReport() {
             
             Notifier.success('Report sent successfully');
         } catch (error) {
-            console.error('Error:', error);
+            // logger.error('Error:', error);
             Notifier.error('Failed to send report');
         }
     }, 1000);
@@ -267,7 +267,7 @@ function sendReport() {
 // ============================================
 
 function addServiceRow() {
-    console.log('➕ Adding service row...');
+    // logger.log('➕ Adding service row...');
     
     const table = document.getElementById('servicesTable');
     const newRow = table.insertRow();
@@ -284,7 +284,7 @@ function addServiceRow() {
 }
 
 function removeServiceRow(btn) {
-    console.log('❌ Removing service row...');
+    // logger.log('❌ Removing service row...');
     btn.closest('tr').remove();
     Notifier.success('Service row removed');
 }

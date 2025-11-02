@@ -1,43 +1,42 @@
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const { authenticateToken } = require('../middleware/auth.middleware');
+const AuthController = require('../controllers/AuthController');
+const { authenticateJWT } = require('../middleware/auth');
+const { validateLogin, validateUserRegistration } = require('../middleware/validation');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
+/**
+ * @route   POST /api/auth/login
+ * @desc    User login
+ * @access  Public
+ */
+router.post('/login', validateLogin, AuthController.login);
 
-router.post('/register', async (req, res) => {
-  try {
-    const { email, password, name } = req.body;
-    
-    if (!email || !password || !name) {
-      return res.status(400).json({ error: 'Всі поля обов\'язкові' });
-    }
-    
-    const hashedPassword = await bcrypt.hash(password, 10);
-    res.json({ success: true, message: 'Користувач зареєстрований' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+/**
+ * @route   POST /api/auth/signup
+ * @desc    User registration
+ * @access  Public
+ */
+router.post('/signup', validateUserRegistration, AuthController.signup);
 
-router.post('/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email та пароль обов\'язкові' });
-    }
-    
-    const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: '24h' });
-    res.json({ success: true, token });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+/**
+ * @route   POST /api/auth/refresh
+ * @desc    Refresh access token
+ * @access  Public
+ */
+router.post('/refresh', AuthController.refreshToken);
 
-router.post('/logout', authenticateToken, (req, res) => {
-  res.json({ success: true, message: 'Вихід успішний' });
-});
+/**
+ * @route   POST /api/auth/logout
+ * @desc    Logout user
+ * @access  Private
+ */
+router.post('/logout', authenticateJWT, AuthController.logout);
+
+/**
+ * @route   GET /api/auth/me
+ * @desc    Get current user
+ * @access  Private
+ */
+router.get('/me', authenticateJWT, AuthController.me);
 
 module.exports = router;

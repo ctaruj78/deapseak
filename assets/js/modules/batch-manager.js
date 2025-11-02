@@ -6,7 +6,7 @@
 const batchManager = (function() {
     // Initialize the module
     function init() {
-        console.log("Batch Manager initialized");
+        // logger.log("Batch Manager initialized");
         // Implementation here
     }
 

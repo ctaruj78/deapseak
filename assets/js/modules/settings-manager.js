@@ -352,7 +352,7 @@ class SettingsManager {
             document.getElementById('newPassword').value = '';
             document.getElementById('confirmPassword').value = '';
         } catch (error) {
-            console.error('Помилка зміни пароля:', error);
+            // logger.error('Помилка зміни пароля:', error);
             this.showNotification('Помилка зміни пароля', 'error');
         }
     }
@@ -387,19 +387,19 @@ class SettingsManager {
     applyLanguageSettings() {
         const language = this.settings.general.language;
         // Логіка зміни мови інтерфейсу
-        console.log('Застосовано мову:', language);
+        // logger.log('Застосовано мову:', language);
     }
 
     applyTimezoneSettings() {
         const timezone = this.settings.general.timezone;
         // Логіка застосування часового поясу
-        console.log('Застосовано часовий пояс:', timezone);
+        // logger.log('Застосовано часовий пояс:', timezone);
     }
 
     applyDateFormatSettings() {
         const dateFormat = this.settings.general.dateFormat;
         // Логіка застосування формату дати
-        console.log('Застосовано формат дати:', dateFormat);
+        // logger.log('Застосовано формат дати:', dateFormat);
     }
 
     applyThemeSettings() {
@@ -488,7 +488,7 @@ class SettingsManager {
             this.showNotification('Резервну копію успішно створено', 'success');
 
         } catch (error) {
-            console.error('Помилка створення резервної копії:', error);
+            // logger.error('Помилка створення резервної копії:', error);
             this.showNotification('Помилка створення резервної копії', 'error');
         }
     }
@@ -542,7 +542,7 @@ class SettingsManager {
             }
 
         } catch (error) {
-            console.error('Помилка відновлення резервної копії:', error);
+            // logger.error('Помилка відновлення резервної копії:', error);
             this.showNotification('Помилка відновлення резервної копії', 'error');
         }
     }
@@ -688,7 +688,7 @@ class SettingsManager {
                 this.showNotification('Невірний формат файлу налаштувань', 'error');
             }
         }).catch(error => {
-            console.error('Помилка імпорту налаштувань:', error);
+            // logger.error('Помилка імпорту налаштувань:', error);
             this.showNotification('Помилка імпорту налаштувань', 'error');
         });
     }

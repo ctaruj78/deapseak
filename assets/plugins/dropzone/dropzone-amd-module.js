@@ -1447,7 +1447,7 @@ module.exports = function (exec) {
 
 "use strict";
 
-// TODO: Remove from `core-js@4` since it's moved to entry points
+// NOTE: Remove from `core-js@4` since it's moved to entry points
 __webpack_require__(4916);
 var redefine = __webpack_require__(1320);
 var fails = __webpack_require__(7293);
@@ -3538,7 +3538,7 @@ var wrappedDefineProperty = function defineProperty(target, key, descriptor) {
     && has(descriptor, 'value')
     && !has(descriptor, 'get')
     && !has(descriptor, 'set')
-    // TODO: add validation descriptor w/o calling accessors
+    // NOTE: add validation descriptor w/o calling accessors
     && !descriptor.configurable
     && (!has(descriptor, 'writable') || descriptor.writable)
     && (!has(descriptor, 'enumerable') || descriptor.enumerable)
@@ -5321,7 +5321,7 @@ for (var COLLECTION_NAME in DOMIterables) {
 
 "use strict";
 
-// TODO: in core-js@4, move /modules/ dependencies to public entries for better optimization by tools like `preset-env`
+// NOTE: in core-js@4, move /modules/ dependencies to public entries for better optimization by tools like `preset-env`
 __webpack_require__(6992);
 var $ = __webpack_require__(2109);
 var getBuiltIn = __webpack_require__(5005);
@@ -5676,7 +5676,7 @@ module.exports = {
 
 "use strict";
 
-// TODO: in core-js@4, move /modules/ dependencies to public entries for better optimization by tools like `preset-env`
+// NOTE: in core-js@4, move /modules/ dependencies to public entries for better optimization by tools like `preset-env`
 __webpack_require__(8783);
 var $ = __webpack_require__(2109);
 var DESCRIPTORS = __webpack_require__(9781);
@@ -9605,7 +9605,7 @@ var Dropzone = /*#__PURE__*/function (_Emitter) {
 
           return;
         } else {
-          console.warn("Retried this chunk too often. Giving up.");
+          // logger.warn("Retried this chunk too often. Giving up.");
         }
       }
 
@@ -9615,7 +9615,7 @@ var Dropzone = /*#__PURE__*/function (_Emitter) {
     key: "submitRequest",
     value: function submitRequest(xhr, formData, files) {
       if (xhr.readyState != 1) {
-        console.warn("Cannot send this request because the XMLHttpRequest.readyState is not OPENED.");
+        // logger.warn("Cannot send this request because the XMLHttpRequest.readyState is not OPENED.");
         return;
       }
 
@@ -10302,7 +10302,7 @@ var ExifRestore = /*#__PURE__*/function () {
       var base64test = /[^A-Za-z0-9\+\/\=]/g;
 
       if (base64test.exec(input)) {
-        console.warn("There were invalid base64 characters in the input text.\nValid base64 characters are A-Z, a-z, 0-9, '+', '/',and '='\nExpect errors in decoding.");
+        // logger.warn("There were invalid base64 characters in the input text.\nValid base64 characters are A-Z, a-z, 0-9, '+', '/',and '='\nExpect errors in decoding.");
       }
 
       input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");

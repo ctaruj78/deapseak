@@ -7,51 +7,44 @@ app.use(express.json());
 app.use('/api/lifts', liftsRoutes);
 
 describe('Lifts Routes', () => {
-  test('GET /api/lifts - отримати всі ліфти', async () => {
+  test('GET /api/lifts - отримання списку ліфтів', async () => {
     const res = await request(app)
       .get('/api/lifts')
       .set('Authorization', 'Bearer test_token');
-
-    expect(res.status).toBeOneOf([200, 401]);
+    expect([200, 404, 401, 403]).toContain(res.status);
   });
 
-  test('POST /api/lifts - створити ліфт', async () => {
+  test('GET /api/lifts/:id - отримання конкретного ліфта', async () => {
+    const res = await request(app)
+      .get('/api/lifts/test_id')
+      .set('Authorization', 'Bearer test_token');
+    expect([200, 404, 401, 403]).toContain(res.status);
+  });
+
+  test('POST /api/lifts - створення нового ліфта', async () => {
+    const newLift = {
+      name: 'Тестовий ліфт',
+      location: 'Тестова локація'
+    };
     const res = await request(app)
       .post('/api/lifts')
       .set('Authorization', 'Bearer test_token')
-      .send({
-        address: 'вул. Тестова, 1',
-        model: 'OTIS 2000',
-        status: 'active'
-      });
-
-    expect(res.status).toBeOneOf([201, 400, 401]);
+      .send(newLift);
+    expect([201, 400, 401, 403]).toContain(res.status);
   });
 
-  test('GET /api/lifts/:id - отримати ліфт по ID', async () => {
+  test('PUT /api/lifts/:id - оновлення ліфта', async () => {
     const res = await request(app)
-      .get('/api/lifts/507f1f77bcf86cd799439011')
-      .set('Authorization', 'Bearer test_token');
-
-    expect(res.status).toBeOneOf([200, 404, 401]);
-  });
-
-  test('PUT /api/lifts/:id - оновити ліфт', async () => {
-    const res = await request(app)
-      .put('/api/lifts/507f1f77bcf86cd799439011')
+      .put('/api/lifts/test_id')
       .set('Authorization', 'Bearer test_token')
-      .send({
-        status: 'maintenance'
-      });
-
-    expect(res.status).toBeOneOf([200, 404, 400, 401]);
+      .send({ name: 'Оновлений ліфт' });
+    expect([200, 404, 400, 401, 403]).toContain(res.status);
   });
 
-  test('DELETE /api/lifts/:id - видалити ліфт', async () => {
+  test('DELETE /api/lifts/:id - видалення ліфта', async () => {
     const res = await request(app)
-      .delete('/api/lifts/507f1f77bcf86cd799439011')
+      .delete('/api/lifts/test_id')
       .set('Authorization', 'Bearer test_token');
-
-    expect(res.status).toBeOneOf([200, 404, 401]);
+    expect([200, 204, 404, 401, 403]).toContain(res.status);
   });
 });

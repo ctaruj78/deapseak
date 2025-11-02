@@ -42,5 +42,5 @@ app.delete('/api/chat', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Chat server running on http://localhost:${PORT}`);
+  // logger.log(`Chat server running on http://localhost:${PORT}`);
 });

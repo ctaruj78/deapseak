@@ -19,7 +19,7 @@ class SmartAnalyticsEngine {
     }
 
     init() {
-        console.log('🧠 Ініціалізація Smart Analytics Engine...');
+        // logger.log('🧠 Ініціалізація Smart Analytics Engine...');
         
         // Завантажуємо історичні дані
         this.loadHistoricalData();
@@ -30,14 +30,14 @@ class SmartAnalyticsEngine {
         // Запускаємо аналітичні процеси
         this.startAnalyticalProcesses();
         
-        console.log('✅ Smart Analytics Engine готовий!');
+        // logger.log('✅ Smart Analytics Engine готовий!');
     }
 
     /**
      * 📈 Завантаження та аналіз історичних даних
      */
     loadHistoricalData() {
-        console.log('📚 Завантаження історичних даних...');
+        // logger.log('📚 Завантаження історичних даних...');
         
         // Завантажуємо всі дані з localStorage
         const lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
@@ -49,7 +49,7 @@ class SmartAnalyticsEngine {
         this.analyzeInspectionsData(inspections);
         this.analyzeEventLog(criticalLog);
         
-        console.log('📊 Історичні дані оброблено');
+        // logger.log('📊 Історичні дані оброблено');
     }
 
     /**
@@ -162,7 +162,7 @@ class SmartAnalyticsEngine {
      * 🤖 Машинне навчання для прогнозування тенденцій
      */
     predictTrends() {
-        console.log('🔮 Генерація прогнозів...');
+        // logger.log('🔮 Генерація прогнозів...');
         
         const liftsAnalysis = this.dataCache.get('lifts_analysis');
         const inspectionsAnalysis = this.dataCache.get('inspections_analysis');
@@ -291,7 +291,7 @@ class SmartAnalyticsEngine {
      * 🎯 Генерація розумних рекомендацій
      */
     generateSmartRecommendations() {
-        console.log('💡 Генерація розумних рекомендацій...');
+        // logger.log('💡 Генерація розумних рекомендацій...');
         
         const recommendations = [];
         
@@ -350,7 +350,7 @@ class SmartAnalyticsEngine {
             });
         }, { module: 'analytics-engine', priority: 1 });
 
-        console.log('📡 EventBus інтеграція налаштована');
+        // logger.log('📡 EventBus інтеграція налаштована');
     }
 
     /**
@@ -479,7 +479,7 @@ class SmartAnalyticsEngine {
             this.predictTrends();
         }, 300000); // Кожні 5 хвилин
         
-        console.log('🔄 Аналітичні процеси запущено');
+        // logger.log('🔄 Аналітичні процеси запущено');
     }
 }
 
@@ -491,5 +491,5 @@ if (typeof window !== 'undefined') {
 // Автоматичне створення глобального інстансу
 if (typeof window !== 'undefined' && window.eventBus) {
     window.smartAnalytics = new SmartAnalyticsEngine();
-    console.log('🧠 Smart Analytics Engine готовий до роботи!');
+    // logger.log('🧠 Smart Analytics Engine готовий до роботи!');
 }

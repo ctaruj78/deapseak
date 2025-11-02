@@ -22,7 +22,7 @@ class AssignmentsManager {
       this.assignments = data.assignments || [];
       this.render();
     } catch (error) {
-      console.error('Error:', error);
+      // logger.error('Error:', error);
     }
   }
 

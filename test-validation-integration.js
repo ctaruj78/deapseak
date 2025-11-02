@@ -4,7 +4,7 @@ const express = require('express');
 const { validateRequest } = require('./validation');
 const { validationSchemas } = require('./validation-schemas');
 
-console.log('🧪 Testing validation integration...\n');
+// logger.log('🧪 Testing validation integration...\n');
 
 // Тестові дані для валідації
 const testCases = [
@@ -70,8 +70,8 @@ function testValidation(schema, data, shouldPass, testName) {
         // Створюємо mock response з методами
         res.status = () => res;
         res.json = (data) => {
-            console.log(`❌ ${testName}: FAILED (unexpected validation error)`);
-            console.log(`   Response: ${JSON.stringify(data)}`);
+            // logger.log(`❌ ${testName}: FAILED (unexpected validation error)`);
+            // logger.log(`   Response: ${JSON.stringify(data)}`);
             return res;
         };
 
@@ -79,18 +79,18 @@ function testValidation(schema, data, shouldPass, testName) {
         middleware(req, res, next);
 
         if (shouldPass && nextCalled) {
-            console.log(`✅ ${testName}: PASSED`);
+            // logger.log(`✅ ${testName}: PASSED`);
             return true;
         } else if (!shouldPass && !nextCalled) {
-            console.log(`✅ ${testName}: PASSED (correctly rejected)`);
+            // logger.log(`✅ ${testName}: PASSED (correctly rejected)`);
             return true;
         } else {
-            console.log(`❌ ${testName}: FAILED`);
+            // logger.log(`❌ ${testName}: FAILED`);
             return false;
         }
 
     } catch (error) {
-        console.log(`❌ ${testName}: ERROR - ${error.message}`);
+        // logger.log(`❌ ${testName}: ERROR - ${error.message}`);
         return false;
     }
 }
@@ -99,7 +99,7 @@ function testValidation(schema, data, shouldPass, testName) {
 let passedTests = 0;
 let totalTests = testCases.length;
 
-console.log('Running validation tests...\n');
+// logger.log('Running validation tests...\n');
 
 testCases.forEach(testCase => {
     const passed = testValidation(
@@ -111,16 +111,16 @@ testCases.forEach(testCase => {
     if (passed) passedTests++;
 });
 
-console.log(`\n📊 Test Results: ${passedTests}/${totalTests} tests passed`);
+// logger.log(`\n📊 Test Results: ${passedTests}/${totalTests} tests passed`);
 
 if (passedTests === totalTests) {
-    console.log('🎉 All validation tests passed! Input validation is working correctly.');
+    // logger.log('🎉 All validation tests passed! Input validation is working correctly.');
 } else {
-    console.log('⚠️  Some validation tests failed. Please check the implementation.');
+    // logger.log('⚠️  Some validation tests failed. Please check the implementation.');
 }
 
-console.log('\n🔒 Input validation and sanitization implementation completed successfully!');
-console.log('   - Comprehensive validation schemas created');
-console.log('   - Validation middleware integrated into API endpoints');
-console.log('   - Input sanitization for security');
-console.log('   - Structured error responses for invalid data');
+// logger.log('\n🔒 Input validation and sanitization implementation completed successfully!');
+// logger.log('   - Comprehensive validation schemas created');
+// logger.log('   - Validation middleware integrated into API endpoints');
+// logger.log('   - Input sanitization for security');
+// logger.log('   - Structured error responses for invalid data');

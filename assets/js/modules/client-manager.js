@@ -31,7 +31,7 @@ class ClientManager {
                 this.loadDemoClients();
             }
         } catch (error) {
-            console.error('Помилка завантаження клієнтів:', error);
+            // logger.error('Помилка завантаження клієнтів:', error);
             this.loadDemoClients();
         }
     }
@@ -152,7 +152,7 @@ class ClientManager {
                 this.loadDemoRequests();
             }
         } catch (error) {
-            console.error('Помилка завантаження заявок:', error);
+            // logger.error('Помилка завантаження заявок:', error);
             this.loadDemoRequests();
         }
     }
@@ -654,7 +654,7 @@ class ClientManager {
             
             $('#clientModal').modal('hide');
         } catch (error) {
-            console.error('Помилка збереження клієнта:', error);
+            // logger.error('Помилка збереження клієнта:', error);
             this.showNotification('Помилка збереження клієнта', 'error');
         }
     }
@@ -679,7 +679,7 @@ class ClientManager {
                 this.showNotification('Клієнта успішно видалено', 'success');
             }
         } catch (error) {
-            console.error('Помилка видалення клієнта:', error);
+            // logger.error('Помилка видалення клієнта:', error);
             this.showNotification('Помилка видалення клієнта', 'error');
         }
     }

@@ -3660,7 +3660,7 @@ ZipEntries.prototype = {
             } else {
                 // We found some records but not all.
                 // Something is wrong but we got something for the user: no error here.
-                // console.warn("expected", this.centralDirRecords, "records in central dir, got", this.files.length);
+                // // logger.warn("expected", this.centralDirRecords, "records in central dir, got", this.files.length);
             }
         }
     },
@@ -3724,7 +3724,7 @@ ZipEntries.prototype = {
 
             // now the zip64 EOCD record
             if (!this.isSignature(this.relativeOffsetEndOfZip64CentralDir, sig.ZIP64_CENTRAL_DIRECTORY_END)) {
-                // console.warn("ZIP64 end of central directory not where expected.");
+                // // logger.warn("ZIP64 end of central directory not where expected.");
                 this.relativeOffsetEndOfZip64CentralDir = this.reader.lastIndexOfSignature(sig.ZIP64_CENTRAL_DIRECTORY_END);
                 if (this.relativeOffsetEndOfZip64CentralDir < 0) {
                     throw new Error("Corrupted zip: can't find the ZIP64 end of central directory");
@@ -3744,7 +3744,7 @@ ZipEntries.prototype = {
         var extraBytes = endOfCentralDirOffset - expectedEndOfCentralDirOffset;
 
         if (extraBytes > 0) {
-            // console.warn(extraBytes, "extra bytes at beginning or within zipfile");
+            // // logger.warn(extraBytes, "extra bytes at beginning or within zipfile");
             if (this.isSignature(endOfCentralDirOffset, sig.CENTRAL_FILE_HEADER)) {
                 // The offsets seem wrong, but we have something at the specified offset.
                 // So… we keep it.
@@ -4686,7 +4686,7 @@ var Z_DEFLATED  = 8;
  *
  * if (deflate.err) { throw new Error(deflate.err); }
  *
- * console.log(deflate.result);
+ * // logger.log(deflate.result);
  * ```
  **/
 function Deflate(options) {
@@ -4921,7 +4921,7 @@ Deflate.prototype.onEnd = function (status) {
  * var pako = require('pako')
  *   , data = Uint8Array([1,2,3,4,5,6,7,8,9]);
  *
- * console.log(pako.deflate(data));
+ * // logger.log(pako.deflate(data));
  * ```
  **/
 function deflate(input, options) {
@@ -5061,7 +5061,7 @@ var toString = Object.prototype.toString;
  *
  * if (inflate.err) { throw new Error(inflate.err); }
  *
- * console.log(inflate.result);
+ * // logger.log(inflate.result);
  * ```
  **/
 function Inflate(options) {
@@ -5345,7 +5345,7 @@ Inflate.prototype.onEnd = function (status) {
  * try {
  *   output = pako.inflate(input);
  * } catch (err)
- *   console.log(err);
+ *   // logger.log(err);
  * }
  * ```
  **/
@@ -8279,7 +8279,7 @@ function InflateState() {
   this.dmax = 0;              /* zlib header max distance (INFLATE_STRICT) */
   this.check = 0;             /* protected copy of check value */
   this.total = 0;             /* protected copy of output count */
-  // TODO: may be {}
+  // NOTE: may be {}
   this.head = null;           /* where to save gzip header information */
 
   /* sliding window */
@@ -8811,7 +8811,7 @@ function inflate(strm, flush) {
         if (have === 0) { break inf_leave; }
         copy = 0;
         do {
-          // TODO: 2 or 1 bytes?
+          // NOTE: 2 or 1 bytes?
           len = input[next + copy++];
           /* use constant limit because in js we should not preallocate memory */
           if (state.head && len &&

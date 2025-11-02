@@ -136,15 +136,15 @@ class NotificationManager {
         if ('serviceWorker' in navigator && 'PushManager' in window) {
             try {
                 const registration = await navigator.serviceWorker.register('/sw.js');
-                console.log('Service Worker registered for notifications');
+                // logger.log('Service Worker registered for notifications');
 
                 // Перевірка дозволу
                 const permission = await Notification.requestPermission();
                 if (permission === 'granted') {
-                    console.log('Push notifications enabled');
+                    // logger.log('Push notifications enabled');
                 }
             } catch (error) {
-                console.error('Service Worker registration failed:', error);
+                // logger.error('Service Worker registration failed:', error);
             }
         }
     }
@@ -183,7 +183,7 @@ class NotificationManager {
                     requireInteraction: notification.type === this.NOTIFICATION_TYPES.ERROR
                 });
             } catch (error) {
-                console.error('Push notification failed:', error);
+                // logger.error('Push notification failed:', error);
             }
         }
     }
@@ -238,7 +238,7 @@ class NotificationManager {
     async sendEmailNotification(notification) {
         try {
             // Тут можна інтегрувати EmailJS або відправити на API
-            console.log('Sending email notification:', notification);
+            // logger.log('Sending email notification:', notification);
 
             // Приклад з EmailJS
             if (typeof emailjs !== 'undefined') {
@@ -249,14 +249,14 @@ class NotificationManager {
                 });
             }
         } catch (error) {
-            console.error('Email notification failed:', error);
+            // logger.error('Email notification failed:', error);
         }
     }
 
     // SMS notification (через Twilio API)
     async sendSMSNotification(notification) {
         try {
-            console.log('Sending SMS notification:', notification);
+            // logger.log('Sending SMS notification:', notification);
 
             // Відправка на API endpoint
             if (notification.data.phone) {
@@ -266,7 +266,7 @@ class NotificationManager {
                 });
             }
         } catch (error) {
-            console.error('SMS notification failed:', error);
+            // logger.error('SMS notification failed:', error);
         }
     }
 
@@ -279,7 +279,7 @@ class NotificationManager {
                 this.mergeServerNotifications(serverNotifications);
             }
         } catch (error) {
-            console.error('Failed to sync notifications:', error);
+            // logger.error('Failed to sync notifications:', error);
         }
     }
 

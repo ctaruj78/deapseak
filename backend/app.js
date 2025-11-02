@@ -56,6 +56,6 @@ Promise.all([mongoConnect(), pgConnect()])
     });
   })
   .catch((err) => {
-    console.error('DB connection error:', err);
+    // logger.error('DB connection error:', err);
     process.exit(1);
   });

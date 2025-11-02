@@ -4,7 +4,7 @@ class StorageManager {
             localStorage.setItem(key, JSON.stringify(data));
             return true;
         } catch (error) {
-            console.error('Помилка збереження даних:', error);
+            // logger.error('Помилка збереження даних:', error);
             this.handleStorageError(error, key, data);
             return false;
         }
@@ -15,7 +15,7 @@ class StorageManager {
             const data = localStorage.getItem(key);
             return data ? JSON.parse(data) : null;
         } catch (error) {
-            console.error('Помилка завантаження даних:', error);
+            // logger.error('Помилка завантаження даних:', error);
             return null;
         }
     }
@@ -25,7 +25,7 @@ class StorageManager {
             localStorage.removeItem(key);
             return true;
         } catch (error) {
-            console.error('Помилка видалення даних:', error);
+            // logger.error('Помилка видалення даних:', error);
             return false;
         }
     }
@@ -35,7 +35,7 @@ class StorageManager {
             localStorage.clear();
             return true;
         } catch (error) {
-            console.error('Помилка очищення сховища:', error);
+            // logger.error('Помилка очищення сховища:', error);
             return false;
         }
     }
@@ -44,7 +44,7 @@ class StorageManager {
         try {
             return Object.keys(localStorage);
         } catch (error) {
-            console.error('Помилка отримання ключів:', error);
+            // logger.error('Помилка отримання ключів:', error);
             return [];
         }
     }
@@ -59,7 +59,7 @@ class StorageManager {
             }
             return total;
         } catch (error) {
-            console.error('Помилка розрахунку розміру:', error);
+            // logger.error('Помилка розрахунку розміру:', error);
             return 0;
         }
     }
@@ -82,7 +82,7 @@ class StorageManager {
     static handleStorageError(error, key, data) {
         // Автоматичне очищення при переповненні
         if (error.name === 'QuotaExceededError') {
-            console.warn('Сховище переповнено. Спроба очищення...');
+            // logger.warn('Сховище переповнено. Спроба очищення...');
             this.clearOldData();
             
             // Повторна спроба збереження
@@ -152,7 +152,7 @@ class StorageManager {
             const json = JSON.stringify(data);
             return btoa(unescape(encodeURIComponent(json)));
         } catch (error) {
-            console.error('Помилка шифрування:', error);
+            // logger.error('Помилка шифрування:', error);
             return data;
         }
     }
@@ -162,7 +162,7 @@ class StorageManager {
             const json = decodeURIComponent(escape(atob(encryptedData)));
             return JSON.parse(json);
         } catch (error) {
-            console.error('Помилка дешифрування:', error);
+            // logger.error('Помилка дешифрування:', error);
             return encryptedData;
         }
     }

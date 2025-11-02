@@ -1,0 +1,177 @@
+=== eval() Usage Report ===
+7376-				// correct value when it hasn't been explicitly set
+7377-				// https://web.archive.org/web/20141116233347/http://fluidproject.org/blog/2008/01/09/getting-setting-and-removing-tabindex-values-with-javascript/
+7378:				// Use proper attribute retrieval(#12072)
+7379-				var tabindex = jQuery.find.attr( elem, "tabindex" );
+7380-
+8170-				// correct value when it hasn't been explicitly set
+8171-				// https://web.archive.org/web/20141116233347/http://fluidproject.org/blog/2008/01/09/getting-setting-and-removing-tabindex-values-with-javascript/
+8172:				// Use proper attribute retrieval(#12072)
+8173-				var tabindex = jQuery.find.attr( elem, "tabindex" );
+8174-
+7376-				// correct value when it hasn't been explicitly set
+7377-				// https://web.archive.org/web/20141116233347/http://fluidproject.org/blog/2008/01/09/getting-setting-and-removing-tabindex-values-with-javascript/
+7378:				// Use proper attribute retrieval(#12072)
+7379-				var tabindex = jQuery.find.attr( elem, "tabindex" );
+7380-
+8170-				// correct value when it hasn't been explicitly set
+8171-				// https://web.archive.org/web/20141116233347/http://fluidproject.org/blog/2008/01/09/getting-setting-and-removing-tabindex-values-with-javascript/
+8172:				// Use proper attribute retrieval(#12072)
+8173-				var tabindex = jQuery.find.attr( elem, "tabindex" );
+8174-
+130-    // Once a script is populated, we can execute it.
+131-    if (elem.localName === "script" && elem.namespaceURI === HTML_NS) {
+132:      elem._eval();
+133-    }
+134-  });
+11-  if (window._runScripts === "dangerously") {
+12-    try {
+13:      return window.eval(scriptSource);
+14-    } catch (e) {
+15-      reportException(window, e, urlString);
+43-
+44-    // In our current terribly-hacky document.write() implementation, we parse in a div them move elements into the main
+45:    // document. Thus _eval() will bail early when it gets in _poppedOffStackOfOpenElements(), since we're not attached
+46-    // then. Instead, we'll let it eval here.
+47-    if (!this._parserInserted || this._isMovingDueToDocumentWrite) {
+48:      this._eval();
+49-    }
+50-  }
+--
+127-    // https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-incdata:prepare-a-script, although we certainly
+128-    // don't implement the full semantics.
+129:    this._eval();
+130-  }
+131-
+132-  // Vaguely similar to https://html.spec.whatwg.org/multipage/scripting.html#prepare-a-script, but we have a long way
+133-  // to go before it's aligned.
+134:  _eval() {
+135-    if (this._alreadyStarted) {
+136-      return;
+52-    ctorRegistry["%AsyncIteratorPrototype%"] = Object.getPrototypeOf(
+53-      Object.getPrototypeOf(
+54:        globalObject.eval("(async function* () {})").prototype
+55-      )
+56-    );
+9-    
+10-    try {
+11:        eval('throw "STOP"; (function () { ' + src + '\n})()');
+12-        return;
+13-    }
+130-    // Once a script is populated, we can execute it.
+131-    if (elem.localName === "script" && elem.namespaceURI === HTML_NS) {
+132:      elem._eval();
+133-    }
+134-  });
+11-  if (window._runScripts === "dangerously") {
+12-    try {
+13:      return window.eval(scriptSource);
+14-    } catch (e) {
+15-      reportException(window, e, urlString);
+43-
+44-    // In our current terribly-hacky document.write() implementation, we parse in a div them move elements into the main
+45:    // document. Thus _eval() will bail early when it gets in _poppedOffStackOfOpenElements(), since we're not attached
+46-    // then. Instead, we'll let it eval here.
+47-    if (!this._parserInserted || this._isMovingDueToDocumentWrite) {
+48:      this._eval();
+49-    }
+50-  }
+--
+127-    // https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-incdata:prepare-a-script, although we certainly
+128-    // don't implement the full semantics.
+129:    this._eval();
+130-  }
+131-
+132-  // Vaguely similar to https://html.spec.whatwg.org/multipage/scripting.html#prepare-a-script, but we have a long way
+133-  // to go before it's aligned.
+134:  _eval() {
+135-    if (this._alreadyStarted) {
+136-      return;
+52-    ctorRegistry["%AsyncIteratorPrototype%"] = Object.getPrototypeOf(
+53-      Object.getPrototypeOf(
+54:        globalObject.eval("(async function* () {})").prototype
+55-      )
+56-    );
+52-    ctorRegistry["%AsyncIteratorPrototype%"] = Object.getPrototypeOf(
+53-      Object.getPrototypeOf(
+54:        globalObject.eval("(async function* () {})").prototype
+55-      )
+56-    );
+232-// https://code.google.com/p/v8/source/browse/trunk/src/messages.js
+233-function mapEvalOrigin(origin) {
+234:  // Most eval() calls are in this format
+235-  var match = /^eval at ([^(]+) \((.+):(\d+):(\d+)\)$/.exec(origin);
+236-  if (match) {
+--
+244-  }
+245-
+246:  // Parse nested eval() calls using recursion
+247-  match = /^eval at ([^(]+) \((.+)\)$/.exec(origin);
+248-  if (match) {
+--
+342-
+343-  // Most call sites will return the source file from getFileName(), but code
+344:  // passed to eval() ending in "//# sourceURL=..." will return the source file
+345-  // from getScriptNameOrSourceURL() instead
+346-  var source = frame.getFileName() || frame.getScriptNameOrSourceURL();
+--
+371-  }
+372-
+373:  // Code called using eval() needs special handling
+374-  var origin = frame.isEval() && frame.getEvalOrigin();
+375-  if (origin) {
+1:t.equal(eval('typeof process'), 'object');
+2:t.equal(eval('typeof process.nextTick'), 'function');
+3:t.equal(eval('typeof global'), 'object');
+4:t.equal(eval('global.xyz'), 555);
+5:t.equal(eval('typeof Buffer'), 'function');
+6:t.equal(eval('typeof __filename'), 'string');
+7:t.notEqual(eval('__filename'), 'sandbox __filename');
+8:t.equal(eval('typeof __dirname'), 'string');
+9:t.notEqual(eval('__dirname'), 'sandbox __dirname');
+10:t.equal(eval('custom'), 'sandbox custom');
+1:t.equal(eval('cust' + 'om'), eval('expected'));
+1:t.equal(eval('process'), 'sandbox process');
+2:t.equal(eval('typeof global'), 'undefined');
+3:t.equal(eval('self.xyz'), 555);
+4:t.equal(eval('Buffer'), 'sandbox Buffer');
+5:t.equal(eval('__filename'), 'sandbox __filename');
+6:t.equal(eval('__dirname'), 'sandbox __dirname');
+7:t.equal(eval('custom'), 'inserted custom');
+70-
+71-    if (!wEval && wExecScript) {
+72:        // win.eval() magically appears when this is called in IE:
+73-        wExecScript.call(win, 'null');
+74-        wEval = win.eval;
+--
+109-
+110-Script.prototype.runInThisContext = function () {
+111:    return eval(this.code); // maybe...
+112-};
+113-
+69-
+70-    if (!wEval && wExecScript) {
+71:        // win.eval() magically appears when this is called in IE:
+72-        wExecScript.call(win, 'null');
+73-        wEval = win.eval;
+--
+108-
+109-Script.prototype.runInThisContext = function () {
+110:    return eval(this.code); // maybe...
+111-};
+112-
+65-            try {
+66-                // eslint-disable-next-line no-eval
+67:                fn = eval("(function*() {})")().constructor;
+68-            } catch (e) {
+69-                // env doesn't support generators
+52-    ctorRegistry["%AsyncIteratorPrototype%"] = Object.getPrototypeOf(
+53-      Object.getPrototypeOf(
+54:        globalObject.eval("(async function* () {})").prototype
+55-      )
+56-    );
+52-    ctorRegistry["%AsyncIteratorPrototype%"] = Object.getPrototypeOf(
+53-      Object.getPrototypeOf(
+54:        globalObject.eval("(async function* () {})").prototype
+55-      )
+56-    );

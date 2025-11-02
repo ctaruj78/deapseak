@@ -40,38 +40,38 @@ class PredictiveMaintenanceSystem {
     }
 
     async init() {
-        console.log('🔮 Ініціалізація Predictive Maintenance System...');
+        // logger.log('🔮 Ініціалізація Predictive Maintenance System...');
         
         try {
             // Завантажуємо історичні дані
             await this.loadHistoricalData();
-            console.log('✅ Історичні дані завантажено');
+            // logger.log('✅ Історичні дані завантажено');
             
             // Ініціалізуємо ML моделі
             this.initializePredictiveModels();
-            console.log('✅ ML моделі ініціалізовано');
+            // logger.log('✅ ML моделі ініціалізовано');
             
             // Налаштовуємо алерти та правила
             this.setupAlertRules();
-            console.log('✅ Правила алертів налаштовано');
+            // logger.log('✅ Правила алертів налаштовано');
             
             // EventBus інтеграція (якщо доступний)
             try {
                 this.setupEventBusIntegration();
-                console.log('✅ EventBus інтеграція налаштована');
+                // logger.log('✅ EventBus інтеграція налаштована');
             } catch (eventError) {
-                console.warn('⚠️ EventBus недоступний, пропускаємо інтеграцію');
+                // logger.warn('⚠️ EventBus недоступний, пропускаємо інтеграцію');
             }
             
             // Запускаємо періодичний аналіз
             this.startPredictiveAnalysis();
-            console.log('✅ Періодичний аналіз запущено');
+            // logger.log('✅ Періодичний аналіз запущено');
             
             this.isInitialized = true;
-            console.log('✅ Predictive Maintenance System готовий!');
+            // logger.log('✅ Predictive Maintenance System готовий!');
             
         } catch (error) {
-            console.error('❌ Помилка ініціалізації Predictive Maintenance System:', error);
+            // logger.error('❌ Помилка ініціалізації Predictive Maintenance System:', error);
             
             // Встановлюємо мінімальну робочу конфігурацію
             this.isInitialized = false;
@@ -83,7 +83,7 @@ class PredictiveMaintenanceSystem {
      * 🔄 Ініціалізація в режимі fallback з мінімальною функціональністю
      */
     initializeFallbackMode() {
-        console.log('🔄 Запуск в режимі fallback...');
+        // logger.log('🔄 Запуск в режимі fallback...');
         
         // Створюємо базові тестові дані
         this.predictions.set('fallback', {
@@ -94,11 +94,11 @@ class PredictiveMaintenanceSystem {
         });
         
         this.isInitialized = true;
-        console.log('✅ Fallback режим активний');
+        // logger.log('✅ Fallback режим активний');
     }
 
     async loadHistoricalData() {
-        console.log('📚 Завантаження історичних даних технічного обслуговування...');
+        // logger.log('📚 Завантаження історичних даних технічного обслуговування...');
         
         try {
             // Завантажуємо дані ліфтів
@@ -109,21 +109,21 @@ class PredictiveMaintenanceSystem {
             try {
                 lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
             } catch (e) {
-                console.warn('⚠️ Не вдалося завантажити дані ліфтів з localStorage');
+                // logger.warn('⚠️ Не вдалося завантажити дані ліфтів з localStorage');
                 lifts = [];
             }
             
             try {
                 inspections = JSON.parse(localStorage.getItem('scheduled_inspections') || '[]');
             } catch (e) {
-                console.warn('⚠️ Не вдалося завантажити дані інспекцій з localStorage');
+                // logger.warn('⚠️ Не вдалося завантажити дані інспекцій з localStorage');
                 inspections = [];
             }
             
             try {
                 maintenanceLog = JSON.parse(localStorage.getItem('maintenance_log') || '[]');
             } catch (e) {
-                console.warn('⚠️ Не вдалося завантажити лог технічного обслуговування');
+                // logger.warn('⚠️ Не вдалося завантажити лог технічного обслуговування');
                 maintenanceLog = [];
             }
             
@@ -134,7 +134,7 @@ class PredictiveMaintenanceSystem {
                     this.analyzeElevatorCondition(lift);
                     processedLifts++;
                 } catch (e) {
-                    console.warn(`⚠️ Помилка аналізу ліфта ${index}:`, e);
+                    // logger.warn(`⚠️ Помилка аналізу ліфта ${index}:`, e);
                 }
             });
             
@@ -145,14 +145,14 @@ class PredictiveMaintenanceSystem {
                     this.analyzeInspectionHistory(inspection);
                     processedInspections++;
                 } catch (e) {
-                    console.warn(`⚠️ Помилка аналізу інспекції ${index}:`, e);
+                    // logger.warn(`⚠️ Помилка аналізу інспекції ${index}:`, e);
                 }
             });
             
-            console.log(`📊 Успішно проаналізовано ${processedLifts}/${lifts.length} ліфтів та ${processedInspections}/${inspections.length} інспекцій`);
+            // logger.log(`📊 Успішно проаналізовано ${processedLifts}/${lifts.length} ліфтів та ${processedInspections}/${inspections.length} інспекцій`);
             
         } catch (error) {
-            console.error('❌ Критична помилка завантаження історичних даних:', error);
+            // logger.error('❌ Критична помилка завантаження історичних даних:', error);
             // Продовжуємо роботу з порожніми даними
         }
     }
@@ -188,7 +188,7 @@ class PredictiveMaintenanceSystem {
         
         this.maintenanceData.set(liftId, condition);
         
-        console.log(`🔍 Проаналізовано ліфт ${liftId}: ризик ${(condition.failureRisk * 100).toFixed(1)}%`);
+        // logger.log(`🔍 Проаналізовано ліфт ${liftId}: ризик ${(condition.failureRisk * 100).toFixed(1)}%`);
     }
 
     calculateUsageIntensity(lift) {
@@ -426,7 +426,7 @@ class PredictiveMaintenanceSystem {
     }
 
     initializePredictiveModels() {
-        console.log('🤖 Ініціалізація ML моделей для прогнозування...');
+        // logger.log('🤖 Ініціалізація ML моделей для прогнозування...');
         
         // Спрощені ML моделі (в реальному проекті тут будуть складніші алгоритми)
         
@@ -454,7 +454,7 @@ class PredictiveMaintenanceSystem {
             estimate: (parameters) => this.estimateTotalCost(parameters)
         });
         
-        console.log('✅ ML моделі ініціалізовано');
+        // logger.log('✅ ML моделі ініціалізовано');
     }
 
     predictFailureProbability(features) {
@@ -548,7 +548,7 @@ class PredictiveMaintenanceSystem {
     }
 
     setupAlertRules() {
-        console.log('🚨 Налаштування правил алертів...');
+        // logger.log('🚨 Налаштування правил алертів...');
         
         // Критичні алерти
         this.alertRules.set('critical_failure_risk', {
@@ -574,7 +574,7 @@ class PredictiveMaintenanceSystem {
             priority: 'medium'
         });
         
-        console.log(`✅ Налаштовано ${this.alertRules.size} правил алертів`);
+        // logger.log(`✅ Налаштовано ${this.alertRules.size} правил алертів`);
     }
 
     isMaintenanceOverdue(data) {
@@ -587,7 +587,7 @@ class PredictiveMaintenanceSystem {
     }
 
     generateSystemAlerts() {
-        console.log('🚨 Генерація системних алертів...');
+        // logger.log('🚨 Генерація системних алертів...');
         
         const alerts = [];
         
@@ -626,7 +626,7 @@ class PredictiveMaintenanceSystem {
             }, { source: 'predictive-maintenance' });
         }
         
-        console.log(`🚨 Згенеровано ${alerts.length} алертів`);
+        // logger.log(`🚨 Згенеровано ${alerts.length} алертів`);
         return alerts;
     }
 
@@ -640,7 +640,7 @@ class PredictiveMaintenanceSystem {
     }
 
     startPredictiveAnalysis() {
-        console.log('🔄 Запуск періодичного аналізу...');
+        // logger.log('🔄 Запуск періодичного аналізу...');
         
         // Запускаємо аналіз кожні 6 годин
         setInterval(() => {
@@ -654,7 +654,7 @@ class PredictiveMaintenanceSystem {
     }
 
     async runFullAnalysis() {
-        console.log('🔮 Запуск повного прогностичного аналізу...');
+        // logger.log('🔮 Запуск повного прогностичного аналізу...');
         
         try {
             // Оновлюємо дані всіх ліфтів
@@ -680,14 +680,14 @@ class PredictiveMaintenanceSystem {
                 }, { source: 'predictive-maintenance' });
             }
             
-            console.log('✅ Повний аналіз завершено');
+            // logger.log('✅ Повний аналіз завершено');
         } catch (error) {
-            console.error('❌ Помилка при аналізі:', error);
+            // logger.error('❌ Помилка при аналізі:', error);
         }
     }
 
     generateSystemPredictions() {
-        console.log('🔮 Генерація системних прогнозів...');
+        // logger.log('🔮 Генерація системних прогнозів...');
         
         const predictions = {
             nextMonth: {
@@ -735,7 +735,7 @@ class PredictiveMaintenanceSystem {
             confidence: 0.75
         });
         
-        console.log('🔮 Прогнози згенеровано:', predictions);
+        // logger.log('🔮 Прогнози згенеровано:', predictions);
     }
 
     // Допоміжні методи
@@ -846,7 +846,7 @@ class PredictiveMaintenanceSystem {
     setupEventBusIntegration() {
         if (!window.eventBus) return;
         
-        console.log('📡 Налаштування EventBus для Predictive Maintenance...');
+        // logger.log('📡 Налаштування EventBus для Predictive Maintenance...');
         
         // Слухаємо створення ліфтів
         eventBus.on('lift:created', (data) => {
@@ -858,7 +858,7 @@ class PredictiveMaintenanceSystem {
                     status: 'active'
                 });
                 
-                console.log(`🔮 Додано ліфт ${data.id} до системи прогнозування`);
+                // logger.log(`🔮 Додано ліфт ${data.id} до системи прогнозування`);
             }, 1000);
         }, { module: 'predictive-maintenance' });
         
@@ -875,11 +875,11 @@ class PredictiveMaintenanceSystem {
                     lastInspection: data.completedDate
                 });
                 
-                console.log(`🔮 Оновлено прогноз для ліфта ${data.liftId} після інспекції`);
+                // logger.log(`🔮 Оновлено прогноз для ліфта ${data.liftId} після інспекції`);
             }
         }, { module: 'predictive-maintenance' });
         
-        console.log('✅ EventBus інтеграція для Predictive Maintenance налаштована');
+        // logger.log('✅ EventBus інтеграція для Predictive Maintenance налаштована');
     }
 
     optimizeMaintenanceSchedules() {
@@ -904,7 +904,7 @@ class PredictiveMaintenanceSystem {
         // Зберігаємо оптимізований графік
         localStorage.setItem('optimized_maintenance_schedule', JSON.stringify(optimizedSchedule));
         
-        console.log(`📅 Оптимізовано графік ТО для ${optimizedSchedule.schedule.length} ліфтів`);
+        // logger.log(`📅 Оптимізовано графік ТО для ${optimizedSchedule.schedule.length} ліфтів`);
     }
 
     estimateTotalCost(parameters) {
@@ -934,7 +934,7 @@ class PredictiveMaintenanceSystem {
      */
     analyzeInspectionHistory(inspection) {
         if (!inspection || !inspection.liftId) {
-            console.warn('⚠️ Неповні дані інспекції');
+            // logger.warn('⚠️ Неповні дані інспекції');
             return;
         }
 
@@ -1102,4 +1102,4 @@ if (typeof window !== 'undefined') {
     }, 2000);
 }
 
-console.log('🔮 Predictive Maintenance модуль завантажено!');
+// logger.log('🔮 Predictive Maintenance модуль завантажено!');

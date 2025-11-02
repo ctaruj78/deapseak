@@ -154,7 +154,7 @@ class I18nManager {
                 }
             };
         } catch (error) {
-            console.error('Failed to load translations:', error);
+            // logger.error('Failed to load translations:', error);
         }
     }
 
@@ -297,7 +297,7 @@ class I18nManager {
             this.updateDOMTranslations();
             return true;
         } catch (error) {
-            console.error('Failed to import translations:', error);
+            // logger.error('Failed to import translations:', error);
             return false;
         }
     }

@@ -6,7 +6,7 @@
 const scanAnalytics = (function() {
     // Initialize the module
     function init() {
-        console.log("Scan Analytics initialized");
+        // logger.log("Scan Analytics initialized");
         // Implementation here
     }
 

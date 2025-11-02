@@ -32,7 +32,7 @@ class TechnicianManager {
                 this.loadDemoTechnicians();
             }
         } catch (error) {
-            console.error('Помилка завантаження техніків:', error);
+            // logger.error('Помилка завантаження техніків:', error);
             this.loadDemoTechnicians();
         }
     }
@@ -401,7 +401,7 @@ class TechnicianManager {
             
             $('#technicianModal').modal('hide');
         } catch (error) {
-            console.error('Помилка збереження техніка:', error);
+            // logger.error('Помилка збереження техніка:', error);
             this.showNotification('Помилка збереження техніка', 'error');
         }
     }
@@ -427,7 +427,7 @@ class TechnicianManager {
                 this.showNotification('Техніка успішно видалено', 'success');
             }
         } catch (error) {
-            console.error('Помилка видалення техніка:', error);
+            // logger.error('Помилка видалення техніка:', error);
             this.showNotification('Помилка видалення техніка', 'error');
         }
     }

@@ -12,29 +12,29 @@ class TokenManager {
     }
 
     init() {
-        console.log('🔐 Initializing Token Manager...');
+        // logger.log('🔐 Initializing Token Manager...');
         
         try {
             const token = this.getToken();
             
             if (!token) {
-                console.warn('⚠️ No token found in localStorage');
+                // logger.warn('⚠️ No token found in localStorage');
                 this.redirectToLogin();
                 return;
             }
             
             if (this.isTokenExpired()) {
-                console.warn('⚠️ Token expired');
+                // logger.warn('⚠️ Token expired');
                 this.clearToken();
                 this.redirectToLogin();
                 return;
             }
             
-            console.log('✅ Token initialized successfully');
+            // logger.log('✅ Token initialized successfully');
             this.attachAuthHeader();
             
         } catch (error) {
-            console.error('❌ Token initialization error:', error);
+            // logger.error('❌ Token initialization error:', error);
             this.clearToken();
             this.redirectToLogin();
         }
@@ -45,13 +45,13 @@ class TokenManager {
             const token = localStorage.getItem(this.tokenKey);
             
             if (!token) {
-                console.warn('No token in localStorage');
+                // logger.warn('No token in localStorage');
                 return null;
             }
             
             return token;
         } catch (error) {
-            console.error('Error getting token:', error);
+            // logger.error('Error getting token:', error);
             return null;
         }
     }
@@ -60,11 +60,11 @@ class TokenManager {
         try {
             localStorage.setItem(this.tokenKey, token);
             localStorage.setItem(this.expiryKey, Date.now() + expiryTime);
-            console.log('✅ Token saved');
+            // logger.log('✅ Token saved');
             this.attachAuthHeader();
             return true;
         } catch (error) {
-            console.error('Error setting token:', error);
+            // logger.error('Error setting token:', error);
             return false;
         }
     }
@@ -79,7 +79,7 @@ class TokenManager {
             
             return Date.now() > parseInt(expiry);
         } catch (error) {
-            console.error('Error checking token expiry:', error);
+            // logger.error('Error checking token expiry:', error);
             return true;
         }
     }
@@ -89,7 +89,7 @@ class TokenManager {
             const userStr = localStorage.getItem(this.userKey);
             return userStr ? JSON.parse(userStr) : null;
         } catch (error) {
-            console.error('Error getting user:', error);
+            // logger.error('Error getting user:', error);
             return null;
         }
     }
@@ -97,10 +97,10 @@ class TokenManager {
     setUser(user) {
         try {
             localStorage.setItem(this.userKey, JSON.stringify(user));
-            console.log('✅ User saved');
+            // logger.log('✅ User saved');
             return true;
         } catch (error) {
-            console.error('Error setting user:', error);
+            // logger.error('Error setting user:', error);
             return false;
         }
     }
@@ -110,10 +110,10 @@ class TokenManager {
             localStorage.removeItem(this.tokenKey);
             localStorage.removeItem(this.userKey);
             localStorage.removeItem(this.expiryKey);
-            console.log('✅ Token cleared');
+            // logger.log('✅ Token cleared');
             return true;
         } catch (error) {
-            console.error('Error clearing token:', error);
+            // logger.error('Error clearing token:', error);
             return false;
         }
     }
@@ -122,7 +122,7 @@ class TokenManager {
         const token = this.getToken();
         
         if (!token) {
-            console.warn('No token to attach');
+            // logger.warn('No token to attach');
             return;
         }
 
@@ -145,18 +145,18 @@ class TokenManager {
             return originalFetch.apply(this, [resource, config]);
         };
         
-        console.log('✅ Auth header attached to all requests');
+        // logger.log('✅ Auth header attached to all requests');
     }
 
     redirectToLogin() {
-        console.warn('🔄 Redirecting to login...');
+        // logger.warn('🔄 Redirecting to login...');
         setTimeout(() => {
             window.location.href = '/login.html';
         }, 1000);
     }
 
     refreshToken(newToken) {
-        console.log('🔄 Refreshing token...');
+        // logger.log('🔄 Refreshing token...');
         this.setToken(newToken);
     }
 }
@@ -169,4 +169,4 @@ if (typeof module !== 'undefined' && module.exports) {
     module.exports = TokenManager;
 }
 
-console.log('✅ Token Manager loaded');
+// logger.log('✅ Token Manager loaded');

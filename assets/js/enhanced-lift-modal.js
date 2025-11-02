@@ -10,17 +10,17 @@ class EnhancedLiftModal {
     }
 
     init() {
-        console.log('🚀 Initializing Enhanced Lift Modal with Map...');
+        // logger.log('🚀 Initializing Enhanced Lift Modal with Map...');
         this.initEventListeners();
-        console.log('✅ Enhanced Lift Modal initialized');
+        // logger.log('✅ Enhanced Lift Modal initialized');
     }
 
     initEventListeners() {
-        console.log('🔧 Setting up enhanced event listeners...');
+        // logger.log('🔧 Setting up enhanced event listeners...');
         
         // Основний обробник форми
         $(document).off('submit', '#enhancedLiftForm').on('submit', '#enhancedLiftForm', (e) => {
-            console.log('🔥 Enhanced form submit triggered!');
+            // logger.log('🔥 Enhanced form submit triggered!');
             e.preventDefault();
             this.handleFormSubmit();
         });
@@ -42,15 +42,15 @@ class EnhancedLiftModal {
         
         // Скидання форми при відкритті модалки (тільки для нових ліфтів)
         $('#enhancedLiftModal').on('show.bs.modal', () => {
-            console.log('📝 Enhanced modal opening...');
+            // logger.log('📝 Enhanced modal opening...');
             // Скидаємо форму тільки якщо це не режим редагування
             if (!this.currentLiftId) {
-                console.log('📝 Resetting form for new lift...');
+                // logger.log('📝 Resetting form for new lift...');
                 this.resetForm();
                 // ВИПРАВЛЕННЯ: Показуємо QR-генератор відразу
                 this.handleLiftsCountChange();
             } else {
-                console.log('📝 Editing mode - keeping existing data');
+                // logger.log('📝 Editing mode - keeping existing data');
             }
             setTimeout(() => this.initializeMap(), 500);
         });
@@ -67,24 +67,24 @@ class EnhancedLiftModal {
             this.handleLiftsCountChange();
         });
         
-        console.log('✅ Enhanced event listeners set up');
+        // logger.log('✅ Enhanced event listeners set up');
     }
 
     initializeMap() {
-        console.log('🗺️ Attempting to initialize map...');
+        // logger.log('🗺️ Attempting to initialize map...');
         
         if (typeof L === 'undefined') {
-            console.log('⚠️ Leaflet not loaded, skipping map initialization');
+            // logger.log('⚠️ Leaflet not loaded, skipping map initialization');
             return;
         }
         
         const mapContainer = document.getElementById('enhancedLiftMap');
         if (!mapContainer) {
-            console.log('⚠️ Enhanced map container not found');
+            // logger.log('⚠️ Enhanced map container not found');
             return;
         }
         
-        console.log('✅ Map container found, Leaflet loaded');
+        // logger.log('✅ Map container found, Leaflet loaded');
 
         try {
             // Видаляємо попередню карту якщо існує
@@ -106,14 +106,14 @@ class EnhancedLiftModal {
                 this.setCoordinates(e.latlng.lat, e.latlng.lng);
             });
 
-            console.log('✅ Enhanced map initialized successfully');
+            // logger.log('✅ Enhanced map initialized successfully');
         } catch (error) {
-            console.error('❌ Error initializing enhanced map:', error);
+            // logger.error('❌ Error initializing enhanced map:', error);
         }
     }
 
     setCoordinates(lat, lng) {
-        console.log(`📍 Setting enhanced coordinates: ${lat}, ${lng}`);
+        // logger.log(`📍 Setting enhanced coordinates: ${lat}, ${lng}`);
         
         // Оновлюємо поля форми з префіксом enhanced
         $('#enhancedLiftLat').val(lat.toFixed(6));
@@ -142,9 +142,9 @@ class EnhancedLiftModal {
             // Центруємо карту на маркері
             this.map.setView([lat, lng], Math.max(this.map.getZoom(), 15));
             
-            console.log('✅ Enhanced map marker updated');
+            // logger.log('✅ Enhanced map marker updated');
         } catch (error) {
-            console.error('❌ Error updating enhanced map marker:', error);
+            // logger.error('❌ Error updating enhanced map marker:', error);
         }
     }
 
@@ -176,7 +176,7 @@ class EnhancedLiftModal {
                 btn.html(originalHtml).prop('disabled', false);
             },
             (error) => {
-                console.error('Enhanced geolocation error:', error);
+                // logger.error('Enhanced geolocation error:', error);
                 this.showMessage('Не вдалось отримати координати: ' + error.message, 'error');
                 btn.html(originalHtml).prop('disabled', false);
             },
@@ -233,8 +233,8 @@ class EnhancedLiftModal {
         
         searchQuery += ', ' + country;
         
-        console.log('🔍 Geocoding query:', searchQuery);
-        console.log('🌍 Target country:', country, 'Code:', countryCode);
+        // logger.log('🔍 Geocoding query:', searchQuery);
+        // logger.log('🌍 Target country:', country, 'Code:', countryCode);
         
         // Використовуємо Nominatim API для геокодування
         const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=1&countrycodes=${countryCode}`;
@@ -253,19 +253,19 @@ class EnhancedLiftModal {
                 btn.html(originalHtml).prop('disabled', false);
             })
             .catch(error => {
-                console.error('Enhanced geocoding error:', error);
+                // logger.error('Enhanced geocoding error:', error);
                 this.showMessage('Помилка при пошуку координат: ' + error.message, 'error');
                 btn.html(originalHtml).prop('disabled', false);
             });
     }
 
     handleFormSubmit() {
-        console.log('📋 Processing enhanced form submission...');
+        // logger.log('📋 Processing enhanced form submission...');
         
         try {
             // Збираємо дані з форми (використовуємо enhanced префікси)
             const formData = this.collectFormData();
-            console.log('📄 Enhanced form data collected:', formData);
+            // logger.log('📄 Enhanced form data collected:', formData);
             
             // Валідація
             if (!this.validateBasicFields(formData)) {
@@ -277,13 +277,13 @@ class EnhancedLiftModal {
                 return;
             }
             
-            console.log('✅ Enhanced validation passed');
+            // logger.log('✅ Enhanced validation passed');
             
             // Зберігаємо ліфт
             this.saveLift(formData);
             
         } catch (error) {
-            console.error('❌ Error in enhanced form submission:', error);
+            // logger.error('❌ Error in enhanced form submission:', error);
             this.showMessage('Помилка обробки форми: ' + error.message, 'error');
         }
     }
@@ -409,12 +409,12 @@ class EnhancedLiftModal {
                 } else {
                     this.detectedCountry = null; // Загальний пошук без країни
                 }
-                console.log('🌍 Detected country by postcode format:', this.detectedCountry || 'general');
+                // logger.log('🌍 Detected country by postcode format:', this.detectedCountry || 'general');
             }
         }
         
         if (missing.length > 0) {
-            console.log('❌ Missing required fields:', missing);
+            // logger.log('❌ Missing required fields:', missing);
             this.showMessage('Заповніть обов\'язкові поля: ' + missing.join(', '), 'warning');
             return false;
         }
@@ -440,18 +440,18 @@ class EnhancedLiftModal {
     }
 
     saveLift(liftData) {
-        console.log('💾 Saving enhanced lift data...');
+        // logger.log('💾 Saving enhanced lift data...');
         
         try {
             // Ініціалізуємо масив якщо потрібно
             if (typeof window.allLifts === 'undefined') {
-                console.log('⚠️ window.allLifts not found, creating new array');
+                // logger.log('⚠️ window.allLifts not found, creating new array');
                 window.allLifts = [];
             }
             
             // НОВА ЛОГІКА: Створюємо окремі записи для кожного ліфта
             const liftsToSave = this.createSeparateLifts(liftData);
-            console.log('🏢 Creating separate lifts:', liftsToSave.length);
+            // logger.log('🏢 Creating separate lifts:', liftsToSave.length);
             
             let savedCount = 0;
             
@@ -462,11 +462,11 @@ class EnhancedLiftModal {
                 if (existingIndex !== -1) {
                     // Оновлюємо існуючий
                     window.allLifts[existingIndex] = { ...window.allLifts[existingIndex], ...lift };
-                    console.log('✏️ Updated existing lift:', lift.municipalNumber);
+                    // logger.log('✏️ Updated existing lift:', lift.municipalNumber);
                 } else {
                     // Додаємо новий
                     window.allLifts.push(lift);
-                    console.log('➕ Added new lift:', lift.municipalNumber);
+                    // logger.log('➕ Added new lift:', lift.municipalNumber);
                     savedCount++;
                 }
             }
@@ -474,7 +474,7 @@ class EnhancedLiftModal {
             // Синхронізуємо з глобальною змінною
             if (typeof allLifts !== 'undefined') {
                 allLifts = [...window.allLifts];
-                console.log('🔄 Synchronized global allLifts variable, total count:', allLifts.length);
+                // logger.log('🔄 Synchronized global allLifts variable, total count:', allLifts.length);
             }
             
             // Зберігаємо в localStorage
@@ -507,7 +507,7 @@ class EnhancedLiftModal {
             this.refreshTable();
             
         } catch (error) {
-            console.error('❌ Error saving enhanced lift:', error);
+            // logger.error('❌ Error saving enhanced lift:', error);
             this.showMessage('Помилка збереження: ' + error.message, 'error');
         }
     }
@@ -517,45 +517,45 @@ class EnhancedLiftModal {
             // Використовуємо CommonUtils якщо є
             if (typeof CommonUtils !== 'undefined' && CommonUtils.saveLifts) {
                 const saved = CommonUtils.saveLifts(window.allLifts);
-                console.log('💾 CommonUtils.saveLifts result:', saved);
+                // logger.log('💾 CommonUtils.saveLifts result:', saved);
                 if (!saved) {
                     throw new Error('CommonUtils.saveLifts failed');
                 }
             } else {
                 localStorage.setItem('lifts', JSON.stringify(window.allLifts));
-                console.log('💾 Direct localStorage save completed');
+                // logger.log('💾 Direct localStorage save completed');
             }
             
             const stored = localStorage.getItem('lifts');
             if (stored) {
                 const parsed = JSON.parse(stored);
-                console.log('✅ Verification: localStorage contains', parsed.length, 'lifts');
+                // logger.log('✅ Verification: localStorage contains', parsed.length, 'lifts');
             }
             
         } catch (error) {
-            console.error('❌ Storage save error:', error);
+            // logger.error('❌ Storage save error:', error);
             throw error;
         }
     }
 
     refreshTable() {
-        console.log('🔄 Refreshing table after enhanced save...');
+        // logger.log('🔄 Refreshing table after enhanced save...');
         
         if (typeof window.liftManager !== 'undefined' && window.liftManager.loadLifts) {
             setTimeout(() => {
                 window.liftManager.loadLifts();
-                console.log('✅ liftManager.loadLifts() called from enhanced modal');
+                // logger.log('✅ liftManager.loadLifts() called from enhanced modal');
             }, 200);
         } else if (typeof window.simpleLiftModal !== 'undefined') {
             window.simpleLiftModal.manualRefreshTable();
-            console.log('✅ Used simpleLiftModal.manualRefreshTable()');
+            // logger.log('✅ Used simpleLiftModal.manualRefreshTable()');
         } else {
-            console.log('⚠️ No table refresh method available');
+            // logger.log('⚠️ No table refresh method available');
         }
     }
 
     resetForm() {
-        console.log('🔄 Resetting enhanced form...');
+        // logger.log('🔄 Resetting enhanced form...');
         $('#enhancedLiftForm')[0].reset();
         $('#enhancedLiftId').val('');
         $('.is-invalid').removeClass('is-invalid');
@@ -575,11 +575,11 @@ class EnhancedLiftModal {
     }
 
     loadLiftForEdit(liftData) {
-        console.log('📝 Loading lift for enhanced edit:', liftData);
+        // logger.log('📝 Loading lift for enhanced edit:', liftData);
         
         // Встановлюємо currentLiftId перед заповненням форми
         this.currentLiftId = liftData.id;
-        console.log('🔧 Set currentLiftId:', this.currentLiftId);
+        // logger.log('🔧 Set currentLiftId:', this.currentLiftId);
         
         // Заповнюємо всі поля з префіксом enhanced
         $('#enhancedLiftId').val(liftData.id);
@@ -617,7 +617,7 @@ class EnhancedLiftModal {
         }
         
         $('#enhancedModalTitle').text('Редагувати ліфт (з картою)');
-        console.log('✅ Enhanced lift data loaded for editing. Current ID:', this.currentLiftId);
+        // logger.log('✅ Enhanced lift data loaded for editing. Current ID:', this.currentLiftId);
     }
 
     showMessage(message, type = 'info') {
@@ -641,12 +641,12 @@ class EnhancedLiftModal {
             $('.enhanced-modal-alert').fadeOut();
         }, 5000);
         
-        console.log(`📢 Enhanced message shown: ${message}`);
+        // logger.log(`📢 Enhanced message shown: ${message}`);
     }
 
     handleLiftsCountChange() {
         const count = parseInt($('#enhancedLiftsCountAtAddress').val()) || 1;
-        console.log(`🏢 Lifts count changed to: ${count}`);
+        // logger.log(`🏢 Lifts count changed to: ${count}`);
         
         // Очищуємо контейнер додаткових ліфтів
         $('#additionalLiftsFields').empty();
@@ -655,7 +655,7 @@ class EnhancedLiftModal {
         const mainQrPreview = $('#mainQrPreview');
         if (mainQrPreview.length) {
             mainQrPreview.removeClass('d-none');
-            console.log('✅ Main QR preview container shown');
+            // logger.log('✅ Main QR preview container shown');
         }
         
         if (count > 1) {
@@ -723,7 +723,7 @@ class EnhancedLiftModal {
             }
         }
         
-        console.log('🔢 Additional municipal numbers collected:', additionalNumbers);
+        // logger.log('🔢 Additional municipal numbers collected:', additionalNumbers);
         return additionalNumbers;
     }
 
@@ -758,30 +758,30 @@ class EnhancedLiftModal {
                     
                     lifts.push(additionalLift);
                     
-                    console.log(`🏗️ Created additional lift #${additionalInfo.liftNumber}: ${additionalInfo.municipalNumber}`);
+                    // logger.log(`🏗️ Created additional lift #${additionalInfo.liftNumber}: ${additionalInfo.municipalNumber}`);
                 }
             }
         }
         
-        console.log(`📋 Total lifts to save: ${lifts.length} (1 main + ${lifts.length - 1} additional)`);
+        // logger.log(`📋 Total lifts to save: ${lifts.length} (1 main + ${lifts.length - 1} additional)`);
         return lifts;
     }
 
     // Генерація QR-коду для ліфта
     generateQRCode(inputId, liftNumber = 1) {
-        console.log(`🔄 Generating QR code for input: ${inputId}, lift #${liftNumber}`);
+        // logger.log(`🔄 Generating QR code for input: ${inputId}, lift #${liftNumber}`);
         
         const municipalNumber = $(`#${inputId}`).val();
         
         if (!municipalNumber || !municipalNumber.trim()) {
             this.showMessage('Будь ласка, введіть муніципальний номер ліфта', 'error');
-            console.error('❌ Municipal number is empty');
+            // logger.error('❌ Municipal number is empty');
             return;
         }
         
         // Перевірка доступності бібліотеки (qrcode або QRCode)
         if (typeof QRCode === 'undefined' && typeof qrcode === 'undefined') {
-            console.error('❌ QRCode library not loaded');
+            // logger.error('❌ QRCode library not loaded');
             this.showMessage('Помилка: бібліотека QR-коду не завантажена', 'error');
             return;
         }
@@ -789,7 +789,7 @@ class EnhancedLiftModal {
         // Якщо є qrcode але немає QRCode - створюємо псевдонім
         if (typeof qrcode !== 'undefined' && typeof QRCode === 'undefined') {
             window.QRCode = qrcode;
-            console.log('🔧 Створено window.QRCode з qrcode');
+            // logger.log('🔧 Створено window.QRCode з qrcode');
         }
         
         // Отримуємо адресу для QR-коду
@@ -805,26 +805,26 @@ class EnhancedLiftModal {
         const qrText = JSON.stringify(qrData);
         const previewContainer = liftNumber === 1 ? '#mainQrPreview' : `#qrPreview${liftNumber}`;
         
-        console.log(`📦 QR text: "${qrText}" (length: ${qrText.length})`);
-        console.log(`📍 Preview container: ${previewContainer}`);
+        // logger.log(`📦 QR text: "${qrText}" (length: ${qrText.length})`);
+        // logger.log(`📍 Preview container: ${previewContainer}`);
         
         // Перевіряємо чи існує контейнер
         const $container = $(previewContainer);
         if ($container.length === 0) {
-            console.error(`❌ Container ${previewContainer} not found`);
+            // logger.error(`❌ Container ${previewContainer} not found`);
             this.showMessage('Помилка: контейнер для QR-коду не знайдено', 'error');
             return;
         }
         
         // Очищуємо попередній QR-код
         $container.empty().removeClass('d-none').addClass('text-center');
-        console.log('✅ Container cleared and shown');
+        // logger.log('✅ Container cleared and shown');
         
         try {
             // Генеруємо QR-код використовуючи qrcode-generator API
-            console.log('🔧 typeof QRCode:', typeof QRCode);
-            console.log('🔧 Container element:', $container[0]);
-            console.log('🔧 Container id:', $container[0].id);
+            // logger.log('🔧 typeof QRCode:', typeof QRCode);
+            // logger.log('🔧 Container element:', $container[0]);
+            // logger.log('🔧 Container id:', $container[0].id);
             
             // ВАЖЛИВО: qrcode-generator потребує DIVID або елемент
             // API: new QRCode(element, {text, width, height})
@@ -834,24 +834,24 @@ class EnhancedLiftModal {
                 height: 150
             });
             
-            console.log('✅ QR code generated successfully');
-            console.log('🔧 QR instance:', qrInstance);
+            // logger.log('✅ QR code generated successfully');
+            // logger.log('🔧 QR instance:', qrInstance);
             
             // Діагностика: що саме створилось
             setTimeout(() => {
-                console.log('🔍 Container HTML:', $container[0].innerHTML.substring(0, 200));
-                console.log('🔍 Container children count:', $container[0].children.length);
+                // logger.log('🔍 Container HTML:', $container[0].innerHTML.substring(0, 200));
+                // logger.log('🔍 Container children count:', $container[0].children.length);
                 
                 const createdElement = $container.find('img, canvas')[0];
                 if (createdElement) {
-                    console.log('✅ Created element:', createdElement.tagName);
-                    console.log('  Element src:', createdElement.src?.substring(0, 50));
-                    console.log('  Element width:', createdElement.width);
-                    console.log('  Element height:', createdElement.height);
-                    console.log('  Element display:', window.getComputedStyle(createdElement).display);
-                    console.log('  Element visibility:', window.getComputedStyle(createdElement).visibility);
+                    // logger.log('✅ Created element:', createdElement.tagName);
+                    // logger.log('  Element src:', createdElement.src?.substring(0, 50));
+                    // logger.log('  Element width:', createdElement.width);
+                    // logger.log('  Element height:', createdElement.height);
+                    // logger.log('  Element display:', window.getComputedStyle(createdElement).display);
+                    // logger.log('  Element visibility:', window.getComputedStyle(createdElement).visibility);
                 } else {
-                    console.error('❌ Елемент НЕ СТВОРИВСЯ! Container innerHTML:', $container[0].innerHTML);
+                    // logger.error('❌ Елемент НЕ СТВОРИВСЯ! Container innerHTML:', $container[0].innerHTML);
                 }
             }, 200);
             
@@ -884,10 +884,10 @@ class EnhancedLiftModal {
             `;
             $container.append(actionsHtml);
             
-            console.log(`✅ QR code generated for lift #${liftNumber}: ${municipalNumber}`);
+            // logger.log(`✅ QR code generated for lift #${liftNumber}: ${municipalNumber}`);
             this.showMessage(`QR-код створено для ліфта №${liftNumber}`, 'success');
         } catch (error) {
-            console.error('❌ QR generation error:', error);
+            // logger.error('❌ QR generation error:', error);
             this.showMessage('Помилка генерації QR-коду: ' + error.message, 'error');
             $container.html(`<div class="text-danger"><i class="fas fa-exclamation-triangle"></i> Помилка</div>`);
         }
@@ -905,11 +905,11 @@ class EnhancedLiftModal {
         
         if (!qrElement) {
             this.showMessage('Спочатку згенеруйте QR-код', 'error');
-            console.error('❌ QR element not found in', previewContainer);
+            // logger.error('❌ QR element not found in', previewContainer);
             return;
         }
         
-        console.log('📥 Downloading QR as PNG:', qrElement.tagName);
+        // logger.log('📥 Downloading QR as PNG:', qrElement.tagName);
         
         // Створюємо посилання для завантаження
         const link = document.createElement('a');
@@ -941,11 +941,11 @@ class EnhancedLiftModal {
         
         if (!qrElement) {
             this.showMessage('Спочатку згенеруйте QR-код', 'error');
-            console.error('❌ QR element not found in', previewContainer);
+            // logger.error('❌ QR element not found in', previewContainer);
             return;
         }
         
-        console.log('🖨️ Printing QR:', qrElement.tagName);
+        // logger.log('🖨️ Printing QR:', qrElement.tagName);
         
         // Створюємо нове вікно для друку
         const printWindow = window.open('', '_blank');
@@ -986,7 +986,7 @@ class EnhancedLiftModal {
 
     // Функція для відкриття модального вікна звіту інспекції
     openInspectionReportModal() {
-        console.log('🔓 Відкриваємо модальне вікно інспекції...');
+        // logger.log('🔓 Відкриваємо модальне вікно інспекції...');
         
         // Використовуємо існуюче статичне модальне вікно
         const existingModal = document.getElementById('inspectionReportModal');
@@ -1005,23 +1005,23 @@ class EnhancedLiftModal {
             
             // Відкриваємо модальне вікно
             $('#inspectionReportModal').modal('show');
-            console.log('✅ Модальне вікно інспекції відкрито');
+            // logger.log('✅ Модальне вікно інспекції відкрито');
         } else {
-            console.error('❌ Модальне вікно інспекції не знайдено!');
+            // logger.error('❌ Модальне вікно інспекції не знайдено!');
             this.showMessage('Помилка: модальне вікно не знайдено', 'error');
         }
     }
 
     // Збереження звіту інспекції
     saveInspectionReport() {
-        console.log('💾 Спроба збереження з enhanced-lift-modal...');
+        // logger.log('💾 Спроба збереження з enhanced-lift-modal...');
         
         // Використовуємо функцію з HTML сторінки
         if (typeof window.saveInspectionReport === 'function') {
-            console.log('✅ Викликаємо основну функцію збереження');
+            // logger.log('✅ Викликаємо основну функцію збереження');
             window.saveInspectionReport();
         } else {
-            console.error('❌ Функція saveInspectionReport не знайдена');
+            // logger.error('❌ Функція saveInspectionReport не знайдена');
             this.showMessage('Помилка збереження: функція не знайдена', 'error');
         }
     }
@@ -1052,19 +1052,19 @@ class EnhancedLiftModal {
 $(document).ready(function() {
     // Перевіряємо чи завантажений Leaflet
     if (typeof L !== 'undefined') {
-        console.log('📱 Initializing Enhanced Lift Modal with Leaflet...');
+        // logger.log('📱 Initializing Enhanced Lift Modal with Leaflet...');
         window.enhancedLiftModal = new EnhancedLiftModal();
-        console.log('✅ Enhanced Lift Modal ready');
+        // logger.log('✅ Enhanced Lift Modal ready');
     } else {
-        console.log('⚠️ Leaflet not available, will try to initialize later...');
+        // logger.log('⚠️ Leaflet not available, will try to initialize later...');
         // Чекаємо завантаження Leaflet
         setTimeout(() => {
             if (typeof L !== 'undefined') {
-                console.log('📱 Leaflet loaded, initializing Enhanced Lift Modal...');
+                // logger.log('📱 Leaflet loaded, initializing Enhanced Lift Modal...');
                 window.enhancedLiftModal = new EnhancedLiftModal();
-                console.log('✅ Enhanced Lift Modal ready (delayed)');
+                // logger.log('✅ Enhanced Lift Modal ready (delayed)');
             } else {
-                console.log('❌ Leaflet still not available, enhanced modal disabled');
+                // logger.log('❌ Leaflet still not available, enhanced modal disabled');
             }
         }, 1000);
     }

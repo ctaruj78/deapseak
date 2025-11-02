@@ -20,7 +20,7 @@ class LiftAPI {
         if (method === 'GET' && useCache) {
             const cached = StorageManager.getCache(`api_${endpoint}`);
             if (cached) {
-                console.log('Використано кеш для:', endpoint);
+                // logger.log('Використано кеш для:', endpoint);
                 return cached;
             }
         }
@@ -51,13 +51,13 @@ class LiftAPI {
 
             return result;
         } catch (error) {
-            console.error('API Error:', error);
+            // logger.error('API Error:', error);
             
             // Спроба отримати дані з локального сховища при помилці
             if (method === 'GET') {
                 const fallback = StorageManager.load(`fallback_${endpoint}`);
                 if (fallback) {
-                    console.warn('Використано резервні дані для:', endpoint);
+                    // logger.warn('Використано резервні дані для:', endpoint);
                     return fallback;
                 }
             }
@@ -71,7 +71,7 @@ class LiftAPI {
     }
 
     static async mockRequest(endpoint, method, data) {
-        console.log('Mock API:', method, endpoint, data);
+        // logger.log('Mock API:', method, endpoint, data);
         
         // Штучна затримка для імітації мережевого запиту
         await this.delay(300 + Math.random() * 700);
@@ -109,7 +109,7 @@ class LiftAPI {
 
             return response;
         } catch (error) {
-            console.error('Mock API Error:', error);
+            // logger.error('Mock API Error:', error);
             throw error;
         }
     }
@@ -301,9 +301,9 @@ class LiftAPI {
             try {
                 await this.request(action.endpoint, action.method, action.data);
                 successfulActions.push(action);
-                console.log('Синхронізовано:', action);
+                // logger.log('Синхронізовано:', action);
             } catch (error) {
-                console.error('Помилка синхронізації:', action, error);
+                // logger.error('Помилка синхронізації:', action, error);
             }
         }
 
@@ -354,7 +354,7 @@ class LiftAPI {
             this.socket = new WebSocket(wsUrl);
             
             this.socket.onopen = () => {
-                console.log('WebSocket connected');
+                // logger.log('WebSocket connected');
                 this.emit('connected');
             };
 
@@ -363,12 +363,12 @@ class LiftAPI {
                     const data = JSON.parse(event.data);
                     this.emit('message', data);
                 } catch (error) {
-                    console.error('Помилка парсингу WebSocket повідомлення:', error);
+                    // logger.error('Помилка парсингу WebSocket повідомлення:', error);
                 }
             };
 
             this.socket.onclose = () => {
-                console.log('WebSocket disconnected');
+                // logger.log('WebSocket disconnected');
                 this.emit('disconnected');
                 this.socket = null;
                 
@@ -377,13 +377,13 @@ class LiftAPI {
             };
 
             this.socket.onerror = (error) => {
-                console.error('WebSocket error:', error);
+                // logger.error('WebSocket error:', error);
                 this.emit('error', error);
             };
 
             return this.socket;
         } catch (error) {
-            console.error('Помилка створення WebSocket:', error);
+            // logger.error('Помилка створення WebSocket:', error);
             return null;
         }
     }
@@ -397,7 +397,7 @@ class LiftAPI {
 
     static sendWebSocketMessage(type, data) {
         if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
-            console.warn('WebSocket не підключено');
+            // logger.warn('WebSocket не підключено');
             return false;
         }
 
@@ -406,7 +406,7 @@ class LiftAPI {
             this.socket.send(message);
             return true;
         } catch (error) {
-            console.error('Помилка відправки WebSocket повідомлення:', error);
+            // logger.error('Помилка відправки WebSocket повідомлення:', error);
             return false;
         }
     }
@@ -486,7 +486,7 @@ class LiftAPI {
                 body: JSON.stringify(metrics)
             });
         } catch (error) {
-            console.error('Помилка відправки метрик:', error);
+            // logger.error('Помилка відправки метрик:', error);
         }
     }
 
@@ -518,7 +518,7 @@ class LiftAPI {
                     throw error;
                 }
                 
-                console.warn(`Спроба ${attempt} невдала, повтор через ${delay}ms...`);
+                // logger.warn(`Спроба ${attempt} невдала, повтор через ${delay}ms...`);
                 await this.delay(delay * attempt); // Exponential backoff
             }
         }
@@ -543,7 +543,7 @@ class LiftAPI {
             const response = await this.request('/batch', 'POST', { requests });
             return response.results;
         } catch (error) {
-            console.error('Помилка batch запиту:', error);
+            // logger.error('Помилка batch запиту:', error);
             throw error;
         }
     }
@@ -574,7 +574,7 @@ class LiftAPI {
 
             return await response.json();
         } catch (error) {
-            console.error('Помилка завантаження файлу:', error);
+            // logger.error('Помилка завантаження файлу:', error);
             throw error;
         }
     }
@@ -678,9 +678,9 @@ if (typeof window !== 'undefined') {
 
     // Синхронізація при поверненні онлайн
     window.addEventListener('online', () => {
-        console.log('Мережа доступна, синхронізація даних...');
+        // logger.log('Мережа доступна, синхронізація даних...');
         LiftAPI.syncOfflineData().then(result => {
-            console.log(`Синхронізовано ${result.successful} з ${result.total} дій`);
+            // logger.log(`Синхронізовано ${result.successful} з ${result.total} дій`);
         });
     });
 

@@ -6,7 +6,7 @@ class TechDashboard {
     }
 
     init() {
-        console.log('🏗️ Ініціалізація панелі техніка...');
+        // logger.log('🏗️ Ініціалізація панелі техніка...');
         this.loadUserInfo();
         this.loadStatistics();
         this.loadTodayTasks();
@@ -15,7 +15,7 @@ class TechDashboard {
         this.setupEventListeners();
         this.startClocks();
         
-        console.log('✅ Панель техніка успішно ініціалізовано');
+        // logger.log('✅ Панель техніка успішно ініціалізовано');
     }
 
     loadUserInfo() {
@@ -30,7 +30,7 @@ class TechDashboard {
             $('#userName').text(this.currentUser.firstName || 'Технік');
             
         } catch (error) {
-            console.error('Помилка завантаження даних користувача:', error);
+            // logger.error('Помилка завантаження даних користувача:', error);
         }
     }
 
@@ -65,7 +65,7 @@ class TechDashboard {
                 request.status !== 'cancelled'
             );
         } catch (error) {
-            console.error('Помилка отримання завдань:', error);
+            // logger.error('Помилка отримання завдань:', error);
             return [];
         }
     }
@@ -94,7 +94,7 @@ class TechDashboard {
             $('#upcomingMaintenanceCount').text(upcoming.length);
             
         } catch (error) {
-            console.error('Помилка завантаження техобслуговування:', error);
+            // logger.error('Помилка завантаження техобслуговування:', error);
         }
     }
 
@@ -171,7 +171,7 @@ class TechDashboard {
                             this._completeTaskFinalize(requests, taskIndex, taskId);
                         },
                         error => {
-                            console.warn('Геолокація завершення недоступна:', error);
+                            // logger.warn('Геолокація завершення недоступна:', error);
                             this._completeTaskFinalize(requests, taskIndex, taskId);
                         },
                         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
@@ -181,7 +181,7 @@ class TechDashboard {
                 }
             }
         } catch (error) {
-            console.error('Помилка завершення завдання:', error);
+            // logger.error('Помилка завершення завдання:', error);
             this.showNotification('Помилка при завершенні завдання', 'error');
         }
     }
@@ -375,7 +375,7 @@ class TechDashboard {
                             this._startTaskFinalize(requests, taskIndex, taskId);
                         },
                         error => {
-                            console.warn('Геолокація недоступна:', error);
+                            // logger.warn('Геолокація недоступна:', error);
                             this._startTaskFinalize(requests, taskIndex, taskId);
                         },
                         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
@@ -385,7 +385,7 @@ class TechDashboard {
                 }
             }
         } catch (error) {
-            console.error('Помилка старту завдання:', error);
+            // logger.error('Помилка старту завдання:', error);
             this.showNotification('Помилка при старті завдання', 'error');
         }
 

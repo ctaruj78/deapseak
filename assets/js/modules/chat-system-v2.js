@@ -41,7 +41,7 @@ class ChatSystem {
      */
     async init() {
         try {
-            console.log('💬 Ініціалізація Chat System...');
+            // logger.log('💬 Ініціалізація Chat System...');
             
             await this.loadContacts();
             await this.loadChannels();
@@ -50,10 +50,10 @@ class ChatSystem {
             this.setupNotifications();
             
             this.isInitialized = true;
-            console.log('✅ Chat System ініціалізовано');
+            // logger.log('✅ Chat System ініціалізовано');
             
         } catch (error) {
-            console.error('❌ Помилка ініціалізації Chat System:', error);
+            // logger.error('❌ Помилка ініціалізації Chat System:', error);
             this.loadFromLocalStorage();
         }
     }
@@ -89,7 +89,7 @@ class ChatSystem {
                 return true;
             }
         } catch (error) {
-            console.error('Помилка завантаження контактів:', error);
+            // logger.error('Помилка завантаження контактів:', error);
         }
         return false;
     }
@@ -118,7 +118,7 @@ class ChatSystem {
             this.renderChannels();
             return true;
         } catch (error) {
-            console.error('Помилка завантаження каналів:', error);
+            // logger.error('Помилка завантаження каналів:', error);
             this.channels = this.createDefaultChannels();
             this.renderChannels();
         }
@@ -177,7 +177,7 @@ class ChatSystem {
      */
     setupSocketConnection() {
         // В реальному проекті тут буде справжній WebSocket
-        console.log('📡 WebSocket підключення налаштовано (симуляція)');
+        // logger.log('📡 WebSocket підключення налаштовано (симуляція)');
         
         // Симуляція підключення
         setTimeout(() => {
@@ -402,7 +402,7 @@ class ChatSystem {
             
             this.renderMessages();
         } catch (error) {
-            console.error('Помилка завантаження повідомлень:', error);
+            // logger.error('Помилка завантаження повідомлень:', error);
             this.messages = this.generateTestMessages(chatId, type);
             this.renderMessages();
         }
@@ -546,7 +546,7 @@ class ChatSystem {
                 throw new Error('Помилка відправки повідомлення');
             }
         } catch (error) {
-            console.error('Помилка відправки повідомлення:', error);
+            // logger.error('Помилка відправки повідомлення:', error);
             
             // Додаємо повідомлення локально (симуляція)
             const localMessage = {
@@ -777,17 +777,17 @@ class ChatSystem {
     
     // Показ інформації про чат
     showChatInfo() {
-        console.log('Інформація про чат:', this.currentChat);
+        // logger.log('Інформація про чат:', this.currentChat);
     }
 
     // Показ діалогу прикріплення
     showAttachmentDialog() {
-        console.log('Діалог прикріплення файлів');
+        // logger.log('Діалог прикріплення файлів');
     }
 
     // Пошук у чатах
     searchChats(query) {
-        console.log('Пошук:', query);
+        // logger.log('Пошук:', query);
     }
 
     // Обробка набору тексту
@@ -899,7 +899,7 @@ class ChatSystem {
             this.renderContacts();
             this.renderChannels();
         } catch (error) {
-            console.error('Помилка завантаження з localStorage:', error);
+            // logger.error('Помилка завантаження з localStorage:', error);
             this.contacts = [];
             this.channels = this.createDefaultChannels();
         }

@@ -229,7 +229,7 @@ class ThemeManager {
             }
             return true;
         } catch (error) {
-            console.error('Failed to import theme settings:', error);
+            // logger.error('Failed to import theme settings:', error);
             return false;
         }
     }

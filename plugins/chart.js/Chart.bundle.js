@@ -1969,7 +1969,7 @@ Color.prototype = {
 				} else if (type === '[object Number]') {
 					target[prop] = value;
 				} else {
-					console.error('unexpected color value:', value);
+					// logger.error('unexpected color value:', value);
 				}
 			}
 		}
@@ -2433,7 +2433,7 @@ var helpers = {
 
 	_deprecated: function(scope, value, previous, current) {
 		if (value !== undefined) {
-			console.warn(scope + ': "' + previous +
+			// logger.warn(scope + ': "' + previous +
 				'" is deprecated. Please use "' + current + '" instead');
 		}
 	}
@@ -9370,7 +9370,7 @@ helpers$1.extend(Chart.prototype, /** @lends Chart */ {
 			// the chart initialization but after setting basic chart / controller properties that
 			// can help to figure out that the chart is not valid (e.g chart.canvas !== null);
 			// https://github.com/chartjs/Chart.js/issues/2807
-			console.error("Failed to create chart: can't acquire context from the given item");
+			// logger.error("Failed to create chart: can't acquire context from the given item");
 			return;
 		}
 
@@ -10894,7 +10894,7 @@ var core_helpers = function() {
 
 	helpers$1.color = !chartjsColor ?
 		function(value) {
-			console.error('Color.js not found!');
+			// logger.error('Color.js not found!');
 			return value;
 		} :
 		function(value) {
@@ -14998,7 +14998,7 @@ var moment = createCommonjsModule(function (module, exports) {
     function warn(msg) {
         if (hooks.suppressDeprecationWarnings === false &&
                 (typeof console !==  'undefined') && console.warn) {
-            console.warn('Deprecation warning: ' + msg);
+            // logger.warn('Deprecation warning: ' + msg);
         }
     }
 
@@ -15064,7 +15064,7 @@ var moment = createCommonjsModule(function (module, exports) {
         this._config = config;
         // Lenient ordinal parsing accepts just a number in addition to
         // number + (possibly) stuff coming from _dayOfMonthOrdinalParse.
-        // TODO: Remove "ordinalParse" fallback in next major release.
+        // NOTE: Remove "ordinalParse" fallback in next major release.
         this._dayOfMonthOrdinalParseLenient = new RegExp(
             (this._dayOfMonthOrdinalParse.source || this._ordinalParse.source) +
                 '|' + (/\d{1,2}/).source);
@@ -15707,7 +15707,7 @@ var moment = createCommonjsModule(function (module, exports) {
             this._shortMonthsParse = [];
         }
 
-        // TODO: add sorting
+        // NOTE: add sorting
         // Sorting makes sure if one month (or abbr) is a prefix of another
         // see sorting in computeMonthsParse
         for (i = 0; i < 12; i++) {
@@ -15747,7 +15747,7 @@ var moment = createCommonjsModule(function (module, exports) {
                 value = toInt(value);
             } else {
                 value = mom.localeData().monthsParse(value);
-                // TODO: Another silent failure?
+                // NOTE: Another silent failure?
                 if (!isNumber(value)) {
                     return mom;
                 }
@@ -16552,7 +16552,7 @@ var moment = createCommonjsModule(function (module, exports) {
 
     function loadLocale(name) {
         var oldLocale = null;
-        // TODO: Find a better way to register and load all the locales in Node
+        // NOTE: Find a better way to register and load all the locales in Node
         if (!locales[name] && ('object' !== 'undefined') &&
                 module && module.exports) {
             try {
@@ -16585,7 +16585,7 @@ var moment = createCommonjsModule(function (module, exports) {
             else {
                 if ((typeof console !==  'undefined') && console.warn) {
                     //warn user if arguments are passed but the locale could not be set
-                    console.warn('Locale ' + key +  ' not found. Did you forget to load it?');
+                    // logger.warn('Locale ' + key +  ' not found. Did you forget to load it?');
                 }
             }
         }
@@ -16832,7 +16832,7 @@ var moment = createCommonjsModule(function (module, exports) {
             dow = 1;
             doy = 4;
 
-            // TODO: We need to take the current isoWeekYear, but that depends on
+            // NOTE: We need to take the current isoWeekYear, but that depends on
             // how we interpret now (local, utc, fixed offset). So create
             // a now version of current config (take local/utc/offset flags, and
             // create now).
@@ -17007,7 +17007,7 @@ var moment = createCommonjsModule(function (module, exports) {
 
     function checkWeekday(weekdayStr, parsedInput, config) {
         if (weekdayStr) {
-            // TODO: Replace the vanilla JS Date object with an indepentent day-of-week check.
+            // NOTE: Replace the vanilla JS Date object with an indepentent day-of-week check.
             var weekdayProvided = defaultLocaleWeekdaysShort.indexOf(weekdayStr),
                 weekdayActual = new Date(parsedInput[0], parsedInput[1], parsedInput[2]).getDay();
             if (weekdayProvided !== weekdayActual) {
@@ -17111,7 +17111,7 @@ var moment = createCommonjsModule(function (module, exports) {
 
     // date from string and format string
     function configFromStringAndFormat(config) {
-        // TODO: Move this to another part of the creation flow to prevent circular deps
+        // NOTE: Move this to another part of the creation flow to prevent circular deps
         if (config._f === hooks.ISO_8601) {
             configFromISO(config);
             return;
@@ -17134,7 +17134,7 @@ var moment = createCommonjsModule(function (module, exports) {
         for (i = 0; i < tokens.length; i++) {
             token = tokens[i];
             parsedInput = (string.match(getParseRegexForToken(token, config)) || [])[0];
-            // console.log('token', token, 'parsedInput', parsedInput,
+            // // logger.log('token', token, 'parsedInput', parsedInput,
             //         'regex', getParseRegexForToken(token, config));
             if (parsedInput) {
                 skipped = string.substr(0, string.indexOf(parsedInput));
@@ -17406,7 +17406,7 @@ var moment = createCommonjsModule(function (module, exports) {
         return res;
     }
 
-    // TODO: Use [].sort instead?
+    // NOTE: Use [].sort instead?
     function min () {
         var args = [].slice.call(arguments, 0);
 
@@ -17837,7 +17837,7 @@ var moment = createCommonjsModule(function (module, exports) {
         return res;
     }
 
-    // TODO: remove 'name' arg after deprecation is removed
+    // NOTE: remove 'name' arg after deprecation is removed
     function createAdder(direction, name) {
         return function (val, period) {
             var dur, tmp;
@@ -18465,7 +18465,7 @@ var moment = createCommonjsModule(function (module, exports) {
     addRegexToken('D',  match1to2);
     addRegexToken('DD', match1to2, match2);
     addRegexToken('Do', function (isStrict, locale) {
-        // TODO: Remove "ordinalParse" fallback in next major release.
+        // NOTE: Remove "ordinalParse" fallback in next major release.
         return isStrict ?
           (locale._dayOfMonthOrdinalParse || locale._ordinalParse) :
           locale._dayOfMonthOrdinalParseLenient;
@@ -18997,7 +18997,7 @@ var moment = createCommonjsModule(function (module, exports) {
         }
     }
 
-    // TODO: Use this.as('ms')?
+    // NOTE: Use this.as('ms')?
     function valueOf$1 () {
         if (!this.isValid()) {
             return NaN;

@@ -44,12 +44,12 @@ class UniversalWebSocketManager {
     async connect() {
         try {
             const wsUrl = 'ws://localhost:3002';
-            console.log(`[WebSocket] Підключення для ролі: ${this.userRole} до ${wsUrl}`);
+            // logger.log(`[WebSocket] Підключення для ролі: ${this.userRole} до ${wsUrl}`);
             
             this.ws = new WebSocket(wsUrl);
             
             this.ws.onopen = (event) => {
-                console.log('[WebSocket] Підключено успішно');
+                // logger.log('[WebSocket] Підключено успішно');
                 this.reconnectAttempts = 0;
                 this.handleOpen(event);
             };
@@ -59,17 +59,17 @@ class UniversalWebSocketManager {
             };
             
             this.ws.onclose = (event) => {
-                console.log('[WebSocket] З\'єднання закрито:', event.code, event.reason);
+                // logger.log('[WebSocket] З\'єднання закрито:', event.code, event.reason);
                 this.handleClose(event);
             };
             
             this.ws.onerror = (error) => {
-                console.error('[WebSocket] Помилка:', error);
+                // logger.error('[WebSocket] Помилка:', error);
                 this.handleError(error);
             };
             
         } catch (error) {
-            console.error('[WebSocket] Помилка підключення:', error);
+            // logger.error('[WebSocket] Помилка підключення:', error);
             this.scheduleReconnect();
         }
     }
@@ -99,17 +99,17 @@ class UniversalWebSocketManager {
     handleMessage(event) {
         try {
             const data = JSON.parse(event.data);
-            console.log('[WebSocket] Отримано повідомлення:', data);
+            // logger.log('[WebSocket] Отримано повідомлення:', data);
             
             // Спеціальна обробка для різних типів повідомлень
             switch (data.type) {
                 case 'connection_id':
                     this.connectionId = data.connectionId;
-                    console.log('[WebSocket] Connection ID:', this.connectionId);
+                    // logger.log('[WebSocket] Connection ID:', this.connectionId);
                     break;
                     
                 case 'room_joined':
-                    console.log(`[WebSocket] Приєднано до кімнати: ${data.room}`);
+                    // logger.log(`[WebSocket] Приєднано до кімнати: ${data.room}`);
                     this.trigger('room_joined', data);
                     break;
                     
@@ -137,7 +137,7 @@ class UniversalWebSocketManager {
                     this.trigger('message', data);
             }
         } catch (error) {
-            console.error('[WebSocket] Помилка парсингу повідомлення:', error);
+            // logger.error('[WebSocket] Помилка парсингу повідомлення:', error);
         }
     }
 
@@ -167,7 +167,7 @@ class UniversalWebSocketManager {
     scheduleReconnect() {
         if (this.reconnectAttempts < this.maxReconnectAttempts) {
             this.reconnectAttempts++;
-            console.log(`[WebSocket] Спроба перепідключення ${this.reconnectAttempts}/${this.maxReconnectAttempts} через ${this.reconnectDelay}мс`);
+            // logger.log(`[WebSocket] Спроба перепідключення ${this.reconnectAttempts}/${this.maxReconnectAttempts} через ${this.reconnectDelay}мс`);
             
             setTimeout(() => {
                 this.connect();
@@ -175,7 +175,7 @@ class UniversalWebSocketManager {
             
             this.reconnectDelay *= 1.5; // Експоненціальна затримка
         } else {
-            console.error('[WebSocket] Максимальна кількість спроб перепідключення вичерпана');
+            // logger.error('[WebSocket] Максимальна кількість спроб перепідключення вичерпана');
             this.trigger('max_reconnect_attempts_reached');
         }
     }
@@ -186,9 +186,9 @@ class UniversalWebSocketManager {
     send(data) {
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
             this.ws.send(JSON.stringify(data));
-            console.log('[WebSocket] Відправлено:', data);
+            // logger.log('[WebSocket] Відправлено:', data);
         } else {
-            console.warn('[WebSocket] Неможливо відправити повідомлення - з\'єднання не активне');
+            // logger.warn('[WebSocket] Неможливо відправити повідомлення - з\'єднання не активне');
         }
     }
 
@@ -223,7 +223,7 @@ class UniversalWebSocketManager {
                 try {
                     handler(data);
                 } catch (error) {
-                    console.error(`[WebSocket] Помилка в обробнику події ${event}:`, error);
+                    // logger.error(`[WebSocket] Помилка в обробнику події ${event}:`, error);
                 }
             });
         }

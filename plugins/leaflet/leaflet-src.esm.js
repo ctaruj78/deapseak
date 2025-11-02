@@ -399,7 +399,7 @@ function checkDeprecatedMixinEvents(includes) {
 
 	for (var i = 0; i < includes.length; i++) {
 		if (includes[i] === L.Mixin.Events) {
-			console.warn('Deprecated include of L.Mixin.Events: ' +
+			// logger.warn('Deprecated include of L.Mixin.Events: ' +
 				'this property will be removed in future releases, ' +
 				'please inherit from L.Evented instead.', new Error().stack);
 		}
@@ -502,7 +502,7 @@ var Events = {
 	// attach listener (without syntactic sugar now)
 	_on: function (type, fn, context, _once) {
 		if (typeof fn !== 'function') {
-			console.warn('wrong listener type: ' + typeof fn);
+			// logger.warn('wrong listener type: ' + typeof fn);
 			return;
 		}
 
@@ -554,7 +554,7 @@ var Events = {
 		}
 
 		if (typeof fn !== 'function') {
-			console.warn('wrong listener type: ' + typeof fn);
+			// logger.warn('wrong listener type: ' + typeof fn);
 			return;
 		}
 
@@ -618,7 +618,7 @@ var Events = {
 	// The verification can optionally be propagated, it will return `true` if parents have the listener attached to it.
 	listens: function (type, fn, context, propagate) {
 		if (typeof type !== 'string') {
-			console.warn('"string" type argument expected');
+			// logger.warn('"string" type argument expected');
 		}
 
 		// we don't overwrite the input `fn` value, because we need to use it for propagation
@@ -2160,7 +2160,7 @@ function addPointerListener(obj, type, handler) {
 		_addPointerDocListener();
 	}
 	if (!handle[type]) {
-		console.warn('wrong event specified:', type);
+		// logger.warn('wrong event specified:', type);
 		return falseFn;
 	}
 	handler = handle[type].bind(this, handler);
@@ -2170,7 +2170,7 @@ function addPointerListener(obj, type, handler) {
 
 function removePointerListener(obj, type, handler) {
 	if (!pEvent[type]) {
-		console.warn('wrong event specified:', type);
+		// logger.warn('wrong event specified:', type);
 		return;
 	}
 	obj.removeEventListener(pEvent[type], handler, false);
@@ -4016,7 +4016,7 @@ var Map = Evented.extend({
 		return new Bounds(topLeftPoint, topLeftPoint.add(this.getSize()));
 	},
 
-	// TODO: Check semantics - isn't the pixel origin the 0,0 coord relative to
+	// NOTE: Check semantics - isn't the pixel origin the 0,0 coord relative to
 	// the map pane? "left point of the map layer" can be confusing, specially
 	// since there can be negative offsets.
 	// @method getPixelOrigin(): Point
@@ -6222,7 +6222,7 @@ function polygonCenter(latlngs, crs) {
 	}
 
 	if (!isFlat(latlngs)) {
-		console.warn('latlngs are not flat! Only the first ring will be used');
+		// logger.warn('latlngs are not flat! Only the first ring will be used');
 		latlngs = latlngs[0];
 	}
 
@@ -6525,7 +6525,7 @@ function isFlat(latlngs) {
 }
 
 function _flat(latlngs) {
-	console.warn('Deprecated use of _flat, please use L.LineUtil.isFlat instead.');
+	// logger.warn('Deprecated use of _flat, please use L.LineUtil.isFlat instead.');
 	return isFlat(latlngs);
 }
 
@@ -6540,7 +6540,7 @@ function polylineCenter(latlngs, crs) {
 	}
 
 	if (!isFlat(latlngs)) {
-		console.warn('latlngs are not flat! Only the first ring will be used');
+		// logger.warn('latlngs are not flat! Only the first ring will be used');
 		latlngs = latlngs[0];
 	}
 

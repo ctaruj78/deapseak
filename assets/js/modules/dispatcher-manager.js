@@ -27,7 +27,7 @@ class DispatcherManager {
       this.assignments = data.assignments || [];
       this.renderAssignments();
     } catch (error) {
-      console.error('Error loading assignments:', error);
+      // logger.error('Error loading assignments:', error);
     }
   }
 
@@ -36,7 +36,7 @@ class DispatcherManager {
       const data = await api.get('/technicians');
       this.technicians = data.technicians || [];
     } catch (error) {
-      console.error('Error loading technicians:', error);
+      // logger.error('Error loading technicians:', error);
     }
   }
 
@@ -45,7 +45,7 @@ class DispatcherManager {
       const data = await api.get('/clients');
       this.clients = data.clients || [];
     } catch (error) {
-      console.error('Error loading clients:', error);
+      // logger.error('Error loading clients:', error);
     }
   }
 
@@ -127,7 +127,7 @@ class DispatcherManager {
   editAssignment(id) {
     const assignment = this.assignments.find(a => a._id === id);
     if (assignment) {
-      console.log('Редагування:', assignment);
+      // logger.log('Редагування:', assignment);
       // Заповнити форму редагування
     }
   }

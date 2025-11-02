@@ -44,7 +44,7 @@
    */
 
   const warn = message => {
-    console.warn("".concat(consolePrefix, " ").concat(typeof message === 'object' ? message.join(' ') : message));
+    // logger.warn("".concat(consolePrefix, " ").concat(typeof message === 'object' ? message.join(' ') : message));
   };
   /**
    * Standardize console errors
@@ -52,7 +52,7 @@
    */
 
   const error = message => {
-    console.error("".concat(consolePrefix, " ").concat(message));
+    // logger.error("".concat(consolePrefix, " ").concat(message));
   };
   /**
    * Private global state for `warnOnce`

@@ -7,7 +7,7 @@
 (function() {
     'use strict';
     
-    console.log('🔧 QRCode Wrapper: Починаю...');
+    // logger.log('🔧 QRCode Wrapper: Починаю...');
     
     // Чекаємо поки завантажиться qrcode
     let attempts = 0;
@@ -19,14 +19,14 @@
         if (typeof qrcode !== 'undefined') {
             // Знайшли qrcode! Створюємо QRCode як псевдонім
             window.QRCode = qrcode;
-            console.log('✅ QRCode Wrapper: Створено window.QRCode');
-            console.log('  - qrcode доступний:', typeof qrcode);
-            console.log('  - QRCode доступний:', typeof QRCode);
+            // logger.log('✅ QRCode Wrapper: Створено window.QRCode');
+            // logger.log('  - qrcode доступний:', typeof qrcode);
+            // logger.log('  - QRCode доступний:', typeof QRCode);
             return;
         }
         
         if (attempts >= maxAttempts) {
-            console.error('❌ QRCode Wrapper: qrcode не завантажився після', maxAttempts, 'спроб');
+            // logger.error('❌ QRCode Wrapper: qrcode не завантажився після', maxAttempts, 'спроб');
             return;
         }
         

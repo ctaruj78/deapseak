@@ -40,7 +40,7 @@ const API = {
             
             return data;
         } catch (error) {
-            console.error('API Request Error:', error);
+            // logger.error('API Request Error:', error);
             throw error;
         }
     },
@@ -389,7 +389,7 @@ const Storage = {
             const value = localStorage.getItem(key);
             return value ? JSON.parse(value) : defaultValue;
         } catch (error) {
-            console.error('Storage get error:', error);
+            // logger.error('Storage get error:', error);
             return defaultValue;
         }
     },

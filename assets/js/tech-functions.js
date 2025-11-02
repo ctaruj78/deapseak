@@ -8,7 +8,7 @@
 // ============================================
 
 function loadMyTasks() {
-    console.log('📂 Loading my tasks...');
+    // logger.log('📂 Loading my tasks...');
     
     try {
         fetch('/api/my-tasks', {
@@ -24,7 +24,7 @@ function loadMyTasks() {
             displayMyTasks(data);
         })
         .catch(error => {
-            console.error('Error:', error);
+            // logger.error('Error:', error);
             Notifier.error('Failed to load tasks');
         });
     } catch (error) {
@@ -55,7 +55,7 @@ function displayMyTasks(tasks) {
 }
 
 function startTask(taskId) {
-    console.log('🚀 Starting task:', taskId);
+    // logger.log('🚀 Starting task:', taskId);
     
     try {
         fetch(`/api/tasks/${taskId}/start`, {
@@ -79,7 +79,7 @@ function startTask(taskId) {
             loadMyTasks();
         })
         .catch(error => {
-            console.error('Error:', error);
+            // logger.error('Error:', error);
             Notifier.error('Failed to start task');
         });
     } catch (error) {
@@ -88,7 +88,7 @@ function startTask(taskId) {
 }
 
 function completeTask(taskId) {
-    console.log('✅ Completing task:', taskId);
+    // logger.log('✅ Completing task:', taskId);
     
     const modal = new bootstrap.Modal(document.getElementById('completeTaskModal'));
     document.getElementById('completeTaskId').value = taskId;
@@ -96,7 +96,7 @@ function completeTask(taskId) {
 }
 
 function submitTaskCompletion() {
-    console.log('📤 Submitting task completion...');
+    // logger.log('📤 Submitting task completion...');
     
     const taskId = document.getElementById('completeTaskId').value;
     const completionNotes = document.getElementById('completionNotes')?.value;
@@ -130,7 +130,7 @@ function submitTaskCompletion() {
             loadMyTasks();
         })
         .catch(error => {
-            console.error('Error:', error);
+            // logger.error('Error:', error);
             Notifier.error('Failed to complete task');
         });
     } catch (error) {
@@ -143,7 +143,7 @@ function submitTaskCompletion() {
 // ============================================
 
 function startQRScanner() {
-    console.log('📷 Starting QR scanner...');
+    // logger.log('📷 Starting QR scanner...');
     
     const modal = new bootstrap.Modal(document.getElementById('qrScannerModal'));
     modal.show();
@@ -164,13 +164,13 @@ function startQRScanner() {
         
         Notifier.success('QR scanner started');
     } catch (error) {
-        console.error('Error:', error);
+        // logger.error('Error:', error);
         Notifier.error('Failed to start QR scanner');
     }
 }
 
 function onQRCodeSuccess(decodedText, decodedResult) {
-    console.log('✅ QR Code detected:', decodedText);
+    // logger.log('✅ QR Code detected:', decodedText);
     
     try {
         fetch('/api/qr-scans', {
@@ -189,13 +189,13 @@ function onQRCodeSuccess(decodedText, decodedResult) {
             return r.json();
         })
         .then(data => {
-            console.log('✅ QR Scan saved:', data);
+            // logger.log('✅ QR Scan saved:', data);
             Notifier.success('QR Code scanned successfully');
             bootstrap.Modal.getInstance(document.getElementById('qrScannerModal')).hide();
             loadQRHistory();
         })
         .catch(error => {
-            console.error('Error:', error);
+            // logger.error('Error:', error);
             Notifier.error('Failed to process QR code');
         });
     } catch (error) {
@@ -204,11 +204,11 @@ function onQRCodeSuccess(decodedText, decodedResult) {
 }
 
 function onQRCodeError(error) {
-    console.warn('QR Error:', error);
+    // logger.warn('QR Error:', error);
 }
 
 function loadQRHistory() {
-    console.log('📂 Loading QR history...');
+    // logger.log('📂 Loading QR history...');
     
     try {
         fetch('/api/qr-scans', {
@@ -224,7 +224,7 @@ function loadQRHistory() {
             displayQRHistory(data);
         })
         .catch(error => {
-            console.error('Error:', error);
+            // logger.error('Error:', error);
             Notifier.error('Failed to load QR history');
         });
     } catch (error) {
@@ -256,14 +256,14 @@ function displayQRHistory(scans) {
 // ============================================
 
 function createInspection() {
-    console.log('📋 Creating new inspection...');
+    // logger.log('📋 Creating new inspection...');
     
     const modal = new bootstrap.Modal(document.getElementById('inspectionModal'));
     modal.show();
 }
 
 function submitInspection() {
-    console.log('📤 Submitting inspection...');
+    // logger.log('📤 Submitting inspection...');
     
     const inspectionData = {
         taskId: document.getElementById('inspectionTaskId')?.value,
@@ -297,7 +297,7 @@ function submitInspection() {
             loadInspections();
         })
         .catch(error => {
-            console.error('Error:', error);
+            // logger.error('Error:', error);
             Notifier.error('Failed to create inspection');
         });
     } catch (error) {
@@ -306,7 +306,7 @@ function submitInspection() {
 }
 
 function loadInspections() {
-    console.log('📂 Loading inspections...');
+    // logger.log('📂 Loading inspections...');
     
     try {
         fetch('/api/inspections', {
@@ -322,7 +322,7 @@ function loadInspections() {
             displayInspections(data);
         })
         .catch(error => {
-            console.error('Error:', error);
+            // logger.error('Error:', error);
             Notifier.error('Failed to load inspections');
         });
     } catch (error) {
@@ -355,7 +355,7 @@ function displayInspections(inspections) {
 // ============================================
 
 function uploadPhotos(inputId) {
-    console.log('📸 Uploading photos...');
+    // logger.log('📸 Uploading photos...');
     
     const input = document.getElementById(inputId);
     const files = input?.files;
@@ -389,7 +389,7 @@ function uploadPhotos(inputId) {
             displayUploadedPhotos(data);
         })
         .catch(error => {
-            console.error('Error:', error);
+            // logger.error('Error:', error);
             Notifier.error('Failed to upload photos');
         });
     } catch (error) {
@@ -420,7 +420,7 @@ let activeTaskTimer = null;
 let taskStartTime = null;
 
 function startTaskTimer(taskId) {
-    console.log('⏱️ Starting task timer...');
+    // logger.log('⏱️ Starting task timer...');
     
     taskStartTime = new Date();
     
@@ -440,7 +440,7 @@ function startTaskTimer(taskId) {
 }
 
 function stopTaskTimer() {
-    console.log('⏹️ Stopping task timer...');
+    // logger.log('⏹️ Stopping task timer...');
     
     if (activeTaskTimer) {
         clearInterval(activeTaskTimer);
@@ -463,17 +463,17 @@ function getStatusColor(status) {
 }
 
 function viewTaskDetails(taskId) {
-    console.log('👁️ Viewing task details:', taskId);
+    // logger.log('👁️ Viewing task details:', taskId);
     Notifier.info('Loading task details...');
 }
 
 function editInspection(inspectionId) {
-    console.log('✏️ Editing inspection:', inspectionId);
+    // logger.log('✏️ Editing inspection:', inspectionId);
     Notifier.info('Loading inspection...');
 }
 
 function deleteInspection(inspectionId) {
-    console.log('🗑️ Deleting inspection:', inspectionId);
+    // logger.log('🗑️ Deleting inspection:', inspectionId);
     if (confirm('Delete this inspection?')) {
         Notifier.success('Inspection deleted');
         loadInspections();
@@ -481,7 +481,7 @@ function deleteInspection(inspectionId) {
 }
 
 function viewQRDetails(scanId) {
-    console.log('👁️ Viewing QR details:', scanId);
+    // logger.log('👁️ Viewing QR details:', scanId);
     Notifier.info('Loading QR details...');
 }
 

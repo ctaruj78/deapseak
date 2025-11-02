@@ -5,7 +5,7 @@
 
 class AuthInterceptor {
     static init() {
-        console.log('🔐 Initializing Auth Interceptor...');
+        // logger.log('🔐 Initializing Auth Interceptor...');
         
         const originalFetch = window.fetch;
         
@@ -26,9 +26,9 @@ class AuthInterceptor {
             
             if (token) {
                 config.headers['Authorization'] = `Bearer ${token}`;
-                console.log('✅ Token added to request:', resource);
+                // logger.log('✅ Token added to request:', resource);
             } else {
-                console.warn('⚠️ No token available for:', resource);
+                // logger.warn('⚠️ No token available for:', resource);
             }
             
             // Додати Content-Type якщо немає
@@ -41,7 +41,7 @@ class AuthInterceptor {
                 
                 // Перевірити 401 (Unauthorized)
                 if (response.status === 401) {
-                    console.error('❌ 401 Unauthorized - redirecting to login');
+                    // logger.error('❌ 401 Unauthorized - redirecting to login');
                     localStorage.removeItem('auth_token');
                     localStorage.removeItem('token');
                     window.location.href = '/login.html';
@@ -50,7 +50,7 @@ class AuthInterceptor {
                 
                 // Перевірити 403 (Forbidden)
                 if (response.status === 403) {
-                    console.error('❌ 403 Forbidden');
+                    // logger.error('❌ 403 Forbidden');
                     if (typeof Notifier !== 'undefined') {
                         Notifier.error('Access denied');
                     }
@@ -59,7 +59,7 @@ class AuthInterceptor {
                 return response;
                 
             } catch (error) {
-                console.error('❌ Fetch error:', error);
+                // logger.error('❌ Fetch error:', error);
                 if (typeof Notifier !== 'undefined') {
                     Notifier.error('Network error: ' + error.message);
                 }
@@ -67,7 +67,7 @@ class AuthInterceptor {
             }
         };
         
-        console.log('✅ Auth Interceptor initialized');
+        // logger.log('✅ Auth Interceptor initialized');
     }
 }
 

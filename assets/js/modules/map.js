@@ -20,7 +20,7 @@ class MapManager {
             this.initMap();
 
         } catch (error) {
-            console.error('Failed to initialize map:', error);
+            // logger.error('Failed to initialize map:', error);
             this.showFallback();
         }
     }
@@ -51,7 +51,7 @@ class MapManager {
     initMap() {
         const container = document.getElementById(this.containerId);
         if (!container) {
-            console.error('Map container not found:', this.containerId);
+            // logger.error('Map container not found:', this.containerId);
             return;
         }
 
@@ -67,7 +67,7 @@ class MapManager {
         // Додавання контролів
         this.addControls();
 
-        console.log('Map initialized');
+        // logger.log('Map initialized');
     }
 
     addControls() {
@@ -127,7 +127,7 @@ class MapManager {
             }
 
         } catch (error) {
-            console.error('Failed to load lift markers:', error);
+            // logger.error('Failed to load lift markers:', error);
         }
     }
 
@@ -172,7 +172,7 @@ class MapManager {
                 }).addTo(this.map).bindPopup('Ваше місцезнаходження');
             },
             (error) => {
-                console.error('Geolocation error:', error);
+                // logger.error('Geolocation error:', error);
                 NotificationManager.error('Помилка геолокації', 'Не вдалося визначити ваше місцезнаходження');
             }
         );
@@ -196,7 +196,7 @@ class MapManager {
     // Показати маршрут (якщо потрібно)
     showRoute(fromLat, fromLng, toLat, toLng) {
         // Тут можна додати інтеграцію з routing service
-        console.log('Route from', [fromLat, fromLng], 'to', [toLat, toLng]);
+        // logger.log('Route from', [fromLat, fromLng], 'to', [toLat, toLng]);
     }
 
     // Fallback для випадків, коли карта не завантажилася
@@ -232,7 +232,7 @@ class MapManager {
 // Глобальна функція для перегляду деталей ліфта
 function viewLiftDetails(liftId) {
     // Тут можна відкрити модальне вікно або перейти на сторінку ліфта
-    console.log('View lift details:', liftId);
+    // logger.log('View lift details:', liftId);
     NotificationManager.info('Перегляд ліфта', `Перегляд деталей ліфта ID: ${liftId}`);
 }
 

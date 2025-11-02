@@ -34,11 +34,11 @@ class OfflineManager {
                 const registration = await navigator.serviceWorker.register('/sw.js');
                 this.serviceWorker = registration;
                 
-                console.log('ServiceWorker registered successfully');
+                // logger.log('ServiceWorker registered successfully');
                 this.setupServiceWorkerEvents(registration);
 
             } catch (error) {
-                console.error('ServiceWorker registration failed:', error);
+                // logger.error('ServiceWorker registration failed:', error);
             }
         }
     }
@@ -64,8 +64,8 @@ class OfflineManager {
         const registration = await navigator.serviceWorker.ready;
         
         registration.sync.register('pending-actions')
-            .then(() => console.log('Background sync registered'))
-            .catch(err => console.error('Background sync failed:', err));
+            .then(() => // logger.log('Background sync registered'))
+            .catch(err => logger.error('Background sync failed:', err));
     }
 
     initCacheManagement() {
@@ -98,7 +98,7 @@ class OfflineManager {
     // Data Synchronization
     async syncData() {
         if (!this.isOnline) {
-            console.log('Offline - queuing sync for later');
+            // logger.log('Offline - queuing sync for later');
             this.queueSync();
             return;
         }
@@ -111,7 +111,7 @@ class OfflineManager {
             CommonUtils.showNotification('Дані синхронізовано', 'success');
 
         } catch (error) {
-            console.error('Sync failed:', error);
+            // logger.error('Sync failed:', error);
             this.queueSync();
         }
     }
@@ -124,7 +124,7 @@ class OfflineManager {
                 await this.executeAction(action);
                 this.removePendingAction(action.id);
             } catch (error) {
-                console.error('Failed to execute action:', action, error);
+                // logger.error('Failed to execute action:', action, error);
             }
         }
     }
@@ -176,7 +176,7 @@ class OfflineManager {
             const cached = await this.getFromCache(key);
             return cached || null;
         } catch (error) {
-            console.error('Error getting cached data:', error);
+            // logger.error('Error getting cached data:', error);
             return null;
         }
     }
@@ -238,13 +238,13 @@ class OfflineManager {
     }
 
     async handleNetworkError(error) {
-        console.log('Network error - switching to offline mode');
+        // logger.log('Network error - switching to offline mode');
         this.queueForRetry(error.operation);
         this.showOfflineNotification();
     }
 
     async handleSyncError(error) {
-        console.log('Sync error - will retry later');
+        // logger.log('Sync error - will retry later');
         this.queueSync();
         this.logSyncError(error);
     }
@@ -328,7 +328,7 @@ class OfflineManager {
             const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
             await cache.put(key, new Response(blob));
         } catch (error) {
-            console.error('Error storing in cache:', error);
+            // logger.error('Error storing in cache:', error);
         }
     }
 
@@ -338,7 +338,7 @@ class OfflineManager {
             const response = await cache.match(key);
             return response ? response.json() : null;
         } catch (error) {
-            console.error('Error getting from cache:', error);
+            // logger.error('Error getting from cache:', error);
             return null;
         }
     }
@@ -362,7 +362,7 @@ class OfflineManager {
                     this.removePendingAction(action.id);
                 } catch (error) {
                     action.retryCount++;
-                    console.error(`Retry ${action.retryCount} failed:`, error);
+                    // logger.error(`Retry ${action.retryCount} failed:`, error);
                 }
             } else {
                 // Too many retries, give up

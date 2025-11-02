@@ -31,9 +31,9 @@ class DispatcherDashboard {
         URL.revokeObjectURL(url);
     }
     constructor() {
-        console.log('DispatcherDashboard constructor called');
-        console.log('jQuery available:', typeof $ !== 'undefined');
-        console.log('jQuery version:', $.fn ? $.fn.jquery : 'unknown');
+        // logger.log('DispatcherDashboard constructor called');
+        // logger.log('jQuery available:', typeof $ !== 'undefined');
+        // logger.log('jQuery version:', $.fn ? $.fn.jquery : 'unknown');
         this.requests = [];
         this.technicians = [];
         this.activities = [];
@@ -43,7 +43,7 @@ class DispatcherDashboard {
     }
 
     init() {
-        console.log('DispatcherDashboard init called');
+        // logger.log('DispatcherDashboard init called');
         try {
             this.loadRequests();
             this.loadTechnicians();
@@ -53,17 +53,17 @@ class DispatcherDashboard {
             this.updateStats();
             this.setupEventListeners();
             this.setupFilters();
-            console.log('DispatcherDashboard init completed');
+            // logger.log('DispatcherDashboard init completed');
         } catch (error) {
-            console.error('Error in DispatcherDashboard init:', error);
+            // logger.error('Error in DispatcherDashboard init:', error);
         }
     }
 
     // Налаштування обробників подій
     setupEventListeners() {
-            console.log('Setting up event listeners, jQuery available:', typeof $ !== 'undefined');
+            // logger.log('Setting up event listeners, jQuery available:', typeof $ !== 'undefined');
             if (typeof $ === 'undefined') {
-                console.error('jQuery not available for event listeners');
+                // logger.error('jQuery not available for event listeners');
                 return;
             }
 
@@ -89,7 +89,7 @@ class DispatcherDashboard {
                 e.preventDefault();
                 const action = $(e.target).closest('.btn-action').data('action');
                 const id = parseInt($(e.target).closest('.btn-action').data('id'));
-                console.log('Button action clicked:', action, 'id:', id);
+                // logger.log('Button action clicked:', action, 'id:', id);
                 
                 if (window.dispatcherDashboard) {
                     if (action === 'view') {
@@ -100,7 +100,7 @@ class DispatcherDashboard {
                         window.dispatcherDashboard.editRequest(id);
                     }
                 } else {
-                    console.error('dispatcherDashboard not available');
+                    // logger.error('dispatcherDashboard not available');
                 }
             });
 
@@ -137,7 +137,7 @@ class DispatcherDashboard {
             this.emergencyProtocol();
         });
         } catch (error) {
-            console.error('Error setting up event listeners:', error);
+            // logger.error('Error setting up event listeners:', error);
         }
     }
 
@@ -226,7 +226,7 @@ class DispatcherDashboard {
     renderRequests() {
         const tbody = document.getElementById('requestsTableBody');
         if (!tbody) {
-            console.error('requestsTableBody element not found');
+            // logger.error('requestsTableBody element not found');
             return;
         }
         tbody.innerHTML = '';
@@ -238,7 +238,7 @@ class DispatcherDashboard {
         const sortSelect = document.getElementById('sortSelect');
 
         if (!priorityFilter || !statusFilter || !technicianFilter || !dateFilter || !sortSelect) {
-            console.error('Filter elements not found');
+            // logger.error('Filter elements not found');
             return;
         }
 
@@ -467,7 +467,7 @@ class DispatcherDashboard {
     renderTechnicians() {
         const techList = document.getElementById('techList');
         if (!techList) {
-            console.error('techList element not found');
+            // logger.error('techList element not found');
             return;
         }
         techList.innerHTML = '';
@@ -882,10 +882,10 @@ class DispatcherDashboard {
 
     // Перегляд заявки
     viewRequest(requestId) {
-        console.log('viewRequest called with id:', requestId, 'Available requests:', this.requests.length);
+        // logger.log('viewRequest called with id:', requestId, 'Available requests:', this.requests.length);
         const request = this.requests.find(r => r.id === requestId);
         if (request) {
-            console.log('Found request:', request.title);
+            // logger.log('Found request:', request.title);
             const modalContent = `
                 <div class="modal-header">
                     <h5 class="modal-title">Заявка #${request.id}</h5>
@@ -926,7 +926,7 @@ class DispatcherDashboard {
             
             this.showCustomModal(modalContent);
         } else {
-            console.error('Request not found with id:', requestId);
+            // logger.error('Request not found with id:', requestId);
         }
     }
 
@@ -953,10 +953,10 @@ class DispatcherDashboard {
 
     // Призначення заявки
     assignRequest(requestId) {
-        console.log('assignRequest called with id:', requestId, 'Available requests:', this.requests.length, 'Available technicians:', this.technicians.length);
+        // logger.log('assignRequest called with id:', requestId, 'Available requests:', this.requests.length, 'Available technicians:', this.technicians.length);
         const request = this.requests.find(r => r.id === requestId);
         if (request) {
-            console.log('Found request for assignment:', request.title);
+            // logger.log('Found request for assignment:', request.title);
             // Заповнення випадаючих списків
             const requestSelect = document.getElementById('requestSelect');
             const techSelect = document.getElementById('techSelect');
@@ -974,7 +974,7 @@ class DispatcherDashboard {
             
             // Додавання доступних техніків
             const availableTechs = this.technicians.filter(t => t.status === 'online' && t.workload !== 'high');
-            console.log('Available technicians for assignment:', availableTechs.length);
+            // logger.log('Available technicians for assignment:', availableTechs.length);
             availableTechs.forEach(tech => {
                 const techOption = document.createElement('option');
                 techOption.value = tech.id;
@@ -988,9 +988,9 @@ class DispatcherDashboard {
             document.getElementById('deadline').value = deadline.toISOString().slice(0, 16);
             
             $('#assignmentModal').modal('show');
-            console.log('Assignment modal shown');
+            // logger.log('Assignment modal shown');
         } else {
-            console.error('Request not found for assignment with id:', requestId);
+            // logger.error('Request not found for assignment with id:', requestId);
         }
     }
 
@@ -1008,10 +1008,10 @@ class DispatcherDashboard {
 
     // Редагування заявки
     editRequest(requestId) {
-        console.log('editRequest called with id:', requestId);
+        // logger.log('editRequest called with id:', requestId);
         const request = this.requests.find(r => r.id === requestId);
         if (request) {
-            console.log('Found request for editing:', request.title);
+            // logger.log('Found request for editing:', request.title);
             
             // Заповнення форми редагування даними заявки
             document.getElementById('editRequestId').value = request.id;
@@ -1038,9 +1038,9 @@ class DispatcherDashboard {
             });
             
             $('#editRequestModal').modal('show');
-            console.log('Edit request modal shown');
+            // logger.log('Edit request modal shown');
         } else {
-            console.error('Request not found for editing with id:', requestId);
+            // logger.error('Request not found for editing with id:', requestId);
         }
     }
 

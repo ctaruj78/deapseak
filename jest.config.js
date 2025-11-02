@@ -1,15 +1,43 @@
 module.exports = {
-  testEnvironment: 'jsdom',  // Змінено з 'node' на 'jsdom'
-  coveragePathIgnorePatterns: ['/node_modules/'],
-  testMatch: ['**/__tests__/**/*.test.js', '**/?(*.)+(spec|test).js'],
+  testEnvironment: 'node',
+  
+  // Використовуємо babel-jest для транспіляції
+  transform: {
+    '^.+\\.js$': 'babel-jest',
+  },
+  
+  // Тестуємо тільки backend код
+  testMatch: [
+    '**/tests/__tests__/**/*.test.js',
+    '**/tests/unit/**/*.test.js',
+    '**/tests/integration/**/*.test.js'
+  ],
+  
+  // Ігноруємо frontend і node_modules
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/assets/',
+    '/public/',
+    '/plugins/'
+  ],
+  
+  // Coverage тільки для backend
   collectCoverageFrom: [
     'routes/**/*.js',
     'middleware/**/*.js',
-    'assets/js/**/*.js',
-    '!**/*.config.js',
-    '!**/node_modules/**'
+    'models/**/*.js',
+    'controllers/**/*.js',
+    'services/**/*.js',
+    'utils/**/*.js',
+    '!**/node_modules/**',
+    '!**/assets/**',
+    '!**/public/**',
+    '!**/plugins/**',
+    '!**/tests/**'
   ],
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  
+  coverageDirectory: 'coverage',
+  
   coverageThreshold: {
     global: {
       branches: 30,
@@ -17,5 +45,12 @@ module.exports = {
       lines: 30,
       statements: 30
     }
-  }
+  },
+  
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  testTimeout: 10000,
+  verbose: true,
+  
+  // Додаємо підтримку ES modules
+  moduleFileExtensions: ['js', 'json', 'node']
 };

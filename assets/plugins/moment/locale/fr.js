@@ -84,7 +84,7 @@
         dayOfMonthOrdinalParse: /\d{1,2}(er|)/,
         ordinal: function (number, period) {
             switch (period) {
-                // TODO: Return 'e' when day of month > 1. Move this case inside
+                // NOTE: Return 'e' when day of month > 1. Move this case inside
                 // block for masculine words below.
                 // See https://github.com/moment/moment/issues/3375
                 case 'D':

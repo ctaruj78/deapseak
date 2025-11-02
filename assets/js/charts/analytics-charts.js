@@ -174,7 +174,7 @@ class AnalyticsCharts {
         };
 
         eventSource.onerror = (error) => {
-            console.error('Real-time source error:', error);
+            // logger.error('Real-time source error:', error);
             this.handleRealTimeError(source, error);
         };
     }

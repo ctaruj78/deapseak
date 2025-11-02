@@ -1965,7 +1965,7 @@ Color.prototype = {
 				} else if (type === '[object Number]') {
 					target[prop] = value;
 				} else {
-					console.error('unexpected color value:', value);
+					// logger.error('unexpected color value:', value);
 				}
 			}
 		}
@@ -2429,7 +2429,7 @@ var helpers = {
 
 	_deprecated: function(scope, value, previous, current) {
 		if (value !== undefined) {
-			console.warn(scope + ': "' + previous +
+			// logger.warn(scope + ': "' + previous +
 				'" is deprecated. Please use "' + current + '" instead');
 		}
 	}
@@ -9366,7 +9366,7 @@ helpers$1.extend(Chart.prototype, /** @lends Chart */ {
 			// the chart initialization but after setting basic chart / controller properties that
 			// can help to figure out that the chart is not valid (e.g chart.canvas !== null);
 			// https://github.com/chartjs/Chart.js/issues/2807
-			console.error("Failed to create chart: can't acquire context from the given item");
+			// logger.error("Failed to create chart: can't acquire context from the given item");
 			return;
 		}
 
@@ -10890,7 +10890,7 @@ var core_helpers = function() {
 
 	helpers$1.color = !chartjsColor ?
 		function(value) {
-			console.error('Color.js not found!');
+			// logger.error('Color.js not found!');
 			return value;
 		} :
 		function(value) {

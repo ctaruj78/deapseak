@@ -11,7 +11,7 @@ class EnhancedLiftModal {
     }
 
     init() {
-        console.log('Initializing Enhanced Lift Modal...');
+        // logger.log('Initializing Enhanced Lift Modal...');
         this.initEventListeners();
         this.waitForLeafletAndInitMap();
         this.loadTechniciansData();
@@ -21,10 +21,10 @@ class EnhancedLiftModal {
         // Чекаємо завантаження Leaflet
         const checkLeaflet = () => {
             if (typeof L !== 'undefined') {
-                console.log('✅ Leaflet loaded, initializing map...');
+                // logger.log('✅ Leaflet loaded, initializing map...');
                 this.initMap();
             } else {
-                console.log('⏳ Waiting for Leaflet to load...');
+                // logger.log('⏳ Waiting for Leaflet to load...');
                 setTimeout(checkLeaflet, 100);
             }
         };
@@ -32,9 +32,9 @@ class EnhancedLiftModal {
     }
 
     initEventListeners() {
-        console.log('🔧 Initializing event listeners...');
-        console.log('Form #liftForm exists:', $('#liftForm').length > 0);
-        console.log('Submit button exists:', $('button[type="submit"]').length > 0);
+        // logger.log('🔧 Initializing event listeners...');
+        // logger.log('Form #liftForm exists:', $('#liftForm').length > 0);
+        // logger.log('Submit button exists:', $('button[type="submit"]').length > 0);
         
         // Геокодування адреси
         $('#btnGeocode').on('click', () => this.geocodeAddress());
@@ -83,13 +83,13 @@ class EnhancedLiftModal {
         
         // Відправка форми
         $('#liftForm').on('submit', (e) => {
-            console.log('🔥 Form submit event triggered!');
+            // logger.log('🔥 Form submit event triggered!');
             this.submitForm(e);
         });
         
         // Альтернативний обробник для кнопки submit
         $(document).on('click', 'button[type="submit"]', (e) => {
-            console.log('🔥 Submit button clicked directly!');
+            // logger.log('🔥 Submit button clicked directly!');
             if ($(e.target).closest('#liftForm').length > 0) {
                 e.preventDefault();
                 this.submitForm(e);
@@ -114,20 +114,20 @@ class EnhancedLiftModal {
 
     async initMap() {
         try {
-            console.log('🗺️ Initializing map system...');
-            console.log('Leaflet available:', typeof L !== 'undefined');
-            console.log('#liftMap element exists:', $('#liftMap').length > 0);
+            // logger.log('🗺️ Initializing map system...');
+            // logger.log('Leaflet available:', typeof L !== 'undefined');
+            // logger.log('#liftMap element exists:', $('#liftMap').length > 0);
             
             // Перевірка наявності Leaflet
             if (typeof L === 'undefined') {
-                console.error('❌ Leaflet library not loaded! Map will be disabled.');
+                // logger.error('❌ Leaflet library not loaded! Map will be disabled.');
                 this.hideMapInterface();
                 return;
             }
             
             // Чекаємо, поки модальне вікно буде показано, щоб карта правильно ініціалізувалася
             $('#liftModal').on('shown.bs.modal', () => {
-                console.log('🗺️ Modal shown, creating map...');
+                // logger.log('🗺️ Modal shown, creating map...');
                 if (!this.map) {
                     this.createMap();
                 } else {
@@ -138,9 +138,9 @@ class EnhancedLiftModal {
                 }
             });
             
-            console.log('✅ Map initialization prepared');
+            // logger.log('✅ Map initialization prepared');
         } catch (error) {
-            console.error('❌ Error preparing map initialization:', error);
+            // logger.error('❌ Error preparing map initialization:', error);
             this.hideMapInterface();
         }
     }
@@ -159,17 +159,17 @@ class EnhancedLiftModal {
                 </div>
             `);
         }
-        console.log('🚫 Map interface hidden due to loading issues');
+        // logger.log('🚫 Map interface hidden due to loading issues');
     }
 
     createMap() {
         try {
-            console.log('🗺️ Creating Leaflet map...');
+            // logger.log('🗺️ Creating Leaflet map...');
             
             // Перевірка наявності контейнера карти
             const mapContainer = document.getElementById('liftMap');
             if (!mapContainer) {
-                console.error('❌ Map container #liftMap not found!');
+                // logger.error('❌ Map container #liftMap not found!');
                 return;
             }
             
@@ -179,7 +179,7 @@ class EnhancedLiftModal {
                 this.map = null;
             }
             
-            console.log('📍 Initializing Leaflet map with container:', mapContainer);
+            // logger.log('📍 Initializing Leaflet map with container:', mapContainer);
             
             // Ініціалізація Leaflet карти з Києвом як центром за замовчуванням
             this.map = L.map('liftMap', {
@@ -197,7 +197,7 @@ class EnhancedLiftModal {
             
             // Обробник кліку на карту для вибору локації
             this.map.on('click', (e) => {
-                console.log('Map clicked at:', e.latlng);
+                // logger.log('Map clicked at:', e.latlng);
                 this.setMapLocation(e.latlng.lat, e.latlng.lng);
                 // Автоматично отримуємо адресу за координатами
                 this.reverseGeocode(e.latlng.lat, e.latlng.lng);
@@ -206,7 +206,7 @@ class EnhancedLiftModal {
             // Ховаємо індикатор завантаження
             $('.map-loading').hide();
             
-            console.log('Map created successfully');
+            // logger.log('Map created successfully');
             
             // Якщо є збережені координати, показуємо їх на карті
             const lat = $('#liftLat').val();
@@ -216,7 +216,7 @@ class EnhancedLiftModal {
             }
             
         } catch (error) {
-            console.error('Error creating map:', error);
+            // logger.error('Error creating map:', error);
             $('#liftMap').html(`
                 <div class="alert alert-warning">
                     <i class="fas fa-exclamation-triangle mr-2"></i>
@@ -259,7 +259,7 @@ class EnhancedLiftModal {
                 this.showToast('Не вдалося знайти координати для вказаної адреси', 'error');
             }
         } catch (error) {
-            console.error('Geocoding error:', error);
+            // logger.error('Geocoding error:', error);
             this.showToast('Помилка геокодування', 'error');
         } finally {
             $('#btnGeocode').html('<i class="fas fa-search-location"></i>').prop('disabled', false);
@@ -274,7 +274,7 @@ class EnhancedLiftModal {
         
         // Автоматично геокодуємо тільки якщо немає координат і є адреса або поштовий код
         if ((address || postcode) && (!currentLat || !currentLng)) {
-            console.log('Auto-geocoding address...');
+            // logger.log('Auto-geocoding address...');
             
             try {
                 const result = await this.performGeocode(address, postcode, true);
@@ -293,7 +293,7 @@ class EnhancedLiftModal {
                     }
                 }
             } catch (error) {
-                console.log('Auto-geocoding failed:', error);
+                // logger.log('Auto-geocoding failed:', error);
                 // Тихо ігноруємо помилки автоматичного геокодування
             }
         }
@@ -318,7 +318,7 @@ class EnhancedLiftModal {
         const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=3&countrycodes=ua&addressdetails=1`;
         
         if (!silent) {
-            console.log('Geocoding URL:', url);
+            // logger.log('Geocoding URL:', url);
         }
         
         const response = await fetch(url, {
@@ -361,7 +361,7 @@ class EnhancedLiftModal {
             }
             
             if (!silent) {
-                console.log('Geocoding result:', { lat, lng, address: extractedAddress, postcode: extractedPostcode });
+                // logger.log('Geocoding result:', { lat, lng, address: extractedAddress, postcode: extractedPostcode });
             }
             
             return {
@@ -411,10 +411,10 @@ class EnhancedLiftModal {
                     $('#liftPostcode').val(addr.postcode);
                 }
                 
-                console.log('Reverse geocoding result:', fullAddress, addr.postcode);
+                // logger.log('Reverse geocoding result:', fullAddress, addr.postcode);
             }
         } catch (error) {
-            console.log('Reverse geocoding failed:', error);
+            // logger.log('Reverse geocoding failed:', error);
             // Тихо ігноруємо помилки зворотного геокодування
         }
     }
@@ -441,7 +441,7 @@ class EnhancedLiftModal {
             const lng = position.coords.longitude;
             const accuracy = position.coords.accuracy;
 
-            console.log('Current location:', lat, lng, 'accuracy:', accuracy);
+            // logger.log('Current location:', lat, lng, 'accuracy:', accuracy);
 
             // Встановлюємо координати
             this.setMapLocation(lat, lng);
@@ -452,7 +452,7 @@ class EnhancedLiftModal {
             this.showToast(`Локація визначена (точність: ${Math.round(accuracy)}м)`, 'success');
 
         } catch (error) {
-            console.error('Geolocation error:', error);
+            // logger.error('Geolocation error:', error);
             
             let message = 'Не вдалося визначити поточну локацію';
             switch (error.code) {
@@ -483,7 +483,7 @@ class EnhancedLiftModal {
             await navigator.clipboard.writeText(text);
             this.showToast(successMessage, 'success');
         } catch (error) {
-            console.error('Clipboard error:', error);
+            // logger.error('Clipboard error:', error);
             
             // Fallback для старих браузерів
             try {
@@ -498,7 +498,7 @@ class EnhancedLiftModal {
                 document.body.removeChild(textArea);
                 this.showToast(successMessage, 'success');
             } catch (fallbackError) {
-                console.error('Fallback clipboard error:', fallbackError);
+                // logger.error('Fallback clipboard error:', fallbackError);
                 this.showToast('Не вдалося скопіювати в буфер обміну', 'error');
             }
         }
@@ -506,7 +506,7 @@ class EnhancedLiftModal {
 
     setMapLocation(lat, lng) {
         if (!this.map) {
-            console.log('Map not initialized, coordinates saved for later use');
+            // logger.log('Map not initialized, coordinates saved for later use');
             $('#liftLat').val(lat);
             $('#liftLng').val(lng);
             return;
@@ -560,10 +560,10 @@ class EnhancedLiftModal {
             $('#liftLat').val(lat.toFixed(6));
             $('#liftLng').val(lng.toFixed(6));
             
-            console.log('Map location set:', lat, lng);
+            // logger.log('Map location set:', lat, lng);
             
         } catch (error) {
-            console.error('Error setting map location:', error);
+            // logger.error('Error setting map location:', error);
             // Зберігаємо координати навіть якщо карта не працює
             $('#liftLat').val(lat);
             $('#liftLng').val(lng);
@@ -789,7 +789,7 @@ class EnhancedLiftModal {
             
             this.displayInterventionHistory(sampleInterventions);
         } catch (error) {
-            console.error('Error loading intervention history:', error);
+            // logger.error('Error loading intervention history:', error);
         }
     }
 
@@ -925,7 +925,7 @@ class EnhancedLiftModal {
             
             this.showToast('QR код успішно створено', 'success');
         } catch (error) {
-            console.error('Error generating QR code:', error);
+            // logger.error('Error generating QR code:', error);
             this.showToast('Помилка створення QR коду', 'error');
         }
     }
@@ -982,29 +982,29 @@ class EnhancedLiftModal {
 
     async submitForm(event) {
         event.preventDefault();
-        console.log('🔄 submitForm started');
+        // logger.log('🔄 submitForm started');
         
         if (!this.validateForm()) {
-            console.log('❌ Form validation failed');
+            // logger.log('❌ Form validation failed');
             return;
         }
-        console.log('✅ Form validation passed');
+        // logger.log('✅ Form validation passed');
 
         const formData = this.collectFormData();
-        console.log('📝 Form data collected:', formData);
+        // logger.log('📝 Form data collected:', formData);
         const submitBtn = $('button[type="submit"]');
         
         try {
-            console.log('🔄 Starting save process...');
+            // logger.log('🔄 Starting save process...');
             submitBtn.html('<i class="fas fa-spinner fa-spin"></i> Збереження...').prop('disabled', true);
             
             // Конвертуємо дані в формат, сумісний з існуючою системою
             const liftData = this.convertToLiftFormat(formData);
-            console.log('🔄 Converted lift data:', liftData);
+            // logger.log('🔄 Converted lift data:', liftData);
             
             // Зберігаємо через існуючу систему
             await this.saveLiftData(liftData);
-            console.log('✅ Lift saved successfully');
+            // logger.log('✅ Lift saved successfully');
             
             this.showToast('Ліфт успішно збережено', 'success');
             $('#liftModal').modal('hide');
@@ -1015,10 +1015,10 @@ class EnhancedLiftModal {
             }
             
         } catch (error) {
-            console.error('❌ Error saving lift:', error);
+            // logger.error('❌ Error saving lift:', error);
             this.showToast('Помилка збереження ліфта: ' + error.message, 'error');
         } finally {
-            console.log('🔄 Restoring submit button');
+            // logger.log('🔄 Restoring submit button');
             submitBtn.html('<i class="fas fa-save"></i> Зберегти ліфт').prop('disabled', false);
         }
     }
@@ -1070,7 +1070,7 @@ class EnhancedLiftModal {
 
     async saveLiftData(liftData) {
         try {
-            console.log('Saving lift data:', liftData);
+            // logger.log('Saving lift data:', liftData);
             
             // Використовуємо глобальну змінну allLifts
             if (typeof allLifts === 'undefined') {
@@ -1083,11 +1083,11 @@ class EnhancedLiftModal {
             if (existingIndex !== -1) {
                 // Оновлюємо існуючий ліфт
                 allLifts[existingIndex] = { ...allLifts[existingIndex], ...liftData };
-                console.log('Updated existing lift at index:', existingIndex);
+                // logger.log('Updated existing lift at index:', existingIndex);
             } else {
                 // Додаємо новий ліфт
                 allLifts.push(liftData);
-                console.log('Added new lift. Total lifts:', allLifts.length);
+                // logger.log('Added new lift. Total lifts:', allLifts.length);
             }
             
             // Зберігаємо в localStorage через CommonUtils
@@ -1101,11 +1101,11 @@ class EnhancedLiftModal {
                 localStorage.setItem('lifts', JSON.stringify(allLifts));
             }
             
-            console.log('Lift saved successfully');
+            // logger.log('Lift saved successfully');
             return true;
             
         } catch (error) {
-            console.error('Error in saveLiftData:', error);
+            // logger.error('Error in saveLiftData:', error);
             throw error;
         }
     }
@@ -1115,7 +1115,7 @@ class EnhancedLiftModal {
     }
 
     validateForm() {
-        console.log('🔍 Starting form validation...');
+        // logger.log('🔍 Starting form validation...');
         // Тільки найважливіші поля є обов'язковими
         const requiredFields = [
             { id: '#municipalNumber', name: 'Муніципальний номер' },
@@ -1151,9 +1151,9 @@ class EnhancedLiftModal {
         });
 
         if (emptyFields.length > 0) {
-            console.log('❌ Empty required fields:', emptyFields);
+            // logger.log('❌ Empty required fields:', emptyFields);
         } else {
-            console.log('✅ All required fields filled');
+            // logger.log('✅ All required fields filled');
         }
 
         // Додаткова валідація email
@@ -1218,7 +1218,7 @@ class EnhancedLiftModal {
             this.populateForm(formData);
             
         } catch (error) {
-            console.error('Error loading lift data:', error);
+            // logger.error('Error loading lift data:', error);
             this.showToast('Помилка завантаження даних ліфта', 'error');
         }
     }
@@ -1285,7 +1285,7 @@ class EnhancedLiftModal {
     }
 
     resetForm() {
-        console.log('Resetting form for new lift');
+        // logger.log('Resetting form for new lift');
         
         // Очищуємо форму
         $('#liftForm')[0].reset();
@@ -1316,7 +1316,7 @@ class EnhancedLiftModal {
         this.photos = [];
         this.currentLiftId = null;
         
-        console.log('Form reset completed');
+        // logger.log('Form reset completed');
     }
 
     showToast(message, type = 'info') {
@@ -1350,16 +1350,16 @@ class EnhancedLiftModal {
 
 // Функція для тестування збереження
 function testLiftSave() {
-    console.log('🧪 Testing lift save functionality...');
+    // logger.log('🧪 Testing lift save functionality...');
     
     // Перевіримо чи доступні необхідні компоненти
-    console.log('📋 System check:');
-    console.log('- allLifts available:', typeof allLifts !== 'undefined', allLifts?.length || 0);
-    console.log('- CommonUtils available:', typeof CommonUtils !== 'undefined');
-    console.log('- enhancedLiftModal available:', typeof window.enhancedLiftModal !== 'undefined');
+    // logger.log('📋 System check:');
+    // logger.log('- allLifts available:', typeof allLifts !== 'undefined', allLifts?.length || 0);
+    // logger.log('- CommonUtils available:', typeof CommonUtils !== 'undefined');
+    // logger.log('- enhancedLiftModal available:', typeof window.enhancedLiftModal !== 'undefined');
     
     if (typeof allLifts === 'undefined') {
-        console.error('❌ allLifts not defined!');
+        // logger.error('❌ allLifts not defined!');
         return false;
     }
     
@@ -1405,18 +1405,18 @@ function testLiftSave() {
     };
     
     try {
-        console.log('🔄 Adding test lift to allLifts array...');
+        // logger.log('🔄 Adding test lift to allLifts array...');
         const beforeCount = allLifts.length;
         allLifts.push(testLift);
-        console.log('✅ Lift added to memory. Before:', beforeCount, 'After:', allLifts.length);
+        // logger.log('✅ Lift added to memory. Before:', beforeCount, 'After:', allLifts.length);
         
-        console.log('💾 Saving to localStorage...');
+        // logger.log('💾 Saving to localStorage...');
         if (typeof CommonUtils !== 'undefined' && CommonUtils.saveLifts) {
             const saved = CommonUtils.saveLifts(allLifts);
-            console.log('CommonUtils.saveLifts result:', saved);
+            // logger.log('CommonUtils.saveLifts result:', saved);
         } else {
             localStorage.setItem('lifts', JSON.stringify(allLifts));
-            console.log('Direct localStorage save completed');
+            // logger.log('Direct localStorage save completed');
         }
         
         // Перевіримо збереження
@@ -1425,19 +1425,19 @@ function testLiftSave() {
             const parsed = JSON.parse(stored);
             const found = parsed.find(l => l.id === testLift.id);
             if (found) {
-                console.log('✅ Test lift successfully saved and found in localStorage!');
+                // logger.log('✅ Test lift successfully saved and found in localStorage!');
                 return true;
             } else {
-                console.error('❌ Test lift not found in localStorage');
+                // logger.error('❌ Test lift not found in localStorage');
                 return false;
             }
         } else {
-            console.error('❌ No data in localStorage');
+            // logger.error('❌ No data in localStorage');
             return false;
         }
         
     } catch (error) {
-        console.error('❌ Error during test save:', error);
+        // logger.error('❌ Error during test save:', error);
         return false;
     }
 }
@@ -1447,13 +1447,13 @@ window.testLiftSave = testLiftSave;
 
 // Ініціалізація при завантаженні сторінки
 $(document).ready(function() {
-    console.log('Initializing Enhanced Lift Modal...');
+    // logger.log('Initializing Enhanced Lift Modal...');
     window.enhancedLiftModal = new EnhancedLiftModal();
-    console.log('Enhanced Lift Modal initialized successfully');
+    // logger.log('Enhanced Lift Modal initialized successfully');
     
     // Додаємо тестову кнопку в режимі розробки
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        console.log('🔧 Development mode detected - adding test button');
+        // logger.log('🔧 Development mode detected - adding test button');
         setTimeout(() => {
             if ($('#test-save-lift').length === 0) {
                 $('body').append(`

@@ -15,9 +15,9 @@ const sequelize = new Sequelize(
 module.exports = async function pgConnect() {
   try {
     await sequelize.authenticate();
-    console.log('PostgreSQL connected');
+    // logger.log('PostgreSQL connected');
   } catch (err) {
-    console.error('PostgreSQL connection error:', err);
+    // logger.error('PostgreSQL connection error:', err);
     throw err;
   }
 };

@@ -40,7 +40,7 @@ class EmailService {
             return result;
 
         } catch (error) {
-            console.error('Email sending failed:', error);
+            // logger.error('Email sending failed:', error);
             await this.handleEmailError(error, { to, templateName });
             throw error;
         }

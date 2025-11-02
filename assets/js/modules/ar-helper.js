@@ -11,7 +11,7 @@ class ARHelper {
     }
 
     async init() {
-        console.log('🏗️ Ініціалізація AR помічника...');
+        // logger.log('🏗️ Ініціалізація AR помічника...');
         this.loadUserInfo();
         this.loadLiftModels();
         this.setupEventListeners();
@@ -20,7 +20,7 @@ class ARHelper {
         await this.setupWebSocket();
         this.setupRealTimeFeatures();
         
-        console.log('✅ AR помічник успішно ініціалізовано');
+        // logger.log('✅ AR помічник успішно ініціалізовано');
     }
 
     async setupWebSocket() {
@@ -47,7 +47,7 @@ class ARHelper {
                 this.handleEmergencyAlert(data);
             });
             
-            console.log('🔌 WebSocket підключено до AR Helper');
+            // logger.log('🔌 WebSocket підключено до AR Helper');
         }
     }
 
@@ -67,7 +67,7 @@ class ARHelper {
             };
             $('#techName').text(currentUser.firstName);
         } catch (error) {
-            console.error('Помилка завантаження даних користувача:', error);
+            // logger.error('Помилка завантаження даних користувача:', error);
         }
     }
 
@@ -252,7 +252,7 @@ class ARHelper {
             this.logAREvent('ar_session_start');
 
         } catch (error) {
-            console.error('Помилка запуску AR:', error);
+            // logger.error('Помилка запуску AR:', error);
             this.showNotification('Помилка запуску AR: ' + error.message, 'error');
         }
     }
@@ -282,7 +282,7 @@ class ARHelper {
                 this.setupAFrameScene();
             }
 
-            console.log('AR сцена ініціалізована');
+            // logger.log('AR сцена ініціалізована');
         } catch (error) {
             throw new Error('Помилка ініціалізації AR сцени: ' + error.message);
         }
@@ -293,7 +293,7 @@ class ARHelper {
         const scene = document.querySelector('a-scene');
         if (scene) {
             scene.addEventListener('loaded', () => {
-                console.log('A-Frame сцена завантажена');
+                // logger.log('A-Frame сцена завантажена');
             });
         }
     }
@@ -320,7 +320,7 @@ class ARHelper {
 
     async addModelToScene(model) {
         // Додавання 3D моделі до AR сцени
-        console.log(`Додавання моделі до сцени: ${model.name}`);
+        // logger.log(`Додавання моделі до сцени: ${model.name}`);
         
         // У реальному додатку: завантаження GLB/GLTF моделі
         if (typeof AFRAME !== 'undefined') {
@@ -402,7 +402,7 @@ class ARHelper {
     }
 
     activateMeasureTool() {
-        console.log('Активація інструменту вимірювання');
+        // logger.log('Активація інструменту вимірювання');
         this.measurements = [];
         this.isMeasuring = false;
         this.measureStartPoint = null;
@@ -415,7 +415,7 @@ class ARHelper {
     }
 
     deactivateMeasureTool() {
-        console.log('Деактивація інструменту вимірювання');
+        // logger.log('Деактивація інструменту вимірювання');
         this.removeMeasureEventListeners();
         this.clearMeasurements();
         this.hideToolHint();
@@ -554,7 +554,7 @@ class ARHelper {
     }
 
     activateAnnotationTool() {
-        console.log('Активація інструменту анотацій');
+        // logger.log('Активація інструменту анотацій');
         this.isAnnotating = false;
 
         // Додаємо обробники подій для анотацій
@@ -564,7 +564,7 @@ class ARHelper {
     }
 
     deactivateAnnotationTool() {
-        console.log('Деактивація інструменту анотацій');
+        // logger.log('Деактивація інструменту анотацій');
         this.removeAnnotationEventListeners();
         this.hideToolHint();
     }
@@ -627,7 +627,7 @@ class ARHelper {
     }
 
     activateHotspotTool() {
-        console.log('Активація інструменту хот-спотів');
+        // logger.log('Активація інструменту хот-спотів');
         this.isCreatingHotspot = false;
 
         // Додаємо обробники подій для хот-спотів
@@ -637,7 +637,7 @@ class ARHelper {
     }
 
     deactivateHotspotTool() {
-        console.log('Деактивація інструменту хот-спотів');
+        // logger.log('Деактивація інструменту хот-спотів');
         this.removeHotspotEventListeners();
         this.hideToolHint();
     }
@@ -773,7 +773,7 @@ class ARHelper {
             this.logAREvent('screenshot_taken');
 
         } catch (error) {
-            console.error('Помилка знімка:', error);
+            // logger.error('Помилка знімка:', error);
             this.showNotification('Помилка при знімку', 'error');
         }
     }
@@ -821,7 +821,7 @@ class ARHelper {
 
             return canvas.toDataURL('image/png');
         } catch (error) {
-            console.error('Помилка захоплення AR виду:', error);
+            // logger.error('Помилка захоплення AR виду:', error);
             // Emergency fallback
             const canvas = document.createElement('canvas');
             canvas.width = 400;
@@ -1012,7 +1012,7 @@ class ARHelper {
             this.logAREvent('ar_session_end');
 
         } catch (error) {
-            console.error('Помилка вимкнення AR:', error);
+            // logger.error('Помилка вимкнення AR:', error);
             this.showNotification('Помилка при вимкненні AR', 'error');
         }
     }
@@ -1097,7 +1097,7 @@ class ARHelper {
     }
 
     logAREvent(eventName, data = {}) {
-        console.log(`AR Event: ${eventName}`, {
+        logger.log(`AR Event: ${eventName}`, {
             timestamp: new Date().toISOString(),
             model: this.currentModel?.name,
             ...data
@@ -1183,7 +1183,7 @@ class ARHelper {
     }
 
     handleRemoteInstruction(data) {
-        console.log('📱 Отримано віддалену інструкцію:', data);
+        // logger.log('📱 Отримано віддалену інструкцію:', data);
         
         const { action, payload } = data;
         
@@ -1207,13 +1207,13 @@ class ARHelper {
     }
 
     handleLiftStatusChange(data) {
-        console.log('🔄 Статус ліфта змінено:', data);
+        // logger.log('🔄 Статус ліфта змінено:', data);
         this.showNotification(`Ліфт ${data.liftId}: ${data.status}`, 
             data.status === 'error' ? 'error' : 'info');
     }
 
     handleCollaboration(data) {
-        console.log('👥 Колаборативні дані:', data);
+        // logger.log('👥 Колаборативні дані:', data);
         const { type, user, payload } = data;
         
         if (type === 'annotation_added') {

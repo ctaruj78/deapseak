@@ -80,7 +80,7 @@ class DataLoader {
             // Оновлення інтерфейсу
             Renderer.updateDynamicContent();
         } catch (error) {
-            console.error('Помилка завантаження даних:', error);
+            // logger.error('Помилка завантаження даних:', error);
             DOMHelper.showNotification('Помилка завантаження даних', 'error');
         }
     }

@@ -25,7 +25,7 @@ class TechManager {
       this.tasks = data.tasks || [];
       this.renderTasks();
     } catch (error) {
-      console.error('Error loading tasks:', error);
+      // logger.error('Error loading tasks:', error);
     }
   }
 
@@ -34,7 +34,7 @@ class TechManager {
       const data = await api.get('/inspections');
       this.inspections = data.inspections || [];
     } catch (error) {
-      console.error('Error loading inspections:', error);
+      // logger.error('Error loading inspections:', error);
     }
   }
 
@@ -95,7 +95,7 @@ class TechManager {
   viewQR(id) {
     const task = this.tasks.find(t => t._id === id);
     if (task && task.qrCode) {
-      console.log('QR код:', task.qrCode);
+      // logger.log('QR код:', task.qrCode);
       // Показати QR код
     }
   }
