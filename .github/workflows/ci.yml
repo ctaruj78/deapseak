@@ -5,18 +5,19 @@ on:
     branches: 
       - main
       - html-consolidation-phase1
+      - develop
   pull_request:
     branches: 
       - main
 
 jobs:
   test:
-    name: �� Run Tests
+    name: 🧪 Run Tests
     runs-on: ubuntu-latest
     
     strategy:
       matrix:
-        node-version: [18.x]
+        node-version: [18.x, 20.x]
     
     steps:
       - name: 📥 Checkout code
@@ -34,16 +35,17 @@ jobs:
       - name: 🧪 Run tests
         run: npm test
       
-      - name: 📊 Generate coverage report
-        run: npm test -- --coverage
+      - name: 📊 Generate coverage
+        run: npm test -- --coverage --coverageReporters=text --coverageReporters=lcov
       
       - name: 📈 Upload coverage to Codecov
         uses: codecov/codecov-action@v4
-        if: always()
+        if: matrix.node-version == '20.x'
         with:
           files: ./coverage/lcov.info
           flags: unittests
           name: codecov-umbrella
+          fail_ci_if_error: false
   
   lint:
     name: 🔍 Code Quality
@@ -51,30 +53,20 @@ jobs:
     
     steps:
       - uses: actions/checkout@v4
+      
       - uses: actions/setup-node@v4
         with:
-          node-version: '18.x'
+          node-version: '20.x'
           cache: 'npm'
-      - run: npm ci
-      - name: Run linter
-        run: npm run lint || echo "⚠️  Linter not configured, skipping..."
-      - name: Check formatting
-        run: npm run format:check || echo "⚠️  Prettier not configured, skipping..."
-  
-  build:
-    name: 🏗️  Build Project
-    runs-on: ubuntu-latest
-    needs: [test, lint]
-    
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '18.x'
-          cache: 'npm'
-      - run: npm ci
-      - name: Build
-        run: npm run build || echo "✅ No build step required"
+      
+      - name: 📦 Install dependencies
+        run: npm ci
+      
+      - name: 🔍 Run linter
+        run: npm run lint || echo "⚠️  Linter not configured"
+      
+      - name: 📝 Check code formatting
+        run: npm run format:check || echo "⚠️  Prettier not configured"
   
   security:
     name: 🔒 Security Audit
@@ -82,9 +74,38 @@ jobs:
     
     steps:
       - uses: actions/checkout@v4
+      
       - uses: actions/setup-node@v4
         with:
-          node-version: '18.x'
-      - name: Run security audit
+          node-version: '20.x'
+      
+      - name: 🔒 Run npm audit
         run: npm audit --audit-level=moderate || true
+      
+      - name: 🔍 Check for vulnerabilities
+        run: npm audit --production || echo "⚠️  Found vulnerabilities (non-blocking)"
+  
+  build:
+    name: 🏗️  Build & Test Integration
+    runs-on: ubuntu-latest
+    needs: [test, lint]
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+      
+      - name: 📦 Install dependencies
+        run: npm ci
+      
+      - name: 🏗️  Build project
+        run: npm run build || echo "✅ No build step configured"
+      
+      - name: ✅ Verify build artifacts
+        run: |
+          echo "Project structure:"
+          tree -L 2 -I 'node_modules|coverage' || ls -la
 
