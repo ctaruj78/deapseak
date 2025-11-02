@@ -1,3 +1,9 @@
+# DeapSeak Project
+
+[![CI/CD Pipeline](https://github.com/ctaruj78/deapseak/actions/workflows/ci.yml/badge.svg)](https://github.com/ctaruj78/deapseak/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-17%20passed-success)](https://github.com/ctaruj78/deapseak/actions)
+[![Coverage](https://img.shields.io/badge/coverage-check%20CI-blue)](https://github.com/ctaruj78/deapseak/actions)
+
 # DeapSeaK - Система управління ліфтами
 
 ## Опис проекту

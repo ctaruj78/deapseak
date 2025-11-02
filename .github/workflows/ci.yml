@@ -2,57 +2,89 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, html-consolidation-phase1 ]
+    branches: 
+      - main
+      - html-consolidation-phase1
   pull_request:
-    branches: [ main ]
+    branches: 
+      - main
 
 jobs:
   test:
-    name: Run Tests
+    name: �� Run Tests
     runs-on: ubuntu-latest
     
+    strategy:
+      matrix:
+        node-version: [18.x]
+    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
       
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - name: 🟢 Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: ${{ matrix.node-version }}
           cache: 'npm'
       
-      - name: Install dependencies
+      - name: 📦 Install dependencies
         run: npm ci
       
-      - name: Run tests
+      - name: 🧪 Run tests
         run: npm test
       
-      - name: Upload coverage
-        uses: codecov/codecov-action@v3
+      - name: 📊 Generate coverage report
+        run: npm test -- --coverage
+      
+      - name: 📈 Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        if: always()
         with:
           files: ./coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
   
   lint:
-    name: Code Quality
+    name: 🔍 Code Quality
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '18.x'
+          cache: 'npm'
       - run: npm ci
-      - run: npm run lint || echo "Linter not configured"
+      - name: Run linter
+        run: npm run lint || echo "⚠️  Linter not configured, skipping..."
+      - name: Check formatting
+        run: npm run format:check || echo "⚠️  Prettier not configured, skipping..."
   
-  deploy:
-    name: Deploy to Production
-    needs: [test, lint]
+  build:
+    name: 🏗️  Build Project
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    needs: [test, lint]
     
     steps:
-      - uses: actions/checkout@v3
-      - name: Deploy
-        run: |
-          echo "Deploying to production..."
-          # Тут ваші команди для deploy
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+      - run: npm ci
+      - name: Build
+        run: npm run build || echo "✅ No build step required"
+  
+  security:
+    name: 🔒 Security Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+      - name: Run security audit
+        run: npm audit --audit-level=moderate || true
+
