@@ -1,6 +1,8 @@
 // Input Validation and Sanitization Module
 // Захищає API від некоректних даних та потенційних атак
 
+const { body, validationResult } = require('express-validator');
+
 class ValidationError extends Error {
     constructor(message, field = null) {
         super(message);
@@ -257,9 +259,40 @@ function validateRequest(schema) {
     };
 }
 
+/**
+ * Middleware для валідації запитів
+ */
+const requestValidationMiddleware = (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({
+            success: false,
+            message: 'Помилки валідації',
+            errors: errors.array().map(err => ({
+                field: err.path,
+                message: err.msg,
+                value: err.value
+            }))
+        });
+    }
+    next();
+};
+
+// Створити config/validator.js
+const requiredEnvVars = ['JWT_SECRET', 'MONGODB_URI', 'NODE_ENV'];
+
+function validateEnvironment() {
+    const missing = requiredEnvVars.filter(key => !process.env[key]);
+    if (missing.length > 0) {
+        throw new Error(`Відсутні обов'язкові змінні: ${missing.join(', ')}`);
+    }
+}
+
 module.exports = {
     ValidationError,
     validators,
     sanitizers,
-    validateRequest
+    validateRequest,
+    validateEnvironment,
+    requestValidationMiddleware
 };

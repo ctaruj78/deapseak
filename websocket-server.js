@@ -4,329 +4,163 @@
  */
 
 const WebSocket = require('ws');
-const http = require('http');
+const jwt = require('jsonwebtoken');
 
-class WebSocketServer {
-    constructor(port = 3002) {
-        this.port = port;
-        this.clients = new Map(); // userId -> WebSocket connection
-        this.rooms = new Map(); // roomId -> Set of userIds
-        this.userRooms = new Map(); // userId -> Set of roomIds
-        
-        this.setupServer();
-        this.setupHeartbeat();
-    }
+const PORT = process.env.WS_PORT || 3002;
+const JWT_SECRET = process.env.JWT_SECRET || 'deapseak-super-secret-key-2024';
 
-    setupServer() {
-        // Створюємо HTTP сервер для WebSocket
-        this.server = http.createServer();
-        this.wss = new WebSocket.Server({ server: this.server });
+console.log('🔌 Запуск WebSocket сервера...');
 
-        this.wss.on('connection', (ws, req) => {
-            console.log('🔌 Новий WebSocket клієнт підключився');
+const wss = new WebSocket.Server({ 
+    port: PORT,
+    host: '0.0.0.0'
+});
+
+console.log(`✅ WebSocket сервер запущено на ws://0.0.0.0:${PORT}`);
+
+// Store authenticated connections
+const authenticatedClients = new Map();
+
+wss.on('connection', (ws, req) => {
+    console.log('📱 Новий WebSocket клієнт підключився');
+    
+    ws.isAuthenticated = false;
+    ws.userId = null;
+    
+    // Send welcome message
+    ws.send(JSON.stringify({
+        type: 'welcome',
+        message: 'WebSocket підключено. Будь ласка, авторизуйтеся.',
+        timestamp: new Date().toISOString()
+    }));
+    
+    ws.on('message', async (message) => {
+        try {
+            const data = JSON.parse(message.toString()); // Безпека
+            console.log('📨 Отримано повідомлення:', data.type);
             
-            ws.isAlive = true;
-            ws.on('pong', () => {
-                ws.isAlive = true;
-            });
-
-            ws.on('message', (data) => {
-                try {
-                    const message = JSON.parse(data);
-                    this.handleMessage(ws, message);
-                } catch (error) {
-                    console.error('❌ Помилка обробки повідомлення:', error);
-                    this.sendError(ws, 'Invalid JSON format');
-                }
-            });
-
-            ws.on('close', () => {
-                this.handleDisconnection(ws);
-                console.log('🔌 WebSocket клієнт відключився');
-            });
-
-            ws.on('error', (error) => {
-                console.error('❌ WebSocket помилка:', error);
-            });
-        });
-
-        this.server.listen(this.port, () => {
-            console.log(`🚀 WebSocket сервер запущено на порту ${this.port}`);
-        });
-    }
-
-    setupHeartbeat() {
-        // Ping клієнтів кожні 30 секунд для підтримки з'єднання
-        setInterval(() => {
-            this.wss.clients.forEach((ws) => {
-                if (ws.isAlive === false) {
-                    this.handleDisconnection(ws);
-                    return ws.terminate();
-                }
-                
-                ws.isAlive = false;
-                ws.ping();
-            });
-        }, 30000);
-    }
-
-    handleMessage(ws, message) {
-        const { type, data, userId, room } = message;
-
-        switch (type) {
-            case 'auth':
-                this.handleAuth(ws, data);
-                break;
-            case 'join_room':
-                this.handleJoinRoom(ws, room, userId);
-                break;
-            case 'leave_room':
-                this.handleLeaveRoom(ws, room, userId);
-                break;
-            case 'chat_message':
-                this.handleChatMessage(ws, data);
-                break;
-            case 'assignment_update':
-                this.handleAssignmentUpdate(ws, data);
-                break;
-            case 'monitoring_alert':
-                this.handleMonitoringAlert(ws, data);
-                break;
-            case 'typing_status':
-                this.handleTypingStatus(ws, data);
-                break;
-            case 'user_status':
-                this.handleUserStatus(ws, data);
-                break;
-            default:
-                this.sendError(ws, `Unknown message type: ${type}`);
-        }
-    }
-
-    handleAuth(ws, data) {
-        const { userId, token } = data;
-        
-        // TODO: Перевірка JWT токена
-        if (userId && token) {
-            ws.userId = userId;
-            this.clients.set(userId, ws);
-            
-            this.send(ws, {
-                type: 'auth_success',
-                data: { userId, timestamp: new Date().toISOString() }
-            });
-
-            // Повідомити інших про онлайн статус
-            this.broadcastUserStatus(userId, 'online');
-            
-            console.log(`✅ Користувач ${userId} авторизовано`);
-        } else {
-            this.sendError(ws, 'Authentication failed');
-        }
-    }
-
-    handleJoinRoom(ws, roomId, userId) {
-        if (!this.rooms.has(roomId)) {
-            this.rooms.set(roomId, new Set());
-        }
-        
-        if (!this.userRooms.has(userId)) {
-            this.userRooms.set(userId, new Set());
-        }
-
-        this.rooms.get(roomId).add(userId);
-        this.userRooms.get(userId).add(roomId);
-        
-        ws.currentRoom = roomId;
-
-        this.send(ws, {
-            type: 'room_joined',
-            data: { roomId, userId, timestamp: new Date().toISOString() }
-        });
-
-        // Повідомити інших у кімнаті
-        this.broadcastToRoom(roomId, {
-            type: 'user_joined_room',
-            data: { userId, roomId, timestamp: new Date().toISOString() }
-        }, userId);
-
-        console.log(`📢 Користувач ${userId} приєднався до кімнати ${roomId}`);
-    }
-
-    handleLeaveRoom(ws, roomId, userId) {
-        if (this.rooms.has(roomId)) {
-            this.rooms.get(roomId).delete(userId);
-            if (this.rooms.get(roomId).size === 0) {
-                this.rooms.delete(roomId);
+            switch (data.type) {
+                case 'auth':
+                    await handleAuth(ws, data);
+                    break;
+                    
+                case 'ping':
+                    ws.send(JSON.stringify({
+                        type: 'pong',
+                        timestamp: new Date().toISOString()
+                    }));
+                    break;
+                    
+                default:
+                    if (ws.isAuthenticated) {
+                        // Handle authenticated messages
+                        handleAuthenticatedMessage(ws, data);
+                    } else {
+                        ws.send(JSON.stringify({
+                            type: 'error',
+                            message: 'Потрібна авторизація',
+                            timestamp: new Date().toISOString()
+                        }));
+                    }
+                    break;
             }
-        }
-        
-        if (this.userRooms.has(userId)) {
-            this.userRooms.get(userId).delete(roomId);
-        }
-
-        ws.currentRoom = null;
-
-        this.broadcastToRoom(roomId, {
-            type: 'user_left_room',
-            data: { userId, roomId, timestamp: new Date().toISOString() }
-        }, userId);
-    }
-
-    handleChatMessage(ws, data) {
-        const { roomId, message, userId, messageId } = data;
-        
-        const messageData = {
-            type: 'new_message',
-            data: {
-                messageId,
-                roomId,
-                userId,
-                message,
+            
+        } catch (error) {
+            console.error('❌ Помилка обробки повідомлення:', error);
+            ws.send(JSON.stringify({
+                type: 'error',
+                message: 'Помилка обробки повідомлення',
                 timestamp: new Date().toISOString()
-            }
-        };
-
-        this.broadcastToRoom(roomId, messageData);
-        console.log(`💬 Повідомлення в кімнаті ${roomId} від ${userId}`);
-    }
-
-    handleAssignmentUpdate(ws, data) {
-        const { assignmentId, status, userId, description } = data;
-        
-        const updateData = {
-            type: 'assignment_updated',
-            data: {
-                assignmentId,
-                status,
-                userId,
-                description,
-                timestamp: new Date().toISOString()
-            }
-        };
-
-        // Відправити всім адміністраторам та диспетчерам
-        this.broadcastToRole(['admin', 'dispatcher'], updateData);
-        console.log(`📋 Оновлення заявки ${assignmentId}: ${status}`);
-    }
-
-    handleMonitoringAlert(ws, data) {
-        const { alertId, type, severity, message, liftId } = data;
-        
-        const alertData = {
-            type: 'monitoring_alert',
-            data: {
-                alertId,
-                alertType: type,
-                severity,
-                message,
-                liftId,
-                timestamp: new Date().toISOString()
-            }
-        };
-
-        // Критичні алерти - всім, інші - тільки техніки та адміни
-        const targetRoles = severity === 'critical' 
-            ? ['admin', 'dispatcher', 'tech', 'client']
-            : ['admin', 'tech'];
-            
-        this.broadcastToRole(targetRoles, alertData);
-        console.log(`🚨 ${severity.toUpperCase()} алерт: ${message}`);
-    }
-
-    handleTypingStatus(ws, data) {
-        const { roomId, userId, isTyping } = data;
-        
-        const typingData = {
-            type: 'typing_status',
-            data: { roomId, userId, isTyping, timestamp: new Date().toISOString() }
-        };
-
-        this.broadcastToRoom(roomId, typingData, userId);
-    }
-
-    handleUserStatus(ws, data) {
-        const { userId, status } = data;
-        this.broadcastUserStatus(userId, status);
-    }
-
-    handleDisconnection(ws) {
+            }));
+        }
+    });
+    
+    ws.on('close', () => {
+        console.log('📱 WebSocket клієнт відключився');
         if (ws.userId) {
-            // Видалити з усіх кімнат
-            if (this.userRooms.has(ws.userId)) {
-                this.userRooms.get(ws.userId).forEach(roomId => {
-                    this.handleLeaveRoom(ws, roomId, ws.userId);
-                });
-                this.userRooms.delete(ws.userId);
-            }
-
-            // Повідомити про офлайн статус
-            this.broadcastUserStatus(ws.userId, 'offline');
-            
-            this.clients.delete(ws.userId);
+            authenticatedClients.delete(ws.userId);
         }
-    }
+    });
+    
+    ws.on('error', (error) => {
+        console.error('❌ WebSocket помилка:', error);
+    });
+});
 
-    broadcastToRoom(roomId, message, excludeUserId = null) {
-        if (!this.rooms.has(roomId)) return;
-
-        this.rooms.get(roomId).forEach(userId => {
-            if (userId !== excludeUserId && this.clients.has(userId)) {
-                const ws = this.clients.get(userId);
-                this.send(ws, message);
-            }
-        });
-    }
-
-    broadcastToRole(roles, message) {
-        // TODO: Отримати список користувачів по ролях з бази даних
-        // Поки що відправляємо всім підключеним клієнтам
-        this.clients.forEach((ws, userId) => {
-            this.send(ws, message);
-        });
-    }
-
-    broadcastUserStatus(userId, status) {
-        const statusMessage = {
-            type: 'user_status_changed',
-            data: { userId, status, timestamp: new Date().toISOString() }
-        };
-
-        this.clients.forEach((ws, clientId) => {
-            if (clientId !== userId) {
-                this.send(ws, statusMessage);
-            }
-        });
-    }
-
-    send(ws, message) {
-        if (ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify(message));
+async function handleAuth(ws, data) {
+    try {
+        const { token } = data;
+        
+        if (!token) {
+            ws.send(JSON.stringify({
+                type: 'auth_error',
+                message: 'Токен не надано',
+                timestamp: new Date().toISOString()
+            }));
+            return;
         }
-    }
-
-    sendError(ws, error) {
-        this.send(ws, {
-            type: 'error',
-            data: { error, timestamp: new Date().toISOString() }
-        });
-    }
-
-    // Публічні методи для інтеграції з API
-    broadcastMessage(roomId, message) {
-        this.broadcastToRoom(roomId, message);
-    }
-
-    getOnlineUsers() {
-        return Array.from(this.clients.keys());
-    }
-
-    getUsersInRoom(roomId) {
-        return this.rooms.has(roomId) ? Array.from(this.rooms.get(roomId)) : [];
+        
+        const decoded = jwt.verify(token, JWT_SECRET);
+        
+        ws.isAuthenticated = true;
+        ws.userId = decoded.userId;
+        authenticatedClients.set(decoded.userId, ws);
+        
+        ws.send(JSON.stringify({
+            type: 'auth_success',
+            message: 'Авторизація успішна',
+            userId: decoded.userId,
+            timestamp: new Date().toISOString()
+        }));
+        
+        console.log(`✅ Користувач ${decoded.userId} авторизований через WebSocket`);
+        
+    } catch (error) {
+        console.error('❌ Помилка авторизації WebSocket:', error);
+        ws.send(JSON.stringify({
+            type: 'auth_error',
+            message: 'Невірний токен',
+            timestamp: new Date().toISOString()
+        }));
     }
 }
 
-// Запуск WebSocket сервера
-const wsServer = new WebSocketServer(process.env.WS_PORT || 3002);
+function handleAuthenticatedMessage(ws, data) {
+    // Echo back for now
+    ws.send(JSON.stringify({
+        type: 'echo',
+        originalType: data.type,
+        data: data,
+        timestamp: new Date().toISOString()
+    }));
+}
 
-module.exports = WebSocketServer;
+// Broadcast to all authenticated clients
+function broadcast(message) {
+    authenticatedClients.forEach((client, userId) => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({
+                type: 'broadcast',
+                message: message,
+                timestamp: new Date().toISOString()
+            }));
+        }
+    });
+}
+
+wss.on('error', (error) => {
+    console.error('❌ WebSocket сервер помилка:', error);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+    console.log('🛑 Зупинка WebSocket сервера...');
+    wss.close();
+});
+
+process.on('SIGINT', () => {
+    console.log('🛑 Зупинка WebSocket сервера...');
+    wss.close();
+});
+
+module.exports = { wss, broadcast };
