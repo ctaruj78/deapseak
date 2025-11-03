@@ -1,4 +1,5 @@
 
+// api-server-backup.js - Резервна копія API сервера
 const express = require("express");
 const cors = require("cors");
 const { connectDB, getDB, closeDB } = require("./db");
