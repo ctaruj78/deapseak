@@ -10,63 +10,7 @@ function getApiUrl() {
     }
 }
 
-// Автоматична ініціалізація тестових користувачів
-if (!localStorage.getItem('lm_users')) {
-    localStorage.setItem('lm_users', JSON.stringify([
-        {
-            id: 1,
-            username: 'admin',
-            password: 'admin123',
-            email: 'admin@deapseak.com',
-            role: 'admin',
-            firstName: 'Адміністратор',
-            lastName: 'Системи',
-            phone: '+380441234567',
-            avatar: null,
-            isActive: true,
-            createdAt: new Date().toISOString()
-        },
-        {
-            id: 2,
-            username: 'tech1',
-            password: 'tech123',
-            email: 'tech1@deapseak.com',
-            role: 'tech',
-            firstName: 'Іван',
-            lastName: 'Технік',
-            phone: '+380441234568',
-            avatar: null,
-            isActive: true,
-            createdAt: new Date().toISOString()
-        },
-        {
-            id: 3,
-            username: 'client1',
-            password: 'client123',
-            email: 'client1@deapseak.com',
-            role: 'client',
-            firstName: 'Петро',
-            lastName: 'Клієнт',
-            phone: '+380441234569',
-            avatar: null,
-            isActive: true,
-            createdAt: new Date().toISOString()
-        },
-        {
-            id: 4,
-            username: 'dispatcher1',
-            password: 'dispatcher123',
-            email: 'dispatcher1@deapseak.com',
-            role: 'dispatcher',
-            firstName: 'Олег',
-            lastName: 'Диспетчер',
-            phone: '+380441234570',
-            avatar: null,
-            isActive: true,
-            createdAt: new Date().toISOString()
-        }
-    ]));
-}
+// ВСЯ АУТЕНТИФІКАЦІЯ ТЕПЕР ЧЕРЕЗ API - localStorage тестові дані видалено
 
 class AuthManager {
     constructor(options = {}) {
@@ -118,20 +62,30 @@ class AuthManager {
     }
 
     async authenticate(username, password) {
-        // Підтримка різних ключів для користувачів
-        let users = [];
-        if (localStorage.getItem('lm_users')) {
-            users = JSON.parse(localStorage.getItem('lm_users'));
-        } else if (localStorage.getItem('users')) {
-            users = JSON.parse(localStorage.getItem('users'));
-        } else if (localStorage.getItem('userData')) {
-            users = [JSON.parse(localStorage.getItem('userData'))];
+        // ВСЯ АУТЕНТИФІКАЦІЯ ТЕПЕР ЧЕРЕЗ API
+        try {
+            const response = await fetch(`${getApiUrl()}/api/auth/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    email: username,
+                    password: password
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok && data.success) {
+                return data.user;
+            } else {
+                return null;
+            }
+        } catch (error) {
+            console.error('API authentication error:', error);
+            return null;
         }
-        return users.find(user => 
-            user.username === username && 
-            user.password === password &&
-            user.isActive
-        );
     }
 
     async createSession(user, remember) {
