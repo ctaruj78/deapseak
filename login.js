@@ -31,11 +31,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // Перенаправлення згідно ролі
                 if (user.role === 'admin') {
-                    window.location.href = '/';
+                    window.location.href = '/pages/admin/admin-dashboard.html';
                 } else if (user.role === 'dispatcher') {
-                    window.location.href = '/dispatcher.html';
+                    window.location.href = '/pages/dispatcher/dashboard.html';
                 } else if (user.role === 'technician') {
-                    window.location.href = '/technician.html';
+                    window.location.href = '/pages/tech/dashboard.html';
+                } else if (user.role === 'client') {
+                    window.location.href = '/pages/client/dashboard.html';
                 } else {
                     window.location.href = '/';
                 }
