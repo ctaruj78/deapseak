@@ -37,3 +37,5 @@
 127.0.0.1 - - [04/Nov/2025 18:20:05] "GET /pages/admin/assets/js/modules/qr-generator.js HTTP/1.1" 404 -
 127.0.0.1 - - [04/Nov/2025 18:20:58] "GET /pages/admin/users.html HTTP/1.1" 200 -
 127.0.0.1 - - [04/Nov/2025 18:20:59] "GET /pages/admin/requests.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Nov/2025 18:24:08] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Nov/2025 18:24:19] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
