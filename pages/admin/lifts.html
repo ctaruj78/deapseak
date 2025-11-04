@@ -211,15 +211,23 @@
         /* Стилі для QR-кодів */
         .qr-preview-mini {
             padding: 15px;
-            background: #f8f9fa;
-            border: 2px dashed #dee2e6;
+            background: #ffffff;
+            border: 2px solid #007bff;
             border-radius: 8px;
             margin-top: 10px;
         }
         
-        .qr-preview-mini canvas {
+        .qr-preview-mini canvas,
+        .qr-preview-mini img {
             border: 1px solid #dee2e6;
             border-radius: 4px;
+            background: #ffffff !important;
+        }
+        
+        /* Приховуємо дублюючі QR елементи - залишаємо тільки перший */
+        .qr-preview-mini > img:not(:first-child),
+        .qr-preview-mini > canvas:not(:first-child) {
+            display: none !important;
         }
         
         .qr-preview-mini .btn-group {
@@ -1661,7 +1669,7 @@
 
             // Модальне вікно для email
             const emailModal = `
-                <div class="modal fade" id="emailModal" tabindex="-1">
+                <div class="modal fade" id="emailModal" tabindex="-1" style="z-index: 1060;">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -2908,7 +2916,7 @@
 
         // Модальне вікно для email
         const emailModal = `
-            <div class="modal fade" id="emailInspectionModal" tabindex="-1">
+            <div class="modal fade" id="emailInspectionModal" tabindex="-1" style="z-index: 1060;">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
