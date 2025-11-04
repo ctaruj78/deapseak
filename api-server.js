@@ -19,7 +19,13 @@ console.log('🚀 Запуск DEAPSEAK API Server...');
 // ===============================
 
 app.use(cors({
-    origin: ['http://localhost:8080', 'http://127.0.0.1:8080'],
+    origin: [
+        'http://localhost:8080', 
+        'http://127.0.0.1:8080',
+        'https://redesigned-waddle-v6w5g7rvxqpxf6pwg-8080.app.github.dev',
+        /https:\/\/.*\.app\.github\.dev$/,
+        /https:\/\/.*-8080\.app\.github\.dev$/
+    ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']

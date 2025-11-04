@@ -1,3 +1,15 @@
+// Функція для визначення правильного API URL
+function getApiUrl() {
+    const hostname = window.location.hostname;
+    if (hostname.includes('app.github.dev')) {
+        // GitHub Codespaces
+        return window.location.origin.replace('-8080.app.github.dev', '-3001.app.github.dev');
+    } else {
+        // Local development
+        return 'http://localhost:3001';
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('login-form');
     
@@ -7,8 +19,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         
+        const apiUrl = getApiUrl();
+        console.log('🌐 Використовую API URL:', apiUrl);
+        
         try {
-            const response = await fetch('http://localhost:3001/api/auth/login', {
+            const response = await fetch(`${apiUrl}/api/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
