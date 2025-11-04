@@ -44,7 +44,7 @@ if (!localStorage.getItem('lm_users')) {
             id: 4,
             username: 'dispatcher1',
             password: 'dispatcher123',
-            email: 'dispatcher@deapseak.com',
+            email: 'dispatcher1@deapseak.com',
             role: 'dispatcher',
             firstName: 'Олег',
             lastName: 'Диспетчер',

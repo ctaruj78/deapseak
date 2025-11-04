@@ -71,7 +71,7 @@ test_login() {
 }
 
 test_login "admin@deapseak.com" "admin123" "АДМІН"
-test_login "dispatcher@deapseak.com" "dispatcher123" "ДИСПЕТЧЕР" 
+test_login "dispatcher1@deapseak.com" "dispatcher123" "ДИСПЕТЧЕР" 
 test_login "tech1@deapseak.com" "tech123" "ТЕХНІК"
 test_login "client1@deapseak.com" "client123" "КЛІЄНТ"
 
