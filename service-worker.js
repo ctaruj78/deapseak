@@ -1,7 +1,7 @@
 // service-worker.js
 // Кешування сторінок, інструкцій, чек-листів, завдань для офлайн-режиму
 
-const CACHE_NAME = 'deapseak-tech-cache-v1';
+const CACHE_NAME = 'deapseak-tech-cache-v2';
 const urlsToCache = [
   '/',
   '/pages/tech/ar-helper.html',
@@ -27,6 +27,13 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
+  // НЕ кешуємо API запити - вони повинні йти напряму до сервера
+  if (event.request.url.includes('/api/')) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+  
+  // Кешуємо тільки статичні ресурси
   event.respondWith(
     caches.match(event.request)
       .then(response => response || fetch(event.request))

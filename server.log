@@ -10,3 +10,7 @@ nohup: ignoring input
    👥 GET  http://localhost:3001/api/technicians
 
 ✅ Всі endpoints готові до роботи!
+🔐 Login attempt: admin@deapseak.com 
+🔐 Login attempt: admin@deapseak.com 
+🔐 Login attempt: admin@deapseak.com
+✅ Login успішний: admin@deapseak.com
