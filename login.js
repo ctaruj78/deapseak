@@ -38,7 +38,13 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (response.ok && data.success) {
                 // Збереження токена та користувача
-                AuthManager.login(data.token, data.user);
+                if (window.authManager) {
+                    window.authManager.login(data.token, data.user);
+                } else {
+                    // Fallback: зберігаємо вручну
+                    localStorage.setItem('authToken', data.token);
+                    localStorage.setItem('currentUser', JSON.stringify(data.user));
+                }
                 
                 // Перевірка ролі та перенаправлення
                 const user = data.user;

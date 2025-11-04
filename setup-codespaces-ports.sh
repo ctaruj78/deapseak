@@ -1,8 +1,42 @@
 #!/bin/bash
 
-echo "🔧 Налаштування портів для GitHub Codespaces"
-echo "=============================================="
+echo "� DEAPSEAK - Налаштування портів для GitHub Codespaces"
+echo "====================================================="
+
+# Функція для відкриття порту
+open_port() {
+    local port=$1
+    local name=$2
+    
+    echo "🔓 Відкриваю порт $port для $name..."
+    
+    # Використовуємо gh CLI для відкриття порту
+    if command -v gh &> /dev/null; then
+        gh codespace ports visibility $port:public 2>/dev/null || echo "  ⚠️  Порт $port вже налаштований або gh CLI недоступний"
+    fi
+    
+    # Також спробуємо через curl до Codespaces API
+    echo "  📡 Перевіряю доступність порту $port..."
+    
+    # Отримуємо назву Codespace з середовища
+    if [ -n "$CODESPACE_NAME" ]; then
+        CODESPACE_URL="https://${CODESPACE_NAME}-${port}.app.github.dev"
+        echo "  🌐 URL: $CODESPACE_URL"
+        
+        # Тестуємо доступність
+        if curl -s --max-time 5 "$CODESPACE_URL" >/dev/null 2>&1; then
+            echo "  ✅ Порт $port доступний публічно"
+        else
+            echo "  ❌ Порт $port недоступний публічно"
+            echo "  💡 Відкрийте порт вручну в Codespaces: Ports -> Forward Port -> $port -> Change Visibility -> Public"
+        fi
+    else
+        echo "  ⚠️  Не в Codespaces середовищі"
+    fi
+}
+
 echo ""
+echo "🔍 Перевіряю необхідні порти..."
 
 # Функція для встановлення публічної видимості порту
 set_port_public() {
