@@ -1,3 +1,15 @@
+// Функція для визначення правильного API URL
+function getApiUrl() {
+    const hostname = window.location.hostname;
+    if (hostname.includes('app.github.dev')) {
+        // GitHub Codespaces
+        return window.location.origin.replace('-8080.app.github.dev', '-3001.app.github.dev');
+    } else {
+        // Local development
+        return 'http://localhost:3001';
+    }
+}
+
 // Автоматична ініціалізація тестових користувачів
 if (!localStorage.getItem('lm_users')) {
     localStorage.setItem('lm_users', JSON.stringify([
@@ -226,7 +238,7 @@ class AuthManager {
             }
 
             // Проверяем токен на сервере
-            const response = await fetch('http://localhost:3001/api/verify-token', {
+            const response = await fetch(`${getApiUrl()}/api/verify-token`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -415,7 +427,7 @@ class AuthManager {
         };
 
         try {
-            const response = await fetch(`http://localhost:3001/api${endpoint}`, finalOptions);
+            const response = await fetch(`${getApiUrl()}/api${endpoint}`, finalOptions);
             
             if (response.status === 401) {
                 // Токен истек или недействителен
