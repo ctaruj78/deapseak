@@ -651,11 +651,11 @@ class EnhancedLiftModal {
         // Очищуємо контейнер додаткових ліфтів
         $('#additionalLiftsFields').empty();
         
-        // ВИПРАВЛЕННЯ: Завжди показуємо QR-генератор для основного ліфта
+        // Ховаємо QR контейнер основного ліфта (покажеться при генерації QR)
         const mainQrPreview = $('#mainQrPreview');
-        if (mainQrPreview.length) {
-            mainQrPreview.removeClass('d-none');
-            console.log('✅ Main QR preview container shown');
+        if (mainQrPreview.length && mainQrPreview.is(':empty')) {
+            mainQrPreview.addClass('d-none');
+            console.log('✅ Main QR preview container hidden (empty)');
         }
         
         if (count > 1) {
