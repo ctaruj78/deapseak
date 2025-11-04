@@ -48,7 +48,7 @@ const users = [
     {
         id: '2', 
         username: 'dispatcher1',
-        email: 'dispatcher@deapseak.com',
+        email: 'dispatcher1@deapseak.com',
         password: '$2b$12$3yDVrfEYUofXT.4k5lDevOzadkyHSRWeyoBVFHQnWbsPHBH2UgL8m', // dispatcher123
         role: 'dispatcher',
         firstName: 'Диспетчер',

@@ -95,7 +95,7 @@ class UserManager {
                 id: 'DIS-001',
                 firstName: 'Олена',
                 lastName: 'Коваленко',
-                email: 'dispatcher@deapseak.com',
+                email: 'dispatcher1@deapseak.com',
                 role: 'dispatcher',
                 status: 'active',
                 phone: '+380631234567',
