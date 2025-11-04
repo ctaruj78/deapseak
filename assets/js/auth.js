@@ -285,7 +285,7 @@ class AuthManager {
 
     redirectToDashboard(role) {
         const dashboards = {
-            admin: 'pages/admin/lifts.html',
+            admin: 'pages/admin/admin-dashboard.html',
             tech: 'pages/tech/dashboard.html', 
             technician: 'pages/tech/dashboard.html',
             client: 'pages/client/dashboard.html',

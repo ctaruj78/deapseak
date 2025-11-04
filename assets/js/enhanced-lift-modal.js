@@ -827,11 +827,14 @@ class EnhancedLiftModal {
             console.log('🔧 Container id:', $container[0].id);
             
             // ВАЖЛИВО: qrcode-generator потребує DIVID або елемент
-            // API: new QRCode(element, {text, width, height})
+            // API: new QRCode(element, {text, width, height, colorDark, colorLight, correctLevel})
             const qrInstance = new QRCode($container[0], {
                 text: qrText,
                 width: 150,
-                height: 150
+                height: 150,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
             });
             
             console.log('✅ QR code generated successfully');
