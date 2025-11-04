@@ -2,7 +2,7 @@ const CONFIG = {
     APP: {
         NAME: 'LiftMaster Pro',
         VERSION: '2.0.0',
-        SUPPORT_EMAIL: 'support@liftmaster.com',
+        SUPPORT_EMAIL: 'support@deapseak.com',
         SUPPORT_PHONE: '+380 44 123 4567'
     },
 
@@ -72,7 +72,7 @@ function initializeTestData() {
                 id: 1,
                 username: 'admin',
                 password: 'admin123',
-                email: 'admin@liftmaster.com',
+                email: 'admin@deapseak.com',
                 role: 'admin',
                 firstName: 'Адміністратор',
                 lastName: 'Системи',
@@ -85,7 +85,7 @@ function initializeTestData() {
                 id: 2,
                 username: 'tech1',
                 password: 'tech123',
-                email: 'tech1@liftmaster.com',
+                email: 'tech1@deapseak.com',
                 role: 'tech',
                 firstName: 'Іван',
                 lastName: 'Технік',
@@ -98,7 +98,7 @@ function initializeTestData() {
                 id: 3,
                 username: 'client1',
                 password: 'client123',
-                email: 'client1@liftmaster.com',
+                email: 'client1@deapseak.com',
                 role: 'client',
                 firstName: 'Петро',
                 lastName: 'Клієнт',

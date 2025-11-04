@@ -469,6 +469,50 @@ app.get('/api/notifications', authenticateToken, (req, res) => {
     res.json(notifications);
 });
 
+// Перевірка токена
+app.get('/api/verify-token', authenticateToken, (req, res) => {
+    res.json({
+        success: true,
+        valid: true,
+        user: req.user
+    });
+});
+
+// Отримання користувачів за роллю
+app.get('/api/users', authenticateToken, (req, res) => {
+    const role = req.query.role;
+    let filteredUsers = users;
+    
+    if (role) {
+        filteredUsers = users.filter(user => user.role === role);
+    }
+    
+    // Видаляємо паролі з відповіді
+    const safeUsers = filteredUsers.map(user => {
+        const { password, ...safeUser } = user;
+        return safeUser;
+    });
+    
+    res.json(safeUsers);
+});
+
+// Базові endpoints для ліфтів
+app.get('/api/lifts', authenticateToken, (req, res) => {
+    res.json([
+        { id: 1, name: "Ліфт #1", address: "вул. Хрещатик 1", status: "active" },
+        { id: 2, name: "Ліфт #2", address: "вул. Хрещатик 2", status: "maintenance" }
+    ]);
+});
+
+app.post('/api/lifts', authenticateToken, (req, res) => {
+    const newLift = { id: Date.now(), ...req.body };
+    res.json({ success: true, lift: newLift });
+});
+
+app.delete('/api/lifts/:id', authenticateToken, (req, res) => {
+    res.json({ success: true, message: 'Ліфт видалено' });
+});
+
 // ===============================
 // ERROR HANDLERS
 // ===============================
