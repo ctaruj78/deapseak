@@ -34,3 +34,20 @@ nohup: ignoring input
 127.0.0.1 - - [04/Nov/2025 09:23:05] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 304 -
 127.0.0.1 - - [04/Nov/2025 09:23:06] "GET /assets/js/auth.js HTTP/1.1" 304 -
 127.0.0.1 - - [04/Nov/2025 09:23:18] "GET /service-worker.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Nov/2025 09:47:19] "GET /service-worker.js HTTP/1.1" 304 -
+127.0.0.1 - - [04/Nov/2025 09:47:20] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Nov/2025 09:47:21] code 404, message File not found
+127.0.0.1 - - [04/Nov/2025 09:47:21] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [04/Nov/2025 09:47:24] "GET /service-worker.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Nov/2025 09:48:00] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 304 -
+127.0.0.1 - - [04/Nov/2025 09:48:01] "GET /assets/js/auth.js HTTP/1.1" 304 -
+127.0.0.1 - - [04/Nov/2025 09:48:01] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Nov/2025 09:48:41] "GET /login.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Nov/2025 09:48:42] "GET /assets/css/main.css HTTP/1.1" 200 -
+127.0.0.1 - - [04/Nov/2025 09:48:42] "GET /assets/js/auth.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Nov/2025 09:48:42] "GET /assets/css/auth.css HTTP/1.1" 200 -
+127.0.0.1 - - [04/Nov/2025 09:48:42] "GET /security.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Nov/2025 09:48:43] code 404, message File not found
+127.0.0.1 - - [04/Nov/2025 09:48:43] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [04/Nov/2025 09:48:45] "GET /login.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Nov/2025 09:50:52] "GET /service-worker.js HTTP/1.1" 304 -
