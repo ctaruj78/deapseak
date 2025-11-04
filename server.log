@@ -1,4 +1,37 @@
-API сервер запущено на http://0.0.0.0:3001
-MongoDB connected: mongodb://localhost:27017 DB: deapseak
-📁 Файлові директорії ініціалізовано
-⚠️ CORS заблоковано для: https://localhost:3001
+nohup: ignoring input
+🚀 Запуск DEAPSEAK API Server...
+✅ Middleware налаштовано
+
+🚀 DEAPSEAK API Server запущено:
+   📍 http://localhost:3001
+   🔐 POST http://localhost:3001/api/auth/login
+   📡 GET  http://localhost:3001/api/health
+   📋 GET  http://localhost:3001/api/requests
+   👥 GET  http://localhost:3001/api/technicians
+
+✅ Всі endpoints готові до роботи!
+🔐 Login attempt: admin@deapseak.com
+✅ Login успішний: admin@deapseak.com
+🔐 Login attempt: dispatcher@deapseak.com
+🔐 Login attempt: dispatcher@deapseak.com
+✅ Login успішний: dispatcher@deapseak.com
+🔐 Login attempt: tech1@deapseak.com
+✅ Login успішний: tech1@deapseak.com
+🔐 Login attempt: client1@deapseak.com
+✅ Login успішний: client1@deapseak.com
+🔐 Login attempt: admin@deapseak.com
+✅ Login успішний: admin@deapseak.com
+🔐 Login attempt: dispatcher@deapseak.com
+✅ Login успішний: dispatcher@deapseak.com
+🔐 Login attempt: tech1@deapseak.com
+✅ Login успішний: tech1@deapseak.com
+🔐 Login attempt: client1@deapseak.com
+✅ Login успішний: client1@deapseak.com
+🔐 Login attempt: admin@deapseak.com
+✅ Login успішний: admin@deapseak.com
+🔐 Login attempt: dispatcher@deapseak.com
+✅ Login успішний: dispatcher@deapseak.com
+🔐 Login attempt: tech1@deapseak.com
+✅ Login успішний: tech1@deapseak.com
+🔐 Login attempt: client1@deapseak.com
+✅ Login успішний: client1@deapseak.com

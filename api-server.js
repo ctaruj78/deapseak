@@ -53,6 +53,24 @@ const users = [
         role: 'dispatcher',
         firstName: 'Диспетчер',
         lastName: '1'
+    },
+    {
+        id: '3',
+        username: 'tech1',
+        email: 'tech1@deapseak.com',
+        password: '$2b$12$UAhE6V/FXWQcy..np0Jxl.xosamXjMO/OOBLgWe2GD/6h/OBvFgX2', // tech123
+        role: 'technician',
+        firstName: 'Олександр',
+        lastName: 'Петренко'
+    },
+    {
+        id: '4',
+        username: 'client1',
+        email: 'client1@deapseak.com',
+        password: '$2b$12$AdUANw3QinD1piq67OkLuurzqDMJHrulJWVZjSdRxybTTXhTntoDK', // client123
+        role: 'client',
+        firstName: 'Іван',
+        lastName: 'Клієнтов'
     }
 ];
 
