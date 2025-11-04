@@ -58,3 +58,29 @@ nohup: ignoring input
 127.0.0.1 - - [04/Nov/2025 09:54:07] "GET /login.html HTTP/1.1" 304 -
 127.0.0.1 - - [04/Nov/2025 09:54:07] "GET /assets/js/auth.js HTTP/1.1" 200 -
 127.0.0.1 - - [04/Nov/2025 09:54:09] "GET /service-worker.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Nov/2025 09:59:12] code 404, message File not found
+127.0.0.1 - - [04/Nov/2025 09:59:12] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [04/Nov/2025 09:59:14] "GET /service-worker.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Nov/2025 09:59:14] "GET /pages/tech/tools.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Nov/2025 09:59:14] "GET /pages/tech/ar-helper.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Nov/2025 09:59:14] "GET /pages/tech/inspections.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Nov/2025 09:59:15] "GET /assets/js/modules/technician-manager.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Nov/2025 09:59:15] "GET /assets/js/modules/ar-helper.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Nov/2025 09:59:15] "GET /pages/tech/knowledge-base.html HTTP/1.1" 200 -
+127.0.0.1 - - [04/Nov/2025 09:59:15] "GET /data/lifts.json HTTP/1.1" 200 -
+127.0.0.1 - - [04/Nov/2025 09:59:15] "GET /assets/js/modules/ai-assistant.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Nov/2025 09:59:16] "GET /data/sample-data.json HTTP/1.1" 200 -
+127.0.0.1 - - [04/Nov/2025 09:59:16] "GET /docs/technical-guide.md HTTP/1.1" 200 -
+127.0.0.1 - - [04/Nov/2025 09:59:16] "GET /docs/api-documentation.md HTTP/1.1" 200 -
+127.0.0.1 - - [04/Nov/2025 09:59:16] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Nov/2025 09:59:16] "GET /docs/user-manual.pdf HTTP/1.1" 200 -
+127.0.0.1 - - [04/Nov/2025 09:59:17] code 404, message File not found
+127.0.0.1 - - [04/Nov/2025 09:59:17] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [04/Nov/2025 09:59:18] "GET /login.html HTTP/1.1" 304 -
+127.0.0.1 - - [04/Nov/2025 09:59:18] "GET /assets/js/auth.js HTTP/1.1" 304 -
+127.0.0.1 - - [04/Nov/2025 09:59:20] "GET /service-worker.js HTTP/1.1" 304 -
+127.0.0.1 - - [04/Nov/2025 10:00:54] "GET /login.html HTTP/1.1" 304 -
+127.0.0.1 - - [04/Nov/2025 10:00:55] "GET /service-worker.js HTTP/1.1" 304 -
+127.0.0.1 - - [04/Nov/2025 10:00:55] "GET /assets/js/auth.js HTTP/1.1" 304 -
+127.0.0.1 - - [04/Nov/2025 10:00:57] "GET /service-worker.js HTTP/1.1" 200 -
+127.0.0.1 - - [04/Nov/2025 10:00:58] "GET /login.html HTTP/1.1" 200 -
