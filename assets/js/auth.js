@@ -5,7 +5,7 @@ if (!localStorage.getItem('lm_users')) {
             id: 1,
             username: 'admin',
             password: 'admin123',
-            email: 'admin@liftmaster.com',
+            email: 'admin@deapseak.com',
             role: 'admin',
             firstName: 'Адміністратор',
             lastName: 'Системи',
@@ -18,7 +18,7 @@ if (!localStorage.getItem('lm_users')) {
             id: 2,
             username: 'tech1',
             password: 'tech123',
-            email: 'tech1@liftmaster.com',
+            email: 'tech1@deapseak.com',
             role: 'tech',
             firstName: 'Іван',
             lastName: 'Технік',
@@ -31,7 +31,7 @@ if (!localStorage.getItem('lm_users')) {
             id: 3,
             username: 'client1',
             password: 'client123',
-            email: 'client1@liftmaster.com',
+            email: 'client1@deapseak.com',
             role: 'client',
             firstName: 'Петро',
             lastName: 'Клієнт',
@@ -44,7 +44,7 @@ if (!localStorage.getItem('lm_users')) {
             id: 4,
             username: 'dispatcher1',
             password: 'dispatcher123',
-            email: 'dispatcher1@liftmaster.com',
+            email: 'dispatcher@deapseak.com',
             role: 'dispatcher',
             firstName: 'Олег',
             lastName: 'Диспетчер',
@@ -488,6 +488,7 @@ class AuthManager {
 if (typeof document !== 'undefined') {
     document.addEventListener('DOMContentLoaded', function() {
         window.authManager = new AuthManager();
+        window.AuthManager = AuthManager; // Для зворотної сумісності
         
         // Получаем требуемую роль из атрибута body
         const body = document.body;
