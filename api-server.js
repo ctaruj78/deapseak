@@ -510,9 +510,54 @@ app.get('/api/lifts', authenticateToken, (req, res) => {
     ]);
 });
 
+app.get('/api/lifts/:id', authenticateToken, (req, res) => {
+    const liftId = req.params.id;
+    console.log('📋 Запит на отримання ліфта:', liftId);
+    
+    // Тимчасово: повертаємо mock дані
+    // TODO: В майбутньому інтегрувати з MongoDB
+    const mockLift = {
+        id: liftId,
+        _id: liftId,
+        municipalNumber: `MUN-${liftId}`,
+        serialNumber: `SN-${liftId}`,
+        brand: 'OTIS',
+        model: 'Gen2',
+        type: 'passenger',
+        capacity: 630,
+        speed: 1.0,
+        installationYear: 2020,
+        address: 'вул. Хрещатик 1, Київ',
+        postcode: '01001',
+        liftsCountAtAddress: 1,
+        lat: 50.4501,
+        lng: 30.5234,
+        clientName: 'Тестовий клієнт',
+        clientEmail: 'client@test.com',
+        clientPhone: '+380501234567',
+        contactPerson: 'Іван Петренко',
+        accessCode: '1234',
+        tech: 'technician@deapseak.com',
+        status: 'active',
+        lastMaintenance: '2024-10-01',
+        nextMaintenance: '2025-04-01',
+        inspectionFrequency: 6,
+        maintenanceNotes: 'Тестові нотатки'
+    };
+    
+    res.json({ success: true, data: mockLift });
+});
+
 app.post('/api/lifts', authenticateToken, (req, res) => {
     const newLift = { id: Date.now(), ...req.body };
-    res.json({ success: true, lift: newLift });
+    res.json({ success: true, data: newLift });
+});
+
+app.put('/api/lifts/:id', authenticateToken, (req, res) => {
+    const liftId = req.params.id;
+    const updatedLift = { id: liftId, ...req.body };
+    console.log('📝 Оновлення ліфта:', liftId);
+    res.json({ success: true, data: updatedLift, message: 'Ліфт оновлено' });
 });
 
 app.delete('/api/lifts/:id', authenticateToken, (req, res) => {

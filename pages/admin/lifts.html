@@ -2029,8 +2029,8 @@
     
     <script>
     // Функція для відкриття модального вікна ліфта (тільки з картою)
-    function openEnhancedModal() {
-        console.log('Opening lift modal with map...');
+    function openEnhancedModal(liftData = null) {
+        console.log('Opening lift modal with map...', liftData ? 'Edit mode' : 'Create mode');
         
         // Перевіряємо чи доступний enhanced lift modal
         if (typeof window.enhancedLiftModal === 'undefined') {
@@ -2040,13 +2040,27 @@
             return;
         }
         
-        // Скидаємо форму та відкриваємо модальне вікно
-        if (window.enhancedLiftModal.resetForm) {
-            window.enhancedLiftModal.currentLiftId = null; // Скидаємо ID для нового ліфта
-            window.enhancedLiftModal.resetForm();
+        if (liftData) {
+            // Режим редагування - завантажуємо дані
+            console.log('📝 Завантаження даних для редагування:', liftData);
+            $('#enhancedModalTitle').text('Редагувати ліфт');
+            
+            if (window.enhancedLiftModal.loadLiftForEdit) {
+                window.enhancedLiftModal.loadLiftForEdit(liftData);
+            } else {
+                console.error('❌ Метод loadLiftForEdit не знайдено');
+            }
+        } else {
+            // Режим створення - скидаємо форму
+            console.log('➕ Режим створення нового ліфта');
+            $('#enhancedModalTitle').text('Додати новий ліфт');
+            
+            if (window.enhancedLiftModal.resetForm) {
+                window.enhancedLiftModal.currentLiftId = null;
+                window.enhancedLiftModal.resetForm();
+            }
         }
         
-        $('#enhancedModalTitle').text('Додати новий ліфт');
         $('#enhancedLiftModal').modal('show');
     }
 
@@ -3484,23 +3498,41 @@
         }
     }
 
-    function editLift(liftId) {
+    async function editLift(liftId) {
         console.log('✏️ Редагування ліфта:', liftId);
         
-        const lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
-        const lift = lifts.find(l => (l._id || l.id) === liftId);
-        
-        if (!lift) {
-            alert('Ліфт не знайдено');
-            return;
-        }
+        try {
+            // Спробуємо завантажити з API
+            const result = await apiCall(`/api/lifts/${liftId}`, 'GET');
+            
+            let lift;
+            if (result.success && result.data) {
+                console.log('✅ Ліфт завантажено з API:', result.data);
+                lift = result.data;
+            } else {
+                // Fallback до localStorage
+                console.log('⚠️ Завантаження з localStorage (API не доступний)');
+                const lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
+                lift = lifts.find(l => (l._id || l.id) === liftId);
+            }
+            
+            if (!lift) {
+                alert('Ліфт не знайдено');
+                return;
+            }
+            
+            console.log('📋 Дані ліфта для редагування:', lift);
 
-        // Заповнюємо форму редагування
-        if (typeof openEnhancedModal === 'function') {
-            // Відкриваємо модальне вікно додавання/редагування
-            openEnhancedModal(lift);
-        } else {
-            alert('Функція редагування недоступна');
+            // Заповнюємо форму редагування
+            if (typeof openEnhancedModal === 'function') {
+                // Відкриваємо модальне вікно додавання/редагування
+                openEnhancedModal(lift);
+            } else {
+                alert('Функція редагування недоступна');
+            }
+        } catch (error) {
+            console.error('❌ Помилка завантаження ліфта:', error);
+            alert('Помилка завантаження даних ліфта');
         }
     }
 
