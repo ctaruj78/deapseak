@@ -1259,6 +1259,37 @@
                     </div>
                     <div class="row">
                         <div class="col-12">
+                            <h6>Звіт інспекції</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Дата інспекції:</strong></td>
+                                    <td id="detail-inspection-date">Не вказано</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Тип інспекції:</strong></td>
+                                    <td id="detail-inspection-type">Не вказано</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Статус:</strong></td>
+                                    <td id="detail-inspection-status">Не вказано</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Коментарі:</strong></td>
+                                    <td id="detail-inspection-comments">Не вказано</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <h6>Карта розташування</h6>
+                            <div id="detailsMapContainer" style="height: 300px; border: 1px solid #ddd; border-radius: 4px;">
+                                <div id="detailsMap" style="height: 100%; width: 100%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
                             <h6>Додаткова інформація</h6>
                             <table class="table table-sm">
                                 <tr>
@@ -2803,9 +2834,20 @@
             
             console.log('✅ Звіт успішно збережено!');
             
-            // Оновлюємо основні дані ліфта якщо потрібно
-            if (shouldUpdateMaintenance && reportData.liftId !== 'UNKNOWN_LIFT') {
-                updateLiftMaintenanceDates(reportData.liftId, inspectionDate, calculatedNextMaintenance);
+            // Оновлюємо основні дані ліфта (завжди зберігаємо дані інспекції)
+            if (reportData.liftId !== 'UNKNOWN_LIFT') {
+                const inspectionType = document.getElementById('inspectionType')?.value || 'routine';
+                updateLiftMaintenanceDates(
+                    reportData.liftId, 
+                    inspectionDate, 
+                    calculatedNextMaintenance,
+                    {
+                        inspectionDate: inspectionDate,
+                        inspectionType: inspectionType,
+                        inspectionStatus: inspectionStatus,
+                        inspectionComments: inspectionComments
+                    }
+                );
             }
             
             // Показуємо повідомлення про успіх
@@ -2836,8 +2878,8 @@
     }
 
     // Функція для оновлення дат ТО у основних даних ліфта
-    function updateLiftMaintenanceDates(liftId, lastMaintenanceDate, nextMaintenanceDate) {
-        console.log('🔄 Оновлення дат ТО для ліфта:', liftId);
+    function updateLiftMaintenanceDates(liftId, lastMaintenanceDate, nextMaintenanceDate, inspectionData = {}) {
+        console.log('🔄 Оновлення дат ТО та даних інспекції для ліфта:', liftId);
         
         try {
             // Оновлюємо в localStorage
@@ -2850,9 +2892,22 @@
                     if (nextMaintenanceDate) {
                         lifts[i].nextMaintenance = nextMaintenanceDate;
                     }
+                    // Зберігаємо дані інспекції
+                    if (inspectionData.inspectionDate) {
+                        lifts[i].inspectionDate = inspectionData.inspectionDate;
+                    }
+                    if (inspectionData.inspectionType) {
+                        lifts[i].inspectionType = inspectionData.inspectionType;
+                    }
+                    if (inspectionData.inspectionStatus) {
+                        lifts[i].inspectionStatus = inspectionData.inspectionStatus;
+                    }
+                    if (inspectionData.inspectionComments) {
+                        lifts[i].inspectionComments = inspectionData.inspectionComments;
+                    }
                     lifts[i].updatedAt = new Date().toISOString();
                     liftFound = true;
-                    console.log('✅ Дати ТО оновлено для ліфта:', lifts[i].municipalNumber);
+                    console.log('✅ Дати ТО та дані інспекції оновлено для ліфта:', lifts[i].municipalNumber);
                     break;
                 }
             }
@@ -3456,45 +3511,131 @@
     }
 
     // Функції для кнопок дій
-    function showLiftDetails(liftId) {
+    async function showLiftDetails(liftId) {
         console.log('📋 Показати деталі ліфта:', liftId);
         
-        // Знаходимо ліфт за ID
-        const lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
-        const lift = lifts.find(l => (l._id || l.id) === liftId);
-        
-        if (!lift) {
-            alert('Ліфт не знайдено');
-            return;
-        }
-
-        // Заповнюємо модальне вікно деталей
-        const modal = document.getElementById('liftDetailsModal');
-        if (modal) {
-            // Заповнюємо поля
-            document.getElementById('detailsAddress').textContent = lift.address || 'Не вказано';
-            document.getElementById('detailsMunicipalNumber').textContent = lift.municipalNumber || 'Не вказано';
-            document.getElementById('detailsType').textContent = lift.type || 'Не вказано';
-            document.getElementById('detailsCapacity').textContent = (lift.loadCapacity || 'Не вказано') + ' кг';
-            document.getElementById('detailsFloors').textContent = (lift.floorCount || 'Не вказано') + ' пов.';
-            document.getElementById('detailsYear').textContent = lift.manufacturingYear || 'Не вказано';
-            document.getElementById('detailsLastInspection').textContent = 
-                lift.lastInspection ? new Date(lift.lastInspection).toLocaleDateString('uk-UA') : 'Не проводилась';
+        try {
+            // Спробуємо завантажити з API
+            const result = await apiCall(`/api/lifts/${liftId}`, 'GET');
             
-            // Додаємо обробник для кнопки редагування
-            const editBtn = document.getElementById('edit-lift-from-details');
-            if (editBtn) {
-                editBtn.onclick = () => {
-                    $('#liftDetailsModal').modal('hide');
-                    editLift(liftId);
-                };
+            let lift;
+            if (result.success && result.data) {
+                console.log('✅ Ліфт завантажено з API:', result.data);
+                lift = result.data;
+            } else {
+                // Fallback до localStorage
+                console.log('⚠️ Завантаження з localStorage (API не доступний)');
+                const lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
+                lift = lifts.find(l => (l._id || l.id) === liftId);
             }
             
-            // Показуємо модальне вікно
-            $('#liftDetailsModal').modal('show');
-        } else {
-            // Fallback - показуємо alert з інформацією
-            alert(`Деталі ліфта:\n\nАдреса: ${lift.address}\nМуніципальний номер: ${lift.municipalNumber}\nТип: ${lift.type}\nВантажопідйомність: ${lift.loadCapacity} кг\nПоверхи: ${lift.floorCount}\nРік виготовлення: ${lift.manufacturingYear}`);
+            if (!lift) {
+                alert('Ліфт не знайдено');
+                return;
+            }
+
+            // Заповнюємо модальне вікно деталей
+            const modal = document.getElementById('liftDetailsModal');
+            if (modal) {
+                // Основна інформація
+                $('#detail-municipal-number').text(lift.municipalNumber || 'Не вказано');
+                $('#detail-id').text(lift.serialNumber || lift.id || 'Не вказано');
+                $('#detail-model').text(lift.model || 'Не вказано');
+                $('#detail-type').text(lift.type || 'Не вказано');
+                $('#detail-status').text(lift.status || 'Не вказано');
+                
+                // Технічні характеристики
+                $('#detail-capacity').text(lift.capacity ? lift.capacity + ' кг' : 'Не вказано');
+                $('#detail-speed').text(lift.speed ? lift.speed + ' м/с' : 'Не вказано');
+                $('#detail-frequency').text(lift.inspectionFrequency ? lift.inspectionFrequency + ' міс.' : 'Не вказано');
+                
+                // Розташування
+                $('#detail-address').text(lift.address || 'Не вказано');
+                $('#detail-postcode').text(lift.postcode || 'Не вказано');
+                $('#detail-coordinates').text(
+                    lift.lat && lift.lng ? `${lift.lat}, ${lift.lng}` : 'Не вказано'
+                );
+                
+                // Клієнт та обслуговування
+                $('#detail-client').text(lift.clientName || 'Не вказано');
+                $('#detail-email').text(lift.clientEmail || 'Не вказано');
+                $('#detail-access-code').text(lift.accessCode || 'Не вказано');
+                $('#detail-last-maintenance').text(
+                    lift.lastMaintenance ? new Date(lift.lastMaintenance).toLocaleDateString('uk-UA') : 'Не вказано'
+                );
+                $('#detail-next-maintenance').text(
+                    lift.nextMaintenance ? new Date(lift.nextMaintenance).toLocaleDateString('uk-UA') : 'Не вказано'
+                );
+                
+                // Звіт інспекції
+                $('#detail-inspection-date').text(
+                    lift.inspectionDate ? new Date(lift.inspectionDate).toLocaleDateString('uk-UA') : 'Не вказано'
+                );
+                $('#detail-inspection-type').text(lift.inspectionType || 'Не вказано');
+                $('#detail-inspection-status').text(lift.inspectionStatus || 'Не вказано');
+                $('#detail-inspection-comments').text(lift.inspectionComments || 'Не вказано');
+                
+                // Додаткова інформація
+                $('#detail-created').text(
+                    lift.createdAt ? new Date(lift.createdAt).toLocaleString('uk-UA') : 'Не вказано'
+                );
+                $('#detail-updated').text(
+                    lift.updatedAt ? new Date(lift.updatedAt).toLocaleString('uk-UA') : 'Не вказано'
+                );
+                
+                // Ініціалізуємо карту якщо є координати
+                if (lift.lat && lift.lng && typeof L !== 'undefined') {
+                    setTimeout(() => {
+                        initDetailsMap(lift.lat, lift.lng, lift.address);
+                    }, 300);
+                }
+                
+                // Додаємо обробник для кнопки редагування
+                const editBtn = document.getElementById('edit-lift-from-details');
+                if (editBtn) {
+                    editBtn.onclick = () => {
+                        $('#liftDetailsModal').modal('hide');
+                        editLift(liftId);
+                    };
+                }
+                
+                // Показуємо модальне вікно
+                $('#liftDetailsModal').modal('show');
+            }
+        } catch (error) {
+            console.error('❌ Помилка завантаження деталей ліфта:', error);
+            alert('Помилка завантаження деталей ліфта');
+        }
+    }
+    
+    // Функція ініціалізації карти в модальному вікні деталей
+    function initDetailsMap(lat, lng, address) {
+        const mapContainer = document.getElementById('detailsMap');
+        if (!mapContainer) return;
+        
+        // Видаляємо стару карту якщо існує
+        if (window.detailsMapInstance) {
+            window.detailsMapInstance.remove();
+        }
+        
+        try {
+            // Створюємо нову карту
+            window.detailsMapInstance = L.map('detailsMap').setView([lat, lng], 15);
+            
+            // Додаємо tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(window.detailsMapInstance);
+            
+            // Додаємо маркер
+            L.marker([lat, lng])
+                .addTo(window.detailsMapInstance)
+                .bindPopup(address || 'Розташування ліфта')
+                .openPopup();
+                
+            console.log('✅ Карта деталей ініціалізована');
+        } catch (error) {
+            console.error('❌ Помилка ініціалізації карти:', error);
         }
     }
 
