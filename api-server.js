@@ -542,7 +542,12 @@ app.get('/api/lifts/:id', authenticateToken, (req, res) => {
         lastMaintenance: '2024-10-01',
         nextMaintenance: '2025-04-01',
         inspectionFrequency: 6,
-        maintenanceNotes: 'Тестові нотатки'
+        maintenanceNotes: 'Тестові нотатки',
+        // Дані інспекції
+        inspectionDate: '2024-11-01',
+        inspectionType: 'routine',
+        inspectionStatus: 'passed',
+        inspectionComments: 'Все в нормі, ліфт функціонує правильно'
     };
     
     res.json({ success: true, data: mockLift });
