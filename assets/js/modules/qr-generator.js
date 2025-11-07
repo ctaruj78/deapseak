@@ -191,15 +191,17 @@ const qrGenerator = (function() {
     function init() {
         console.log("🔧 QR Generator initialized");
         
-        // Ініціалізація Select2
-        $('.select2').select2({
-            theme: 'bootstrap4',
-            width: '100%'
-        });
+        // Ініціалізація Select2 (тільки якщо потрібно)
+        // Закоментовано для кращої видимості стандартних select
+        // $('.select2').select2({
+        //     theme: 'bootstrap4',
+        //     width: '100%'
+        // });
         
         // Обробник зміни типу QR
         $('#qrType').on('change', function() {
             const type = $(this).val();
+            console.log('🔧 QR Type changed:', type);
             updateTargetOptions(type);
         });
         
@@ -210,6 +212,8 @@ const qrGenerator = (function() {
             const type = $('#qrType').val();
             const target = $('#qrTarget').val();
             const customData = $('#customData').val();
+            
+            console.log('📋 Form submitted:', { type, target, customData });
             
             if (!type || !target) {
                 alert('Будь ласка, заповніть всі обов\'язкові поля');
