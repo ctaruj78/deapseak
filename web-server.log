@@ -13,3 +13,63 @@
 127.0.0.1 - - [07/Nov/2025 08:19:42] "GET /pages/admin/assets/img/user-avatar.png HTTP/1.1" 404 -
 127.0.0.1 - - [07/Nov/2025 08:19:42] code 404, message File not found
 127.0.0.1 - - [07/Nov/2025 08:19:42] "GET /pages/admin/assets/js/modules/qr-generator.js HTTP/1.1" 404 -
+127.0.0.1 - - [07/Nov/2025 08:27:09] "GET /pages/admin/qr-generator.html HTTP/1.1" 304 -
+127.0.0.1 - - [07/Nov/2025 08:27:10] code 404, message File not found
+127.0.0.1 - - [07/Nov/2025 08:27:10] "GET /pages/admin/assets/img/user-avatar.png HTTP/1.1" 404 -
+127.0.0.1 - - [07/Nov/2025 08:27:10] code 404, message File not found
+127.0.0.1 - - [07/Nov/2025 08:27:10] "GET /pages/admin/assets/js/modules/qr-generator.js HTTP/1.1" 404 -
+127.0.0.1 - - [07/Nov/2025 08:27:12] "GET /pages/admin/qr-management.html HTTP/1.1" 200 -
+127.0.0.1 - - [07/Nov/2025 08:27:13] "GET /assets/js/modules/ai-assistant.js HTTP/1.1" 304 -
+127.0.0.1 - - [07/Nov/2025 08:27:13] code 404, message File not found
+127.0.0.1 - - [07/Nov/2025 08:27:13] "GET /pages/admin/assets/img/user-avatar.png HTTP/1.1" 404 -
+127.0.0.1 - - [07/Nov/2025 08:27:13] "GET /assets/css/ai-assistant.css HTTP/1.1" 304 -
+127.0.0.1 - - [07/Nov/2025 08:27:13] code 404, message File not found
+127.0.0.1 - - [07/Nov/2025 08:27:13] "GET /pages/admin/assets/js/modules/qr-manager.js HTTP/1.1" 404 -
+127.0.0.1 - - [07/Nov/2025 08:27:16] "GET /pages/admin/qr-generator.html HTTP/1.1" 200 -
+127.0.0.1 - - [07/Nov/2025 08:27:16] code 404, message File not found
+127.0.0.1 - - [07/Nov/2025 08:27:16] "GET /pages/admin/assets/js/modules/qr-generator.js HTTP/1.1" 404 -
+127.0.0.1 - - [07/Nov/2025 08:27:16] code 404, message File not found
+127.0.0.1 - - [07/Nov/2025 08:27:16] "GET /pages/admin/assets/img/user-avatar.png HTTP/1.1" 404 -
+127.0.0.1 - - [07/Nov/2025 08:27:26] "GET /pages/admin/qr-generator.html HTTP/1.1" 200 -
+127.0.0.1 - - [07/Nov/2025 08:27:26] code 404, message File not found
+127.0.0.1 - - [07/Nov/2025 08:27:26] "GET /pages/admin/assets/img/user-avatar.png HTTP/1.1" 404 -
+127.0.0.1 - - [07/Nov/2025 08:27:26] code 404, message File not found
+127.0.0.1 - - [07/Nov/2025 08:27:26] "GET /pages/admin/assets/js/modules/qr-generator.js HTTP/1.1" 404 -
+127.0.0.1 - - [07/Nov/2025 08:27:56] code 404, message File not found
+127.0.0.1 - - [07/Nov/2025 08:27:56] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [07/Nov/2025 08:28:00] "GET /pages/admin/admin-dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [07/Nov/2025 08:28:03] code 404, message File not found
+127.0.0.1 - - [07/Nov/2025 08:28:03] "GET /pages/admin/assets/js/modules/qr-generator.js HTTP/1.1" 404 -
+127.0.0.1 - - [07/Nov/2025 08:28:03] code 404, message File not found
+127.0.0.1 - - [07/Nov/2025 08:28:03] "GET /pages/admin/assets/img/user-avatar.png HTTP/1.1" 404 -
+127.0.0.1 - - [07/Nov/2025 08:28:12] "GET /pages/admin/qr-generator.html HTTP/1.1" 200 -
+127.0.0.1 - - [07/Nov/2025 08:28:12] code 404, message File not found
+127.0.0.1 - - [07/Nov/2025 08:28:12] "GET /pages/admin/assets/img/user-avatar.png HTTP/1.1" 404 -
+127.0.0.1 - - [07/Nov/2025 08:28:12] code 404, message File not found
+127.0.0.1 - - [07/Nov/2025 08:28:12] "GET /pages/admin/assets/js/modules/qr-generator.js HTTP/1.1" 404 -
+127.0.0.1 - - [07/Nov/2025 08:29:05] code 404, message File not found
+127.0.0.1 - - [07/Nov/2025 08:29:05] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [07/Nov/2025 08:29:07] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
+127.0.0.1 - - [07/Nov/2025 08:29:09] "GET /assets/css/enhanced-lift-modal.css HTTP/1.1" 304 -
+127.0.0.1 - - [07/Nov/2025 08:29:09] "GET /assets/libs/qrcode-loader.js HTTP/1.1" 304 -
+127.0.0.1 - - [07/Nov/2025 08:29:09] "GET /assets/js/common.js HTTP/1.1" 304 -
+127.0.0.1 - - [07/Nov/2025 08:29:09] "GET /assets/js/lift-utils.js HTTP/1.1" 304 -
+127.0.0.1 - - [07/Nov/2025 08:29:09] "GET /assets/js/system-eventbus.js HTTP/1.1" 304 -
+127.0.0.1 - - [07/Nov/2025 08:29:09] "GET /assets/js/ar-helper.js HTTP/1.1" 304 -
+127.0.0.1 - - [07/Nov/2025 08:29:09] "GET /assets/js/enhanced-lift-modal.js HTTP/1.1" 200 -
+127.0.0.1 - - [07/Nov/2025 08:29:09] "GET /assets/js/lifts.js HTTP/1.1" 304 -
+127.0.0.1 - - [07/Nov/2025 08:29:09] "GET /assets/js/voice-control.js HTTP/1.1" 304 -
+127.0.0.1 - - [07/Nov/2025 08:29:09] "GET /assets/js/simple-lift-modal.js HTTP/1.1" 304 -
+127.0.0.1 - - [07/Nov/2025 08:29:09] "GET /assets/js/test-lift-saving.js HTTP/1.1" 304 -
+127.0.0.1 - - [07/Nov/2025 08:29:09] "GET /assets/js/predictive-maintenance.js HTTP/1.1" 304 -
+127.0.0.1 - - [07/Nov/2025 08:29:09] "GET /assets/libs/qrcodejs.min.js HTTP/1.1" 304 -
+127.0.0.1 - - [07/Nov/2025 08:29:09] "GET /assets/libs/qrcode-wrapper.js HTTP/1.1" 304 -
+127.0.0.1 - - [07/Nov/2025 08:31:19] code 404, message File not found
+127.0.0.1 - - [07/Nov/2025 08:31:19] code 404, message File not found
+127.0.0.1 - - [07/Nov/2025 08:31:19] "GET /pages/admin/assets/js/modules/qr-generator.js HTTP/1.1" 404 -
+127.0.0.1 - - [07/Nov/2025 08:31:19] "GET /pages/admin/assets/img/user-avatar.png HTTP/1.1" 404 -
+127.0.0.1 - - [07/Nov/2025 08:32:46] "GET /assets/js/enhanced-lift-modal.js HTTP/1.1" 304 -
+127.0.0.1 - - [07/Nov/2025 08:33:06] code 404, message File not found
+127.0.0.1 - - [07/Nov/2025 08:33:06] "GET /pages/admin/assets/img/user-avatar.png HTTP/1.1" 404 -
+127.0.0.1 - - [07/Nov/2025 08:33:06] code 404, message File not found
+127.0.0.1 - - [07/Nov/2025 08:33:06] "GET /pages/admin/assets/js/modules/qr-generator.js HTTP/1.1" 404 -

@@ -774,8 +774,21 @@ class EnhancedLiftModal {
         const municipalNumber = $(`#${inputId}`).val();
         
         if (!municipalNumber || !municipalNumber.trim()) {
-            this.showMessage('Будь ласка, введіть муніципальний номер ліфта', 'error');
+            this.showMessage('Будь ласка, введіть муніципальний номер ліфта перед генерацією QR', 'error');
             console.error('❌ Municipal number is empty');
+            // Фокусуємо поле
+            $('#enhancedMunicipalNumber').focus();
+            return;
+        }
+        
+        // Отримуємо адресу для QR-коду
+        const address = $('#enhancedLiftAddress').val() || '';
+        
+        if (!address || !address.trim()) {
+            this.showMessage('Будь ласка, введіть адресу ліфта перед генерацією QR', 'error');
+            console.error('❌ Address is empty');
+            // Фокусуємо поле
+            $('#enhancedLiftAddress').focus();
             return;
         }
         
@@ -792,15 +805,12 @@ class EnhancedLiftModal {
             console.log('🔧 Створено window.QRCode з qrcode');
         }
         
-        // Отримуємо адресу для QR-коду
-        const address = $('#enhancedLiftAddress').val() || '';
-        
         // ВАЖЛИВО: QR код має обмеження на розмір даних (~2024 символи)
         // Тому використовуємо компактний JSON для диспетчера
         const qrData = {
             id: municipalNumber.trim(),
             lift: liftNumber,
-            addr: address.substring(0, 80)  // Обрізаємо довгі адреси
+            addr: address.trim().substring(0, 80)  // Обрізаємо довгі адреси
         };
         const qrText = JSON.stringify(qrData);
         const previewContainer = liftNumber === 1 ? '#mainQrPreview' : `#qrPreview${liftNumber}`;
