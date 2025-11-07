@@ -777,7 +777,11 @@ class EnhancedLiftModal {
             this.showMessage('Будь ласка, введіть муніципальний номер ліфта перед генерацією QR', 'error');
             console.error('❌ Municipal number is empty');
             // Фокусуємо поле
-            $('#enhancedMunicipalNumber').focus();
+            if (liftNumber === 1) {
+                $('#enhancedMunicipalNumber').focus();
+            } else {
+                $(`#${inputId}`).focus();
+            }
             return;
         }
         
@@ -805,17 +809,17 @@ class EnhancedLiftModal {
             console.log('🔧 Створено window.QRCode з qrcode');
         }
         
-        // ВАЖЛИВО: QR код має обмеження на розмір даних (~2024 символи)
-        // Тому використовуємо компактний JSON для диспетчера
-        const qrData = {
-            id: municipalNumber.trim(),
-            lift: liftNumber,
-            addr: address.trim().substring(0, 80)  // Обрізаємо довгі адреси
-        };
-        const qrText = JSON.stringify(qrData);
+        // ВАЖЛИВО: QR код має обмеження на розмір даних
+        // Максимум для CorrectLevel.M (середня корекція): ~890 символів
+        // Максимум для CorrectLevel.L (низька): ~1264 символи
+        // 
+        // ФОРМАТ: Компактний для сканування диспетчером
+        // Використовуємо тільки муніципальний номер - він унікальний в системі
+        const qrText = municipalNumber.trim();
         const previewContainer = liftNumber === 1 ? '#mainQrPreview' : `#qrPreview${liftNumber}`;
         
-        console.log(`📦 QR text: "${qrText}" (length: ${qrText.length})`);
+        console.log(`📦 QR text: "${qrText}" (length: ${qrText.length} chars)`);
+        console.log(`📦 QR lift #${liftNumber}, municipal: ${municipalNumber.trim()}`);
         console.log(`📍 Preview container: ${previewContainer}`);
         
         // Перевіряємо чи існує контейнер
@@ -838,13 +842,14 @@ class EnhancedLiftModal {
             
             // ВАЖЛИВО: qrcode-generator потребує DIVID або елемент
             // API: new QRCode(element, {text, width, height, colorDark, colorLight, correctLevel})
+            // CorrectLevel.M (середня корекція) дозволяє більше даних ніж CorrectLevel.H
             const qrInstance = new QRCode($container[0], {
                 text: qrText,
                 width: 150,
                 height: 150,
                 colorDark: "#000000",
                 colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.H
+                correctLevel: QRCode.CorrectLevel.M  // Змінено з H на M для збільшення ліміту даних
             });
             
             console.log('✅ QR code generated successfully');
