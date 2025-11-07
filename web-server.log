@@ -90,3 +90,5 @@
 127.0.0.1 - - [07/Nov/2025 08:46:48] "GET /pages/admin/assets/js/modules/qr-manager.js HTTP/1.1" 404 -
 127.0.0.1 - - [07/Nov/2025 08:46:50] "GET /pages/admin/users.html HTTP/1.1" 200 -
 127.0.0.1 - - [07/Nov/2025 08:46:54] "GET /assets/js/enhanced-lift-modal.js HTTP/1.1" 200 -
+127.0.0.1 - - [07/Nov/2025 08:55:11] "GET /pages/admin/lifts.html HTTP/1.1" 304 -
+127.0.0.1 - - [07/Nov/2025 08:55:11] "GET /assets/js/enhanced-lift-modal.js HTTP/1.1" 200 -
