@@ -2061,37 +2061,49 @@
     <script>
     // Функція для відкриття модального вікна ліфта (тільки з картою)
     function openEnhancedModal(liftData = null) {
-        console.log('Opening lift modal with map...', liftData ? 'Edit mode' : 'Create mode');
+        console.log('🚪 Opening lift modal with map...', liftData ? 'Edit mode' : 'Create mode');
         
         // Перевіряємо чи доступний enhanced lift modal
         if (typeof window.enhancedLiftModal === 'undefined') {
-            console.error('Enhanced lift modal not available');
+            console.error('❌ Enhanced lift modal not available');
             // Показуємо повідомлення користувачу
             alert('Модальне вікно з картою ще не завантажилось. Спробуйте через кілька секунд.');
             return;
         }
         
         if (liftData) {
-            // Режим редагування - завантажуємо дані
-            console.log('📝 Завантаження даних для редагування:', liftData);
+            // Режим редагування - СПОЧАТКУ встановлюємо ID, ПОТІМ завантажуємо дані
+            console.log('✏️ EDIT MODE: Loading data for lift:', liftData);
+            console.log('� Lift ID:', liftData.id || liftData._id);
+            
+            // КРИТИЧНО: Встановлюємо currentLiftId ПЕРЕД відкриттям модалки
+            window.enhancedLiftModal.currentLiftId = liftData.id || liftData._id;
+            console.log('✅ Set currentLiftId BEFORE opening modal:', window.enhancedLiftModal.currentLiftId);
+            
             $('#enhancedModalTitle').text('Редагувати ліфт');
             
             if (window.enhancedLiftModal.loadLiftForEdit) {
                 window.enhancedLiftModal.loadLiftForEdit(liftData);
+                console.log('✅ Data loaded into form');
             } else {
                 console.error('❌ Метод loadLiftForEdit не знайдено');
             }
         } else {
             // Режим створення - скидаємо форму
-            console.log('➕ Режим створення нового ліфта');
+            console.log('➕ CREATE MODE: New lift');
             $('#enhancedModalTitle').text('Додати новий ліфт');
             
+            // Очищуємо currentLiftId для режиму створення
+            window.enhancedLiftModal.currentLiftId = null;
+            console.log('✅ Cleared currentLiftId for new lift');
+            
             if (window.enhancedLiftModal.resetForm) {
-                window.enhancedLiftModal.currentLiftId = null;
                 window.enhancedLiftModal.resetForm();
             }
         }
         
+        // ВАЖЛИВО: Відкриваємо модалку ПІСЛЯ налаштування
+        console.log('🚪 Opening modal now...');
         $('#enhancedLiftModal').modal('show');
     }
 

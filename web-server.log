@@ -92,3 +92,13 @@
 127.0.0.1 - - [07/Nov/2025 08:46:54] "GET /assets/js/enhanced-lift-modal.js HTTP/1.1" 200 -
 127.0.0.1 - - [07/Nov/2025 08:55:11] "GET /pages/admin/lifts.html HTTP/1.1" 304 -
 127.0.0.1 - - [07/Nov/2025 08:55:11] "GET /assets/js/enhanced-lift-modal.js HTTP/1.1" 200 -
+127.0.0.1 - - [07/Nov/2025 08:56:23] "GET /pages/admin/lifts.html HTTP/1.1" 200 -
+127.0.0.1 - - [07/Nov/2025 08:56:24] "GET /assets/js/enhanced-lift-modal.js HTTP/1.1" 200 -
+127.0.0.1 - - [07/Nov/2025 09:02:47] "GET /pages/ai-assistant/ai-assistant.html HTTP/1.1" 200 -
+127.0.0.1 - - [07/Nov/2025 09:02:48] "GET /assets/img/logo.png HTTP/1.1" 200 -
+127.0.0.1 - - [07/Nov/2025 09:02:48] code 404, message File not found
+127.0.0.1 - - [07/Nov/2025 09:02:48] "GET /assets/img/avatars/admin.png HTTP/1.1" 404 -
+127.0.0.1 - - [07/Nov/2025 09:03:24] "GET /pages/admin/qr-generator.html HTTP/1.1" 200 -
+127.0.0.1 - - [07/Nov/2025 09:03:25] "GET /assets/js/modules/qr-generator.js HTTP/1.1" 200 -
+127.0.0.1 - - [07/Nov/2025 09:03:25] code 404, message File not found
+127.0.0.1 - - [07/Nov/2025 09:03:25] "GET /pages/admin/assets/img/user-avatar.png HTTP/1.1" 404 -

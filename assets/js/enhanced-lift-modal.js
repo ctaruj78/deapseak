@@ -41,16 +41,20 @@ class EnhancedLiftModal {
         });
         
         // Скидання форми при відкритті модалки (тільки для нових ліфтів)
-        $('#enhancedLiftModal').on('show.bs.modal', () => {
+        $('#enhancedLiftModal').off('show.bs.modal').on('show.bs.modal', () => {
             console.log('📝 Enhanced modal opening...');
+            console.log('🔍 Current lift ID:', this.currentLiftId);
+            console.log('🔍 Municipal number field:', $('#enhancedMunicipalNumber').val());
+            
             // Скидаємо форму тільки якщо це не режим редагування
             if (!this.currentLiftId) {
-                console.log('📝 Resetting form for new lift...');
+                console.log('➕ CREATE MODE: Resetting form for new lift...');
                 this.resetForm();
-                // ВИПРАВЛЕННЯ: Показуємо QR-генератор відразу
+                // Показуємо QR-генератор відразу
                 this.handleLiftsCountChange();
             } else {
-                console.log('📝 Editing mode - keeping existing data');
+                console.log('✏️ EDIT MODE: Keeping existing data, currentLiftId =', this.currentLiftId);
+                console.log('✅ Data should be already loaded by loadLiftForEdit()');
             }
             setTimeout(() => this.initializeMap(), 500);
         });
@@ -576,13 +580,14 @@ class EnhancedLiftModal {
 
     loadLiftForEdit(liftData) {
         console.log('📝 Loading lift for enhanced edit:', liftData);
+        console.log('🔍 Lift fields:', Object.keys(liftData));
         
         // Встановлюємо currentLiftId перед заповненням форми
-        this.currentLiftId = liftData.id;
+        this.currentLiftId = liftData.id || liftData._id;
         console.log('🔧 Set currentLiftId:', this.currentLiftId);
         
         // Заповнюємо всі поля з префіксом enhanced
-        $('#enhancedLiftId').val(liftData.id);
+        $('#enhancedLiftId').val(this.currentLiftId);
         $('#enhancedMunicipalNumber').val(liftData.municipalNumber || '');
         $('#enhancedSerialNumber').val(liftData.serial || liftData.serialNumber || '');
         $('#enhancedLiftBrand').val(liftData.brand || '');
@@ -608,6 +613,10 @@ class EnhancedLiftModal {
         $('#nextMaintenance').val(liftData.nextMaintenance || '');
         $('#enhancedInspectionFrequency').val(liftData.inspectionFrequency || 6);
         $('#enhancedMaintenanceNotes').val(liftData.maintenanceNotes || '');
+        
+        console.log('✅ All form fields populated');
+        console.log('🔍 Municipal number field value:', $('#enhancedMunicipalNumber').val());
+        console.log('🔍 Address field value:', $('#enhancedLiftAddress').val());
         
         // Оновлюємо карту з координатами ліфта
         if (liftData.lat && liftData.lng) {
