@@ -840,6 +840,19 @@ class EnhancedLiftModal {
             console.log('✅ QR code generated successfully');
             console.log('🔧 QR instance:', qrInstance);
             
+            // Видаляємо дублікати - залишаємо тільки перший елемент (canvas або img)
+            setTimeout(() => {
+                const children = $container[0].children;
+                if (children.length > 1) {
+                    console.log(`🧹 Видаляємо ${children.length - 1} дублікат(ів) QR`);
+                    // Видаляємо всі крім першого
+                    while (children.length > 1) {
+                        children[children.length - 1].remove();
+                    }
+                }
+                console.log('✅ QR очищено, залишено тільки один елемент');
+            }, 100);
+            
             // Діагностика: що саме створилось
             setTimeout(() => {
                 console.log('🔍 Container HTML:', $container[0].innerHTML.substring(0, 200));
