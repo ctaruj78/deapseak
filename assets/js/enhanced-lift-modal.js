@@ -890,9 +890,9 @@ class EnhancedLiftModal {
             if (window.eventBus) {
                 const qrCanvas = $container.find('canvas')[0] || $container.find('img')[0];
                 eventBus.emit('qr:generated', {
-                    municipalNumber: qrData.id,
-                    liftNumber: qrData.lift,
-                    address: qrData.addr,
+                    municipalNumber: municipalNumber.trim(),
+                    liftNumber: liftNumber,
+                    address: address.trim(),
                     qrText: qrText,
                     element: qrCanvas
                 }, { source: 'qr-generator' });
