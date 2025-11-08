@@ -7,6 +7,7 @@ const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const emailService = require('./services/email-service');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -354,126 +355,176 @@ app.get('/api/requests', authenticateToken, (req, res) => {
 
 // Create request (всі можуть створювати)
 app.post('/api/requests', authenticateToken, (req, res) => {
-    const { title, client, description, location, priority, status } = req.body;
-    
-    if (!title || !client || !description) {
-        return res.status(400).json({
+    try {
+        const { title, client, description, location, priority, status } = req.body;
+        
+        if (!title || !client || !description) {
+            return res.status(400).json({
+                success: false,
+                message: 'Обов\'язкові поля: title, client, description'
+            });
+        }
+        
+        const newRequest = {
+            id: Math.max(...requests.map(r => r.id), 1000) + 1,
+            title,
+            client,
+            description,
+            location: location || '',
+            priority: priority || 'medium',
+            status: status || 'new',
+            assignedTo: null,
+            date: new Date().toLocaleDateString('uk-UA') + " " + new Date().toLocaleTimeString('uk-UA', {hour: '2-digit', minute: '2-digit'})
+        };
+        
+        requests.push(newRequest);
+        
+        // Додаємо активність
+        activities.unshift({
+            id: activities.length + 1,
+            type: "request",
+            message: `Створено заявку: ${title}`,
+            timestamp: new Date().toLocaleString('uk-UA'),
+            icon: "fas fa-ticket-alt",
+            color: "text-info"
+        });
+        
+        // Відправляємо email сповіщення клієнту
+        emailService.sendNewRequestNotification({
+            clientEmail: client,
+            requestData: newRequest
+        }).catch(err => console.error('❌ Email send failed:', err));
+        
+        res.status(201).json({
+            success: true,
+            message: 'Заявку створено',
+            data: newRequest
+        });
+    } catch (error) {
+        console.error('❌ Error creating request:', error);
+        res.status(500).json({
             success: false,
-            message: 'Обов\'язкові поля: title, client, description'
+            message: 'Помилка створення заявки'
         });
     }
-    
-    const newRequest = {
-        id: Math.max(...requests.map(r => r.id), 1000) + 1,
-        title,
-        client,
-        description,
-        location: location || '',
-        priority: priority || 'medium',
-        status: status || 'new',
-        assignedTo: null,
-        date: new Date().toLocaleDateString('uk-UA') + " " + new Date().toLocaleTimeString('uk-UA', {hour: '2-digit', minute: '2-digit'})
-    };
-    
-    requests.push(newRequest);
-    
-    // Додаємо активність
-    activities.unshift({
-        id: activities.length + 1,
-        type: "request",
-        message: `Створено заявку: ${title}`,
-        timestamp: new Date().toLocaleString('uk-UA'),
-        icon: "fas fa-ticket-alt",
-        color: "text-info"
-    });
-    
-    res.status(201).json({
-        success: true,
-        message: 'Заявку створено',
-        data: newRequest
-    });
 });
 
 // Update request (тільки admin, dispatcher та призначений технік)
 app.patch('/api/requests/:id', authenticateToken, (req, res) => {
-    const { id } = req.params;
-    const requestIndex = requests.findIndex(r => r.id == id);
-    
-    if (requestIndex === -1) {
-        return res.status(404).json({
+    try {
+        const { id } = req.params;
+        const requestIndex = requests.findIndex(r => r.id == id);
+        
+        if (requestIndex === -1) {
+            return res.status(404).json({
+                success: false,
+                message: 'Заявку не знайдено'
+            });
+        }
+        
+        const request = requests[requestIndex];
+        
+        // Перевірка прав доступу
+        if (req.user.role === 'technician' && request.assignedTo !== req.user.id && request.assignedTo !== req.user.email) {
+            return res.status(403).json({
+                success: false,
+                message: 'Ви можете редагувати тільки свої заявки'
+            });
+        }
+        
+        if (req.user.role === 'client') {
+            return res.status(403).json({
+                success: false,
+                message: 'Клієнти не можуть редагувати заявки'
+            });
+        }
+        
+        const updateData = req.body;
+        delete updateData.id; // Не дозволяємо змінювати ID
+        
+        const oldStatus = request.status;
+        requests[requestIndex] = { ...requests[requestIndex], ...updateData };
+        const newStatus = requests[requestIndex].status;
+        
+        // Додаємо активність
+        activities.unshift({
+            id: activities.length + 1,
+            type: "edit",
+            message: `Відредаговано заявку #${id}: ${updateData.title || requests[requestIndex].title}`,
+            timestamp: new Date().toLocaleString('uk-UA'),
+            icon: "fas fa-edit",
+            color: "text-info"
+        });
+        
+        // Відправляємо email при зміні статусу
+        if (updateData.status && oldStatus !== newStatus) {
+            emailService.sendStatusChangeNotification({
+                clientEmail: request.client,
+                requestData: requests[requestIndex],
+                oldStatus,
+                newStatus
+            }).catch(err => console.error('❌ Email send failed:', err));
+            
+            // Якщо статус "завершено" - відправляємо спеціальне повідомлення
+            if (newStatus === 'completed') {
+                emailService.sendWorkCompletedNotification({
+                    clientEmail: request.client,
+                    requestData: requests[requestIndex]
+                }).catch(err => console.error('❌ Email send failed:', err));
+            }
+        }
+        
+        res.json({
+            success: true,
+            message: 'Заявку оновлено',
+            data: requests[requestIndex]
+        });
+    } catch (error) {
+        console.error('❌ Error updating request:', error);
+        res.status(500).json({
             success: false,
-            message: 'Заявку не знайдено'
+            message: 'Помилка оновлення заявки'
         });
     }
-    
-    const request = requests[requestIndex];
-    
-    // Перевірка прав доступу
-    if (req.user.role === 'technician' && request.assignedTo !== req.user.id && request.assignedTo !== req.user.email) {
-        return res.status(403).json({
-            success: false,
-            message: 'Ви можете редагувати тільки свої заявки'
-        });
-    }
-    
-    if (req.user.role === 'client') {
-        return res.status(403).json({
-            success: false,
-            message: 'Клієнти не можуть редагувати заявки'
-        });
-    }
-    
-    const updateData = req.body;
-    delete updateData.id; // Не дозволяємо змінювати ID
-    
-    requests[requestIndex] = { ...requests[requestIndex], ...updateData };
-    
-    // Додаємо активність
-    activities.unshift({
-        id: activities.length + 1,
-        type: "edit",
-        message: `Відредаговано заявку #${id}: ${updateData.title || requests[requestIndex].title}`,
-        timestamp: new Date().toLocaleString('uk-UA'),
-        icon: "fas fa-edit",
-        color: "text-info"
-    });
-    
-    res.json({
-        success: true,
-        message: 'Заявку оновлено',
-        data: requests[requestIndex]
-    });
 });
 
 // Delete request (тільки admin)
 app.delete('/api/requests/:id', authenticateToken, authorizeRoles('admin'), (req, res) => {
-    const { id } = req.params;
-    const requestIndex = requests.findIndex(r => r.id == id);
-    
-    if (requestIndex === -1) {
-        return res.status(404).json({
+    try {
+        const { id } = req.params;
+        const requestIndex = requests.findIndex(r => r.id == id);
+        
+        if (requestIndex === -1) {
+            return res.status(404).json({
+                success: false,
+                message: 'Заявку не знайдено'
+            });
+        }
+        
+        const deletedRequest = requests[requestIndex];
+        requests.splice(requestIndex, 1);
+        
+        // Додаємо активність
+        activities.unshift({
+            id: activities.length + 1,
+            type: "delete",
+            message: `Видалено заявку #${id}: ${deletedRequest.title}`,
+            timestamp: new Date().toLocaleString('uk-UA'),
+            icon: "fas fa-trash",
+            color: "text-danger"
+        });
+        
+        res.json({
+            success: true,
+            message: 'Заявку видалено'
+        });
+    } catch (error) {
+        console.error('❌ Error deleting request:', error);
+        res.status(500).json({
             success: false,
-            message: 'Заявку не знайдено'
+            message: 'Помилка видалення заявки'
         });
     }
-    
-    const deletedRequest = requests[requestIndex];
-    requests.splice(requestIndex, 1);
-    
-    // Додаємо активність
-    activities.unshift({
-        id: activities.length + 1,
-        type: "delete",
-        message: `Видалено заявку #${id}: ${deletedRequest.title}`,
-        timestamp: new Date().toLocaleString('uk-UA'),
-        icon: "fas fa-trash",
-        color: "text-danger"
-    });
-    
-    res.json({
-        success: true,
-        message: 'Заявку видалено'
-    });
 });
 
 // Get technicians
@@ -483,37 +534,60 @@ app.get('/api/technicians', authenticateToken, (req, res) => {
 
 // Create assignment
 app.post('/api/assignments', authenticateToken, (req, res) => {
-    const { requestId, techId } = req.body;
-    
-    const request = requests.find(r => r.id == requestId);
-    const tech = technicians.find(t => t.id == techId);
-    
-    if (!request || !tech) {
-        return res.status(404).json({
+    try {
+        const { requestId, techId } = req.body;
+        
+        const request = requests.find(r => r.id == requestId);
+        const tech = technicians.find(t => t.id == techId);
+        
+        if (!request || !tech) {
+            return res.status(404).json({
+                success: false,
+                message: 'Заявка або технік не знайдені'
+            });
+        }
+        
+        // Оновлюємо заявку
+        request.status = 'assigned';
+        request.assignedTo = `${tech.firstName} ${tech.lastName}`;
+        
+        // Додаємо активність
+        activities.unshift({
+            id: activities.length + 1,
+            type: "assignment",
+            message: `Заявку #${requestId} призначено техніку ${tech.firstName} ${tech.lastName}`,
+            timestamp: new Date().toLocaleString('uk-UA'),
+            icon: "fas fa-user-check",
+            color: "text-success"
+        });
+        
+        // Відправляємо email техніку
+        emailService.sendTechnicianAssignmentNotification({
+            techEmail: tech.email,
+            requestData: request,
+            techName: `${tech.firstName} ${tech.lastName}`
+        }).catch(err => console.error('❌ Email send failed:', err));
+        
+        // Відправляємо email клієнту про зміну статусу
+        emailService.sendStatusChangeNotification({
+            clientEmail: request.client,
+            requestData: request,
+            oldStatus: 'new',
+            newStatus: 'assigned'
+        }).catch(err => console.error('❌ Email send failed:', err));
+        
+        res.json({
+            success: true,
+            message: 'Призначення створено',
+            data: { requestId, techId, request }
+        });
+    } catch (error) {
+        console.error('❌ Error creating assignment:', error);
+        res.status(500).json({
             success: false,
-            message: 'Заявка або технік не знайдені'
+            message: 'Помилка створення призначення'
         });
     }
-    
-    // Оновлюємо заявку
-    request.status = 'assigned';
-    request.assignedTo = `${tech.firstName} ${tech.lastName}`;
-    
-    // Додаємо активність
-    activities.unshift({
-        id: activities.length + 1,
-        type: "assignment",
-        message: `Заявку #${requestId} призначено техніку ${tech.firstName} ${tech.lastName}`,
-        timestamp: new Date().toLocaleString('uk-UA'),
-        icon: "fas fa-user-check",
-        color: "text-success"
-    });
-    
-    res.json({
-        success: true,
-        message: 'Призначення створено',
-        data: { requestId, techId, request }
-    });
 });
 
 // Get activities
@@ -606,21 +680,45 @@ app.get('/api/lifts/:id', authenticateToken, (req, res) => {
 
 // Створення ліфта (тільки admin та dispatcher)
 app.post('/api/lifts', authenticateToken, authorizeRoles('admin', 'dispatcher'), (req, res) => {
-    const newLift = { id: Date.now(), ...req.body };
-    res.json({ success: true, data: newLift });
+    try {
+        const newLift = { id: Date.now(), ...req.body };
+        res.json({ success: true, data: newLift });
+    } catch (error) {
+        console.error('❌ Error creating lift:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка створення ліфта'
+        });
+    }
 });
 
 // Оновлення ліфта (admin, dispatcher, technician)
 app.put('/api/lifts/:id', authenticateToken, authorizeRoles('admin', 'dispatcher', 'technician'), (req, res) => {
-    const liftId = req.params.id;
-    const updatedLift = { id: liftId, ...req.body };
-    console.log('📝 Оновлення ліфта:', liftId);
-    res.json({ success: true, data: updatedLift, message: 'Ліфт оновлено' });
+    try {
+        const liftId = req.params.id;
+        const updatedLift = { id: liftId, ...req.body };
+        console.log('📝 Оновлення ліфта:', liftId);
+        res.json({ success: true, data: updatedLift, message: 'Ліфт оновлено' });
+    } catch (error) {
+        console.error('❌ Error updating lift:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка оновлення ліфта'
+        });
+    }
 });
 
 // Видалення ліфта (тільки admin)
 app.delete('/api/lifts/:id', authenticateToken, authorizeRoles('admin'), (req, res) => {
-    res.json({ success: true, message: 'Ліфт видалено' });
+    try {
+        res.json({ success: true, message: 'Ліфт видалено' });
+    } catch (error) {
+        console.error('❌ Error deleting lift:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка видалення ліфта'
+        });
+    }
 });
 
 // ===============================
