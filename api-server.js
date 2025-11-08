@@ -193,6 +193,27 @@ function authenticateToken(req, res, next) {
     });
 }
 
+// Middleware для перевірки ролей
+function authorizeRoles(...allowedRoles) {
+    return (req, res, next) => {
+        if (!req.user) {
+            return res.status(401).json({
+                success: false,
+                message: 'Користувач не автентифікований'
+            });
+        }
+
+        if (!allowedRoles.includes(req.user.role)) {
+            return res.status(403).json({
+                success: false,
+                message: `Доступ заборонено. Потрібна роль: ${allowedRoles.join(' або ')}`
+            });
+        }
+
+        next();
+    };
+}
+
 // ===============================
 // ROUTES
 // ===============================
@@ -313,12 +334,25 @@ app.post('/api/auth/login', async (req, res) => {
     }
 });
 
-// Get requests
+// Get requests (всі аутентифіковані користувачі можуть бачити заявки)
 app.get('/api/requests', authenticateToken, (req, res) => {
+    // Клієнти бачать тільки свої заявки
+    if (req.user.role === 'client') {
+        const userRequests = requests.filter(r => r.client === req.user.email || r.clientId === req.user.id);
+        return res.json(userRequests);
+    }
+    
+    // Технік бачить тільки призначені йому заявки
+    if (req.user.role === 'technician') {
+        const techRequests = requests.filter(r => r.assignedTo === req.user.id || r.assignedTo === req.user.email);
+        return res.json(techRequests);
+    }
+    
+    // Admin та dispatcher бачать всі заявки
     res.json(requests);
 });
 
-// Create request
+// Create request (всі можуть створювати)
 app.post('/api/requests', authenticateToken, (req, res) => {
     const { title, client, description, location, priority, status } = req.body;
     
@@ -360,7 +394,7 @@ app.post('/api/requests', authenticateToken, (req, res) => {
     });
 });
 
-// Update request
+// Update request (тільки admin, dispatcher та призначений технік)
 app.patch('/api/requests/:id', authenticateToken, (req, res) => {
     const { id } = req.params;
     const requestIndex = requests.findIndex(r => r.id == id);
@@ -369,6 +403,23 @@ app.patch('/api/requests/:id', authenticateToken, (req, res) => {
         return res.status(404).json({
             success: false,
             message: 'Заявку не знайдено'
+        });
+    }
+    
+    const request = requests[requestIndex];
+    
+    // Перевірка прав доступу
+    if (req.user.role === 'technician' && request.assignedTo !== req.user.id && request.assignedTo !== req.user.email) {
+        return res.status(403).json({
+            success: false,
+            message: 'Ви можете редагувати тільки свої заявки'
+        });
+    }
+    
+    if (req.user.role === 'client') {
+        return res.status(403).json({
+            success: false,
+            message: 'Клієнти не можуть редагувати заявки'
         });
     }
     
@@ -394,8 +445,8 @@ app.patch('/api/requests/:id', authenticateToken, (req, res) => {
     });
 });
 
-// Delete request
-app.delete('/api/requests/:id', authenticateToken, (req, res) => {
+// Delete request (тільки admin)
+app.delete('/api/requests/:id', authenticateToken, authorizeRoles('admin'), (req, res) => {
     const { id } = req.params;
     const requestIndex = requests.findIndex(r => r.id == id);
     
@@ -484,8 +535,8 @@ app.get('/api/verify-token', authenticateToken, (req, res) => {
     });
 });
 
-// Отримання користувачів за роллю
-app.get('/api/users', authenticateToken, (req, res) => {
+// Отримання користувачів за роллю (тільки admin та dispatcher)
+app.get('/api/users', authenticateToken, authorizeRoles('admin', 'dispatcher'), (req, res) => {
     const role = req.query.role;
     let filteredUsers = users;
     
@@ -553,19 +604,22 @@ app.get('/api/lifts/:id', authenticateToken, (req, res) => {
     res.json({ success: true, data: mockLift });
 });
 
-app.post('/api/lifts', authenticateToken, (req, res) => {
+// Створення ліфта (тільки admin та dispatcher)
+app.post('/api/lifts', authenticateToken, authorizeRoles('admin', 'dispatcher'), (req, res) => {
     const newLift = { id: Date.now(), ...req.body };
     res.json({ success: true, data: newLift });
 });
 
-app.put('/api/lifts/:id', authenticateToken, (req, res) => {
+// Оновлення ліфта (admin, dispatcher, technician)
+app.put('/api/lifts/:id', authenticateToken, authorizeRoles('admin', 'dispatcher', 'technician'), (req, res) => {
     const liftId = req.params.id;
     const updatedLift = { id: liftId, ...req.body };
     console.log('📝 Оновлення ліфта:', liftId);
     res.json({ success: true, data: updatedLift, message: 'Ліфт оновлено' });
 });
 
-app.delete('/api/lifts/:id', authenticateToken, (req, res) => {
+// Видалення ліфта (тільки admin)
+app.delete('/api/lifts/:id', authenticateToken, authorizeRoles('admin'), (req, res) => {
     res.json({ success: true, message: 'Ліфт видалено' });
 });
 

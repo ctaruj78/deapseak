@@ -343,8 +343,48 @@ class EnhancedLiftModal {
     }
 
     validateBasicFields(data) {
-        // Серійний номер та поштовий код НЕ обов'язкові
-        // Email клієнта - ОБОВ'ЯЗКОВИЙ для правильної роботи системи
+        console.log('🔍 Validating enhanced lift form fields...');
+        
+        // Створюємо валідатор якщо доступний
+        if (typeof FormValidator !== 'undefined') {
+            const validator = new FormValidator('#enhancedLiftForm');
+            validator.clearErrors();
+            
+            // Обов'язкові поля
+            validator.required('#enhancedMunicipalNumber', 'Муніципальний номер');
+            validator.required('#enhancedLiftBrand', 'Бренд ліфта');
+            validator.required('#enhancedLiftModel', 'Модель ліфта');
+            validator.required('#enhancedLiftAddress', 'Адреса');
+            validator.required('#enhancedClientEmail', 'Email клієнта');
+            
+            // Email формат
+            validator.email('#enhancedClientEmail', 'Email клієнта');
+            
+            // Телефон якщо заповнений
+            if ($('#enhancedClientPhone').val()) {
+                validator.phone('#enhancedClientPhone', 'Телефон клієнта');
+            }
+            
+            // Числові поля
+            if ($('#enhancedLiftCapacity').val()) {
+                validator.number('#enhancedLiftCapacity', 'Вантажопідйомність', { min: 1, max: 10000 });
+            }
+            
+            if ($('#enhancedLiftSpeed').val()) {
+                validator.number('#enhancedLiftSpeed', 'Швидкість', { min: 0.1, max: 10 });
+            }
+            
+            if (!validator.isValid()) {
+                validator.showErrorsSummary();
+                console.error('❌ Validation failed:', validator.getErrors());
+                return false;
+            }
+            
+            console.log('✅ All fields validated successfully');
+            return true;
+        }
+        
+        // Fallback валідація якщо FormValidator не завантажився
         const required = ['municipalNumber', 'brand', 'model', 'address', 'clientEmail'];
         const missing = [];
         
