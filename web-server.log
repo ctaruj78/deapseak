@@ -41,3 +41,6 @@
 127.0.0.1 - - [08/Nov/2025 08:35:25] "GET /pages/admin/lifts.html HTTP/1.1" 304 -
 127.0.0.1 - - [08/Nov/2025 08:35:25] "GET /assets/js/form-validator.js HTTP/1.1" 304 -
 127.0.0.1 - - [08/Nov/2025 08:35:25] "GET /assets/js/enhanced-lift-modal.js HTTP/1.1" 304 -
+127.0.0.1 - - [08/Nov/2025 08:45:05] "GET /pages/admin/lifts.html HTTP/1.1" 304 -
+127.0.0.1 - - [08/Nov/2025 08:45:05] "GET /assets/js/form-validator.js HTTP/1.1" 304 -
+127.0.0.1 - - [08/Nov/2025 08:45:05] "GET /assets/js/enhanced-lift-modal.js HTTP/1.1" 304 -
