@@ -9,3 +9,5 @@
    👥 GET  http://localhost:3001/api/technicians
 
 ✅ Всі endpoints готові до роботи!
+🔐 Login attempt: admin
+✅ Login успішний: admin@deapseak.com
