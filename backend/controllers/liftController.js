@@ -1,76 +1,183 @@
-const { LiftMongo, LiftSQL } = require('../models/Lift');
+const { Lift, User } = require('../models');
+const { AppError } = require('../middleware/errorHandler');
 
-// MongoDB CRUD
-exports.getAllLiftsMongo = async (req, res) => {
-  try {
-    const lifts = await LiftMongo.find();
-    res.json(lifts);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+exports.createLift = async (req, res, next) => {
+    try {
+        const { municipalNumber, address, location, client, technician, manufacturer, model, capacity, floors, installationDate, lastInspectionDate, nextInspectionDate, qrCode } = req.body;
+        const existingLift = await Lift.findOne({ municipalNumber });
+        if (existingLift) throw new AppError('Lift with this number exists', 400);
+        if (client) {
+            const clientUser = await User.findById(client);
+            if (!clientUser || clientUser.role !== 'client') throw new AppError('Invalid client', 400);
+        }
+        if (technician) {
+            const techUser = await User.findById(technician);
+            if (!techUser || techUser.role !== 'technician') throw new AppError('Invalid technician', 400);
+        }
+        const lift = await Lift.create({ municipalNumber, address, location, client, technician, manufacturer, model, capacity, floors, installationDate, lastInspectionDate, nextInspectionDate, qrCode });
+        await lift.populate(['client', 'technician']);
+        res.status(201).json({ success: true, message: 'Lift created', data: { lift } });
+    } catch (error) {
+        next(error);
+    }
 };
 
-exports.createLiftMongo = async (req, res) => {
-  try {
-    const lift = new LiftMongo(req.body);
-    await lift.save();
-    res.status(201).json(lift);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
+exports.getAllLifts = async (req, res, next) => {
+    try {
+        const { status, client, technician, search, needsMaintenance, page = 1, limit = 20, sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
+        const query = {};
+        if (status) query.status = status;
+        if (client) query.client = client;
+        if (technician) query.technician = technician;
+        if (search) {
+            query.$or = [
+                { municipalNumber: { $regex: search, $options: 'i' } },
+                { 'address.street': { $regex: search, $options: 'i' } },
+                { 'address.city': { $regex: search, $options: 'i' } }
+            ];
+        }
+        if (needsMaintenance === 'true') query.nextInspectionDate = { $lte: new Date() };
+        const skip = (page - 1) * limit;
+        const sort = { [sortBy]: sortOrder === 'desc' ? -1 : 1 };
+        const [lifts, total] = await Promise.all([
+            Lift.find(query).populate('client', 'firstName lastName email phone').populate('technician', 'firstName lastName email phone').sort(sort).skip(skip).limit(parseInt(limit)),
+            Lift.countDocuments(query)
+        ]);
+        res.json({ success: true, data: { lifts, pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / limit) } } });
+    } catch (error) {
+        next(error);
+    }
 };
 
-exports.updateLiftMongo = async (req, res) => {
-  try {
-    const lift = await LiftMongo.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json(lift);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
+exports.getLiftById = async (req, res, next) => {
+    try {
+        const lift = await Lift.findById(req.params.id).populate('client', 'firstName lastName email phone').populate('technician', 'firstName lastName email phone').populate('requests');
+        if (!lift) throw new AppError('Lift not found', 404);
+        res.json({ success: true, data: { lift } });
+    } catch (error) {
+        next(error);
+    }
 };
 
-exports.deleteLiftMongo = async (req, res) => {
-  try {
-    await LiftMongo.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Deleted' });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
+exports.getLiftByMunicipalNumber = async (req, res, next) => {
+    try {
+        const lift = await Lift.findOne({ municipalNumber: req.params.municipalNumber }).populate('client').populate('technician').populate('requests');
+        if (!lift) throw new AppError('Lift not found', 404);
+        res.json({ success: true, data: { lift } });
+    } catch (error) {
+        next(error);
+    }
 };
 
-// PostgreSQL CRUD
-exports.getAllLiftsSQL = async (req, res) => {
-  try {
-    const lifts = await LiftSQL.findAll();
-    res.json(lifts);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+exports.updateLift = async (req, res, next) => {
+    try {
+        const updates = req.body;
+        if (updates.municipalNumber) {
+            const existingLift = await Lift.findOne({ municipalNumber: updates.municipalNumber, _id: { $ne: req.params.id } });
+            if (existingLift) throw new AppError('Municipal number exists', 400);
+        }
+        const lift = await Lift.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true }).populate('client').populate('technician');
+        if (!lift) throw new AppError('Lift not found', 404);
+        res.json({ success: true, message: 'Lift updated', data: { lift } });
+    } catch (error) {
+        next(error);
+    }
 };
 
-exports.createLiftSQL = async (req, res) => {
-  try {
-    const lift = await LiftSQL.create(req.body);
-    res.status(201).json(lift);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
+exports.deleteLift = async (req, res, next) => {
+    try {
+        const lift = await Lift.findByIdAndDelete(req.params.id);
+        if (!lift) throw new AppError('Lift not found', 404);
+        res.json({ success: true, message: 'Lift deleted' });
+    } catch (error) {
+        next(error);
+    }
 };
 
-exports.updateLiftSQL = async (req, res) => {
-  try {
-    const lift = await LiftSQL.update(req.body, { where: { id: req.params.id } });
-    res.json(lift);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
+exports.getLiftsStats = async (req, res, next) => {
+    try {
+        const [total, byStatus, needsMaintenance] = await Promise.all([
+            Lift.countDocuments(),
+            Lift.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }]),
+            Lift.countDocuments({ nextInspectionDate: { $lte: new Date() } })
+        ]);
+        res.json({ success: true, data: { total, byStatus: byStatus.reduce((acc, item) => { acc[item._id] = item.count; return acc; }, {}), needsMaintenance } });
+    } catch (error) {
+        next(error);
+    }
 };
 
-exports.deleteLiftSQL = async (req, res) => {
-  try {
-    await LiftSQL.destroy({ where: { id: req.params.id } });
-    res.json({ message: 'Deleted' });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
+exports.getLiftsNearby = async (req, res, next) => {
+    try {
+        const { longitude, latitude, maxDistance = 5000 } = req.query;
+        if (!longitude || !latitude) throw new AppError('Provide coordinates', 400);
+        const lifts = await Lift.find({
+            location: {
+                $near: {
+                    $geometry: { type: 'Point', coordinates: [parseFloat(longitude), parseFloat(latitude)] },
+                    $maxDistance: parseInt(maxDistance)
+                }
+            }
+        }).populate('client').populate('technician').limit(50);
+        res.json({ success: true, data: { lifts, count: lifts.length } });
+    } catch (error) {
+        next(error);
+    }
+};
+
+exports.updateLiftStatus = async (req, res, next) => {
+    try {
+        const { status } = req.body;
+        if (!status) throw new AppError('Status required', 400);
+        const lift = await Lift.findByIdAndUpdate(req.params.id, { status }, { new: true }).populate('client').populate('technician');
+        if (!lift) throw new AppError('Lift not found', 404);
+        res.json({ success: true, message: 'Status updated', data: { lift } });
+    } catch (error) {
+        next(error);
+    }
+};
+
+exports.addInspection = async (req, res, next) => {
+    try {
+        const { date, inspector, notes, photos } = req.body;
+        const lift = await Lift.findById(req.params.id);
+        if (!lift) throw new AppError('Lift not found', 404);
+        lift.inspectionHistory.push({ date: date || new Date(), inspector, notes, photos: photos || [] });
+        lift.lastInspectionDate = date || new Date();
+        const nextDate = new Date(lift.lastInspectionDate);
+        nextDate.setMonth(nextDate.getMonth() + 6);
+        lift.nextInspectionDate = nextDate;
+        await lift.save();
+        res.json({ success: true, message: 'Inspection added', data: { lift } });
+    } catch (error) {
+        next(error);
+    }
+};
+
+exports.addPhoto = async (req, res, next) => {
+    try {
+        const { url, description } = req.body;
+        if (!url) throw new AppError('Photo URL required', 400);
+        const lift = await Lift.findById(req.params.id);
+        if (!lift) throw new AppError('Lift not found', 404);
+        lift.photos.push({ url, description: description || '', uploadedBy: req.user.id });
+        await lift.save();
+        res.json({ success: true, message: 'Photo added', data: { lift } });
+    } catch (error) {
+        next(error);
+    }
+};
+
+exports.assignTechnician = async (req, res, next) => {
+    try {
+        const { technicianId } = req.body;
+        if (!technicianId) throw new AppError('Technician ID required', 400);
+        const technician = await User.findById(technicianId);
+        if (!technician || technician.role !== 'technician') throw new AppError('Invalid technician', 400);
+        const lift = await Lift.findByIdAndUpdate(req.params.id, { technician: technicianId }, { new: true }).populate('client').populate('technician');
+        if (!lift) throw new AppError('Lift not found', 404);
+        res.json({ success: true, message: 'Technician assigned', data: { lift } });
+    } catch (error) {
+        next(error);
+    }
 };

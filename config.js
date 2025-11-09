@@ -1,8 +1,8 @@
 class AppConfig {
     static config = {
-        // Базові налаштування API
+        // Базові налаштування API - ВИКОРИСТОВУЄМО V2 з MongoDB!
         api: {
-            baseUrl: 'https://api.liftmanager.com/v1',
+            baseUrl: 'http://localhost:3002',
             timeout: 30000,
             retryAttempts: 3,
             retryDelay: 1000,
@@ -33,7 +33,7 @@ class AppConfig {
 
         // Налаштування розробника
         development: {
-            useMockData: true,
+            useMockData: false, // ВИМКНУЛИ mock data - використовуємо реальний API!
             mockDelay: { min: 300, max: 1000 },
             logLevel: 'debug' // debug, info, warn, error
         }

@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Система - Інструкції користувача</title>
+    
+    <!-- CSS Dependencies -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/adminlte.min.css">
+    
+    <style>
+        /* AdminLTE Integration Styles */
+        .content-wrapper {
+            background-color: #f4f4f4;
+        }
+        
+        .instruction-card {
+            transition: all 0.3s ease;
+            border: none;
+            border-left: 4px solid #007bff;
+            box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
+            border-radius: 0.25rem;
+        }
+        .instruction-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 6px rgba(0,0,0,.15), 0 4px 12px rgba(0,0,0,.15);
+        }
+        
+        .role-badge {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+        
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            background: #007bff;
+            color: white;
+            border-radius: 50%;
+            font-weight: 700;
+            margin-right: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .feature-highlight {
+            background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
+            color: white;
+            border-radius: 0.5rem;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
+        }
+        
+        /* Card improvements */
+        .card {
+            box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
+            border: none;
+            border-radius: 0.25rem;
+        }
+        .card-header {
+            background-color: rgba(0,0,0,.03);
+            border-bottom: 1px solid rgba(0,0,0,.125);
+            border-radius: 0.25rem 0.25rem 0 0;
+        }
+        .card-title {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        /* Alert improvements */
+        .alert {
+            border: none;
+            border-radius: 0.5rem;
+        }
+        
+        /* Button improvements */
+        .btn {
+            border-radius: 0.5rem;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini">
+    <div class="wrapper">
+        
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button">
+                        <i class="fas fa-bars"></i>
+                    </a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="index.html" class="nav-link">Головна</a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="qr-interface.html" class="nav-link">QR Система</a>
+                </li>
+            </ul>
+            
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="login.html">
+                        <i class="fas fa-sign-in-alt"></i> Вхід
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Sidebar -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <a href="index.html" class="brand-link">
+                <img src="assets/img/AdminLTELogo.png" alt="Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
+                <span class="brand-text font-weight-light">DeapSeaK</span>
+            </a>
+
+            <div class="sidebar">
+                <nav class="mt-2">
+                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                        <li class="nav-item">
+                            <a href="index.html" class="nav-link">
+                                <i class="nav-icon fas fa-home"></i>
+                                <p>Головна</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="qr-interface.html" class="nav-link">
+                                <i class="nav-icon fas fa-qrcode"></i>
+                                <p>QR Система</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link active">
+                                <i class="nav-icon fas fa-question-circle"></i>
+                                <p>Інструкції</p>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            
+            <!-- Content Header -->
+            <section class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1>QR Система - Інструкції</h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="index.html">Головна</a></li>
+                                <li class="breadcrumb-item active">Інструкції</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+                    
+                    <!-- Огляд системи -->
+                    <div class="feature-highlight">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h2><i class="fas fa-qrcode mr-2"></i>QR Система DeapSeaK</h2>
+                                <p class="lead">Єдина система для управління QR-кодами ліфтів із підтримкою різних ролей користувачів</p>
+                                <p>🔹 Генерація і управління QR-кодами<br>
+                                🔹 Сканування через камеру або файл<br>
+                                🔹 Різні інтерфейси для різних ролей<br>
+                                🔹 Статистика та аналітика</p>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <i class="fas fa-mobile-alt fa-5x"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Доступ до системи -->
+                    <div class="card instruction-card">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="fas fa-key mr-2"></i>Як отримати доступ до QR системи</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5><span class="step-number">1</span>Увійдіть в систему</h5>
+                                    <p>Використовуйте свої облікові дані для входу в систему DeapSeaK</p>
+                                    
+                                    <h5><span class="step-number">2</span>Виберіть спосіб доступу</h5>
+                                    <ul>
+                                        <li><strong>Головна сторінка:</strong> кнопка "QR Система"</li>
+                                        <li><strong>Меню системи:</strong> розділ "QR Система"</li>
+                                        <li><strong>Прямий доступ:</strong> <code>/qr-interface.html</code></li>
+                                    </ul>
+
+                                    <h5><span class="step-number">3</span>Використовуйте відповідні функції</h5>
+                                    <p>Система автоматично покаже інтерфейс відповідно до вашої ролі</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="alert alert-info">
+                                        <h6><i class="fas fa-info-circle mr-2"></i>Тестові користувачі</h6>
+                                        <p><strong>Адміністратор:</strong> admin / admin123<br>
+                                        <strong>Диспетчер:</strong> dispatcher1 / dispatcher123<br>
+                                        <strong>Технік:</strong> tech1 / tech123<br>
+                                        <strong>Клієнт:</strong> client1 / client123</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Інструкції за ролями -->
+                    <div class="row">
+                        
+                        <!-- Адміністратор -->
+                        <div class="col-md-6">
+                            <div class="card instruction-card">
+                                <div class="card-header">
+                                    <h4 class="card-title">
+                                        <i class="fas fa-user-shield text-danger mr-2"></i>
+                                        Адміністратор
+                                        <span class="role-badge bg-danger">ADMIN</span>
+                                    </h4>
+                                </div>
+                                <div class="card-body">
+                                    <h6>Доступні функції:</h6>
+                                    <ul>
+                                        <li>Повне управління QR-кодами</li>
+                                        <li>Розширена аналітика</li>
+                                        <li>Масове створення кодів</li>
+                                        <li>Управління користувачами</li>
+                                    </ul>
+                                    
+                                    <h6>Швидкі дії:</h6>
+                                    <p>📊 <strong>Управління QR-кодами</strong> - повний контроль<br>
+                                    📈 <strong>Розширена аналітика</strong> - детальні звіти<br>
+                                    ⚡ <strong>Масове створення</strong> - створення для всіх ліфтів</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Диспетчер -->
+                        <div class="col-md-6">
+                            <div class="card instruction-card">
+                                <div class="card-header">
+                                    <h4 class="card-title">
+                                        <i class="fas fa-headset text-warning mr-2"></i>
+                                        Диспетчер
+                                        <span class="role-badge bg-warning">DISPATCHER</span>
+                                    </h4>
+                                </div>
+                                <div class="card-body">
+                                    <h6>Доступні функції:</h6>
+                                    <ul>
+                                        <li>Управління QR-кодами для ліфтів</li>
+                                        <li>Створення кодів для заявок</li>
+                                        <li>Перегляд статистики</li>
+                                        <li>Координація технічних робіт</li>
+                                    </ul>
+                                    
+                                    <h6>Швидкі дії:</h6>
+                                    <p>📋 <strong>QR-коди системи</strong> - управління кодами<br>
+                                    🏢 <strong>QR для ліфтів</strong> - створення кодів<br>
+                                    📝 <strong>QR для заявок</strong> - обробка запитів</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Технік -->
+                        <div class="col-md-6">
+                            <div class="card instruction-card">
+                                <div class="card-header">
+                                    <h4 class="card-title">
+                                        <i class="fas fa-tools text-success mr-2"></i>
+                                        Технік
+                                        <span class="role-badge bg-success">TECHNICIAN</span>
+                                    </h4>
+                                </div>
+                                <div class="card-body">
+                                    <h6>Доступні функції:</h6>
+                                    <ul>
+                                        <li>Сканування QR-кодів</li>
+                                        <li>Робота з завданнями</li>
+                                        <li>Перегляд історії сканувань</li>
+                                        <li>Швидке сканування</li>
+                                    </ul>
+                                    
+                                    <h6>Швидкі дії:</h6>
+                                    <p>📷 <strong>Сканер QR-кодів</strong> - основний інструмент<br>
+                                    📊 <strong>Мої сканування</strong> - історія дій<br>
+                                    ⚡ <strong>Швидке сканування</strong> - миттєвий доступ</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Клієнт -->
+                        <div class="col-md-6">
+                            <div class="card instruction-card">
+                                <div class="card-header">
+                                    <h4 class="card-title">
+                                        <i class="fas fa-user text-info mr-2"></i>
+                                        Клієнт
+                                        <span class="role-badge bg-info">CLIENT</span>
+                                    </h4>
+                                </div>
+                                <div class="card-body">
+                                    <h6>Доступні функції:</h6>
+                                    <ul>
+                                        <li>Сканування QR-кодів ліфтів</li>
+                                        <li>Подача заявок</li>
+                                        <li>Повідомлення про проблеми</li>
+                                        <li>Отримання інформації</li>
+                                    </ul>
+                                    
+                                    <h6>Швидкі дії:</h6>
+                                    <p>📱 <strong>Сканувати QR ліфта</strong> - отримання інформації<br>
+                                    ⚠️ <strong>Повідомити про проблему</strong> - подача заявки</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Поради та підказки -->
+                    <div class="card instruction-card">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="fas fa-lightbulb mr-2"></i>Корисні поради</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <h5><i class="fas fa-camera text-primary mr-2"></i>Сканування</h5>
+                                    <ul>
+                                        <li>Переконайтеся, що камера має доступ</li>
+                                        <li>Тримайте QR-код в центрі кадру</li>
+                                        <li>Забезпечте достатнє освітлення</li>
+                                        <li>Можна завантажити файл з QR-кодом</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-4">
+                                    <h5><i class="fas fa-mobile-alt text-success mr-2"></i>Мобільний доступ</h5>
+                                    <ul>
+                                        <li>Система адаптована для мобільних</li>
+                                        <li>Використовуйте основну камеру</li>
+                                        <li>Поверніть пристрій вертикально</li>
+                                        <li>Стабільний інтернет обов'язковий</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-4">
+                                    <h5><i class="fas fa-question-circle text-warning mr-2"></i>Проблеми</h5>
+                                    <ul>
+                                        <li>Перевірте права доступу до камери</li>
+                                        <li>Оновіть сторінку при помилках</li>
+                                        <li>Зверніться до адміністратора</li>
+                                        <li>Використовуйте підтримуваний браузер</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Кнопки швидкого доступу -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="fas fa-rocket mr-2"></i>Швидкий старт</h3>
+                        </div>
+                        <div class="card-body text-center">
+                            <a href="qr-interface.html" class="btn btn-primary btn-lg mr-3">
+                                <i class="fas fa-qrcode mr-2"></i>Відкрити QR Систему
+                            </a>
+                            <a href="login.html" class="btn btn-success btn-lg mr-3">
+                                <i class="fas fa-sign-in-alt mr-2"></i>Увійти в систему
+                            </a>
+                            <a href="pages/qr/scanner.html" class="btn btn-info btn-lg">
+                                <i class="fas fa-camera mr-2"></i>Швидке сканування
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer class="main-footer">
+            <div class="float-right d-none d-sm-block">
+                <b>Версія</b> 1.0.0
+            </div>
+            <strong>Copyright &copy; 2024 <a href="#">DeapSeaK</a>.</strong> QR-система управління ліфтами.
+        </footer>
+    </div>
+
+    <!-- JavaScript Dependencies -->
+    <script src="plugins/jquery/jquery.min.js"></script>
+    <script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/adminlte.min.js"></script>
+</body>
+</html>

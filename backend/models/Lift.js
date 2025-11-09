@@ -1,31 +1,94 @@
 const mongoose = require('mongoose');
-const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/postgres');
 
-// MongoDB Schema
 const liftSchema = new mongoose.Schema({
-  liftId: String,
-  status: String,
-  location: {
-    lat: Number,
-    lng: Number
-  },
-  lastInspection: Date,
-  assignedTechnician: String,
-  notes: String
+    municipalNumber: {
+        type: String,
+        required: [true, 'Municipal number required'],
+        unique: true,
+        trim: true,
+        index: true
+    },
+    address: {
+        street: { type: String, required: true },
+        city: { type: String, required: true },
+        zipCode: String,
+        country: { type: String, default: 'Ukraine' }
+    },
+    location: {
+        type: { type: String, enum: ['Point'], default: 'Point' },
+        coordinates: {
+            type: [Number],
+            required: true
+        }
+    },
+    client: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        index: true
+    },
+    technician: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        index: true
+    },
+    manufacturer: { type: String, required: true },
+    model: { type: String, required: true },
+    capacity: { type: Number, required: true },
+    floors: { type: Number, required: true },
+    installationDate: Date,
+    lastInspectionDate: Date,
+    nextInspectionDate: { type: Date, index: true },
+    status: {
+        type: String,
+        enum: ['operational', 'maintenance', 'repair', 'out_of_service', 'inspection'],
+        default: 'operational',
+        index: true
+    },
+    inspectionHistory: [{
+        date: { type: Date, default: Date.now },
+        inspector: String,
+        notes: String,
+        photos: [String]
+    }],
+    photos: [{
+        url: String,
+        description: String,
+        uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        uploadedAt: { type: Date, default: Date.now }
+    }],
+    qrCode: {
+        code: { type: String, unique: true, sparse: true },
+        generatedAt: Date,
+        accessLevel: {
+            type: String,
+            enum: ['public', 'client', 'technician', 'admin'],
+            default: 'client'
+        }
+    },
+    notes: String
+}, {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
 });
 
-const LiftMongo = mongoose.model('Lift', liftSchema);
+liftSchema.index({ location: '2dsphere' });
 
-// PostgreSQL Model
-const LiftSQL = sequelize.define('Lift', {
-  liftId: DataTypes.STRING,
-  status: DataTypes.STRING,
-  lat: DataTypes.FLOAT,
-  lng: DataTypes.FLOAT,
-  lastInspection: DataTypes.DATE,
-  assignedTechnician: DataTypes.STRING,
-  notes: DataTypes.TEXT
+liftSchema.virtual('requests', {
+    ref: 'Request',
+    localField: '_id',
+    foreignField: 'lift'
 });
 
-module.exports = { LiftMongo, LiftSQL };
+liftSchema.methods.needsMaintenance = function() {
+    if (!this.nextInspectionDate) return false;
+    return new Date() >= this.nextInspectionDate;
+};
+
+liftSchema.methods.calculateNextMaintenance = function(monthsFromNow = 6) {
+    const nextDate = new Date(this.lastInspectionDate || new Date());
+    nextDate.setMonth(nextDate.getMonth() + monthsFromNow);
+    return nextDate;
+};
+
+module.exports = mongoose.model('Lift', liftSchema);

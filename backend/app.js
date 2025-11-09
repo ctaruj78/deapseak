@@ -1,61 +1,101 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const bodyParser = require('body-parser');
-const morgan = require('morgan');
-const winston = require('winston');
+const connectDB = require('./config/database');
+const { errorHandler } = require('./middleware/errorHandler');
 
-const mongoConnect = require('./config/mongo');
-const pgConnect = require('./config/postgres');
-
-const technicianRoutes = require('./routes/technician');
-const assignmentRoutes = require('./routes/assignment');
-const liftRoutes = require('./routes/lift');
-const notificationRoutes = require('./routes/notification');
+const authRoutes = require('./routes/authRoutes');
+const liftRoutes = require('./routes/liftRoutes');
+const requestRoutes = require('./routes/requestRoutes');
 
 const app = express();
-const PORT = process.env.PORT || 3001;
-
-// Winston logger setup
-const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.json()
-  ),
-  transports: [
-    new winston.transports.Console(),
-    new winston.transports.File({ filename: 'backend.log' })
-  ]
-});
-
-// Morgan HTTP request logger
-app.use(morgan('combined', {
-  stream: {
-    write: (message) => logger.info(message.trim())
-  }
-}));
 
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-app.use('/api/technicians', technicianRoutes);
-app.use('/api/assignments', assignmentRoutes);
-app.use('/api/lifts', liftRoutes);
-app.use('/api/notifications', notificationRoutes);
+if (process.env.NODE_ENV !== 'production') {
+    app.use((req, res, next) => {
+        console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+        next();
+    });
+}
 
-app.get('/', (req, res) => {
-  logger.info('Root endpoint accessed');
-  res.send('Deapseak backend API is running');
+app.get('/health', (req, res) => {
+    res.json({
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        environment: process.env.NODE_ENV || 'development'
+    });
 });
 
-Promise.all([mongoConnect(), pgConnect()])
-  .then(() => {
-    app.listen(PORT, () => {
-      logger.info(`Backend server running on http://localhost:${PORT}`);
+app.use('/api/auth', authRoutes);
+app.use('/api/lifts', liftRoutes);
+app.use('/api/requests', requestRoutes);
+
+app.get('/', (req, res) => {
+    res.json({
+        message: 'DeapSeaK v2 API',
+        version: '2.0.0',
+        documentation: '/api/docs',
+        endpoints: {
+            auth: '/api/auth',
+            lifts: '/api/lifts',
+            requests: '/api/requests'
+        }
     });
-  })
-  .catch((err) => {
-    console.error('DB connection error:', err);
-    process.exit(1);
-  });
+});
+
+app.use((req, res) => {
+    res.status(404).json({
+        success: false,
+        message: 'Route not found',
+        path: req.path
+    });
+});
+
+app.use(errorHandler);
+
+const startServer = async (port = 3002) => {
+    try {
+        await connectDB();
+        const server = app.listen(port, () => {
+            console.log(`
+╔════════════════════════════════════════════════╗
+║         DeapSeaK v2 API Server                 ║
+╠════════════════════════════════════════════════╣
+║  Status: Running ✓                             ║
+║  Port: ${port}                                    ║
+║  Environment: ${process.env.NODE_ENV || 'development'}                    ║
+║  MongoDB: Connected ✓                          ║
+╠════════════════════════════════════════════════╣
+║  Endpoints:                                    ║
+║  • http://localhost:${port}/                      ║
+║  • http://localhost:${port}/health               ║
+║  • http://localhost:${port}/api/auth             ║
+║  • http://localhost:${port}/api/lifts            ║
+║  • http://localhost:${port}/api/requests         ║
+╚════════════════════════════════════════════════╝
+            `);
+        });
+        process.on('SIGTERM', () => {
+            console.log('SIGTERM received. Closing server...');
+            server.close(() => {
+                console.log('HTTP server closed');
+                process.exit(0);
+            });
+        });
+        return server;
+    } catch (error) {
+        console.error('Server startup error:', error);
+        process.exit(1);
+    }
+};
+
+module.exports = { app, startServer };
+
+if (require.main === module) {
+    const PORT = process.env.V2_PORT || process.env.PORT || 3002;
+    startServer(PORT);
+}

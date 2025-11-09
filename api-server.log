@@ -1,3 +1,4 @@
+⚠️ SMTP not configured, using test mode
 🚀 Запуск DEAPSEAK API Server...
 ✅ Middleware налаштовано
 
@@ -9,5 +10,3 @@
    👥 GET  http://localhost:3001/api/technicians
 
 ✅ Всі endpoints готові до роботи!
-🔐 Login attempt: admin
-✅ Login успішний: admin@deapseak.com

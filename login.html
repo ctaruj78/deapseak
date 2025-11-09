@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/main.css">
     <link rel="stylesheet" href="assets/css/auth.css">
+    <script src="config.js"></script>
 </head>
 <body class="hold-transition login-page bg-light">
     <div class="login-box">
@@ -161,12 +162,12 @@
                     const hostname = window.location.hostname;
                     
                     if (hostname.includes('.app.github.dev')) {
-                        // GitHub Codespaces: використовуємо правильний API URL
-                        const baseUrl = window.location.protocol + '//' + hostname.replace(/(-\d+)(\.app\.github\.dev)/, '-3001$2');
+                        // GitHub Codespaces: використовуємо правильний API URL (V2 на порту 3002!)
+                        const baseUrl = window.location.protocol + '//' + hostname.replace(/(-\d+)(\.app\.github\.dev)/, '-3002$2');
                         apiUrl = baseUrl + '/api/auth/login';
                     } else if (window.location.port === '8080' || window.location.port === '3000' || window.location.hostname === 'localhost') {
-                        // Локальна розробка
-                        apiUrl = 'http://localhost:3001/api/auth/login';
+                        // Локальна розробка - НОВИЙ V2 API на порту 3002!
+                        apiUrl = 'http://localhost:3002/api/auth/login';
                     } else {
                         // Відносний шлях
                         apiUrl = '/api/auth/login';
@@ -180,8 +181,7 @@
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({ 
-                            email: email,
-                            username: email, // Підтримуємо і email і username
+                            login: email, // V2 API використовує поле "login"
                             password: password
                         })
                     });
@@ -192,13 +192,21 @@
                     console.log('🔢 Status Code:', response.status);
                     
                     if (response.ok && data.success) {
+                        // V2 API: отримуємо token та user з data
+                        const token = data.data?.token || data.token;
+                        const user = data.data?.user || data.user;
+                        
+                        // Зберігаємо токен
+                        localStorage.setItem('lm_token', token);
+                        localStorage.setItem('deapseak_token', token);
+                        
                         // Збереження через AuthManager (новий метод)
                         if (typeof AuthManager !== 'undefined') {
-                            AuthManager.login(data.token, data.user);
+                            AuthManager.login(token, user);
                         }
                         
                         // Також зберігаємо в старому форматі для сумісності
-                        localStorage.setItem('lm_session', JSON.stringify(data.user));
+                        localStorage.setItem('lm_session', JSON.stringify(user));
                         
                         showMessage('Успішний вхід! Перенаправлення...', 'success');
                         
@@ -214,7 +222,7 @@
                                 window.location.href = redirectUrl;
                             } else {
                                 // Стандартне перенаправлення за роллю
-                                redirectUserByRole(data.user.role);
+                                redirectUserByRole(user.role);
                             }
                         }, 500);
                         
