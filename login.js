@@ -6,7 +6,7 @@ function getApiUrl() {
         return window.location.origin.replace('-8080.app.github.dev', '-3001.app.github.dev');
     } else {
         // Local development
-        return 'http://localhost:3001';
+        return 'http://localhost:3002';
     }
 }
 

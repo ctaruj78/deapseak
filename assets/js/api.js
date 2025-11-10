@@ -354,9 +354,10 @@ class LiftAPI {
     static connectWebSocket() {
         if (this.socket) return this.socket;
 
-        const wsUrl = IS_DEVELOPMENT ? 
-            'ws://localhost:3002' : 
-            'wss://api.liftmanager.com/ws';
+        // Динамічне визначення WebSocket URL
+        const wsUrl = window.location.origin.includes('github.dev') 
+            ? `wss://${window.location.host.replace('-5000.', '-3002.')}/ws`
+            : 'ws://localhost:3002';
 
         try {
             this.socket = new WebSocket(wsUrl);

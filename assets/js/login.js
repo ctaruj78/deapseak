@@ -7,8 +7,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         
+        // Динамічне визначення API URL
+        const apiUrl = window.location.origin.includes('github.dev')
+            ? window.location.origin.replace('-5000.', '-3002.')
+            : 'http://localhost:3002';
+        
         try {
-            const response = await fetch('https://api.liftmanager.com/v1/auth/login', {
+            const response = await fetch(`${apiUrl}/api/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

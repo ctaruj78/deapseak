@@ -4,7 +4,7 @@
  */
 class AssignmentManager {
     constructor() {
-        this.apiUrl = 'http://localhost:3001/api';
+        this.apiUrl = 'http://localhost:3002/api';
         this.assignments = [];
         this.technicians = [];
         this.templates = [];

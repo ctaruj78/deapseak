@@ -1,4 +1,13 @@
-const API_BASE_URL = 'https://api.liftmanager.com/v1';
+// Динамічне визначення API URL
+let API_BASE_URL = 'http://localhost:3002/api';
+if (typeof window !== 'undefined' && window.location) {
+    if (window.location.origin.includes('github.dev')) {
+        API_BASE_URL = window.location.origin.replace('-5000.', '-3002.') + '/api';
+    } else {
+        API_BASE_URL = 'http://localhost:3002/api';
+    }
+}
+
 let IS_DEVELOPMENT = false;
 if (typeof window !== 'undefined' && window.location) {
     IS_DEVELOPMENT = window.location.hostname === 'localhost' || 
@@ -688,9 +697,11 @@ class LiftAPI {
     static connectWebSocket() {
         if (this.socket) return this.socket;
 
-        const wsUrl = IS_DEVELOPMENT ? 
-            'ws://localhost:3002' : 
-            'wss://api.liftmanager.com/ws';
+        // Динамічне визначення WebSocket URL
+        let wsUrl = 'ws://localhost:3002';
+        if (typeof window !== 'undefined' && window.location.origin.includes('github.dev')) {
+            wsUrl = `wss://${window.location.host.replace('-5000.', '-3002.')}/ws`;
+        }
 
         try {
             this.socket = new WebSocket(wsUrl);

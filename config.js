@@ -106,7 +106,9 @@ class AppConfig {
     static reset() {
         this.config = {
             api: {
-                baseUrl: 'https://api.liftmanager.com/v1',
+                get baseUrl() {
+                    return AppConfig.getBaseUrl();
+                },
                 timeout: 30000,
                 retryAttempts: 3,
                 retryDelay: 1000,
@@ -116,7 +118,7 @@ class AppConfig {
             websocket: { enabled: true, reconnectDelay: 5000, heartbeatInterval: 30000 },
             offline: { enabled: true, syncInterval: 30000, maxPendingActions: 100 },
             security: { encryptData: false, encryptionKey: 'lift-manager-secret-key', tokenRefreshInterval: 3600000 },
-            development: { useMockData: true, mockDelay: { min: 300, max: 1000 }, logLevel: 'debug' }
+            development: { useMockData: false, mockDelay: { min: 300, max: 1000 }, logLevel: 'debug' }
         };
         
         StorageManager.remove('app_config');

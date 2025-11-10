@@ -4,7 +4,7 @@
  */
 class MonitoringManager {
     constructor() {
-        this.apiUrl = 'http://localhost:3001/api';
+        this.apiUrl = 'http://localhost:3002/api';
         this.wsUrl = 'ws://localhost:3002';
         
         // Дані для моніторингу

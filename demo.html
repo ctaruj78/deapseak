@@ -466,7 +466,7 @@
             resultDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Виконуємо вхід...';
             
             try {
-                const response = await fetch('http://localhost:3001/api/auth/login', {
+                const response = await fetch('http://localhost:3002/api/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
@@ -525,7 +525,7 @@
             };
             
             try {
-                const response = await fetch('http://localhost:3001/api/lifts', {
+                const response = await fetch('http://localhost:3002/api/lifts', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(liftData)
@@ -563,7 +563,7 @@
             resultDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Завантажуємо ліфти...';
             
             try {
-                const response = await fetch('http://localhost:3001/api/lifts');
+                const response = await fetch('http://localhost:3002/api/lifts');
                 const lifts = await response.json();
                 
                 if (response.ok) {
@@ -623,7 +623,7 @@
             };
             
             try {
-                const response = await fetch('http://localhost:3001/api/requests', {
+                const response = await fetch('http://localhost:3002/api/requests', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(requestData)
@@ -661,7 +661,7 @@
             resultDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Завантажуємо заявки...';
             
             try {
-                const response = await fetch('http://localhost:3001/api/requests');
+                const response = await fetch('http://localhost:3002/api/requests');
                 const requests = await response.json();
                 
                 if (response.ok) {
@@ -825,7 +825,7 @@
             resultDiv.innerHTML = 'Виконується запит...';
             
             try {
-                const response = await fetch(`http://localhost:3001${endpoint}`);
+                const response = await fetch(`http://localhost:3002${endpoint}`);
                 const data = await response.json();
                 
                 resultDiv.innerHTML = `
@@ -840,7 +840,7 @@
         // Системний монітор
         async function updateSystemStatus() {
             try {
-                const response = await fetch('http://localhost:3001/api/status');
+                const response = await fetch('http://localhost:3002/api/status');
                 const status = await response.json();
                 
                 document.getElementById('dbStatus').textContent = status.mongodb ? 'OK' : 'ERROR';
