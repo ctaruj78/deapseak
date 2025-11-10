@@ -1,8 +1,19 @@
 class AppConfig {
+    // Автоматичне визначення базового URL для Codespaces
+    static getBaseUrl() {
+        // Перевіряємо чи це GitHub Codespaces
+        if (window.location.hostname.includes('github.dev')) {
+            // Замінюємо порт 5000 (frontend) на 3002 (backend)
+            return window.location.origin.replace('-5000.', '-3002.');
+        }
+        // Локальна розробка
+        return 'http://localhost:3002';
+    }
+
     static config = {
         // Базові налаштування API - ВИКОРИСТОВУЄМО V2 з MongoDB!
         api: {
-            baseUrl: 'http://localhost:3002',
+            baseUrl: AppConfig.getBaseUrl(),
             timeout: 30000,
             retryAttempts: 3,
             retryDelay: 1000,

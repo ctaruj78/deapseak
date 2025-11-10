@@ -10,7 +10,30 @@ const requestRoutes = require('./routes/requestRoutes');
 
 const app = express();
 
-app.use(cors());
+// CORS налаштування для GitHub Codespaces та локальної розробки
+const corsOptions = {
+    origin: function (origin, callback) {
+        // Дозволяємо запити без origin (наприклад, curl)
+        if (!origin) return callback(null, true);
+        
+        // Дозволяємо всі localhost порти
+        if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+            return callback(null, true);
+        }
+        
+        // Дозволяємо всі GitHub Codespaces домени
+        if (origin.includes('github.dev')) {
+            return callback(null, true);
+        }
+        
+        callback(null, true);
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
