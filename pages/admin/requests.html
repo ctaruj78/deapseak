@@ -529,7 +529,8 @@
                     </div>
                     <div class="form-group">
                         <label for="requestScheduled">Запланована дата виконання</label>
-                        <input type="datetime-local" class="form-control" id="requestScheduled">
+                        <input type="datetime-local" class="form-control" id="requestScheduled" min="">
+                        <small class="form-text text-muted">Можна обрати тільки поточну дату або майбутню</small>
                     </div>
                 </form>
             </div>
@@ -650,7 +651,8 @@
 
                     <div class="form-group">
                         <label for="editScheduledAt">Заплановано на:</label>
-                        <input type="datetime-local" class="form-control" id="editScheduledAt">
+                        <input type="datetime-local" class="form-control" id="editScheduledAt" min="">
+                        <small class="form-text text-muted">Можна обрати тільки поточну дату або майбутню</small>
                     </div>
                 </form>
             </div>
@@ -1268,6 +1270,10 @@ class ServiceRequestManager {
 
         this.currentRequest = request;
         
+        // Встановлюємо мінімальну дату (поточна)
+        const now = new Date().toISOString().slice(0, 16);
+        $('#editScheduledAt').attr('min', now);
+        
         // Заповнюємо форму редагування
         $('#editRequestId').val(request.id);
         $('#editRequestLift').val(request.liftId);
@@ -1354,6 +1360,10 @@ class ServiceRequestManager {
 
 // Глобальні функції
 function openNewRequestModal() {
+    // Встановлюємо мінімальну дату (поточна)
+    const now = new Date().toISOString().slice(0, 16);
+    $('#requestScheduled').attr('min', now);
+    
     $('#newRequestModal').modal('show');
 }
 
