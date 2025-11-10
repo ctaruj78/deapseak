@@ -589,6 +589,80 @@
     </div>
 </div>
 
+<!-- Edit Request Modal -->
+<div class="modal fade" id="editRequestModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Редагувати заявку</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editRequestForm">
+                    <input type="hidden" id="editRequestId">
+                    
+                    <div class="form-group">
+                        <label for="editRequestLift">Ліфт:</label>
+                        <select class="form-control" id="editRequestLift" disabled>
+                            <option value="">-- Вибір заблоковано --</option>
+                        </select>
+                        <small class="form-text text-muted">Ліфт не можна змінити після створення</small>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="editRequestType">Тип заявки:</label>
+                                <select class="form-control" id="editRequestType" disabled>
+                                    <option value="emergency">Аварія</option>
+                                    <option value="maintenance">ТО</option>
+                                    <option value="repair">Ремонт</option>
+                                    <option value="inspection">Інспекція</option>
+                                </select>
+                                <small class="form-text text-muted">Тип не можна змінити</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="editRequestPriority">Пріоритет:</label>
+                                <select class="form-control" id="editRequestPriority" required>
+                                    <option value="low">Низький</option>
+                                    <option value="medium">Середній</option>
+                                    <option value="high">Високий</option>
+                                    <option value="critical">Критичний</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editRequestTitle">Заголовок:</label>
+                        <input type="text" class="form-control" id="editRequestTitle" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editRequestDescription">Опис проблеми:</label>
+                        <textarea class="form-control" id="editRequestDescription" rows="4" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editScheduledAt">Заплановано на:</label>
+                        <input type="datetime-local" class="form-control" id="editScheduledAt">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                <button type="button" class="btn btn-primary" onclick="window.serviceManager.saveEditedRequest()">
+                    <i class="fas fa-save"></i> Зберегти зміни
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Scripts -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -1136,9 +1210,69 @@ class ServiceRequestManager {
         $('#viewRequestModal').modal('show');
     }
 
-    editRequest(requestId) {
-        // Логіка редагування заявки
-        toastr.info('Функція редагування в розробці');
+    async editRequest(requestId) {
+        const request = this.requests.find(r => r.id === requestId);
+        if (!request) {
+            alert('Заявка не знайдена');
+            return;
+        }
+
+        this.currentRequest = request;
+        
+        // Заповнюємо форму редагування
+        $('#editRequestId').val(request.id);
+        $('#editRequestLift').val(request.liftId);
+        $('#editRequestType').val(request.type);
+        $('#editRequestPriority').val(request.priority);
+        $('#editRequestTitle').val(request.title);
+        $('#editRequestDescription').val(request.description);
+        
+        if (request.scheduledAt) {
+            const date = new Date(request.scheduledAt);
+            const formattedDate = date.toISOString().slice(0, 16);
+            $('#editScheduledAt').val(formattedDate);
+        }
+        
+        // Показуємо модальне вікно
+        $('#editRequestModal').modal('show');
+    }
+
+    async saveEditedRequest() {
+        try {
+            const requestId = $('#editRequestId').val();
+            
+            const updateData = {
+                priority: $('#editRequestPriority').val(),
+                title: $('#editRequestTitle').val(),
+                description: $('#editRequestDescription').val(),
+                scheduledDate: $('#editScheduledAt').val() || undefined
+            };
+            
+            const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}`, {
+                method: 'PUT',
+                body: JSON.stringify(updateData)
+            });
+            
+            if (!response || !response.ok) {
+                const error = await response.json();
+                throw new Error(error.message || 'Помилка оновлення заявки');
+            }
+            
+            const result = await response.json();
+            
+            alert('Заявку успішно оновлено!');
+            
+            // Закриваємо модальне вікно
+            $('#editRequestModal').modal('hide');
+            
+            // Перезавантажуємо список заявок
+            await this.loadRequests();
+            this.renderRequests();
+            
+        } catch (error) {
+            console.error('Помилка оновлення заявки:', error);
+            alert('Не вдалося оновити заявку: ' + error.message);
+        }
     }
 
     deleteRequest(requestId) {
@@ -1222,38 +1356,135 @@ function assignTechnician() {
     showAssignTechnicianModal();
 }
 
-function changeRequestStatus(newStatus) {
+async function changeRequestStatus(newStatus) {
     if (!AuthManager.isAuthenticated()) {
         AuthManager.logout();
         return;
     }
     
-    // Логіка зміни статусу заявки
-    console.log('Зміна статусу на:', newStatus);
-    // TODO: Імплементувати через API
+    if (!window.serviceManager.currentRequest) {
+        alert('Заявка не обрана');
+        return;
+    }
+    
+    try {
+        const requestId = window.serviceManager.currentRequest.id;
+        
+        const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/status`, {
+            method: 'PATCH',
+            body: JSON.stringify({ status: newStatus })
+        });
+        
+        if (!response || !response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Помилка зміни статусу');
+        }
+        
+        const result = await response.json();
+        
+        alert('Статус заявки успішно змінено!');
+        
+        // Закриваємо модальне вікно
+        $('#viewRequestModal').modal('hide');
+        
+        // Перезавантажуємо список заявок
+        await window.serviceManager.loadRequests();
+        window.serviceManager.renderRequests();
+        
+    } catch (error) {
+        console.error('Помилка зміни статусу:', error);
+        alert('Не вдалося змінити статус: ' + error.message);
+    }
 }
 
-function addComment() {
+async function addComment() {
     if (!AuthManager.isAuthenticated()) {
         AuthManager.logout();
+        return;
+    }
+    
+    if (!window.serviceManager.currentRequest) {
+        alert('Заявка не обрана');
         return;
     }
     
     const comment = prompt('Введіть коментар:');
-    if (comment) {
-        console.log('Додавання коментару:', comment);
-        // TODO: Імплементувати через API
+    if (!comment || comment.trim() === '') {
+        return;
+    }
+    
+    try {
+        const requestId = window.serviceManager.currentRequest.id;
+        
+        const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/comment`, {
+            method: 'POST',
+            body: JSON.stringify({ text: comment })
+        });
+        
+        if (!response || !response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Помилка додавання коментаря');
+        }
+        
+        const result = await response.json();
+        
+        alert('Коментар успішно додано!');
+        
+        // Закриваємо модальне вікно
+        $('#viewRequestModal').modal('hide');
+        
+        // Перезавантажуємо список заявок
+        await window.serviceManager.loadRequests();
+        window.serviceManager.renderRequests();
+        
+    } catch (error) {
+        console.error('Помилка додавання коментаря:', error);
+        alert('Не вдалося додати коментар: ' + error.message);
     }
 }
 
-function completeRequest() {
+async function completeRequest() {
     if (!AuthManager.isAuthenticated()) {
         AuthManager.logout();
         return;
     }
     
-    if (confirm('Ви впевнені, що хочете завершити цю заявку?')) {
-        changeRequestStatus('completed');
+    if (!window.serviceManager.currentRequest) {
+        alert('Заявка не обрана');
+        return;
+    }
+    
+    if (!confirm('Ви впевнені, що хочете завершити цю заявку?')) {
+        return;
+    }
+    
+    try {
+        const requestId = window.serviceManager.currentRequest.id;
+        
+        const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/complete`, {
+            method: 'POST',
+            body: JSON.stringify({})
+        });
+        
+        if (!response || !response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Помилка завершення заявки');
+        }
+        
+        const result = await response.json();
+        
+        alert('Заявку успішно завершено!');
+        
+        // Закриваємо модальне вікно
+        $('#viewRequestModal').modal('hide');
+        
+        // Перезавантажуємо список заявок
+        await window.serviceManager.loadRequests();
+        window.serviceManager.renderRequests();
+        
+    } catch (error) {
+        console.error('Помилка завершення заявки:', error);
+        alert('Не вдалося завершити заявку: ' + error.message);
     }
 }
 
@@ -1337,18 +1568,17 @@ async function submitTechnicianAssignment() {
             return;
         }
         
-        // TODO: Отримати ID поточної заявки
-        const assignmentId = getCurrentAssignmentId(); // Ця функція має бути реалізована
-        
-        if (!assignmentId) {
+        if (!window.serviceManager.currentRequest) {
             alert('Не вибрана заявка для призначення');
             return;
         }
         
-        const response = await AuthManager.fetchWithAuth(`/api/assignments/${assignmentId}/assign`, {
-            method: 'PUT',
+        const requestId = window.serviceManager.currentRequest.id;
+        
+        const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/assign`, {
+            method: 'POST',
             body: JSON.stringify({
-                assignedTo: selectedTechnician,
+                technicianId: selectedTechnician,
                 instructions: instructions,
                 deadline: deadline
             })
@@ -1361,16 +1591,16 @@ async function submitTechnicianAssignment() {
         
         const result = await response.json();
         
-        // Закриваємо модальне вікно
+        // Закриваємо модальні вікна
         $('#assignTechnicianModal').modal('hide');
+        $('#viewRequestModal').modal('hide');
         
         // Повідомлення про успіх
         alert('Техніка успішно призначено!');
         
         // Перезавантажуємо дані заявок
-        if (window.serviceManager) {
-            window.serviceManager.loadRequests();
-        }
+        await window.serviceManager.loadRequests();
+        window.serviceManager.renderRequests();
         
     } catch (error) {
         console.error('Помилка призначення техніка:', error);
