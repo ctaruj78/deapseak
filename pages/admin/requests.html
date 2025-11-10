@@ -1356,6 +1356,13 @@ function assignTechnician() {
         return;
     }
     
+    // Детальне логування для діагностики
+    console.log('🔍 Перевірка авторизації...');
+    console.log('Token (liftmanager_jwt):', localStorage.getItem('liftmanager_jwt'));
+    console.log('User:', localStorage.getItem('liftmanager_user'));
+    console.log('AuthManager.isAuthenticated():', AuthManager.isAuthenticated());
+    console.log('AuthManager.getCurrentUser():', AuthManager.getCurrentUser());
+    
     // Перевірка авторизації
     if (!AuthManager.isAuthenticated()) {
         alert('Ваша сесія закінчилась.\nБудь ласка, увійдіть знову.');
