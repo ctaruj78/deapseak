@@ -1566,8 +1566,18 @@ async function showAssignTechnicianModal() {
             throw new Error('Не вдалося завантажити список техніків');
         }
         
-        const allUsers = await response.json();
-        console.log('Отримано користувачів:', allUsers);
+        const result = await response.json();
+        console.log('Отримано відповідь:', result);
+        
+        // API v2 повертає {success: true, data: [...]}
+        const allUsers = result.data || result;
+        console.log('Список користувачів:', allUsers);
+        
+        // Перевіряємо чи це масив
+        if (!Array.isArray(allUsers)) {
+            console.error('allUsers не є масивом:', allUsers);
+            throw new Error('Неправильний формат даних від сервера');
+        }
         
         const technicians = allUsers.filter(user => user.role === 'tech' || user.role === 'technician');
         console.log('Техніків знайдено:', technicians.length);
