@@ -1567,15 +1567,16 @@ async function showAssignTechnicianModal() {
         }
         
         const result = await response.json();
-        console.log('Отримано відповідь:', result);
+        console.log('Отримано відповідь від API:', result);
         
-        // API v2 повертає {success: true, data: [...]}
-        const allUsers = result.data || result;
+        // API v2 повертає {success: true, data: {users: [...], pagination: {...}}}
+        let allUsers = result.data?.users || result.users || result.data || result;
         console.log('Список користувачів:', allUsers);
         
         // Перевіряємо чи це масив
         if (!Array.isArray(allUsers)) {
             console.error('allUsers не є масивом:', allUsers);
+            console.error('Повна структура:', JSON.stringify(result, null, 2));
             throw new Error('Неправильний формат даних від сервера');
         }
         
