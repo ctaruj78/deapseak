@@ -1349,16 +1349,17 @@ function applyFilters() {
 
 // Функції для роботи з заявками
 function assignTechnician() {
+    // Перевірка наявності AuthManager
     if (typeof AuthManager === 'undefined') {
-        alert('Помилка: Система авторизації не завантажена. Перезавантажте сторінку.');
-        console.error('AuthManager is not defined');
+        alert('Для виконання цієї дії потрібна авторизація.\nБудь ласка, увійдіть через сторінку логіну.');
+        window.location.href = '../../login.html';
         return;
     }
     
     // Перевірка авторизації
     if (!AuthManager.isAuthenticated()) {
-        alert('Ви не авторизовані');
-        AuthManager.logout();
+        alert('Ваша сесія закінчилась.\nБудь ласка, увійдіть знову.');
+        window.location.href = '../../login.html';
         return;
     }
     
@@ -1373,15 +1374,16 @@ function assignTechnician() {
 }
 
 async function changeRequestStatus(newStatus) {
+    // Перевірка наявності AuthManager
     if (typeof AuthManager === 'undefined') {
-        alert('Помилка: Система авторизації не завантажена. Перезавантажте сторінку.');
-        console.error('AuthManager is not defined');
+        alert('Для виконання цієї дії потрібна авторизація.\nБудь ласка, увійдіть через сторінку логіну.');
+        window.location.href = '../../login.html';
         return;
     }
     
     if (!AuthManager.isAuthenticated()) {
-        alert('Ви не авторизовані');
-        AuthManager.logout();
+        alert('Ваша сесія закінчилась.\nБудь ласка, увійдіть знову.');
+        window.location.href = '../../login.html';
         return;
     }
     
@@ -1423,15 +1425,16 @@ async function changeRequestStatus(newStatus) {
 }
 
 async function addComment() {
+    // Перевірка наявності AuthManager
     if (typeof AuthManager === 'undefined') {
-        alert('Помилка: Система авторизації не завантажена. Перезавантажте сторінку.');
-        console.error('AuthManager is not defined');
+        alert('Для виконання цієї дії потрібна авторизація.\nБудь ласка, увійдіть через сторінку логіну.');
+        window.location.href = '../../login.html';
         return;
     }
     
     if (!AuthManager.isAuthenticated()) {
-        alert('Ви не авторизовані');
-        AuthManager.logout();
+        alert('Ваша сесія закінчилась.\nБудь ласка, увійдіть знову.');
+        window.location.href = '../../login.html';
         return;
     }
     
@@ -1478,15 +1481,16 @@ async function addComment() {
 }
 
 async function completeRequest() {
+    // Перевірка наявності AuthManager
     if (typeof AuthManager === 'undefined') {
-        alert('Помилка: Система авторизації не завантажена. Перезавантажте сторінку.');
-        console.error('AuthManager is not defined');
+        alert('Для виконання цієї дії потрібна авторизація.\nБудь ласка, увійдіть через сторінку логіну.');
+        window.location.href = '../../login.html';
         return;
     }
     
     if (!AuthManager.isAuthenticated()) {
-        alert('Ви не авторизовані');
-        AuthManager.logout();
+        alert('Ваша сесія закінчилась.\nБудь ласка, увійдіть знову.');
+        window.location.href = '../../login.html';
         return;
     }
     
@@ -1532,9 +1536,16 @@ async function completeRequest() {
 }
 
 async function showAssignTechnicianModal() {
+    // Перевірка наявності AuthManager
     if (typeof AuthManager === 'undefined') {
-        alert('Помилка: Система авторизації не завантажена. Перезавантажте сторінку.');
-        console.error('AuthManager is not defined');
+        alert('Для виконання цієї дії потрібна авторизація.\nБудь ласка, увійдіть через сторінку логіну.');
+        window.location.href = '../../login.html';
+        return;
+    }
+    
+    if (!AuthManager.isAuthenticated()) {
+        alert('Ваша сесія закінчилась.\nБудь ласка, увійдіть знову.');
+        window.location.href = '../../login.html';
         return;
     }
     
@@ -1612,9 +1623,16 @@ async function showAssignTechnicianModal() {
 }
 
 async function submitTechnicianAssignment() {
+    // Перевірка наявності AuthManager
     if (typeof AuthManager === 'undefined') {
-        alert('Помилка: Система авторизації не завантажена. Перезавантажте сторінку.');
-        console.error('AuthManager is not defined');
+        alert('Для виконання цієї дії потрібна авторизація.\nБудь ласка, увійдіть через сторінку логіну.');
+        window.location.href = '../../login.html';
+        return;
+    }
+    
+    if (!AuthManager.isAuthenticated()) {
+        alert('Ваша сесія закінчилась.\nБудь ласка, увійдіть знову.');
+        window.location.href = '../../login.html';
         return;
     }
     
