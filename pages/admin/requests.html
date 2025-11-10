@@ -1216,7 +1216,46 @@ class ServiceRequestManager {
         
         $('#requestTimeline').html(timeline);
         
+        // Генеруємо кнопки в залежності від статусу
+        const quickActionsHtml = this.generateQuickActions(request);
+        $('#viewRequestModal .card-body').html(quickActionsHtml);
+        
         $('#viewRequestModal').modal('show');
+    }
+    
+    generateQuickActions(request) {
+        const currentUser = typeof AuthManager !== 'undefined' ? AuthManager.getCurrentUser() : null;
+        const isAdmin = currentUser && currentUser.role === 'admin';
+        
+        if (request.status === 'completed') {
+            // Для завершених заявок показуємо тільки кнопку повернення (тільки для admin)
+            return `
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i> Заявка завершена
+                </div>
+                ${isAdmin ? `
+                    <button class="btn btn-warning btn-block btn-sm" onclick="reopenRequest()">
+                        <i class="fas fa-undo"></i> Повернути в роботу
+                    </button>
+                ` : ''}
+            `;
+        }
+        
+        // Для активних заявок показуємо всі кнопки
+        return `
+            <button class="btn btn-success btn-block btn-sm" onclick="changeRequestStatus('in-progress')">
+                <i class="fas fa-play"></i> Розпочати роботу
+            </button>
+            <button class="btn btn-info btn-block btn-sm" onclick="assignTechnician()">
+                <i class="fas fa-user-plus"></i> Призначити техніка
+            </button>
+            <button class="btn btn-warning btn-block btn-sm" onclick="addComment()">
+                <i class="fas fa-comment"></i> Додати коментар
+            </button>
+            <button class="btn btn-primary btn-block btn-sm" onclick="completeRequest()">
+                <i class="fas fa-check"></i> Завершити
+            </button>
+        `;
     }
 
     async editRequest(requestId) {
@@ -1370,6 +1409,12 @@ function assignTechnician() {
         return;
     }
     
+    // Перевірка чи заявка не завершена
+    if (window.serviceManager?.currentRequest?.status === 'completed') {
+        alert('Неможливо призначити техніка.\nЦя заявка вже завершена.\n\nЯкщо потрібно внести зміни, спочатку поверніть заявку в роботу.');
+        return;
+    }
+    
     const currentUser = AuthManager.getCurrentUser();
     if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'dispatcher')) {
         alert('У вас немає прав для призначення техніків');
@@ -1391,6 +1436,12 @@ async function changeRequestStatus(newStatus) {
     if (!AuthManager.isAuthenticated()) {
         alert('Ваша сесія закінчилась.\nБудь ласка, увійдіть знову.');
         window.location.href = '../../login.html';
+        return;
+    }
+    
+    // Перевірка чи заявка не завершена
+    if (window.serviceManager?.currentRequest?.status === 'completed') {
+        alert('Неможливо змінити статус.\nЦя заявка вже завершена.\n\nЯкщо потрібно внести зміни, спочатку поверніть заявку в роботу.');
         return;
     }
     
@@ -1442,6 +1493,12 @@ async function addComment() {
     if (!AuthManager.isAuthenticated()) {
         alert('Ваша сесія закінчилась.\nБудь ласка, увійдіть знову.');
         window.location.href = '../../login.html';
+        return;
+    }
+    
+    // Перевірка чи заявка не завершена
+    if (window.serviceManager?.currentRequest?.status === 'completed') {
+        alert('Неможливо додати коментар.\nЦя заявка вже завершена.');
         return;
     }
     
@@ -1542,6 +1599,68 @@ async function completeRequest() {
     }
 }
 
+async function reopenRequest() {
+    // Перевірка наявності AuthManager
+    if (typeof AuthManager === 'undefined') {
+        alert('Для виконання цієї дії потрібна авторизація.\nБудь ласка, увійдіть через сторінку логіну.');
+        window.location.href = '../../login.html';
+        return;
+    }
+    
+    if (!AuthManager.isAuthenticated()) {
+        alert('Ваша сесія закінчилась.\nБудь ласка, увійдіть знову.');
+        window.location.href = '../../login.html';
+        return;
+    }
+    
+    // Перевірка ролі - тільки admin може повертати в роботу
+    const currentUser = AuthManager.getCurrentUser();
+    if (!currentUser || currentUser.role !== 'admin') {
+        alert('Тільки адміністратор може повертати завершені заявки в роботу');
+        return;
+    }
+    
+    if (!window.serviceManager || !window.serviceManager.currentRequest) {
+        alert('Заявка не обрана');
+        return;
+    }
+    
+    if (!confirm('Ви впевнені, що хочете повернути цю заявку в роботу?\n\nЗаявка отримає статус "В роботі" і її можна буде редагувати.')) {
+        return;
+    }
+    
+    try {
+        const requestId = window.serviceManager.currentRequest.id;
+        
+        console.log(`Повернення заявки ${requestId} в роботу`);
+        
+        const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/status`, {
+            method: 'PATCH',
+            body: JSON.stringify({ status: 'in-progress' })
+        });
+        
+        if (!response || !response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Помилка відновлення заявки');
+        }
+        
+        const result = await response.json();
+        
+        alert('Заявку повернуто в роботу!');
+        
+        // Закриваємо модальне вікно
+        $('#viewRequestModal').modal('hide');
+        
+        // Перезавантажуємо список заявок
+        await window.serviceManager.loadRequests();
+        window.serviceManager.renderRequests();
+        
+    } catch (error) {
+        console.error('Помилка відновлення заявки:', error);
+        alert('Не вдалося повернути заявку в роботу: ' + error.message);
+    }
+}
+
 async function showAssignTechnicianModal() {
     // Перевірка наявності AuthManager
     if (typeof AuthManager === 'undefined') {
@@ -1610,7 +1729,8 @@ async function showAssignTechnicianModal() {
                                 </div>
                                 <div class="form-group">
                                     <label for="deadline">Термін виконання:</label>
-                                    <input type="datetime-local" class="form-control" id="deadline">
+                                    <input type="datetime-local" class="form-control" id="deadline" min="${new Date().toISOString().slice(0, 16)}">
+                                    <small class="form-text text-muted">Можна обрати тільки поточну дату або майбутню</small>
                                 </div>
                             </form>
                         </div>
