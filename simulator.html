@@ -713,17 +713,22 @@
             const result = await makeAPICall('/api/auth/login', 'POST', testCredentials);
             
             if (result.success && result.data) {
-                // API v2 повертає токен в data.token
-                const token = result.data.token || result.data.accessToken;
+                // API v2 повертає: { success: true, data: { token, user } }
+                const apiData = result.data.data || result.data;
+                const token = apiData.token || apiData.accessToken;
+                
                 if (token) {
                     authToken = token;
                     localStorage.setItem('test_token', token);
                     logResult('✅ Логін успішний. Токен отримано і збережено.', 'success');
+                    console.log('🔑 Auth token:', token.substring(0, 50) + '...');
                 } else {
                     logResult('❌ Токен не знайдено у відповіді', 'error');
+                    console.error('Response structure:', result);
                 }
             } else {
-                logResult('❌ Помилка логіну: ' + (result.error || result.data?.message || 'Невідома помилка'), 'error');
+                const errorMsg = result.data?.message || result.error || 'Невідома помилка';
+                logResult('❌ Помилка логіну: ' + errorMsg, 'error');
             }
             
             completedTests++;
@@ -781,11 +786,15 @@
             
             const result = await makeAPICall('/api/lifts');
             
-            if (result.success) {
-                const liftsCount = Array.isArray(result.data) ? result.data.length : 0;
+            if (result.success && result.data) {
+                // API v2 повертає: { success: true, data: { lifts: [...] } }
+                const apiData = result.data.data || result.data;
+                const lifts = apiData.lifts || apiData;
+                const liftsCount = Array.isArray(lifts) ? lifts.length : 0;
                 logResult(`✅ Отримано ${liftsCount} ліфтів з бази даних`, 'success');
             } else {
-                logResult('❌ Помилка отримання ліфтів: ' + (result.error || 'API недоступний'), 'error');
+                const errorMsg = result.data?.message || result.error || 'API недоступний';
+                logResult('❌ Помилка отримання ліфтів: ' + errorMsg, 'error');
             }
             
             completedTests++;
@@ -807,12 +816,18 @@
 
             const result = await makeAPICall('/api/lifts', 'POST', testLift);
             
-            if (result.success) {
-                logResult('✅ Ліфт успішно створено. ID: ' + (result.data.id || result.data._id), 'success');
-                // Зберігаємо ID для подальшого тестування
-                localStorage.setItem('test_lift_id', result.data.id || result.data._id);
+            if (result.success && result.data) {
+                const apiData = result.data.data || result.data;
+                const liftId = apiData.id || apiData._id || apiData.lift?._id;
+                if (liftId) {
+                    logResult('✅ Ліфт успішно створено. ID: ' + liftId, 'success');
+                    localStorage.setItem('test_lift_id', liftId);
+                } else {
+                    logResult('✅ Ліфт створено', 'success');
+                }
             } else {
-                logResult('❌ Помилка створення ліфта: ' + (result.error || 'Невідома помилка'), 'error');
+                const errorMsg = result.data?.message || result.error || 'Невідома помилка';
+                logResult('❌ Помилка створення ліфта: ' + errorMsg, 'error');
             }
             
             completedTests++;
@@ -824,11 +839,14 @@
             
             const result = await makeAPICall('/api/requests');
             
-            if (result.success) {
-                const requestsCount = Array.isArray(result.data) ? result.data.length : 0;
+            if (result.success && result.data) {
+                const apiData = result.data.data || result.data;
+                const requests = apiData.requests || apiData;
+                const requestsCount = Array.isArray(requests) ? requests.length : 0;
                 logResult(`✅ Отримано ${requestsCount} заявок з бази даних`, 'success');
             } else {
-                logResult('❌ Помилка отримання заявок: ' + (result.error || 'API недоступний'), 'error');
+                const errorMsg = result.data?.message || result.error || 'API недоступний';
+                logResult('❌ Помилка отримання заявок: ' + errorMsg, 'error');
             }
             
             completedTests++;
