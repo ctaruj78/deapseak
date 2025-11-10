@@ -514,6 +514,9 @@
         const API_BASE_URL = getApiBaseUrl();
         console.log('🚀 Simulator using API URL:', API_BASE_URL);
 
+        // Токен авторизації
+        let authToken = null;
+
         // Глобальні змінні
         let testResults = [];
         let totalTests = 0;
@@ -528,6 +531,13 @@
             setInterval(updateUptime, 1000);
             checkSystemStatus();
             setInterval(checkSystemStatus, 30000); // Перевірка кожні 30 секунд
+            
+            // Завантажуємо токен якщо є
+            const savedToken = localStorage.getItem('test_token');
+            if (savedToken) {
+                authToken = savedToken;
+                console.log('✅ Токен завантажено з localStorage');
+            }
         });
 
         function updateUptime() {
@@ -615,6 +625,11 @@
                     }
                 };
 
+                // Додаємо токен авторизації якщо є
+                if (authToken) {
+                    options.headers['Authorization'] = `Bearer ${authToken}`;
+                }
+
                 if (data) {
                     options.body = JSON.stringify(data);
                 }
@@ -691,17 +706,24 @@
             logResult('🔑 Тестування входу в систему...', 'info');
             
             const testCredentials = {
-                username: 'admin',
-                password: 'admin123'
+                login: 'ctaruj78@gmail.com',
+                password: 'Solomia1704fel!'
             };
 
             const result = await makeAPICall('/api/auth/login', 'POST', testCredentials);
             
-            if (result.success) {
-                logResult('✅ Логін успішний. Токен отримано.', 'success');
-                localStorage.setItem('test_token', result.data.token);
+            if (result.success && result.data) {
+                // API v2 повертає токен в data.token
+                const token = result.data.token || result.data.accessToken;
+                if (token) {
+                    authToken = token;
+                    localStorage.setItem('test_token', token);
+                    logResult('✅ Логін успішний. Токен отримано і збережено.', 'success');
+                } else {
+                    logResult('❌ Токен не знайдено у відповіді', 'error');
+                }
             } else {
-                logResult('❌ Помилка логіну: ' + (result.error || 'Невідома помилка'), 'error');
+                logResult('❌ Помилка логіну: ' + (result.error || result.data?.message || 'Невідома помилка'), 'error');
             }
             
             completedTests++;
