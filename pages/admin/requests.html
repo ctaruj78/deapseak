@@ -45,7 +45,8 @@
 
         .status-new { background: #e3f2fd; color: #1976d2; }
         .status-assigned { background: #fff3e0; color: #f57c00; }
-        .status-in-progress { background: #e8f5e8; color: #388e3c; }
+        .status-in-progress,
+        .status-in_progress { background: #e8f5e8; color: #388e3c; }
         .status-completed { background: #f3e5f5; color: #7b1fa2; }
         .status-cancelled { background: #ffebee; color: #d32f2f; }
 
@@ -372,7 +373,7 @@
                                 <option value="">Всі статуси</option>
                                 <option value="new">Нові</option>
                                 <option value="assigned">Призначені</option>
-                                <option value="in-progress">В роботі</option>
+                                <option value="in_progress">В роботі</option>
                                 <option value="completed">Завершені</option>
                             </select>
                         </div>
@@ -568,7 +569,7 @@
                                 <h6>Швидкі дії</h6>
                             </div>
                             <div class="card-body">
-                                <button class="btn btn-success btn-block btn-sm" onclick="changeRequestStatus('in-progress')">
+                                <button class="btn btn-success btn-block btn-sm" onclick="changeRequestStatus('in_progress')">
                                     <i class="fas fa-play"></i> Розпочати роботу
                                 </button>
                                 <button class="btn btn-info btn-block btn-sm" onclick="assignTechnician()">
@@ -871,7 +872,7 @@ class ServiceRequestManager {
                 liftAddress: 'пр-т Перемоги, 42',
                 type: 'repair',
                 priority: 'high',
-                status: 'in-progress',
+                status: 'in_progress',
                 title: 'Ремонт дверей',
                 description: 'Двері ліфта не закриваються повністю, потрібна заміна сенсора',
                 technician: 'tech2',
@@ -1090,7 +1091,7 @@ class ServiceRequestManager {
         const texts = {
             new: 'Нова',
             assigned: 'Призначена',
-            'in-progress': 'В роботі',
+            in_progress: 'В роботі',
             completed: 'Завершена',
             cancelled: 'Скасована'
         };
@@ -1243,7 +1244,7 @@ class ServiceRequestManager {
         
         // Для активних заявок показуємо всі кнопки
         return `
-            <button class="btn btn-success btn-block btn-sm" onclick="changeRequestStatus('in-progress')">
+            <button class="btn btn-success btn-block btn-sm" onclick="changeRequestStatus('in_progress')">
                 <i class="fas fa-play"></i> Розпочати роботу
             </button>
             <button class="btn btn-info btn-block btn-sm" onclick="assignTechnician()">
@@ -1636,7 +1637,7 @@ async function reopenRequest() {
         
         const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/status`, {
             method: 'PATCH',
-            body: JSON.stringify({ status: 'in-progress' })
+            body: JSON.stringify({ status: 'in_progress' })
         });
         
         if (!response || !response.ok) {
