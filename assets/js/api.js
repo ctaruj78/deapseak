@@ -1,4 +1,19 @@
-const API_BASE_URL = 'https://api.liftmanager.com/v1';
+// Функція для отримання базового URL API
+function getApiBaseUrl() {
+    // Перевіряємо чи є AppConfig
+    if (typeof AppConfig !== 'undefined' && AppConfig.config && AppConfig.config.api) {
+        return AppConfig.config.api.baseUrl;
+    }
+    
+    // Fallback: автоматичне визначення для Codespaces
+    if (window.location.hostname.includes('github.dev')) {
+        return window.location.origin.replace('-5000.', '-3002.');
+    }
+    
+    // Fallback: localhost
+    return 'http://localhost:3002';
+}
+
 const IS_DEVELOPMENT = window.location.hostname === 'localhost' || 
                        window.location.hostname === '127.0.0.1' ||
                        window.location.hostname === '';
@@ -10,7 +25,7 @@ class LiftAPI {
             return this.mockRequest(endpoint, method, data);
         }
 
-        const url = `${API_BASE_URL}${endpoint}`;
+        const url = `${getApiBaseUrl()}${endpoint}`;
         const headers = {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${AuthManager.getAuthToken()}`
@@ -288,13 +303,6 @@ class LiftAPI {
     // Офлайн функціонал
     static async syncOfflineData() {
         const pendingActions = StorageManager.load('pending_actions') || [];
-        
-        for (const action of pendingActions) {
-            try {
-                await this.request
-    // Офлайн функціонал
-    static async syncOfflineData() {
-        const pendingActions = StorageManager.load('pending_actions') || [];
         const successfulActions = [];
         
         for (const action of pendingActions) {
@@ -478,7 +486,7 @@ class LiftAPI {
 
     static async sendMetricsToServer(metrics) {
         try {
-            await fetch(`${API_BASE_URL}/metrics`, {
+            await fetch(`${getApiBaseUrl()}/metrics`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -564,7 +572,7 @@ class LiftAPI {
         formData.append('file', file);
 
         try {
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            const response = await fetch(`${getApiBaseUrl()}${endpoint}`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${AuthManager.getAuthToken()}`
@@ -583,7 +591,7 @@ class LiftAPI {
     static async healthCheck() {
         try {
             const startTime = Date.now();
-            const response = await fetch(`${API_BASE_URL}/health`, {
+            const response = await fetch(`${getApiBaseUrl()}/health`, {
                 method: 'GET',
                 headers: {
                     'Cache-Control': 'no-cache'

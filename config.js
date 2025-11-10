@@ -4,16 +4,21 @@ class AppConfig {
         // Перевіряємо чи це GitHub Codespaces
         if (window.location.hostname.includes('github.dev')) {
             // Замінюємо порт 5000 (frontend) на 3002 (backend)
-            return window.location.origin.replace('-5000.', '-3002.');
+            const backendUrl = window.location.origin.replace('-5000.', '-3002.');
+            console.log('🌐 Codespaces detected - Backend URL:', backendUrl);
+            return backendUrl;
         }
         // Локальна розробка
+        console.log('💻 Local development - Backend URL: http://localhost:3002');
         return 'http://localhost:3002';
     }
 
     static config = {
         // Базові налаштування API - ВИКОРИСТОВУЄМО V2 з MongoDB!
         api: {
-            baseUrl: AppConfig.getBaseUrl(),
+            get baseUrl() {
+                return AppConfig.getBaseUrl();
+            },
             timeout: 30000,
             retryAttempts: 3,
             retryDelay: 1000,
@@ -66,7 +71,10 @@ class AppConfig {
             StorageManager.encryptionKey = this.config.security.encryptionKey;
         }
 
-        console.log('Конфігурація застосована:', this.config);
+        console.log('✅ Конфігурація застосована:', {
+            baseUrl: this.config.api.baseUrl,
+            useMockData: this.config.development.useMockData
+        });
     }
 
     static get(key) {
