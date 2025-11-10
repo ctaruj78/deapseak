@@ -660,20 +660,72 @@ class ServiceRequestManager {
         });
     }
 
-    loadRequests() {
+    async loadRequests() {
         try {
-            const savedRequests = localStorage.getItem('serviceRequests');
-            if (savedRequests) {
-                this.requests = JSON.parse(savedRequests);
+            // Завантажуємо заявки з API v2
+            const response = await AuthManager.fetchWithAuth('/api/requests');
+            
+            if (response && response.ok) {
+                const result = await response.json();
+                
+                // API v2 повертає: { success: true, data: { requests: [...] } }
+                if (result.success && result.data) {
+                    const apiRequests = result.data.requests || result.data;
+                    
+                    // Конвертуємо формат API в формат сторінки
+                    this.requests = apiRequests.map(req => ({
+                        id: req._id,
+                        liftId: req.lift?._id || req.lift,
+                        liftAddress: req.lift?.address ? 
+                            `${req.lift.address.street}, ${req.lift.address.city}` : 
+                            'Адреса невідома',
+                        type: this.mapStatusToType(req.status),
+                        priority: req.priority || 'medium',
+                        status: req.status || 'new',
+                        title: req.title,
+                        description: req.description,
+                        technician: req.assignedTo?._id || req.assignedTo,
+                        createdAt: req.createdAt,
+                        scheduledAt: req.scheduledDate,
+                        completedAt: req.completedDate,
+                        createdBy: req.client?._id || req.client,
+                        timeline: req.comments?.map(c => ({
+                            timestamp: c.createdAt,
+                            action: 'comment',
+                            message: c.text,
+                            user: c.user?.username || 'Unknown'
+                        })) || []
+                    }));
+                    
+                    console.log('✅ Завантажено заявок з API:', this.requests.length);
+                } else {
+                    console.warn('⚠️ Невірний формат відповіді API, використовую demo дані');
+                    this.loadDemoRequests();
+                }
             } else {
+                console.warn('⚠️ API недоступний, використовую demo дані');
                 this.loadDemoRequests();
             }
+            
             this.renderRequests();
             this.updateStatistics();
         } catch (error) {
-            console.error('Помилка завантаження заявок:', error);
+            console.error('❌ Помилка завантаження заявок:', error);
             this.loadDemoRequests();
+            this.renderRequests();
+            this.updateStatistics();
         }
+    }
+    
+    // Допоміжна функція для конвертації статусу
+    mapStatusToType(status) {
+        const typeMap = {
+            'new': 'emergency',
+            'assigned': 'maintenance',
+            'in_progress': 'repair',
+            'completed': 'inspection'
+        };
+        return typeMap[status] || 'maintenance';
     }
 
     loadDemoRequests() {

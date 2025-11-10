@@ -3386,11 +3386,15 @@
         
         const result = await apiCall('/api/lifts');
         
-        if (result.success) {
-            console.log('✅ Ліфти завантажено з API:', result.data.length);
-            return result.data;
+        if (result.success && result.data) {
+            // API v2 повертає: { success: true, data: { lifts: [...] } }
+            const apiData = result.data.data || result.data;
+            const lifts = apiData.lifts || apiData;
+            
+            console.log('✅ Ліфти завантажено з API:', lifts.length);
+            return Array.isArray(lifts) ? lifts : [];
         } else {
-            console.error('❌ Помилка завантаження ліфтів:', result.error);
+            console.error('❌ Помилка завантаження ліфтів:', result.error || 'Unknown error');
             // Fallback до localStorage якщо API недоступний
             return JSON.parse(localStorage.getItem('lifts') || '[]');
         }
@@ -3779,6 +3783,11 @@
     
     // Ініціалізація при завантаженні сторінки
     checkAuthOnLoad();
+    
+    // Завантажуємо ліфти з API після перевірки авторизації
+    setTimeout(() => {
+        refreshLiftsDisplay();
+    }, 1000);
     
     </script>
 </body>
