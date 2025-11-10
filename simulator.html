@@ -792,6 +792,11 @@
                 const lifts = apiData.lifts || apiData;
                 const liftsCount = Array.isArray(lifts) ? lifts.length : 0;
                 logResult(`✅ Отримано ${liftsCount} ліфтів з бази даних`, 'success');
+                
+                // Зберігаємо ID першого ліфта для тестів
+                if (lifts.length > 0) {
+                    localStorage.setItem('test_lift_id', lifts[0]._id || lifts[0].id);
+                }
             } else {
                 const errorMsg = result.data?.message || result.error || 'API недоступний';
                 logResult('❌ Помилка отримання ліфтів: ' + errorMsg, 'error');
@@ -805,13 +810,23 @@
             logResult('➕ Тестування створення ліфта (POST /api/lifts)...', 'info');
             
             const testLift = {
-                address: 'Тестова адреса, 123',
                 municipalNumber: 'TEST-' + Date.now(),
-                type: 'Пасажирський',
-                loadCapacity: 1000,
-                floorCount: 10,
-                manufacturingYear: 2023,
-                status: 'active'
+                address: {
+                    street: 'Тестова вулиця, 123',
+                    city: 'Київ',
+                    zipCode: '01001',
+                    country: 'Ukraine'
+                },
+                location: {
+                    type: 'Point',
+                    coordinates: [30.5234, 50.4501] // [longitude, latitude] Київ
+                },
+                manufacturer: 'Test Manufacturer',
+                model: 'Test Model X',
+                capacity: 1000,
+                floors: 10,
+                installationDate: new Date('2023-01-01'),
+                status: 'operational'
             };
 
             const result = await makeAPICall('/api/lifts', 'POST', testLift);
@@ -856,20 +871,32 @@
         async function testCreateRequestAPI() {
             logResult('🎫 Тестування створення заявки (POST /api/requests)...', 'info');
             
+            // Отримуємо ID ліфта для заявки
+            const liftId = localStorage.getItem('test_lift_id');
+            if (!liftId) {
+                logResult('❌ Не знайдено ID ліфта для створення заявки', 'error');
+                completedTests++;
+                updateProgress();
+                return;
+            }
+            
             const testRequest = {
+                lift: liftId,
                 title: 'Тестова заявка',
-                description: 'Автоматично створена заявка для тестування',
+                description: 'Автоматично створена заявка для тестування системи',
                 priority: 'medium',
-                type: 'maintenance',
-                status: 'open'
+                status: 'new'
             };
 
             const result = await makeAPICall('/api/requests', 'POST', testRequest);
             
-            if (result.success) {
-                logResult('✅ Заявка успішно створена. ID: ' + (result.data.id || result.data._id), 'success');
+            if (result.success && result.data) {
+                const apiData = result.data.data || result.data;
+                const requestId = apiData.id || apiData._id || apiData.request?._id;
+                logResult('✅ Заявка успішно створена. ID: ' + (requestId || 'unknown'), 'success');
             } else {
-                logResult('❌ Помилка створення заявки: ' + (result.error || 'Невідома помилка'), 'error');
+                const errorMsg = result.data?.message || result.error || 'Невідома помилка';
+                logResult('❌ Помилка створення заявки: ' + errorMsg, 'error');
             }
             
             completedTests++;
@@ -877,15 +904,18 @@
         }
 
         async function testUsersAPI() {
-            logResult('👥 Тестування API користувачів (GET /api/users)...', 'info');
+            logResult('👥 Тестування API користувачів (GET /api/auth/users)...', 'info');
             
-            const result = await makeAPICall('/api/users');
+            const result = await makeAPICall('/api/auth/users');
             
-            if (result.success) {
-                const usersCount = Array.isArray(result.data) ? result.data.length : 0;
+            if (result.success && result.data) {
+                const apiData = result.data.data || result.data;
+                const users = apiData.users || apiData;
+                const usersCount = Array.isArray(users) ? users.length : 0;
                 logResult(`✅ Отримано ${usersCount} користувачів з бази даних`, 'success');
             } else {
-                logResult('❌ Помилка отримання користувачів: ' + (result.error || 'API недоступний'), 'error');
+                const errorMsg = result.data?.message || result.error || 'API недоступний';
+                logResult('❌ Помилка отримання користувачів: ' + errorMsg, 'error');
             }
             
             completedTests++;
