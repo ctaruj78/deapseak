@@ -736,6 +736,15 @@ class ServiceRequestManager {
 
     async loadRequests() {
         try {
+            // Перевірка наявності AuthManager
+            if (typeof AuthManager === 'undefined' || !AuthManager.isAuthenticated || !AuthManager.isAuthenticated()) {
+                console.warn('⚠️ AuthManager не готовий або користувач не авторизований, використовую demo дані');
+                this.loadDemoRequests();
+                this.renderRequests();
+                this.updateStatistics();
+                return;
+            }
+            
             // Завантажуємо заявки з API v2
             const response = await AuthManager.fetchWithAuth('/api/requests');
             
@@ -1677,14 +1686,16 @@ function logout() {
 $(document).ready(function() {
     console.log('🚀 Запуск системи заявок на обслуговування...');
     
-    // Перевірка завантаження AuthManager
-    if (typeof AuthManager === 'undefined') {
-        console.error('❌ AuthManager не завантажено!');
-        alert('Помилка: Система авторизації не завантажена. Перезавантажте сторінку.');
-        return;
-    }
+    // М'яка перевірка завантаження AuthManager з затримкою
+    setTimeout(() => {
+        if (typeof AuthManager === 'undefined') {
+            console.error('❌ AuthManager не завантажено після затримки!');
+        } else {
+            console.log('✅ AuthManager завантажено');
+        }
+    }, 100);
     
-    console.log('✅ AuthManager завантажено');
+    // Ініціалізуємо serviceManager в будь-якому випадку
     window.serviceManager = new ServiceRequestManager();
 });
 
