@@ -309,6 +309,15 @@ class CRMController {
         this.checkAuth();
     }
 
+    // Функція для визначення API URL
+    getApiUrl() {
+        const hostname = window.location.hostname;
+        if (hostname.includes('app.github.dev')) {
+            return window.location.origin.replace('-5000.', '-3002.');
+        }
+        return 'http://localhost:3002';
+    }
+
     updateUserInfo() {
         const userName = `${this.userData.firstName || 'Користувач'} ${this.userData.lastName || ''}`.trim();
         
@@ -326,8 +335,8 @@ class CRMController {
             return;
         }
         
-        // Verify token with API
-        fetch('http://localhost:3001/api/verify-token', {
+        // Verify token with API (endpoint не існує в v2, можна видалити або замінити на /health)
+        fetch(this.getApiUrl() + '/health', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }

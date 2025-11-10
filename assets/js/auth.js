@@ -85,12 +85,12 @@ class AuthManager {
         
         // GitHub Codespaces
         if (hostname.includes('.app.github.dev')) {
-            const apiHost = hostname.replace(/(-\d+)(\.app\.github\.dev)/, '-3001$2');
+            const apiHost = hostname.replace(/(-\d+)(\.app\.github\.dev)/, '-3002$2');
             return `${window.location.protocol}//${apiHost}${endpoint}`;
         }
         // Локальна розробка
-        else if (window.location.port === '8080' || window.location.port === '3000' || window.location.hostname === 'localhost') {
-            return `http://localhost:3001${endpoint}`;
+        else if (window.location.port === '8080' || window.location.port === '5000' || window.location.port === '3000' || window.location.hostname === 'localhost') {
+            return `http://localhost:3002${endpoint}`;
         }
         // Відносний шлях
         return endpoint;
@@ -173,11 +173,11 @@ class AuthManager {
 function getApiUrl() {
     const hostname = window.location.hostname;
     if (hostname.includes('app.github.dev')) {
-        // GitHub Codespaces
-        return window.location.origin.replace('-8080.app.github.dev', '-3001.app.github.dev');
+        // GitHub Codespaces - замінюємо порт frontend (5000) на backend (3002)
+        return window.location.origin.replace('-5000.', '-3002.');
     } else {
         // Local development
-        return 'http://localhost:3001';
+        return 'http://localhost:3002';
     }
 }
 

@@ -3358,7 +3358,7 @@
         }
         
         try {
-            const response = await AuthManager.fetchWithAuth(`http://localhost:3001${endpoint}`, {
+            const response = await AuthManager.fetchWithAuth(endpoint, {
                 method: method,
                 body: data ? JSON.stringify(data) : null
             });

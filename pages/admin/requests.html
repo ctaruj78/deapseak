@@ -1208,7 +1208,7 @@ function completeRequest() {
 async function showAssignTechnicianModal() {
     try {
         // Завантаження списку техніків
-        const response = await AuthManager.fetchWithAuth('http://localhost:3001/api/users?role=tech');
+        const response = await AuthManager.fetchWithAuth('/api/auth/users?role=tech');
         
         if (!response || !response.ok) {
             throw new Error('Не вдалося завантажити список техніків');
