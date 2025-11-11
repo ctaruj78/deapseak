@@ -164,15 +164,14 @@ deapseak/
 - ✅ Role-based permissions
 - ✅ **Повна інтеграція всіх ролей з API v2** (Nov 11, 2025)
 - ✅ Admin, Dispatcher, Technician, Client - всі працюють через API
+- ✅ **Email нотифікації** (Nov 11, 2025) - Nodemailer integration
+- ✅ **WebSocket real-time updates** (Nov 11, 2025) - Socket.io integration
 
 ### В планах
-- 🚧 Email нотифікації
-- 🚧 WebSocket real-time updates
-- 🚧 Mobile app (React Native)
-- 🚧 QR код система для ліфтів
-- 🚧 Експорт звітів (PDF/Excel)
-- 🚧 Push notifications
-- 🚧 Offline mode support
+- � **QR код система для ліфтів** (library ready, needs endpoints)
+- 🚧 Експорт звітів (PDF/Excel) - implementation plan ready
+- 🚧 Push notifications (Firebase) - setup guide ready
+- 🚧 Offline mode support (Service Workers) - template ready
 
 ---
 
