@@ -17,6 +17,75 @@
 
 ---
 
+## ✅ ВИПРАВЛЕНО - Dispatcher Role (pages/dispatcher/assignments.html)
+
+### 1. **loadAssignments()**
+**Було:** `const assignments = this.getMyAssignments();` (localStorage)  
+**Стало:** Повна інтеграція з API
+```javascript
+- Використовує GET /api/requests
+- Отримує { success: true, data: { requests: [...] } }
+- Конвертує формат API в UI формат
+- Відображає assignedToName з populate
+```
+
+### 2. **assignTechnician(requestId)**
+**Було:** `prompt('Введіть ID техніка')` + console.log  
+**Стало:** Повна функціональність
+```javascript
+- Завантажує техніків через GET /api/auth/users?role=tech
+- Показує інтерактивний список для вибору
+- Призначає через POST /api/requests/:id/assign
+- Оновлює дані після успіху
+```
+
+### 3. **addComment(requestId)**
+**Було:** `console.log('Додано коментар')` (заглушка)  
+**Стало:** API інтеграція
+```javascript
+- Використовує POST /api/requests/:id/comment
+- Передає { text: comment }
+- Перезавантажує список після успіху
+```
+
+### 4. **completeRequest(requestId)**
+**Було:** `this.updateRequestStatus(requestId, 'completed')` (не працювало)  
+**Стало:** Окрема функція
+```javascript
+- Використовує POST /api/requests/:id/complete
+- Передає workDetails
+- Підтвердження через confirm()
+```
+
+### 5. **startWork(requestId)**
+**Було:** Викликала закоментовану `updateRequestStatus`  
+**Стало:** Повна функціональність
+```javascript
+- Використовує PATCH /api/requests/:id/status
+- Змінює статус на 'in_progress'
+- Оновлює UI після успіху
+```
+
+### 6. **updateRequestStatus(requestId, newStatus)**
+**Було:** `// apiCall('/api/requests', 'POST', ...)` (закоментовано)  
+**Стало:** Працююча функція
+```javascript
+- Використовує PATCH /api/requests/:id/status
+- Передає { status: newStatus }
+- Використовується іншими функціями
+```
+
+### 7. **approveRequest(requestId)**
+**Було:** Оновлювало localStorage  
+**Стало:** API інтеграція
+```javascript
+- Використовує PATCH /api/requests/:id/status
+- Змінює статус на 'assigned'
+- Оновлює список після успіху
+```
+
+---
+
 ## ✅ ВИПРАВЛЕНО - Admin Role (pages/admin/requests.html)
 
 ### 1. **changeRequestStatus(newStatus)**
@@ -82,21 +151,29 @@
 
 ## 🔄 ПОТРЕБУЄ ВИПРАВЛЕННЯ
 
-### Dispatcher Role (pages/dispatcher/assignments.html)
-- Використовує auth.js ✅
-- Потрібно перевірити функції призначення
-- Статус: 🔍 Requires investigation
+### ✅ Dispatcher Role (pages/dispatcher/assignments.html) - ВИПРАВЛЕНО!
+- ✅ Використовує auth.js
+- ✅ `loadAssignments()` - GET /api/requests
+- ✅ `assignTechnician()` - POST /api/requests/:id/assign
+- ✅ `addComment()` - POST /api/requests/:id/comment
+- ✅ `completeRequest()` - POST /api/requests/:id/complete
+- ✅ `startWork()` - PATCH /api/requests/:id/status
+- ✅ `updateRequestStatus()` - PATCH /api/requests/:id/status
+- ✅ `approveRequest()` - PATCH /api/requests/:id/status
+- Статус: ✅ **FIXED**
 
-### Technician Role (pages/tech/tasks.html)
-- ❌ Використовує локальне сховище
-- ❌ `completeTask()` працює з localStorage
-- ❌ `startWork()` не інтегровано з API
-- Статус: 🚨 Needs full refactoring
+### ✅ Technician Role (pages/tech/tasks.html) - ВЖЕ ВИПРАВЛЕНО!
+- ✅ Використовує API v2
+- ✅ `loadTasks()` - GET /api/requests
+- ✅ `completeTask()` - POST /api/requests/:id/complete
+- ✅ `startTask()` - PATCH /api/requests/:id/status
+- Статус: ✅ **ALREADY FIXED**
 
 ### Client Role (pages/client/requests.html)
-- Потрібно перевірити чи існує
-- Клієнти можуть створювати заявки
-- Статус: ❓ Unknown
+- ❌ Використовує localStorage
+- ❌ `createRequest()` не використовує API
+- ❌ `cancelRequest()` не використовує API
+- Статус: 🚨 **Needs refactoring**
 
 ---
 
