@@ -673,10 +673,45 @@
             }
             
             // Завантажити та відобразити призначення
-            loadAssignments() {
-                const assignments = this.getMyAssignments();
-                this.displayAssignments(assignments);
-                this.updateStats(assignments);
+            // Завантажити призначення з API
+            async loadAssignments() {
+                try {
+                    const response = await AuthManager.fetchWithAuth('/api/requests');
+                    
+                    if (!response || !response.ok) {
+                        throw new Error('Не вдалося завантажити призначення');
+                    }
+                    
+                    const result = await response.json();
+                    
+                    if (result.success && result.data) {
+                        // API v2 повертає: { success: true, data: { requests: [...] } }
+                        const apiRequests = result.data.requests || result.data;
+                        
+                        // Конвертуємо формат API в формат UI
+                        const assignments = apiRequests.map(req => ({
+                            id: req._id,
+                            liftId: req.lift?.municipalNumber || req.lift?._id || 'Невідомо',
+                            liftAddress: req.lift?.address ? 
+                                `${req.lift.address.street}, ${req.lift.address.city}` : 
+                                'Адреса невідома',
+                            description: req.description,
+                            priority: req.priority || 'medium',
+                            status: req.status || 'new',
+                            createdAt: req.createdAt,
+                            assignedTo: req.assignedTo?._id,
+                            assignedToName: req.assignedTo ? 
+                                `${req.assignedTo.firstName} ${req.assignedTo.lastName}` : null
+                        }));
+                        
+                        this.displayAssignments(assignments);
+                        this.updateStats(assignments);
+                    }
+                    
+                } catch (error) {
+                    console.error('Помилка завантаження призначень:', error);
+                    alert('Помилка завантаження призначень: ' + error.message);
+                }
             }
             
             displayAssignments(assignments) {
@@ -717,7 +752,7 @@
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <small class="text-muted">Призначено:</small>
-                                    <p class="mb-0">${this.getTechnicianName(assignment.assignedTo) || 'Не призначено'}</p>
+                                    <p class="mb-0">${assignment.assignedToName || 'Не призначено'}</p>
                                 </div>
                                 <div class="col-md-6">
                                     <small class="text-muted">Створено:</small>
@@ -776,17 +811,24 @@
                 }
             }
             
-            approveRequest(requestId) {
-                const request = this.integration.getRequest(requestId);
-                if (request) {
-                    request.status = 'approved';
-                    request.approvedBy = this.currentUser.id;
-                    request.approvedAt = new Date().toISOString();
+            async approveRequest(requestId) {
+                try {
+                    const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/status`, {
+                        method: 'PATCH',
+                        body: JSON.stringify({ status: 'assigned' })
+                    });
                     
-                    this.integration.updateRequest(requestId, request);
-                    this.loadAssignments();
+                    if (!response || !response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.message || 'Помилка підтвердження');
+                    }
                     
-                    toastr.success('Заявку підтверджено!');
+                    alert('Заявку підтверджено!');
+                    await this.loadAssignments();
+                    
+                } catch (error) {
+                    console.error('Помилка підтвердження заявки:', error);
+                    alert('Не вдалося підтвердити заявку: ' + error.message);
                 }
             }
             
@@ -940,47 +982,165 @@
                 // 🎯 ГОЛОВНІ ФУНКЦІЇ ДЛЯ РОБОТИ З ЗАЯВКАМИ
                 
                 // Розпочати роботу
-                startWork: function(requestId) {
-                    console.log('Розпочати роботу з заявкою:', requestId);
-                    if (confirm('Розпочати роботу над цією заявкою?')) {
-                        // Тут буде API виклик для оновлення статусу
-                        this.updateRequestStatus(requestId, 'in-progress');
+                startWork: async function(requestId) {
+                    if (!confirm('Розпочати роботу над цією заявкою?')) {
+                        return;
+                    }
+                    
+                    try {
+                        const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/status`, {
+                            method: 'PATCH',
+                            body: JSON.stringify({ status: 'in_progress' })
+                        });
+                        
+                        if (!response || !response.ok) {
+                            const error = await response.json();
+                            throw new Error(error.message || 'Помилка зміни статусу');
+                        }
+                        
                         alert('Роботу розпочато!');
+                        await this.loadAssignments();
+                        
+                    } catch (error) {
+                        console.error('Помилка початку роботи:', error);
+                        alert('Не вдалося розпочати роботу: ' + error.message);
                     }
                 },
                 
                 // Призначити техніка  
-                assignTechnician: function(requestId) {
-                    const technician = prompt('Введіть ID техніка або виберіть зі списку:');
-                    if (technician) {
-                        // API виклик для призначення
-                        console.log(`Призначення техніка ${technician} до заявки ${requestId}`);
-                        alert(`Техніка ${technician} призначено до заявки ${requestId}`);
+                assignTechnician: async function(requestId) {
+                    try {
+                        // Завантажуємо список техніків
+                        const response = await AuthManager.fetchWithAuth('/api/auth/users?role=tech');
+                        
+                        if (!response || !response.ok) {
+                            throw new Error('Не вдалося завантажити список техніків');
+                        }
+                        
+                        const result = await response.json();
+                        const technicians = result.data?.users || result.users || [];
+                        
+                        if (technicians.length === 0) {
+                            alert('Немає доступних техніків');
+                            return;
+                        }
+                        
+                        // Створюємо список для вибору
+                        let techList = 'Оберіть техніка:\n\n';
+                        technicians.forEach((tech, index) => {
+                            techList += `${index + 1}. ${tech.firstName} ${tech.lastName} (${tech.email})\n`;
+                        });
+                        
+                        const choice = prompt(techList + '\nВведіть номер:');
+                        if (!choice) return;
+                        
+                        const techIndex = parseInt(choice) - 1;
+                        if (techIndex < 0 || techIndex >= technicians.length) {
+                            alert('Невірний вибір');
+                            return;
+                        }
+                        
+                        const selectedTech = technicians[techIndex];
+                        
+                        // Призначаємо техніка
+                        const assignResponse = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/assign`, {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                technicianId: selectedTech._id,
+                                instructions: 'Призначено диспетчером'
+                            })
+                        });
+                        
+                        if (!assignResponse || !assignResponse.ok) {
+                            const error = await assignResponse.json();
+                            throw new Error(error.message || 'Помилка призначення');
+                        }
+                        
+                        alert(`Техніка ${selectedTech.firstName} ${selectedTech.lastName} призначено!`);
+                        await this.loadAssignments();
+                        
+                    } catch (error) {
+                        console.error('Помилка призначення техніка:', error);
+                        alert('Не вдалося призначити техніка: ' + error.message);
                     }
                 },
                 
                 // Додати коментар
-                addComment: function(requestId) {
+                addComment: async function(requestId) {
                     const comment = prompt('Введіть коментар:');
-                    if (comment) {
-                        console.log(`Додано коментар до заявки ${requestId}:`, comment);
+                    if (!comment || comment.trim() === '') {
+                        return;
+                    }
+                    
+                    try {
+                        const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/comment`, {
+                            method: 'POST',
+                            body: JSON.stringify({ text: comment })
+                        });
+                        
+                        if (!response || !response.ok) {
+                            const error = await response.json();
+                            throw new Error(error.message || 'Помилка додавання коментаря');
+                        }
+                        
                         alert('Коментар додано!');
+                        await this.loadAssignments();
+                        
+                    } catch (error) {
+                        console.error('Помилка додавання коментаря:', error);
+                        alert('Не вдалося додати коментар: ' + error.message);
                     }
                 },
                 
                 // Завершити заявку
-                completeRequest: function(requestId) {
-                    if (confirm('Завершити цю заявку?')) {
-                        this.updateRequestStatus(requestId, 'completed');
+                completeRequest: async function(requestId) {
+                    if (!confirm('Завершити цю заявку?')) {
+                        return;
+                    }
+                    
+                    try {
+                        const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/complete`, {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                workDetails: {
+                                    summary: 'Завершено диспетчером'
+                                }
+                            })
+                        });
+                        
+                        if (!response || !response.ok) {
+                            const error = await response.json();
+                            throw new Error(error.message || 'Помилка завершення');
+                        }
+                        
                         alert('Заявку завершено!');
+                        await this.loadAssignments();
+                        
+                    } catch (error) {
+                        console.error('Помилка завершення заявки:', error);
+                        alert('Не вдалося завершити заявку: ' + error.message);
                     }
                 },
                 
                 // Оновити статус заявки
-                updateRequestStatus: function(requestId, newStatus) {
-                    console.log(`Оновлення статусу заявки ${requestId} на ${newStatus}`);
-                    // Тут буде реальний API виклик
-                    // apiCall('/api/requests', 'POST', { _id: requestId, status: newStatus });
+                updateRequestStatus: async function(requestId, newStatus) {
+                    try {
+                        const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/status`, {
+                            method: 'PATCH',
+                            body: JSON.stringify({ status: newStatus })
+                        });
+                        
+                        if (!response || !response.ok) {
+                            const error = await response.json();
+                            throw new Error(error.message || 'Помилка оновлення статусу');
+                        }
+                        
+                        await this.loadAssignments();
+                        
+                    } catch (error) {
+                        console.error('Помилка оновлення статусу:', error);
+                        throw error;
+                    }
                 }
             };
             
