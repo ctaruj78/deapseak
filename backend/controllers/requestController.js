@@ -1,5 +1,7 @@
 const { Request, Lift, User } = require('../models');
 const { AppError } = require('../middleware/errorHandler');
+const emailService = require('../services/emailService');
+const websocketService = require('../services/websocketService');
 
 /**
  * Створення нового запиту
@@ -34,6 +36,16 @@ exports.createRequest = async (req, res, next) => {
             { path: 'lift', select: 'municipalNumber address' },
             { path: 'client', select: 'firstName lastName email phone' }
         ]);
+
+        // Відправити email клієнту
+        if (request.client && request.client.email) {
+            emailService.sendNewRequestNotification(request, request.client).catch(err => 
+                console.error('Email send failed:', err)
+            );
+        }
+
+        // WebSocket: Повідомити адміна та диспетчера
+        websocketService.notifyNewRequest(request);
 
         res.status(201).json({
             success: true,
@@ -229,6 +241,18 @@ exports.assignRequest = async (req, res, next) => {
             { path: 'assignedTo', select: 'firstName lastName email phone' }
         ]);
 
+        // Відправити email клієнту та техніку
+        if (request.client && request.assignedTo) {
+            emailService.sendTechnicianAssignedNotification(
+                request, 
+                request.assignedTo, 
+                request.client
+            ).catch(err => console.error('Email send failed:', err));
+        }
+
+        // WebSocket: Повідомити всіх
+        websocketService.notifyRequestAssigned(request);
+
         res.json({
             success: true,
             message: 'Запит призначено техніку',
@@ -261,6 +285,7 @@ exports.updateRequestStatus = async (req, res, next) => {
             throw new AppError('Цей запит призначено іншому техніку', 403);
         }
 
+        const oldStatus = request.status;
         await request.changeStatus(status, req.user.id);
         await request.save();
 
@@ -269,6 +294,19 @@ exports.updateRequestStatus = async (req, res, next) => {
             { path: 'client', select: 'firstName lastName email phone' },
             { path: 'assignedTo', select: 'firstName lastName email phone' }
         ]);
+
+        // Відправити email про зміну статусу
+        if (request.client && request.client.email && oldStatus !== status) {
+            emailService.sendStatusChangeNotification(
+                request, 
+                request.client, 
+                oldStatus, 
+                status
+            ).catch(err => console.error('Email send failed:', err));
+        }
+
+        // WebSocket: Повідомити всіх про зміну статусу
+        websocketService.notifyStatusChange(request, oldStatus, status);
 
         res.json({
             success: true,
@@ -421,6 +459,17 @@ exports.completeRequest = async (req, res, next) => {
             { path: 'client', select: 'firstName lastName email phone' },
             { path: 'assignedTo', select: 'firstName lastName email phone' }
         ]);
+
+        // Відправити email клієнту про завершення
+        if (request.client && request.client.email) {
+            emailService.sendRequestCompletedNotification(
+                request, 
+                request.client
+            ).catch(err => console.error('Email send failed:', err));
+        }
+
+        // WebSocket: Повідомити всіх про завершення
+        websocketService.notifyRequestCompleted(request);
 
         res.json({
             success: true,

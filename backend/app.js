@@ -7,6 +7,7 @@ const { errorHandler } = require('./middleware/errorHandler');
 const authRoutes = require('./routes/authRoutes');
 const liftRoutes = require('./routes/liftRoutes');
 const requestRoutes = require('./routes/requestRoutes');
+const websocketService = require('./services/websocketService');
 
 const app = express();
 
@@ -92,6 +93,7 @@ const startServer = async (port = 3002) => {
 ║  Port: ${port}                                    ║
 ║  Environment: ${process.env.NODE_ENV || 'development'}                    ║
 ║  MongoDB: Connected ✓                          ║
+║  WebSocket: Enabled ✓                          ║
 ╠════════════════════════════════════════════════╣
 ║  Endpoints:                                    ║
 ║  • http://localhost:${port}/                      ║
@@ -99,9 +101,14 @@ const startServer = async (port = 3002) => {
 ║  • http://localhost:${port}/api/auth             ║
 ║  • http://localhost:${port}/api/lifts            ║
 ║  • http://localhost:${port}/api/requests         ║
+║  • ws://localhost:${port} (WebSocket)            ║
 ╚════════════════════════════════════════════════╝
             `);
         });
+        
+        // Ініціалізація WebSocket
+        websocketService.initialize(server);
+        
         process.on('SIGTERM', () => {
             console.log('SIGTERM received. Closing server...');
             server.close(() => {
