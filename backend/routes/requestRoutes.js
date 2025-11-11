@@ -19,8 +19,21 @@ router.get('/stats',
     requestController.getRequestsStats
 );
 
+// GET /api/requests/export/excel - Експорт заявок в Excel
+router.get('/export/excel', 
+    authenticate, 
+    authorizeRoles('admin', 'dispatcher'), 
+    requestController.exportRequestsExcel
+);
+
 // GET /api/requests/:id - Отримання запиту по ID
 router.get('/:id', authenticate, requestController.getRequestById);
+
+// GET /api/requests/:id/export/pdf - Експорт заявки в PDF
+router.get('/:id/export/pdf', 
+    authenticate, 
+    requestController.exportRequestPDF
+);
 
 // POST /api/requests - Створення нового запиту (всі авторизовані користувачі)
 router.post('/', authenticate, requestController.createRequest);

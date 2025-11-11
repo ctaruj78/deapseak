@@ -1,5 +1,6 @@
 const { Lift, User } = require('../models');
 const { AppError } = require('../middleware/errorHandler');
+const qrService = require('../services/qrService');
 
 exports.createLift = async (req, res, next) => {
     try {
@@ -177,6 +178,34 @@ exports.assignTechnician = async (req, res, next) => {
         const lift = await Lift.findByIdAndUpdate(req.params.id, { technician: technicianId }, { new: true }).populate('client').populate('technician');
         if (!lift) throw new AppError('Lift not found', 404);
         res.json({ success: true, message: 'Technician assigned', data: { lift } });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Генерація QR коду для ліфта
+ */
+exports.generateLiftQR = async (req, res, next) => {
+    try {
+        const lift = await Lift.findById(req.params.id);
+        
+        if (!lift) {
+            throw new AppError('Ліфт не знайдено', 404);
+        }
+
+        const format = req.query.format || 'dataURL';
+        const qrCode = await qrService.generateLiftQR(req.params.id, format);
+
+        if (format === 'buffer') {
+            res.set('Content-Type', 'image/png');
+            res.send(qrCode);
+        } else {
+            res.json({
+                success: true,
+                data: { qrCode }
+            });
+        }
     } catch (error) {
         next(error);
     }

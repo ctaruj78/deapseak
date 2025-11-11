@@ -2,6 +2,7 @@ const { Request, Lift, User } = require('../models');
 const { AppError } = require('../middleware/errorHandler');
 const emailService = require('../services/emailService');
 const websocketService = require('../services/websocketService');
+const exportService = require('../services/exportService');
 
 /**
  * Створення нового запиту
@@ -589,6 +590,62 @@ exports.getRequestsStats = async (req, res, next) => {
                     : 0
             }
         });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Експорт заявки в PDF
+ */
+exports.exportRequestPDF = async (req, res, next) => {
+    try {
+        const request = await Request.findById(req.params.id)
+            .populate('client', 'firstName lastName email phone')
+            .populate('assignedTo', 'firstName lastName email phone')
+            .populate('lift', 'municipalNumber');
+
+        if (!request) {
+            throw new AppError('Заявку не знайдено', 404);
+        }
+
+        const pdfBuffer = await exportService.exportRequestToPDF(request);
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=request-${request._id}.pdf`);
+        res.send(pdfBuffer);
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Експорт заявок в Excel
+ */
+exports.exportRequestsExcel = async (req, res, next) => {
+    try {
+        const { status, priority, startDate, endDate } = req.query;
+        const filter = {};
+
+        if (status) filter.status = status;
+        if (priority) filter.priority = priority;
+        if (startDate || endDate) {
+            filter.createdAt = {};
+            if (startDate) filter.createdAt.$gte = new Date(startDate);
+            if (endDate) filter.createdAt.$lte = new Date(endDate);
+        }
+
+        const requests = await Request.find(filter)
+            .populate('client', 'firstName lastName email')
+            .populate('assignedTo', 'firstName lastName email')
+            .populate('lift', 'municipalNumber')
+            .sort({ createdAt: -1 });
+
+        const excelBuffer = await exportService.exportRequestsToExcel(requests);
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename=requests-${Date.now()}.xlsx`);
+        res.send(excelBuffer);
     } catch (error) {
         next(error);
     }

@@ -28,6 +28,9 @@ router.get('/municipal/:municipalNumber', authenticate, liftController.getLiftBy
 // GET /api/lifts/:id - Отримання ліфта по ID
 router.get('/:id', authenticate, liftController.getLiftById);
 
+// GET /api/lifts/:id/qr - Генерація QR коду для ліфта
+router.get('/:id/qr', authenticate, liftController.generateLiftQR);
+
 // POST /api/lifts - Створення нового ліфта (admin, dispatcher)
 router.post('/', 
     authenticate, 

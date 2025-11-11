@@ -405,6 +405,9 @@
                             <button class="btn btn-primary" onclick="applyFilters()">
                                 <i class="fas fa-search"></i> Застосувати
                             </button>
+                            <button class="btn btn-success" onclick="exportToExcel()">
+                                <i class="fas fa-file-excel"></i> Excel
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -1223,6 +1226,16 @@ class ServiceRequestManager {
         const quickActionsHtml = this.generateQuickActions(request);
         $('#viewRequestModal .card-body').html(quickActionsHtml);
         
+        // Додаємо кнопку експорту PDF
+        const exportBtnHtml = `
+            <div class="mt-2">
+                <button class="btn btn-outline-danger btn-sm" onclick="exportRequestPDF('${request.id}')">
+                    <i class="fas fa-file-pdf"></i> Експортувати PDF
+                </button>
+            </div>
+        `;
+        $('#viewRequestModal .card-body').append(exportBtnHtml);
+        
         $('#viewRequestModal').modal('show');
     }
     
@@ -1355,6 +1368,82 @@ class ServiceRequestManager {
     clearFilters() {
         $('#filterType, #filterStatus, #filterPriority, #filterTechnician').val('');
         this.applyFilters();
+    }
+}
+
+// Export функції
+async function exportToExcel() {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            throw new Error('Не авторизовано');
+        }
+
+        const filterParams = new URLSearchParams();
+        const status = $('#filterStatus').val();
+        const priority = $('#filterPriority').val();
+        
+        if (status) filterParams.append('status', status);
+        if (priority) filterParams.append('priority', priority);
+
+        const response = await fetch(`${window.API_BASE_URL}/api/requests/export/excel?${filterParams.toString()}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Помилка експорту');
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `requests-${Date.now()}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        toastr.success('Експорт завершено');
+    } catch (error) {
+        console.error('Помилка експорту:', error);
+        toastr.error('Помилка експорту: ' + error.message);
+    }
+}
+
+async function exportRequestPDF(requestId) {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            throw new Error('Не авторизовано');
+        }
+
+        const response = await fetch(`${window.API_BASE_URL}/api/requests/${requestId}/export/pdf`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Помилка експорту PDF');
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `request-${requestId}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        toastr.success('PDF експортовано');
+    } catch (error) {
+        console.error('Помилка експорту PDF:', error);
+        toastr.error('Помилка експорту PDF: ' + error.message);
     }
 }
 
