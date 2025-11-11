@@ -350,7 +350,7 @@
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-8">
-                                            <button class="btn btn-primary btn-lg" onclick="requestsManager.createNewRequest()">
+                                            <button class="btn btn-primary btn-lg" onclick="$('#newRequestModal').modal('show')">
                                                 <i class="fas fa-plus"></i> Створити нову заявку
                                             </button>
                                         </div>
@@ -671,7 +671,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
-                    <button type="button" class="btn btn-primary" onclick="requestsManager.submitNewRequest()">
+                    <button type="button" class="btn btn-primary" onclick="clientRequestsManager.submitNewRequest()">
                         <i class="fas fa-paper-plane"></i> Відправити заявку
                     </button>
                 </div>
@@ -734,47 +734,91 @@
                        { id: 'client_001', firstName: 'Олена', lastName: 'Шевченко', role: 'client' };
             }
             
-            // Отримати заявки поточного клієнта
-            getMyRequests() {
-                return this.integration.getFilteredRequests('client', this.currentUser.id);
+            // Завантажити та відобразити заявки
+            async loadRequests() {
+                try {
+                    const response = await AuthManager.fetchWithAuth('/api/requests');
+                    
+                    if (response.success && response.data && response.data.requests) {
+                        const requests = response.data.requests;
+                        this.displayRequests(requests);
+                        this.updateStats(requests);
+                    } else {
+                        console.error('Failed to load requests:', response);
+                        toastr.error('Помилка завантаження заявок');
+                    }
+                } catch (error) {
+                    console.error('Error loading requests:', error);
+                    toastr.error('Помилка з\'єднання з сервером');
+                }
             }
             
-            // Створити нову заявку
-            createRequest(formData) {
-                const request = {
-                    id: this.integration.generateId(),
-                    type: formData.type || 'maintenance',
-                    liftId: formData.liftId,
-                    description: formData.description,
-                    priority: formData.priority || 'medium',
-                    status: 'new',
-                    createdBy: this.currentUser.id,
-                    createdAt: new Date().toISOString(),
-                    clientId: this.currentUser.id,
-                    clientName: `${this.currentUser.firstName} ${this.currentUser.lastName}`
-                };
-                
-                this.integration.createRequest(request);
-                this.loadRequests();
-                
-                toastr.success('Заявку успішно створено!');
-                return request.id;
+            // Створити нову заявку через API
+            async submitNewRequest() {
+                try {
+                    // Отримуємо дані з форми
+                    const type = document.getElementById('requestType').value;
+                    const liftId = document.getElementById('requestLift').value;
+                    const priority = document.getElementById('requestPriority').value;
+                    const title = document.getElementById('requestTitle').value;
+                    const description = document.getElementById('requestDescription').value;
+                    const urgent = document.getElementById('urgentRequest').checked;
+
+                    // Валідація
+                    if (!type || !liftId || !title || !description) {
+                        toastr.error('Будь ласка, заповніть всі обов\'язкові поля');
+                        return;
+                    }
+
+                    // Формуємо дані заявки
+                    const requestData = {
+                        type: type,
+                        liftId: liftId,
+                        title: title,
+                        description: description,
+                        priority: urgent ? 'high' : (priority || 'medium')
+                    };
+
+                    // Відправляємо через API
+                    const response = await AuthManager.fetchWithAuth('/api/requests', {
+                        method: 'POST',
+                        body: JSON.stringify(requestData)
+                    });
+
+                    if (response.success) {
+                        toastr.success('Заявку успішно створено!');
+                        $('#newRequestModal').modal('hide');
+                        document.getElementById('newRequestForm').reset();
+                        this.loadRequests();
+                    } else {
+                        toastr.error(response.message || 'Помилка створення заявки');
+                    }
+                } catch (error) {
+                    console.error('Error creating request:', error);
+                    toastr.error('Помилка з\'єднання з сервером');
+                }
             }
             
-            // Скасувати заявку
-            cancelRequest(requestId) {
-                const request = this.integration.getRequest(requestId);
-                if (request && request.status === 'new') {
-                    request.status = 'cancelled';
-                    request.cancelledAt = new Date().toISOString();
-                    request.cancelledBy = this.currentUser.id;
-                    
-                    this.integration.updateRequest(requestId, request);
-                    this.loadRequests();
-                    
-                    toastr.info('Заявку скасовано');
-                } else {
-                    toastr.error('Неможливо скасувати заявку в поточному статусі');
+            // Скасувати заявку через API
+            async cancelRequest(requestId) {
+                if (!confirm('Ви впевнені, що хочете скасувати цю заявку?')) {
+                    return;
+                }
+
+                try {
+                    const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/cancel`, {
+                        method: 'POST'
+                    });
+
+                    if (response.success) {
+                        toastr.info('Заявку скасовано');
+                        this.loadRequests();
+                    } else {
+                        toastr.error(response.message || 'Неможливо скасувати заявку в поточному статусі');
+                    }
+                } catch (error) {
+                    console.error('Error cancelling request:', error);
+                    toastr.error('Помилка з\'єднання з сервером');
                 }
             }
             
