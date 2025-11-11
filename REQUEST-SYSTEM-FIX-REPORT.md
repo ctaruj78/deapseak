@@ -149,6 +149,49 @@
 
 ---
 
+## ✅ ВИПРАВЛЕНО - Client Role (pages/client/requests.html)
+
+### 1. **loadRequests()**
+**Було:** `const requests = this.getMyRequests();` (localStorage через integration)  
+**Стало:** Повна інтеграція з API
+```javascript
+- Використовує GET /api/requests
+- Async/await з AuthManager.fetchWithAuth()
+- Обробляє response.data.requests формат
+- Error handling з toastr повідомленнями
+```
+
+### 2. **submitNewRequest()** (NEW FUNCTION)
+**Було:** Функції не існувало, кнопка викликала неіснуючий `requestsManager.submitNewRequest()`  
+**Стало:** Повна функціональність створення заявки
+```javascript
+- Отримує дані з форми (type, liftId, title, description, priority)
+- Валідація обов'язкових полів
+- Використовує POST /api/requests
+- Закриває модальне вікно після успіху
+- Перезавантажує список заявок
+```
+
+### 3. **cancelRequest(requestId)**
+**Було:** Змінювало localStorage через `this.integration.updateRequest()`  
+**Стало:** API інтеграція
+```javascript
+- Підтвердження через confirm()
+- Використовує POST /api/requests/:id/cancel
+- Оновлює список після успіху
+- Обробка помилок
+```
+
+### 4. **Fixed onclick references**
+**Було:** Кнопки викликали `requestsManager.submitNewRequest()` (неіснуючий об'єкт)  
+**Стало:** Виправлено на `clientRequestsManager.submitNewRequest()`
+```html
+- Modal submit button тепер працює
+- Create request button відкриває modal
+```
+
+---
+
 ## 🔄 ПОТРЕБУЄ ВИПРАВЛЕННЯ
 
 ### ✅ Dispatcher Role (pages/dispatcher/assignments.html) - ВИПРАВЛЕНО!
@@ -169,11 +212,12 @@
 - ✅ `startTask()` - PATCH /api/requests/:id/status
 - Статус: ✅ **ALREADY FIXED**
 
-### Client Role (pages/client/requests.html)
-- ❌ Використовує localStorage
-- ❌ `createRequest()` не використовує API
-- ❌ `cancelRequest()` не використовує API
-- Статус: 🚨 **Needs refactoring**
+### ✅ Client Role (pages/client/requests.html) - ВИПРАВЛЕНО!
+- ✅ Використовує API v2
+- ✅ `loadRequests()` - GET /api/requests
+- ✅ `submitNewRequest()` - POST /api/requests (створення заявки)
+- ✅ `cancelRequest()` - POST /api/requests/:id/cancel
+- Статус: ✅ **FIXED**
 
 ---
 
