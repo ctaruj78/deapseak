@@ -1,6 +1,7 @@
 const { Lift, User } = require('../models');
 const { AppError } = require('../middleware/errorHandler');
 const qrService = require('../services/qrService');
+const exportService = require('../services/exportService');
 
 exports.createLift = async (req, res, next) => {
     try {
@@ -206,6 +207,32 @@ exports.generateLiftQR = async (req, res, next) => {
                 data: { qrCode }
             });
         }
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Експорт ліфтів в Excel
+ */
+exports.exportLiftsToExcel = async (req, res, next) => {
+    try {
+        const { status, manufacturer } = req.query;
+        const filter = {};
+
+        if (status) filter.status = status;
+        if (manufacturer) filter.manufacturer = manufacturer;
+
+        const lifts = await Lift.find(filter)
+            .populate('client', 'firstName lastName email')
+            .populate('technician', 'firstName lastName email')
+            .sort({ createdAt: -1 });
+
+        const excelBuffer = await exportService.exportLiftsToExcel(lifts);
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename=lifts-${Date.now()}.xlsx`);
+        res.send(excelBuffer);
     } catch (error) {
         next(error);
     }

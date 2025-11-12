@@ -682,9 +682,9 @@
                                             <div class="form-group">
                                                 <label>Пошук:</label>
                                                 <div class="input-group">
-                                                    <input type="text" id="searchInput" class="form-control" placeholder="Пошук ліфтів...">
+                                                    <input type="text" id="searchInput" class="form-control" placeholder="Пошук по моделі, адресі, ID..." aria-label="Пошук ліфтів">
                                                     <div class="input-group-append">
-                                                        <button class="btn btn-default">
+                                                        <button class="btn btn-primary" id="searchBtn" aria-label="Виконати пошук">
                                                             <i class="fas fa-search"></i>
                                                         </button>
                                                     </div>
@@ -694,36 +694,23 @@
                                         <div class="col-md-4">
                                             <div class="form-group">
                                                 <label>Статус:</label>
-                                                <select id="statusFilter" class="form-control">
+                                                <select id="statusFilter" class="form-control" aria-label="Фільтр по статусу">
                                                     <option value="all">Всі статуси</option>
-                                                    <option value="active">Активні</option>
+                                                    <option value="operational">Працює</option>
                                                     <option value="maintenance">Обслуговування</option>
-                                                    <option value="inactive">Неактивні</option>
+                                                    <option value="broken">Поламаний</option>
                                                 </select>
                                             </div>
                                         </div>
                                         <div class="col-md-4">
                                             <div class="form-group">
                                                 <label>Тип:</label>
-                                                <select id="typeFilter" class="form-control">
+                                                <select id="typeFilter" class="form-control" aria-label="Фільтр по типу">
                                                     <option value="all">Всі типи</option>
-                                                    <option value="passenger">Пасажирські</option>
-                                                    <option value="cargo">Вантажні</option>
-                                                    <option value="hospital">Лікарняні</option>
+                                                    <option value="passenger">Пасажирський</option>
+                                                    <option value="freight">Вантажний</option>
+                                                    <option value="hospital">Лікарняний</option>
                                                 </select>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label>Пошук:</label>
-                                                <div class="input-group">
-                                                    <input type="text" id="searchInput" class="form-control" placeholder="Пошук по моделі, адресі, ID...">
-                                                    <div class="input-group-append">
-                                                        <button class="btn btn-primary" id="searchBtn">
-                                                            <i class="fas fa-search"></i>
-                                                        </button>
-                                                    </div>
-                                                </div>
                                             </div>
                                         </div>
                                     </div>

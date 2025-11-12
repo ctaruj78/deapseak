@@ -19,6 +19,13 @@ router.get('/stats',
     liftController.getLiftsStats
 );
 
+// GET /api/lifts/export/excel - Експорт ліфтів в Excel
+router.get('/export/excel',
+    authenticate,
+    authorizeRoles('admin', 'dispatcher'),
+    liftController.exportLiftsToExcel
+);
+
 // GET /api/lifts/nearby - Пошук ліфтів поблизу (геопросторовий пошук)
 router.get('/nearby', authenticate, liftController.getLiftsNearby);
 

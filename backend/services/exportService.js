@@ -196,6 +196,67 @@ class ExportService {
         };
         return map[priority] || priority;
     }
+
+    /**
+     * Експорт ліфтів в Excel
+     */
+    async exportLiftsToExcel(lifts) {
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Ліфти');
+
+        // Headers
+        worksheet.columns = [
+            { header: 'Муніципальний №', key: 'municipalNumber', width: 20 },
+            { header: 'Виробник', key: 'manufacturer', width: 20 },
+            { header: 'Модель', key: 'model', width: 20 },
+            { header: 'Адреса', key: 'address', width: 40 },
+            { header: 'Статус', key: 'status', width: 15 },
+            { header: 'Вантажопідйомність', key: 'capacity', width: 20 },
+            { header: 'Поверхів', key: 'floors', width: 12 },
+            { header: 'Дата встановлення', key: 'installationDate', width: 20 },
+            { header: 'Остання інспекція', key: 'lastInspection', width: 20 }
+        ];
+
+        // Style header
+        worksheet.getRow(1).font = { bold: true };
+        worksheet.getRow(1).fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FF28A745' }
+        };
+        worksheet.getRow(1).font = { color: { argb: 'FFFFFFFF' }, bold: true };
+
+        // Add data
+        lifts.forEach(lift => {
+            worksheet.addRow({
+                municipalNumber: lift.municipalNumber || 'Н/Д',
+                manufacturer: lift.manufacturer || 'Н/Д',
+                model: lift.model || 'Н/Д',
+                address: lift.address?.full || 'Н/Д',
+                status: this.getLiftStatusText(lift.status),
+                capacity: lift.capacity ? `${lift.capacity} осіб` : 'Н/Д',
+                floors: lift.floors || 'Н/Д',
+                installationDate: lift.installationDate ? new Date(lift.installationDate).toLocaleDateString('uk-UA') : 'Н/Д',
+                lastInspection: lift.lastInspection ? new Date(lift.lastInspection).toLocaleDateString('uk-UA') : 'Н/Д'
+            });
+        });
+
+        // Auto-fit columns
+        worksheet.columns.forEach(column => {
+            column.alignment = { vertical: 'middle', horizontal: 'left' };
+        });
+
+        return await workbook.xlsx.writeBuffer();
+    }
+
+    getLiftStatusText(status) {
+        const map = {
+            'operational': 'Працює',
+            'maintenance': 'Обслуговування',
+            'broken': 'Поламаний'
+        };
+        return map[status] || status;
+    }
 }
 
 module.exports = new ExportService();
