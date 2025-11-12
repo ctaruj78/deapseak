@@ -167,11 +167,13 @@ deapseak/
 - ✅ **Email нотифікації** (Nov 11, 2025) - Nodemailer, 5 типів листів
 - ✅ **WebSocket real-time updates** (Nov 11, 2025) - Socket.io, room messaging
 - ✅ **QR код система** (Nov 11, 2025) - генерація, сканування, lift-info.html
-- ✅ **PDF/Excel експорт** (Nov 11, 2025) - звіти по заявках, pdfkit/exceljs
+- ✅ **PDF/Excel експорт** (Nov 11, 2025) - звіти по заявках та ліфтах
 - ✅ **Offline режим** (Nov 11, 2025) - Service Worker, IndexedDB, sync queue
+- ✅ **Lifts.html рефакторинг** (Nov 12, 2025) - видалено глобальні змінні, модульний JS, безпека
 
 ### В планах
-- � Push notifications (Firebase FCM) - guide ready in NEW-FEATURES-GUIDE.md
+- 🔜 Push notifications (Firebase FCM) - guide ready in NEW-FEATURES-GUIDE.md
+- 🔜 Inspections API (MongoDB model + endpoints)
 - 🔜 AI прогнозування техобслуговування
 - 🔜 Advanced analytics dashboard
 
