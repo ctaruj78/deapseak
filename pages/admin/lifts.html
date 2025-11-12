@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Адмін панель - Управління ліфтами</title>
-    <!-- Enhanced Lift Modal CSS -->
-    <link rel="stylesheet" href="/assets/css/enhanced-lift-modal.css">
     
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
@@ -13,6 +11,10 @@
     
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Custom CSS (оптимізований, без зайвих !important) -->
+    <link rel="stylesheet" href="/assets/css/lifts.css">
+    <link rel="stylesheet" href="/assets/css/enhanced-lift-modal.css">
     
     <style>
         .lift-status {
@@ -1468,13 +1470,13 @@
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label for="inspectionDate">Дата інспекції</label>
-                                            <input type="date" id="inspectionDate" class="form-control" required>
+                                            <input type="date" id="inspectionDate" name="inspectionDate" class="form-control" required>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label for="inspectionType">Тип інспекції</label>
-                                            <select class="form-control" id="inspectionType" required>
+                                            <select class="form-control" id="inspectionType" name="inspectionType" required>
                                                 <option value="">Оберіть тип...</option>
                                                 <option value="technical">Технічна інспекція</option>
                                                 <option value="safety">Перевірка безпеки</option>
