@@ -205,6 +205,58 @@ class EmailService {
         }
     }
 
+    // Відправити email для скидання паролю
+    async sendPasswordResetEmail(email, resetUrl, firstName) {
+        try {
+            const mailOptions = {
+                from: `"DeapSeaK System" <${process.env.SMTP_USER}>`,
+                to: email,
+                subject: '🔐 Скидання паролю - DeapSeaK',
+                html: `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                        <h2 style="color: #dc3545;">Запит на скидання паролю</h2>
+                        <p>Шановний ${firstName || 'користувач'}!</p>
+                        <p>Ви отримали цей лист, оскільки був надісланий запит на скидання паролю для вашого облікового запису в системі DeapSeaK.</p>
+                        
+                        <div style="background: #f8d7da; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #dc3545;">
+                            <p style="margin: 0;"><strong>⚠️ Важливо:</strong> Це посилання дійсне лише протягом <strong>10 хвилин</strong>.</p>
+                        </div>
+
+                        <p>Натисніть кнопку нижче, щоб створити новий пароль:</p>
+                        
+                        <a href="${resetUrl}" 
+                           style="display: inline-block; background: #dc3545; color: white; padding: 14px 28px; 
+                                  text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold;">
+                            Скинути пароль
+                        </a>
+
+                        <p style="color: #666; font-size: 14px; margin-top: 20px;">
+                            Якщо кнопка не працює, скопіюйте та вставте це посилання в браузер:<br>
+                            <span style="word-break: break-all; color: #007bff;">${resetUrl}</span>
+                        </p>
+
+                        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 30px 0; border-left: 4px solid #ffc107;">
+                            <p style="margin: 0;"><strong>🛡️ Безпека:</strong> Якщо ви не надсилали цей запит, просто проігноруйте цей лист. Ваш пароль залишиться незмінним.</p>
+                        </div>
+
+                        <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+                        
+                        <p style="color: #666; font-size: 12px;">
+                            Це автоматичний лист від системи DeapSeaK. Будь ласка, не відповідайте на нього.<br>
+                            З питань безпеки звертайтеся до вашого адміністратора системи.
+                        </p>
+                    </div>
+                `
+            };
+
+            await this.transporter.sendMail(mailOptions);
+            console.log(`✅ Password reset email sent to ${email}`);
+        } catch (error) {
+            console.error('❌ Error sending password reset email:', error);
+            throw error;
+        }
+    }
+
     // Допоміжні функції для текстів
     getRequestTypeText(type) {
         const types = {

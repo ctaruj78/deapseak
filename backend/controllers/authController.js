@@ -76,6 +76,11 @@ exports.login = async (req, res, next) => {
             throw new AppError('Невірний email/username або пароль', 401);
         }
 
+        // Перевірка статусу акаунту
+        if (!user.isActive) {
+            throw new AppError('Акаунт заблоковано. Зверніться до адміністратора', 403);
+        }
+
         // Перевірка пароля
         const isPasswordValid = await user.comparePassword(password);
         if (!isPasswordValid) {
@@ -338,3 +343,129 @@ exports.deleteUser = async (req, res, next) => {
         next(error);
     }
 };
+
+/**
+ * Блокування/розблокування користувача (тільки admin)
+ */
+exports.toggleUserBan = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.params.id).select('-password');
+
+        if (!user) {
+            throw new AppError('Користувача не знайдено', 404);
+        }
+
+        // Не можна забанити самого себе
+        if (user._id.toString() === req.user.id) {
+            throw new AppError('Не можна забанити самого себе', 400);
+        }
+
+        // Не можна забанити іншого адміна
+        if (user.role === 'admin') {
+            throw new AppError('Не можна забанити адміністратора', 400);
+        }
+
+        user.isActive = !user.isActive;
+        await user.save();
+
+        res.json({
+            success: true,
+            message: user.isActive ? 'Користувача розблоковано' : 'Користувача заблоковано',
+            data: { user }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Запит на відновлення пароля
+ */
+exports.requestPasswordReset = async (req, res, next) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            throw new AppError('Надайте email', 400);
+        }
+
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            // Не розкриваємо чи існує користувач (безпека)
+            res.json({
+                success: true,
+                message: 'Якщо email існує, на нього буде відправлено інструкції'
+            });
+            return;
+        }
+
+        // Генеруємо reset token
+        const crypto = require('crypto');
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const resetTokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
+
+        user.resetPasswordToken = resetTokenHash;
+        user.resetPasswordExpire = Date.now() + 10 * 60 * 1000; // 10 хвилин
+        await user.save();
+
+        // Відправляємо email з токеном
+        const emailService = require('../services/emailService');
+        const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+        
+        try {
+            await emailService.sendPasswordResetEmail(user.email, resetUrl, user.firstName);
+        } catch (emailError) {
+            console.error('Помилка відправки email:', emailError);
+            user.resetPasswordToken = undefined;
+            user.resetPasswordExpire = undefined;
+            await user.save();
+            throw new AppError('Помилка відправки email', 500);
+        }
+
+        res.json({
+            success: true,
+            message: 'Інструкції відправлено на email'
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Скидання пароля за токеном
+ */
+exports.resetPassword = async (req, res, next) => {
+    try {
+        const { token, newPassword } = req.body;
+
+        if (!token || !newPassword) {
+            throw new AppError('Надайте токен та новий пароль', 400);
+        }
+
+        const crypto = require('crypto');
+        const resetTokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+        const user = await User.findOne({
+            resetPasswordToken: resetTokenHash,
+            resetPasswordExpire: { $gt: Date.now() }
+        });
+
+        if (!user) {
+            throw new AppError('Токен недійсний або прострочений', 400);
+        }
+
+        user.password = newPassword;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpire = undefined;
+        await user.save();
+
+        res.json({
+            success: true,
+            message: 'Пароль успішно змінено'
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+

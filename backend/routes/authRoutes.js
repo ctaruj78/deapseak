@@ -14,6 +14,12 @@ router.post('/register', authController.register);
 // POST /api/auth/login - Вхід користувача
 router.post('/login', authController.login);
 
+// POST /api/auth/forgot-password - Запит на відновлення пароля
+router.post('/forgot-password', authController.requestPasswordReset);
+
+// POST /api/auth/reset-password - Скидання пароля за токеном
+router.post('/reset-password', authController.resetPassword);
+
 /**
  * Захищені маршрути (потребують автентифікації)
  */
@@ -39,6 +45,9 @@ router.get('/users/:id', authenticate, authorizeRoles('admin'), authController.g
 
 // PUT /api/auth/users/:id/role - Оновлення ролі користувача
 router.put('/users/:id/role', authenticate, authorizeRoles('admin'), authController.updateUserRole);
+
+// PATCH /api/auth/users/:id/ban - Блокування/розблокування користувача
+router.patch('/users/:id/ban', authenticate, authorizeRoles('admin'), authController.toggleUserBan);
 
 // DELETE /api/auth/users/:id - Видалення користувача
 router.delete('/users/:id', authenticate, authorizeRoles('admin'), authController.deleteUser);

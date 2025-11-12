@@ -63,6 +63,33 @@ const userSchema = new mongoose.Schema({
     refreshToken: {
         type: String,
         select: false
+    },
+    resetPasswordToken: {
+        type: String,
+        select: false
+    },
+    resetPasswordExpire: {
+        type: Date,
+        select: false
+    },
+    // Для technician - workload tracking
+    currentAssignments: {
+        type: Number,
+        default: 0
+    },
+    maxAssignments: {
+        type: Number,
+        default: 10
+    },
+    specialty: {
+        type: String,
+        enum: ['hydraulic', 'electric', 'mechanical', 'general'],
+        default: 'general'
+    },
+    status: {
+        type: String,
+        enum: ['online', 'offline', 'busy'],
+        default: 'offline'
     }
 }, {
     timestamps: true,

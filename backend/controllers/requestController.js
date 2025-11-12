@@ -226,6 +226,11 @@ exports.assignRequest = async (req, res, next) => {
             throw new AppError('Невірний технік', 400);
         }
 
+        // Перевірка навантаження техніка
+        if (technician.currentAssignments >= technician.maxAssignments) {
+            throw new AppError('Технік досяг максимального навантаження. Оберіть іншого техніка', 400);
+        }
+
         const request = await Request.findById(req.params.id);
 
         if (!request) {
@@ -235,6 +240,15 @@ exports.assignRequest = async (req, res, next) => {
         await request.changeStatus('assigned', req.user.id);
         request.assignedTo = technicianId;
         await request.save();
+
+        // Оновити навантаження техніка
+        technician.currentAssignments += 1;
+        if (technician.currentAssignments >= technician.maxAssignments) {
+            technician.status = 'busy';
+        } else {
+            technician.status = 'online';
+        }
+        await technician.save();
 
         await request.populate([
             { path: 'lift', select: 'municipalNumber address' },
@@ -445,6 +459,19 @@ exports.completeRequest = async (req, res, next) => {
             throw new AppError('Доступ заборонено', 403);
         }
 
+        // Зменшити навантаження техніка
+        if (request.assignedTo) {
+            const technician = await User.findById(request.assignedTo);
+            if (technician && technician.currentAssignments > 0) {
+                technician.currentAssignments -= 1;
+                // Оновити статус техніка
+                if (technician.currentAssignments < technician.maxAssignments) {
+                    technician.status = 'online';
+                }
+                await technician.save();
+            }
+        }
+
         // Оновлення деталей роботи
         if (workDescription) request.workDescription = workDescription;
         if (partsUsed) request.partsUsed = partsUsed;
@@ -498,6 +525,19 @@ exports.cancelRequest = async (req, res, next) => {
         // Клієнт може скасувати тільки свій запит
         if (req.user.role === 'client' && request.client.toString() !== req.user.id) {
             throw new AppError('Доступ заборонено', 403);
+        }
+
+        // Зменшити навантаження техніка при скасуванні призначеного запиту
+        if (request.assignedTo && (request.status === 'assigned' || request.status === 'in_progress')) {
+            const technician = await User.findById(request.assignedTo);
+            if (technician && technician.currentAssignments > 0) {
+                technician.currentAssignments -= 1;
+                // Оновити статус техніка
+                if (technician.currentAssignments < technician.maxAssignments) {
+                    technician.status = 'online';
+                }
+                await technician.save();
+            }
         }
 
         await request.changeStatus('cancelled', req.user.id);
