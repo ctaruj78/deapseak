@@ -43,6 +43,9 @@
     "dev": "nodemon backend/app.js",
     "websocket": "node websocket-server.js",
     "dev:all": "concurrently \"npm run dev\" \"npm run websocket\"",
+    "auto-start": "bash auto-start.sh",
+    "stop": "bash stop-servers.sh",
+    "restart": "npm run stop && npm run auto-start",
     "test": "jest",
     "lint": "eslint backend/**/*.js",
     "format": "prettier --write backend/**/*.js frontend/**/*.js"
