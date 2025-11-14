@@ -42,7 +42,10 @@ class AuthManager {
             
             if (payload.exp && payload.exp < now) {
                 console.warn('⚠️ Токен застарілий');
-                this.logout();
+                // НЕ викликаємо logout() тут - це створює цикл редиректів!
+                // Просто очищуємо дані
+                localStorage.removeItem(this.TOKEN_KEY);
+                localStorage.removeItem(this.USER_KEY);
                 return false;
             }
             

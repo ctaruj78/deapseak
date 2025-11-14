@@ -84,10 +84,21 @@
             const loginForm = document.getElementById('login-form');
             
             // Перевіряємо чи користувач вже увійшов через AuthManager
-            if (typeof AuthManager !== 'undefined' && AuthManager.isAuthenticated()) {
+            // Додаємо захист від циклу редиректів
+            const redirecting = sessionStorage.getItem('redirecting');
+            if (redirecting) {
+                console.log('⚠️ Запобігання циклу редиректів - очищуємо session');
+                sessionStorage.removeItem('redirecting');
+                // Очищуємо всі дані автентифікації
+                if (typeof AuthManager !== 'undefined') {
+                    localStorage.removeItem(AuthManager.TOKEN_KEY);
+                    localStorage.removeItem(AuthManager.USER_KEY);
+                }
+            } else if (typeof AuthManager !== 'undefined' && AuthManager.isAuthenticated()) {
                 const user = AuthManager.getCurrentUser();
                 if (user && user.role) {
                     console.log('✅ Користувач вже авторизований, перенаправляємо...');
+                    sessionStorage.setItem('redirecting', 'true');
                     redirectUserByRole(user.role);
                     return;
                 }
@@ -99,6 +110,9 @@
             
             // Функція перенаправлення за ролями
             function redirectUserByRole(role) {
+                // Очищуємо sessionStorage після редиректу
+                setTimeout(() => sessionStorage.removeItem('redirecting'), 100);
+                
                 switch (role) {
                     case 'admin':
                         window.location.href = 'pages/admin/admin-dashboard.html';

@@ -1,5 +1,8 @@
 // assets/js/lifts.js
 
+// Глобальна змінна для ліфтів (ініціалізується порожнім масивом)
+let allLifts = [];
+
 // Клас для управління ліфтами
 class LiftManager {
     constructor() {
@@ -933,6 +936,13 @@ class LiftManager {
     // Оновлені методи для роботи з новими функціями
     updateLiftTable() {
         console.log('Updating lift table...');
+        
+        // Перевірка чи завантажені ліфти
+        if (!this.lifts || !Array.isArray(this.lifts)) {
+            console.log('⏳ Ліфти ще не завантажені, пропускаємо оновлення таблиці');
+            return;
+        }
+        
         const liftsTableBody = $('#lifts-table-body');
         if (!liftsTableBody.length) {
             this.renderLiftsTable();
@@ -941,19 +951,32 @@ class LiftManager {
         
         liftsTableBody.empty();
         const searchTerm = $('#lift-search').val().toLowerCase();
-        const filteredLifts = allLifts.filter(lift =>
-            (lift.municipalNumber && lift.municipalNumber.toLowerCase().includes(searchTerm)) ||
-            (lift.id && lift.id.toString().includes(searchTerm)) ||
-            (lift.model && lift.model.toLowerCase().includes(searchTerm)) ||
-            (lift.type && lift.type.toLowerCase().includes(searchTerm)) ||
-            (lift.address && lift.address.toLowerCase().includes(searchTerm)) ||
-            (lift.location && lift.location.toLowerCase().includes(searchTerm)) ||
-            (lift.clientName && lift.clientName.toLowerCase().includes(searchTerm)) ||
-            (lift.clientEmail && lift.clientEmail.toLowerCase().includes(searchTerm)) ||
-            (lift.status && lift.status.toLowerCase().includes(searchTerm))
-        );
+        const filteredLifts = this.lifts.filter(lift => {
+            // Перевірка текстових полів
+            if (lift.municipalNumber && lift.municipalNumber.toLowerCase().includes(searchTerm)) return true;
+            if (lift.id && lift.id.toString().includes(searchTerm)) return true;
+            if (lift.model && lift.model.toLowerCase().includes(searchTerm)) return true;
+            if (lift.type && lift.type.toLowerCase().includes(searchTerm)) return true;
+            if (lift.manufacturer && lift.manufacturer.toLowerCase().includes(searchTerm)) return true;
+            if (lift.status && lift.status.toLowerCase().includes(searchTerm)) return true;
+            
+            // Перевірка адреси (об'єкт)
+            if (lift.address) {
+                if (lift.address.street && lift.address.street.toLowerCase().includes(searchTerm)) return true;
+                if (lift.address.city && lift.address.city.toLowerCase().includes(searchTerm)) return true;
+            }
+            
+            // Перевірка клієнта
+            if (lift.client) {
+                if (lift.client.firstName && lift.client.firstName.toLowerCase().includes(searchTerm)) return true;
+                if (lift.client.lastName && lift.client.lastName.toLowerCase().includes(searchTerm)) return true;
+                if (lift.client.email && lift.client.email.toLowerCase().includes(searchTerm)) return true;
+            }
+            
+            return false;
+        });
 
-        $('#lift-count').text(`Загальна кількість ліфтів: ${allLifts.length}, знайдено: ${filteredLifts.length}`);
+        $('#lift-count').text(`Загальна кількість ліфтів: ${this.lifts.length}, знайдено: ${filteredLifts.length}`);
         if (filteredLifts.length === 0) {
             $('#no-lifts-message').show();
             $('#lifts-table').hide();

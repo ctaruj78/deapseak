@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 
     <style>
         .request-card {
@@ -673,6 +674,7 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
 <!-- Система авторизації -->
 <script src="../../assets/js/auth.js"></script>
@@ -762,29 +764,47 @@ class ServiceRequestManager {
                     const apiRequests = result.data.requests || result.data;
                     
                     // Конвертуємо формат API в формат сторінки
-                    this.requests = apiRequests.map(req => ({
-                        id: req._id,
-                        liftId: req.lift?._id || req.lift,
-                        liftAddress: req.lift?.address ? 
-                            `${req.lift.address.street}, ${req.lift.address.city}` : 
-                            'Адреса невідома',
-                        type: this.mapStatusToType(req.status),
-                        priority: req.priority || 'medium',
-                        status: req.status || 'new',
-                        title: req.title,
-                        description: req.description,
-                        technician: req.assignedTo?._id || req.assignedTo,
-                        createdAt: req.createdAt,
-                        scheduledAt: req.scheduledDate,
-                        completedAt: req.completedDate,
-                        createdBy: req.client?._id || req.client,
-                        timeline: req.comments?.map(c => ({
-                            timestamp: c.createdAt,
-                            action: 'comment',
-                            message: c.text,
-                            user: c.user?.username || 'Unknown'
-                        })) || []
-                    }));
+                    this.requests = apiRequests.map((req, index) => {
+                        // Генеруємо красивий ID
+                        const displayId = `REQ-${String(index + 1).padStart(3, '0')}`;
+                        
+                        // Отримуємо дані ліфта
+                        const liftData = req.lift || {};
+                        const liftId = liftData.municipalNumber || liftData._id || 'Невідомий';
+                        const liftAddress = liftData.address || 'Адреса невідома';
+                        
+                        // Отримуємо дані техніка
+                        const techData = req.assignedTo || {};
+                        const techName = techData.firstName && techData.lastName 
+                            ? `${techData.firstName} ${techData.lastName}`
+                            : techData.username || null;
+                        
+                        return {
+                            id: displayId,
+                            _id: req._id, // Зберігаємо реальний MongoDB ID
+                            liftId: liftId,
+                            liftAddress: liftAddress,
+                            type: this.mapStatusToType(req.status),
+                            priority: req.priority || 'medium',
+                            status: req.status || 'new',
+                            title: req.title || 'Без назви',
+                            description: req.description || 'Без опису',
+                            technician: techName,
+                            technicianId: req.assignedTo?._id || req.assignedTo,
+                            createdAt: req.createdAt,
+                            scheduledAt: req.scheduledDate,
+                            completedAt: req.completedDate,
+                            createdBy: req.client?._id || req.client,
+                            liftObjectId: liftData._id,
+                            timeline: req.comments?.map(c => ({
+                                timestamp: c.createdAt,
+                                action: 'comment',
+                                message: c.text,
+                                user: c.user?.username || 'Unknown'
+                            })) || [],
+                            rawData: req // Зберігаємо оригінальні дані
+                        };
+                    });
                     
                     console.log('✅ Завантажено заявок з API:', this.requests.length);
                 } else {
@@ -1551,7 +1571,8 @@ async function changeRequestStatus(newStatus) {
     }
     
     try {
-        const requestId = window.serviceManager.currentRequest.id;
+        // Використовуємо MongoDB _id, а не красивий ID
+        const requestId = window.serviceManager.currentRequest._id || window.serviceManager.currentRequest.id;
         
         console.log(`Зміна статусу заявки ${requestId} на ${newStatus}`);
         
@@ -1778,8 +1799,8 @@ async function showAssignTechnicianModal() {
     try {
         console.log('Завантаження списку техніків...');
         
-        // Завантаження списку техніків
-        const response = await AuthManager.fetchWithAuth('/api/auth/users?role=tech');
+        // Завантаження списку техніків (без фільтру role в URL, фільтруємо на клієнті)
+        const response = await AuthManager.fetchWithAuth('/api/auth/users');
         
         if (!response || !response.ok) {
             throw new Error('Не вдалося завантажити список техніків');
@@ -1799,7 +1820,11 @@ async function showAssignTechnicianModal() {
             throw new Error('Неправильний формат даних від сервера');
         }
         
-        const technicians = allUsers.filter(user => user.role === 'tech' || user.role === 'technician');
+        // Фільтруємо техніків (роль може бути 'tech' або 'technician')
+        const technicians = allUsers.filter(user => 
+            user.role === 'tech' || 
+            user.role === 'technician'
+        );
         console.log('Техніків знайдено:', technicians.length);
         
         // Створення модального вікна

@@ -3,6 +3,7 @@ const router = express.Router();
 const liftController = require('../controllers/liftController');
 const { authenticate } = require('../middleware/auth');
 const { authorizeRoles } = require('../middleware/roleAuth');
+const { uploadContract, uploadReport } = require('../middleware/upload');
 
 /**
  * Маршрути для роботи з ліфтами
@@ -74,6 +75,41 @@ router.post('/:id/assign-technician',
     authenticate, 
     authorizeRoles('admin', 'dispatcher'), 
     liftController.assignTechnician
+);
+
+// POST /api/lifts/:id/inspection-report - Додати звіт інспекції (admin, technician, dispatcher)
+router.post('/:id/inspection-report',
+    authenticate,
+    authorizeRoles('admin', 'dispatcher', 'technician'),
+    uploadReport,
+    liftController.addInspectionReport
+);
+
+// POST /api/lifts/:id/contract - Завантажити контракт на обслуговування (admin, dispatcher)
+router.post('/:id/contract',
+    authenticate,
+    authorizeRoles('admin', 'dispatcher'),
+    uploadContract,
+    liftController.uploadMaintenanceContract
+);
+
+// GET /api/lifts/:id/contract - Отримати контракт (admin, dispatcher, client-owner)
+router.get('/:id/contract',
+    authenticate,
+    liftController.getMaintenanceContract
+);
+
+// DELETE /api/lifts/:id/contract - Видалити контракт (admin)
+router.delete('/:id/contract',
+    authenticate,
+    authorizeRoles('admin'),
+    liftController.deleteMaintenanceContract
+);
+
+// POST /api/lifts/:id/contract/email - Надіслати контракт по email (admin, dispatcher, client-owner)
+router.post('/:id/contract/email',
+    authenticate,
+    liftController.emailMaintenanceContract
 );
 
 // DELETE /api/lifts/:id - Видалення ліфта (тільки admin)

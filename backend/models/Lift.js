@@ -48,7 +48,10 @@ const liftSchema = new mongoose.Schema({
         date: { type: Date, default: Date.now },
         inspector: String,
         notes: String,
-        photos: [String]
+        photos: [String],
+        reportFile: String, // PDF файл звіту
+        reportType: { type: String, enum: ['routine', 'emergency', 'annual', 'certification'], default: 'routine' },
+        status: { type: String, enum: ['passed', 'failed', 'conditional'], default: 'passed' }
     }],
     photos: [{
         url: String,
@@ -56,6 +59,15 @@ const liftSchema = new mongoose.Schema({
         uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
         uploadedAt: { type: Date, default: Date.now }
     }],
+    maintenanceContract: {
+        contractFile: String, // PDF файл контракту
+        contractNumber: String,
+        startDate: Date,
+        endDate: Date,
+        uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        uploadedAt: Date,
+        description: String
+    },
     qrCode: {
         code: { type: String, unique: true, sparse: true },
         generatedAt: Date,

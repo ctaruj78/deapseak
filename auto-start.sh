@@ -91,41 +91,148 @@ else
         log_warning "Локальний MongoDB не знайдено"
         log_info "Спроба запуску системного MongoDB..."
         
-        # Спроба запустити через systemctl
-        if command -v systemctl &> /dev/null; then
-            sudo systemctl start mongod 2>/dev/null || true
-            sleep 2
+        # Перевіряємо чи це контейнер (Codespaces, Docker)
+        if [ -f "/.dockerenv" ] || grep -q "microsoft" /proc/version 2>/dev/null || [ "$CODESPACES" = "true" ]; then
+            log_info "Виявлено контейнерне середовище"
+            
+            # Спроба запуску MongoDB 7.0 напряму
+            if command -v mongod &> /dev/null; then
+                MONGODB_VERSION=$(mongod --version | grep -oP "(?<=db version v)[0-9]+\.[0-9]+")
+                log_info "Знайдено MongoDB версії $MONGODB_VERSION"
+                
+                # Запускаємо MongoDB 7.0 в фоновому режимі
+                if ! pgrep -x "mongod" > /dev/null; then
+                    log_info "Запуск MongoDB через mongod --fork..."
+                    sudo mongod --fork \
+                        --logpath /var/log/mongodb/mongod.log \
+                        --dbpath /var/lib/mongodb \
+                        --quiet 2>/dev/null || true
+                    sleep 5
+                    log_info "MongoDB має запуститись"
+                fi
+            fi
+            
+            # Якщо не вдалося, пробуємо service команду
+            if ! pgrep -x "mongod" > /dev/null && command -v service &> /dev/null; then
+                log_info "Спроба запуску через service..."
+                sudo service mongodb start 2>/dev/null || sudo service mongod start 2>/dev/null || true
+                sleep 5
+                log_info "Очікування запуску MongoDB..."
+            fi
+        else
+            # Звичайна система - використовуємо systemctl
+            if command -v systemctl &> /dev/null; then
+                log_info "Спроба запуску через systemctl..."
+                sudo systemctl start mongod 2>/dev/null || sudo systemctl start mongodb 2>/dev/null || true
+                sleep 3
+            fi
         fi
         
+        # Якщо MongoDB все ще не запущено, пропонуємо використати Docker
         if ! pgrep -x "mongod" > /dev/null; then
-            log_error "MongoDB не запущено!"
-            log_info "Варіанти вирішення:"
-            log_info "1. Встановіть MongoDB: https://www.mongodb.com/docs/manual/installation/"
-            log_info "2. Запустіть MongoDB вручну: sudo systemctl start mongod"
-            log_info "3. Використовуйте Docker: docker run -d -p 27017:27017 mongo"
-            exit 1
+            log_warning "MongoDB не запущено через системний менеджер"
+            log_info "Спроба запуску через Docker..."
+            
+            if command -v docker &> /dev/null; then
+                # Перевіряємо чи вже є запущений контейнер MongoDB
+                if docker ps --format '{{.Names}}' | grep -q "^deapseak-mongo$"; then
+                    log_success "MongoDB контейнер вже запущено"
+                elif docker ps -a --format '{{.Names}}' | grep -q "^deapseak-mongo$"; then
+                    log_info "Запуск існуючого MongoDB контейнера..."
+                    docker start deapseak-mongo > /dev/null 2>&1
+                    sleep 3
+                    log_success "MongoDB контейнер запущено"
+                else
+                    log_info "Створення нового MongoDB контейнера..."
+                    docker run -d \
+                        --name deapseak-mongo \
+                        -p 27017:27017 \
+                        -v "$(pwd)/mongodb/data:/data/db" \
+                        mongo:7.0 > /dev/null 2>&1
+                    sleep 5
+                    log_success "MongoDB контейнер створено та запущено"
+                fi
+            else
+                log_error "MongoDB не запущено та Docker недоступний!"
+                log_info "Варіанти вирішення:"
+                log_info "1. Встановіть MongoDB: https://www.mongodb.com/docs/manual/installation/"
+                log_info "2. Встановіть Docker: https://docs.docker.com/get-docker/"
+                log_info "3. Запустіть MongoDB вручну в іншому терміналі"
+                exit 1
+            fi
         fi
     fi
 fi
 
 # Перевірка підключення до MongoDB
 log_info "Перевірка підключення до MongoDB..."
-if command -v mongosh &> /dev/null; then
-    if mongosh --eval "db.adminCommand('ping')" --quiet localhost:27017/test > /dev/null 2>&1; then
-        log_success "MongoDB доступна та працює"
-    else
-        log_error "Не вдалося підключитися до MongoDB"
-        exit 1
+MONGO_CONNECTED=false
+MAX_RETRIES=10
+RETRY_COUNT=0
+
+while [ $RETRY_COUNT -lt $MAX_RETRIES ] && [ "$MONGO_CONNECTED" = false ]; do
+    RETRY_COUNT=$((RETRY_COUNT + 1))
+    
+    # Спроба з mongosh (новий клієнт)
+    if command -v mongosh &> /dev/null; then
+        if mongosh --eval "db.adminCommand('ping')" --quiet localhost:27017/test > /dev/null 2>&1; then
+            log_success "MongoDB доступна та працює (через mongosh)"
+            MONGO_CONNECTED=true
+            break
+        fi
     fi
-elif command -v mongo &> /dev/null; then
-    if mongo --eval "db.adminCommand('ping')" --quiet localhost:27017/test > /dev/null 2>&1; then
-        log_success "MongoDB доступна та працює"
-    else
-        log_error "Не вдалося підключитися до MongoDB"
-        exit 1
+
+    # Спроба з mongo (старий клієнт)
+    if [ "$MONGO_CONNECTED" = false ] && command -v mongo &> /dev/null; then
+        if mongo --eval "db.adminCommand('ping')" --quiet localhost:27017/test > /dev/null 2>&1; then
+            log_success "MongoDB доступна та працює (через mongo)"
+            MONGO_CONNECTED=true
+            break
+        fi
     fi
-else
-    log_warning "MongoDB CLI не знайдено, пропускаю перевірку підключення"
+
+    # Спроба через Docker exec якщо MongoDB в контейнері
+    if [ "$MONGO_CONNECTED" = false ] && command -v docker &> /dev/null; then
+        if docker ps --format '{{.Names}}' | grep -q "deapseak-mongo"; then
+            if docker exec deapseak-mongo mongosh --eval "db.adminCommand('ping')" --quiet > /dev/null 2>&1; then
+                log_success "MongoDB доступна та працює (через Docker)"
+                MONGO_CONNECTED=true
+                break
+            fi
+        fi
+    fi
+
+    # Проста перевірка порту
+    if [ "$MONGO_CONNECTED" = false ]; then
+        if command -v nc &> /dev/null; then
+            if nc -z localhost 27017 2>/dev/null; then
+                log_success "MongoDB відповідає на порту 27017"
+                MONGO_CONNECTED=true
+                break
+            fi
+        else
+            # Альтернативна перевірка через bash
+            if timeout 1 bash -c "echo > /dev/tcp/localhost/27017" 2>/dev/null; then
+                log_success "MongoDB відповідає на порту 27017"
+                MONGO_CONNECTED=true
+                break
+            fi
+        fi
+    fi
+    
+    # Якщо не підключилися, чекаємо перед наступною спробою
+    if [ "$MONGO_CONNECTED" = false ] && [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+        log_info "Спроба $RETRY_COUNT/$MAX_RETRIES: Очікування MongoDB..."
+        sleep 2
+    fi
+done
+
+if [ "$MONGO_CONNECTED" = false ]; then
+    log_error "Не вдалося підключитися до MongoDB після $MAX_RETRIES спроб"
+    log_info "Перевірте чи MongoDB запущено: ps aux | grep mongod"
+    log_info "Перевірте порт: netstat -tulpn | grep 27017"
+    log_info "Логи MongoDB: tail -f /var/log/mongodb/mongod.log"
+    exit 1
 fi
 
 # ============================================

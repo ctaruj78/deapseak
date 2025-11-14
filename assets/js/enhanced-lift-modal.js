@@ -483,72 +483,80 @@ class EnhancedLiftModal {
         return true;
     }
 
-    saveLift(liftData) {
-        console.log('💾 Saving enhanced lift data...');
+    async saveLift(liftData) {
+        console.log('💾 Saving enhanced lift data via API...');
         
         try {
-            // Ініціалізуємо масив якщо потрібно
-            if (typeof window.allLifts === 'undefined') {
-                console.log('⚠️ window.allLifts not found, creating new array');
-                window.allLifts = [];
-            }
+            // Перевіряємо чи це редагування (є currentLiftId) чи створення нового
+            const isEdit = !!this.currentLiftId;
+            const liftId = this.currentLiftId || liftData.id;
             
-            // НОВА ЛОГІКА: Створюємо окремі записи для кожного ліфта
-            const liftsToSave = this.createSeparateLifts(liftData);
-            console.log('🏢 Creating separate lifts:', liftsToSave.length);
+            console.log(`${isEdit ? '✏️ UPDATE' : '➕ CREATE'} mode, liftId:`, liftId);
             
-            let savedCount = 0;
+            // Отримуємо ID тестового клієнта (TODO: витягти з форми або з локального сховища)
+            const testClientId = '6915a14c8c41cac851f25c7e';
             
-            // Зберігаємо кожен ліфт окремо
-            for (const lift of liftsToSave) {
-                const existingIndex = window.allLifts.findIndex(l => l.id === lift.id);
-                
-                if (existingIndex !== -1) {
-                    // Оновлюємо існуючий
-                    window.allLifts[existingIndex] = { ...window.allLifts[existingIndex], ...lift };
-                    console.log('✏️ Updated existing lift:', lift.municipalNumber);
+            // Конвертуємо дані в формат API v2
+            const apiData = {
+                municipalNumber: liftData.municipalNumber,
+                serialNumber: liftData.serialNumber,
+                manufacturer: liftData.brand,
+                model: liftData.model,
+                type: liftData.type || 'passenger',
+                capacity: liftData.capacity,
+                speed: liftData.speed,
+                floors: liftData.floorsCount || 5,
+                installationDate: liftData.installationYear ? `${liftData.installationYear}-01-01` : null,
+                address: {
+                    street: liftData.address,
+                    city: 'Київ', // TODO: витягти з форми
+                    zipCode: liftData.postcode,
+                    country: 'Ukraine'
+                },
+                location: {
+                    type: 'Point',
+                    coordinates: [liftData.lng || 30.5234, liftData.lat || 50.4501] // [longitude, latitude]
+                },
+                client: testClientId, // ID клієнта
+                status: liftData.status || 'operational',
+                lastInspectionDate: liftData.lastMaintenance,
+                nextInspectionDate: liftData.nextMaintenance,
+                inspectionFrequency: liftData.inspectionFrequency,
+                maintenanceNotes: liftData.maintenanceNotes
+            };
+            
+            console.log('📤 Sending to API:', apiData);
+            
+            // Вибираємо метод та URL залежно від режиму
+            let result;
+            if (isEdit) {
+                // Оновлення існуючого ліфта
+                result = await apiCall(`/api/lifts/${liftId}`, 'PUT', apiData);
+            } else {
+                // Створення нового ліфта
+                if (typeof window.saveLiftToAPI === 'function') {
+                    result = await window.saveLiftToAPI(apiData);
                 } else {
-                    // Додаємо новий
-                    window.allLifts.push(lift);
-                    console.log('➕ Added new lift:', lift.municipalNumber);
-                    savedCount++;
+                    throw new Error('saveLiftToAPI function not found');
                 }
             }
             
-            // Синхронізуємо з глобальною змінною
-            if (typeof allLifts !== 'undefined') {
-                allLifts = [...window.allLifts];
-                console.log('🔄 Synchronized global allLifts variable, total count:', allLifts.length);
+            console.log('✅ API response:', result);
+            
+            if (result && (result.success || result.data)) {
+                this.showMessage(isEdit ? 'Ліфт успішно оновлено!' : 'Ліфт успішно збережено!', 'success');
+                $('#enhancedLiftModal').modal('hide');
+                
+                // Скидаємо currentLiftId після успішного збереження
+                this.currentLiftId = null;
+                
+                // Оновлюємо таблицю
+                setTimeout(() => {
+                    this.refreshTable();
+                }, 500);
+            } else {
+                throw new Error(result?.error || result?.message || 'Невідома помилка');
             }
-            
-            // Зберігаємо в localStorage
-            this.saveToStorage();
-            
-            // 🚀 EventBus: Повідомляємо про створення ліфтів
-            if (window.eventBus && savedCount > 0) {
-                for (const lift of liftsToSave) {
-                    if (window.allLifts.some(l => l.id === lift.id)) {
-                        eventBus.emit('lift:created', {
-                            id: lift.id,
-                            municipalNumber: lift.municipalNumber,
-                            name: lift.buildingName || lift.municipalNumber,
-                            address: lift.address,
-                            coordinates: { lat: lift.latitude, lng: lift.longitude },
-                            data: lift
-                        }, { source: 'enhanced-lift-modal' });
-                    }
-                }
-            }
-            
-            // Успіх з кількістю збережених ліфтів
-            const message = savedCount > 1 ? 
-                `Успішно збережено ${savedCount} ліфтів з координатами!` :
-                'Ліфт успішно збережено з координатами!';
-            this.showMessage(message, 'success');
-            $('#enhancedLiftModal').modal('hide');
-            
-            // Оновлюємо таблицю
-            this.refreshTable();
             
         } catch (error) {
             console.error('❌ Error saving enhanced lift:', error);
@@ -584,17 +592,21 @@ class EnhancedLiftModal {
 
     refreshTable() {
         console.log('🔄 Refreshing table after enhanced save...');
+        console.log('🔍 Available refresh methods:', {
+            loadLiftsFromAPI: typeof window.loadLiftsFromAPI,
+            liftManager: typeof window.liftManager
+        });
         
-        if (typeof window.liftManager !== 'undefined' && window.liftManager.loadLifts) {
-            setTimeout(() => {
-                window.liftManager.loadLifts();
-                console.log('✅ liftManager.loadLifts() called from enhanced modal');
-            }, 200);
-        } else if (typeof window.simpleLiftModal !== 'undefined') {
-            window.simpleLiftModal.manualRefreshTable();
-            console.log('✅ Used simpleLiftModal.manualRefreshTable()');
+        // Пріоритет: loadLiftsFromAPI > liftManager.loadLifts
+        if (typeof window.loadLiftsFromAPI === 'function') {
+            window.loadLiftsFromAPI();
+            console.log('✅ Called window.loadLiftsFromAPI()');
+        } else if (typeof window.liftManager !== 'undefined' && window.liftManager.loadLifts) {
+            window.liftManager.loadLifts();
+            console.log('✅ Called liftManager.loadLifts()');
         } else {
-            console.log('⚠️ No table refresh method available');
+            console.warn('⚠️ No table refresh method available, reloading page...');
+            setTimeout(() => location.reload(), 1000);
         }
     }
 

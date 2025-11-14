@@ -237,3 +237,194 @@ exports.exportLiftsToExcel = async (req, res, next) => {
         next(error);
     }
 };
+
+/**
+ * Додати звіт інспекції
+ */
+exports.addInspectionReport = async (req, res, next) => {
+    try {
+        const { inspector, notes, reportType, status, photos } = req.body;
+        const reportFile = req.file ? `/uploads/${req.file.filename}` : null;
+
+        const lift = await Lift.findById(req.params.id);
+        if (!lift) {
+            throw new AppError('Ліфт не знайдено', 404);
+        }
+
+        const report = {
+            date: new Date(),
+            inspector: inspector || `${req.user.firstName} ${req.user.lastName}`,
+            notes,
+            reportType: reportType || 'routine',
+            status: status || 'passed',
+            reportFile,
+            photos: photos || []
+        };
+
+        lift.inspectionHistory.push(report);
+        lift.lastInspectionDate = new Date();
+
+        // Якщо звіт пройдено, розрахувати наступну інспекцію
+        if (status === 'passed') {
+            lift.calculateNextMaintenance(6);
+        }
+
+        await lift.save();
+
+        res.json({
+            success: true,
+            message: 'Звіт інспекції додано',
+            data: { lift }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Завантажити контракт на обслуговування
+ */
+exports.uploadMaintenanceContract = async (req, res, next) => {
+    try {
+        if (!req.file) {
+            throw new AppError('Файл контракту не завантажено', 400);
+        }
+
+        const { contractNumber, startDate, endDate, description } = req.body;
+
+        const lift = await Lift.findById(req.params.id);
+        if (!lift) {
+            throw new AppError('Ліфт не знайдено', 404);
+        }
+
+        lift.maintenanceContract = {
+            contractFile: `/uploads/${req.file.filename}`,
+            contractNumber,
+            startDate: startDate ? new Date(startDate) : null,
+            endDate: endDate ? new Date(endDate) : null,
+            uploadedBy: req.user.id,
+            uploadedAt: new Date(),
+            description
+        };
+
+        await lift.save();
+        await lift.populate('maintenanceContract.uploadedBy', 'firstName lastName email');
+
+        res.json({
+            success: true,
+            message: 'Контракт на обслуговування завантажено',
+            data: { lift }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Отримати контракт на обслуговування
+ */
+exports.getMaintenanceContract = async (req, res, next) => {
+    try {
+        const lift = await Lift.findById(req.params.id)
+            .populate('maintenanceContract.uploadedBy', 'firstName lastName email');
+
+        if (!lift) {
+            throw new AppError('Ліфт не знайдено', 404);
+        }
+
+        if (!lift.maintenanceContract || !lift.maintenanceContract.contractFile) {
+            throw new AppError('Контракт не знайдено', 404);
+        }
+
+        // Перевірка доступу
+        const userRole = req.user.role;
+        const isOwner = lift.client && lift.client.toString() === req.user.id;
+
+        if (userRole === 'client' && !isOwner) {
+            throw new AppError('Доступ заборонено', 403);
+        }
+
+        res.json({
+            success: true,
+            data: { contract: lift.maintenanceContract }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Видалити контракт
+ */
+exports.deleteMaintenanceContract = async (req, res, next) => {
+    try {
+        const lift = await Lift.findById(req.params.id);
+        
+        if (!lift) {
+            throw new AppError('Ліфт не знайдено', 404);
+        }
+
+        // Тільки адмін може видаляти контракти
+        if (req.user.role !== 'admin') {
+            throw new AppError('Тільки адміністратор може видалити контракт', 403);
+        }
+
+        lift.maintenanceContract = undefined;
+        await lift.save();
+
+        res.json({
+            success: true,
+            message: 'Контракт видалено'
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Надіслати контракт по email
+ */
+exports.emailMaintenanceContract = async (req, res, next) => {
+    try {
+        const { recipientEmail } = req.body;
+        
+        if (!recipientEmail) {
+            throw new AppError('Email отримувача не вказано', 400);
+        }
+
+        const lift = await Lift.findById(req.params.id)
+            .populate('client', 'firstName lastName email')
+            .populate('maintenanceContract.uploadedBy', 'firstName lastName');
+
+        if (!lift) {
+            throw new AppError('Ліфт не знайдено', 404);
+        }
+
+        if (!lift.maintenanceContract || !lift.maintenanceContract.contractFile) {
+            throw new AppError('Контракт не знайдено', 404);
+        }
+
+        // Перевірка доступу
+        const userRole = req.user.role;
+        const isOwner = lift.client && lift.client._id.toString() === req.user.id;
+
+        if (userRole === 'client' && !isOwner) {
+            throw new AppError('Доступ заборонено', 403);
+        }
+
+        // TODO: Інтегрувати з emailService для відправки
+        // const emailService = require('../services/emailService');
+        // await emailService.sendContractEmail(recipientEmail, lift);
+
+        res.json({
+            success: true,
+            message: `Контракт надіслано на ${recipientEmail}`,
+            data: { 
+                recipient: recipientEmail,
+                contractFile: lift.maintenanceContract.contractFile
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+};

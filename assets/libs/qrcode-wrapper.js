@@ -1,32 +1,31 @@
 /**
  * QRCode Wrapper
- * Додає window.QRCode як псевдонім для qrcode бібліотеки
- * qrcode-generator експортує "qrcode" (малими літерами)
- * але багато коду очікує "QRCode" (великими)
+ * Перевіряє чи QRCode вже завантажений
+ * qrcodejs експортує window.QRCode напряму
  */
 (function() {
     'use strict';
     
     console.log('🔧 QRCode Wrapper: Починаю...');
     
-    // Чекаємо поки завантажиться qrcode
+    // Чекаємо поки завантажиться QRCode
     let attempts = 0;
-    const maxAttempts = 100;
+    const maxAttempts = 50; // Зменшено до 50 (2.5 секунди)
     
     function setupWrapper() {
         attempts++;
         
-        if (typeof qrcode !== 'undefined') {
-            // Знайшли qrcode! Створюємо QRCode як псевдонім
-            window.QRCode = qrcode;
-            console.log('✅ QRCode Wrapper: Створено window.QRCode');
-            console.log('  - qrcode доступний:', typeof qrcode);
-            console.log('  - QRCode доступний:', typeof QRCode);
+        if (typeof QRCode !== 'undefined') {
+            // QRCode вже є!
+            console.log('✅ QRCode Wrapper: QRCode доступний');
+            console.log('  - QRCode type:', typeof QRCode);
+            console.log('  - QRCode constructor:', QRCode.name || 'unnamed');
             return;
         }
         
         if (attempts >= maxAttempts) {
-            console.error('❌ QRCode Wrapper: qrcode не завантажився після', maxAttempts, 'спроб');
+            console.error('❌ QRCode Wrapper: QRCode не завантажився після', maxAttempts, 'спроб (2.5 сек)');
+            console.warn('⚠️ QR код функції будуть недоступні');
             return;
         }
         

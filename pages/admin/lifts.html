@@ -1292,6 +1292,33 @@
                             </table>
                         </div>
                     </div>
+
+                    <!-- Секція звітів інспекцій -->
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Звіти інспекцій</h6>
+                            <div id="inspection-reports-list">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i> Завантаження звітів...
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-primary" onclick="showAddReportModal()">
+                                <i class="fas fa-plus"></i> Додати звіт
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Секція контракту -->
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Контракт на обслуговування</h6>
+                            <div id="maintenance-contract-section">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i> Завантаження контракту...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
@@ -1303,6 +1330,140 @@
 
     <!-- Toast Container -->
     <div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+    <!-- Модальне вікно для додавання звіту -->
+    <div class="modal fade" id="addReportModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary">
+                    <h5 class="modal-title">Додати звіт інспекції</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="addReportForm">
+                        <input type="hidden" id="report-lift-id">
+                        <div class="form-group">
+                            <label for="report-type">Тип звіту *</label>
+                            <select id="report-type" class="form-control" required>
+                                <option value="">Оберіть тип...</option>
+                                <option value="inspection">Інспекція</option>
+                                <option value="maintenance">Технічне обслуговування</option>
+                                <option value="repair">Ремонт</option>
+                                <option value="emergency">Аварійний виклик</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="report-date">Дата *</label>
+                            <input type="date" id="report-date" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="report-description">Опис</label>
+                            <textarea id="report-description" class="form-control" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="report-file">Завантажити файл (PDF або зображення)</label>
+                            <input type="file" id="report-file" class="form-control-file" accept=".pdf,image/*">
+                            <small class="form-text text-muted">Максимальний розмір: 10MB</small>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                    <button type="button" class="btn btn-primary" onclick="submitReport()">
+                        <i class="fas fa-save"></i> Зберегти
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальне вікно для завантаження контракту -->
+    <div class="modal fade" id="uploadContractModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-success">
+                    <h5 class="modal-title">Завантажити контракт на обслуговування</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="uploadContractForm">
+                        <input type="hidden" id="contract-lift-id">
+                        <div class="form-group">
+                            <label for="contract-number">Номер контракту *</label>
+                            <input type="text" id="contract-number" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="contract-start-date">Дата початку *</label>
+                            <input type="date" id="contract-start-date" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="contract-end-date">Дата закінчення *</label>
+                            <input type="date" id="contract-end-date" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="contract-notes">Примітки</label>
+                            <textarea id="contract-notes" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="contract-file">Завантажити PDF контракт *</label>
+                            <input type="file" id="contract-file" class="form-control-file" accept=".pdf" required>
+                            <small class="form-text text-muted">Тільки PDF файли. Максимальний розмір: 10MB</small>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                    <button type="button" class="btn btn-success" onclick="submitContract()">
+                        <i class="fas fa-upload"></i> Завантажити
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Code Modal -->
+    <div class="modal fade" id="qrCodeModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-success">
+                    <h5 class="modal-title">
+                        <i class="fas fa-qrcode"></i> QR код ліфта
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body text-center">
+                    <div id="qr-lift-info" class="mb-3">
+                        <h5 id="qr-municipal-number"></h5>
+                        <p class="text-muted" id="qr-address"></p>
+                    </div>
+                    <div id="qrcode-container" class="d-flex justify-content-center mb-3">
+                        <!-- QR код буде згенеровано тут -->
+                    </div>
+                    <div class="alert alert-info">
+                        <small>
+                            <i class="fas fa-info-circle"></i>
+                            Відскануйте цей QR код для швидкого доступу до інформації про ліфт
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="downloadQRCode()">
+                        <i class="fas fa-download"></i> Завантажити
+                    </button>
+                    <button type="button" class="btn btn-info" onclick="printQRCode()">
+                        <i class="fas fa-print"></i> Друкувати
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Intervention Modal -->
     <div class="modal fade" id="interventionModal" tabindex="-1" role="dialog" aria-hidden="true">
@@ -2050,7 +2211,8 @@
     
     <script>
     // Функція для відкриття модального вікна ліфта (тільки з картою)
-    function openEnhancedModal(liftData = null) {
+    // Глобальна функція для відкриття модального вікна ліфта
+    window.openEnhancedModal = function(liftData = null) {
         console.log('🚪 Opening lift modal with map...', liftData ? 'Edit mode' : 'Create mode');
         
         // Перевіряємо чи доступний enhanced lift modal
@@ -2064,7 +2226,7 @@
         if (liftData) {
             // Режим редагування - СПОЧАТКУ встановлюємо ID, ПОТІМ завантажуємо дані
             console.log('✏️ EDIT MODE: Loading data for lift:', liftData);
-            console.log('� Lift ID:', liftData.id || liftData._id);
+            console.log('🔑 Lift ID:', liftData.id || liftData._id);
             
             // КРИТИЧНО: Встановлюємо currentLiftId ПЕРЕД відкриттям модалки
             window.enhancedLiftModal.currentLiftId = liftData.id || liftData._id;
@@ -2095,7 +2257,7 @@
         // ВАЖЛИВО: Відкриваємо модалку ПІСЛЯ налаштування
         console.log('🚪 Opening modal now...');
         $('#enhancedLiftModal').modal('show');
-    }
+    };
 
     // Обробник кнопки "Зберегти і створити QR код"
     document.addEventListener('DOMContentLoaded', function() {
@@ -2250,6 +2412,13 @@
 
     function updateScheduledInspectionsList() {
         const container = document.getElementById('scheduledInspections');
+        
+        // Перевірка чи елемент існує
+        if (!container) {
+            console.warn('⚠️ Елемент scheduledInspections не знайдено на сторінці');
+            return;
+        }
+        
         const inspections = JSON.parse(localStorage.getItem('scheduled_inspections') || '[]');
         
         if (inspections.length === 0) {
@@ -3293,17 +3462,6 @@
             window.enhancedLiftModal = new EnhancedLiftModal();
             console.log('✅ Enhanced Lift Modal ініціалізовано успішно!');
             
-            // Додаємо глобальні функції для зворотної сумісності
-            window.openEnhancedModal = function() {
-                console.log('🔥 Відкриття Enhanced Modal...');
-                if (window.enhancedLiftModal && window.enhancedLiftModal.resetForm) {
-                    window.enhancedLiftModal.currentLiftId = null;
-                    window.enhancedLiftModal.resetForm();
-                }
-                $('#enhancedModalTitle').text('Додати новий ліфт');
-                $('#enhancedLiftModal').modal('show');
-            };
-            
             // Функція для QR генерації (безпечна версія)
             window.generateQRCodeSafe = function(inputId, liftNumber = 1) {
                 if (window.enhancedLiftModal && window.enhancedLiftModal.generateQRCode) {
@@ -3317,10 +3475,12 @@
         } catch (error) {
             console.error('❌ Помилка ініціалізації Enhanced Lift Modal:', error);
             
-            // Fallback функції якщо щось пішло не так
-            window.openEnhancedModal = function() {
-                alert('Модальне вікно тимчасово недоступне. Спробуйте оновити сторінку.');
-            };
+            // Fallback функція якщо щось пішло не так
+            if (typeof window.openEnhancedModal === 'undefined') {
+                window.openEnhancedModal = function() {
+                    alert('Модальне вікно тимчасово недоступне. Спробуйте оновити сторінку.');
+                };
+            }
         }
     }
     
@@ -3425,63 +3585,85 @@
         if (!lifts || lifts.length === 0) {
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="8" class="text-center text-muted py-4">
+                    <td colspan="10" class="text-center text-muted py-4">
                         <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
                         <p class="mb-0">Ліфти не знайдені</p>
                         <small>Додайте перший ліфт, натиснувши кнопку "Додати ліфт"</small>
                     </td>
                 </tr>
             `;
+            // Оновлюємо статистику (всі нулі)
+            updateLiftsStatistics(lifts);
             return;
         }
 
         // Додати рядки ліфтів
         lifts.forEach(lift => {
             const liftId = lift._id || lift.id || Math.random().toString(36);
-            const statusClass = getStatusClass(lift.status || 'active');
-            const statusText = getStatusText(lift.status || 'active');
+            const statusClass = getStatusClass(lift.status || 'operational');
+            const statusText = getStatusText(lift.status || 'operational');
+            
+            // Адреса з нового формату
+            const address = lift.address || {};
+            const addressStr = address.street 
+                ? `${address.street}, ${address.city || ''}` 
+                : lift.address || 'Не вказано';
+            const postalCode = address.zipCode || lift.postalCode || '';
+            
+            // Клієнт з populate
+            const client = lift.client || {};
+            const clientName = client.firstName && client.lastName
+                ? `${client.firstName} ${client.lastName}`
+                : lift.clientName || 'Не вказано';
+            const clientEmail = client.email || lift.clientEmail || lift.email || 'Не вказано';
             
             const row = document.createElement('tr');
             row.innerHTML = `
+                <td><strong>${lift.municipalNumber || 'Невизначено'}</strong></td>
+                <td>${lift.manufacturer || ''} ${lift.model || 'Не вказано'}</td>
+                <td>${lift.type || 'Не вказано'}</td>
+                <td>
+                    <strong>${addressStr}</strong>
+                    ${postalCode ? `<br><small class="text-muted">${postalCode}</small>` : ''}
+                </td>
+                <td>${clientName}</td>
+                <td>${clientEmail}</td>
                 <td>
                     <span class="badge ${statusClass} text-white px-2 py-1">
                         ${statusText}
                     </span>
                 </td>
                 <td>
-                    <strong>${lift.address || 'Не вказано'}</strong>
-                    ${lift.municipalNumber ? `<br><small class="text-muted">№${lift.municipalNumber}</small>` : ''}
-                </td>
-                <td>${lift.type || 'Не вказано'}</td>
-                <td>${lift.loadCapacity || 'Не вказано'} кг</td>
-                <td>${lift.floorCount || 'Не вказано'} пов.</td>
-                <td>${lift.manufacturingYear || 'Не вказано'}</td>
-                <td>
-                    ${lift.lastInspection ? new Date(lift.lastInspection).toLocaleDateString('uk-UA') : 'Не проводилась'}
+                    ${lift.lastInspectionDate ? new Date(lift.lastInspectionDate).toLocaleDateString('uk-UA') : 
+                      lift.lastMaintenance ? new Date(lift.lastMaintenance).toLocaleDateString('uk-UA') : 'Не вказано'}
                 </td>
                 <td>
-                    <div class="btn-group btn-group-sm">
-                        <button type="button" class="btn btn-outline-info" 
+                    ${lift.nextInspectionDate ? new Date(lift.nextInspectionDate).toLocaleDateString('uk-UA') : 
+                      lift.nextMaintenance ? new Date(lift.nextMaintenance).toLocaleDateString('uk-UA') : 'Не вказано'}
+                </td>
+                <td>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn btn-info" 
                                 onclick="showLiftDetails('${liftId}')"
                                 title="Детальна інформація">
                             <i class="fas fa-info-circle"></i>
                         </button>
-                        <button type="button" class="btn btn-outline-primary" 
+                        <button type="button" class="btn btn-primary" 
                                 onclick="editLift('${liftId}')"
                                 title="Редагувати">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button type="button" class="btn btn-outline-success" 
+                        <button type="button" class="btn btn-success" 
                                 onclick="generateQRCodeForLift('${liftId}')"
                                 title="Генерувати QR код">
                             <i class="fas fa-qrcode"></i>
                         </button>
-                        <button type="button" class="btn btn-outline-warning" 
+                        <button type="button" class="btn btn-warning" 
                                 onclick="scheduleMaintenance('${liftId}')"
                                 title="Запланувати обслуговування">
                             <i class="fas fa-tools"></i>
                         </button>
-                        <button type="button" class="btn btn-outline-danger" 
+                        <button type="button" class="btn btn-danger" 
                                 onclick="deleteLift('${liftId}')"
                                 title="Видалити">
                             <i class="fas fa-trash"></i>
@@ -3493,14 +3675,76 @@
         });
         
         console.log('✅ Відображено ліфтів в таблиці:', lifts.length);
+        
+        // Оновлюємо статистику
+        updateLiftsStatistics(lifts);
+    }
+
+    // Функція оновлення статистики ліфтів
+    function updateLiftsStatistics(lifts) {
+        if (!lifts || lifts.length === 0) {
+            // Якщо немає ліфтів - всі лічильники на нуль
+            $('#totalLifts').text('0');
+            $('#activeLifts').text('0');
+            $('#maintenanceLifts').text('0');
+            $('#inactiveLifts').text('0');
+            $('#lift-count').text('(0)');
+            console.log('📊 Статистика: немає ліфтів');
+            return;
+        }
+        
+        // Загальна кількість
+        const total = lifts.length;
+        
+        // Підраховуємо по статусах
+        let activeCount = 0;
+        let maintenanceCount = 0;
+        let inactiveCount = 0;
+        
+        lifts.forEach(lift => {
+            const status = lift.status || 'operational';
+            
+            // Активні (operational, active)
+            if (status === 'operational' || status === 'active') {
+                activeCount++;
+            }
+            // В обслуговуванні (maintenance, repair)
+            else if (status === 'maintenance' || status === 'repair') {
+                maintenanceCount++;
+            }
+            // Неактивні (inactive, out-of-service, broken)
+            else if (status === 'inactive' || status === 'out-of-service' || status === 'broken') {
+                inactiveCount++;
+            }
+            // Якщо статус невідомий - вважаємо активним
+            else {
+                activeCount++;
+            }
+        });
+        
+        // Оновлюємо лічильники
+        $('#totalLifts').text(total);
+        $('#activeLifts').text(activeCount);
+        $('#maintenanceLifts').text(maintenanceCount);
+        $('#inactiveLifts').text(inactiveCount);
+        $('#lift-count').text(`(${total})`);
+        
+        console.log('📊 Статистика оновлена:', {
+            total: total,
+            active: activeCount,
+            maintenance: maintenanceCount,
+            inactive: inactiveCount
+        });
     }
 
     // Допоміжні функції для статусів
     function getStatusClass(status) {
         const statusClasses = {
+            'operational': 'badge-success',
             'active': 'badge-success',
             'maintenance': 'badge-warning', 
             'repair': 'badge-danger',
+            'out-of-service': 'badge-danger',
             'inactive': 'badge-secondary'
         };
         return statusClasses[status] || 'badge-secondary';
@@ -3508,9 +3752,11 @@
 
     function getStatusText(status) {
         const statusTexts = {
+            'operational': 'Працює',
             'active': 'Активний',
             'maintenance': 'Обслуговування',
-            'repair': 'Ремонт', 
+            'repair': 'Ремонт',
+            'out-of-service': 'Не працює',
             'inactive': 'Неактивний'
         };
         return statusTexts[status] || 'Невизначено';
@@ -3545,41 +3791,85 @@
             if (modal) {
                 // Основна інформація
                 $('#detail-municipal-number').text(lift.municipalNumber || 'Не вказано');
-                $('#detail-id').text(lift.serialNumber || lift.id || 'Не вказано');
-                $('#detail-model').text(lift.model || 'Не вказано');
+                $('#detail-id').text(lift._id || lift.id || 'Не вказано');
+                $('#detail-model').text(
+                    lift.manufacturer && lift.model 
+                        ? `${lift.manufacturer} ${lift.model}` 
+                        : lift.model || 'Не вказано'
+                );
                 $('#detail-type').text(lift.type || 'Не вказано');
-                $('#detail-status').text(lift.status || 'Не вказано');
+                $('#detail-status').text(getStatusText(lift.status) || 'Не вказано');
                 
                 // Технічні характеристики
-                $('#detail-capacity').text(lift.capacity ? lift.capacity + ' кг' : 'Не вказано');
+                $('#detail-capacity').text(
+                    lift.capacity ? lift.capacity + ' кг' : 
+                    lift.loadCapacity ? lift.loadCapacity + ' кг' : 'Не вказано'
+                );
                 $('#detail-speed').text(lift.speed ? lift.speed + ' м/с' : 'Не вказано');
-                $('#detail-frequency').text(lift.inspectionFrequency ? lift.inspectionFrequency + ' міс.' : 'Не вказано');
-                
-                // Розташування
-                $('#detail-address').text(lift.address || 'Не вказано');
-                $('#detail-postcode').text(lift.postcode || 'Не вказано');
-                $('#detail-coordinates').text(
-                    lift.lat && lift.lng ? `${lift.lat}, ${lift.lng}` : 'Не вказано'
+                $('#detail-frequency').text(
+                    lift.inspectionFrequency ? lift.inspectionFrequency + ' міс.' : 
+                    lift.floors ? lift.floors + ' поверхів' : 'Не вказано'
                 );
                 
-                // Клієнт та обслуговування
-                $('#detail-client').text(lift.clientName || 'Не вказано');
-                $('#detail-email').text(lift.clientEmail || 'Не вказано');
-                $('#detail-access-code').text(lift.accessCode || 'Не вказано');
+                // Розташування з нової структури
+                const address = lift.address || {};
+                const addressStr = address.street 
+                    ? `${address.street}, ${address.city || ''}` 
+                    : lift.address || 'Не вказано';
+                const postalCode = address.zipCode || lift.postalCode || 'Не вказано';
+                
+                $('#detail-address').text(addressStr);
+                $('#detail-postcode').text(postalCode);
+                
+                // Координати з location.coordinates
+                const coords = lift.location?.coordinates || [];
+                const latitude = coords[1] || lift.latitude || null;
+                const longitude = coords[0] || lift.longitude || null;
+                
+                console.log('📍 Координати ліфта:', { 
+                    coords, 
+                    latitude, 
+                    longitude, 
+                    hasLocation: !!lift.location,
+                    locationData: lift.location 
+                });
+                
+                $('#detail-coordinates').text(
+                    latitude && longitude ? `${latitude}, ${longitude}` : 'Не вказано'
+                );
+                
+                // Клієнт з populate
+                const client = lift.client || {};
+                const clientName = client.firstName && client.lastName
+                    ? `${client.firstName} ${client.lastName}`
+                    : lift.clientName || 'Не вказано';
+                const clientEmail = client.email || lift.clientEmail || lift.email || 'Не вказано';
+                
+                $('#detail-client').text(clientName);
+                $('#detail-email').text(clientEmail);
+                $('#detail-access-code').text(lift.intercomCode || lift.accessCode || 'Не вказано');
+                
+                // Дати обслуговування
                 $('#detail-last-maintenance').text(
+                    lift.lastInspectionDate ? new Date(lift.lastInspectionDate).toLocaleDateString('uk-UA') :
                     lift.lastMaintenance ? new Date(lift.lastMaintenance).toLocaleDateString('uk-UA') : 'Не вказано'
                 );
                 $('#detail-next-maintenance').text(
+                    lift.nextInspectionDate ? new Date(lift.nextInspectionDate).toLocaleDateString('uk-UA') :
                     lift.nextMaintenance ? new Date(lift.nextMaintenance).toLocaleDateString('uk-UA') : 'Не вказано'
                 );
                 
-                // Звіт інспекції
+                // Звіт інспекції (показуємо останній звіт з історії)
+                const lastReport = lift.inspectionHistory && lift.inspectionHistory.length > 0 
+                    ? lift.inspectionHistory[lift.inspectionHistory.length - 1] 
+                    : null;
+                
                 $('#detail-inspection-date').text(
-                    lift.inspectionDate ? new Date(lift.inspectionDate).toLocaleDateString('uk-UA') : 'Не вказано'
+                    lastReport && lastReport.date ? new Date(lastReport.date).toLocaleDateString('uk-UA') : 'Не вказано'
                 );
-                $('#detail-inspection-type').text(lift.inspectionType || 'Не вказано');
-                $('#detail-inspection-status').text(lift.inspectionStatus || 'Не вказано');
-                $('#detail-inspection-comments').text(lift.inspectionComments || 'Не вказано');
+                $('#detail-inspection-type').text(lastReport ? lastReport.type || 'Не вказано' : 'Не вказано');
+                $('#detail-inspection-status').text(lastReport ? lastReport.status || 'Не вказано' : 'Не вказано');
+                $('#detail-inspection-comments').text(lastReport ? lastReport.notes || 'Не вказано' : 'Не вказано');
                 
                 // Додаткова інформація
                 $('#detail-created').text(
@@ -3588,13 +3878,6 @@
                 $('#detail-updated').text(
                     lift.updatedAt ? new Date(lift.updatedAt).toLocaleString('uk-UA') : 'Не вказано'
                 );
-                
-                // Ініціалізуємо карту якщо є координати
-                if (lift.lat && lift.lng && typeof L !== 'undefined') {
-                    setTimeout(() => {
-                        initDetailsMap(lift.lat, lift.lng, lift.address);
-                    }, 300);
-                }
                 
                 // Додаємо обробник для кнопки редагування
                 const editBtn = document.getElementById('edit-lift-from-details');
@@ -3605,8 +3888,42 @@
                     };
                 }
                 
+                // Завантажуємо звіти інспекцій
+                loadInspectionReports(liftId, lift);
+                
+                // Завантажуємо контракт
+                loadMaintenanceContract(liftId, lift);
+                
                 // Показуємо модальне вікно
                 $('#liftDetailsModal').modal('show');
+                
+                // Координати вже отримані вище (coords, latitude, longitude)
+                // Ініціалізуємо карту ПІСЛЯ того як модальне вікно повністю відкрите
+                if (latitude && longitude) {
+                    console.log('🗺️ Підготовка до ініціалізації карти деталей:', { lat: latitude, lng: longitude });
+                    
+                    // Видаляємо попередні обробники
+                    $('#liftDetailsModal').off('shown.bs.modal');
+                    
+                    // Додаємо новий обробник
+                    $('#liftDetailsModal').one('shown.bs.modal', function() {
+                        console.log('🗺️ Модальне вікно відкрите, ініціалізуємо карту...');
+                        
+                        if (typeof L === 'undefined') {
+                            console.error('❌ Leaflet не завантажений');
+                            return;
+                        }
+                        
+                        setTimeout(() => {
+                            const addressStr = lift.address?.street 
+                                ? `${lift.address.street}, ${lift.address.city}` 
+                                : lift.address || '';
+                            initDetailsMap(latitude, longitude, addressStr);
+                        }, 200);
+                    });
+                } else {
+                    console.warn('⚠️ Немає координат для відображення карти:', { lift });
+                }
             }
         } catch (error) {
             console.error('❌ Помилка завантаження деталей ліфта:', error);
@@ -3616,32 +3933,68 @@
     
     // Функція ініціалізації карти в модальному вікні деталей
     function initDetailsMap(lat, lng, address) {
+        console.log('🗺️ Ініціалізація карти деталей:', { lat, lng, address });
+        
         const mapContainer = document.getElementById('detailsMap');
-        if (!mapContainer) return;
+        if (!mapContainer) {
+            console.error('❌ Контейнер detailsMap не знайдено');
+            return;
+        }
+        
+        // Перевіряємо чи Leaflet завантажений
+        if (typeof L === 'undefined') {
+            console.error('❌ Leaflet бібліотека не завантажена');
+            return;
+        }
         
         // Видаляємо стару карту якщо існує
         if (window.detailsMapInstance) {
-            window.detailsMapInstance.remove();
+            try {
+                window.detailsMapInstance.remove();
+                console.log('✅ Стара карта видалена');
+            } catch (e) {
+                console.warn('⚠️ Помилка видалення старої карти:', e);
+            }
         }
         
         try {
             // Створюємо нову карту
-            window.detailsMapInstance = L.map('detailsMap').setView([lat, lng], 15);
+            window.detailsMapInstance = L.map('detailsMap', {
+                center: [lat, lng],
+                zoom: 15,
+                zoomControl: true,
+                scrollWheelZoom: true
+            });
+            
+            console.log('✅ Карта створена');
             
             // Додаємо tiles
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
             }).addTo(window.detailsMapInstance);
             
+            console.log('✅ Tiles додані');
+            
             // Додаємо маркер
-            L.marker([lat, lng])
-                .addTo(window.detailsMapInstance)
-                .bindPopup(address || 'Розташування ліфта')
-                .openPopup();
-                
-            console.log('✅ Карта деталей ініціалізована');
+            const marker = L.marker([lat, lng])
+                .addTo(window.detailsMapInstance);
+            
+            // Додаємо popup якщо є адреса
+            if (address) {
+                marker.bindPopup(`<strong>${address}</strong>`).openPopup();
+            }
+            
+            console.log('✅ Маркер додано');
+            
+            // Оновлюємо розмір карти (важливо для модальних вікон)
+            setTimeout(() => {
+                window.detailsMapInstance.invalidateSize();
+                console.log('✅ Розмір карти оновлено');
+            }, 100);
+            
         } catch (error) {
-            console.error('❌ Помилка ініціалізації карти:', error);
+            console.error('❌ Помилка ініціалізації карти деталей:', error);
         }
     }
 
@@ -3655,7 +4008,7 @@
             let lift;
             if (result.success && result.data) {
                 console.log('✅ Ліфт завантажено з API:', result.data);
-                lift = result.data;
+                lift = result.data.lift || result.data;
             } else {
                 // Fallback до localStorage
                 console.log('⚠️ Завантаження з localStorage (API не доступний)');
@@ -3669,36 +4022,332 @@
             }
             
             console.log('📋 Дані ліфта для редагування:', lift);
-
-            // Заповнюємо форму редагування
-            if (typeof openEnhancedModal === 'function') {
-                // Відкриваємо модальне вікно додавання/редагування
-                openEnhancedModal(lift);
-            } else {
-                alert('Функція редагування недоступна');
+            
+            // ВАЖЛИВО: Встановлюємо currentLiftId в enhanced-lift-modal ПЕРЕД відкриттям
+            if (window.enhancedLiftModal) {
+                window.enhancedLiftModal.currentLiftId = lift._id || lift.id;
+                console.log('✅ Set enhancedLiftModal.currentLiftId:', window.enhancedLiftModal.currentLiftId);
             }
+
+            // Змінюємо заголовок модального вікна
+            $('#enhancedModalTitle').text('Редагувати ліфт');
+            
+            // Заповнюємо приховане поле з ID
+            $('#enhancedLiftId').val(lift._id || lift.id);
+            
+            // Основна інформація
+            $('#enhancedMunicipalNumber').val(lift.municipalNumber || '');
+            $('#enhancedLiftBrand').val(lift.manufacturer || lift.brand || '');
+            $('#enhancedLiftModel').val(lift.model || '');
+            $('#enhancedLiftType').val(lift.type || '');
+            $('#enhancedLiftCapacity').val(lift.capacity || lift.loadCapacity || '');
+            $('#enhancedLiftSpeed').val(lift.speed || '');
+            
+            // Розташування
+            const address = lift.address || {};
+            $('#enhancedLiftAddress').val(address.street || lift.address || '');
+            $('#enhancedLiftPostcode').val(address.zipCode || lift.postalCode || '');
+            
+            // Координати з location.coordinates або старого формату
+            const coords = lift.location?.coordinates || [];
+            const lat = coords[1] || lift.latitude || '';
+            const lng = coords[0] || lift.longitude || '';
+            $('#enhancedLiftLat').val(lat);
+            $('#enhancedLiftLng').val(lng);
+            
+            // Клієнт
+            const client = lift.client || {};
+            $('#enhancedClientName').val(
+                client.firstName && client.lastName 
+                    ? `${client.firstName} ${client.lastName}` 
+                    : lift.clientName || ''
+            );
+            $('#enhancedClientEmail').val(client.email || lift.clientEmail || lift.email || '');
+            $('#enhancedClientPhone').val(client.phone || lift.clientPhone || lift.phone || '');
+            $('#enhancedContactPerson').val(lift.contactPerson || '');
+            $('#enhancedAccessCode').val(lift.intercomCode || lift.accessCode || '');
+            
+            // Технічні дані
+            $('#enhancedLiftStatus').val(lift.status || 'operational');
+            
+            // Технік
+            const technician = lift.technician || {};
+            const technicianId = technician._id || lift.assignedTechnician || 'auto';
+            $('#enhancedAssignedTechnician').val(technicianId);
+            
+            // Інспекції
+            if (lift.lastInspectionDate) {
+                const lastMaintenanceDate = new Date(lift.lastInspectionDate).toISOString().split('T')[0];
+                $('#lastMaintenance').val(lastMaintenanceDate);
+            } else if (lift.lastMaintenance) {
+                const lastMaintenanceDate = new Date(lift.lastMaintenance).toISOString().split('T')[0];
+                $('#lastMaintenance').val(lastMaintenanceDate);
+            } else {
+                $('#lastMaintenance').val('');
+            }
+            if (lift.nextInspectionDate) {
+                const nextMaintenanceDate = new Date(lift.nextInspectionDate).toISOString().split('T')[0];
+                $('#nextMaintenance').val(nextMaintenanceDate);
+            } else if (lift.nextMaintenance) {
+                const nextMaintenanceDate = new Date(lift.nextMaintenance).toISOString().split('T')[0];
+                $('#nextMaintenance').val(nextMaintenanceDate);
+            } else {
+                $('#nextMaintenance').val('');
+            }
+            
+            console.log('✅ Форма заповнена даними');
+            
+            // Відкриваємо модальне вікно
+            $('#enhancedLiftModal').modal('show');
+            
+            // Оновлюємо карту ПІСЛЯ відкриття модального вікна
+            if (lift.latitude && lift.longitude && typeof L !== 'undefined') {
+                $('#enhancedLiftModal').on('shown.bs.modal', function() {
+                    // Відключаємо обробник після виконання
+                    $('#enhancedLiftModal').off('shown.bs.modal');
+                    
+                    console.log('🗺️ Ініціалізація карти редагування...');
+                    setTimeout(() => {
+                        initEditMap(lift.latitude, lift.longitude, lift.address);
+                    }, 100);
+                });
+            }
+            
         } catch (error) {
             console.error('❌ Помилка завантаження ліфта:', error);
             alert('Помилка завантаження даних ліфта');
         }
     }
 
-    function generateQRCodeForLift(liftId) {
-        console.log('🏷️ Генерація QR коду для ліфта:', liftId);
+    // Функція ініціалізації карти в модальному вікні редагування
+    function initEditMap(lat, lng, address) {
+        console.log('🗺️ Ініціалізація карти редагування:', { lat, lng, address });
         
-        const lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
-        const lift = lifts.find(l => (l._id || l.id) === liftId);
-        
-        if (!lift) {
-            alert('Ліфт не знайдено');
+        const mapContainer = document.getElementById('enhancedLiftMap');
+        if (!mapContainer) {
+            console.error('❌ Контейнер enhancedLiftMap не знайдено');
             return;
         }
+        
+        // Перевіряємо чи Leaflet завантажений
+        if (typeof L === 'undefined') {
+            console.error('❌ Leaflet бібліотека не завантажена');
+            return;
+        }
+        
+        // Видаляємо стару карту якщо існує
+        if (window.editMapInstance) {
+            try {
+                window.editMapInstance.remove();
+                console.log('✅ Стара карта редагування видалена');
+            } catch (e) {
+                console.warn('⚠️ Помилка видалення старої карти:', e);
+            }
+        }
+        
+        try {
+            // Створюємо нову карту
+            window.editMapInstance = L.map('enhancedLiftMap', {
+                center: [lat, lng],
+                zoom: 15,
+                zoomControl: true,
+                scrollWheelZoom: true
+            });
+            
+            console.log('✅ Карта редагування створена');
+            
+            // Додаємо tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(window.editMapInstance);
+            
+            console.log('✅ Tiles додані');
+            
+            // Додаємо маркер (draggable для можливості переміщення)
+            const marker = L.marker([lat, lng], { draggable: true })
+                .addTo(window.editMapInstance);
+            
+            // Оновлюємо координати при переміщенні маркера
+            marker.on('dragend', function(event) {
+                const position = marker.getLatLng();
+                $('#enhancedLiftLat').val(position.lat.toFixed(6));
+                $('#enhancedLiftLng').val(position.lng.toFixed(6));
+                console.log('📍 Маркер переміщено:', position);
+            });
+            
+            // Додаємо popup якщо є адреса
+            if (address) {
+                marker.bindPopup(`<strong>${address}</strong><br><small>Перетягніть маркер для зміни позиції</small>`).openPopup();
+            }
+            
+            console.log('✅ Маркер додано');
+            
+            // Оновлюємо розмір карти (важливо для модальних вікон)
+            setTimeout(() => {
+                window.editMapInstance.invalidateSize();
+                console.log('✅ Розмір карти редагування оновлено');
+            }, 100);
+            
+        } catch (error) {
+            console.error('❌ Помилка ініціалізації карти редагування:', error);
+        }
+    }
 
-        // Використовуємо існуючу функцію генерації QR
-        if (typeof generateQRCodeSafe === 'function') {
-            generateQRCodeSafe('municipalNumber', lift.municipalNumber || liftId);
-        } else {
-            alert('Функція генерації QR коду недоступна');
+    async function generateQRCodeForLift(liftId) {
+        console.log('🏷️ Генерація QR коду для ліфта:', liftId);
+        
+        try {
+            // Завантажуємо дані ліфта з API
+            const result = await apiCall(`/api/lifts/${liftId}`, 'GET');
+            
+            let lift;
+            if (result.success && result.data) {
+                lift = result.data;
+            } else {
+                // Fallback до localStorage
+                const lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
+                lift = lifts.find(l => (l._id || l.id) === liftId);
+            }
+            
+            if (!lift) {
+                alert('Ліфт не знайдено');
+                return;
+            }
+            
+            // Перевіряємо наявність бібліотеки QRCode
+            if (typeof QRCode === 'undefined') {
+                alert('Бібліотека QR кодів ще завантажується. Спробуйте через кілька секунд.');
+                return;
+            }
+            
+            // Заповнюємо інформацію про ліфт
+            $('#qr-municipal-number').text(lift.municipalNumber || 'Без номера');
+            $('#qr-address').text(lift.address || 'Адреса не вказана');
+            
+            // Очищуємо контейнер QR коду
+            const container = document.getElementById('qrcode-container');
+            container.innerHTML = '<div id="qrcode"></div>';
+            
+            // Генеруємо дані для QR коду
+            const qrData = {
+                liftId: lift._id || lift.id,
+                municipalNumber: lift.municipalNumber,
+                address: lift.address,
+                type: lift.type,
+                model: lift.model,
+                url: `${window.location.origin}/lift-info.html?id=${lift._id || lift.id}`
+            };
+            
+            // Створюємо QR код
+            new QRCode(document.getElementById('qrcode'), {
+                text: JSON.stringify(qrData),
+                width: 256,
+                height: 256,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            
+            // Зберігаємо дані для завантаження/друку
+            window.currentQRData = {
+                lift: lift,
+                qrData: qrData
+            };
+            
+            // Показуємо модальне вікно
+            $('#qrCodeModal').modal('show');
+            
+        } catch (error) {
+            console.error('❌ Помилка генерації QR коду:', error);
+            alert('Помилка генерації QR коду: ' + error.message);
+        }
+    }
+    
+    function downloadQRCode() {
+        try {
+            const canvas = document.querySelector('#qrcode canvas');
+            if (!canvas) {
+                alert('QR код не знайдено');
+                return;
+            }
+            
+            const lift = window.currentQRData?.lift;
+            const fileName = `QR_${lift?.municipalNumber || 'lift'}_${Date.now()}.png`;
+            
+            // Конвертуємо canvas в blob і завантажуємо
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = fileName;
+                link.click();
+                URL.revokeObjectURL(url);
+            });
+        } catch (error) {
+            console.error('❌ Помилка завантаження QR коду:', error);
+            alert('Помилка завантаження QR коду');
+        }
+    }
+    
+    function printQRCode() {
+        try {
+            const lift = window.currentQRData?.lift;
+            const canvas = document.querySelector('#qrcode canvas');
+            
+            if (!canvas) {
+                alert('QR код не знайдено');
+                return;
+            }
+            
+            // Створюємо нове вікно для друку
+            const printWindow = window.open('', '_blank');
+            const imgData = canvas.toDataURL('image/png');
+            
+            const municipalNumber = lift?.municipalNumber || 'Не вказано';
+            const address = lift?.address || 'Не вказано';
+            const model = lift?.model || 'Не вказано';
+            const type = lift?.type || 'Не вказано';
+            
+            const htmlContent = [
+                '<!DOCTYPE html>',
+                '<html>',
+                '<head>',
+                '<title>QR код - ' + municipalNumber + '</title>',
+                '<style>',
+                'body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }',
+                'h2 { margin: 10px 0; }',
+                '.info { margin: 20px 0; color: #666; }',
+                'img { margin: 20px 0; }',
+                '@media print { body { padding: 0; } }',
+                '</style>',
+                '</head>',
+                '<body>',
+                '<h2>QR код ліфта</h2>',
+                '<div class="info">',
+                '<strong>Муніципальний №:</strong> ' + municipalNumber + '<br>',
+                '<strong>Адреса:</strong> ' + address + '<br>',
+                '<strong>Модель:</strong> ' + model + '<br>',
+                '<strong>Тип:</strong> ' + type,
+                '</div>',
+                '<img src="' + imgData + '" alt="QR Code">',
+                '</body>',
+                '</html>'
+            ].join('');
+            
+            printWindow.document.write(htmlContent);
+            printWindow.document.close();
+            
+            // Чекаємо завантаження зображення перед друком
+            printWindow.onload = function() {
+                printWindow.print();
+                setTimeout(function() {
+                    printWindow.close();
+                }, 100);
+            };
+        } catch (error) {
+            console.error('❌ Помилка друку QR коду:', error);
+            alert('Помилка друку QR коду');
         }
     }
 
@@ -3777,6 +4426,338 @@
     setTimeout(() => {
         refreshLiftsDisplay();
     }, 1000);
+    
+    // ============================================
+    // Функції для роботи зі звітами інспекцій
+    // ============================================
+    
+    async function loadInspectionReports(liftId, lift) {
+        const container = document.getElementById('inspection-reports-list');
+        if (!container) return;
+        
+        try {
+            // Використовуємо inspectionHistory з моделі ліфта
+            const reports = lift.inspectionHistory || [];
+            
+            if (reports.length === 0) {
+                container.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> Жодного звіту ще не додано
+                    </div>
+                `;
+                return;
+            }
+            
+            // Відображаємо звіти
+            let html = '<div class="list-group">';
+            reports.forEach((report, index) => {
+                const date = report.date ? new Date(report.date).toLocaleDateString('uk-UA') : 'Невідома дата';
+                const type = report.type || 'Не вказано';
+                const notes = report.notes || 'Без коментарів';
+                const fileUrl = report.fileUrl || report.file || null;
+                
+                html += `
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1">
+                                    <i class="fas fa-clipboard-check text-primary"></i>
+                                    ${type}
+                                </h6>
+                                <p class="mb-1"><small><strong>Дата:</strong> ${date}</small></p>
+                                <p class="mb-1"><small>${notes}</small></p>
+                            </div>
+                            <div>
+                                ${fileUrl ? `
+                                    <a href="${fileUrl}" target="_blank" class="btn btn-sm btn-info">
+                                        <i class="fas fa-file-pdf"></i> Переглянути
+                                    </a>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            
+            container.innerHTML = html;
+        } catch (error) {
+            console.error('❌ Помилка завантаження звітів:', error);
+            container.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle"></i> Помилка завантаження звітів
+                </div>
+            `;
+        }
+    }
+    
+    function showAddReportModal() {
+        // Отримуємо ID ліфта з модального вікна деталей
+        const liftId = $('#detail-municipal-number').text();
+        $('#report-lift-id').val(liftId);
+        $('#addReportModal').modal('show');
+    }
+    
+    async function submitReport() {
+        const liftId = $('#report-lift-id').val();
+        const type = $('#report-type').val();
+        const date = $('#report-date').val();
+        const description = $('#report-description').val();
+        const fileInput = document.getElementById('report-file');
+        
+        if (!type || !date) {
+            alert('Будь ласка, заповніть обов\'язкові поля');
+            return;
+        }
+        
+        try {
+            const formData = new FormData();
+            formData.append('type', type);
+            formData.append('date', date);
+            if (description) formData.append('description', description);
+            if (fileInput.files[0]) formData.append('report', fileInput.files[0]);
+            
+            // Відправляємо запит через apiCall
+            const apiUrl = AuthManager.getApiUrl(`/api/lifts/${liftId}/inspection-report`);
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                alert('Звіт успішно додано!');
+                $('#addReportModal').modal('hide');
+                $('#addReportForm')[0].reset();
+                // Оновлюємо деталі ліфта
+                showLiftDetails(liftId);
+            } else {
+                alert('Помилка: ' + (result.message || 'Не вдалося додати звіт'));
+            }
+        } catch (error) {
+            console.error('❌ Помилка додавання звіту:', error);
+            alert('Помилка додавання звіту');
+        }
+    }
+    
+    // ============================================
+    // Функції для роботи з контрактами
+    // ============================================
+    
+    async function loadMaintenanceContract(liftId, lift) {
+        const container = document.getElementById('maintenance-contract-section');
+        if (!container) return;
+        
+        try {
+            // Спочатку перевіряємо чи є контракт у об'єкті lift
+            let contract = lift.maintenanceContract;
+            
+            // Якщо немає, завантажуємо з API
+            if (!contract || !contract.contractFile) {
+                try {
+                    const response = await AuthManager.fetchWithAuth(`/api/lifts/${liftId}/contract`);
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.success && result.data) {
+                            contract = result.data.contract || result.data;
+                        }
+                    }
+                } catch (apiError) {
+                    console.warn('⚠️ Не вдалося завантажити контракт з API:', apiError.message);
+                }
+            }
+            
+            if (!contract || !contract.contractFile) {
+                // Немає контракту - показуємо кнопку завантаження
+                container.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> Контракт не завантажено
+                    </div>
+                    <button type="button" class="btn btn-sm btn-success" onclick="showUploadContractModal('${liftId}')">
+                        <i class="fas fa-upload"></i> Завантажити контракт
+                    </button>
+                `;
+                return;
+            }
+            
+            // Є контракт - показуємо інформацію
+            const startDate = contract.startDate ? new Date(contract.startDate).toLocaleDateString('uk-UA') : 'Невідомо';
+            const endDate = contract.endDate ? new Date(contract.endDate).toLocaleDateString('uk-UA') : 'Невідомо';
+            const contractNumber = contract.contractNumber || 'Не вказано';
+            const description = contract.description || '';
+            
+            // contractFile вже містить повний шлях від кореня (починається з /)
+            const fileUrl = contract.contractFile.startsWith('/') 
+                ? contract.contractFile 
+                : `/uploads/${contract.contractFile}`;
+            
+            container.innerHTML = `
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">
+                            <i class="fas fa-file-contract text-success"></i> Контракт №${contractNumber}
+                        </h6>
+                        <p class="card-text">
+                            <strong>Період дії:</strong> ${startDate} - ${endDate}<br>
+                            ${description ? `<strong>Примітки:</strong> ${description}<br>` : ''}
+                        </p>
+                        <div class="btn-group">
+                            <a href="${fileUrl}" target="_blank" class="btn btn-sm btn-primary">
+                                <i class="fas fa-eye"></i> Переглянути
+                            </a>
+                            <a href="${fileUrl}" download class="btn btn-sm btn-info">
+                                <i class="fas fa-download"></i> Завантажити
+                            </a>
+                            <button type="button" class="btn btn-sm btn-success" onclick="emailContract('${liftId}')">
+                                <i class="fas fa-envelope"></i> Надіслати Email
+                            </button>
+                            <button type="button" class="btn btn-sm btn-warning" onclick="showUploadContractModal('${liftId}')">
+                                <i class="fas fa-sync"></i> Оновити
+                            </button>
+                            <button type="button" class="btn btn-sm btn-danger" onclick="deleteContract('${liftId}')">
+                                <i class="fas fa-trash"></i> Видалити
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } catch (error) {
+            console.error('❌ Помилка завантаження контракту:', error);
+            container.innerHTML = `
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Контракт не завантажено
+                </div>
+                <button type="button" class="btn btn-sm btn-success" onclick="showUploadContractModal('${liftId}')">
+                    <i class="fas fa-upload"></i> Завантажити контракт
+                </button>
+            `;
+        }
+    }
+    
+    function showUploadContractModal(liftId) {
+        $('#contract-lift-id').val(liftId);
+        $('#uploadContractModal').modal('show');
+    }
+    
+    async function submitContract() {
+        const liftId = $('#contract-lift-id').val();
+        const contractNumber = $('#contract-number').val();
+        const startDate = $('#contract-start-date').val();
+        const endDate = $('#contract-end-date').val();
+        const notes = $('#contract-notes').val();
+        const fileInput = document.getElementById('contract-file');
+        
+        if (!contractNumber || !startDate || !endDate || !fileInput.files[0]) {
+            alert('Будь ласка, заповніть всі обов\'язкові поля та оберіть файл');
+            return;
+        }
+        
+        try {
+            // Перевіряємо автентифікацію
+            if (!AuthManager.isAuthenticated()) {
+                alert('Сесія прострочена. Будь ласка, увійдіть знову');
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('contractNumber', contractNumber);
+            formData.append('startDate', startDate);
+            formData.append('endDate', endDate);
+            if (notes) formData.append('notes', notes);
+            formData.append('contract', fileInput.files[0]);
+            
+            // Отримуємо токен через AuthManager
+            const token = AuthManager.getAuthToken(); // Виправлено: getAuthToken замість getToken
+            if (!token) {
+                alert('Токен не знайдено. Будь ласка, увійдіть знову');
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            // Відправляємо запит
+            const apiUrl = AuthManager.getApiUrl(`/api/lifts/${liftId}/contract`);
+            console.log('📤 Uploading contract to:', apiUrl);
+            console.log('📦 File:', fileInput.files[0].name, 'Size:', fileInput.files[0].size);
+            console.log('🔑 Token length:', token.length);
+            
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            }).catch(error => {
+                console.error('❌ Fetch error:', error);
+                throw new Error(`Помилка з'єднання з сервером: ${error.message}`);
+            });
+            
+            console.log('📡 Response status:', response.status, response.statusText);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('❌ Server error:', errorText);
+                throw new Error(`Помилка сервера (${response.status}): ${errorText}`);
+            }
+            
+            const result = await response.json();
+            console.log('📥 Contract upload response:', result);
+            
+            if (result.success) {
+                alert('Контракт успішно завантажено!');
+                $('#uploadContractModal').modal('hide');
+                $('#uploadContractForm')[0].reset();
+                // Оновлюємо деталі ліфта
+                showLiftDetails(liftId);
+            } else {
+                alert('Помилка: ' + (result.message || result.error || 'Не вдалося завантажити контракт'));
+            }
+        } catch (error) {
+            console.error('❌ Помилка завантаження контракту:', error);
+            alert('Помилка завантаження контракту: ' + error.message);
+        }
+    }
+    
+    async function emailContract(liftId) {
+        const email = prompt('Введіть email адресу для надсилання контракту:');
+        if (!email) return;
+        
+        try {
+            const result = await apiCall(`/api/lifts/${liftId}/contract/email`, 'POST', { email });
+            
+            if (result.success) {
+                alert('Контракт успішно надіслано на ' + email);
+            } else {
+                alert('Помилка надсилання: ' + (result.message || 'Невідома помилка'));
+            }
+        } catch (error) {
+            console.error('❌ Помилка надсилання контракту:', error);
+            alert('Помилка надсилання контракту');
+        }
+    }
+    
+    async function deleteContract(liftId) {
+        if (!confirm('Ви впевнені, що хочете видалити контракт?')) return;
+        
+        try {
+            const result = await apiCall(`/api/lifts/${liftId}/contract`, 'DELETE');
+            
+            if (result.success) {
+                alert('Контракт успішно видалено');
+                // Оновлюємо деталі ліфта
+                showLiftDetails(liftId);
+            } else {
+                alert('Помилка видалення: ' + (result.message || 'Невідома помилка'));
+            }
+        } catch (error) {
+            console.error('❌ Помилка видалення контракту:', error);
+            alert('Помилка видалення контракту');
+        }
+    }
     
     </script>
 </body>

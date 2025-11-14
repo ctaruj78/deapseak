@@ -58,28 +58,37 @@ if [ -n "$CODESPACE_NAME" ]; then
     echo ""
     
     # Налаштування портів
-    set_port_public 3001
-    set_port_public 8080
-    set_port_public 8081
+    set_port_public 3002
+    set_port_public 5000
+    set_port_public 27017
     
     echo ""
     echo "=============================================="
     echo "✅ Готово!"
     echo ""
-    echo "📋 ВАЖЛИВІ КРОКИ:"
+    echo "📋 ВАЖЛИВІ КРОКИ ДЛЯ ВИПРАВЛЕННЯ CORS:"
+    echo ""
+    echo "🔧 МЕТОД 1: Через VS Code UI (Рекомендовано)"
     echo "1. Відкрийте панель PORTS у VS Code:"
-    echo "   - Натисніть Ctrl+Shift+\` (або Ctrl+J)"
+    echo "   - Натисніть Ctrl+\` або Ctrl+J"
     echo "   - Перейдіть на вкладку 'PORTS'"
     echo ""
-    echo "2. Знайдіть порт 3001 (api-server.js)"
-    echo "   - Клікніть правою кнопкою на порт 3001"
+    echo "2. Знайдіть порт 3002 (Backend API)"
+    echo "   - Клікніть правою кнопкою на порт 3002"
     echo "   - Виберіть 'Port Visibility' → 'Public'"
     echo ""
-    echo "3. Те саме для портів 8080 та 8081 якщо потрібно"
+    echo "3. Знайдіть порт 5000 (Frontend)"
+    echo "   - Клікніть правою кнопкою на порт 5000"
+    echo "   - Виберіть 'Port Visibility' → 'Public'"
     echo ""
-    echo "🔗 Публічні URL будуть:"
-    echo "   API:  https://$CODESPACE_NAME-3001.app.github.dev"
-    echo "   Web:  https://$CODESPACE_NAME-8080.app.github.dev"
+    echo "🔧 МЕТОД 2: Через gh CLI"
+    echo "   gh codespace ports visibility 3002:public -c $CODESPACE_NAME"
+    echo "   gh codespace ports visibility 5000:public -c $CODESPACE_NAME"
+    echo ""
+    echo "🔗 Публічні URL:"
+    echo "   Backend:  https://$CODESPACE_NAME-3002.app.github.dev"
+    echo "   Frontend: https://$CODESPACE_NAME-5000.app.github.dev"
+    echo "   MongoDB:  https://$CODESPACE_NAME-27017.app.github.dev"
     echo ""
     
 else
