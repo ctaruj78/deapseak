@@ -3,14 +3,14 @@ class AppConfig {
     static getBaseUrl() {
         // Перевіряємо чи це GitHub Codespaces
         if (window.location.hostname.includes('github.dev')) {
-            // Замінюємо порт 5000 (frontend) на 3002 (backend)
-            const backendUrl = window.location.origin.replace('-5000.', '-3002.');
+            // Замінюємо порт 5000 (frontend) на 3001 (backend API)
+            const backendUrl = window.location.origin.replace('-5000.', '-3001.');
             console.log('🌐 Codespaces detected - Backend URL:', backendUrl);
             return backendUrl;
         }
         // Локальна розробка
-        console.log('💻 Local development - Backend URL: http://localhost:3002');
-        return 'http://localhost:3002';
+        console.log('💻 Local development - Backend URL: http://localhost:3001');
+        return 'http://localhost:3001';
     }
 
     static config = {
