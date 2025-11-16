@@ -456,6 +456,27 @@ else
 fi
 
 # ============================================
+# НАЛАШТУВАННЯ CODESPACES (якщо потрібно)
+# ============================================
+if [ "$CODESPACES" = "true" ] && command -v gh &> /dev/null; then
+    log_step "Налаштування портів для GitHub Codespaces"
+    
+    # Робимо порт 3001 публічним для API
+    log_info "Робимо порт 3001 (API) публічним..."
+    gh codespace ports visibility 3001:public -c "$CODESPACE_NAME" 2>/dev/null && \
+        log_success "Порт 3001 налаштовано як публічний" || \
+        log_warning "Не вдалося автоматично налаштувати порт 3001. Налаштуйте вручну: PORTS tab → 3001 → Port Visibility → Public"
+    
+    # Робимо порт 5000 публічним для Frontend (якщо ще не)
+    log_info "Перевірка порту 5000 (Frontend)..."
+    gh codespace ports visibility 5000:public -c "$CODESPACE_NAME" 2>/dev/null && \
+        log_success "Порт 5000 налаштовано як публічний" || \
+        log_info "Порт 5000 вже налаштований"
+    
+    sleep 2
+fi
+
+# ============================================
 # ФІНАЛЬНЕ ПОВІДОМЛЕННЯ
 # ============================================
 echo ""
@@ -464,9 +485,21 @@ echo -e "${GREEN}🎉 DeapSeaK System Started!${NC}"
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 echo -e "${BLUE}📊 Доступні сервіси:${NC}"
-echo -e "   ${GREEN}🌐 Frontend:${NC}      http://localhost:5000"
-echo -e "   ${GREEN}🔗 API:${NC}           http://localhost:3001/api"
-echo -e "   ${GREEN}💬 WebSocket:${NC}     ws://localhost:3002"
+
+# Перевірка чи це Codespaces
+if [ "$CODESPACES" = "true" ]; then
+    # Отримуємо базову URL з CODESPACE_NAME
+    BASE_URL="${CODESPACE_NAME}"
+    echo -e "   ${GREEN}🌐 Frontend:${NC}      https://${BASE_URL}-5000.app.github.dev"
+    echo -e "   ${GREEN}🔗 API:${NC}           https://${BASE_URL}-3001.app.github.dev/api"
+    echo -e "   ${GREEN}💬 WebSocket:${NC}     wss://${BASE_URL}-3002.app.github.dev"
+    echo -e "   ${YELLOW}⚠️  Переконайтесь що порт 3001 має видимість 'Public' в PORTS tab${NC}"
+else
+    echo -e "   ${GREEN}🌐 Frontend:${NC}      http://localhost:5000"
+    echo -e "   ${GREEN}🔗 API:${NC}           http://localhost:3001/api"
+    echo -e "   ${GREEN}💬 WebSocket:${NC}     ws://localhost:3002"
+fi
+
 echo -e "   ${GREEN}🗄️  MongoDB:${NC}      mongodb://localhost:27017"
 echo ""
 echo -e "${BLUE}📋 Сторінки системи:${NC}"

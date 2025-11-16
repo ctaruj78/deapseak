@@ -540,15 +540,47 @@
             initWebSocket();
         });
 
-        function loadDashboardData() {
-            // Завантажуємо статистику
-            $('#totalUsers').text(Math.floor(Math.random() * 100) + 50);
-            $('#totalLifts').text(Math.floor(Math.random() * 500) + 200);
-            $('#activeRequests').text(Math.floor(Math.random() * 20) + 5);
-            $('#totalRevenue').text((Math.floor(Math.random() * 50000) + 10000).toLocaleString());
-            
-            // Оновлюємо час
-            $('#lastUpdate').text(new Date().toLocaleTimeString('uk-UA'));
+        async function loadDashboardData() {
+            try {
+                console.log('📊 Завантаження статистики дашборду...');
+                
+                // Показуємо індикатори завантаження
+                $('#totalUsers').html('<i class="fas fa-spinner fa-spin"></i>');
+                $('#totalLifts').html('<i class="fas fa-spinner fa-spin"></i>');
+                $('#activeRequests').html('<i class="fas fa-spinner fa-spin"></i>');
+                
+                // Паралельно завантажуємо всі дані
+                const [usersResponse, liftsResponse, requestsResponse] = await Promise.all([
+                    AuthManager.fetchWithAuth('/api/auth/users').catch(e => ({ users: [] })),
+                    AuthManager.fetchWithAuth('/api/lifts').catch(e => ({ lifts: [] })),
+                    AuthManager.fetchWithAuth('/api/requests').catch(e => ({ requests: [] }))
+                ]);
+                
+                // Оновлюємо статистику
+                const totalUsers = usersResponse.users?.length || 0;
+                const totalLifts = liftsResponse.lifts?.length || 0;
+                const allRequests = requestsResponse.requests || [];
+                const activeRequests = allRequests.filter(r => 
+                    r.status === 'pending' || r.status === 'in_progress'
+                ).length;
+                
+                $('#totalUsers').text(totalUsers);
+                $('#totalLifts').text(totalLifts);
+                $('#activeRequests').text(activeRequests);
+                $('#totalRevenue').text('N/A'); // TODO: Додати API для доходів
+                
+                console.log('✅ Статистика завантажена:', { totalUsers, totalLifts, activeRequests });
+                
+                // Оновлюємо час
+                $('#lastUpdate').text(new Date().toLocaleTimeString('uk-UA'));
+            } catch (error) {
+                console.error('❌ Помилка завантаження статистики:', error);
+                // Показуємо помилку але не блокуємо інтерфейс
+                $('#totalUsers').text('?');
+                $('#totalLifts').text('?');
+                $('#activeRequests').text('?');
+                $('#totalRevenue').text('?');
+            }
         }
 
         // Оновлення даних кожні 30 секунд

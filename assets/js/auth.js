@@ -84,10 +84,17 @@ class AuthManager {
     }
 
     static getApiUrl(endpoint) {
-        // ВАЖЛИВО: Завжди використовуємо localhost:3001 навіть в Codespaces
-        // GitHub Codespaces має критичні проблеми з CORS та multipart/form-data через tunnel
-        // Внутрішній localhost URL працює напряму без tunnel проблем
-        return `http://localhost:3001${endpoint}`;
+        // Визначаємо чи ми в Codespaces
+        const isCodespaces = window.location.hostname.includes('app.github.dev');
+        
+        if (isCodespaces) {
+            // В Codespaces використовуємо публічний URL з тим самим хостом але портом 3001
+            const baseUrl = window.location.origin.replace('-5000.', '-3001.');
+            return `${baseUrl}${endpoint}`;
+        } else {
+            // Локально використовуємо localhost
+            return `http://localhost:3001${endpoint}`;
+        }
     }
 
     static async fetchWithAuth(url, options = {}) {

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Settings</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Testing Settings Scripts</h1>
+    <div id="test-output"></div>
+    <div id="settings-content"></div>
+
+    <script src="/assets/js/auth.js"></script>
+    <script src="/assets/js/i18n.js"></script>
+    <script src="/assets/js/settings-manager.js"></script>
+    <script src="/assets/js/modules/settings-page.js"></script>
+
+    <script>
+        console.log('=== SCRIPT LOADING TEST ===');
+        console.log('AuthManager:', typeof AuthManager);
+        console.log('i18n:', typeof i18n);
+        console.log('settingsManager:', typeof settingsManager);
+        console.log('SettingsPage:', typeof SettingsPage);
+        
+        // Fake user for testing
+        localStorage.setItem('liftmanager_jwt', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxMjMiLCJyb2xlIjoiYWRtaW4iLCJleHAiOjk5OTk5OTk5OTl9.test');
+        localStorage.setItem('liftmanager_user', JSON.stringify({
+            id: '123',
+            email: 'admin@test.com',
+            role: 'admin',
+            name: 'Test Admin'
+        }));
+
+        $(document).ready(function() {
+            console.log('=== DOM READY ===');
+            try {
+                const settingsPage = new SettingsPage();
+                console.log('SettingsPage created:', settingsPage);
+                settingsPage.init();
+                console.log('SettingsPage initialized');
+            } catch (error) {
+                console.error('ERROR:', error);
+                document.getElementById('test-output').innerHTML = 
+                    '<div style="color: red; padding: 20px; border: 2px solid red;">' +
+                    '<h2>Error:</h2><pre>' + error.message + '\n\n' + error.stack + '</pre></div>';
+            }
+        });
+    </script>
+</body>
+</html>

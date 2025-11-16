@@ -15,9 +15,14 @@ class I18n {
 
     // Визначення мови браузера
     detectLanguage() {
-        const browserLang = navigator.language || navigator.userLanguage;
-        const langCode = browserLang.split('-')[0];
-        return this.supportedLanguages.includes(langCode) ? langCode : 'uk';
+        try {
+            const browserLang = navigator.language || navigator.userLanguage || 'uk-UA';
+            const langCode = browserLang.split('-')[0];
+            return this.supportedLanguages.includes(langCode) ? langCode : 'uk';
+        } catch (error) {
+            console.warn('Error detecting language:', error);
+            return 'uk';
+        }
     }
 
     // Отримання збереженої мови

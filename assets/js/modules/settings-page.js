@@ -14,7 +14,7 @@ class SettingsPage {
     getRoleSettings() {
         const roleSettings = {
             admin: {
-                sections: ['general', 'notifications', 'system', 'security', 'backup', 'integrations'],
+                sections: ['general', 'notifications', 'system', 'security', 'backup', 'integrations', 'ai'],
                 features: {
                     system: {
                         label: 'Системні налаштування',
@@ -44,6 +44,17 @@ class SettingsPage {
                             { id: 'smsIntegration', label: 'SMS інтеграція', type: 'checkbox', default: false },
                             { id: 'telegramBot', label: 'Telegram бот', type: 'checkbox', default: false },
                             { id: 'googleMaps', label: 'Google Maps API', type: 'checkbox', default: true }
+                        ]
+                    },
+                    ai: {
+                        label: '🤖 AI Системи',
+                        icon: 'fa-robot',
+                        items: [
+                            { id: 'smartSystemEnabled', label: '🧠 Smart Система (прогнозна аналітика)', type: 'checkbox', default: false },
+                            { id: 'voiceAssistantEnabled', label: '🎤 Голосовий Асистент', type: 'checkbox', default: false },
+                            { id: 'arHelperEnabled', label: '🥽 AR Помічник', type: 'checkbox', default: false },
+                            { id: 'aiMaintenancePrediction', label: 'AI Прогнозування ТО', type: 'checkbox', default: false },
+                            { id: 'aiAutoReporting', label: 'Автоматична AI звітність', type: 'checkbox', default: false }
                         ]
                     }
                 }

@@ -49,12 +49,24 @@ tail -f logs/*.log     # Переглянути логи в реальному �
 
 ## 📊 Доступні сервіси після запуску
 
+### Локальна розробка:
+
 | Сервіс | URL | Опис |
 |--------|-----|------|
 | 🌐 **Frontend** | http://localhost:5000 | Веб-інтерфейс |
 | 🔗 **API** | http://localhost:3001/api | REST API |
 | 💬 **WebSocket** | ws://localhost:3002 | Real-time оновлення |
 | 🗄️ **MongoDB** | mongodb://localhost:27017 | База даних |
+
+### GitHub Codespaces:
+
+| Сервіс | URL Pattern | Опис |
+|--------|-------------|------|
+| 🌐 **Frontend** | `https://YOUR-CODESPACE-5000.app.github.dev` | Веб-інтерфейс |
+| 🔗 **API** | `https://YOUR-CODESPACE-3001.app.github.dev/api` | REST API |
+| 💬 **WebSocket** | `wss://YOUR-CODESPACE-3002.app.github.dev` | Real-time оновлення |
+
+⚠️ **Важливо для Codespaces**: Порт 3001 має бути публічним! Див. [CODESPACES-PORT-FIX.md](CODESPACES-PORT-FIX.md)
 
 ---
 

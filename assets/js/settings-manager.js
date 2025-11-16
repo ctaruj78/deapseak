@@ -6,7 +6,10 @@
 class SettingsManager {
     constructor() {
         this.settings = this.getLocalSettings();
-        this.apiUrl = 'http://localhost:3001/api/settings';
+        // Use AuthManager's API URL to get the correct endpoint
+        this.apiUrl = (typeof AuthManager !== 'undefined' && AuthManager.getApiUrl) 
+            ? AuthManager.getApiUrl('/api/settings')
+            : 'http://localhost:3001/api/settings';
     }
 
     // Отримати локальні налаштування
@@ -46,31 +49,34 @@ class SettingsManager {
     // Завантажити налаштування з сервера
     async loadSettings() {
         try {
-            const token = AuthManager.getAuthToken();
-            if (!token) {
+            // Спочатку показуємо локальні налаштування для швидкості
+            const localSettings = this.getLocalSettings();
+            console.log('📦 Using cached settings while loading from server...');
+            
+            if (!AuthManager.isAuthenticated()) {
                 console.warn('No auth token, using local settings');
-                return this.settings;
+                return localSettings;
             }
 
-            const response = await fetch(this.apiUrl, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
+            const response = await AuthManager.fetchWithAuth('/api/settings', {
+                method: 'GET'
             });
 
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
+                console.warn(`Server returned ${response.status}, using cached settings`);
+                return localSettings;
             }
 
             const data = await response.json();
             this.settings = data.settings;
             this.saveLocal(this.settings);
             
+            console.log('✅ Settings loaded from server');
             return this.settings;
         } catch (error) {
             console.error('Failed to load settings from server:', error);
-            return this.settings;
+            // Використовуємо локальні налаштування при помилці
+            return this.getLocalSettings();
         }
     }
 
@@ -82,7 +88,7 @@ class SettingsManager {
                 throw new Error('Not authenticated');
             }
 
-            const response = await fetch(this.apiUrl, {
+            const response = await AuthManager.fetchWithAuth("/api/settings", {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -116,7 +122,7 @@ class SettingsManager {
                 throw new Error('Not authenticated');
             }
 
-            const response = await fetch(`${this.apiUrl}/language`, {
+            const response = await AuthManager.fetchWithAuth("/api/settings/language", {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -152,7 +158,7 @@ class SettingsManager {
                 throw new Error('Not authenticated');
             }
 
-            const response = await fetch(`${this.apiUrl}/theme`, {
+            const response = await AuthManager.fetchWithAuth("/api/settings/theme", {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -184,7 +190,7 @@ class SettingsManager {
                 throw new Error('Not authenticated');
             }
 
-            const response = await fetch(`${this.apiUrl}/notifications`, {
+            const response = await AuthManager.fetchWithAuth("/api/settings/notifications", {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -215,7 +221,7 @@ class SettingsManager {
                 throw new Error('Not authenticated');
             }
 
-            const response = await fetch(`${this.apiUrl}/reset`, {
+            const response = await AuthManager.fetchWithAuth("/api/settings/reset", {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -299,12 +305,8 @@ class SettingsManager {
 // Глобальний екземпляр
 const settingsManager = new SettingsManager();
 
-// Ініціалізація при завантаженні
-if (typeof window !== 'undefined') {
-    window.addEventListener('DOMContentLoaded', () => {
-        settingsManager.init();
-    });
-}
+// НЕ ініціалізуємо автоматично - буде викликано вручну зі сторінки
+// після завантаження всіх залежностей
 
 // Експорт
 if (typeof module !== 'undefined' && module.exports) {
