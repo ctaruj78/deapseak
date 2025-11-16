@@ -96,7 +96,7 @@ app.use((req, res) => {
 
 app.use(errorHandler);
 
-const startServer = async (port = 3002) => {
+const startServer = async (port = 3001) => {
     try {
         await connectDB();
         const server = app.listen(port, () => {
@@ -141,6 +141,6 @@ const startServer = async (port = 3002) => {
 module.exports = { app, startServer };
 
 if (require.main === module) {
-    const PORT = process.env.V2_PORT || process.env.PORT || 3002;
+    const PORT = process.env.V2_PORT || process.env.PORT || 3001;
     startServer(PORT);
 }
