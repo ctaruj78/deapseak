@@ -4744,17 +4744,17 @@
                 return;
             }
             
-            // Відправляємо запит
-            const apiUrl = AuthManager.getApiUrl(`/api/lifts/${liftId}/contract`);
-            console.log('📤 Uploading contract to:', apiUrl);
+            // WORKAROUND для GitHub Codespaces CORS: передаємо token через query parameter
+            // замість Authorization header, щоб уникнути CORS preflight (OPTIONS)
+            const apiUrl = AuthManager.getApiUrl(`/api/lifts/${liftId}/contract?token=${encodeURIComponent(token)}`);
+            console.log('📤 Uploading contract to:', apiUrl.replace(/token=[^&]+/, 'token=***'));
             console.log('📦 File:', fileInput.files[0].name, 'Size:', fileInput.files[0].size);
-            console.log('🔑 Token length:', token.length);
+            console.log('🔑 Token in query parameter (CORS workaround)');
             
+            // FormData з POST БЕЗ custom headers не викликає CORS preflight
             const response = await fetch(apiUrl, {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                },
+                // Не додаємо headers щоб уникнути preflight!
                 body: formData
             }).catch(error => {
                 console.error('❌ Fetch error:', error);

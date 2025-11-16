@@ -11,54 +11,46 @@ const websocketService = require('./services/websocketService');
 
 const app = express();
 
-// CORS налаштування для GitHub Codespaces та локальної розробки
+// CORS налаштування - МАКСИМАЛЬНО PERMISSIVE для GitHub Codespaces
+// Codespaces має проблеми з preflight запитами, тому дозволяємо ВСЕ
 const corsOptions = {
-    origin: function (origin, callback) {
-        console.log('🔍 CORS Request from origin:', origin);
-        
-        // Дозволяємо запити без origin (наприклад, curl, same-origin)
-        if (!origin) {
-            console.log('✅ CORS: No origin header (allowed)');
-            return callback(null, true);
-        }
-        
-        // Дозволяємо всі localhost порти
-        if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
-            console.log('✅ CORS: Localhost origin (allowed)');
-            return callback(null, true);
-        }
-        
-        // Дозволяємо всі GitHub Codespaces домени
-        if (origin.includes('github.dev') || origin.includes('app.github.dev')) {
-            console.log('✅ CORS: GitHub Codespaces origin (allowed)');
-            return callback(null, true);
-        }
-        
-        // Логування відхиленого origin
-        console.log('⚠️ CORS: Unknown origin', origin);
-        callback(null, true); // Дозволяємо всі для розробки
-    },
+    origin: '*', // Дозволяємо всі origins (для development)
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
-    exposedHeaders: ['Content-Range', 'X-Content-Range'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'],
+    allowedHeaders: '*', // Дозволяємо всі headers
+    exposedHeaders: ['Content-Range', 'X-Content-Range', 'Authorization'],
     maxAge: 86400, // 24 години
     preflightContinue: false,
     optionsSuccessStatus: 204
 };
 
+// Застосовуємо CORS ПЕРЕД усіма іншими middleware
 app.use(cors(corsOptions));
 
-// Додатковий middleware для логування запитів
+// Додатковий middleware для примусового додавання CORS headers
 app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', req.get('Origin') || '*');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH,OPTIONS,HEAD');
+    res.header('Access-Control-Allow-Headers', req.get('Access-Control-Request-Headers') || '*');
+    res.header('Access-Control-Max-Age', '86400');
+    
+    // Логування
     if (req.method === 'OPTIONS') {
         console.log(`📡 OPTIONS ${req.path} from ${req.get('origin') || 'no-origin'}`);
+        // Відразу відповідаємо на OPTIONS без подальшої обробки
+        return res.status(204).end();
     }
+    
+    console.log(`🔍 ${req.method} ${req.path} from ${req.get('origin') || 'no-origin'}`);
     next();
 });
 
-// Явна обробка OPTIONS для всіх маршрутів
-app.options('*', cors(corsOptions));
+// Явна обробка OPTIONS для всіх маршрутів (backup)
+app.options('*', (req, res) => {
+    console.log(`✅ Explicit OPTIONS handler for ${req.path}`);
+    res.status(204).end();
+});
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
