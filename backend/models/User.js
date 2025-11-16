@@ -60,6 +60,42 @@ const userSchema = new mongoose.Schema({
     lastLogin: {
         type: Date
     },
+    
+    // Налаштування користувача
+    settings: {
+        language: {
+            type: String,
+            enum: ['uk', 'en', 'pt'],
+            default: 'uk'
+        },
+        theme: {
+            type: String,
+            enum: ['light', 'dark', 'auto'],
+            default: 'light'
+        },
+        notifications: {
+            email: { type: Boolean, default: true },
+            push: { type: Boolean, default: true },
+            sms: { type: Boolean, default: false },
+            newRequest: { type: Boolean, default: true },
+            statusChange: { type: Boolean, default: true },
+            assignment: { type: Boolean, default: true },
+            reminders: { type: Boolean, default: true }
+        },
+        privacy: {
+            showEmail: { type: Boolean, default: false },
+            showPhone: { type: Boolean, default: false },
+            allowAnalytics: { type: Boolean, default: true }
+        },
+        display: {
+            itemsPerPage: { type: Number, default: 20 },
+            dateFormat: { type: String, default: 'DD.MM.YYYY' },
+            timeFormat: { type: String, default: '24h' },
+            timezone: { type: String, default: 'Europe/Kiev' }
+        },
+        updatedAt: { type: Date, default: Date.now }
+    },
+    
     refreshToken: {
         type: String,
         select: false

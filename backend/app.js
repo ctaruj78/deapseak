@@ -7,6 +7,7 @@ const { errorHandler } = require('./middleware/errorHandler');
 const authRoutes = require('./routes/authRoutes');
 const liftRoutes = require('./routes/liftRoutes');
 const requestRoutes = require('./routes/requestRoutes');
+const settingsRoutes = require('./routes/settingsRoutes');
 const websocketService = require('./services/websocketService');
 
 const app = express();
@@ -77,6 +78,7 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/lifts', liftRoutes);
 app.use('/api/requests', requestRoutes);
+app.use('/api/settings', settingsRoutes);
 
 app.get('/', (req, res) => {
     res.json({
@@ -86,7 +88,8 @@ app.get('/', (req, res) => {
         endpoints: {
             auth: '/api/auth',
             lifts: '/api/lifts',
-            requests: '/api/requests'
+            requests: '/api/requests',
+            settings: '/api/settings'
         }
     });
 });
