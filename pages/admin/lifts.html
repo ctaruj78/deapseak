@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Адмін панель - Управління ліфтами</title>
     
     <!-- AdminLTE CSS -->
@@ -966,14 +969,14 @@
                                 <div class="row mb-3">
                                     <div class="col-md-5">
                                         <div class="form-group">
-                                            <label for="enhancedLiftLat">Широта *</label>
-                                            <input type="number" id="enhancedLiftLat" name="liftLat" class="form-control" step="0.000001" required placeholder="50.4501">
+                                            <label for="enhancedLiftLat">Широта</label>
+                                            <input type="number" id="enhancedLiftLat" name="liftLat" class="form-control" step="0.000001" placeholder="50.4501 (Київ за замовчуванням)">
                                         </div>
                                     </div>
                                     <div class="col-md-5">
                                         <div class="form-group">
-                                            <label for="enhancedLiftLng">Довгота *</label>
-                                            <input type="number" id="enhancedLiftLng" name="liftLng" class="form-control" step="0.000001" required placeholder="30.5234">
+                                            <label for="enhancedLiftLng">Довгота</label>
+                                            <input type="number" id="enhancedLiftLng" name="liftLng" class="form-control" step="0.000001" placeholder="30.5234 (Київ за замовчуванням)">
                                         </div>
                                     </div>
                                     <div class="col-md-2">
@@ -1801,8 +1804,11 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
     
+    <!-- 🔌 КОНФІГУРАЦІЯ ПОРТІВ (завантажується ПЕРШОЮ!) -->
+    <script src="../../assets/js/config.js?v=20241116"></script>
+    
     <!-- Система авторизації -->
-    <script src="../../assets/js/auth.js"></script>
+    <script src="../../assets/js/auth.js?v=20241116"></script>
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
@@ -1815,11 +1821,11 @@
     <script src="../../assets/js/ar-helper.js"></script>
     <script src="../../assets/js/common.js"></script>
     <script src="../../assets/js/lift-utils.js"></script>
-    <script src="../../assets/js/lifts.js"></script>
-    <script src="../../assets/js/simple-lift-modal.js"></script>
-    <script src="../../assets/js/form-validator.js"></script>
-    <script src="../../assets/js/enhanced-lift-modal.js"></script>
-    <script src="../../assets/js/test-lift-saving.js"></script>
+    <script src="../../assets/js/lifts.js?v=20241116"></script>
+    <script src="../../assets/js/simple-lift-modal.js?v=20241116"></script>
+    <script src="../../assets/js/form-validator.js?v=20241116"></script>
+    <script src="../../assets/js/enhanced-lift-modal.js?v=20241116"></script>
+    <script src="../../assets/js/test-lift-saving.js?v=20241116"></script>
 
     <script>
         // Глобальна змінна для збереження PDF файлу
@@ -2119,6 +2125,14 @@
             if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
                 $('#test-saving-button').show();
             }
+            
+            // Завантажуємо ліфти з API при завантаженні сторінки
+            console.log('🚀 Завантаження ліфтів при старті сторінки...');
+            setTimeout(() => {
+                if (typeof window.loadLiftsFromAPI === 'function') {
+                    window.loadLiftsFromAPI();
+                }
+            }, 500);
             
             // Ініціалізуємо LiftManager з assets/js/lifts.js
             console.log('Document ready, initializing LiftManager...');
@@ -3530,22 +3544,40 @@
     }
     
     // Виправлена функція завантаження ліфтів з API
-    async function loadLiftsFromAPI() {
+    // Глобальна функція завантаження ліфтів з API
+    window.loadLiftsFromAPI = async function() {
         console.log('🔄 Завантаження ліфтів з API...');
         
-        const result = await apiCall('/api/lifts');
-        
-        if (result.success && result.data) {
-            // API v2 повертає: { success: true, data: { lifts: [...] } }
-            const apiData = result.data.data || result.data;
-            const lifts = apiData.lifts || apiData;
+        try {
+            const result = await apiCall('/api/lifts');
             
-            console.log('✅ Ліфти завантажено з API:', lifts.length);
-            return Array.isArray(lifts) ? lifts : [];
-        } else {
-            console.error('❌ Помилка завантаження ліфтів:', result.error || 'Unknown error');
-            // Fallback до localStorage якщо API недоступний
-            return JSON.parse(localStorage.getItem('lifts') || '[]');
+            if (result.success && result.data) {
+                // API v2 повертає: { success: true, data: { lifts: [...] } }
+                const apiData = result.data.data || result.data;
+                const lifts = apiData.lifts || apiData;
+                
+                console.log('✅ Ліфти завантажено з API:', lifts.length);
+                
+                // Оновлюємо таблицю
+                if (Array.isArray(lifts)) {
+                    displayLiftsInTable(lifts);
+                    return lifts;
+                } else {
+                    console.error('❌ API повернув не масив:', lifts);
+                    return [];
+                }
+            } else {
+                console.error('❌ Помилка завантаження ліфтів:', result.error || 'Unknown error');
+                // Fallback до localStorage якщо API недоступний
+                const localLifts = JSON.parse(localStorage.getItem('lifts') || '[]');
+                displayLiftsInTable(localLifts);
+                return localLifts;
+            }
+        } catch (error) {
+            console.error('❌ Exception при завантаженні ліфтів:', error);
+            const localLifts = JSON.parse(localStorage.getItem('lifts') || '[]');
+            displayLiftsInTable(localLifts);
+            return localLifts;
         }
     }
     
@@ -3555,17 +3587,22 @@
         
         const result = await apiCall('/api/lifts', 'POST', liftData);
         
-        if (result.success) {
-            console.log('✅ Ліфт збережено в MongoDB:', result.data);
+        if (result.success && result.data && result.data.lift) {
+            console.log('✅ Ліфт збережено в MongoDB:', result.data.lift);
             // Також зберігаємо в localStorage для сумісності
             let savedLifts = JSON.parse(localStorage.getItem('lifts') || '[]');
-            savedLifts.push({...liftData, id: result.data.id, _id: result.data.id});
+            const savedLift = {
+                ...result.data.lift,
+                id: result.data.lift._id,
+                _id: result.data.lift._id
+            };
+            savedLifts.push(savedLift);
             localStorage.setItem('lifts', JSON.stringify(savedLifts));
             
-            return result.data;
+            return result.data.lift;
         } else {
-            console.error('❌ Помилка збереження ліфта:', result.error);
-            throw new Error(result.error || 'Помилка збереження');
+            console.error('❌ Помилка збереження ліфта:', result.error || result.message);
+            throw new Error(result.error || result.message || 'Помилка збереження');
         }
     }
     
@@ -3773,7 +3810,8 @@
             let lift;
             if (result.success && result.data) {
                 console.log('✅ Ліфт завантажено з API:', result.data);
-                lift = result.data;
+                // API повертає { success: true, data: { lift: {...} } }
+                lift = result.data.lift || result.data;
             } else {
                 // Fallback до localStorage
                 console.log('⚠️ Завантаження з localStorage (API не доступний)');
@@ -3785,6 +3823,8 @@
                 alert('Ліфт не знайдено');
                 return;
             }
+
+            console.log('🔍 Об\'єкт ліфта для відображення:', lift);
 
             // Заповнюємо модальне вікно деталей
             const modal = document.getElementById('liftDetailsModal');
@@ -3831,11 +3871,17 @@
                     latitude, 
                     longitude, 
                     hasLocation: !!lift.location,
-                    locationData: lift.location 
+                    locationData: lift.location,
+                    fullLiftObject: lift
                 });
                 
+                // Перевірка чи координати валідні (не NaN і не 0,0)
+                const hasValidCoords = latitude && longitude && 
+                                      latitude !== 0 && longitude !== 0 &&
+                                      !isNaN(latitude) && !isNaN(longitude);
+                
                 $('#detail-coordinates').text(
-                    latitude && longitude ? `${latitude}, ${longitude}` : 'Не вказано'
+                    hasValidCoords ? `${latitude.toFixed(6)}, ${longitude.toFixed(6)}` : 'Не вказано'
                 );
                 
                 // Клієнт з populate
@@ -3888,6 +3934,9 @@
                     };
                 }
                 
+                // Зберігаємо current-lift-id для використання в інших функціях
+                $('#liftDetailsModal').data('current-lift-id', liftId);
+                
                 // Завантажуємо звіти інспекцій
                 loadInspectionReports(liftId, lift);
                 
@@ -3899,8 +3948,15 @@
                 
                 // Координати вже отримані вище (coords, latitude, longitude)
                 // Ініціалізуємо карту ПІСЛЯ того як модальне вікно повністю відкрите
-                if (latitude && longitude) {
-                    console.log('🗺️ Підготовка до ініціалізації карти деталей:', { lat: latitude, lng: longitude });
+                // Перевіряємо чи координати валідні
+                const canShowMap = hasValidCoords;
+                
+                if (canShowMap) {
+                    console.log('🗺️ Підготовка до ініціалізації карти деталей:', { 
+                        lat: latitude, 
+                        lng: longitude,
+                        hasValidCoords 
+                    });
                     
                     // Видаляємо попередні обробники
                     $('#liftDetailsModal').off('shown.bs.modal');
@@ -3922,7 +3978,13 @@
                         }, 200);
                     });
                 } else {
-                    console.warn('⚠️ Немає координат для відображення карти:', { lift });
+                    console.warn('⚠️ Немає координат для відображення карти:', { 
+                        latitude, 
+                        longitude,
+                        coords,
+                        locationData: lift.location,
+                        fullLift: lift 
+                    });
                 }
             }
         } catch (error) {
@@ -4565,9 +4627,12 @@
                         if (result.success && result.data) {
                             contract = result.data.contract || result.data;
                         }
+                    } else if (response.status === 404) {
+                        console.log('ℹ️ Контракт не знайдено для ліфта:', liftId);
                     }
                 } catch (apiError) {
-                    console.warn('⚠️ Не вдалося завантажити контракт з API:', apiError.message);
+                    // Тихо ігноруємо помилки - контракт опціональний
+                    console.log('ℹ️ Контракт відсутній:', apiError.message);
                 }
             }
             

@@ -1,13 +1,30 @@
+/**
+ * ═══════════════════════════════════════════════════════════
+ * ЦЕНТРАЛІЗОВАНА КОНФІГУРАЦІЯ ПОРТІВ - DeapSeaK v2
+ * ═══════════════════════════════════════════════════════════
+ * ⚠️  ВАЖЛИВО: Це ЄДИНЕ місце де визначаються порти!
+ * ⚠️  НЕ ЗМІНЮЙТЕ порти без необхідності!
+ * ═══════════════════════════════════════════════════════════
+ */
+
 const CONFIG = {
     APP: {
-        NAME: 'LiftMaster Pro',
+        NAME: 'DeapSeaK',
         VERSION: '2.0.0',
         SUPPORT_EMAIL: 'support@deapseak.com',
         SUPPORT_PHONE: '+380 44 123 4567'
     },
 
+    // 🔌 ПОРТИ СИСТЕМИ (ФІКСОВАНІ!)
+    PORTS: {
+        FRONTEND: 5000,      // Frontend сервер
+        API: 3001,           // REST API Backend (ФІКСОВАНО!)
+        WEBSOCKET: 3002,     // WebSocket сервер
+        MONGODB: 27017       // MongoDB
+    },
+
     API: {
-        BASE_URL: 'https://api.liftmaster.com',
+        BASE_URL: null, // Обчислюється автоматично через getApiBaseUrl()
         TIMEOUT: 30000,
         ENDPOINTS: {
             AUTH: '/auth',
@@ -15,6 +32,52 @@ const CONFIG = {
             LIFTS: '/lifts',
             REQUESTS: '/requests',
             REPORTS: '/reports'
+        },
+        
+        // 🎯 Автоматичне визначення базового URL для API
+        getApiBaseUrl() {
+            const hostname = window.location.hostname;
+            
+            // GitHub Codespaces
+            if (hostname.includes('.app.github.dev')) {
+                const apiHost = hostname.replace(/(-\d+)(\.app\.github\.dev)/, `-${CONFIG.PORTS.API}$2`);
+                return `${window.location.protocol}//${apiHost}`;
+            }
+            
+            // Локальна розробка
+            if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                return `http://localhost:${CONFIG.PORTS.API}`;
+            }
+            
+            // Production
+            return window.location.origin;
+        },
+
+        // 🎯 Отримати повний URL для endpoint
+        getUrl(endpoint) {
+            const path = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+            return `${this.getApiBaseUrl()}${path}`;
+        }
+    },
+
+    // 💬 WebSocket конфігурація
+    WEBSOCKET: {
+        getUrl() {
+            const hostname = window.location.hostname;
+            
+            // GitHub Codespaces
+            if (hostname.includes('.app.github.dev')) {
+                const wsHost = hostname.replace(/(-\d+)(\.app\.github\.dev)/, `-${CONFIG.PORTS.WEBSOCKET}$2`);
+                return `${window.location.protocol}//${wsHost}`;
+            }
+            
+            // Локальна розробка
+            if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                return `http://localhost:${CONFIG.PORTS.WEBSOCKET}`;
+            }
+            
+            // Production
+            return window.location.origin;
         }
     },
 
@@ -48,6 +111,16 @@ const CONFIG = {
         SESSION_TIMEOUT: 3600000,
         MAX_LOGIN_ATTEMPTS: 5,
         PASSWORD_MIN_LENGTH: 8
+    },
+
+    // 🔍 Діагностика конфігурації
+    debug() {
+        console.group('🔧 CONFIG - Конфігурація системи');
+        console.log('📍 Hostname:', window.location.hostname);
+        console.log('🌐 API Base URL:', this.API.getApiBaseUrl());
+        console.log('💬 WebSocket URL:', this.WEBSOCKET.getUrl());
+        console.log('🔌 Порти:', this.PORTS);
+        console.groupEnd();
     }
 };
 

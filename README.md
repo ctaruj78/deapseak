@@ -34,9 +34,13 @@ npm run auto-start
 ### Інші команди:
 
 ```bash
-npm run stop       # Зупинити всі сервери
-npm run restart    # Перезапустити систему
-tail -f logs/*.log # Переглянути логи в реальному часі
+npm run stop           # Зупинити всі сервери
+npm run restart        # Перезапустити систему
+npm run check-ports    # Перевірити конфігурацію портів
+npm run cleanup        # Очистити проект (тести, backup, дублікати)
+npm run analyze-logs   # Проаналізувати console.log в коді
+npm run audit          # Показати посилання на system audit
+tail -f logs/*.log     # Переглянути логи в реальному часі
 ```
 
 📖 **Детальна документація:** [QUICK-START.md](QUICK-START.md)
@@ -233,7 +237,15 @@ npm install
 
 ## 📚 Додаткова документація
 
+### Запуск та конфігурація:
 - [QUICK-START.md](QUICK-START.md) - Детальний гайд по запуску
+- [PORTS-CONFIG.md](docs/PORTS-CONFIG.md) - **Конфігурація портів (ВАЖЛИВО!)**
+
+### Оптимізація та maintenance:
+- [SYSTEM-AUDIT-REPORT.md](docs/SYSTEM-AUDIT-REPORT.md) - **Повний аудит системи**
+- [OPTIMIZATION-QUICK-GUIDE.md](docs/OPTIMIZATION-QUICK-GUIDE.md) - **Швидкий гайд по оптимізації**
+
+### Звіти та features:
 - [ROLE-BASED-LOGIC-FIX-REPORT.md](ROLE-BASED-LOGIC-FIX-REPORT.md) - Звіт про виправлення
 - [REMAINING-FEATURES.md](REMAINING-FEATURES.md) - Майбутні функції
 

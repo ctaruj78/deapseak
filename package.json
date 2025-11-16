@@ -46,6 +46,11 @@
     "auto-start": "bash auto-start.sh",
     "stop": "bash stop-servers.sh",
     "restart": "npm run stop && npm run auto-start",
+    "check-ports": "bash scripts/check-ports.sh",
+    "fix-config": "bash scripts/fix-config-includes.sh",
+    "cleanup": "bash scripts/cleanup-project.sh",
+    "analyze-logs": "bash scripts/analyze-console-logs.sh",
+    "audit": "echo '📋 System Audit Report: docs/SYSTEM-AUDIT-REPORT.md'",
     "test": "jest",
     "lint": "eslint backend/**/*.js",
     "format": "prettier --write backend/**/*.js frontend/**/*.js"

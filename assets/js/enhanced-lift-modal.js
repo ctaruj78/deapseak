@@ -307,8 +307,9 @@ class EnhancedLiftModal {
             address: $('#enhancedLiftAddress').val() || '',
             postcode: $('#enhancedLiftPostcode').val() || '',
             liftsCountAtAddress: parseInt($('#enhancedLiftsCountAtAddress').val()) || 1,
-            lat: parseFloat($('#enhancedLiftLat').val()) || null,
-            lng: parseFloat($('#enhancedLiftLng').val()) || null,
+            // Координати: перевіряємо чи поля не порожні перед парсингом
+            lat: $('#enhancedLiftLat').val() ? parseFloat($('#enhancedLiftLat').val()) : null,
+            lng: $('#enhancedLiftLng').val() ? parseFloat($('#enhancedLiftLng').val()) : null,
             // Збираємо додаткові муніципальні номери якщо є
             additionalMunicipalNumbers: this.collectAdditionalMunicipalNumbers(),
             clientName: $('#enhancedClientName').val() || 'Невказано',
@@ -497,6 +498,22 @@ class EnhancedLiftModal {
             const testClientId = '6915a14c8c41cac851f25c7e';
             
             // Конвертуємо дані в формат API v2
+            // Координати: використовуємо реальні якщо є, інакше Київ за замовчуванням
+            const hasCoords = liftData.lat && liftData.lng && 
+                             !isNaN(parseFloat(liftData.lat)) && 
+                             !isNaN(parseFloat(liftData.lng));
+            
+            const finalLat = hasCoords ? parseFloat(liftData.lat) : 50.4501;
+            const finalLng = hasCoords ? parseFloat(liftData.lng) : 30.5234;
+            
+            console.log('📍 Координати для збереження:', { 
+                hasCoords, 
+                inputLat: liftData.lat, 
+                inputLng: liftData.lng,
+                finalLat, 
+                finalLng 
+            });
+            
             const apiData = {
                 municipalNumber: liftData.municipalNumber,
                 serialNumber: liftData.serialNumber,
@@ -515,7 +532,7 @@ class EnhancedLiftModal {
                 },
                 location: {
                     type: 'Point',
-                    coordinates: [liftData.lng || 30.5234, liftData.lat || 50.4501] // [longitude, latitude]
+                    coordinates: [finalLng, finalLat] // [longitude, latitude]
                 },
                 client: testClientId, // ID клієнта
                 status: liftData.status || 'operational',
@@ -529,21 +546,25 @@ class EnhancedLiftModal {
             
             // Вибираємо метод та URL залежно від режиму
             let result;
+            let liftObject;
             if (isEdit) {
                 // Оновлення існуючого ліфта
                 result = await apiCall(`/api/lifts/${liftId}`, 'PUT', apiData);
+                liftObject = result.data?.lift || result.data;
             } else {
                 // Створення нового ліфта
                 if (typeof window.saveLiftToAPI === 'function') {
-                    result = await window.saveLiftToAPI(apiData);
+                    liftObject = await window.saveLiftToAPI(apiData);
+                    result = { success: true, data: { lift: liftObject } };
                 } else {
                     throw new Error('saveLiftToAPI function not found');
                 }
             }
             
             console.log('✅ API response:', result);
+            console.log('✅ Lift object:', liftObject);
             
-            if (result && (result.success || result.data)) {
+            if (result && result.success && liftObject) {
                 this.showMessage(isEdit ? 'Ліфт успішно оновлено!' : 'Ліфт успішно збережено!', 'success');
                 $('#enhancedLiftModal').modal('hide');
                 

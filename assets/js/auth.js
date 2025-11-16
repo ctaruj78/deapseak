@@ -84,14 +84,22 @@ class AuthManager {
     }
 
     static getApiUrl(endpoint) {
+        // Використовуємо централізовану конфігурацію якщо доступна
+        if (typeof CONFIG !== 'undefined' && CONFIG.API && CONFIG.API.getUrl) {
+            return CONFIG.API.getUrl(endpoint);
+        }
+        
+        // Fallback на стару логіку
         const hostname = window.location.hostname;
         
         if (hostname.includes('.app.github.dev')) {
-            const apiHost = hostname.replace(/(-\d+)(\.app\.github\.dev)/, '-3002$2');
+            // Для GitHub Codespaces використовуємо порт 3001 (API), а не 3002 (WebSocket)
+            const apiHost = hostname.replace(/(-\d+)(\.app\.github\.dev)/, '-3001$2');
             return `${window.location.protocol}//${apiHost}${endpoint}`;
         }
         else if (window.location.port === '8080' || window.location.port === '5000' || window.location.port === '3000' || window.location.hostname === 'localhost') {
-            return `http://localhost:3002${endpoint}`;
+            // Локально також використовуємо порт 3001 для API
+            return `http://localhost:3001${endpoint}`;
         }
         return endpoint;
     }
