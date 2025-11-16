@@ -84,24 +84,10 @@ class AuthManager {
     }
 
     static getApiUrl(endpoint) {
-        // Використовуємо централізовану конфігурацію якщо доступна
-        if (typeof CONFIG !== 'undefined' && CONFIG.API && CONFIG.API.getUrl) {
-            return CONFIG.API.getUrl(endpoint);
-        }
-        
-        // Fallback на стару логіку
-        const hostname = window.location.hostname;
-        
-        if (hostname.includes('.app.github.dev')) {
-            // Для GitHub Codespaces використовуємо порт 3001 (API), а не 3002 (WebSocket)
-            const apiHost = hostname.replace(/(-\d+)(\.app\.github\.dev)/, '-3001$2');
-            return `${window.location.protocol}//${apiHost}${endpoint}`;
-        }
-        else if (window.location.port === '8080' || window.location.port === '5000' || window.location.port === '3000' || window.location.hostname === 'localhost') {
-            // Локально також використовуємо порт 3001 для API
-            return `http://localhost:3001${endpoint}`;
-        }
-        return endpoint;
+        // ВАЖЛИВО: Завжди використовуємо localhost:3001 навіть в Codespaces
+        // GitHub Codespaces має критичні проблеми з CORS та multipart/form-data через tunnel
+        // Внутрішній localhost URL працює напряму без tunnel проблем
+        return `http://localhost:3001${endpoint}`;
     }
 
     static async fetchWithAuth(url, options = {}) {

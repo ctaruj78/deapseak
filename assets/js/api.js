@@ -1,16 +1,7 @@
 // Функція для отримання базового URL API
 function getApiBaseUrl() {
-    // Перевіряємо чи є AppConfig
-    if (typeof AppConfig !== 'undefined' && AppConfig.config && AppConfig.config.api) {
-        return AppConfig.config.api.baseUrl;
-    }
-    
-    // Fallback: автоматичне визначення для Codespaces
-    if (window.location.hostname.includes('github.dev')) {
-        return window.location.origin.replace('-5000.', '-3002.');
-    }
-    
-    // Fallback: localhost
+    // ВАЖЛИВО: Завжди використовуємо localhost навіть в Codespaces
+    // GitHub Codespaces має проблеми з CORS та multipart/form-data через tunnel
     return 'http://localhost:3001';
 }
 
@@ -354,10 +345,8 @@ class LiftAPI {
     static connectWebSocket() {
         if (this.socket) return this.socket;
 
-        // Динамічне визначення WebSocket URL
-        const wsUrl = window.location.origin.includes('github.dev') 
-            ? `wss://${window.location.host.replace('-5000.', '-3002.')}/ws`
-            : 'ws://localhost:3002';
+        // WebSocket завжди на localhost:3002 (навіть в Codespaces)
+        const wsUrl = 'ws://localhost:3002';
 
         try {
             this.socket = new WebSocket(wsUrl);

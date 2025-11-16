@@ -36,21 +36,9 @@ const CONFIG = {
         
         // 🎯 Автоматичне визначення базового URL для API
         getApiBaseUrl() {
-            const hostname = window.location.hostname;
-            
-            // GitHub Codespaces
-            if (hostname.includes('.app.github.dev')) {
-                const apiHost = hostname.replace(/(-\d+)(\.app\.github\.dev)/, `-${CONFIG.PORTS.API}$2`);
-                return `${window.location.protocol}//${apiHost}`;
-            }
-            
-            // Локальна розробка
-            if (hostname === 'localhost' || hostname === '127.0.0.1') {
-                return `http://localhost:${CONFIG.PORTS.API}`;
-            }
-            
-            // Production
-            return window.location.origin;
+            // ВАЖЛИВО: Завжди використовуємо localhost навіть в Codespaces
+            // GitHub Codespaces має проблеми з CORS та multipart через tunnel
+            return `http://localhost:${CONFIG.PORTS.API}`;
         },
 
         // 🎯 Отримати повний URL для endpoint
@@ -63,21 +51,8 @@ const CONFIG = {
     // 💬 WebSocket конфігурація
     WEBSOCKET: {
         getUrl() {
-            const hostname = window.location.hostname;
-            
-            // GitHub Codespaces
-            if (hostname.includes('.app.github.dev')) {
-                const wsHost = hostname.replace(/(-\d+)(\.app\.github\.dev)/, `-${CONFIG.PORTS.WEBSOCKET}$2`);
-                return `${window.location.protocol}//${wsHost}`;
-            }
-            
-            // Локальна розробка
-            if (hostname === 'localhost' || hostname === '127.0.0.1') {
-                return `http://localhost:${CONFIG.PORTS.WEBSOCKET}`;
-            }
-            
-            // Production
-            return window.location.origin;
+            // WebSocket завжди на localhost (навіть в Codespaces)
+            return `http://localhost:${CONFIG.PORTS.WEBSOCKET}`;
         }
     },
 

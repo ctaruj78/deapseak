@@ -7,10 +7,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         
-        // Динамічне визначення API URL
-        const apiUrl = window.location.origin.includes('github.dev')
-            ? window.location.origin.replace('-5000.', '-3002.')
-            : 'http://localhost:3001';
+        // ВАЖЛИВО: Завжди використовуємо localhost навіть в Codespaces
+        // GitHub Codespaces має проблеми з CORS через tunnel
+        const apiUrl = 'http://localhost:3001';
         
         try {
             const response = await fetch(`${apiUrl}/api/auth/login`, {
