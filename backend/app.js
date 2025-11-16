@@ -16,16 +16,21 @@ const corsOptions = {
     origin: function (origin, callback) {
         console.log('🔍 CORS Request from origin:', origin);
         
-        // Дозволяємо запити без origin (наприклад, curl)
-        if (!origin) return callback(null, true);
+        // Дозволяємо запити без origin (наприклад, curl, same-origin)
+        if (!origin) {
+            console.log('✅ CORS: No origin header (allowed)');
+            return callback(null, true);
+        }
         
         // Дозволяємо всі localhost порти
         if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+            console.log('✅ CORS: Localhost origin (allowed)');
             return callback(null, true);
         }
         
         // Дозволяємо всі GitHub Codespaces домени
         if (origin.includes('github.dev') || origin.includes('app.github.dev')) {
+            console.log('✅ CORS: GitHub Codespaces origin (allowed)');
             return callback(null, true);
         }
         
@@ -35,7 +40,7 @@ const corsOptions = {
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
     exposedHeaders: ['Content-Range', 'X-Content-Range'],
     maxAge: 86400, // 24 години
     preflightContinue: false,
@@ -43,6 +48,14 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+
+// Додатковий middleware для логування запитів
+app.use((req, res, next) => {
+    if (req.method === 'OPTIONS') {
+        console.log(`📡 OPTIONS ${req.path} from ${req.get('origin') || 'no-origin'}`);
+    }
+    next();
+});
 
 // Явна обробка OPTIONS для всіх маршрутів
 app.options('*', cors(corsOptions));
