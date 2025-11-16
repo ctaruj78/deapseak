@@ -11,7 +11,7 @@ function getApiBaseUrl() {
     }
     
     // Fallback: localhost
-    return 'http://localhost:3002';
+    return 'http://localhost:3001';
 }
 
 const IS_DEVELOPMENT = window.location.hostname === 'localhost' || 

@@ -8,7 +8,7 @@ echo "║   DeapSeaK v2 API - Практичний Tutorial       ║"
 echo "╚════════════════════════════════════════════════╝"
 echo ""
 
-BASE_URL="http://localhost:3002"
+BASE_URL="http://localhost:3001"
 
 # 1. ВХІД В СИСТЕМУ
 echo "📝 1. Вхід в систему (ваш admin акаунт)..."

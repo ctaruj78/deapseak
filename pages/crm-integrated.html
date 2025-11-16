@@ -313,9 +313,9 @@ class CRMController {
     getApiUrl() {
         const hostname = window.location.hostname;
         if (hostname.includes('app.github.dev')) {
-            return window.location.origin.replace('-5000.', '-3002.');
+            return window.location.origin.replace('-5000.', '-3001.');
         }
-        return 'http://localhost:3002';
+        return 'http://localhost:3001';
     }
 
     updateUserInfo() {

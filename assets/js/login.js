@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Динамічне визначення API URL
         const apiUrl = window.location.origin.includes('github.dev')
             ? window.location.origin.replace('-5000.', '-3002.')
-            : 'http://localhost:3002';
+            : 'http://localhost:3001';
         
         try {
             const response = await fetch(`${apiUrl}/api/auth/login`, {
