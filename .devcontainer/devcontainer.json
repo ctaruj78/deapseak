@@ -3,16 +3,20 @@
   "image": "mcr.microsoft.com/devcontainers/universal:2",
   
   // Налаштування портів
-  "forwardPorts": [5000, 3002, 27017],
+  "forwardPorts": [5000, 3001, 3002, 27017],
   
   "portsAttributes": {
     "5000": {
       "visibility": "public",
       "label": "Frontend Server"
     },
+    "3001": {
+      "visibility": "public",
+      "label": "Backend API"
+    },
     "3002": {
       "visibility": "public",
-      "label": "Backend API v2"
+      "label": "WebSocket Server"
     },
     "27017": {
       "visibility": "private",
@@ -41,8 +45,9 @@
   // Змінні середовища
   "containerEnv": {
     "NODE_ENV": "development",
-    "PORT": "3002",
-    "V2_PORT": "3002",
+    "PORT": "3001",
+    "V2_PORT": "3001",
+    "WS_PORT": "3002",
     "FRONTEND_PORT": "5000"
   },
   
