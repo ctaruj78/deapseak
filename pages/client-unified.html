@@ -208,6 +208,7 @@ class ClientSystem {
             'history',
             'invoices',
             'support',
+            'ai-assistant',
             'profile',
             'settings'
         ];
@@ -271,6 +272,11 @@ class ClientSystem {
                 title: 'Технічна підтримка',
                 icon: 'fas fa-headset',
                 action: () => this.loadModule('support')
+            },
+            'ai-assistant': {
+                title: 'AI Асистент',
+                icon: 'fas fa-robot',
+                action: () => window.open('../ai-assistant/ai-assistant.html', '_blank')
             },
             'settings': {
                 title: 'Налаштування',

@@ -597,9 +597,13 @@
     <script>
         function logout() {
             if (confirm('Ви впевнені, що хочете вийти з системи?')) {
-                localStorage.removeItem('authToken');
-                localStorage.removeItem('userData');
-                window.location.href = 'login.html';
+                if (typeof AuthManager !== 'undefined') {
+                    AuthManager.logout();
+                } else {
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    window.location.href = '/login.html';
+                }
             }
         }
 
@@ -648,6 +652,8 @@
             });
         });
     </script>
+    <!-- AI Assistant Widget -->
+    <script src="/components/ai-widget.js"></script>
 </body>
 
 <!-- AI Assistant Floating Button & Modal -->
@@ -692,4 +698,6 @@
 </html>
 <!-- AI Assistant Include -->
 <!--#include file="../../templates/ai-assistant-include.html" -->
-<!-- Якщо сервер не підтримує include, вставте вміст ai-assistant-include.html вручну перед </body> -->
+<!-- Якщо сервер не підтримує include, вставте вміст ai-assistant-include.html вручну перед
+    <script src="/components/ai-widget.js"></script>
+</body> -->

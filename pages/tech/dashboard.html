@@ -391,6 +391,11 @@
                             <button class="btn btn-outline-info" onclick="openTaskDetails('${task._id || task.id}')" title="Деталі">
                                 <i class="fas fa-eye"></i>
                             </button>
+                            ${task.lift?._id ? 
+                                `<button class="btn btn-outline-success" onclick="showRoute('${task.lift._id}')" title="Маршрут до ліфта">
+                                    <i class="fas fa-route"></i>
+                                </button>` : ''
+                            }
                             ${task.status === 'assigned' ? 
                                 `<button class="btn btn-outline-primary" onclick="startTask('${task._id || task.id}')" title="Почати">
                                     <i class="fas fa-play"></i>
@@ -646,6 +651,21 @@
                 notification.alert('close');
             }, 7000);
         }
+        
+        /**
+         * Показати маршрут до ліфта
+         */
+        function showRoute(liftId) {
+            if (!liftId) {
+                alert('Помилка: ID ліфта не вказано');
+                return;
+            }
+            
+            // Відкрити task-map.html з ID ліфта
+            window.open(`task-map.html?lift=${liftId}`, '_blank', 'width=1200,height=800');
+        }
     </script>
+    <!-- AI Assistant Widget -->
+    <script src="/components/ai-widget.js"></script>
 </body>
 </html>

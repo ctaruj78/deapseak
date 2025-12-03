@@ -2,96 +2,263 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <title>Карта завдання</title>
+    <title>Маршрут до завдання - DeapSeaK</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../../assets/plugins/leaflet/leaflet.css">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    
+    <!-- Bootstrap & AdminLTE -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        #map { height: 70vh; width: 100%; margin: 0 auto; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.12); }
-        .info-panel { background: #fff; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; box-shadow: 0 1px 6px rgba(0,0,0,0.08); }
+        body { margin: 0; padding: 0; background: #f4f6f9; }
+        #map { height: calc(100vh - 120px); width: 100%; }
+        .info-panel { 
+            background: white; 
+            padding: 15px; 
+            margin: 10px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+        }
+        .loading { text-align: center; padding: 50px; }
     </style>
 </head>
 <body>
-    <div class="info-panel" id="taskInfo"></div>
+    <div class="info-panel" id="taskInfo">
+        <div class="loading">
+            <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
+            <p>Завантаження даних...</p>
+        </div>
+    </div>
     <div id="map"></div>
-    <script src="../../assets/plugins/leaflet/leaflet.js"></script>
-    <script src="../../assets/js/api.js"></script>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+    <script src="../../assets/js/config.js?v=2.1"></script>
+    <script src="../../assets/js/auth.js"></script>
+    
     <script>
-    // Отримати ID завдання з URL
-    function getTaskId() {
-        const params = new URLSearchParams(window.location.search);
-        return params.get('id');
-    }
+        let map, routingControl, userLocation;
+        
+        // Отримати ID ліфта з URL
+        function getLiftId() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('lift') || params.get('id');
+        }
 
-    // Завантажити дані завдання з бекенду
-    async function loadTaskData(taskId) {
-        try {
-            const result = await LiftAPI.getAssignments({ id: taskId });
-            if (Array.isArray(result) && result.length > 0) return result[0];
-            if (result && result.id) return result;
-        } catch (e) {
-            // fallback на localStorage
-            const requests = JSON.parse(localStorage.getItem('maintenanceRequests')) || [];
-            return requests.find(r => r.id == taskId);
-        }
-        return null;
-    }
+        // Завантажити дані ліфта з API
+        async function loadLiftData(liftId) {
+            try {
+                console.log('🔄 Завантаження даних ліфта:', liftId);
+                const response = await AuthManager.fetchWithAuth(`/api/lifts/${liftId}`);
+                
+                if (!response.ok) {
+                    throw new Error('Ліфт не знайдено');
+                }
 
-    // Відобразити інформацію про завдання
-    function renderTaskInfo(task) {
-        if (!task) {
-            document.getElementById('taskInfo').innerHTML = '<p class="text-danger">Дані завдання не знайдено</p>';
-            return;
+                const data = await response.json();
+                console.log('✅ Дані ліфта отримано:', data);
+                return data.data || data;
+            } catch (error) {
+                console.error('❌ Помилка завантаження ліфта:', error);
+                return null;
+            }
         }
-        document.getElementById('taskInfo').innerHTML = `
-            <h3>${task.title}</h3>
-            <p><strong>Опис:</strong> ${task.description || '—'}</p>
-            <p><strong>Місце роботи:</strong> ${task.location ? (typeof task.location === 'object' ? `${task.location.latitude}, ${task.location.longitude}` : task.location) : '—'}</p>
-            <p><strong>Статус:</strong> ${task.status}</p>
-            <p><strong>Початок:</strong> ${task.startedAt ? new Date(task.startedAt).toLocaleString('uk-UA') : '—'}</p>
-            <p><strong>Завершення:</strong> ${task.completedAt ? new Date(task.completedAt).toLocaleString('uk-UA') : '—'}</p>
-        `;
-    }
 
-    // Відобразити карту
-    function renderMap(task) {
-        const map = L.map('map').setView([48.3794, 31.1656], 6); // Центр України
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
-        let hasMarker = false;
-        // Маркер початку робіт
-        if (task && task.geoStart) {
-            L.marker([task.geoStart.latitude, task.geoStart.longitude], {title: 'Початок робіт'}).addTo(map)
-                .bindPopup('Початок робіт').openPopup();
-            map.setView([task.geoStart.latitude, task.geoStart.longitude], 14);
-            hasMarker = true;
+        // Отримати геолокацію користувача
+        function getUserLocation() {
+            return new Promise((resolve, reject) => {
+                if (!navigator.geolocation) {
+                    reject(new Error('Геолокація не підтримується вашим браузером'));
+                    return;
+                }
+                
+                console.log('📍 Запит геолокації...');
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        userLocation = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude,
+                            accuracy: position.coords.accuracy
+                        };
+                        console.log('✅ Геолокацію отримано:', userLocation);
+                        resolve(userLocation);
+                    },
+                    (error) => {
+                        console.warn('⚠️ Помилка геолокації:', error.message);
+                        reject(error);
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                );
+            });
         }
-        // Маркер завершення
-        if (task && task.geoEnd) {
-            L.marker([task.geoEnd.latitude, task.geoEnd.longitude], {title: 'Завершення'}).addTo(map)
-                .bindPopup('Завершення робіт');
-            hasMarker = true;
-        }
-        // Маркер місця роботи
-        if (task && task.location && typeof task.location === 'object' && task.location.latitude && task.location.longitude) {
-            L.marker([task.location.latitude, task.location.longitude], {title: 'Місце роботи', icon: L.icon({iconUrl: '../../assets/plugins/leaflet/images/marker-icon.png'})}).addTo(map)
-                .bindPopup('Місце роботи');
-            hasMarker = true;
-        }
-        if (!hasMarker) {
-            map.setView([48.3794, 31.1656], 6);
-            L.popup().setLatLng([48.3794, 31.1656]).setContent('Координати для завдання не знайдено').openOn(map);
-        }
-    }
 
-    // ініціалізація
-    (async function(){
-        const taskId = getTaskId();
-        const task = await loadTaskData(taskId);
-        renderTaskInfo(task);
-        renderMap(task);
-    })();
+        // Відобразити інформацію про ліфт
+        function renderLiftInfo(lift) {
+            const fullAddress = [
+                lift.address?.street,
+                lift.address?.city,
+                lift.address?.country
+            ].filter(Boolean).join(', ');
+            
+            const statusText = {
+                'operational': '✅ Працює',
+                'maintenance': '🔧 Технічне обслуговування',
+                'out_of_service': '❌ Не працює',
+                'inactive': '⚠️ Неактивний'
+            }[lift.status] || 'Невідомо';
+
+            document.getElementById('taskInfo').innerHTML = `
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h5><i class="fas fa-elevator text-primary"></i> ${lift.model || 'Ліфт'} ${lift.municipalNumber ? `№${lift.municipalNumber}` : ''}</h5>
+                        <p class="mb-1"><i class="fas fa-map-marker-alt text-danger"></i> <strong>Адреса:</strong> ${fullAddress}</p>
+                        <p class="mb-1"><i class="fas fa-industry"></i> <strong>Виробник:</strong> ${lift.manufacturer || 'Невідомо'}</p>
+                        <p class="mb-0"><i class="fas fa-info-circle"></i> <strong>Статус:</strong> ${statusText}</p>
+                    </div>
+                    <button class="btn btn-secondary" onclick="window.close()">
+                        <i class="fas fa-times"></i> Закрити
+                    </button>
+                </div>
+            `;
+        }
+
+        // Ініціалізувати мапу з маршрутом
+        async function initializeMapWithRoute(lift) {
+            try {
+                // Отримати геолокацію
+                await getUserLocation();
+                
+                // Створити мапу
+                map = L.map('map').setView([userLocation.lat, userLocation.lng], 13);
+                
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors',
+                    maxZoom: 19
+                }).addTo(map);
+
+                // Координати ліфта
+                const liftLat = lift.location?.coordinates?.[1] || 50.4501;
+                const liftLng = lift.location?.coordinates?.[0] || 30.5234;
+
+                // Маркер користувача
+                L.marker([userLocation.lat, userLocation.lng], {
+                    icon: L.icon({
+                        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+                        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                        iconSize: [25, 41],
+                        iconAnchor: [12, 41],
+                        popupAnchor: [1, -34],
+                        shadowSize: [41, 41]
+                    })
+                }).addTo(map).bindPopup('📍 Ваша позиція');
+
+                // Маркер ліфта
+                L.marker([liftLat, liftLng], {
+                    icon: L.icon({
+                        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                        iconSize: [25, 41],
+                        iconAnchor: [12, 41],
+                        popupAnchor: [1, -34],
+                        shadowSize: [41, 41]
+                    })
+                }).addTo(map).bindPopup(`🎯 ${lift.model || 'Ліфт'}`).openPopup();
+
+                // Розрахунок відстані
+                const R = 6371e3;
+                const φ1 = userLocation.lat * Math.PI/180;
+                const φ2 = liftLat * Math.PI/180;
+                const Δφ = (liftLat - userLocation.lat) * Math.PI/180;
+                const Δλ = (liftLng - userLocation.lng) * Math.PI/180;
+                const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                          Math.cos(φ1) * Math.cos(φ2) *
+                          Math.sin(Δλ/2) * Math.sin(Δλ/2);
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                const distance = R * c;
+                
+                console.log('📏 Пряма відстань:', (distance/1000).toFixed(2), 'км');
+
+                // Побудова маршруту
+                routingControl = L.Routing.control({
+                    waypoints: [
+                        L.latLng(userLocation.lat, userLocation.lng),
+                        L.latLng(liftLat, liftLng)
+                    ],
+                    routeWhileDragging: false,
+                    showAlternatives: false,
+                    lineOptions: {
+                        styles: [{color: '#007bff', weight: 5, opacity: 0.7}]
+                    },
+                    createMarker: function() { return null; },
+                    language: 'en',
+                    fitSelectedRoutes: true,
+                    addWaypoints: false
+                }).on('routesfound', function(e) {
+                    const summary = e.routes[0].summary;
+                    console.log('✅ Маршрут знайдено:');
+                    console.log('  Відстань:', (summary.totalDistance/1000).toFixed(2), 'км');
+                    console.log('  Час:', Math.round(summary.totalTime/60), 'хв');
+                }).on('routingerror', function(e) {
+                    console.error('❌ Помилка маршруту:', e.error);
+                    alert('Не вдалося побудувати маршрут. Перевірте з\'єднання.');
+                }).addTo(map);
+
+            } catch (error) {
+                console.error('❌ Помилка ініціалізації:', error);
+                
+                // Fallback: показати тільки ліфт
+                const liftLat = lift.location?.coordinates?.[1] || 50.4501;
+                const liftLng = lift.location?.coordinates?.[0] || 30.5234;
+                
+                map = L.map('map').setView([liftLat, liftLng], 15);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors',
+                    maxZoom: 19
+                }).addTo(map);
+                
+                L.marker([liftLat, liftLng]).addTo(map)
+                    .bindPopup(`${lift.model || 'Ліфт'}<br>${lift.address?.street || ''}`).openPopup();
+                
+                alert('Не вдалося визначити вашу позицію. Показано тільки місце призначення.');
+            }
+        }
+
+        // Ініціалізація
+        (async function() {
+            const liftId = getLiftId();
+            
+            if (!liftId) {
+                document.getElementById('taskInfo').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Помилка: не вказано ID ліфта
+                    </div>
+                `;
+                return;
+            }
+
+            const lift = await loadLiftData(liftId);
+            
+            if (!lift) {
+                document.getElementById('taskInfo').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Ліфт не знайдено
+                    </div>
+                `;
+                return;
+            }
+
+            renderLiftInfo(lift);
+            await initializeMapWithRoute(lift);
+        })();
     </script>
+    <!-- AI Assistant Widget -->
+    <script src="/components/ai-widget.js"></script>
 </body>
 </html>

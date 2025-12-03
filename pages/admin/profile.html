@@ -941,7 +941,12 @@
 <!-- Bootstrap 4 -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
 <!-- AdminLTE App -->
-<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+    <!-- AdminLTE App -->
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+    
+    <!-- 🌍 Система багатомовності -->
+    <script src="../../assets/js/i18n.js"></script>
+    <script src="../../assets/js/init-i18n.js"></script>
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 
@@ -1007,8 +1012,12 @@
             });
         });
     </script>
+    <!-- AI Assistant Widget -->
+    <script src="/components/ai-widget.js"></script>
 </body>
 </html>
 <!-- AI Assistant Include -->
 <!--#include file="../../templates/ai-assistant-include.html" -->
-<!-- Якщо сервер не підтримує include, вставте вміст ai-assistant-include.html вручну перед </body> -->
+<!-- Якщо сервер не підтримує include, вставте вміст ai-assistant-include.html вручну перед
+    <script src="/components/ai-widget.js"></script>
+</body> -->

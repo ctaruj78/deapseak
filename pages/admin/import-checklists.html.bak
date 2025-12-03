@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Імпорт чек-листів для інспекцій</title>
+    <link rel="stylesheet" href="../../assets/css/adminlte.min.css">
+    <link rel="stylesheet" href="../../assets/css/bootstrap.min.css">
+    <script src="../../plugins/jquery/jquery.min.js"></script>
+    <script src="../../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+</head>
+<body class="hold-transition sidebar-mini">
+    <div class="wrapper">
+        <section class="content-header">
+            <div class="container-fluid">
+                <h1>Імпорт чек-листів для інспекцій</h1>
+            </div>
+        </section>
+        <section class="content">
+            <div class="container-fluid">
+                <div class="card">
+                    <div class="card-header">
+                        <input type="file" id="checklistFile" accept=".json,.csv" class="form-control-file">
+                        <button class="btn btn-primary" id="importBtn">Імпортувати</button>
+                    </div>
+                    <div class="card-body">
+                        <h5>Імпортовані чек-листи:</h5>
+                        <ul id="checklistsList" class="list-group"></ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+    $(document).ready(function() {
+        function renderChecklists() {
+            const checklists = JSON.parse(localStorage.getItem('imported_checklists') || '[]');
+            const list = $('#checklistsList');
+            list.empty();
+            checklists.forEach((cl, idx) => {
+                list.append(`<li class="list-group-item">${cl.title || cl.name || 'Без назви'} (${cl.items ? cl.items.length : 0} пунктів)</li>`);
+            });
+        }
+        renderChecklists();
+        $('#importBtn').click(function() {
+            const fileInput = document.getElementById('checklistFile');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Оберіть файл для імпорту');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                let imported = [];
+                try {
+                    if (file.name.endsWith('.json')) {
+                        imported = JSON.parse(e.target.result);
+                    } else if (file.name.endsWith('.csv')) {
+                        imported = csvToChecklists(e.target.result);
+                    }
+                    if (!Array.isArray(imported)) imported = [imported];
+                    const checklists = JSON.parse(localStorage.getItem('imported_checklists') || '[]');
+                    localStorage.setItem('imported_checklists', JSON.stringify([...checklists, ...imported]));
+                    renderChecklists();
+                    alert('Чек-листи успішно імпортовано!');
+                } catch (err) {
+                    alert('Помилка імпорту: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+        });
+        function csvToChecklists(csv) {
+            const lines = csv.split('\n').filter(Boolean);
+            const items = lines.map(line => ({ item: line.trim() }));
+            return [{ title: 'CSV чек-лист', items }];
+        }
+    });
+    </script>
+</body>
+</html>

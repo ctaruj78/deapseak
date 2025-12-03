@@ -344,47 +344,177 @@
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- AdminLTE App -->
     <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+    
+    <!-- 🌍 Система багатомовності -->
+    <script src="../../assets/js/i18n.js"></script>
+    <script src="../../assets/js/init-i18n.js"></script>
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet Routing Machine -->
+    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+    <!-- Auth Manager -->
+    <script src="../../assets/js/auth.js"></script>
+    <script src="../../assets/js/config.js"></script>
 
     <script>
-        // Load lift data from localStorage or use sample data
-        let lifts = JSON.parse(localStorage.getItem('lifts')) || [
-            { id: 'sample_1', model: 'Ліфт №1', address: 'вул. Шевченка, 10', lat: 50.4501, lng: 30.5234, status: 'active', lastMaintenance: '2024-01-10', location: 'вул. Шевченка, 10' },
-            { id: 'sample_2', model: 'Ліфт №2', address: 'вул. Франка, 25', lat: 50.4542, lng: 30.5167, status: 'active', lastMaintenance: '2024-01-08', location: 'вул. Франка, 25' },
-            { id: 'sample_3', model: 'Ліфт №3', address: 'пр. Перемоги, 50', lat: 50.4478, lng: 30.5103, status: 'maintenance', lastMaintenance: '2024-01-12', location: 'пр. Перемоги, 50' },
-            { id: 'sample_4', model: 'Ліфт №4', address: 'вул. Лесі Українки, 15', lat: 50.4421, lng: 30.5189, status: 'inactive', lastMaintenance: '2024-01-05', location: 'вул. Лесі Українки, 15' },
-            { id: 'sample_5', model: 'Ліфт №5', address: 'вул. Сагайдачного, 8', lat: 50.4489, lng: 30.5256, status: 'active', lastMaintenance: '2024-01-09', location: 'вул. Сагайдачного, 8' }
-        ];
-
+        let lifts = [];
         let map;
         let markers = [];
         let routingControl = null;
+        let userLocation = null;
 
-        $(document).ready(function() {
+        $(document).ready(async function() {
+            // Перевірка авторизації
+            if (!AuthManager.isAuthenticated()) {
+                window.location.href = '/login.html';
+                return;
+            }
+
+            await loadLiftsFromAPI();
             initializeMap();
             populateLiftSelector();
             setupEventListeners();
             updateStats();
+            getUserLocation();
         });
 
+        // Завантаження ліфтів з API
+        async function loadLiftsFromAPI() {
+            try {
+                console.log('🔄 Завантаження ліфтів з API...');
+                const response = await AuthManager.fetchWithAuth('/api/lifts');
+                
+                if (!response.ok) {
+                    throw new Error('Помилка завантаження ліфтів');
+                }
+
+                const data = await response.json();
+                console.log('📦 Отримані дані з API:', data);
+                console.log('✅ Завантажено ліфтів:', data.data?.length || 0);
+                
+                // Конвертуємо дані з MongoDB в формат для мапи
+                lifts = (data.data || []).map(lift => {
+                    console.log('🔄 Обробка ліфта:', lift._id, lift.location?.coordinates);
+                    
+                    // Формуємо повну адресу з містом і країною
+                    const fullAddress = [
+                        lift.address?.street,
+                        lift.address?.city,
+                        lift.address?.country
+                    ].filter(Boolean).join(', ');
+                    
+                    return {
+                        id: lift._id,
+                        model: lift.model || 'Невідомо',
+                        manufacturer: lift.manufacturer,
+                        address: fullAddress || 'Адреса не вказана',
+                        location: fullAddress || 'Адреса не вказана',
+                        city: lift.address?.city || 'Невідомо',
+                        country: lift.address?.country || 'Невідомо',
+                        lat: lift.location?.coordinates?.[1] || 50.4501,
+                        lng: lift.location?.coordinates?.[0] || 30.5234,
+                        status: mapStatus(lift.status),
+                        lastMaintenance: lift.lastInspectionDate ? new Date(lift.lastInspectionDate).toLocaleDateString('uk-UA') : 'Невідомо',
+                        municipalNumber: lift.municipalNumber
+                    };
+                });
+
+                console.log('✅ Оброблено ліфтів для мапи:', lifts.length);
+                console.log('📍 Перший ліфт:', lifts[0]);
+            } catch (error) {
+                console.error('❌ Помилка завантаження ліфтів:', error);
+                // Fallback до тестових даних
+                lifts = [
+                    { id: 'sample_1', model: 'Ліфт №1', address: 'вул. Хрещатик, 1', lat: 50.4501, lng: 30.5234, status: 'active', lastMaintenance: '2024-01-10', location: 'вул. Хрещатик, 1' }
+                ];
+            }
+        }
+
+        // Мапування статусів MongoDB до статусів мапи
+        function mapStatus(mongoStatus) {
+            const statusMap = {
+                'operational': 'active',
+                'maintenance': 'maintenance',
+                'out_of_service': 'error',
+                'inactive': 'error'
+            };
+            return statusMap[mongoStatus] || 'active';
+        }
+
+        // Отримання геолокації користувача
+        function getUserLocation() {
+            if (navigator.geolocation) {
+                console.log('🔍 Запит геолокації...');
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        userLocation = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude,
+                            accuracy: position.coords.accuracy
+                        };
+                        console.log('📍 Отримано геолокацію користувача:');
+                        console.log('  Широта:', userLocation.lat);
+                        console.log('  Довгота:', userLocation.lng);
+                        console.log('  Точність:', userLocation.accuracy, 'метрів');
+                        
+                        // Додати маркер поточної позиції
+                        L.marker([userLocation.lat, userLocation.lng], {
+                            icon: L.icon({
+                                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+                                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                                iconSize: [25, 41],
+                                iconAnchor: [12, 41],
+                                popupAnchor: [1, -34],
+                                shadowSize: [41, 41]
+                            })
+                        })
+                        .addTo(map)
+                        .bindPopup('Ваша поточна позиція')
+                        .openPopup();
+                    },
+                    (error) => {
+                        console.warn('⚠️ Не вдалося отримати геолокацію:', error.message);
+                    }
+                );
+            }
+        }
+
         function initializeMap() {
+            console.log('🗺️ Ініціалізація мапи...');
+            console.log('📍 Кількість ліфтів для відображення:', lifts.length);
+            
             // Initialize map centered on Kyiv
             map = L.map('liftsMap').setView([50.4501, 30.5234], 13);
 
             // Add OpenStreetMap tiles
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
             }).addTo(map);
 
             // Add lift markers
-            lifts.forEach(lift => {
-                addLiftMarker(lift);
-            });
+            if (lifts.length === 0) {
+                console.warn('⚠️ Немає ліфтів для відображення на мапі');
+            } else {
+                lifts.forEach((lift, index) => {
+                    console.log(`➕ Додаємо маркер ${index + 1}:`, {
+                        id: lift.id,
+                        lat: lift.lat,
+                        lng: lift.lng,
+                        address: lift.address
+                    });
+                    addLiftMarker(lift);
+                });
+                console.log('✅ Всі маркери додано:', markers.length);
+            }
         }
 
         function addLiftMarker(lift) {
+            console.log('🎯 addLiftMarker викликано для:', lift.id, 'координати:', lift.lat, lift.lng);
+            
             const markerColor = getStatusColor(lift.status);
             const markerHtml = `<div class="lift-marker" style="background-color: ${markerColor}"></div>`;
 
@@ -395,11 +525,16 @@
                 iconAnchor: [10, 10]
             });
 
-            const marker = L.marker([lift.lat, lift.lng], { icon: customIcon })
-                .addTo(map)
-                .bindPopup(createLiftPopup(lift));
+            try {
+                const marker = L.marker([lift.lat, lift.lng], { icon: customIcon })
+                    .addTo(map)
+                    .bindPopup(createLiftPopup(lift));
 
-            markers.push({ marker, lift });
+                markers.push({ marker, lift });
+                console.log('✅ Маркер додано успішно');
+            } catch (error) {
+                console.error('❌ Помилка додавання маркера:', error);
+            }
         }
 
         function createLiftPopup(lift) {
@@ -461,21 +596,72 @@
             const lift = lifts.find(l => l.id == liftId);
             if (!lift) return;
 
-            // Remove existing routing control
+            // Перевірити чи є геолокація користувача
+            if (!userLocation) {
+                alert('Не вдалося визначити вашу поточну локацію. Дозвольте доступ до геолокації в браузері.');
+                map.setView([lift.lat, lift.lng], 16);
+                return;
+            }
+
+            // Видалити попередній маршрут
             if (routingControl) {
                 map.removeControl(routingControl);
             }
 
-            // For demo purposes, we'll just zoom to the lift location
-            // In a real application, you'd integrate with a routing service
-            map.setView([lift.lat, lift.lng], 16);
+            // Логування координат перед побудовою маршруту
+            console.log('🗺️ Побудова маршруту:');
+            console.log('  Від (користувач):', userLocation.lat, userLocation.lng);
+            console.log('  До (ліфт):', lift.lat, lift.lng);
+            console.log('  Адреса ліфта:', lift.address);
+            
+            // Розрахунок прямої відстані (Haversine formula)
+            const R = 6371e3; // Earth radius in meters
+            const φ1 = userLocation.lat * Math.PI/180;
+            const φ2 = lift.lat * Math.PI/180;
+            const Δφ = (lift.lat - userLocation.lat) * Math.PI/180;
+            const Δλ = (lift.lng - userLocation.lng) * Math.PI/180;
+            const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                      Math.cos(φ1) * Math.cos(φ2) *
+                      Math.sin(Δλ/2) * Math.sin(Δλ/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            const distance = R * c;
+            console.log('  Пряма відстань:', (distance/1000).toFixed(2), 'км');
+
+            // Створити маршрут з поточної позиції до ліфта
+            routingControl = L.Routing.control({
+                waypoints: [
+                    L.latLng(userLocation.lat, userLocation.lng),
+                    L.latLng(lift.lat, lift.lng)
+                ],
+                routeWhileDragging: false,
+                showAlternatives: false,
+                lineOptions: {
+                    styles: [{color: '#007bff', weight: 5, opacity: 0.7}]
+                },
+                createMarker: function() { return null; }, // Не створювати додаткові маркери
+                language: 'en', // Використовуємо англійську, бо українська не підтримується
+                fitSelectedRoutes: true,
+                addWaypoints: false
+            }).on('routesfound', function(e) {
+                const routes = e.routes;
+                const summary = routes[0].summary;
+                console.log('✅ Маршрут знайдено:');
+                console.log('  Відстань маршруту:', (summary.totalDistance/1000).toFixed(2), 'км');
+                console.log('  Час у дорозі:', Math.round(summary.totalTime/60), 'хв');
+            }).on('routingerror', function(e) {
+                console.error('❌ Помилка побудови маршруту:', e.error);
+                alert('Не вдалося побудувати маршрут. Можливо, адреса занадто далеко або недоступна для автомобільного руху.');
+            }).addTo(map);
+
             const displayName = lift.model || lift.name || `Ліфт ${lift.id}`;
-            alert(`Маршрут до ${displayName} (${lift.location || lift.address}) буде показано тут.`);
+            console.log(`🗺️ Маршрут до: ${displayName} (${lift.location || lift.address})`);
         }
 
-        function refreshMap() {
-            // Оновити дані з localStorage
-            lifts = JSON.parse(localStorage.getItem('lifts')) || lifts;
+        async function refreshMap() {
+            console.log('🔄 Оновлення мапи...');
+            
+            // Оновити дані з API
+            await loadLiftsFromAPI();
 
             // Очистити існуючі маркери
             markers.forEach(({ marker }) => {
@@ -498,8 +684,8 @@
             $('#refreshMap i').addClass('fa-spin');
             setTimeout(() => {
                 $('#refreshMap i').removeClass('fa-spin');
-                console.log('Карту оновлено');
-            }, 1000);
+                console.log('✅ Мапа оновлена');
+            }, 500);
         }
 
         function updateStats() {
@@ -532,5 +718,7 @@
             }
         }
     </script>
+    <!-- AI Assistant Widget -->
+    <script src="/components/ai-widget.js"></script>
 </body>
 </html>

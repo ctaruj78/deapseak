@@ -373,6 +373,10 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+    
+    <!-- 🌍 Система багатомовності -->
+    <script src="../../assets/js/i18n.js"></script>
+    <script src="../../assets/js/init-i18n.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
 
 <!-- EventBus and Analytics Engine -->
@@ -420,20 +424,42 @@ class SmartAnalyticsDashboard {
         console.log('✅ Analytics Dashboard готовий!');
     }
 
-    loadInitialData() {
-        // Завантажуємо дані з localStorage
-        const lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
-        const inspections = JSON.parse(localStorage.getItem('scheduled_inspections') || '[]');
-        const criticalLog = JSON.parse(localStorage.getItem('system_critical_log') || '[]');
-        
-        this.realTimeData.lifts = lifts.length;
-        this.realTimeData.inspections = inspections.length;
-        
-        // Підраховуємо QR коди та emails з логу
-        criticalLog.forEach(event => {
-            if (event.event === 'qr:generated') this.realTimeData.qrCodes++;
-            if (event.event === 'email:sent') this.realTimeData.emails++;
-        });
+    async loadInitialData() {
+        try {
+            console.log('🔄 Завантаження даних для аналітики...');
+            
+            // Завантажуємо дані з API паралельно
+            const [liftsRes, requestsRes] = await Promise.all([
+                AuthManager.fetchWithAuth('/api/lifts'),
+                AuthManager.fetchWithAuth('/api/requests')
+            ]);
+
+            const liftsData = await liftsRes.json();
+            const requestsData = await requestsRes.json();
+            
+            const lifts = liftsData.data || [];
+            const requests = requestsData.data || [];
+            
+            this.realTimeData.lifts = lifts.length;
+            this.realTimeData.inspections = lifts.filter(l => l.nextInspectionDate).length;
+            this.realTimeData.requests = requests.length;
+            
+            console.log('✅ Завантажено даних:', {
+                lifts: lifts.length,
+                requests: requests.length
+            });
+
+        } catch (error) {
+            console.error('❌ Помилка завантаження даних:', error);
+            // Fallback значення
+            this.realTimeData = {
+                lifts: 0,
+                inspections: 0,
+                qrCodes: 0,
+                emails: 0,
+                requests: 0
+            };
+        }
 
         this.updateMetrics();
     }
@@ -680,8 +706,7 @@ function exportAnalytics() {
     const data = {
         timestamp: new Date().toISOString(),
         metrics: window.analyticsManager.realTimeData,
-        eventBusStats: window.eventBus ? eventBus.getSystemStats() : null,
-        criticalLog: JSON.parse(localStorage.getItem('system_critical_log') || '[]')
+        eventBusStats: window.eventBus ? eventBus.getSystemStats() : null
     };
     
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -710,5 +735,7 @@ $(document).ready(function() {
     }, 1000);
 });
 </script>
+    <!-- AI Assistant Widget -->
+    <script src="/components/ai-widget.js"></script>
 </body>
 </html>

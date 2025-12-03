@@ -676,6 +676,10 @@
 <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
+<!-- 🌍 Система багатомовності -->
+<script src="../../assets/js/i18n.js"></script>
+<script src="../../assets/js/init-i18n.js"></script>
+
 <!-- Система авторизації -->
 <script src="../../assets/js/auth.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
@@ -1578,15 +1582,26 @@ async function changeRequestStatus(newStatus) {
         
         const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/status`, {
             method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({ status: newStatus })
         });
         
         if (!response || !response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Помилка зміни статусу');
+            let errorMessage = 'Помилка зміни статусу';
+            try {
+                const error = await response.json();
+                errorMessage = error.message || errorMessage;
+            } catch (e) {
+                // Якщо відповідь не JSON (наприклад HTML 404)
+                errorMessage = `Помилка сервера (${response.status})`;
+            }
+            throw new Error(errorMessage);
         }
         
         const result = await response.json();
+        console.log('Статус змінено:', result);
         
         alert('Статус заявки успішно змінено!');
         
@@ -1809,8 +1824,21 @@ async function showAssignTechnicianModal() {
         const result = await response.json();
         console.log('Отримано відповідь від API:', result);
         
-        // API v2 повертає {success: true, data: {users: [...], pagination: {...}}}
-        let allUsers = result.data?.users || result.users || result.data || result;
+        // API повертає масив напряму або об'єкт з data
+        let allUsers;
+        if (Array.isArray(result)) {
+            // API повертає масив напряму
+            allUsers = result;
+        } else if (result.data) {
+            // API повертає {success: true, data: {users: [...]} } або {data: [...]}
+            allUsers = Array.isArray(result.data) ? result.data : (result.data.users || []);
+        } else if (result.users) {
+            // API повертає {users: [...]}
+            allUsers = result.users;
+        } else {
+            allUsers = [];
+        }
+        
         console.log('Список користувачів:', allUsers);
         
         // Перевіряємо чи це масив
@@ -1826,6 +1854,11 @@ async function showAssignTechnicianModal() {
             user.role === 'technician'
         );
         console.log('Техніків знайдено:', technicians.length);
+        
+        if (technicians.length === 0) {
+            alert('⚠️ Техніків не знайдено в системі.\n\nБудь ласка, створіть користувачів з роллю "technician" через адмін-панель.');
+            return;
+        }
         
         // Створення модального вікна
         const modalHtml = `
@@ -1914,7 +1947,8 @@ async function submitTechnicianAssignment() {
             return;
         }
         
-        const requestId = window.serviceManager.currentRequest.id;
+        // Використовуємо MongoDB _id, а не красивий ID
+        const requestId = window.serviceManager.currentRequest._id || window.serviceManager.currentRequest.id;
         
         console.log(`Призначення техніка ${selectedTechnician} до заявки ${requestId}`);
         
@@ -1990,5 +2024,7 @@ if (typeof toastr !== 'undefined') {
     };
 }
 </script>
+    <!-- AI Assistant Widget -->
+    <script src="/components/ai-widget.js"></script>
 </body>
 </html>

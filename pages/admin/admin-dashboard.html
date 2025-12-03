@@ -502,6 +502,10 @@
     <!-- AdminLTE -->
     <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
     
+    <!-- 🌍 Система багатомовності -->
+    <script src="../../assets/js/i18n.js"></script>
+    <script src="../../assets/js/init-i18n.js"></script>
+    
     <!-- Security Manager -->
     <script src="../../assets/js/auth.js" onload="console.log('✅ AuthManager завантажено')" onerror="console.error('❌ Помилка завантаження AuthManager')"></script>
     
@@ -594,7 +598,7 @@
                     return;
                 }
                 
-                const wsClient = new WebSocketClient('ws://localhost:3002');
+                const wsClient = new WebSocketClient(window.location.origin.replace('http', 'ws'));
                 wsClient.on('connected', () => {
                     console.log('✅ WebSocket підключено до admin dashboard');
                 });
@@ -618,5 +622,7 @@
             }
         }
     </script>
+    <!-- AI Assistant Widget -->
+    <script src="/components/ai-widget.js"></script>
 </body>
 </html>

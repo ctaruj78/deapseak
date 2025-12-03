@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant - DeapSeaK</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .ai-container {
+            width: 100%;
+            max-width: 900px;
+            height: 90vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .ai-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .ai-header h1 {
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* Animated AI Avatar in header */
+        .header-avatar {
+            width: 40px;
+            height: 40px;
+            position: relative;
+        }
+        
+        .header-avatar-circle {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            position: relative;
+            animation: headerFloat 2s ease-in-out infinite;
+        }
+        
+        .header-avatar-face {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70%;
+            height: 70%;
+        }
+        
+        .header-eyes {
+            display: flex;
+            justify-content: space-around;
+            padding: 0 20%;
+            margin-top: 25%;
+        }
+        
+        .header-eye {
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            animation: blink 3s infinite;
+        }
+        
+        .header-mouth {
+            width: 12px;
+            height: 6px;
+            border: 1px solid white;
+            border-top: none;
+            border-radius: 0 0 12px 12px;
+            margin: 3px auto 0;
+        }
+        
+        @keyframes headerFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-3px); }
+        }
+        
+        @keyframes blink {
+            0%, 45%, 55%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(0.1); }
+        }
+        
+        .ai-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4ade80;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .ai-capabilities {
+            background: #f8f9fa;
+            padding: 15px 30px;
+            border-bottom: 1px solid #e5e7eb;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        
+        .capability-tag {
+            display: inline-block;
+            background: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            margin-right: 10px;
+            font-size: 13px;
+            color: #667eea;
+            border: 1px solid #e5e7eb;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .capability-tag:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .ai-chat {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+            background: #f9fafb;
+        }
+        
+        .message {
+            margin-bottom: 20px;
+            animation: slideIn 0.3s;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .message.user {
+            text-align: right;
+        }
+        
+        .message-bubble {
+            display: inline-block;
+            max-width: 70%;
+            padding: 15px 20px;
+            border-radius: 20px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .message.ai .message-bubble {
+            background: white;
+            color: #1f2937;
+            border: 1px solid #e5e7eb;
+            border-bottom-left-radius: 5px;
+            text-align: left;
+        }
+        
+        .message-time {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-top: 5px;
+        }
+        
+        .typing-indicator {
+            display: inline-block;
+            padding: 15px 20px;
+            background: white;
+            border-radius: 20px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .typing-indicator span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #9ca3af;
+            margin: 0 2px;
+            animation: typing 1.4s infinite;
+        }
+        
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+        
+        .ai-input-container {
+            padding: 20px 30px;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            gap: 15px;
+        }
+        
+        .ai-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 25px;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        .ai-input:focus {
+            border-color: #667eea;
+        }
+        
+        .ai-send-btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .ai-send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .ai-send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .suggestions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .suggestion-chip {
+            padding: 8px 15px;
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            border-radius: 15px;
+            font-size: 13px;
+            color: #4b5563;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .suggestion-chip:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .error-message {
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .welcome-screen {
+            text-align: center;
+            padding: 60px 30px;
+            color: #6b7280;
+        }
+        
+        .welcome-screen h2 {
+            font-size: 28px;
+            color: #1f2937;
+            margin-bottom: 15px;
+        }
+        
+        .welcome-screen p {
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+        
+        .example-queries {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .example-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #e5e7eb;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .example-card:hover {
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .example-card h3 {
+            font-size: 16px;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+        
+        .example-card p {
+            font-size: 14px;
+            color: #6b7280;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="ai-container">
+        <div class="ai-header">
+            <h1>
+                <div class="header-avatar">
+                    <div class="header-avatar-circle">
+                        <div class="header-avatar-face">
+                            <div class="header-eyes">
+                                <div class="header-eye"></div>
+                                <div class="header-eye"></div>
+                            </div>
+                            <div class="header-mouth"></div>
+                        </div>
+                    </div>
+                </div>
+                DeapSeaK AI Assistant
+            </h1>
+            <div class="ai-status">
+                <div class="status-dot"></div>
+                <span>Online</span>
+            </div>
+        </div>
+        
+        <div class="ai-capabilities" id="capabilities">
+            <!-- Carregado dinamicamente -->
+        </div>
+        
+        <div class="ai-chat" id="chatArea">
+            <div class="welcome-screen">
+                <h2>👋 Olá! Como posso ajudar?</h2>
+                <p>Sou seu assistente AI inteligente. Posso ajudar com diagnósticos técnicos, códigos de erro, peças, regulamentos e muito mais.</p>
+                
+                <div class="example-queries">
+                    <div class="example-card" onclick="askQuestion('Código E01')">
+                        <h3>🔴 Código E01</h3>
+                        <p>Diagnóstico de erro de sobrecarga</p>
+                    </div>
+                    <div class="example-card" onclick="askQuestion('Porta não fecha completamente')">
+                        <h3>🚪 Problema Mecânico</h3>
+                        <p>Diagnóstico de porta que não fecha</p>
+                    </div>
+                    <div class="example-card" onclick="askQuestion('Peça LOCK-DOOR-001')">
+                        <h3>🔩 Peça Sobressalente</h3>
+                        <p>Busca de informações sobre peça</p>
+                    </div>
+                    <div class="example-card" onclick="askQuestion('Decreto-Lei 320/2002')">
+                        <h3>📜 Regulamentos</h3>
+                        <p>Legislação portuguesa sobre elevadores</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="ai-input-container">
+            <input 
+                type="text" 
+                class="ai-input" 
+                id="userInput" 
+                placeholder="Faça sua pergunta... (ex: Código E01, porta não fecha, peça LOCK-DOOR-001)"
+                onkeypress="handleKeyPress(event)"
+            >
+            <button class="ai-send-btn" id="sendBtn" onclick="sendMessage()">
+                Enviar
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin;
+        let messageHistory = [];
+        
+        // Carregar capacidades do AI
+        async function loadCapabilities() {
+            try {
+                const response = await fetch(`${API_URL}/api/ai/capabilities`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const capsContainer = document.getElementById('capabilities');
+                    capsContainer.innerHTML = data.capabilities.map(cap => 
+                        `<span class="capability-tag" title="${cap.description}" onclick="showCapabilityExamples('${cap.name}')">
+                            ${cap.name}
+                        </span>`
+                    ).join('');
+                }
+            } catch (error) {
+                console.error('Erro ao carregar capacidades:', error);
+            }
+        }
+        
+        function showCapabilityExamples(capabilityName) {
+            const examples = {
+                'Diagnóstico Técnico': 'Código E01',
+                'Peças e Componentes': 'Peça LOCK-DOOR-001',
+                'Regulamentos Portugueses': 'Decreto-Lei 320/2002',
+                'Manutenção': 'Manutenção elevador L001',
+                'Relatórios e Analytics': 'Relatório de falhas deste mês'
+            };
+            
+            const example = examples[capabilityName];
+            if (example) {
+                document.getElementById('userInput').value = example;
+                document.getElementById('userInput').focus();
+            }
+        }
+        
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+        
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const query = input.value.trim();
+            
+            if (!query) return;
+            
+            // Limpar input
+            input.value = '';
+            
+            // Remover welcome screen se existir
+            const welcomeScreen = document.querySelector('.welcome-screen');
+            if (welcomeScreen) {
+                welcomeScreen.remove();
+            }
+            
+            // Adicionar mensagem do usuário
+            addMessage(query, 'user');
+            
+            // Mostrar typing indicator
+            const typingId = showTyping();
+            
+            // Desabilitar botão
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Pensando...';
+            
+            try {
+                const response = await fetch(`${API_URL}/api/ai/query`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ query })
+                });
+                
+                const data = await response.json();
+                
+                // Remover typing indicator
+                removeTyping(typingId);
+                
+                if (data.success) {
+                    addMessage(data.response, 'ai', data.suggestions);
+                } else {
+                    addMessage(`❌ ${data.message}\n\n${data.fallback || ''}`, 'ai');
+                }
+                
+            } catch (error) {
+                removeTyping(typingId);
+                addMessage(`❌ Erro de conexão: ${error.message}\n\nVerifique se o servidor está rodando.`, 'ai');
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.textContent = 'Enviar';
+                input.focus();
+            }
+        }
+        
+        function addMessage(text, sender, suggestions = []) {
+            const chatArea = document.getElementById('chatArea');
+            const time = new Date().toLocaleTimeString('pt-PT', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            let html = `
+                <div class="message-bubble">${text}</div>
+                <div class="message-time">${time}</div>
+            `;
+            
+            if (suggestions && suggestions.length > 0) {
+                html += `<div class="suggestions">
+                    ${suggestions.map(s => 
+                        `<span class="suggestion-chip" onclick="askQuestion('${s}')">${s}</span>`
+                    ).join('')}
+                </div>`;
+            }
+            
+            messageDiv.innerHTML = html;
+            chatArea.appendChild(messageDiv);
+            
+            // Scroll para baixo
+            chatArea.scrollTop = chatArea.scrollHeight;
+            
+            messageHistory.push({ text, sender, time });
+        }
+        
+        function showTyping() {
+            const chatArea = document.getElementById('chatArea');
+            const typingDiv = document.createElement('div');
+            const id = 'typing-' + Date.now();
+            typingDiv.id = id;
+            typingDiv.className = 'message ai';
+            typingDiv.innerHTML = `
+                <div class="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            `;
+            chatArea.appendChild(typingDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
+            return id;
+        }
+        
+        function removeTyping(id) {
+            const typingDiv = document.getElementById(id);
+            if (typingDiv) {
+                typingDiv.remove();
+            }
+        }
+        
+        function askQuestion(question) {
+            document.getElementById('userInput').value = question;
+            sendMessage();
+        }
+        
+        // Inicialização
+        loadCapabilities();
+        
+        // Focus no input
+        document.getElementById('userInput').focus();
+    </script>
+</body>
+</html>

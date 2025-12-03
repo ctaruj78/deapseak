@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Диспетчер - Моніторинг у реальному часі</title>
+    
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    
+    <!-- Додаткові стилі -->
+    <style>
+        .monitoring-card {
+            transition: all 0.3s ease;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            border: 2px solid transparent;
+        }
+        
+        .monitoring-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .monitoring-card.critical {
+            border-color: #dc3545;
+            background: linear-gradient(135deg, #fff, #f8d7da);
+            animation: pulse-critical 2s infinite;
+        }
+        
+        .monitoring-card.warning {
+            border-color: #ffc107;
+            background: linear-gradient(135deg, #fff, #fff8e1);
+        }
+        
+        .monitoring-card.normal {
+            border-color: #28a745;
+            background: linear-gradient(135deg, #fff, #e8f5e8);
+        }
+        
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-online {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+        
+        .status-offline {
+            background: linear-gradient(135deg, #6c757d, #adb5bd);
+            color: white;
+        }
+        
+        .status-busy {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+            color: #212529;
+        }
+        
+        .status-emergency {
+            background: linear-gradient(135deg, #dc3545, #e83e8c);
+            color: white;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .tech-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 3px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+        
+        .tech-avatar.online {
+            border-color: #28a745;
+            box-shadow: 0 0 15px rgba(40, 167, 69, 0.4);
+        }
+        
+        .tech-avatar.busy {
+            border-color: #ffc107;
+            box-shadow: 0 0 15px rgba(255, 193, 7, 0.4);
+        }
+        
+        .tech-avatar.offline {
+            border-color: #6c757d;
+            opacity: 0.7;
+        }
+        
+        .tech-avatar.emergency {
+            border-color: #dc3545;
+            box-shadow: 0 0 20px rgba(220, 53, 69, 0.6);
+            animation: pulse 1s infinite;
+        }
+        
+        .progress-sm {
+            height: 8px;
+        }
+        
+        .map-container {
+            height: 400px;
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid #dee2e6;
+            position: relative;
+        }
+        
+        .map-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+        
+        .tech-marker {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .tech-marker:hover {
+            transform: scale(1.2);
+            z-index: 1000;
+        }
+        
+        .tech-marker.online {
+            background: #28a745;
+        }
+        
+        .tech-marker.busy {
+            background: #ffc107;
+        }
+        
+        .tech-marker.offline {
+            background: #6c757d;
+        }
+        
+        .tech-marker.emergency {
+            background: #dc3545;
+            animation: pulse 1s infinite;
+        }        .timeline {
+            position: relative;
+            padding-left: 30px;
+            margin: 20px 0;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #dee2e6;
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 15px;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -25px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #007bff;
+            border: 2px solid white;
+        }
+        
+        .alert-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+            background: #dc3545;
+            border-radius: 50%;
+            color: white;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2s infinite;
+        }
+        
+        .metric-card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+        
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .metric-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .gauge-container {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            margin: 0 auto;
+        }
+        
+        .gauge-value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        @keyframes pulse-critical {
+            0% { box-shadow: 0 0 0 rgba(220, 53, 69, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .live-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background: #dc3545;
+            border-radius: 50%;
+            margin-right: 5px;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .connection-quality {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+        
+        .connection-bar {
+            width: 3px;
+            background: #dee2e6;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+        
+        .connection-bar.active {
+            background: #28a745;
+        }
+        
+        .tech-marker {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            transform: translate(-50%, -50%);
+            transition: all 0.3s ease;
+        }
+        
+        .tech-marker.online { background: #28a745; }
+        .tech-marker.busy { background: #ffc107; }
+        .tech-marker.offline { background: #6c757d; }
+        .tech-marker.emergency { 
+            background: #dc3545;
+            animation: pulse 1s infinite;
+            width: 24px;
+            height: 24px;
+        }
+        
+        @media (max-width: 768px) {
+            .map-container {
+                height: 300px;
+            }
+            
+            .metric-card {
+                margin-bottom: 15px;
+            }
+            
+            .gauge-container {
+                width: 80px;
+                height: 80px;
+            }
+        }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper">
+
+        <!-- Навігаційна панель -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button">
+                        <i class="fas fa-bars"></i>
+                    </a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="dashboard.html" class="nav-link">Головна</a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="assignments.html" class="nav-link">Призначення</a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="monitoring.html" class="nav-link active">Моніторинг</a>
+                </li>
+            </ul>
+
+            <!-- Права частина навігації -->
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="monitoringManager.showAlerts()" title="Сповіщення">
+                        <i class="fas fa-bell"></i>
+                        <span class="alert-badge" id="alertsCount">0</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="monitoringManager.toggleAutoRefresh()" title="Автооновлення">
+                        <i class="fas fa-sync" id="autoRefreshIcon"></i>
+                        <span class="live-indicator" id="liveIndicator"></span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" id="darkModeToggle" title="Темна тема">
+                        <i class="fas fa-moon"></i>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="logout()" title="Вийти">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Бічна панель -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <a href="dashboard.html" class="brand-link text-center">
+                <span class="brand-text font-weight-light">Диспетчер</span>
+            </a>
+            
+            <div class="sidebar">
+                <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                    <div class="image">
+                        <img src="../../assets/img/avatars/dispatcher.png" class="img-circle elevation-2" alt="Dispatcher">
+                        <span class="status-indicator online"></span>
+                    </div>
+                    <div class="info">
+                        <a href="#" class="d-block" id="dispatcherName">Диспетчер</a>
+                        <small class="text-warning"><i class="fas fa-circle mr-1"></i> Online</small>
+                    </div>
+                </div>
+                
+                <nav class="mt-2">
+                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                        <li class="nav-item">
+                            <a href="dashboard.html" class="nav-link">
+                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                                <p>Головна панель</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="assignments.html" class="nav-link">
+                                <i class="nav-icon fas fa-tasks"></i>
+                                <p>Призначення</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="monitoring.html" class="nav-link active">
+                                <i class="nav-icon fas fa-desktop"></i>
+                                <p>Моніторинг</p>
+                                <span class="badge badge-success right" id="onlineBadge">0</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="reports.html" class="nav-link">
+                                <i class="nav-icon fas fa-chart-bar"></i>
+                                <p>Звіти</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="technicians.html" class="nav-link">
+                                <i class="nav-icon fas fa-users"></i>
+                                <p>Техніки</p>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <section class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1>Моніторинг у реальному часі</h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="dashboard.html">Головна</a></li>
+                                <li class="breadcrumb-item active">Моніторинг</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+                    <!-- Статистика в реальному часі -->
+                    <div class="row">
+                        <div class="col-lg-2 col-md-4 col-6">
+                            <div class="metric-card">
+                                <div class="metric-value text-primary" id="onlineTechs">0</div>
+                                <div class="metric-label">Техніків онлайн</div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-6">
+                            <div class="metric-card">
+                                <div class="metric-value text-success" id="activeAssignments">0</div>
+                                <div class="metric-label">Активних робіт</div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-6">
+                            <div class="metric-card">
+                                <div class="metric-value text-warning" id="pendingAlerts">0</div>
+                                <div class="metric-label">Активних сповіщень</div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-6">
+                            <div class="metric-card">
+                                <div class="metric-value text-info" id="avgResponse">0с</div>
+                                <div class="metric-label">Середній час відгуку</div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-6">
+                            <div class="metric-card">
+                                <div class="metric-value text-danger" id="emergencyCases">0</div>
+                                <div class="metric-label">Аварійних випадків</div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-6">
+                            <div class="metric-card">
+                                <div class="metric-value" id="systemUptime">100%</div>
+                                <div class="metric-label">Доступність системи</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Мапа та основний моніторинг -->
+                    <div class="row mt-4">
+                        <div class="col-lg-8">
+                            <!-- Карта техніків -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-map-marker-alt mr-2"></i>
+                                        Мапа розташування техніків
+                                    </h3>
+                                    <div class="card-tools">
+                                        <button class="btn btn-sm btn-outline-primary" onclick="monitoringManager.centerMap()">
+                                            <i class="fas fa-crosshairs"></i> Центрувати
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-info" onclick="monitoringManager.toggleHeatmap()">
+                                            <i class="fas fa-fire"></i> Теплова карта
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="map-container" id="techMap">
+                                        <div class="map-placeholder">
+                                            <i class="fas fa-map fa-3x text-muted mb-3"></i>
+                                            <p>Інтерактивна карта моніторингу</p>
+                                            <small class="text-muted">Завантаження даних...</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Активні завдання -->
+                            <div class="card mt-4">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-tasks mr-2"></i>
+                                        Активні завдання в реальному часі
+                                    </h3>
+                                    <div class="card-tools">
+                                        <span class="badge badge-success" id="activeTasksCount">0 активних</span>
+                                    </div>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div id="activeTasksContainer">
+                                        <!-- Активні завдання будуть завантажені тут -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <!-- Статус техніків -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-users mr-2"></i>
+                                        Статус техніків
+                                    </h3>
+                                    <div class="card-tools">
+                                        <div class="input-group input-group-sm" style="width: 150px;">
+                                            <input type="text" id="techSearch" class="form-control" placeholder="Пошук...">
+                                            <div class="input-group-append">
+                                                <button class="btn btn-primary">
+                                                    <i class="fas fa-search"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div id="techStatusContainer" style="max-height: 400px; overflow-y: auto;">
+                                        <!-- Статуси техніків будуть завантажені тут -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Системні сповіщення -->
+                            <div class="card mt-4">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-bell mr-2"></i>
+                                        Останні сповіщення
+                                    </h3>
+                                    <div class="card-tools">
+                                        <button class="btn btn-sm btn-outline-danger" onclick="monitoringManager.clearAlerts()">
+                                            <i class="fas fa-trash"></i> Очистити
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div id="alertsContainer" style="max-height: 300px; overflow-y: auto;">
+                                        <!-- Сповіщення будуть завантажені тут -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Додаткові інструменти -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-tools mr-2"></i>
+                                        Інструменти моніторингу
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-3 mb-3">
+                                            <button class="btn btn-outline-primary btn-block" onclick="monitoringManager.startBroadcast()">
+                                                <i class="fas fa-broadcast-tower"></i> Трансляція
+                                            </button>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <button class="btn btn-outline-success btn-block" onclick="monitoringManager.exportLogs()">
+                                                <i class="fas fa-download"></i> Експорт логів
+                                            </button>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <button class="btn btn-outline-warning btn-block" onclick="monitoringManager.systemDiagnostics()">
+                                                <i class="fas fa-stethoscope"></i> Діагностика
+                                            </button>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <button class="btn btn-outline-info btn-block" onclick="monitoringManager.showSettings()">
+                                                <i class="fas fa-cog"></i> Налаштування
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Графіки та аналітика -->
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-chart-line mr-2"></i>
+                                        Навантаження системи
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    <div id="systemLoadChart" style="height: 200px;">
+                                        <div class="text-center py-5 text-muted">
+                                            <i class="fas fa-chart-line fa-2x mb-3"></i>
+                                            <p>Графік навантаження системи</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-history mr-2"></i>
+                                        Історія активності
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    <div id="activityTimeline">
+                                        <div class="timeline">
+                                            <div class="timeline-item">
+                                                <strong>Запуск системи моніторингу</strong>
+                                                <p>Система успішно ініціалізована</p>
+                                                <small class="text-muted">Щойно</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer class="main-footer">
+            <strong>Диспетчерська панель &copy; 2024</strong>
+            <div class="float-right d-none d-sm-inline-block">
+                <small id="connectionStatus"><i class="fas fa-wifi text-success"></i> Online</small>
+                <small class="ml-2" id="lastUpdate">Оновлено: --:--:--</small>
+                <small class="ml-2" id="refreshRate">0мс</small>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Модальне вікно деталей техніка -->
+    <div class="modal fade" id="techDetailsModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Деталі техніка</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="techDetailsContent">
+                    <!-- Вміст деталей техніка -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальне вікно трансляції -->
+    <div class="modal fade" id="broadcastModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Трансляція повідомлення</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Повідомлення для трансляції:</label>
+                        <textarea class="form-control" rows="3" placeholder="Введіть текст повідомлення..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Пріоритет:</label>
+                        <select class="form-control">
+                            <option value="normal">Звичайний</option>
+                            <option value="important">Важливий</option>
+                            <option value="critical">Критичний</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                    <button type="button" class="btn btn-primary" onclick="monitoringManager.sendBroadcast()">
+                        <i class="fas fa-paper-plane"></i> Надіслати
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Monitoring Manager JS -->
+    <script src="../../assets/js/modules/monitoring-manager.js"></script>
+
+    <script>
+        function logout() {
+            if (confirm('Ви впевнені, що хочете вийти з системи?')) {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userData');
+                window.location.href = '../../login.html';
+            }
+        }
+
+        $(document).ready(function() {
+            // Ініціалізація AdminLTE
+            $('[data-widget="pushmenu"]').PushMenu();
+            
+            // Темна тема
+            $('#darkModeToggle').on('click', function() {
+                $('body').toggleClass('dark-mode');
+                $(this).find('i').toggleClass('fa-moon fa-sun');
+            });
+
+            // Пошук техніків
+            $('#techSearch').on('input', function() {
+                monitoringManager.filterTechnicians($(this).val());
+            });
+
+            // Завантаження даних диспетчера
+            const userData = JSON.parse(localStorage.getItem('userData')) || {};
+            if (userData.firstName) {
+                $('#dispatcherName').text(`${userData.firstName} ${userData.lastName || ''}`);
+            }
+
+            // Ініціалізація менеджера моніторингу
+            window.monitoringManager = new MonitoringManager();
+        });
+    </script>
+</body>
+</html>
+<!-- AI Assistant Include -->
+<!--#include file="../../templates/ai-assistant-include.html" -->
+<!-- Якщо сервер не підтримує include, вставте вміст ai-assistant-include.html вручну перед </body> -->

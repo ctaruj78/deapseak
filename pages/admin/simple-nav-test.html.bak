@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Простий тест навігації</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .nav-item {
+            list-style: none;
+            margin: 10px 0;
+        }
+        .nav-link {
+            display: inline-block;
+            padding: 10px 15px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .nav-link:hover {
+            background: #0056b3;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Простий тест навігації до AI прогнозування</h1>
+    
+    <p>Це імітує меню з сторінки lifts.html без AdminLTE:</p>
+    
+    <ul>
+        <li class="nav-item">
+            <a href="predictive-maintenance.html" class="nav-link" id="test-link">
+                <i class="fas fa-brain"></i> AI Прогнозування
+            </a>
+        </li>
+    </ul>
+    
+    <div id="status"></div>
+    
+    <script>
+        document.getElementById('test-link').addEventListener('click', function(e) {
+            const status = document.getElementById('status');
+            status.innerHTML = `
+                <div style="background: #d4edda; color: #155724; padding: 10px; margin: 10px 0; border-radius: 5px;">
+                    ✅ Клік зареєстровано! Переходимо до: ${this.href}<br>
+                    Час: ${new Date().toLocaleTimeString()}
+                </div>
+            `;
+            
+            // Не блокуємо навігацію
+            return true;
+        });
+        
+        // Логування всіх кліків для діагностики
+        document.addEventListener('click', function(e) {
+            console.log('Клік по елементу:', e.target);
+            console.log('Tag:', e.target.tagName);
+            console.log('Href:', e.target.href);
+        });
+    </script>
+</body>
+</html>

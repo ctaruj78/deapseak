@@ -532,6 +532,10 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+    
+    <!-- 🌍 Система багатомовності -->
+    <script src="../../assets/js/i18n.js"></script>
+    <script src="../../assets/js/init-i18n.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
 
 <!-- EventBus and Predictive Maintenance -->
@@ -1242,21 +1246,32 @@ function acknowledgeAlert(alertId) {
 function showRiskMatrix() {
     // Генеруємо матрицю ризиків
     let matrixHtml = '<div class="table-responsive"><table class="table table-bordered">';
-    matrixHtml += '<thead><tr><th>Ліфт</th><th>Вік</th><th>Ризик відмови</th><th>Останнє ТО</th><th>Статус</th></tr></thead><tbody>';
+    matrixHtml += '<thead><tr><th>Ліфт</th><th>Адреса</th><th>Вік</th><th>Ризик відмови</th><th>Останнє ТО</th><th>Статус</th></tr></thead><tbody>';
     
     if (window.predictiveMaintenance && predictiveMaintenance.maintenanceData) {
         predictiveMaintenance.maintenanceData.forEach((data, liftId) => {
+            // Знаходимо оригінальний ліфт з повними даними
+            const lift = predictiveMaintenance.lifts?.find(l => 
+                (l._id || l.id) === liftId || l.municipalNumber === liftId
+            );
+            
+            const displayName = lift?.municipalNumber || liftId;
+            const address = lift ? `${lift.address?.street || ''}, ${lift.address?.city || ''}`.trim() : '';
             const riskClass = window.dashboardController.getRiskClass(data.failureRisk);
             const lastMaintenance = data.lastInspection ? 
                 new Date(data.lastInspection).toLocaleDateString('uk-UA') : 'Невідомо';
             
+            // Перевіряємо чи ризик є числом
+            const riskValue = isNaN(data.failureRisk) ? 0 : Math.round(data.failureRisk * 100);
+            
             matrixHtml += `
                 <tr>
-                    <td><strong>${liftId}</strong></td>
-                    <td>${data.age.toFixed(1)} років</td>
-                    <td><span class="risk-indicator risk-${riskClass}">${Math.round(data.failureRisk * 100)}%</span></td>
+                    <td><strong>${displayName}</strong></td>
+                    <td>${address || '-'}</td>
+                    <td>${(data.age || 0).toFixed(1)} років</td>
+                    <td><span class="risk-indicator risk-${riskClass}">${riskValue}%</span></td>
                     <td>${lastMaintenance}</td>
-                    <td>${data.status}</td>
+                    <td>${data.status || 'operational'}</td>
                 </tr>
             `;
         });
@@ -1277,5 +1292,7 @@ $(document).ready(function() {
     }, 1000);
 });
 </script>
+    <!-- AI Assistant Widget -->
+    <script src="/components/ai-widget.js"></script>
 </body>
 </html>

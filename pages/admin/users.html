@@ -527,7 +527,18 @@
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- AdminLTE App -->
     <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+    
+    <!-- jQuery Notify -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-notify@3.1.3/bootstrap-notify.min.js"></script>
+    
+    <!-- Auth Manager -->
+    <script src="../../assets/js/auth.js?v=20241203"></script>
+    
+    <!-- 🌍 Система багатомовності -->
+    <script src="../../assets/js/i18n.js"></script>
+    <script src="../../assets/js/init-i18n.js"></script>
 
     <!-- User Management Script -->
     <script>
@@ -547,23 +558,23 @@
                 this.setupFilters();
             }
 
-            loadUsers() {
-                // Завантаження користувачів з localStorage
-                this.allUsers = JSON.parse(localStorage.getItem('users')) || [];
-                
-                // Якщо користувачів немає, додаємо адміністратора за замовчуванням
-                if (this.allUsers.length === 0) {
-                    this.allUsers = [{
-                        id: 'ADM-001',
-                        firstName: 'Адміністратор',
-                        lastName: 'Системи',
-                        email: 'admin@liftmanagement.com',
-                        role: 'admin',
-                        status: 'active',
-                        password: this.hashPassword('admin123'),
-                        createdAt: new Date().toISOString()
-                    }];
-                    this.saveUsers();
+            async loadUsers() {
+                try {
+                    console.log('🔄 Завантаження користувачів з API...');
+                    const response = await AuthManager.fetchWithAuth('/api/auth/users');
+                    
+                    if (!response.ok) {
+                        throw new Error('Помилка завантаження користувачів');
+                    }
+
+                    const data = await response.json();
+                    this.allUsers = data.users || [];
+                    console.log('✅ Завантажено користувачів:', this.allUsers.length);
+                    
+                } catch (error) {
+                    console.error('❌ Помилка завантаження користувачів:', error);
+                    alert('Не вдалося завантажити користувачів. Перевірте підключення до сервера.');
+                    this.allUsers = [];
                 }
                 
                 this.filteredUsers = [...this.allUsers];
@@ -572,8 +583,9 @@
                 this.updateStats();
             }
 
-            saveUsers() {
-                localStorage.setItem('users', JSON.stringify(this.allUsers));
+            async saveUsers() {
+                // Видалено - тепер зберігання через API при створенні/редагуванні
+                console.log('ℹ️ Користувачі зберігаються через API endpoints');
             }
 
             setupEventListeners() {
@@ -889,13 +901,9 @@
         // Ініціалізація менеджера користувачів
         $(document).ready(function() {
             window.userManager = new UserManager();
-            
-            // Додавання функціоналу сповіщень
-            $.notifyDefaults({
-                delay: 3000,
-                z_index: 9999
-            });
         });
     </script>
+    <!-- AI Assistant Widget -->
+    <script src="/components/ai-widget.js"></script>
 </body>
 </html>

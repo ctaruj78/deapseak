@@ -811,8 +811,8 @@
                 );
             }, 30000);
 
-            // Завантаження даних диспетчера
-            const userData = JSON.parse(localStorage.getItem('userData')) || {};
+            // Завантаження даних диспетчера з AuthManager
+            const userData = AuthManager.getUserData() || {};
             if (userData.firstName) {
                 $('#dispatcherName').text(`${userData.firstName} ${userData.lastName || ''}`);
             }
@@ -947,5 +947,7 @@
             </div>
         </div>
     </div>
+    <!-- AI Assistant Widget -->
+    <script src="/components/ai-widget.js"></script>
 </body>
 </html>

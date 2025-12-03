@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentação - DeapSeaK</title>
+    
+    <!-- AdminLTE & Dependencies -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <link rel="stylesheet" href="../../assets/css/ai-assistant.css">
+    
+    <style>
+        .regulation-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            border-left: 4px solid #007bff;
+        }
+        
+        .regulation-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .regulation-badge {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+        }
+        
+        .category-filter {
+            margin-bottom: 20px;
+        }
+        
+        .category-btn {
+            margin: 5px;
+        }
+        
+        .search-highlight {
+            background-color: yellow;
+            font-weight: bold;
+        }
+        
+        .regulation-detail {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        
+        .requirement-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: white;
+            border-left: 3px solid #28a745;
+            border-radius: 4px;
+        }
+        
+        .requirement-item.mandatory {
+            border-left-color: #dc3545;
+        }
+        
+        .loading-spinner {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a>
+            </li>
+            <li class="nav-item d-none d-sm-inline-block">
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+            </li>
+        </ul>
+        
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="#" onclick="event.preventDefault(); logout();">
+                    <i class="fas fa-sign-out-alt"></i> Sair
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <a href="dashboard.html" class="brand-link">
+            <span class="brand-text font-weight-light">DeapSeaK Client</span>
+        </a>
+
+        <div class="sidebar">
+            <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                <div class="image">
+                    <img src="../../assets/img/avatars/client.png" class="img-circle elevation-2" alt="Client">
+                </div>
+                <div class="info">
+                    <a href="#" class="d-block" id="clientName">Cliente</a>
+                </div>
+            </div>
+
+            <nav class="mt-2">
+                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+                    <li class="nav-item">
+                        <a href="dashboard.html" class="nav-link">
+                            <i class="nav-icon fas fa-tachometer-alt"></i>
+                            <p>Dashboard</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="my-lifts.html" class="nav-link">
+                            <i class="nav-icon fas fa-building"></i>
+                            <p>Meus Elevadores</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="requests.html" class="nav-link">
+                            <i class="nav-icon fas fa-clipboard-list"></i>
+                            <p>Solicitações</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="documentation.html" class="nav-link active">
+                            <i class="nav-icon fas fa-book"></i>
+                            <p>Documentação</p>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Content Wrapper -->
+    <div class="content-wrapper">
+        <section class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1><i class="fas fa-book"></i> Documentação Técnica</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="dashboard.html">Dashboard</a></li>
+                            <li class="breadcrumb-item active">Documentação</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content">
+            <div class="container-fluid">
+                
+                <!-- Search Bar -->
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="input-group">
+                                    <input type="text" 
+                                           class="form-control form-control-lg" 
+                                           id="searchInput" 
+                                           placeholder="Pesquisar normas, regulamentos, requisitos...">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-primary" onclick="searchRegulations()">
+                                            <i class="fas fa-search"></i> Pesquisar
+                                        </button>
+                                        <button class="btn btn-info" onclick="askAI()">
+                                            <i class="fas fa-robot"></i> Perguntar ao AI
+                                        </button>
+                                    </div>
+                                </div>
+                                <small class="text-muted">
+                                    💡 Exemplos: "manutenção obrigatória", "inspeção anual", "observações do inspector"
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Categories -->
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-filter"></i> Filtrar por Categoria</h3>
+                            </div>
+                            <div class="card-body category-filter" id="categoryFilters">
+                                <button class="btn btn-outline-primary category-btn" onclick="filterByCategory('all')">
+                                    Todas
+                                </button>
+                                <button class="btn btn-outline-danger category-btn" onclick="filterByCategory('safety')">
+                                    <i class="fas fa-shield-alt"></i> Segurança
+                                </button>
+                                <button class="btn btn-outline-warning category-btn" onclick="filterByCategory('installation')">
+                                    <i class="fas fa-tools"></i> Instalação
+                                </button>
+                                <button class="btn btn-outline-success category-btn" onclick="filterByCategory('maintenance')">
+                                    <i class="fas fa-wrench"></i> Manutenção
+                                </button>
+                                <button class="btn btn-outline-info category-btn" onclick="filterByCategory('inspection')">
+                                    <i class="fas fa-clipboard-check"></i> Inspeção
+                                </button>
+                                <button class="btn btn-outline-secondary category-btn" onclick="filterByCategory('accessibility')">
+                                    <i class="fas fa-wheelchair"></i> Acessibilidade
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Regulations List -->
+                <div class="row" id="regulationsList">
+                    <div class="col-md-12">
+                        <div class="loading-spinner">
+                            <i class="fas fa-spinner fa-spin fa-3x"></i>
+                            <p>Carregando documentação...</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <strong>Copyright &copy; 2024 DeapSeaK.</strong> Todos os direitos reservados.
+    </footer>
+</div>
+
+<!-- Regulation Detail Modal -->
+<div class="modal fade" id="regulationModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="regulationTitle"></h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body" id="regulationBody">
+                <!-- Content loaded dynamically -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+<script src="../../assets/js/modules/ai-assistant.js"></script>
+<script src="../../assets/js/modules/regulations-ai-integration.js"></script>
+
+<script>
+let regulationsAI;
+let allRegulations = [];
+let currentCategory = 'all';
+
+$(document).ready(function() {
+    // Ініціалізація
+    regulationsAI = new RegulationsAI();
+    
+    // Завантажити користувача
+    const userData = JSON.parse(localStorage.getItem('userData')) || {};
+    if (userData.firstName) {
+        $('#clientName').text(userData.firstName);
+    }
+    
+    // Завантажити всі документи
+    loadAllRegulations();
+    
+    // Enter для пошуку
+    $('#searchInput').on('keypress', function(e) {
+        if (e.which === 13) {
+            searchRegulations();
+        }
+    });
+});
+
+async function loadAllRegulations() {
+    try {
+        const response = await fetch('/api/regulations');
+        const data = await response.json();
+        
+        if (data.success) {
+            allRegulations = data.data;
+            displayRegulations(allRegulations);
+        } else {
+            showError('Erro ao carregar documentação');
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        showError('Erro de conexão');
+    }
+}
+
+function displayRegulations(regulations) {
+    const container = $('#regulationsList');
+    container.empty();
+    
+    if (!regulations || regulations.length === 0) {
+        container.html(`
+            <div class="col-md-12">
+                <div class="no-results">
+                    <i class="fas fa-search fa-3x mb-3"></i>
+                    <h4>Nenhum documento encontrado</h4>
+                    <p>Tente outros termos de pesquisa ou categorias</p>
+                </div>
+            </div>
+        `);
+        return;
+    }
+    
+    regulations.forEach(reg => {
+        const card = `
+            <div class="col-md-6 mb-3">
+                <div class="card regulation-card" onclick="showRegulationDetail('${reg.code}')">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <strong>${reg.code}</strong>
+                            <span class="badge badge-${getCategoryColor(reg.category)} regulation-badge float-right">
+                                ${getCategoryName(reg.category)}
+                            </span>
+                        </h5>
+                        <p class="card-text">
+                            <strong>${reg.titleUA || reg.title}</strong>
+                        </p>
+                        <p class="text-muted small">
+                            ${reg.summaryUA || reg.summary || ''}
+                        </p>
+                        <div class="mt-2">
+                            <span class="badge badge-info">${getTypeName(reg.type)}</span>
+                            ${reg.requirements ? `<span class="badge badge-warning">${reg.requirements.length} requisitos</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        container.append(card);
+    });
+}
+
+async function showRegulationDetail(code) {
+    const result = await regulationsAI.getRegulation(code);
+    
+    if (!result.success || !result.data) {
+        alert('Erro ao carregar documento');
+        return;
+    }
+    
+    const reg = result.data;
+    
+    $('#regulationTitle').html(`<strong>${reg.code}</strong> - ${reg.titleUA || reg.title}`);
+    
+    let body = `
+        <div class="regulation-detail">
+            <p><strong>Resumo:</strong><br>${reg.summaryUA || reg.summary}</p>
+            
+            ${reg.issueDate ? `<p><small class="text-muted">📅 Emissão: ${new Date(reg.issueDate).toLocaleDateString('pt-PT')}</small></p>` : ''}
+            
+            ${reg.requirements && reg.requirements.length > 0 ? `
+                <h5 class="mt-3"><i class="fas fa-clipboard-list"></i> Requisitos:</h5>
+                ${reg.requirements.map(req => `
+                    <div class="requirement-item ${req.severity}">
+                        <strong>${req.description}</strong>
+                        <br><small>Severidade: <span class="badge badge-${req.severity === 'mandatory' ? 'danger' : 'warning'}">${req.severity}</span></small>
+                        ${req.commonViolations && req.commonViolations.length > 0 ? `
+                            <br><small class="text-danger">⚠️ Violações comuns: ${req.commonViolations.join(', ')}</small>
+                        ` : ''}
+                    </div>
+                `).join('')}
+            ` : ''}
+            
+            ${reg.aiContext && reg.aiContext.explanations && reg.aiContext.explanations.length > 0 ? `
+                <h5 class="mt-3"><i class="fas fa-lightbulb"></i> Explicações:</h5>
+                <ul>
+                    ${reg.aiContext.explanations.map(exp => `<li>${exp}</li>`).join('')}
+                </ul>
+            ` : ''}
+            
+            ${reg.aiContext && reg.aiContext.commonQuestions && reg.aiContext.commonQuestions.length > 0 ? `
+                <h5 class="mt-3"><i class="fas fa-question-circle"></i> Perguntas Frequentes:</h5>
+                <ul>
+                    ${reg.aiContext.commonQuestions.map(q => `<li>${q}</li>`).join('')}
+                </ul>
+            ` : ''}
+        </div>
+    `;
+    
+    $('#regulationBody').html(body);
+    $('#regulationModal').modal('show');
+}
+
+async function searchRegulations() {
+    const query = $('#searchInput').val().trim();
+    
+    if (!query) {
+        loadAllRegulations();
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/regulations?keyword=${encodeURIComponent(query)}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            displayRegulations(data.data);
+        }
+    } catch (error) {
+        console.error('Erro na pesquisa:', error);
+    }
+}
+
+async function askAI() {
+    const question = $('#searchInput').val().trim();
+    
+    if (!question) {
+        alert('Por favor, digite uma pergunta');
+        return;
+    }
+    
+    $('#regulationsList').html(`
+        <div class="col-md-12">
+            <div class="loading-spinner">
+                <i class="fas fa-robot fa-spin fa-3x text-primary"></i>
+                <p>AI está pesquisando...</p>
+            </div>
+        </div>
+    `);
+    
+    const result = await regulationsAI.askAI(question);
+    
+    if (result.success && result.regulations) {
+        displayRegulations(result.regulations);
+        
+        // Mostrar відповідь AI
+        const aiAnswer = `
+            <div class="col-md-12 mb-3">
+                <div class="alert alert-info">
+                    <h5><i class="fas fa-robot"></i> Resposta do AI:</h5>
+                    <p style="white-space: pre-line;">${result.answer}</p>
+                </div>
+            </div>
+        `;
+        $('#regulationsList').prepend(aiAnswer);
+    } else {
+        alert(result.error || 'Erro ao processar pergunta');
+        loadAllRegulations();
+    }
+}
+
+function filterByCategory(category) {
+    currentCategory = category;
+    
+    // Оновити активну кнопку
+    $('.category-btn').removeClass('active');
+    $(`button[onclick="filterByCategory('${category}')"]`).addClass('active');
+    
+    if (category === 'all') {
+        displayRegulations(allRegulations);
+    } else {
+        const filtered = allRegulations.filter(reg => reg.category === category);
+        displayRegulations(filtered);
+    }
+}
+
+function getCategoryColor(category) {
+    const colors = {
+        'safety': 'danger',
+        'installation': 'warning',
+        'maintenance': 'success',
+        'inspection': 'info',
+        'accessibility': 'secondary',
+        'fire-safety': 'danger',
+        'emergency': 'warning'
+    };
+    return colors[category] || 'primary';
+}
+
+function getCategoryName(category) {
+    const names = {
+        'safety': 'Segurança',
+        'installation': 'Instalação',
+        'maintenance': 'Manutenção',
+        'inspection': 'Inspeção',
+        'accessibility': 'Acessibilidade',
+        'fire-safety': 'Segurança contra incêndio',
+        'emergency': 'Emergência'
+    };
+    return names[category] || category;
+}
+
+function getTypeName(type) {
+    const names = {
+        'decree-law': 'Decreto-Lei',
+        'european-norm': 'Norma Europeia',
+        'ordinance': 'Portaria',
+        'technical-standard': 'Norma Técnica',
+        'inspection-guide': 'Guia de Inspeção'
+    };
+    return names[type] || type;
+}
+
+function showError(message) {
+    $('#regulationsList').html(`
+        <div class="col-md-12">
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle"></i> ${message}
+            </div>
+        </div>
+    `);
+}
+
+function logout() {
+    localStorage.clear();
+    window.location.href = '../../login.html';
+}
+</script>
+
+</body>
+</html>

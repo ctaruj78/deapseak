@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>Адмін панель - Управління ліфтами</title>
+    <title data-i18n-title="lift_management">Адмін панель - Управління ліфтами</title>
     
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
@@ -18,6 +18,8 @@
     <!-- Custom CSS (оптимізований, без зайвих !important) -->
     <link rel="stylesheet" href="/assets/css/lifts.css">
     <link rel="stylesheet" href="/assets/css/enhanced-lift-modal.css">
+    <link rel="stylesheet" href="/assets/css/z-index-system.css">
+    <link rel="stylesheet" href="/assets/css/notifications.css">
     
     <style>
         .lift-status {
@@ -238,6 +240,32 @@
         .qr-preview-mini .btn-group {
             justify-content: center;
             width: 100%;
+        }
+        
+        /* Маркер поточного місцезнаходження */
+        .current-location-marker {
+            background: #007bff;
+            border: 3px solid white;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+            width: 18px !important;
+            height: 18px !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse-blue 2s infinite;
+        }
+        
+        @keyframes pulse-blue {
+            0% {
+                box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+            }
         }
         
         /* Поліпшення стилів для всіх input полів в модальному вікні */
@@ -498,7 +526,7 @@
                                 <li class="nav-item">
                                     <a href="lifts.html" class="nav-link active">
                                         <i class="fas fa-list nav-icon"></i>
-                                        <p>Управління ліфтами</p>
+                                        <p data-i18n="lift_management">Управління ліфтами</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
@@ -602,7 +630,7 @@
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1>Управління ліфтами</h1>
+                            <h1 data-i18n="lift_management">Управління ліфтами</h1>
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
@@ -779,16 +807,16 @@
 
     <!-- Enhanced Lift Modal with Map -->
     <div class="modal fade" id="enhancedLiftModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="false">
-        <div class="modal-dialog modal-xl" role="document">
-            <div class="modal-content">
-                <div class="modal-header bg-success">
+        <div class="modal-dialog modal-xl" role="document" style="max-height: 95vh; margin: 1.75rem auto;">
+            <div class="modal-content" style="max-height: 95vh; display: flex; flex-direction: column;">
+                <div class="modal-header bg-success" style="flex-shrink: 0;">
                     <h5 class="modal-title" id="enhancedModalTitle">Додати ліфт з картою</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <form id="enhancedLiftForm">
-                    <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
+                <form id="enhancedLiftForm" style="display: flex; flex-direction: column; flex: 1; min-height: 0;">
+                    <div class="modal-body" style="flex: 1; overflow-y: auto; overflow-x: hidden; padding: 15px;">
                         <input type="hidden" id="enhancedLiftId">
                         
                         <!-- Навігація табами -->
@@ -909,13 +937,16 @@
                                     </div>
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label for="enhancedLiftCapacity">Пасажиромісткість</label>
+                                            <label for="enhancedLiftCapacity">Пасажиромісткість (осіб)</label>
                                             <div class="input-group">
-                                                <input type="number" id="enhancedLiftCapacity" name="liftCapacity" class="form-control" min="2" max="50" value="2" placeholder="осіб">
+                                                <input type="number" id="enhancedLiftCapacity" name="liftCapacity" class="form-control" min="2" max="50" value="4" placeholder="осіб">
                                                 <div class="input-group-append">
                                                     <span class="input-group-text">осіб</span>
                                                 </div>
                                             </div>
+                                            <small class="form-text text-muted">
+                                                <i class="fas fa-info-circle"></i> Вага автоматично розраховується (1 особа ≈ 75 кг)
+                                            </small>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
@@ -970,13 +1001,13 @@
                                     <div class="col-md-5">
                                         <div class="form-group">
                                             <label for="enhancedLiftLat">Широта</label>
-                                            <input type="number" id="enhancedLiftLat" name="liftLat" class="form-control" step="0.000001" placeholder="50.4501 (Київ за замовчуванням)">
+                                            <input type="number" id="enhancedLiftLat" name="liftLat" class="form-control" step="0.000001" placeholder="Автоматично визначається...">
                                         </div>
                                     </div>
                                     <div class="col-md-5">
                                         <div class="form-group">
                                             <label for="enhancedLiftLng">Довгота</label>
-                                            <input type="number" id="enhancedLiftLng" name="liftLng" class="form-control" step="0.000001" placeholder="30.5234 (Київ за замовчуванням)">
+                                            <input type="number" id="enhancedLiftLng" name="liftLng" class="form-control" step="0.000001" placeholder="Автоматично визначається...">
                                         </div>
                                     </div>
                                     <div class="col-md-2">
@@ -1136,7 +1167,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer">
+                    <div class="modal-footer" style="flex-shrink: 0; border-top: 1px solid #dee2e6;">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">
                             <i class="fas fa-times"></i> Скасувати
                         </button>
@@ -1151,15 +1182,15 @@
 
     <!-- Lift Details Modal -->
     <div class="modal fade" id="liftDetailsModal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header bg-info">
+        <div class="modal-dialog modal-lg" role="document" style="max-height: 95vh; margin: 1.75rem auto;">
+            <div class="modal-content" style="max-height: 95vh; display: flex; flex-direction: column;">
+                <div class="modal-header bg-info" style="flex-shrink: 0;">
                     <h5 class="modal-title">Деталі ліфта</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body" style="flex: 1; overflow-y: auto; overflow-x: hidden;">
                     <div class="row">
                         <div class="col-md-6">
                             <h6>Основна інформація</h6>
@@ -1323,7 +1354,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer" style="flex-shrink: 0; border-top: 1px solid #dee2e6;">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
                     <button type="button" class="btn btn-primary" id="edit-lift-from-details">Редагувати</button>
                 </div>
@@ -1336,15 +1367,15 @@
 
     <!-- Модальне вікно для додавання звіту -->
     <div class="modal fade" id="addReportModal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header bg-primary">
+        <div class="modal-dialog" role="document" style="max-height: 95vh; margin: 1.75rem auto;">
+            <div class="modal-content" style="max-height: 95vh; display: flex; flex-direction: column;">
+                <div class="modal-header bg-primary" style="flex-shrink: 0;">
                     <h5 class="modal-title">Додати звіт інспекції</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body" style="flex: 1; overflow-y: auto; overflow-x: hidden;">
                     <form id="addReportForm">
                         <input type="hidden" id="report-lift-id">
                         <div class="form-group">
@@ -1372,7 +1403,7 @@
                         </div>
                     </form>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer" style="flex-shrink: 0; border-top: 1px solid #dee2e6;">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
                     <button type="button" class="btn btn-primary" onclick="submitReport()">
                         <i class="fas fa-save"></i> Зберегти
@@ -1384,15 +1415,15 @@
 
     <!-- Модальне вікно для завантаження контракту -->
     <div class="modal fade" id="uploadContractModal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header bg-success">
+        <div class="modal-dialog" role="document" style="max-height: 95vh; margin: 1.75rem auto;">
+            <div class="modal-content" style="max-height: 95vh; display: flex; flex-direction: column;">
+                <div class="modal-header bg-success" style="flex-shrink: 0;">
                     <h5 class="modal-title">Завантажити контракт на обслуговування</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body" style="flex: 1; overflow-y: auto; overflow-x: hidden;">
                     <form id="uploadContractForm">
                         <input type="hidden" id="contract-lift-id">
                         <div class="form-group">
@@ -1418,7 +1449,7 @@
                         </div>
                     </form>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer" style="flex-shrink: 0; border-top: 1px solid #dee2e6;">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
                     <button type="button" class="btn btn-success" onclick="submitContract()">
                         <i class="fas fa-upload"></i> Завантажити
@@ -1807,6 +1838,10 @@
     <!-- 🔌 КОНФІГУРАЦІЯ ПОРТІВ (завантажується ПЕРШОЮ!) -->
     <script src="../../assets/js/config.js?v=20241116"></script>
     
+    <!-- 🌍 Система багатомовності -->
+    <script src="../../assets/js/i18n.js?v=20241117"></script>
+    <script src="../../assets/js/init-i18n.js?v=20241117"></script>
+    
     <!-- Система авторизації -->
     <script src="../../assets/js/auth.js?v=20241116"></script>
     <!-- Leaflet JS -->
@@ -2109,9 +2144,13 @@
         // Функція виходу
         function logout() {
             if (confirm('Ви впевнені, що хочете вийти?')) {
-                localStorage.removeItem('authToken');
-                localStorage.removeItem('userData');
-                window.location.href = 'login.html';
+                if (typeof AuthManager !== 'undefined') {
+                    AuthManager.logout();
+                } else {
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    window.location.href = '/login.html';
+                }
             }
         }
 
@@ -3509,6 +3548,17 @@
     // Запускаємо ініціалізацію після завантаження всіх скриптів
     setTimeout(initializeEnhancedModal, 500);
 
+    // 🔧 ВИДАЛЕНО: Старий обробник submit - тепер використовується EnhancedLiftModal
+    // Проблема: форма зберігалась двічі через два обробники submit
+    // Правильний обробник знаходиться в assets/js/enhanced-lift-modal.js
+    
+    /*
+    $(document).on('submit', '#enhancedLiftForm', async function(e) {
+        // ❌ ЦЕЙ КОД ВИКЛИКАВ ПОДВІЙНЕ ЗБЕРЕЖЕННЯ - ВИДАЛЕНО
+        // Використовуйте EnhancedLiftModal.handleFormSubmit() замість цього
+    });
+    */
+
     // 🔧 ВИПРАВЛЕННЯ: API інтеграція замість localStorage
     
     // API базова функція з використанням AuthManager
@@ -3581,25 +3631,26 @@
         }
     }
     
+    // Alias для сумісності з lift-form-enhanced.js
+    window.loadLifts = window.loadLiftsFromAPI;
+    
     // Виправлена функція збереження ліфта
     async function saveLiftToAPI(liftData) {
         console.log('💾 Збереження ліфта через API...', liftData);
         
         const result = await apiCall('/api/lifts', 'POST', liftData);
         
-        if (result.success && result.data && result.data.lift) {
-            console.log('✅ Ліфт збережено в MongoDB:', result.data.lift);
-            // Також зберігаємо в localStorage для сумісності
-            let savedLifts = JSON.parse(localStorage.getItem('lifts') || '[]');
-            const savedLift = {
-                ...result.data.lift,
-                id: result.data.lift._id,
-                _id: result.data.lift._id
-            };
-            savedLifts.push(savedLift);
-            localStorage.setItem('lifts', JSON.stringify(savedLifts));
+        console.log('📥 Відповідь API:', result);
+        
+        if (result.success && result.data) {
+            // apiCall wraps API response: result.data contains { success, data: {...lift} }
+            const savedLift = result.data.data || result.data;
+            console.log('✅ Ліфт збережено в MongoDB:', savedLift);
             
-            return result.data.lift;
+            // ❌ НЕ зберігаємо в localStorage - завантажимо з API через refreshLiftsDisplay()
+            // Це запобігає дублюванню ліфтів
+            
+            return savedLift;
         } else {
             console.error('❌ Помилка збереження ліфта:', result.error || result.message);
             throw new Error(result.error || result.message || 'Помилка збереження');
@@ -3808,10 +3859,16 @@
             const result = await apiCall(`/api/lifts/${liftId}`, 'GET');
             
             let lift;
-            if (result.success && result.data) {
+            if (result && result.success && result.data) {
                 console.log('✅ Ліфт завантажено з API:', result.data);
-                // API повертає { success: true, data: { lift: {...} } }
-                lift = result.data.lift || result.data;
+                // apiCall wraps API response, so result.data contains the full API response
+                // API returns { success: true, data: {...lift} }, so we need result.data.data
+                lift = result.data.data || result.data;
+            } else if (result && !result.success) {
+                console.log('⚠️ API помилка:', result.message);
+                // Fallback до localStorage
+                const lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
+                lift = lifts.find(l => (l._id || l.id) === liftId);
             } else {
                 // Fallback до localStorage
                 console.log('⚠️ Завантаження з localStorage (API не доступний)');
@@ -3825,10 +3882,20 @@
             }
 
             console.log('🔍 Об\'єкт ліфта для відображення:', lift);
+            console.log('📊 Ключі об\'єкта:', Object.keys(lift));
+            console.log('🏢 municipalNumber:', lift.municipalNumber);
+            console.log('🏭 manufacturer:', lift.manufacturer);
+            console.log('📦 model:', lift.model);
+            console.log('🏗️ type:', lift.type);
+            console.log('📍 address:', lift.address);
+            console.log('🗺️ location:', lift.location);
 
             // Заповнюємо модальне вікно деталей
             const modal = document.getElementById('liftDetailsModal');
             if (modal) {
+                // Зберігаємо _id для API викликів
+                modal.dataset.liftId = lift._id || lift.id || liftId;
+                
                 // Основна інформація
                 $('#detail-municipal-number').text(lift.municipalNumber || 'Не вказано');
                 $('#detail-id').text(lift._id || lift.id || 'Не вказано');
@@ -3841,14 +3908,27 @@
                 $('#detail-status').text(getStatusText(lift.status) || 'Не вказано');
                 
                 // Технічні характеристики
-                $('#detail-capacity').text(
-                    lift.capacity ? lift.capacity + ' кг' : 
-                    lift.loadCapacity ? lift.loadCapacity + ' кг' : 'Не вказано'
-                );
-                $('#detail-speed').text(lift.speed ? lift.speed + ' м/с' : 'Не вказано');
+                // Місткість: показуємо і особи, і кг через рисочку
+                let capacityText = 'Не вказано';
+                if (lift.capacity) {
+                    // Розраховуємо кількість осіб (1 особа ≈ 75 кг)
+                    const persons = Math.floor(lift.capacity / 75);
+                    capacityText = `${persons} осіб / ${lift.capacity} кг`;
+                } else if (lift.loadCapacity) {
+                    const persons = Math.floor(lift.loadCapacity / 75);
+                    capacityText = `${persons} осіб / ${lift.loadCapacity} кг`;
+                } else if (lift.passengerCapacity) {
+                    const kg = lift.passengerCapacity * 75;
+                    capacityText = `${lift.passengerCapacity} осіб / ${kg} кг`;
+                }
+                $('#detail-capacity').text(capacityText);
+                
+                // Швидкість
+                $('#detail-speed').text(lift.speed ? `${lift.speed} м/с` : 'Не вказано');
+                
+                // Частота інспекцій - тільки якщо вказана
                 $('#detail-frequency').text(
-                    lift.inspectionFrequency ? lift.inspectionFrequency + ' міс.' : 
-                    lift.floors ? lift.floors + ' поверхів' : 'Не вказано'
+                    lift.inspectionFrequency ? `${lift.inspectionFrequency} міс.` : 'Не вказано'
                 );
                 
                 // Розташування з нової структури
@@ -4070,7 +4150,9 @@
             let lift;
             if (result.success && result.data) {
                 console.log('✅ Ліфт завантажено з API:', result.data);
-                lift = result.data.lift || result.data;
+                // apiCall wraps API response, so result.data contains the full API response
+                // API returns { success: true, data: {...lift} }, so we need result.data.data
+                lift = result.data.data || result.data;
             } else {
                 // Fallback до localStorage
                 console.log('⚠️ Завантаження з localStorage (API не доступний)');
@@ -4084,6 +4166,8 @@
             }
             
             console.log('📋 Дані ліфта для редагування:', lift);
+            console.log('📊 Ключі об\'єкта:', Object.keys(lift));
+            console.log('🏢 municipalNumber:', lift.municipalNumber);
             
             // ВАЖЛИВО: Встановлюємо currentLiftId в enhanced-lift-modal ПЕРЕД відкриттям
             if (window.enhancedLiftModal) {
@@ -4265,7 +4349,9 @@
             
             let lift;
             if (result.success && result.data) {
-                lift = result.data;
+                console.log('✅ Ліфт завантажено з API:', result.data);
+                // apiCall wraps API response: result.data contains { success, data: {...lift} }
+                lift = result.data.data || result.data;
             } else {
                 // Fallback до localStorage
                 const lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
@@ -4277,44 +4363,58 @@
                 return;
             }
             
+            console.log('🏷️ Дані ліфта для QR:', lift);
+            console.log('📊 Ключі об\'єкта:', Object.keys(lift));
+            
             // Перевіряємо наявність бібліотеки QRCode
             if (typeof QRCode === 'undefined') {
                 alert('Бібліотека QR кодів ще завантажується. Спробуйте через кілька секунд.');
                 return;
             }
             
+            // Формуємо адресу з об'єкта address або строки
+            const address = lift.address;
+            let addressStr = 'Адреса не вказана';
+            if (typeof address === 'object' && address !== null) {
+                // Новий формат: address = { street, city, zipCode, country }
+                addressStr = address.street 
+                    ? `${address.street}${address.city ? ', ' + address.city : ''}` 
+                    : 'Адреса не вказана';
+            } else if (typeof address === 'string' && address) {
+                // Старий формат: address = "вул. Хрещатик, 1"
+                addressStr = address;
+            }
+            
             // Заповнюємо інформацію про ліфт
             $('#qr-municipal-number').text(lift.municipalNumber || 'Без номера');
-            $('#qr-address').text(lift.address || 'Адреса не вказана');
+            $('#qr-address').text(addressStr);
             
             // Очищуємо контейнер QR коду
             const container = document.getElementById('qrcode-container');
             container.innerHTML = '<div id="qrcode"></div>';
             
-            // Генеруємо дані для QR коду
-            const qrData = {
-                liftId: lift._id || lift.id,
-                municipalNumber: lift.municipalNumber,
-                address: lift.address,
-                type: lift.type,
-                model: lift.model,
-                url: `${window.location.origin}/lift-info.html?id=${lift._id || lift.id}`
-            };
+            // Генеруємо ТІЛЬКИ URL для QR коду (щоб не переповнити)
+            // QR код містить лише посилання, всі дані завантажуються при переході
+            const qrUrl = `${window.location.origin}/lift-info.html?id=${lift._id || lift.id}`;
             
-            // Створюємо QR код
+            console.log('📄 QR URL:', qrUrl);
+            
+            // Створюємо QR код з мінімальними даними
             new QRCode(document.getElementById('qrcode'), {
-                text: JSON.stringify(qrData),
+                text: qrUrl,  // Тільки URL, не весь об'єкт!
                 width: 256,
                 height: 256,
                 colorDark: '#000000',
                 colorLight: '#ffffff',
-                correctLevel: QRCode.CorrectLevel.H
+                correctLevel: QRCode.CorrectLevel.M  // Знижуємо рівень корекції (H->M) для менших кодів
             });
+            
             
             // Зберігаємо дані для завантаження/друку
             window.currentQRData = {
                 lift: lift,
-                qrData: qrData
+                qrUrl: qrUrl,  // Зберігаємо URL для QR коду
+                addressStr: addressStr  // Зберігаємо відформатовану адресу
             };
             
             // Показуємо модальне вікно
@@ -4355,6 +4455,7 @@
     function printQRCode() {
         try {
             const lift = window.currentQRData?.lift;
+            const addressStr = window.currentQRData?.addressStr || 'Не вказано';
             const canvas = document.querySelector('#qrcode canvas');
             
             if (!canvas) {
@@ -4367,32 +4468,37 @@
             const imgData = canvas.toDataURL('image/png');
             
             const municipalNumber = lift?.municipalNumber || 'Не вказано';
-            const address = lift?.address || 'Не вказано';
-            const model = lift?.model || 'Не вказано';
+            const manufacturer = lift?.manufacturer || 'Не вказано';
+            const model = lift?.model ? `${manufacturer} ${lift.model}` : manufacturer;
             const type = lift?.type || 'Не вказано';
             
             const htmlContent = [
                 '<!DOCTYPE html>',
                 '<html>',
                 '<head>',
+                '<meta charset="UTF-8">',
                 '<title>QR код - ' + municipalNumber + '</title>',
                 '<style>',
                 'body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }',
-                'h2 { margin: 10px 0; }',
-                '.info { margin: 20px 0; color: #666; }',
-                'img { margin: 20px 0; }',
+                'h2 { margin: 10px 0; color: #333; }',
+                '.info { margin: 20px 0; color: #666; text-align: left; display: inline-block; }',
+                '.info div { margin: 8px 0; }',
+                'img { margin: 20px 0; border: 1px solid #ddd; padding: 10px; }',
                 '@media print { body { padding: 0; } }',
                 '</style>',
                 '</head>',
                 '<body>',
                 '<h2>QR код ліфта</h2>',
                 '<div class="info">',
-                '<strong>Муніципальний №:</strong> ' + municipalNumber + '<br>',
-                '<strong>Адреса:</strong> ' + address + '<br>',
-                '<strong>Модель:</strong> ' + model + '<br>',
-                '<strong>Тип:</strong> ' + type,
+                '<div><strong>Муніципальний №:</strong> ' + municipalNumber + '</div>',
+                '<div><strong>Адреса:</strong> ' + addressStr + '</div>',
+                '<div><strong>Модель:</strong> ' + model + '</div>',
+                '<div><strong>Тип:</strong> ' + type + '</div>',
                 '</div>',
                 '<img src="' + imgData + '" alt="QR Code">',
+                '<div style="margin-top: 20px; color: #999; font-size: 12px;">',
+                'Відскануйте цей QR код для швидкого доступу до інформації про ліфт',
+                '</div>',
                 '</body>',
                 '</html>'
             ].join('');
@@ -4513,10 +4619,21 @@
             // Відображаємо звіти
             let html = '<div class="list-group">';
             reports.forEach((report, index) => {
-                const date = report.date ? new Date(report.date).toLocaleDateString('uk-UA') : 'Невідома дата';
-                const type = report.type || 'Не вказано';
-                const notes = report.notes || 'Без коментарів';
+                const date = report.inspectionDate || report.date 
+                    ? new Date(report.inspectionDate || report.date).toLocaleDateString('uk-UA') 
+                    : 'Невідома дата';
+                const type = report.inspectionType || report.type || 'Не вказано';
+                const notes = report.comments || report.findings || report.notes || 'Без коментарів';
+                const status = report.status || 'completed';
+                const inspector = report.inspectorName || 'Невідомий';
                 const fileUrl = report.fileUrl || report.file || null;
+                
+                // Статус badge
+                const statusBadge = status === 'passed' || status === 'completed'
+                    ? '<span class="badge badge-success">Пройдено</span>'
+                    : status === 'failed'
+                    ? '<span class="badge badge-danger">Не пройдено</span>'
+                    : '<span class="badge badge-info">Виконано</span>';
                 
                 html += `
                     <div class="list-group-item">
@@ -4524,9 +4641,10 @@
                             <div>
                                 <h6 class="mb-1">
                                     <i class="fas fa-clipboard-check text-primary"></i>
-                                    ${type}
+                                    ${type} ${statusBadge}
                                 </h6>
                                 <p class="mb-1"><small><strong>Дата:</strong> ${date}</small></p>
+                                <p class="mb-1"><small><strong>Інспектор:</strong> ${inspector}</small></p>
                                 <p class="mb-1"><small>${notes}</small></p>
                             </div>
                             <div>
@@ -4554,8 +4672,10 @@
     }
     
     function showAddReportModal() {
-        // Отримуємо ID ліфта з модального вікна деталей
-        const liftId = $('#detail-municipal-number').text();
+        // Отримуємо _id ліфта з dataset модального вікна деталей
+        const modal = document.getElementById('liftDetailsModal');
+        const liftId = modal?.dataset?.liftId || $('#detail-id').text();
+        console.log('📋 Відкриття форми звіту для ліфта:', liftId);
         $('#report-lift-id').val(liftId);
         $('#addReportModal').modal('show');
     }
@@ -4565,7 +4685,10 @@
         const type = $('#report-type').val();
         const date = $('#report-date').val();
         const description = $('#report-description').val();
+        const status = $('#report-status').val() || 'completed';
         const fileInput = document.getElementById('report-file');
+        
+        console.log('📋 Відправка звіту інспекції:', { liftId, type, date, status });
         
         if (!type || !date) {
             alert('Будь ласка, заповніть обов\'язкові поля');
@@ -4573,23 +4696,21 @@
         }
         
         try {
-            const formData = new FormData();
-            formData.append('type', type);
-            formData.append('date', date);
-            if (description) formData.append('description', description);
-            if (fileInput.files[0]) formData.append('report', fileInput.files[0]);
+            // Формуємо дані звіту як JSON (не FormData, бо не завантажуємо файл)
+            const reportData = {
+                inspectionType: type,
+                inspectionDate: date,
+                status: status,
+                comments: description || '',
+                findings: description || ''
+            };
             
-            // Відправляємо запит через apiCall
-            const apiUrl = AuthManager.getApiUrl(`/api/lifts/${liftId}/inspection-report`);
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: formData
-            });
+            console.log('📤 Дані звіту:', reportData);
             
-            const result = await response.json();
+            // Використовуємо apiCall для автоматичної обробки auth
+            const result = await apiCall(`/api/lifts/${encodeURIComponent(liftId)}/inspection-report`, 'POST', reportData);
+            
+            console.log('📥 Відповідь сервера:', result);
             
             if (result.success) {
                 alert('Звіт успішно додано!');
@@ -4598,11 +4719,11 @@
                 // Оновлюємо деталі ліфта
                 showLiftDetails(liftId);
             } else {
-                alert('Помилка: ' + (result.message || 'Не вдалося додати звіт'));
+                alert('Помилка: ' + (result.message || result.error || 'Не вдалося додати звіт'));
             }
         } catch (error) {
             console.error('❌ Помилка додавання звіту:', error);
-            alert('Помилка додавання звіту');
+            alert('Помилка додавання звіту: ' + error.message);
         }
     }
     
@@ -4704,6 +4825,12 @@
     }
     
     function showUploadContractModal(liftId) {
+        // Якщо liftId не передано, беремо з dataset модального вікна
+        if (!liftId) {
+            const modal = document.getElementById('liftDetailsModal');
+            liftId = modal?.dataset?.liftId || $('#detail-id').text();
+        }
+        console.log('📄 Відкриття форми контракту для ліфта:', liftId);
         $('#contract-lift-id').val(liftId);
         $('#uploadContractModal').modal('show');
     }
@@ -4824,61 +4951,10 @@
         }
     }
     
-    // ============================================
-    // Експорт даних CSV/PDF
-    // ============================================
-    document.addEventListener('DOMContentLoaded', function() {
-        // Експорт CSV
-        const exportCSVBtn = document.getElementById('exportCSVBtn');
-        if (exportCSVBtn) {
-            exportCSVBtn.addEventListener('click', async function() {
-                try {
-                    const lifts = await loadLiftsFromAPI();
-                    if (!lifts || lifts.length === 0) {
-                        alert('Немає ліфтів для експорту');
-                        return;
-                    }
-                    
-                    // Формуємо CSV
-                    const headers = ['ID', 'Модель', 'Тип', 'Адреса', 'Статус', 'Дата установки'];
-                    const rows = lifts.map(lift => [
-                        lift.municipalNumber || lift._id,
-                        lift.model || '',
-                        lift.type || '',
-                        `${lift.address?.street || ''}, ${lift.address?.city || ''}`,
-                        lift.status || '',
-                        lift.installationDate ? new Date(lift.installationDate).toLocaleDateString('uk-UA') : ''
-                    ]);
-                    
-                    let csv = headers.join(',') + '\\n';
-                    rows.forEach(row => {
-                        csv += row.map(cell => `"${cell}"`).join(',') + '\\n';
-                    });
-                    
-                    // Завантаження файлу
-                    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                    const link = document.createElement('a');
-                    link.href = URL.createObjectURL(blob);
-                    link.download = `lifts_${new Date().toISOString().split('T')[0]}.csv`;
-                    link.click();
-                    
-                    console.log('✅ CSV експортовано');
-                } catch (error) {
-                    console.error('❌ Помилка експорту CSV:', error);
-                    alert('Помилка експорту CSV');
-                }
-            });
-        }
-        
-        // Експорт PDF
-        const exportPDFBtn = document.getElementById('exportPDFBtn');
-        if (exportPDFBtn) {
-            exportPDFBtn.addEventListener('click', function() {
-                alert('Експорт PDF буде доступний у наступній версії.\\nНаразі використовуйте CSV або друк сторінки (Ctrl+P)');
-            });
-        }
-    });
-    
     </script>
+    
+    <!-- Покращена логіка форми з валідацією -->
+    <script type="module" src="/assets/js/lift-form-enhanced.js"></script>
+    <script src="/components/ai-widget.js"></script>
 </body>
 </html>

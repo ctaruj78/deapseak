@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Шаблони рахунків - Адмін панель</title>
+    
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css">
+    
+    <style>
+        .invoice-preview {
+            border: 1px solid #ddd;
+            padding: 30px;
+            background: white;
+            font-family: Arial, sans-serif;
+        }
+        .invoice-header {
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+        .invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .invoice-table th,
+        .invoice-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .invoice-table th {
+            background-color: #f2f2f2;
+        }
+        .invoice-total {
+            text-align: right;
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        @media print {
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper">
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light no-print">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="admin-dashboard.html" class="nav-link">Головна</a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="invoice-template.html" class="nav-link">Рахунки</a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="../auth/login.html" role="button">
+                        <i class="fas fa-sign-out-alt"></i> Вийти
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Sidebar Container -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4 no-print">
+            <!-- Brand Logo -->
+            <a href="admin-dashboard.html" class="brand-link">
+                <i class="brand-image fas fa-elevator"></i>
+                <span class="brand-text font-weight-light">LiftMaster Pro</span>
+            </a>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <nav class="mt-2">
+                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                        <li class="nav-item">
+                            <a href="admin-dashboard.html" class="nav-link">
+                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                                <p>Дашборд</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-file-invoice"></i>
+                                <p>
+                                    Документи
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="invoice-template.html" class="nav-link active">
+                                        <i class="fas fa-file-invoice-dollar nav-icon"></i>
+                                        <p>Рахунки</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="inspection-template.html" class="nav-link">
+                                        <i class="fas fa-clipboard-check nav-icon"></i>
+                                        <p>Інспекції</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="reports.html" class="nav-link">
+                                        <i class="fas fa-chart-bar nav-icon"></i>
+                                        <p>Звіти</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="users.html" class="nav-link">
+                                <i class="nav-icon fas fa-users"></i>
+                                <p>Користувачі</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="lifts.html" class="nav-link">
+                                <i class="nav-icon fas fa-elevator"></i>
+                                <p>Ліфти</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="settings.html" class="nav-link">
+                                <i class="nav-icon fas fa-cog"></i>
+                                <p>Налаштування</p>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <!-- Content Header -->
+            <div class="content-header no-print">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">Шаблони рахунків</h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="admin-dashboard.html">Головна</a></li>
+                                <li class="breadcrumb-item active">Рахунки</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+                    <!-- Invoice Form -->
+                    <div class="row no-print">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Створення рахунку</h3>
+                                    <div class="card-tools">
+                                        <button class="btn btn-success btn-sm" onclick="generateInvoice()">
+                                            <i class="fas fa-plus"></i> Створити рахунок
+                                        </button>
+                                        <button class="btn btn-info btn-sm" onclick="loadTemplate()">
+                                            <i class="fas fa-file-import"></i> Завантажити шаблон
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <form id="invoiceForm">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="clientName">Клієнт</label>
+                                                    <input type="text" class="form-control" id="clientName" placeholder="Назва компанії або ПІБ" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="clientAddress">Адреса клієнта</label>
+                                                    <textarea class="form-control" id="clientAddress" rows="3" placeholder="Повна адреса клієнта"></textarea>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="clientPhone">Телефон</label>
+                                                    <input type="tel" class="form-control" id="clientPhone" placeholder="+380XX XXX XX XX">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="invoiceNumber">Номер рахунку</label>
+                                                    <input type="text" class="form-control" id="invoiceNumber" placeholder="INV-2024-001" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="invoiceDate">Дата рахунку</label>
+                                                    <input type="date" class="form-control" id="invoiceDate" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="dueDate">Термін оплати</label>
+                                                    <input type="date" class="form-control" id="dueDate" required>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Services Table -->
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <h5>Послуги/Товари</h5>
+                                                <div class="table-responsive">
+                                                    <table class="table table-bordered" id="servicesTable">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Опис</th>
+                                                                <th>Кількість</th>
+                                                                <th>Ціна за од.</th>
+                                                                <th>Сума</th>
+                                                                <th>Дії</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td><input type="text" class="form-control" placeholder="Технічне обслуговування ліфта"></td>
+                                                                <td><input type="number" class="form-control qty" value="1" min="1"></td>
+                                                                <td><input type="number" class="form-control price" placeholder="1000.00" step="0.01"></td>
+                                                                <td class="total">0.00</td>
+                                                                <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                <button type="button" class="btn btn-info btn-sm" onclick="addServiceRow()">
+                                                    <i class="fas fa-plus"></i> Додати послугу
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="row mt-3">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="notes">Примітки</label>
+                                                    <textarea class="form-control" id="notes" rows="3" placeholder="Додаткова інформація або умови оплати"></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label>Підсумок</label>
+                                                    <div class="card">
+                                                        <div class="card-body">
+                                                            <div class="d-flex justify-content-between">
+                                                                <span>Підсума:</span>
+                                                                <span id="subtotal">0.00 грн</span>
+                                                            </div>
+                                                            <div class="d-flex justify-content-between">
+                                                                <span>ПДВ (20%):</span>
+                                                                <span id="tax">0.00 грн</span>
+                                                            </div>
+                                                            <hr>
+                                                            <div class="d-flex justify-content-between font-weight-bold">
+                                                                <span>Всього:</span>
+                                                                <span id="grandTotal">0.00 грн</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Invoice Preview -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header no-print">
+                                    <h3 class="card-title">Попередній перегляд рахунку</h3>
+                                    <div class="card-tools">
+                                        <button class="btn btn-primary btn-sm" onclick="printInvoice()">
+                                            <i class="fas fa-print"></i> Друк
+                                        </button>
+                                        <button class="btn btn-success btn-sm" onclick="downloadPDF()">
+                                            <i class="fas fa-download"></i> PDF
+                                        </button>
+                                        <button class="btn btn-info btn-sm" onclick="sendEmail()">
+                                            <i class="fas fa-envelope"></i> Email
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="invoice-preview" id="invoicePreview">
+                                        <div class="invoice-header">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <h2>LiftMaster Pro</h2>
+                                                    <p>
+                                                        вул. Хрещатик, 10<br>
+                                                        Київ, 01001<br>
+                                                        Телефон: +380 44 123-45-67<br>
+                                                        Email: info@liftmaster.ua<br>
+                                                        ІПН: 12345678901
+                                                    </p>
+                                                </div>
+                                                <div class="col-md-6 text-right">
+                                                    <h3>РАХУНОК</h3>
+                                                    <p>
+                                                        <strong>№:</strong> <span id="previewInvoiceNumber">INV-2024-001</span><br>
+                                                        <strong>Дата:</strong> <span id="previewInvoiceDate"></span><br>
+                                                        <strong>Термін оплати:</strong> <span id="previewDueDate"></span>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h5>Рахунок для:</h5>
+                                                <div id="previewClientInfo">
+                                                    <strong id="previewClientName">Назва клієнта</strong><br>
+                                                    <span id="previewClientAddress">Адреса клієнта</span><br>
+                                                    Тел.: <span id="previewClientPhone">+380XX XXX XX XX</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 text-right">
+                                                <h5>Платіжна інформація:</h5>
+                                                <p>
+                                                    Банк: ПриватБанк<br>
+                                                    IBAN: UA123456789012345678901234567<br>
+                                                    МФО: 305299<br>
+                                                    ЄДРПОУ: 12345678
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <table class="invoice-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>№</th>
+                                                    <th>Опис послуги/товару</th>
+                                                    <th>Кількість</th>
+                                                    <th>Ціна за од.</th>
+                                                    <th>Сума</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="previewServicesTable">
+                                                <tr>
+                                                    <td>1</td>
+                                                    <td>Технічне обслуговування ліфта</td>
+                                                    <td>1</td>
+                                                    <td>1,000.00 грн</td>
+                                                    <td>1,000.00 грн</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+
+                                        <div class="row mt-4">
+                                            <div class="col-md-6">
+                                                <h5>Примітки:</h5>
+                                                <p id="previewNotes">Оплата протягом 14 днів з дати виставлення рахунку.</p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="invoice-total">
+                                                    <div class="d-flex justify-content-between">
+                                                        <span>Підсума:</span>
+                                                        <span id="previewSubtotal">1,000.00 грн</span>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between">
+                                                        <span>ПДВ (20%):</span>
+                                                        <span id="previewTax">200.00 грн</span>
+                                                    </div>
+                                                    <hr>
+                                                    <div class="d-flex justify-content-between" style="font-size: 20px;">
+                                                        <span><strong>Всього до оплати:</strong></span>
+                                                        <span><strong id="previewGrandTotal">1,200.00 грн</strong></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="text-center mt-4">
+                                            <p><small>Дякуємо за співпрацю! За додатковою інформацією звертайтеся за телефоном +380 44 123-45-67</small></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer class="main-footer no-print">
+            <strong>&copy; 2024 <a href="#">LiftMaster Pro</a>.</strong>
+            Всі права захищені.
+            <div class="float-right d-none d-sm-inline-block">
+                <b>Версія</b> 3.2.0
+            </div>
+        </footer>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- AdminLTE -->
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+
+    <script>
+        // Invoice management
+        const invoiceManager = {
+            init() {
+                // Set current date
+                const today = new Date().toISOString().split('T')[0];
+                $('#invoiceDate').val(today);
+                
+                // Set due date (14 days from today)
+                const dueDate = new Date();
+                dueDate.setDate(dueDate.getDate() + 14);
+                $('#dueDate').val(dueDate.toISOString().split('T')[0]);
+
+                // Generate invoice number
+                this.generateInvoiceNumber();
+
+                // Bind events
+                this.bindEvents();
+
+                // Update preview
+                this.updatePreview();
+            },
+
+            bindEvents() {
+                // Update totals on input change
+                $(document).on('input', '.qty, .price', this.calculateTotals);
+                
+                // Update preview on form change
+                $('#invoiceForm input, #invoiceForm textarea').on('input', this.updatePreview);
+            },
+
+            generateInvoiceNumber() {
+                const year = new Date().getFullYear();
+                const month = String(new Date().getMonth() + 1).padStart(2, '0');
+                const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+                const number = `INV-${year}-${month}-${random}`;
+                $('#invoiceNumber').val(number);
+            },
+
+            addServiceRow() {
+                const newRow = `
+                    <tr>
+                        <td><input type="text" class="form-control" placeholder="Опис послуги"></td>
+                        <td><input type="number" class="form-control qty" value="1" min="1"></td>
+                        <td><input type="number" class="form-control price" placeholder="0.00" step="0.01"></td>
+                        <td class="total">0.00</td>
+                        <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
+                    </tr>
+                `;
+                $('#servicesTable tbody').append(newRow);
+            },
+
+            removeRow(button) {
+                $(button).closest('tr').remove();
+                this.calculateTotals();
+                this.updatePreview();
+            },
+
+            calculateTotals() {
+                let subtotal = 0;
+
+                $('#servicesTable tbody tr').each(function() {
+                    const qty = parseFloat($(this).find('.qty').val()) || 0;
+                    const price = parseFloat($(this).find('.price').val()) || 0;
+                    const total = qty * price;
+                    
+                    $(this).find('.total').text(total.toFixed(2));
+                    subtotal += total;
+                });
+
+                const tax = subtotal * 0.2; // 20% VAT
+                const grandTotal = subtotal + tax;
+
+                $('#subtotal').text(subtotal.toFixed(2) + ' грн');
+                $('#tax').text(tax.toFixed(2) + ' грн');
+                $('#grandTotal').text(grandTotal.toFixed(2) + ' грн');
+
+                // Update preview
+                invoiceManager.updatePreview();
+            },
+
+            updatePreview() {
+                // Update preview with current form data
+                $('#previewInvoiceNumber').text($('#invoiceNumber').val());
+                $('#previewInvoiceDate').text($('#invoiceDate').val());
+                $('#previewDueDate').text($('#dueDate').val());
+                $('#previewClientName').text($('#clientName').val() || 'Назва клієнта');
+                $('#previewClientAddress').html($('#clientAddress').val().replace(/\n/g, '<br>') || 'Адреса клієнта');
+                $('#previewClientPhone').text($('#clientPhone').val() || '+380XX XXX XX XX');
+                $('#previewNotes').text($('#notes').val() || 'Оплата протягом 14 днів з дати виставлення рахунку.');
+
+                // Update services table
+                const previewTable = $('#previewServicesTable');
+                previewTable.empty();
+
+                $('#servicesTable tbody tr').each(function(index) {
+                    const description = $(this).find('input[type="text"]').val() || 'Послуга';
+                    const qty = $(this).find('.qty').val() || '0';
+                    const price = parseFloat($(this).find('.price').val()) || 0;
+                    const total = (parseFloat(qty) * price).toFixed(2);
+
+                    const row = `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${description}</td>
+                            <td>${qty}</td>
+                            <td>${price.toFixed(2)} грн</td>
+                            <td>${total} грн</td>
+                        </tr>
+                    `;
+                    previewTable.append(row);
+                });
+
+                // Update totals in preview
+                $('#previewSubtotal').text($('#subtotal').text());
+                $('#previewTax').text($('#tax').text());
+                $('#previewGrandTotal').text($('#grandTotal').text());
+            },
+
+            printInvoice() {
+                window.print();
+            },
+
+            downloadPDF() {
+                // Here you would implement PDF generation
+                alert('PDF завантаження буде додано в наступних версіях');
+            },
+
+            sendEmail() {
+                const clientEmail = prompt('Введіть email клієнта:');
+                if (clientEmail) {
+                    alert(`Рахунок буде відправлено на ${clientEmail}`);
+                    // Here you would implement email sending
+                }
+            },
+
+            loadTemplate() {
+                // Load predefined template
+                $('#clientName').val('ТОВ "Приклад"');
+                $('#clientAddress').val('вул. Прикладна, 123\nКиїв, 01001');
+                $('#clientPhone').val('+380 44 123-45-67');
+                $('#notes').val('Оплата протягом 14 днів з дати виставлення рахунку. При несвоєчасній оплаті нараховується пеня 0,1% за кожен день прострочки.');
+                
+                this.updatePreview();
+            }
+        };
+
+        // Global functions
+        function addServiceRow() {
+            invoiceManager.addServiceRow();
+        }
+
+        function removeRow(button) {
+            invoiceManager.removeRow(button);
+        }
+
+        function printInvoice() {
+            invoiceManager.printInvoice();
+        }
+
+        function downloadPDF() {
+            invoiceManager.downloadPDF();
+        }
+
+        function sendEmail() {
+            invoiceManager.sendEmail();
+        }
+
+        function loadTemplate() {
+            invoiceManager.loadTemplate();
+        }
+
+        function generateInvoice() {
+            invoiceManager.generateInvoiceNumber();
+            invoiceManager.updatePreview();
+        }
+
+        // Initialize when document is ready
+        $(document).ready(function() {
+            invoiceManager.init();
+        });
+    </script>
+</body>
+</html>
+                                </div>
+                                <div class="form-group">
+                                    <label for="invoiceDate">Дата рахунку</label>
+                                    <input type="date" class="form-control" id="invoiceDate" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="invoiceAmount">Сума</label>
+                                    <input type="number" class="form-control" id="invoiceAmount" required>
+                                </div>
+                                <button type="submit" class="btn btn-info">Зберегти</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <footer class="main-footer">
+            <strong>Copyright &copy; 2024 <a href="admin-dashboard.html">LiftMaster Pro</a>.</strong>
+        </footer>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+    <script src="../../assets/js/modules/invoice-template.js"></script>
+</body>
+</html>

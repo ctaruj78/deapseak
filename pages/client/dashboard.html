@@ -12,6 +12,9 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
+    <!-- Socket.IO Client -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    
     <!-- Universal WebSocket Manager -->
     <script src="/assets/js/universal-websocket.js"></script>
     <!-- Auth Manager -->
@@ -313,6 +316,15 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a href="ai-predictions.html" class="nav-link">
+                                <i class="nav-icon fas fa-brain"></i>
+                                <p>
+                                    AI Прогнозування
+                                    <span class="badge badge-purple right">Нове</span>
+                                </p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a href="requests.html" class="nav-link">
                                 <i class="nav-icon fas fa-tasks"></i>
                                 <p>Мої заявки</p>
@@ -330,6 +342,12 @@
                             <a href="history.html" class="nav-link">
                                 <i class="nav-icon fas fa-history"></i>
                                 <p>Історія</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="documentation.html" class="nav-link">
+                                <i class="nav-icon fas fa-book"></i>
+                                <p>Documentação</p>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -470,7 +488,7 @@
                                 <div class="card-header">
                                     <h3 class="card-title"><i class="fas fa-history mr-2"></i>Останні події</h3>
                                     <div class="card-tools">
-                                        <button class="btn btn-sm btn-default" onclick="clientDashboard.refreshActivities()">
+                                        <button class="btn btn-sm btn-default" onclick="window.clientDashboard?.refreshActivities()">
                                             <i class="fas fa-sync"></i> Оновити
                                         </button>
                                     </div>
@@ -641,9 +659,15 @@
         // Функція виходу
         function logout() {
             if (confirm('Ви впевнені, що хочете вийти з системи?')) {
-                localStorage.removeItem('authToken');
-                localStorage.removeItem('userData');
-                window.location.href = 'login.html';
+                // Очищуємо всі дані через AuthManager
+                if (typeof AuthManager !== 'undefined') {
+                    AuthManager.logout();
+                } else {
+                    // Fallback якщо AuthManager не завантажений
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    window.location.href = '/login.html';
+                }
             }
         }
 
@@ -754,50 +778,67 @@
             }
 
             /**
-             * Завантаження ліфтів клієнта
+             * Завантаження ліфтів клієнта з MongoDB API
              */
             async function loadClientLifts() {
                 try {
-                    const response = await window.authManager.apiRequest('/lifts/client/my');
+                    console.log('🔄 Завантаження ліфтів клієнта з API...');
+                    const response = await AuthManager.fetchWithAuth('/api/lifts');
                     
-                    if (response.ok) {
-                        const data = await response.json();
-                        const lifts = Array.isArray(data) ? data : data.lifts || [];
-                        
-                        // Зберігаємо локально
-                        localStorage.setItem('client_lifts', JSON.stringify(lifts));
-                        
-                        return lifts;
+                    if (!response.ok) {
+                        throw new Error('Помилка завантаження ліфтів');
                     }
+
+                    const data = await response.json();
+                    console.log('✅ Ліфти завантажено:', data.data?.length || 0);
                     
-                    return [];
+                    // Отримуємо дані користувача для фільтрації
+                    const userData = AuthManager.getCurrentUser();
+                    const allLifts = data.data || [];
+                    
+                    // Фільтруємо ліфти за клієнтом (якщо потрібно)
+                    const clientLifts = userData?.role === 'client' && userData?._id
+                        ? allLifts.filter(lift => lift.client === userData._id || lift.clientId === userData._id)
+                        : allLifts;
+                    
+                    return clientLifts;
                 } catch (error) {
-                    console.warn('API недоступний для ліфтів');
-                    return JSON.parse(localStorage.getItem('client_lifts') || '[]');
+                    console.error('❌ Помилка завантаження ліфтів:', error);
+                    return [];
                 }
             }
 
             /**
              * Завантаження заявок клієнта
+             * TODO: Реалізувати requests API в unified-server
              */
             async function loadClientRequests() {
                 try {
-                    const response = await window.authManager.apiRequest('/requests/client/my');
+                    console.log('🔄 Завантаження заявок клієнта...');
+                    // TODO: Коли requests API буде готовий, розкоментувати:
+                    // const response = await AuthManager.fetchWithAuth('/api/requests');
+                    // const data = await response.json();
+                    // return data.data || [];
                     
-                    if (response.ok) {
-                        const data = await response.json();
-                        const requests = Array.isArray(data) ? data : data.requests || [];
-                        
-                        // Зберігаємо локально
-                        localStorage.setItem('client_requests', JSON.stringify(requests));
-                        
-                        return requests;
-                    }
+                    // Тимчасово: створюємо тестові дані
+                    const userData = AuthManager.getCurrentUser();
+                    const testRequests = [
+                        {
+                            _id: '1',
+                            type: 'maintenance',
+                            status: 'pending',
+                            priority: 'medium',
+                            description: 'Планове технічне обслуговування',
+                            createdAt: new Date().toISOString(),
+                            lift: { municipalNumber: '001' }
+                        }
+                    ];
                     
-                    return [];
+                    console.log('⚠️ Використовуються тестові дані для заявок');
+                    return testRequests;
                 } catch (error) {
-                    console.warn('API недоступний для заявок');
-                    return JSON.parse(localStorage.getItem('client_requests') || '[]');
+                    console.error('❌ Помилка завантаження заявок:', error);
+                    return [];
                 }
             }
 
@@ -1108,8 +1149,12 @@
         fabBtn.onclick = () => { modal.style.display = 'block'; };
         document.querySelector('.ai-chat-close').onclick = () => { modal.style.display = 'none'; };
     </script>
-    </body>
+    <!-- AI Assistant Widget -->
+    <script src="/components/ai-widget.js"></script>
+</body>
 </html>
 <!-- AI Assistant Include -->
 <!--#include file="../../templates/ai-assistant-include.html" -->
-<!-- Якщо сервер не підтримує include, вставте вміст ai-assistant-include.html вручну перед </body> -->
+<!-- Якщо сервер не підтримує include, вставте вміст ai-assistant-include.html вручну перед
+    <script src="/components/ai-widget.js"></script>
+</body> -->

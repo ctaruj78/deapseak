@@ -3,882 +3,1977 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Асистент - LiftMaster Pro</title>
-    
-    <!-- AdminLTE CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Custom AI Assistant CSS -->
-    <link rel="stylesheet" href="../../assets/css/ai-assistant.css">
-    
+    <title>AI Асистент - DeapSeaK Pro</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        .ai-hero {
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 60px 0;
-            text-align: center;
-            margin-bottom: 40px;
+            min-height: 100vh;
+            padding: 20px;
         }
-        
-        .ai-hero h1 {
-            font-size: 3rem;
-            margin-bottom: 20px;
-            font-weight: 300;
-        }
-        
-        .ai-hero p {
-            font-size: 1.2rem;
-            opacity: 0.9;
-            max-width: 600px;
+
+        .ai-container {
+            max-width: 1600px;
             margin: 0 auto;
-        }
-        
-        .ai-features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-bottom: 50px;
-        }
-        
-        .ai-feature-card {
             background: white;
-            border-radius: 15px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .ai-header {
+            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+            color: white;
             padding: 30px;
             text-align: center;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease;
         }
-        
-        .ai-feature-card:hover {
-            transform: translateY(-5px);
+
+        .ai-header h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
         }
-        
-        .ai-feature-icon {
-            width: 80px;
-            height: 80px;
+
+        .ai-header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .ai-tabs {
+            display: flex;
+            background: #f7fafc;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .ai-tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: #4a5568;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .ai-tab:hover {
+            background: #edf2f7;
+        }
+
+        .ai-tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            background: white;
+        }
+
+        .ai-tab-content {
+            display: none;
+            padding: 30px;
+        }
+
+        .ai-tab-content.active {
+            display: block;
+        }
+
+        /* Chat Tab */
+        .chat-layout {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 30px;
+            height: 600px;
+        }
+
+        .quick-actions {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 15px;
+            overflow-y: auto;
+        }
+
+        .quick-actions h3 {
+            margin-bottom: 15px;
+            color: #2d3748;
+        }
+
+        .quick-action-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .quick-action-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+            transform: translateX(5px);
+        }
+
+        .chat-area {
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            height: 600px;
+            max-height: 70vh;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            max-height: calc(600px - 80px);
+        }
+
+        .chat-message {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .chat-message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            margin: 0 auto 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2rem;
+            font-size: 20px;
         }
-        
-        .ai-commands-section {
-            background: #f8f9fa;
-            padding: 50px 0;
-            margin-bottom: 50px;
+
+        .message-avatar.ai {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
         }
-        
-        .ai-commands-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
+
+        .message-avatar.user {
+            background: #e2e8f0;
+            color: #4a5568;
         }
-        
-        .ai-command-group {
-            background: white;
-            border-radius: 10px;
-            padding: 25px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-        }
-        
-        .ai-command-group h4 {
-            color: #495057;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #007bff;
-            padding-bottom: 10px;
-        }
-        
-        .ai-command-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-            padding: 8px;
-            border-radius: 5px;
-            transition: background 0.2s ease;
-        }
-        
-        .ai-command-item:hover {
-            background: #f8f9fa;
-        }
-        
-        .ai-command-icon {
-            width: 30px;
-            text-align: center;
-            margin-right: 10px;
-        }
-        
-        .ai-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 50px;
-        }
-        
-        .ai-stat-card {
-            background: white;
-            border-radius: 10px;
-            padding: 25px;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-        }
-        
-        .ai-stat-number {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #007bff;
-            margin-bottom: 10px;
-        }
-        
-        .ai-chat-demo {
-            background: white;
+
+        .message-content {
+            max-width: 70%;
+            padding: 15px;
             border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 50px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            line-height: 1.6;
         }
-        
-        .ai-demo-messages {
-            max-height: 300px;
-            overflow-y: auto;
-            margin-bottom: 20px;
+
+        .chat-message.ai .message-content {
+            background: #f7fafc;
+            border-bottom-left-radius: 5px;
         }
-        
-        .ai-demo-input {
+
+        .chat-message.user .message-content {
+            background: #667eea;
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .chat-input-area {
+            padding: 20px;
+            border-top: 1px solid #e2e8f0;
             display: flex;
             gap: 10px;
         }
-        
-        .ai-demo-input input {
+
+        .chat-input {
             flex: 1;
-            padding: 10px 15px;
-            border: 1px solid #dee2e6;
-            border-radius: 20px;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 15px;
         }
-        
-        .ai-demo-input button {
-            padding: 10px 20px;
-            background: #007bff;
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .send-btn {
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .voice-btn {
+            padding: 12px 20px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .voice-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .voice-btn.recording {
+            background: #fc8181;
+            color: white;
+            border-color: #fc8181;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Legal Tab */
+        .legal-consult {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .question-panel {
+            background: #f7fafc;
+            padding: 30px;
+            border-radius: 15px;
+        }
+
+        .question-panel h3 {
+            margin-bottom: 20px;
+            color: #2d3748;
+        }
+
+        .question-panel textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+        }
+
+        .question-panel textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .quick-questions {
+            margin-top: 20px;
+        }
+
+        .quick-questions h4 {
+            margin-bottom: 10px;
+            color: #4a5568;
+            font-size: 14px;
+        }
+
+        .quick-q-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+        }
+
+        .quick-q-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .answer-panel {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 30px;
+            min-height: 400px;
+        }
+
+        .answer-panel h3 {
+            margin-bottom: 20px;
+            color: #2d3748;
+        }
+
+        .urgency-badge {
+            display: inline-block;
+            padding: 5px 15px;
             border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .urgency-critical {
+            background: #fed7d7;
+            color: #c53030;
+        }
+
+        .urgency-high {
+            background: #feebc8;
+            color: #c05621;
+        }
+
+        .urgency-medium {
+            background: #bee3f8;
+            color: #2c5282;
+        }
+
+        /* Regulations Tab */
+        .regulations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .regulation-card {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s;
             cursor: pointer;
         }
-        
-        .ai-settings-panel {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+
+        .regulation-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
-        
-        .ai-setting-group {
+
+        .regulation-card h3 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .regulation-card .reg-number {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .regulation-card .reg-summary {
+            color: #4a5568;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .regulation-card .reg-status {
+            display: inline-block;
+            padding: 3px 10px;
+            background: #c6f6d5;
+            color: #22543d;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        /* Analysis Tab */
+        .analysis-section {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .inspection-input {
+            background: #f7fafc;
+            padding: 30px;
+            border-radius: 15px;
             margin-bottom: 30px;
         }
-        
-        .ai-setting-group h5 {
-            color: #495057;
+
+        .inspection-input h3 {
             margin-bottom: 15px;
-            border-bottom: 1px solid #dee2e6;
-            padding-bottom: 10px;
+            color: #2d3748;
         }
-        
-        .ai-setting-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #f8f9fa;
+
+        .inspection-input textarea {
+            width: 100%;
+            min-height: 250px;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
         }
-        
-        .ai-setting-item:last-child {
-            border-bottom: none;
-        }
-        
-        .ai-history {
+
+        .analysis-result {
             background: white;
+            border: 2px solid #e2e8f0;
             border-radius: 15px;
             padding: 30px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
         }
-        
-        .ai-history-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 0;
-            border-bottom: 1px solid #f8f9fa;
-        }
-        
-        .ai-history-item:last-child {
-            border-bottom: none;
-        }
-        
-        .ai-history-command {
-            font-weight: 500;
-            color: #495057;
-        }
-        
-        .ai-history-time {
-            color: #6c757d;
-            font-size: 0.9rem;
-        }
-        
-        .ai-quick-actions {
+
+        .analysis-summary {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            grid-template-columns: repeat(4, 1fr);
             gap: 15px;
-            margin-bottom: 50px;
-        }
-        
-        .ai-quick-action {
-            background: linear-gradient(135deg, #007bff, #0056b3);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            text-decoration: none;
-            transition: transform 0.3s ease;
-        }
-        
-        .ai-quick-action:hover {
-            transform: translateY(-3px);
-            color: white;
-        }
-        
-        .ai-quick-action i {
-            font-size: 2rem;
-            margin-bottom: 10px;
-            display: block;
-        }
-        
-        .ai-tips {
-            background: #e7f3ff;
-            border: 1px solid #b3d7ff;
-            border-radius: 10px;
-            padding: 20px;
             margin-bottom: 30px;
         }
-        
-        .ai-tips h5 {
-            color: #0056b3;
+
+        .summary-card {
+            text-align: center;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 10px;
+        }
+
+        .summary-card .number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .summary-card .label {
+            color: #4a5568;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .issue-item {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #cbd5e0;
+        }
+
+        .issue-item.critical {
+            border-left-color: #fc8181;
+        }
+
+        .issue-item.high {
+            border-left-color: #f6ad55;
+        }
+
+        .issue-item h4 {
+            color: #2d3748;
             margin-bottom: 10px;
         }
-        
-        .ai-tips ul {
-            margin: 0;
-            padding-left: 20px;
+
+        .issue-item p {
+            color: #4a5568;
+            line-height: 1.6;
+            margin-bottom: 8px;
         }
-        
-        .ai-tips li {
-            margin-bottom: 5px;
-            color: #495057;
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 200px;
+        }
+
+        .btn-link {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 5px 10px;
+            transition: opacity 0.3s;
+        }
+
+        .btn-link:hover {
+            opacity: 0.7;
+            text-decoration: underline;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea !important;
+            background-color: #f7fafc !important;
         }
     </style>
 </head>
-<body class="hold-transition sidebar-mini layout-fixed">
-<div class="wrapper">
-
-    <!-- Navbar -->
-    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
-        <!-- Left navbar links -->
-        <ul class="navbar-nav">
-            <li class="nav-item">
-                <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
-            </li>
-        </ul>
-    </nav>
-
-    <!-- Sidebar -->
-    <aside class="main-sidebar sidebar-dark-primary elevation-4">
-        <!-- Brand Logo -->
-        <a href="../admin/admin-dashboard.html" class="brand-link">
-            <img src="../../assets/img/logo.png" alt="Lift Management Logo" class="brand-image img-circle elevation-3">
-            <span class="brand-text font-weight-light">Lift Management</span>
-        </a>
-
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <!-- Sidebar user panel -->
-            <div class="user-panel mt-3 pb-3 mb-3 d-flex">
-                <div class="image">
-                    <img src="../../assets/img/avatars/admin.png" class="img-circle elevation-2" alt="Admin Avatar">
-                </div>
-                <div class="info">
-                    <a href="../admin/profile.html" class="d-block">Адміністратор</a>
-                </div>
-            </div>
-
-            <!-- Sidebar Menu -->
-            <nav class="mt-2">
-                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-                    <li class="nav-item">
-                        <a href="../admin/admin-dashboard.html" class="nav-link">
-                            <i class="nav-icon fas fa-tachometer-alt"></i>
-                            <p>Дашборд</p>
-                        </a>
-                    </li>
-                    
-                    <!-- QR System Menu -->
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <i class="nav-icon fas fa-qrcode"></i>
-                            <p>
-                                QR Система
-                                <i class="right fas fa-angle-left"></i>
-                            </p>
-                        </a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                <a href="../admin/qr-generator.html" class="nav-link">
-                                    <i class="fas fa-plus-circle nav-icon"></i>
-                                    <p>Генератор QR-кодів</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="../admin/qr-management.html" class="nav-link">
-                                    <i class="fas fa-cog nav-icon"></i>
-                                    <p>Керування QR-кодами</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="../admin/qr-analytics.html" class="nav-link">
-                                    <i class="fas fa-chart-line nav-icon"></i>
-                                    <p>Аналітика QR-кодів</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="../admin/qr-history.html" class="nav-link">
-                                    <i class="fas fa-history nav-icon"></i>
-                                    <p>Історія QR-кодів</p>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-
-                    <!-- Lifts Menu -->
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <i class="nav-icon fas fa-elevator"></i>
-                            <p>
-                                Ліфти
-                                <i class="right fas fa-angle-left"></i>
-                            </p>
-                        </a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                <a href="../admin/lifts.html" class="nav-link">
-                                    <i class="fas fa-list nav-icon"></i>
-                                    <p>Керування ліфтами</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="../admin/maps.html" class="nav-link">
-                                    <i class="fas fa-map-marked-alt nav-icon"></i>
-                                    <p>Карта ліфтів</p>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-
-                    <li class="nav-item">
-                        <a href="../admin/users.html" class="nav-link">
-                            <i class="nav-icon fas fa-users"></i>
-                            <p>Користувачі</p>
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a href="../admin/reports.html" class="nav-link">
-                            <i class="nav-icon fas fa-chart-bar"></i>
-                            <p>Звіти та аналітика</p>
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a href="../admin/analytics.html" class="nav-link">
-                            <i class="nav-icon fas fa-chart-line"></i>
-                            <p>Аналітика</p>
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a href="../admin/settings.html" class="nav-link">
-                            <i class="nav-icon fas fa-cog"></i>
-                            <p>Налаштування</p>
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a href="ai-assistant.html" class="nav-link active">
-                            <i class="nav-icon fas fa-robot"></i>
-                            <p>AI Асистент</p>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
+<body>
+    <div class="ai-container">
+        <div class="ai-header">
+            <h1>🤖 AI Асистент DeapSeaK Pro</h1>
+            <p>Розумний помічник • Юридичний консультант • Аналітика</p>
         </div>
-    </aside>
 
-    <!-- Content Wrapper -->
-    <div class="content-wrapper">
-        <!-- Content Header -->
-        <section class="content-header">
-            <div class="container-fluid">
-                <div class="row mb-2">
-                    <div class="col-sm-6">
-                        <h1>AI Асистент</h1>
-                    </div>
-                    <div class="col-sm-6">
-                        <ol class="breadcrumb float-sm-right">
-                            <li class="breadcrumb-item"><a href="../admin/admin-dashboard.html">Головна</a></li>
-                            <li class="breadcrumb-item active">AI Асистент</li>
-                        </ol>
-                    </div>
-                </div>
+        <div class="ai-tabs">
+            <div class="ai-tab active" data-tab="chat">
+                <i class="fas fa-comments"></i> AI Чат
             </div>
-        </section>
+            <div class="ai-tab" data-tab="legal">
+                <i class="fas fa-gavel"></i> Юридичний консультант
+            </div>
+            <div class="ai-tab" data-tab="regulations">
+                <i class="fas fa-book"></i> Законодавство PT
+            </div>
+            <div class="ai-tab" data-tab="analysis">
+                <i class="fas fa-clipboard-check"></i> Аналіз звіту
+            </div>
+        </div>
 
-        <!-- Main content -->
-        <section class="content">
-            <div class="container-fluid">
-                
-                <!-- Hero Section -->
-                <div class="ai-hero">
-                    <h1><i class="fas fa-robot mr-3"></i>AI Асистент</h1>
-                    <p>Ваш розумний помічник для управління системою ліфтів. Використовуйте голосові команди або текст для швидкого доступу до функцій.</p>
-                </div>
-
-                <!-- Quick Actions -->
-                <div class="ai-quick-actions">
-                    <a href="#" class="ai-quick-action" onclick="aiAssistant.toggleChat()">
-                        <i class="fas fa-comments"></i>
-                        <span>Почати чат</span>
-                    </a>
-                    <a href="#" class="ai-quick-action" onclick="aiAssistant.toggleListening()">
-                        <i class="fas fa-microphone"></i>
-                        <span>Голосова команда</span>
-                    </a>
-                    <a href="#" class="ai-quick-action" onclick="aiAssistant.processCommand('допомога')">
-                        <i class="fas fa-question-circle"></i>
-                        <span>Допомога</span>
-                    </a>
-                    <a href="#" class="ai-quick-action" onclick="aiAssistant.toggleSettings()">
-                        <i class="fas fa-cog"></i>
-                        <span>Налаштування</span>
-                    </a>
-                </div>
-
-                <!-- Features -->
-                <div class="ai-features">
-                    <div class="ai-feature-card">
-                        <div class="ai-feature-icon" style="background: linear-gradient(135deg, #007bff, #0056b3); color: white;">
-                            <i class="fas fa-microphone"></i>
-                        </div>
-                        <h4>Голосове управління</h4>
-                        <p>Керуйте системою голосом. Просто скажіть команду і AI виконає її.</p>
-                    </div>
-                    <div class="ai-feature-card">
-                        <div class="ai-feature-icon" style="background: linear-gradient(135deg, #28a745, #1e7e34); color: white;">
-                            <i class="fas fa-brain"></i>
-                        </div>
-                        <h4>ШІ технології</h4>
-                        <p>Розумний асистент розуміє контекст і пропонує релевантні дії.</p>
-                    </div>
-                    <div class="ai-feature-card">
-                        <div class="ai-feature-icon" style="background: linear-gradient(135deg, #ffc107, #e0a800); color: white;">
-                            <i class="fas fa-users-cog"></i>
-                        </div>
-                        <h4>Рольова адаптація</h4>
-                        <p>Команди адаптуються під вашу роль: адміністратор, технік, клієнт.</p>
-                    </div>
-                    <div class="ai-feature-card">
-                        <div class="ai-feature-icon" style="background: linear-gradient(135deg, #dc3545, #bd2130); color: white;">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                        <h4>Швидкий доступ</h4>
-                        <p>Миттєвий доступ до всіх функцій системи без навігації по меню.</p>
+        <!-- AI Chat Tab -->
+        <div class="ai-tab-content active" id="chat">
+            <div class="chat-layout">
+                <div class="quick-actions">
+                    <h3>⚡ Швидкі дії</h3>
+                    <div id="quickActionsContainer">
+                        <!-- Заповнюється JS -->
                     </div>
                 </div>
 
-                <!-- Tips -->
-                <div class="ai-tips">
-                    <h5><i class="fas fa-lightbulb mr-2"></i>Поради по використанню</h5>
-                    <ul>
-                        <li>Натисніть <kbd>Ctrl+Space</kbd> для швидкого відкриття чату</li>
-                        <li>Використовуйте <kbd>Alt+V</kbd> для голосового управління</li>
-                        <li>Скажіть "допомога" для перегляду всіх доступних команд</li>
-                        <li>AI запам'ятовує вашу історію команд для кращого обслуговування</li>
-                    </ul>
-                </div>
-
-                <!-- Statistics -->
-                <div class="ai-stats">
-                    <div class="ai-stat-card">
-                        <div class="ai-stat-number" id="commandsUsed">0</div>
-                        <div>Команд використано</div>
-                    </div>
-                    <div class="ai-stat-card">
-                        <div class="ai-stat-number" id="voiceCommands">0</div>
-                        <div>Голосових команд</div>
-                    </div>
-                    <div class="ai-stat-card">
-                        <div class="ai-stat-number" id="sessionsCount">0</div>
-                        <div>Сесій роботи</div>
-                    </div>
-                    <div class="ai-stat-card">
-                        <div class="ai-stat-number" id="accuracyRate">95%</div>
-                        <div>Точність розпізнавання</div>
-                    </div>
-                </div>
-
-                <!-- Commands Section -->
-                <div class="ai-commands-section">
-                    <div class="container">
-                        <h2 class="text-center mb-4">Доступні команди</h2>
-                        <div class="ai-commands-grid" id="commandsGrid">
-                            <!-- Commands will be loaded dynamically -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Chat Demo -->
-                <div class="ai-chat-demo">
-                    <h3 class="text-center mb-4">Спробуйте AI Асистента</h3>
-                    <div class="ai-demo-messages" id="demoMessages">
-                        <div class="ai-message ai-message-assistant">
-                            <div class="ai-message-content">
-                                <div class="ai-message-text">Привіт! Я ваш AI асистент. Напишіть команду або скористайтеся голосовим управлінням.</div>
-                                <div class="ai-message-time">Зараз</div>
+                <div class="chat-area">
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="chat-message ai">
+                            <div class="message-avatar ai">🤖</div>
+                            <div class="message-content">
+                                Привіт! Я AI асистент DeapSeaK. Можу допомогти з:
+                                <ul style="margin-top: 10px;">
+                                    <li>Керуванням ліфтами та заявками</li>
+                                    <li>Консультаціями по португальському законодавству</li>
+                                    <li>Аналізом звітів інспекцій</li>
+                                    <li>Аналітикою та звітами</li>
+                                </ul>
                             </div>
                         </div>
                     </div>
-                    <div class="ai-demo-input">
-                        <input type="text" id="demoInput" placeholder="Напишіть команду... (наприклад: 'статистика', 'допомога', 'час')" onkeypress="handleDemoKeyPress(event)">
-                        <button onclick="processDemoCommand()">Надіслати</button>
-                        <button onclick="aiAssistant.toggleListening()" class="btn btn-outline-primary">
+
+                    <div class="chat-input-area">
+                        <button class="voice-btn" id="voiceBtn" title="Голосовий ввід">
                             <i class="fas fa-microphone"></i>
+                        </button>
+                        <input type="text" class="chat-input" id="chatInput" placeholder="Напишіть повідомлення або задайте питання...">
+                        <button class="send-btn" id="sendBtn">
+                            <i class="fas fa-paper-plane"></i> Надіслати
                         </button>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <!-- Settings Panel -->
-                <div class="ai-settings-panel">
-                    <h3 class="mb-4">Налаштування AI Асистента</h3>
-                    <div class="ai-setting-group">
-                        <h5>Основні налаштування</h5>
-                        <div class="ai-setting-item">
-                            <span>Голосове управління</span>
-                            <label class="switch">
-                                <input type="checkbox" id="voiceEnabled" checked onchange="updateAISetting('voiceEnabled', this.checked)">
-                                <span class="slider round"></span>
-                            </label>
+        <!-- Legal Consultation Tab -->
+        <div class="ai-tab-content" id="legal">
+            <div class="legal-consult">
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                    <h3 style="margin: 0 0 10px 0; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-shield-alt"></i>
+                        Чесність і прозорість - наш пріоритет
+                    </h3>
+                    <p style="margin: 0; opacity: 0.95; line-height: 1.6;">
+                        Ми надаємо вам доступ до офіційних норм та законів Португалії про ліфти. 
+                        Перевіряйте звіти інспекторів, знайте свої права та обов'язки. 
+                        Наша компанія працює відкрито та чесно! 🤝
+                    </p>
+                </div>
+                <div class="question-panel">
+                    <h3>📝 Ваше питання про звіт інспекції</h3>
+                    <textarea id="legalQuestion" placeholder="Наприклад: O inspetor marcou bloqueio de porta defeituoso. O que devo fazer?"></textarea>
+                    
+                    <div class="quick-questions">
+                        <h4>Часті питання:</h4>
+                        <button class="quick-q-btn" data-question="O que é UCM e por que é obrigatório?">
+                            Що таке UCM і чому це обов'язково?
+                        </button>
+                        <button class="quick-q-btn" data-question="De quanto em quanto tempo preciso fazer inspeção?">
+                            Як часто потрібна інспекція?
+                        </button>
+                        <button class="quick-q-btn" data-question="Falta Braille nos botões. É grave?">
+                            Відсутній Брайль на кнопках - це серйозно?
+                        </button>
+                        <button class="quick-q-btn" data-question="O alarme não funciona. Posso usar o elevador?">
+                            Сигналізація не працює - чи можна користуватись?
+                        </button>
+                        <button class="quick-q-btn" data-question="Falta iluminação de emergência">
+                            Відсутнє аварійне освітлення
+                        </button>
+                    </div>
+                    
+                    <button class="btn btn-primary" id="askLegalBtn" style="margin-top: 20px; width: 100%;">
+                        <i class="fas fa-gavel"></i> Отримати консультацію
+                    </button>
+                </div>
+
+                <div class="answer-panel" id="legalAnswer">
+                    <h3>💡 Відповідь з'явиться тут</h3>
+                    <p style="color: #a0aec0;">Поставте питання про ваш звіт інспекції або виберіть одне з швидких питань зліва.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Regulations Tab -->
+        <div class="ai-tab-content" id="regulations">
+            <div style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                <h3 style="margin: 0 0 10px 0; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-balance-scale"></i>
+                    Офіційні закони - доступні для всіх
+                </h3>
+                <p style="margin: 0; opacity: 0.95; line-height: 1.6;">
+                    Ознайомтесь з повною базою актуальних норм та регламентів Португалії щодо ліфтів.
+                    Ви маєте право знати, які вимоги ставляться до вашого обладнання. Ми нічого не приховуємо! 📖
+                </p>
+            </div>
+            <h2 style="margin-bottom: 30px; color: #2d3748;">📚 Актуальне законодавство Португалії</h2>
+            <div class="regulations-grid" id="regulationsGrid">
+                <!-- Завантажується через API -->
+            </div>
+        </div>
+
+        <!-- Analysis Tab -->
+        <div class="ai-tab-content" id="analysis">
+            <div class="analysis-section">
+                <div style="background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                    <h3 style="margin: 0 0 10px 0; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-clipboard-check"></i>
+                        Перевірте звіт інспектора самостійно
+                    </h3>
+                    <p style="margin: 0; opacity: 0.95; line-height: 1.6;">
+                        Завантажте PDF звіт інспекції і отримайте детальний аналіз кожного пункту з поясненнями,
+                        посиланнями на закони та орієнтовною вартістю. Прозорість - наша політика! 🔍
+                    </p>
+                </div>
+                <div class="inspection-input">
+                    <h3>📋 Аналіз звіту інспекції</h3>
+                    <p style="color: #4a5568; margin-bottom: 15px;">
+                        Завантажте PDF звіт або вставте текст вручну
+                    </p>
+                    
+                    <!-- PDF Upload -->
+                    <div class="upload-area" id="pdfUploadArea" style="margin-bottom: 20px; padding: 30px; border: 2px dashed #cbd5e0; border-radius: 10px; text-align: center; cursor: pointer; transition: all 0.3s;">
+                        <input type="file" id="pdfInput" accept=".pdf" style="display: none;">
+                        <div id="uploadPrompt">
+                            <i class="fas fa-file-pdf" style="font-size: 48px; color: #667eea; margin-bottom: 10px;"></i>
+                            <p style="margin: 0; font-weight: 600; color: #2d3748;">Натисніть або перетягніть PDF звіт</p>
+                            <p style="margin: 5px 0 0 0; font-size: 14px; color: #718096;">Максимум 10 MB</p>
                         </div>
-                        <div class="ai-setting-item">
-                            <span>Автоматичне відкриття</span>
-                            <label class="switch">
-                                <input type="checkbox" id="autoOpen" onchange="updateAISetting('autoOpen', this.checked)">
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
-                        <div class="ai-setting-item">
-                            <span>Звукові ефекти</span>
-                            <label class="switch">
-                                <input type="checkbox" id="soundEffects" checked onchange="updateAISetting('soundEffects', this.checked)">
-                                <span class="slider round"></span>
-                            </label>
+                        <div id="uploadedFileName" style="display: none;">
+                            <i class="fas fa-check-circle" style="color: #48bb78; font-size: 24px;"></i>
+                            <p id="fileName" style="margin: 10px 0 0 0; font-weight: 600;"></p>
+                            <button id="removeFileBtn" class="btn-link" style="margin-top: 10px; color: #e53e3e;">
+                                <i class="fas fa-times"></i> Видалити файл
+                            </button>
                         </div>
                     </div>
                     
-                    <div class="ai-setting-group">
-                        <h5>Мова та інтерфейс</h5>
-                        <div class="ai-setting-item">
-                            <span>Мова асистента</span>
-                            <select id="aiLanguage" onchange="updateAISetting('language', this.value)">
-                                <option value="uk-UA">Українська</option>
-                                <option value="en-US">English</option>
-                                <option value="ru-RU">Русский</option>
-                            </select>
-                        </div>
-                        <div class="ai-setting-item">
-                            <span>Тема інтерфейсу</span>
-                            <select id="aiTheme" onchange="updateAISetting('theme', this.value)">
-                                <option value="light">Світла</option>
-                                <option value="dark">Темна</option>
-                                <option value="auto">Автоматично</option>
-                            </select>
-                        </div>
-                    </div>
+                    <div style="text-align: center; margin: 20px 0; color: #a0aec0; font-weight: 600;">АБО</div>
+                    
+                    <!-- Manual Text Input -->
+                    <textarea id="inspectionReport" placeholder="Приклад:
+• Bloqueio de porta defeituoso
+• Falta iluminação de emergência
+• UCM não instalado
+• Sistema de alarme não funcional
+• Botões sem Braille"></textarea>
+                    
+                    <button class="btn btn-primary" id="analyzeBtn" style="margin-top: 20px; width: 100%;">
+                        <i class="fas fa-search"></i> Аналізувати звіт
+                    </button>
                 </div>
 
-                <!-- Command History -->
-                <div class="ai-history mt-4">
-                    <h3 class="mb-4">Історія команд</h3>
-                    <div id="commandHistory">
-                        <!-- History will be loaded dynamically -->
-                    </div>
+                <div class="analysis-result" id="analysisResult" style="display: none;">
+                    <!-- Результати аналізу -->
                 </div>
-
             </div>
-        </section>
+        </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="main-footer">
-        <strong>Copyright &copy; 2024 <a href="#">Lift Management System</a>.</strong>
-        Всі права захищені.
-    </footer>
-</div>
+    <script>
+        // Global variables
+        let currentUser = null;
+        let recognition = null;
+        let regulationsLoaded = false;
 
-<!-- jQuery -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<!-- Bootstrap 4 -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
-<!-- AdminLTE App -->
-<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+        // Initialize
+        document.addEventListener('DOMContentLoaded', init);
 
-<!-- AI Assistant JS -->
-<script src="../../assets/js/modules/ai-assistant.js"></script>
-
-<script>
-// Load commands based on user role
-function loadCommands() {
-    const role = aiAssistant ? aiAssistant.getCurrentUserRole() : 'guest';
-    const commandsGrid = document.getElementById('commandsGrid');
-    
-    const commandsByRole = {
-        'admin': [
-            { category: 'Управління системою', commands: [
-                { icon: '📱', text: 'створити QR', desc: 'Генератор QR-кодів' },
-                { icon: '📊', text: 'статистика', desc: 'Статистика системи' },
-                { icon: '👥', text: 'користувачі', desc: 'Управління користувачами' },
-                { icon: '📋', text: 'звіт', desc: 'Генерація звітів' },
-                { icon: '➕', text: 'новий користувач', desc: 'Створення користувача' },
-                { icon: '💾', text: 'бек ап', desc: 'Резервне копіювання' }
-            ]},
-            { category: 'Аналітика та оптимізація', commands: [
-                { icon: '🔍', text: 'аналіз даних', desc: 'Глибокий аналіз' },
-                { icon: '⚡', text: 'оптимізувати', desc: 'Оптимізація системи' },
-                { icon: '🔗', text: 'інтеграція', desc: 'Перевірка інтеграцій' },
-                { icon: '🔒', text: 'безпека', desc: 'Аудит безпеки' },
-                { icon: '🤖', text: 'автоматизація', desc: 'Налаштування автоматизації' }
-            ]},
-            { category: 'Моніторинг', commands: [
-                { icon: '📢', text: 'сповіщення', desc: 'Керування сповіщеннями' },
-                { icon: '📤', text: 'експорт всіх', desc: 'Експорт всіх даних' },
-                { icon: '📋', text: 'логі', desc: 'Системні логи' },
-                { icon: '🔧', text: 'діагностика', desc: 'Діагностика системи' }
-            ]}
-        ],
-        'technician': [
-            { category: 'Робота з QR', commands: [
-                { icon: '📷', text: 'сканувати', desc: 'Сканер QR-кодів' },
-                { icon: '✅', text: 'завдання', desc: 'Мої завдання' },
-                { icon: '📅', text: 'графік', desc: 'Робочий графік' }
-            ]},
-            { category: 'Звітність', commands: [
-                { icon: '📝', text: 'звіт техніка', desc: 'Звіт про роботу' },
-                { icon: '📦', text: 'запчастини', desc: 'Склад запчастин' }
-            ]}
-        ],
-        'client': [
-            { category: 'Ліфти', commands: [
-                { icon: '🏢', text: 'стан ліфта', desc: 'Стан моїх ліфтів' },
-                { icon: '📝', text: 'заявка', desc: 'Створення заявки' },
-                { icon: '💰', text: 'рахунки', desc: 'Мої рахунки' },
-                { icon: '📄', text: 'договір', desc: 'Інформація про договір' },
-                { icon: '👨‍🔧', text: 'технік', desc: 'Мій технік' }
-            ]}
-        ],
-        'dispatcher': [
-            { category: 'Завдання', commands: [
-                { icon: '✅', text: 'завдання', desc: 'Всі активні завдання' },
-                { icon: '👥', text: 'техніки', desc: 'Статус техніків' },
-                { icon: '📊', text: 'моніторинг', desc: 'Моніторинг системи' },
-                { icon: '🚨', text: 'терміново', desc: 'Термінове завдання' }
-            ]}
-        ],
-        'guest': [
-            { category: 'Доступ', commands: [
-                { icon: '🔑', text: 'увійти', desc: 'Сторінка входу' },
-                { icon: '📝', text: 'реєстрація', desc: 'Сторінка реєстрації' },
-                { icon: '📞', text: 'контакти', desc: 'Контактна інформація' }
-            ]}
-        ]
-    };
-
-    const roleCommands = commandsByRole[role] || commandsByRole['guest'];
-    
-    commandsGrid.innerHTML = roleCommands.map(group => `
-        <div class="ai-command-group">
-            <h4>${group.category}</h4>
-            ${group.commands.map(cmd => `
-                <div class="ai-command-item" onclick="aiAssistant.processCommand('${cmd.text}')">
-                    <div class="ai-command-icon">${cmd.icon}</div>
-                    <div>
-                        <strong>${cmd.text}</strong><br>
-                        <small class="text-muted">${cmd.desc}</small>
-                    </div>
-                </div>
-            `).join('')}
-        </div>
-    `).join('');
-}
-
-// Load command history
-function loadCommandHistory() {
-    const history = aiAssistant ? aiAssistant.loadCommandHistory() : [];
-    const historyContainer = document.getElementById('commandHistory');
-    
-    if (history.length === 0) {
-        historyContainer.innerHTML = '<p class="text-muted">Історія команд порожня</p>';
-        return;
-    }
-    
-    historyContainer.innerHTML = history.slice(0, 10).map(item => `
-        <div class="ai-history-item">
-            <div>
-                <div class="ai-history-command">${item.command}</div>
-                <div class="ai-history-time">${new Date(item.timestamp).toLocaleString('uk-UA')}</div>
-            </div>
-            <span class="badge badge-${item.type === 'voice' ? 'primary' : 'secondary'}">${item.type}</span>
-        </div>
-    `).join('');
-}
-
-// Update AI settings
-function updateAISetting(setting, value) {
-    if (aiAssistant) {
-        aiAssistant.settings[setting] = value;
-        aiAssistant.saveUserPreferences();
-        
-        // Show notification
-        aiAssistant.showNotification('Налаштування збережено', 'success');
-    }
-}
-
-// Demo chat functionality
-function processDemoCommand() {
-    const input = document.getElementById('demoInput');
-    const message = input.value.trim();
-    
-    if (!message) return;
-    
-    // Add user message
-    addDemoMessage('user', message);
-    
-    // Process with AI
-    if (aiAssistant) {
-        setTimeout(() => {
-            const response = aiAssistant.generateResponse(message);
-            addDemoMessage('assistant', response.text);
-        }, 500);
-    }
-    
-    input.value = '';
-}
-
-function addDemoMessage(sender, text) {
-    const messagesContainer = document.getElementById('demoMessages');
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `ai-message ai-message-${sender}`;
-    messageDiv.innerHTML = `
-        <div class="ai-message-content">
-            <div class="ai-message-text">${text}</div>
-            <div class="ai-message-time">${new Date().toLocaleTimeString('uk-UA')}</div>
-        </div>
-    `;
-    messagesContainer.appendChild(messageDiv);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-}
-
-function handleDemoKeyPress(event) {
-    if (event.key === 'Enter') {
-        processDemoCommand();
-    }
-}
-
-// Load statistics
-function loadStatistics() {
-    const history = aiAssistant ? aiAssistant.loadCommandHistory() : [];
-    
-    document.getElementById('commandsUsed').textContent = history.length;
-    document.getElementById('voiceCommands').textContent = history.filter(h => h.type === 'voice').length;
-    document.getElementById('sessionsCount').textContent = Math.max(1, Math.floor(history.length / 5));
-}
-
-// Initialize page
-document.addEventListener('DOMContentLoaded', function() {
-    // Wait for AI Assistant to load
-    setTimeout(() => {
-        loadCommands();
-        loadCommandHistory();
-        loadStatistics();
-        
-        // Load current settings
-        if (aiAssistant) {
-            document.getElementById('voiceEnabled').checked = aiAssistant.settings.voiceEnabled;
-            document.getElementById('autoOpen').checked = aiAssistant.settings.autoOpen;
-            document.getElementById('soundEffects').checked = aiAssistant.settings.soundEffects;
-            document.getElementById('aiLanguage').value = aiAssistant.settings.language;
+        function init() {
+            console.log('AI Assistant Init Started');
+            loadUserData();
+            console.log('User data loaded:', currentUser);
+            setupTabs();
+            console.log('Tabs setup complete');
+            setupChat();
+            console.log('Chat setup complete');
+            setupLegal();
+            console.log('Legal setup complete');
+            setupVoiceRecognition();
+            console.log('Voice recognition setup complete');
+            loadQuickActions();
+            console.log('Quick actions loaded');
+            
+            // Handle hash navigation
+            handleHashNavigation();
+            window.addEventListener('hashchange', handleHashNavigation);
+            console.log('AI Assistant Init Complete');
         }
-    }, 1000);
-});
-</script>
 
-<style>
-.switch {
-    position: relative;
-    display: inline-block;
-    width: 50px;
-    height: 24px;
-}
+        function handleHashNavigation() {
+            const hash = window.location.hash.substring(1); // Remove #
+            if (hash && ['chat', 'legal', 'regulations', 'analysis'].includes(hash)) {
+                const tab = document.querySelector(`[data-tab="${hash}"]`);
+                if (tab) {
+                    tab.click();
+                }
+            }
+        }
 
-.switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
+        function loadUserData() {
+            const userData = localStorage.getItem('user');
+            if (userData) {
+                currentUser = JSON.parse(userData);
+            } else {
+                currentUser = { role: 'admin', name: 'Admin' };
+            }
+        }
 
-.slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #ccc;
-    transition: .4s;
-}
+        // Tabs
+        function setupTabs() {
+            const tabs = document.querySelectorAll('.ai-tab');
+            console.log('Found tabs:', tabs.length);
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabName = tab.dataset.tab;
+                    console.log('Tab clicked:', tabName);
+                    
+                    document.querySelectorAll('.ai-tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.ai-tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    tab.classList.add('active');
+                    const contentElement = document.getElementById(tabName);
+                    if (contentElement) {
+                        contentElement.classList.add('active');
+                        console.log('Content shown:', tabName);
+                    } else {
+                        console.error('Content element not found:', tabName);
+                    }
+                    
+                    // Load content if needed
+                    if (tabName === 'regulations' && !regulationsLoaded) {
+                        loadRegulations();
+                    }
+                });
+            });
+        }
 
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 18px;
-    width: 18px;
-    left: 3px;
-    bottom: 3px;
-    background-color: white;
-    transition: .4s;
-}
+        // Chat
+        function setupChat() {
+            const sendBtn = document.getElementById('sendBtn');
+            const chatInput = document.getElementById('chatInput');
 
-input:checked + .slider {
-    background-color: #007bff;
-}
+            sendBtn.addEventListener('click', sendMessage);
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') sendMessage();
+            });
+        }
 
-input:checked + .slider:before {
-    transform: translateX(26px);
-}
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            if (!message) return;
 
-.slider.round {
-    border-radius: 24px;
-}
+            addMessage('user', message);
+            input.value = '';
 
-.slider.round:before {
-    border-radius: 50%;
-}
-</style>
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/ai/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ message })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    addMessage('ai', result.data.response);
+                } else {
+                    addMessage('ai', 'Вибачте, виникла помилка. Спробуйте ще раз.');
+                }
+            } catch (error) {
+                addMessage("ai", "Помилка з'єднання з сервером.");
+            }
+        }
+
+        function addMessage(sender, text) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${sender}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = `message-avatar ${sender}`;
+            avatar.innerHTML = sender === 'ai' ? '🤖' : '<i class="fas fa-user"></i>';
+            
+            const content = document.createElement('div');
+            content.className = 'message-content';
+            content.innerHTML = text.replace(/\n/g, '<br>');
+            
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(content);
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        // Voice Recognition
+        function setupVoiceRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                console.warn('Speech Recognition not supported');
+                const voiceBtn = document.getElementById('voiceBtn');
+                if (voiceBtn) voiceBtn.style.display = 'none';
+                return;
+            }
+
+            console.log('Setting up voice recognition...');
+            recognition = new SpeechRecognition();
+            recognition.lang = 'uk-UA';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            const voiceBtn = document.getElementById('voiceBtn');
+            if (!voiceBtn) {
+                console.error('Voice button not found!');
+                return;
+            }
+            
+            voiceBtn.addEventListener('click', toggleVoice);
+            console.log('Voice button listener attached');
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                console.log('Voice input:', transcript);
+                document.getElementById('chatInput').value = transcript;
+                voiceBtn.classList.remove('recording');
+            };
+
+            recognition.onerror = (error) => {
+                console.error('Recognition error:', error);
+                voiceBtn.classList.remove('recording');
+            };
+
+            recognition.onend = () => {
+                console.log('Recognition ended');
+                voiceBtn.classList.remove('recording');
+            };
+        }
+
+        function toggleVoice() {
+            const voiceBtn = document.getElementById('voiceBtn');
+            console.log('Toggle voice clicked, currently recording:', voiceBtn.classList.contains('recording'));
+            
+            if (voiceBtn.classList.contains('recording')) {
+                recognition.stop();
+                voiceBtn.classList.remove('recording');
+            } else {
+                recognition.start();
+                voiceBtn.classList.add('recording');
+            }
+        }
+
+        // Quick Actions
+        function loadQuickActions() {
+            const container = document.getElementById('quickActionsContainer');
+            let actions = [];
+
+            if (currentUser.role === 'admin') {
+                actions = [
+                    { icon: '📊', text: 'Аналітика системи', action: () => { document.getElementById('chatInput').value = 'Покажи повну аналітику системи'; sendMessage(); }},
+                    { icon: '🔍', text: 'Пошук ліфта', action: () => { document.getElementById('chatInput').value = 'Знайти ліфт'; sendMessage(); }},
+                    { icon: '📈', text: 'Місячний звіт', action: () => { document.getElementById('chatInput').value = 'Згенеруй звіт за місяць'; sendMessage(); }},
+                    { icon: '👥', text: 'Користувачі', action: () => { document.getElementById('chatInput').value = 'Список користувачів'; sendMessage(); }},
+                    { icon: '⚖️', text: 'Юридична консультація', action: () => { document.querySelector('[data-tab="legal"]').click(); }},
+                    { icon: '⚠️', text: 'Критичні проблеми', action: () => { document.getElementById('chatInput').value = 'Критичні проблеми'; sendMessage(); }},
+                    { icon: '🔔', text: 'Сповіщення', action: () => { document.getElementById('chatInput').value = 'Непрочитані сповіщення'; sendMessage(); }},
+                    { icon: '📋', text: 'Аналіз звіту інспекції', action: () => { document.querySelector('[data-tab="analysis"]').click(); }}
+                ];
+            } else if (currentUser.role === 'client') {
+                actions = [
+                    { icon: '⚖️', text: 'Юридична консультація', action: () => { document.querySelector('[data-tab="legal"]').click(); }},
+                    { icon: '📚', text: 'Норми і Регламенти PT', action: () => { document.querySelector('[data-tab="regulations"]').click(); }},
+                    { icon: '📋', text: 'Аналіз звіту інспекції', action: () => { document.querySelector('[data-tab="analysis"]').click(); }},
+                    { icon: '🏢', text: 'Мої ліфти', action: () => { document.getElementById('chatInput').value = 'Мої ліфти'; sendMessage(); }},
+                    { icon: '📝', text: 'Створити заявку', action: () => { document.getElementById('chatInput').value = 'Створити заявку'; sendMessage(); }},
+                    { icon: '📊', text: 'Моя статистика', action: () => { document.getElementById('chatInput').value = 'Моя статистика'; sendMessage(); }}
+                ];
+            } else if (currentUser.role === 'tech') {
+                actions = [
+                    { icon: '🔧', text: 'Мої завдання', action: () => { document.getElementById('chatInput').value = 'Мої завдання'; sendMessage(); }},
+                    { icon: '📋', text: 'Чеклісти', action: () => { document.getElementById('chatInput').value = 'Відкрити чеклісти'; sendMessage(); }},
+                    { icon: '⚖️', text: 'Норми PT', action: () => { document.querySelector('[data-tab="regulations"]').click(); }},
+                    { icon: '🛠️', text: 'Інструкції', action: () => { document.getElementById('chatInput').value = 'Інструкції з ремонту'; sendMessage(); }}
+                ];
+            }
+
+            container.innerHTML = actions.map(action => 
+                '<button class="quick-action-btn">' +
+                    '<span style="font-size: 20px;">' + action.icon + '</span>' +
+                    '<span>' + action.text + '</span>' +
+                '</button>'
+            ).join('');
+
+            container.querySelectorAll('.quick-action-btn').forEach((btn, idx) => {
+                btn.addEventListener('click', actions[idx].action);
+            });
+        }
+
+        // Legal Consultation
+        function setupLegal() {
+            document.getElementById('askLegalBtn').addEventListener('click', askLegalQuestion);
+            
+            document.querySelectorAll('.quick-q-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.getElementById('legalQuestion').value = btn.dataset.question;
+                    askLegalQuestion();
+                });
+            });
+        }
+
+        async function askLegalQuestion() {
+            const question = document.getElementById('legalQuestion').value.trim();
+            if (!question) {
+                alert('Будь ласка, введіть питання');
+                return;
+            }
+
+            const answerDiv = document.getElementById('legalAnswer');
+            answerDiv.innerHTML = '<div class="loading-center"><div class="spinner"></div></div>';
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/legal/consult', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ question })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayLegalAnswer(result.data);
+                } else {
+                    answerDiv.innerHTML = '<p style="color: red;">Помилка: ' + result.error + '</p>';
+                }
+            } catch (error) {
+                answerDiv.innerHTML = '<p style="color: red;">Помилка з\'єднання з сервером</p>';
+            }
+        }
+
+        function displayLegalAnswer(data) {
+            const answerDiv = document.getElementById('legalAnswer');
+            
+            let urgencyClass = 'urgency-medium';
+            let urgencyText = 'Інформація';
+            
+            if (data.urgency === 'critical') {
+                urgencyClass = 'urgency-critical';
+                urgencyText = '🚨 Критично';
+            } else if (data.urgency === 'high') {
+                urgencyClass = 'urgency-high';
+                urgencyText = '⚠️ Високий пріоритет';
+            }
+            
+            let html = '<h3>💡 Відповідь</h3>';
+            html += `<span class="urgency-badge ${urgencyClass}">${urgencyText}</span>`;
+            html += `<div style="margin-top: 20px; line-height: 1.8;">${data.answer.replace(/\n/g, '<br>')}</div>`;
+            
+            if (data.regulation) {
+                html += `<p style="margin-top: 20px; color: #667eea; font-weight: 600;">📜 ${data.regulation}</p>`;
+            }
+            
+            answerDiv.innerHTML = html;
+        }
+
+        // Regulations
+        async function loadRegulations() {
+            const grid = document.getElementById('regulationsGrid');
+            grid.innerHTML = '<div class="loading-center"><div class="spinner"></div></div>';
+
+            try {
+                const token = localStorage.getItem('token');
+                
+                const response = await fetch('/api/legal/regulations', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    let html = '';
+                    
+                    // Інформаційний банер про офіційні джерела
+                    html += `
+                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 25px;">
+                            <h3 style="margin: 0 0 10px 0; color: white;">📚 Законодавство Португалії про Ліфти</h3>
+                            <p style="margin: 0; opacity: 0.95; font-size: 14px;">
+                                Оновлено: ${result.data.last_updated || '2025-12-01'}<br>
+                                <strong>Офіційні джерела:</strong> 
+                                <a href="https://diariodarepublica.pt" target="_blank" style="color: #fbbf24; text-decoration: underline;">Diário da República</a> | 
+                                <a href="https://www.dgeg.gov.pt" target="_blank" style="color: #fbbf24; text-decoration: underline;">DGEG</a>
+                            </p>
+                        </div>
+                    `;
+                    
+                    // Показуємо всі закони
+                    html += `<h4 style="color: #2d3748; margin: 25px 0 15px 0;">📋 Чинне законодавство (${result.data.total_regulations || result.data.regulations.length} законів):</h4>`;
+                    html += `<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px;">`;
+                    
+                    html += result.data.regulations.map((reg, index) => `
+                        <div class="regulation-card">
+                            <div class="reg-number">${reg.number}</div>
+                            <h3 style="font-size: 16px; margin: 10px 0;">${reg.title}</h3>
+                            <p class="reg-summary">${reg.summary}</p>
+                            <span class="reg-status">${
+                                reg.status === 'vigente' ? '✅ Діє' : 
+                                reg.status === 'vigente_parcial' ? '⚠️ Діє частково' : 
+                                reg.status === 'vigente_obrigatoria' ? '🔴 Обов\'язково' : 
+                                reg.status
+                            }</span>
+                            <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                                <button class="btn-link" onclick="showRegulationDetails(${index})" style="color: #667eea; font-weight: 600; font-size: 13px;">
+                                    <i class="fas fa-book-open"></i> Детальніше
+                                </button>
+                                ${reg.url ? `<a href="${reg.url}" target="_blank" class="btn-link" style="color: #48bb78; font-weight: 600; font-size: 13px;">
+                                    <i class="fas fa-external-link-alt"></i> Офіційний текст
+                                </a>` : ''}
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    html += `</div>`;
+                    
+                    // Додаємо примітку про джерела
+                    html += `
+                        <div style="margin-top: 30px; padding: 15px; background: #f7fafc; border-left: 4px solid #4299e1; border-radius: 5px;">
+                            <p style="margin: 0; font-size: 13px; color: #2d3748;">
+                                <strong>ℹ️ Важлива інформація:</strong> Всі законодавчі акти перевіряються через офіційні джерела португальського регулятора (DGEG). 
+                                Для отримання найактуальнішої інформації завжди консультуйтеся з 
+                                <a href="https://diariodarepublica.pt" target="_blank" style="color: #3182ce;">Diário da República</a> та 
+                                <a href="https://www.dgeg.gov.pt" target="_blank" style="color: #3182ce;">DGEG</a>.
+                            </p>
+                        </div>
+                    `;
+                    
+                    grid.innerHTML = html;
+                    
+                    // Зберігаємо дані для показу деталей
+                    window.regulationsData = result.data.regulations;
+                    regulationsLoaded = true;
+                }
+            } catch (error) {
+                console.error('Load regulations error:', error);
+                grid.innerHTML = '<p>Помилка завантаження законодавства</p>';
+            }
+        }
+
+        function showRegulationDetails(index) {
+            const reg = window.regulationsData[index];
+            if (!reg) return;
+            
+            // Створюємо модальне вікно
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px;';
+            
+            modal.innerHTML = `
+                <div style="background: white; border-radius: 15px; max-width: 900px; max-height: 90vh; overflow-y: auto; padding: 30px; position: relative;">
+                    <button onclick="this.closest('div[style*=fixed]').remove()" style="position: absolute; top: 15px; right: 15px; background: #e53e3e; color: white; border: none; border-radius: 50%; width: 35px; height: 35px; cursor: pointer; font-size: 18px;">
+                        ✕
+                    </button>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <span style="background: #667eea; color: white; padding: 5px 15px; border-radius: 20px; font-weight: 600; font-size: 14px;">
+                            ${reg.number}
+                        </span>
+                        <span style="background: ${reg.status === 'vigente' ? '#48bb78' : '#cbd5e0'}; color: white; padding: 5px 15px; border-radius: 20px; margin-left: 10px; font-size: 14px;">
+                            ${reg.status === 'vigente' ? 'Діє' : reg.status}
+                        </span>
+                    </div>
+                    
+                    <h2 style="color: #2d3748; margin-bottom: 20px;">${reg.title}</h2>
+                    
+                    <div style="background: #f7fafc; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                        <h4 style="margin: 0 0 10px 0; color: #4a5568;">📋 Опис:</h4>
+                        <p style="margin: 0; line-height: 1.6;">${reg.summary}</p>
+                    </div>
+                    
+                    ${reg.scope && reg.scope.length > 0 ? `
+                        <div style="margin-bottom: 20px;">
+                            <h4 style="color: #2d3748; margin-bottom: 10px;">🎯 Сфера застосування:</h4>
+                            <ul style="margin: 0; padding-left: 20px;">
+                                ${reg.scope.map(item => `<li style="margin-bottom: 5px;">${item}</li>`).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
+                    
+                    ${reg.inspection_points && reg.inspection_points.length > 0 ? `
+                        <div style="margin-bottom: 20px;">
+                            <h4 style="color: #2d3748; margin-bottom: 15px;">🔍 Пункти інспекції (${reg.inspection_points.length}):</h4>
+                            ${reg.inspection_points.slice(0, 5).map(point => `
+                                <div style="background: white; border-left: 4px solid #667eea; padding: 15px; margin-bottom: 10px; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                    <div style="font-weight: 600; color: #667eea; margin-bottom: 5px;">${point.article || point.point}</div>
+                                    <div style="color: #4a5568; margin-bottom: 8px;">${point.requirement}</div>
+                                    <div style="color: #718096; font-size: 14px; font-style: italic;">💡 ${point.client_explanation || point.description}</div>
+                                </div>
+                            `).join('')}
+                            ${reg.inspection_points.length > 5 ? `<p style="color: #718096; text-align: center;">... та ще ${reg.inspection_points.length - 5} пунктів</p>` : ''}
+                        </div>
+                    ` : ''}
+                    
+                    ${reg.url ? `
+                        <div style="text-align: center; margin-top: 30px;">
+                            <a href="${reg.url}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; border-radius: 25px; text-decoration: none; font-weight: 600;">
+                                <i class="fas fa-external-link-alt"></i> Відкрити повний офіційний текст
+                            </a>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Закриття по кліку на фон
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        }
+
+        // Analysis - PDF Upload
+        let uploadedPdfFile = null;
+
+        const pdfUploadArea = document.getElementById('pdfUploadArea');
+        const pdfInput = document.getElementById('pdfInput');
+        const uploadPrompt = document.getElementById('uploadPrompt');
+        const uploadedFileName = document.getElementById('uploadedFileName');
+        const fileNameDisplay = document.getElementById('fileName');
+        const removeFileBtn = document.getElementById('removeFileBtn');
+
+        // Click to upload
+        pdfUploadArea.addEventListener('click', () => {
+            if (!uploadedPdfFile) {
+                pdfInput.click();
+            }
+        });
+
+        // Drag and drop
+        pdfUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            pdfUploadArea.style.borderColor = '#667eea';
+            pdfUploadArea.style.backgroundColor = '#f7fafc';
+        });
+
+        pdfUploadArea.addEventListener('dragleave', () => {
+            pdfUploadArea.style.borderColor = '#cbd5e0';
+            pdfUploadArea.style.backgroundColor = 'transparent';
+        });
+
+        pdfUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            pdfUploadArea.style.borderColor = '#cbd5e0';
+            pdfUploadArea.style.backgroundColor = 'transparent';
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].type === 'application/pdf') {
+                handlePdfFile(files[0]);
+            } else {
+                alert('Будь ласка, завантажте PDF файл');
+            }
+        });
+
+        pdfInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handlePdfFile(e.target.files[0]);
+            }
+        });
+
+        removeFileBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            uploadedPdfFile = null;
+            pdfInput.value = '';
+            uploadPrompt.style.display = 'block';
+            uploadedFileName.style.display = 'none';
+            document.getElementById('inspectionReport').value = '';
+        });
+
+        async function handlePdfFile(file) {
+            if (file.size > 10 * 1024 * 1024) {
+                alert('Файл занадто великий. Максимум 10 MB');
+                return;
+            }
+
+            uploadedPdfFile = file;
+            fileNameDisplay.textContent = file.name;
+            uploadPrompt.style.display = 'none';
+            uploadedFileName.style.display = 'block';
+
+            // Extract text from PDF
+            await extractTextFromPdf(file);
+        }
+
+        async function extractTextFromPdf(file) {
+            const formData = new FormData();
+            formData.append('pdfReport', file);
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/pdf/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                const result = await response.json();
+                
+                if (result.success && result.analysis) {
+                    // Відображення результату парсингу
+                    console.log('✅ PDF успішно оброблено:', result);
+                    
+                    // Автоматично показати результати
+                    displayPDFAnalysisResult(result.analysis);
+                    
+                    // Також заповнити текстове поле для можливості редагування
+                    if (result.analysis.violations && result.analysis.violations.length > 0) {
+                        const violationsText = result.analysis.violations.map(v => 
+                            `${v.classification} Art.º ${v.article} - ${v.description}`
+                        ).join('\n');
+                        document.getElementById('inspectionReport').value = violationsText;
+                    }
+                } else {
+                    alert('Помилка обробки PDF: ' + (result.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('PDF upload error:', error);
+                alert('Не вдалося завантажити PDF файл');
+            }
+        }
+        
+        function displayPDFAnalysisResult(analysis) {
+            const resultDiv = document.getElementById('analysisResult');
+            resultDiv.style.display = 'block';
+            
+            // Зберігаємо аналіз для експорту
+            window.currentAnalysis = analysis;
+            
+            let html = '<div style="background: white; border-radius: 15px; padding: 30px;">';
+            
+            // Кнопки експорту вгорі
+            html += '<div style="display: flex; gap: 10px; margin-bottom: 20px; justify-content: flex-end; flex-wrap: wrap;">';
+            html += '<button onclick="generateActionPlan()" class="btn" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">';
+            html += '<i class="fas fa-tasks"></i> Gerar Plano de Ação</button>';
+            html += '<button onclick="exportToPDF()" class="btn" style="background: linear-gradient(135deg, #e53e3e, #dc3545); color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">';
+            html += '<i class="fas fa-file-pdf"></i> Exportar PDF</button>';
+            html += '<button onclick="exportToExcel()" class="btn" style="background: linear-gradient(135deg, #38a169, #48bb78); color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">';
+            html += '<i class="fas fa-file-excel"></i> Exportar Excel</button>';
+            html += '<button onclick="sendReportByEmail()" class="btn" style="background: linear-gradient(135deg, #3182ce, #2b6cb0); color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">';
+            html += '<i class="fas fa-envelope"></i> Enviar por Email</button>';
+            html += '</div>';
+            
+            // Метадані звіту
+            if (analysis.metadata) {
+                html += '<div style="background: #f7fafc; padding: 20px; border-radius: 10px; margin-bottom: 20px;">';
+                html += '<h3 style="margin: 0 0 15px 0; color: #2d3748;">📋 Інформація про звіт</h3>';
+                if (analysis.metadata.reportNumber) html += `<p><strong>Номер:</strong> ${analysis.metadata.reportNumber}</p>`;
+                if (analysis.metadata.date) html += `<p><strong>Дата:</strong> ${analysis.metadata.date}</p>`;
+                if (analysis.metadata.liftId) html += `<p><strong>ID ліфта:</strong> ${analysis.metadata.liftId}</p>`;
+                if (analysis.metadata.location) html += `<p><strong>Локація:</strong> ${analysis.metadata.location}</p>`;
+                if (analysis.metadata.inspector) html += `<p><strong>Інспектор:</strong> ${analysis.metadata.inspector}</p>`;
+                html += '</div>';
+            }
+            
+            // Статистика
+            if (analysis.stats) {
+                html += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">';
+                html += `<div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                    <div style="font-size: 32px; font-weight: bold;">${analysis.stats.total || 0}</div>
+                    <div>Всього порушень</div>
+                </div>`;
+                html += `<div style="background: linear-gradient(135deg, #f56565, #e53e3e); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                    <div style="font-size: 32px; font-weight: bold;">${analysis.stats.critical || 0}</div>
+                    <div>Критичні (C1)</div>
+                </div>`;
+                html += `<div style="background: linear-gradient(135deg, #ed8936, #dd6b20); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                    <div style="font-size: 32px; font-weight: bold;">${analysis.stats.medium || 0}</div>
+                    <div>Середні (C2)</div>
+                </div>`;
+                html += `<div style="background: linear-gradient(135deg, #48bb78, #38a169); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                    <div style="font-size: 32px; font-weight: bold;">${analysis.stats.low || 0}</div>
+                    <div>Низькі (C3)</div>
+                </div>`;
+                html += '</div>';
+            }
+            
+            // Порушення
+            if (analysis.violations && analysis.violations.length > 0) {
+                html += '<h3 style="margin: 20px 0; color: #2d3748;">🔍 Виявлені порушення</h3>';
+                analysis.violations.forEach((v, idx) => {
+                    const bgColor = v.classification === 'C1' ? '#fed7d7' : 
+                                   v.classification === 'C2' ? '#feebc8' : '#c6f6d5';
+                    const borderColor = v.classification === 'C1' ? '#e53e3e' : 
+                                       v.classification === 'C2' ? '#dd6b20' : '#38a169';
+                    
+                    html += `<div style="background: ${bgColor}; border-left: 4px solid ${borderColor}; padding: 15px; margin-bottom: 15px; border-radius: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: bold; color: #2d3748; margin-bottom: 5px;">
+                                    ${v.classification} - Artigo ${v.article}
+                                </div>
+                                <div style="color: #4a5568;">${v.description}</div>
+                            </div>
+                            <div style="background: ${borderColor}; color: white; padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold;">
+                                ${v.classification}
+                            </div>
+                        </div>
+                    </div>`;
+                });
+            } else {
+                html += '<p style="text-align: center; color: #48bb78; font-size: 18px; padding: 30px;">✅ Порушень не виявлено</p>';
+            }
+            
+            // Висновок
+            if (analysis.conclusion) {
+                html += '<div style="background: #edf2f7; padding: 20px; border-radius: 10px; margin-top: 20px;">';
+                html += '<h3 style="margin: 0 0 15px 0; color: #2d3748;">📝 Висновок</h3>';
+                html += `<p><strong>Статус:</strong> ${analysis.conclusion.approved ? '✅ СХВАЛЕНО' : '❌ НЕ СХВАЛЕНО'}</p>`;
+                if (analysis.conclusion.actionRequired) {
+                    html += `<p><strong>Необхідні дії:</strong> ${analysis.conclusion.actionRequired}</p>`;
+                }
+                if (analysis.conclusion.nextInspectionDate) {
+                    html += `<p><strong>Наступна інспекція:</strong> ${analysis.conclusion.nextInspectionDate}</p>`;
+                }
+                html += '</div>';
+            }
+            
+            html += '</div>';
+            resultDiv.innerHTML = html;
+        }
+
+        document.getElementById('analyzeBtn').addEventListener('click', analyzeInspection);
+
+        async function analyzeInspection() {
+            const input = document.getElementById('inspectionReport').value.trim();
+            if (!input) {
+                alert('Будь ласка, вставте звіт інспекції');
+                return;
+            }
+
+            const resultDiv = document.getElementById('analysisResult');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<div class="loading-center"><div class="spinner"></div></div>';
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/ai/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ 
+                        message: input,
+                        context: { reportText: input }
+                    })
+                });
+
+                const result = await response.json();
+                console.log('API Response:', result);
+                
+                // Server returns { success: true, data: { response, action, data } }
+                if (result.success && result.data) {
+                    const aiResponse = result.data;
+                    
+                    if (aiResponse.action === 'inspection_analysis' && aiResponse.data?.analysis) {
+                        displayNewAnalysis(aiResponse.data.analysis, aiResponse.response);
+                    } else if (aiResponse.response) {
+                        // Fallback to text response
+                        resultDiv.innerHTML = `<pre style="white-space: pre-wrap; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">${aiResponse.response}</pre>`;
+                    } else {
+                        resultDiv.innerHTML = '<p style="color: red;">Помилка аналізу: Немає відповіді</p>';
+                    }
+                } else {
+                    console.error('API Error:', result);
+                    resultDiv.innerHTML = '<p style="color: red;">Помилка аналізу: ' + (result.error || 'Unknown error') + '</p>';
+                }
+            } catch (error) {
+                console.error('Analysis error:', error);
+                resultDiv.innerHTML = '<p style="color: red;">Помилка з\'єднання</p>';
+            }
+        }
+
+        function displayNewAnalysis(analysis, formattedText) {
+            const resultDiv = document.getElementById('analysisResult');
+            
+            let html = '<h3>📊 Результати аналізу</h3>';
+            
+            // Summary cards
+            html += '<div class="analysis-summary">';
+            html += `<div class="summary-card"><div class="number">${analysis.summary.total}</div><div class="label">Всього проблем</div></div>`;
+            html += `<div class="summary-card"><div class="number">${analysis.summary.critical}</div><div class="label">Критичних (C1)</div></div>`;
+            html += `<div class="summary-card"><div class="number">${analysis.summary.medium}</div><div class="label">Середніх (C2)</div></div>`;
+            html += `<div class="summary-card"><div class="number">${analysis.summary.low}</div><div class="label">Низьких (C3)</div></div>`;
+            html += '</div>';
+            
+            // Report type badge
+            if (analysis.reportType === 'certificate' || analysis.passed) {
+                html += '<div style="background: #c6f6d5; color: #22543d; padding: 15px; border-radius: 8px; margin: 20px 0; font-weight: 600; text-align: center;">✅ ELEVADOR APROVADO</div>';
+            } else if (analysis.reportType === 'approved_with_c3') {
+                html += '<div style="background: #fef5e7; color: #7d6608; padding: 15px; border-radius: 8px; margin: 20px 0; font-weight: 600; text-align: center;">⚠️ APROVADO COM CLÁUSULAS C3</div>';
+            } else {
+                html += '<div style="background: #fed7d7; color: #742a2a; padding: 15px; border-radius: 8px; margin: 20px 0; font-weight: 600; text-align: center;">❌ REPROVADO</div>';
+            }
+            
+            // Metadata
+            if (analysis.metadata) {
+                html += '<div style="background: #f7fafc; padding: 15px; border-radius: 8px; margin: 20px 0; font-size: 13px;">';
+                html += '<strong>📍 Informações:</strong><br>';
+                if (analysis.metadata.location) html += `📍 Local: ${analysis.metadata.location}<br>`;
+                if (analysis.metadata.elevatorNumber) html += `🔢 Elevador Nº: ${analysis.metadata.elevatorNumber}<br>`;
+                if (analysis.metadata.capacity) html += `⚖️ Capacidade: ${analysis.metadata.capacity}<br>`;
+                if (analysis.metadata.maintenanceBy) html += `🔧 Manutenção: ${analysis.metadata.maintenanceBy}<br>`;
+                if (analysis.metadata.validUntil) html += `📅 Válido até: ${analysis.metadata.validUntil}<br>`;
+                html += '</div>';
+            }
+            
+            // Violations
+            if (analysis.violations && analysis.violations.length > 0) {
+                html += '<h4 style="margin-top: 30px; margin-bottom: 15px;">📜 Violações Detectadas:</h4>';
+                
+                analysis.violations.forEach((violation, index) => {
+                    const severityClass = violation.riskCategory === 'C1' ? 'critical' : violation.riskCategory === 'C2' ? 'high' : '';
+                    const riskColor = violation.riskCategory === 'C1' ? '#742a2a' : violation.riskCategory === 'C2' ? '#7d6608' : '#2d3748';
+                    
+                    html += `
+                        <div class="issue-item ${severityClass}" style="border-left: 4px solid ${riskColor}; margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                                <h4 style="margin: 0;">${index + 1}. Artigo ${violation.article}${violation.regulation?.articleTitle ? ': ' + violation.regulation.articleTitle : ''}</h4>
+                                <span style="background: ${riskColor}; color: white; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 600;">${violation.riskCategory}</span>
+                            </div>
+                            
+                            <p style="margin: 8px 0; color: #4a5568; font-style: italic; border-left: 3px solid #e2e8f0; padding-left: 10px; background: #f7fafc; padding: 8px 10px; border-radius: 4px;">
+                                "${violation.description}"
+                            </p>
+                            
+                            ${violation.regulation?.articleExplanation ? `
+                                <div style="background: #fff5f5; border-left: 3px solid ${riskColor}; padding: 12px; margin: 12px 0; border-radius: 4px;">
+                                    <strong style="color: ${riskColor}; display: block; margin-bottom: 6px;">⚠️ Porquê é importante:</strong>
+                                    <p style="margin: 0; color: #2d3748; line-height: 1.6; white-space: pre-line;">${violation.regulation.articleExplanation}</p>
+                                </div>
+                            ` : ''}
+                            
+                            ${violation.regulation ? `
+                                <p style="color: #667eea; font-weight: 600; font-size: 12px; margin: 8px 0;">
+                                    📜 ${violation.regulation.code} - ${violation.regulation.name}
+                                </p>
+                            ` : ''}
+                            
+                            ${violation.riskInfo ? `
+                                <p style="color: #718096; font-size: 11px; margin: 8px 0;">
+                                    <strong>Nível de risco:</strong> ${violation.riskInfo.description}
+                                </p>
+                            ` : ''}
+                        </div>
+                    `;
+                });
+            }
+            
+            // Recommendations
+            if (analysis.recommendations && analysis.recommendations.length > 0) {
+                html += '<h4 style="margin-top: 30px; margin-bottom: 15px;">💡 Recomendações:</h4>';
+                html += '<div style="background: #ebf8ff; padding: 15px; border-radius: 8px;">';
+                analysis.recommendations.forEach(rec => {
+                    html += `<p style="margin: 8px 0;">${rec.icon} ${rec.text}</p>`;
+                });
+                html += '</div>';
+            }
+            
+            resultDiv.innerHTML = html;
+        }
+        
+        // Legacy function for backward compatibility
+        function displayAnalysis(data) {
+            const resultDiv = document.getElementById('analysisResult');
+            
+            let html = '<h3>📊 Результати аналізу</h3>';
+            
+            html += '<div class="analysis-summary">';
+            html += `<div class="summary-card"><div class="number">${data.total_items}</div><div class="label">Всього проблем</div></div>`;
+            html += `<div class="summary-card"><div class="number">${data.critical_issues.length}</div><div class="label">Критичних</div></div>`;
+            html += `<div class="summary-card"><div class="number">${data.high_priority.length}</div><div class="label">Високий пріоритет</div></div>`;
+            html += `<div class="summary-card"><div class="number">€${data.estimated_total_cost.min}-${data.estimated_total_cost.max}</div><div class="label">Вартість</div></div>`;
+            html += '</div>';
+            
+            html += '<h4 style="margin-top: 30px; margin-bottom: 15px;">Детальний розбір:</h4>';
+            
+            data.items_detail.forEach(item => {
+                const severityClass = item.severity === 'critical' ? 'critical' : item.severity === 'high' ? 'high' : '';
+                html += `
+                    <div class="issue-item ${severityClass}">
+                        <h4>${item.issue}</h4>
+                        <p>${item.explanation}</p>
+                        <p style="color: #667eea; font-weight: 600; font-size: 12px;">📜 ${item.legal_basis}</p>
+                        ${item.estimated_cost ? `<p style="color: #22543d; background: #c6f6d5; padding: 5px 10px; border-radius: 5px; display: inline-block; margin-top: 10px;">€${item.estimated_cost.min} - €${item.estimated_cost.max}</p>` : ''}
+                    </div>
+                `;
+            });
+            
+            resultDiv.innerHTML = html;
+        }
+        
+        // ==========================================
+        // EXPORT FUNCTIONS
+        // ==========================================
+        
+        async function exportToPDF() {
+            if (!window.currentAnalysis) {
+                alert('Немає даних для експорту');
+                return;
+            }
+            
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/export/pdf', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        analysisData: window.currentAnalysis
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Помилка генерації PDF');
+                }
+                
+                // Завантаження файлу
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `relatorio_inspecao_${Date.now()}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                console.log('✅ PDF експортовано успішно');
+                
+            } catch (error) {
+                console.error('Помилка експорту PDF:', error);
+                alert('Не вдалося експортувати PDF: ' + error.message);
+            }
+        }
+        
+        async function exportToExcel() {
+            if (!window.currentAnalysis) {
+                alert('Немає даних для експорту');
+                return;
+            }
+            
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/export/excel', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        analysisData: window.currentAnalysis
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Помилка генерації Excel');
+                }
+                
+                // Завантаження файлу
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `relatorio_inspecao_${Date.now()}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                console.log('✅ Excel експортовано успішно');
+                
+            } catch (error) {
+                console.error('Помилка експорту Excel:', error);
+                alert('Не вдалося експортувати Excel: ' + error.message);
+            }
+        }
+        
+        // ==========================================
+        // ACTION PLAN GENERATION
+        // ==========================================
+        
+        async function generateActionPlan() {
+            if (!window.currentAnalysis || !window.currentAnalysis.violations) {
+                alert('Немає даних для генерації плану дій');
+                return;
+            }
+            
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/action-plan/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        violations: window.currentAnalysis.violations
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (!result.success) {
+                    throw new Error(result.error || 'Помилка генерації плану');
+                }
+                
+                // Зберігаємо action plan
+                window.currentActionPlan = result.actionPlan;
+                
+                // Відображаємо action plan
+                displayActionPlan(result.actionPlan);
+                
+                console.log('✅ Action Plan згенеровано успішно');
+                
+            } catch (error) {
+                console.error('Помилка генерації Action Plan:', error);
+                alert('Не вдалося згенерувати план дій: ' + error.message);
+            }
+        }
+        
+        function displayActionPlan(actionPlan) {
+            const resultDiv = document.getElementById('analysisResult');
+            
+            let html = '<div style="background: white; border-radius: 15px; padding: 30px;">';
+            
+            // Заголовок
+            html += '<h2 style="color: #2d3748; margin-bottom: 20px;">📋 PLANO DE AÇÃO</h2>';
+            
+            // Кнопки експорту PDF та Email
+            html += '<div style="display: flex; gap: 10px; justify-content: flex-end; margin-bottom: 20px; flex-wrap: wrap;">';
+            html += '<button onclick="exportActionPlanPDF()" class="btn" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">';
+            html += '<i class="fas fa-download"></i> Baixar Plano PDF</button>';
+            html += '<button onclick="sendActionPlanByEmail()" class="btn" style="background: linear-gradient(135deg, #3182ce, #2b6cb0); color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">';
+            html += '<i class="fas fa-envelope"></i> Enviar por Email</button>';
+            html += '</div>';
+            
+            // Summary
+            if (actionPlan.summary) {
+                html += '<div style="background: #f7fafc; padding: 20px; border-radius: 10px; margin-bottom: 20px; white-space: pre-line; font-family: monospace;">';
+                html += actionPlan.summary;
+                html += '</div>';
+            }
+            
+            // Timeline
+            if (actionPlan.timeline && actionPlan.timeline.length > 0) {
+                html += '<h3 style="color: #2d3748; margin: 30px 0 15px 0;">📅 Cronograma</h3>';
+                
+                actionPlan.timeline.forEach(phase => {
+                    const phaseColor = phase.phase === 1 ? '#e53e3e' : phase.phase === 2 ? '#dd6b20' : '#38a169';
+                    
+                    html += `<div style="background: white; border-left: 4px solid ${phaseColor}; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">`;
+                    html += `<div style="font-weight: bold; color: ${phaseColor}; margin-bottom: 10px;">${phase.title}</div>`;
+                    html += `<div style="color: #4a5568; margin-bottom: 5px;">Período: ${phase.period}</div>`;
+                    html += `<div style="color: #4a5568; margin-bottom: 5px;">Ações: ${phase.actions.length}</div>`;
+                    html += `<div style="color: #4a5568; margin-bottom: 5px;">Custo: €${phase.cost.min} - €${phase.cost.max}</div>`;
+                    html += `<div style="color: #718096; font-style: italic;">${phase.description}</div>`;
+                    html += '</div>';
+                });
+            }
+            
+            // Ações детально
+            if (actionPlan.allActions && actionPlan.allActions.length > 0) {
+                html += '<h3 style="color: #2d3748; margin: 30px 0 15px 0;">🔧 Ações Detalhadas</h3>';
+                
+                actionPlan.allActions.forEach(action => {
+                    html += `<div style="background: white; border-left: 4px solid ${action.priority.color}; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">`;
+                    html += `<div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">`;
+                    html += `<div style="font-weight: bold; color: #2d3748;">${action.id}. ${action.violation.article} - ${action.violation.description}</div>`;
+                    html += `<div style="background: ${action.priority.color}; color: white; padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold;">${action.priority.levelPT}</div>`;
+                    html += '</div>';
+                    html += `<div style="color: #2c5282; margin-bottom: 5px;"><strong>Ação:</strong> ${action.action.required}</div>`;
+                    html += `<div style="color: #4a5568; margin-bottom: 5px;"><strong>Prazo:</strong> ${action.deadline.text} (${action.deadline.date})</div>`;
+                    html += `<div style="color: #4a5568;"><strong>Custo:</strong> €${action.cost.min} - €${action.cost.max}</div>`;
+                    if (action.deadline.mustImmobilize) {
+                        html += `<div style="color: #e53e3e; font-weight: bold; margin-top: 10px;">⚠️ IMOBILIZAR ASCENSOR</div>`;
+                    }
+                    html += '</div>';
+                });
+            }
+            
+            html += '</div>';
+            resultDiv.innerHTML = html;
+        }
+        
+        async function exportActionPlanPDF() {
+            if (!window.currentActionPlan) {
+                alert('Немає плану дій для експорту');
+                return;
+            }
+            
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/action-plan/export-pdf', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        actionPlan: window.currentActionPlan
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Помилка експорту PDF');
+                }
+                
+                // Завантаження файлу
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `plano_acao_${Date.now()}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                
+                console.log('✅ Action Plan PDF експортовано');
+                
+            } catch (error) {
+                console.error('Помилка експорту Action Plan PDF:', error);
+                alert('Не вдалося експортувати PDF: ' + error.message);
+            }
+        }
+
+        /**
+         * Відправка inspection report по email
+         */
+        async function sendReportByEmail() {
+            if (!window.currentAnalysis) {
+                alert('Nenhuma análise disponível');
+                return;
+            }
+
+            const email = prompt('Informe o email do destinatário:');
+            if (!email) return;
+
+            // Валідація email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                alert('Email inválido');
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    alert('Autenticação necessária');
+                    window.location.href = '/login.html';
+                    return;
+                }
+
+                // Перевіряємо чи є критичні порушення для автоматичного алерту
+                const hasCritical = window.currentAnalysis.violations?.some(v => v.classification === 'C1');
+
+                const response = await fetch('/api/email/send-inspection-report', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        clientEmail: email,
+                        reportData: window.currentAnalysis
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('✅ Relatório enviado com sucesso!');
+                    
+                    // Якщо є критичні порушення - автоматично відправляємо алерт
+                    if (hasCritical) {
+                        const sendAlert = confirm('Detectadas deficiências críticas! Deseja enviar um alerta separado?');
+                        if (sendAlert) {
+                            await sendCriticalAlertByEmail(email);
+                        }
+                    }
+                } else {
+                    alert('❌ Erro ao enviar email: ' + result.error);
+                }
+
+            } catch (error) {
+                console.error('Erro ao enviar email:', error);
+                alert('Não foi possível enviar o email: ' + error.message);
+            }
+        }
+
+        /**
+         * Відправка критичного алерту
+         */
+        async function sendCriticalAlertByEmail(email) {
+            if (!window.currentAnalysis?.violations) return;
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/email/send-critical-alert', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        clientEmail: email,
+                        violations: window.currentAnalysis.violations,
+                        liftId: window.currentAnalysis.metadata?.liftId
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('🚨 Alerta crítico enviado!');
+                } else {
+                    alert('❌ Erro ao enviar alerta: ' + result.error);
+                }
+
+            } catch (error) {
+                console.error('Erro ao enviar alerta:', error);
+            }
+        }
+
+        /**
+         * Відправка action plan по email
+         */
+        async function sendActionPlanByEmail() {
+            if (!window.currentActionPlan) {
+                alert('Nenhum Plano de Ação disponível. Gere o plano primeiro.');
+                return;
+            }
+
+            const email = prompt('Informe o email do destinatário:');
+            if (!email) return;
+
+            // Валідація email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                alert('Email inválido');
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    alert('Autenticação necessária');
+                    window.location.href = '/login.html';
+                    return;
+                }
+
+                const response = await fetch('/api/email/send-action-plan', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        clientEmail: email,
+                        actionPlan: window.currentActionPlan,
+                        liftId: window.currentAnalysis?.metadata?.liftId
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('✅ Plano de Ação enviado com sucesso!');
+                } else {
+                    alert('❌ Erro ao enviar email: ' + result.error);
+                }
+
+            } catch (error) {
+                console.error('Erro ao enviar email:', error);
+                alert('Não foi possível enviar o email: ' + error.message);
+            }
+        }
+    </script>
 </body>
 </html>
+
