@@ -719,10 +719,10 @@ class ServiceRequestManager {
         this.init();
     }
 
-    init() {
+    async init() {
         console.log('🎫 Ініціалізація системи заявок...');
         this.loadRequests();
-        this.loadLifts();
+        await this.loadLifts(); // Завантажуємо ліфти з API
         this.setupEventListeners();
         this.initDataTable();
         this.handleUrlParams();
@@ -996,22 +996,56 @@ class ServiceRequestManager {
         this.saveRequests();
     }
 
-    loadLifts() {
-        // Завантажуємо список ліфтів для селекту
+    async loadLifts() {
+        // Завантажуємо список ліфтів з API
         try {
-            const lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
             const select = $('#requestLift');
+            select.empty().append('<option value="">Завантаження...</option>');
+            
+            // Викликаємо API для отримання ліфтів
+            const response = await AuthManager.fetchWithAuth('/api/lifts', {
+                method: 'GET'
+            });
+            
+            if (!response) {
+                console.error('Помилка авторизації при завантаженні ліфтів');
+                select.empty().append('<option value="">Помилка завантаження</option>');
+                return;
+            }
+            
+            const lifts = response.data || [];
+            console.log('✅ Завантажено ліфтів:', lifts.length);
+            
             select.empty().append('<option value="">Оберіть ліфт...</option>');
             
             lifts.forEach(lift => {
+                const liftName = lift.name || lift.municipalNumber || lift._id;
+                const liftAddress = lift.address || 'Адреса не вказана';
                 select.append(`
-                    <option value="${lift.id}" data-address="${lift.address}">
-                        ${lift.municipalNumber || lift.id} - ${lift.address}
+                    <option value="${lift._id}" data-address="${liftAddress}">
+                        ${liftName} - ${liftAddress}
                     </option>
                 `);
             });
+            
+            // Також оновлюємо select у формі редагування
+            const editSelect = $('#editRequestLift');
+            if (editSelect.length) {
+                editSelect.empty().append('<option value="">Оберіть ліфт...</option>');
+                lifts.forEach(lift => {
+                    const liftName = lift.name || lift.municipalNumber || lift._id;
+                    const liftAddress = lift.address || 'Адреса не вказана';
+                    editSelect.append(`
+                        <option value="${lift._id}" data-address="${liftAddress}">
+                            ${liftName} - ${liftAddress}
+                        </option>
+                    `);
+                });
+            }
         } catch (error) {
-            console.error('Помилка завантаження ліфтів:', error);
+            console.error('❌ Помилка завантаження ліфтів:', error);
+            const select = $('#requestLift');
+            select.empty().append('<option value="">Помилка завантаження</option>');
         }
     }
 
@@ -1493,7 +1527,12 @@ async function exportRequestPDF(requestId) {
 }
 
 // Глобальні функції
-function openNewRequestModal() {
+async function openNewRequestModal() {
+    // Завантажуємо список ліфтів перед показом модалки
+    if (window.serviceManager) {
+        await window.serviceManager.loadLifts();
+    }
+    
     // Встановлюємо мінімальну дату (поточна)
     const now = new Date().toISOString().slice(0, 16);
     $('#requestScheduled').attr('min', now);
@@ -1501,8 +1540,12 @@ function openNewRequestModal() {
     $('#newRequestModal').modal('show');
 }
 
-function createRequest() {
-    window.serviceManager.createRequest();
+async function createRequest() {
+    // Завантажуємо список ліфтів перед показом модалки
+    if (window.serviceManager) {
+        await window.serviceManager.loadLifts();
+    }
+    openNewRequestModal();
 }
 
 function exportRequests() {
