@@ -163,12 +163,123 @@ function authenticateToken(req, res, next) {
 app.get('/api/lifts', authenticateToken, async (req, res) => {
     try {
         const lifts = await db.collection('lifts').find({}).toArray();
-        res.json(lifts);
+        res.json({
+            success: true,
+            data: lifts
+        });
     } catch (error) {
         console.error('❌ Помилка отримання ліфтів:', error);
         res.status(500).json({
             success: false,
             message: 'Помилка отримання ліфтів'
+        });
+    }
+});
+
+// Заявки на обслуговування
+app.get('/api/requests', authenticateToken, async (req, res) => {
+    try {
+        const requests = await db.collection('requests').find({}).toArray();
+        res.json({
+            success: true,
+            data: requests
+        });
+    } catch (error) {
+        console.error('❌ Помилка отримання заявок:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка отримання заявок'
+        });
+    }
+});
+
+app.post('/api/requests', authenticateToken, async (req, res) => {
+    try {
+        const newRequest = {
+            ...req.body,
+            createdAt: new Date().toISOString(),
+            createdBy: req.user.username,
+            updatedAt: new Date().toISOString()
+        };
+        
+        const result = await db.collection('requests').insertOne(newRequest);
+        
+        res.json({
+            success: true,
+            message: 'Заявку створено успішно',
+            data: {
+                _id: result.insertedId,
+                ...newRequest
+            }
+        });
+    } catch (error) {
+        console.error('❌ Помилка створення заявки:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка створення заявки'
+        });
+    }
+});
+
+app.put('/api/requests/:id', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const requestId = new ObjectId(req.params.id);
+        
+        const updateData = {
+            ...req.body,
+            updatedAt: new Date().toISOString(),
+            updatedBy: req.user.username
+        };
+        
+        const result = await db.collection('requests').updateOne(
+            { _id: requestId },
+            { $set: updateData }
+        );
+        
+        if (result.matchedCount === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Заявку не знайдено'
+            });
+        }
+        
+        res.json({
+            success: true,
+            message: 'Заявку оновлено успішно'
+        });
+    } catch (error) {
+        console.error('❌ Помилка оновлення заявки:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка оновлення заявки'
+        });
+    }
+});
+
+app.delete('/api/requests/:id', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const requestId = new ObjectId(req.params.id);
+        
+        const result = await db.collection('requests').deleteOne({ _id: requestId });
+        
+        if (result.deletedCount === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Заявку не знайдено'
+            });
+        }
+        
+        res.json({
+            success: true,
+            message: 'Заявку видалено успішно'
+        });
+    } catch (error) {
+        console.error('❌ Помилка видалення заявки:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка видалення заявки'
         });
     }
 });
