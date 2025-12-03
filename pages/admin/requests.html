@@ -999,34 +999,59 @@ class ServiceRequestManager {
     async loadLifts() {
         // Завантажуємо список ліфтів з API
         try {
+            console.log('🔄 Завантаження ліфтів для select...');
             const select = $('#requestLift');
             select.empty().append('<option value="">Завантаження...</option>');
             
+            // Перевірка AuthManager
+            if (!AuthManager || !AuthManager.isAuthenticated()) {
+                console.error('❌ Користувач не авторизований');
+                select.empty().append('<option value="">Увійдіть в систему</option>');
+                return;
+            }
+            
             // Викликаємо API для отримання ліфтів
+            console.log('📡 Виклик API /api/lifts...');
             const response = await AuthManager.fetchWithAuth('/api/lifts', {
                 method: 'GET'
             });
             
+            console.log('📥 Відповідь API:', response);
+            
             if (!response) {
-                console.error('Помилка авторизації при завантаженні ліфтів');
-                select.empty().append('<option value="">Помилка завантаження</option>');
+                console.error('❌ Помилка авторизації при завантаженні ліфтів');
+                select.empty().append('<option value="">Помилка авторизації</option>');
+                return;
+            }
+            
+            if (!response.success) {
+                console.error('❌ API повернув помилку:', response.message);
+                select.empty().append('<option value="">Помилка: ' + (response.message || 'невідома помилка') + '</option>');
                 return;
             }
             
             const lifts = response.data || [];
-            console.log('✅ Завантажено ліфтів:', lifts.length);
+            console.log('✅ Завантажено ліфтів:', lifts.length, lifts);
+            
+            if (lifts.length === 0) {
+                select.empty().append('<option value="">Немає доступних ліфтів</option>');
+                return;
+            }
             
             select.empty().append('<option value="">Оберіть ліфт...</option>');
             
             lifts.forEach(lift => {
                 const liftName = lift.name || lift.municipalNumber || lift._id;
                 const liftAddress = lift.address || 'Адреса не вказана';
+                console.log('➕ Додаємо ліфт:', liftName, '-', liftAddress);
                 select.append(`
                     <option value="${lift._id}" data-address="${liftAddress}">
                         ${liftName} - ${liftAddress}
                     </option>
                 `);
             });
+            
+            console.log('✅ Select заповнено, всього опцій:', select.find('option').length);
             
             // Також оновлюємо select у формі редагування
             const editSelect = $('#editRequestLift');
@@ -1045,7 +1070,7 @@ class ServiceRequestManager {
         } catch (error) {
             console.error('❌ Помилка завантаження ліфтів:', error);
             const select = $('#requestLift');
-            select.empty().append('<option value="">Помилка завантаження</option>');
+            select.empty().append('<option value="">Помилка: ' + error.message + '</option>');
         }
     }
 
