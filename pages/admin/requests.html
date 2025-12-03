@@ -416,14 +416,35 @@
                 <!-- Requests Table -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Всі заявки на обслуговування</h3>
+                        <h3 class="card-title">Керування заявками</h3>
                         <div class="card-tools">
-                            <button class="btn btn-success btn-sm" onclick="exportRequests()">
+                            <button class="btn btn-primary" onclick="createRequest()">
+                                <i class="fas fa-plus"></i> Створити заявку
+                            </button>
+                            <button class="btn btn-success btn-sm ml-2" onclick="exportRequests()">
                                 <i class="fas fa-download"></i> Експорт
                             </button>
                         </div>
                     </div>
                     <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <input type="text" id="searchInput" class="form-control" placeholder="Пошук заявок...">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-default">
+                                            <i class="fas fa-search"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 text-right">
+                                <button class="btn btn-outline-primary" onclick="refreshRequests()">
+                                    <i class="fas fa-sync-alt"></i> Оновити
+                                </button>
+                            </div>
+                        </div>
+                        
                         <div class="table-responsive">
                             <table class="table table-striped table-hover" id="requestsTable">
                                 <thead>
@@ -1994,6 +2015,14 @@ function getCurrentAssignmentId() {
 function logout() {
     if (confirm('Ви дійсно хочете вийти?')) {
         window.location.href = '../auth/login.html';
+    }
+}
+
+// Функція оновлення списку заявок
+async function refreshRequests() {
+    if (window.serviceManager) {
+        await window.serviceManager.loadRequests();
+        toastr.success('Список заявок оновлено');
     }
 }
 
