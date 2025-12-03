@@ -4824,6 +4824,61 @@
         }
     }
     
+    // ============================================
+    // Експорт даних CSV/PDF
+    // ============================================
+    document.addEventListener('DOMContentLoaded', function() {
+        // Експорт CSV
+        const exportCSVBtn = document.getElementById('exportCSVBtn');
+        if (exportCSVBtn) {
+            exportCSVBtn.addEventListener('click', async function() {
+                try {
+                    const lifts = await loadLiftsFromAPI();
+                    if (!lifts || lifts.length === 0) {
+                        alert('Немає ліфтів для експорту');
+                        return;
+                    }
+                    
+                    // Формуємо CSV
+                    const headers = ['ID', 'Модель', 'Тип', 'Адреса', 'Статус', 'Дата установки'];
+                    const rows = lifts.map(lift => [
+                        lift.municipalNumber || lift._id,
+                        lift.model || '',
+                        lift.type || '',
+                        `${lift.address?.street || ''}, ${lift.address?.city || ''}`,
+                        lift.status || '',
+                        lift.installationDate ? new Date(lift.installationDate).toLocaleDateString('uk-UA') : ''
+                    ]);
+                    
+                    let csv = headers.join(',') + '\\n';
+                    rows.forEach(row => {
+                        csv += row.map(cell => `"${cell}"`).join(',') + '\\n';
+                    });
+                    
+                    // Завантаження файлу
+                    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = `lifts_${new Date().toISOString().split('T')[0]}.csv`;
+                    link.click();
+                    
+                    console.log('✅ CSV експортовано');
+                } catch (error) {
+                    console.error('❌ Помилка експорту CSV:', error);
+                    alert('Помилка експорту CSV');
+                }
+            });
+        }
+        
+        // Експорт PDF
+        const exportPDFBtn = document.getElementById('exportPDFBtn');
+        if (exportPDFBtn) {
+            exportPDFBtn.addEventListener('click', function() {
+                alert('Експорт PDF буде доступний у наступній версії.\\nНаразі використовуйте CSV або друк сторінки (Ctrl+P)');
+            });
+        }
+    });
+    
     </script>
 </body>
 </html>
