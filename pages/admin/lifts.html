@@ -2312,92 +2312,12 @@
         $('#enhancedLiftModal').modal('show');
     };
 
-    // Обробник кнопки "Зберегти і створити QR код"
+    // 🔧 ВИДАЛЕНО: Старий обробник "Зберегти і створити QR код"
+    // Причина: викликав дублювання ліфтів через збереження в localStorage
+    // Тепер використовується EnhancedLiftModal.handleFormSubmit() з API
+    
     document.addEventListener('DOMContentLoaded', function() {
-        const saveAndGenerateQrBtn = document.getElementById('saveAndGenerateQrBtn');
-        
-        if (saveAndGenerateQrBtn) {
-            saveAndGenerateQrBtn.addEventListener('click', async function() {
-                // Спочатку валідуємо і зберігаємо ліфт
-                const form = document.getElementById('enhancedLiftForm');
-                if (!form) return;
-                
-                // Збираємо дані з форми
-                const formData = new FormData(form);
-                const liftData = {
-                    name: formData.get('name') || 'Новий ліфт',
-                    address: formData.get('address') || '',
-                    manufacturer: formData.get('manufacturer') || '',
-                    model: formData.get('model') || '',
-                    capacity: formData.get('capacity') || 8,
-                    floors: formData.get('floorsCount') || 2,
-                    doors: formData.get('doorsCount') || 2,
-                    latitude: formData.get('latitude') || 0,
-                    longitude: formData.get('longitude') || 0
-                };
-                
-                try {
-                    // Показуємо індикатор завантаження
-                    saveAndGenerateQrBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Зберігаємо...';
-                    saveAndGenerateQrBtn.disabled = true;
-                    
-                    // Симуляція збереження ліфта (замінити на реальний API)
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    
-                    // Генеруємо унікальний ID для ліфта
-                    const liftId = 'LIFT_' + Date.now();
-                    liftData.id = liftId;
-                    
-                    // Зберігаємо ліфт в localStorage (тимчасово)
-                    let savedLifts = JSON.parse(localStorage.getItem('lifts') || '[]');
-                    savedLifts.push(liftData);
-                    localStorage.setItem('lifts', JSON.stringify(savedLifts));
-                    
-                    // Автоматично генеруємо і зберігаємо QR код
-                    const qrData = {
-                        id: 'QR_' + Date.now(),
-                        liftId: liftId,
-                        liftName: liftData.name,
-                        liftAddress: liftData.address,
-                        type: 'lift_access',
-                        data: JSON.stringify(liftData),
-                        createdAt: new Date().toISOString(),
-                        status: 'active'
-                    };
-                    
-                    // Зберігаємо QR код в localStorage
-                    let savedQRCodes = JSON.parse(localStorage.getItem('qr_codes') || '[]');
-                    savedQRCodes.push(qrData);
-                    localStorage.setItem('qr_codes', JSON.stringify(savedQRCodes));
-                    
-                    // Показуємо повідомлення про успіх
-                    toastr.success('Ліфт збережено і QR код автоматично створено!');
-                    
-                    // Закриваємо модальне вікно
-                    $('#enhancedLiftModal').modal('hide');
-                    
-                    // Перезавантажуємо таблицю ліфтів
-                    if (typeof window.loadLifts === 'function') {
-                        window.loadLifts();
-                    }
-                    
-                    // Показуємо повідомлення з посиланням на QR систему
-                    setTimeout(() => {
-                        if (confirm('QR код створено успішно! Хочете переглянути його в QR системі?')) {
-                            window.location.href = 'qr-management.html';
-                        }
-                    }, 1500);
-                    
-                } catch (error) {
-                    console.error('Error saving lift and generating QR:', error);
-                    toastr.error('Помилка збереження ліфта: ' + error.message);
-                } finally {
-                    // Відновлюємо кнопку
-                    saveAndGenerateQrBtn.innerHTML = '<i class="fas fa-save"></i> <i class="fas fa-qrcode ml-1"></i> Зберегти і створити QR код';
-                    saveAndGenerateQrBtn.disabled = false;
-                }
-            });
-        }
+        // Старий код видалено - використовуємо тільки API через EnhancedLiftModal
 
         // Система управління інспекціями
         const scheduleInspectionBtn = document.getElementById('scheduleInspectionBtn');
