@@ -308,7 +308,7 @@ class LiftManager {
             const mapContainer = document.getElementById('liftMap');
             if (!mapContainer) return;
             mapContainer.style.display = 'block';
-            this.map = L.map('liftMap').setView([50.4501, 30.5234], 13);
+            this.map = L.map('liftMap').setView([38.7223, -9.1393], 13); // Лісабон
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors'
             }).addTo(this.map);

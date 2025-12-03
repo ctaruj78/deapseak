@@ -34,7 +34,7 @@ $(document).ready(function() {
     }
 
     // Ініціалізація карти
-    const map = L.map('liftsMap').setView([50.4501, 30.5234], 13);
+    const map = L.map('liftsMap').setView([38.7223, -9.1393], 13); // Лісабон
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
