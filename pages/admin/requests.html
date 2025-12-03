@@ -1043,12 +1043,20 @@ class ServiceRequestManager {
             select.empty().append('<option value="">Оберіть ліфт...</option>');
             
             lifts.forEach(lift => {
-                const liftName = lift.name || lift.municipalNumber || lift._id;
-                const liftAddress = lift.address || 'Адреса не вказана';
-                console.log('➕ Додаємо ліфт:', liftName, '-', liftAddress);
+                // Формуємо читабельну назву ліфта
+                const municipalNumber = lift.municipalNumber || lift.name || 'Без номера';
+                const address = lift.address || 'Адреса не вказана';
+                const city = lift.city ? `, ${lift.city}` : '';
+                
+                // Формат: "№123 - вул. Хрещатик, 1, Київ"
+                const displayText = `№${municipalNumber} - ${address}${city}`;
+                
+                console.log('➕ Додаємо ліфт:', displayText);
                 select.append(`
-                    <option value="${lift._id}" data-address="${liftAddress}">
-                        ${liftName} - ${liftAddress}
+                    <option value="${lift._id}" 
+                            data-address="${address}" 
+                            data-municipal="${municipalNumber}">
+                        ${displayText}
                     </option>
                 `);
             });
@@ -1060,11 +1068,16 @@ class ServiceRequestManager {
             if (editSelect.length) {
                 editSelect.empty().append('<option value="">Оберіть ліфт...</option>');
                 lifts.forEach(lift => {
-                    const liftName = lift.name || lift.municipalNumber || lift._id;
-                    const liftAddress = lift.address || 'Адреса не вказана';
+                    const municipalNumber = lift.municipalNumber || lift.name || 'Без номера';
+                    const address = lift.address || 'Адреса не вказана';
+                    const city = lift.city ? `, ${lift.city}` : '';
+                    const displayText = `№${municipalNumber} - ${address}${city}`;
+                    
                     editSelect.append(`
-                        <option value="${lift._id}" data-address="${liftAddress}">
-                            ${liftName} - ${liftAddress}
+                        <option value="${lift._id}" 
+                                data-address="${address}" 
+                                data-municipal="${municipalNumber}">
+                            ${displayText}
                         </option>
                     `);
                 });
