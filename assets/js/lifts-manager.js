@@ -27,7 +27,7 @@ const LiftsManager = (function() {
     
     // Конфігурація
     const config = {
-        API_BASE_URL: window.API_BASE_URL || 'http://localhost:3001',
+        API_BASE_URL: window.API_BASE_URL || 'http://localhost:5000',
         MAP_CENTER: [50.4501, 30.5234], // Київ
         MAP_ZOOM: 11,
         ITEMS_PER_PAGE: 10

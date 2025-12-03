@@ -84,17 +84,8 @@ class AuthManager {
     }
 
     static getApiUrl(endpoint) {
-        // Визначаємо чи ми в Codespaces
-        const isCodespaces = window.location.hostname.includes('app.github.dev');
-        
-        if (isCodespaces) {
-            // В Codespaces використовуємо публічний URL з тим самим хостом але портом 3001
-            const baseUrl = window.location.origin.replace('-5000.', '-3001.');
-            return `${baseUrl}${endpoint}`;
-        } else {
-            // Локально використовуємо localhost
-            return `http://localhost:3001${endpoint}`;
-        }
+        // ✅ UNIFIED SERVER - все на порту 5000
+        return `${window.location.origin}${endpoint}`;
     }
 
     static async fetchWithAuth(url, options = {}) {

@@ -9,7 +9,7 @@ class SettingsManager {
         // Use AuthManager's API URL to get the correct endpoint
         this.apiUrl = (typeof AuthManager !== 'undefined' && AuthManager.getApiUrl) 
             ? AuthManager.getApiUrl('/api/settings')
-            : 'http://localhost:3001/api/settings';
+            : 'http://localhost:5000/api/settings';
     }
 
     // Отримати локальні налаштування

@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // ВАЖЛИВО: Завжди використовуємо localhost навіть в Codespaces
         // GitHub Codespaces має проблеми з CORS через tunnel
-        const apiUrl = 'http://localhost:3001';
+        const apiUrl = 'http://localhost:5000';
         
         try {
             const response = await fetch(`${apiUrl}/api/auth/login`, {

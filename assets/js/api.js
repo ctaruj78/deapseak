@@ -2,7 +2,7 @@
 function getApiBaseUrl() {
     // ВАЖЛИВО: Завжди використовуємо localhost навіть в Codespaces
     // GitHub Codespaces має проблеми з CORS та multipart/form-data через tunnel
-    return 'http://localhost:3001';
+    return 'http://localhost:5000';
 }
 
 const IS_DEVELOPMENT = window.location.hostname === 'localhost' || 
