@@ -1016,21 +1016,23 @@ class ServiceRequestManager {
                 method: 'GET'
             });
             
-            console.log('📥 Відповідь API:', response);
-            
             if (!response) {
                 console.error('❌ Помилка авторизації при завантаженні ліфтів');
                 select.empty().append('<option value="">Помилка авторизації</option>');
                 return;
             }
             
-            if (!response.success) {
-                console.error('❌ API повернув помилку:', response.message);
-                select.empty().append('<option value="">Помилка: ' + (response.message || 'невідома помилка') + '</option>');
+            // Парсимо JSON з response
+            const data = await response.json();
+            console.log('📥 Відповідь API (parsed):', data);
+            
+            if (!data.success) {
+                console.error('❌ API повернув помилку:', data.message);
+                select.empty().append('<option value="">Помилка: ' + (data.message || 'невідома помилка') + '</option>');
                 return;
             }
             
-            const lifts = response.data || [];
+            const lifts = data.data || [];
             console.log('✅ Завантажено ліфтів:', lifts.length, lifts);
             
             if (lifts.length === 0) {
