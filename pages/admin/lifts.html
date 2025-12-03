@@ -4871,6 +4871,86 @@
         }
     }
     
+    // ========================
+    // ОБРОБНИКИ ЕКСПОРТУ CSV/PDF
+    // ========================
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('📊 Ініціалізація обробників експорту...');
+        
+        // Обробник експорту CSV
+        const exportCSVBtn = document.getElementById('exportCSVBtn');
+        if (exportCSVBtn) {
+            exportCSVBtn.addEventListener('click', async function() {
+                console.log('📥 Експорт CSV...');
+                try {
+                    // Отримуємо всі ліфти з API
+                    const lifts = await window.loadLiftsFromAPI();
+                    
+                    if (!lifts || lifts.length === 0) {
+                        alert('Немає даних для експорту');
+                        return;
+                    }
+                    
+                    // Формуємо CSV
+                    const headers = ['ID', 'Назва', 'Адреса', 'Виробник', 'Модель', 'Місто', 'Статус', 'Дата створення'];
+                    const csvRows = [headers.join(',')];
+                    
+                    lifts.forEach(lift => {
+                        const row = [
+                            lift._id || '',
+                            `"${lift.name || ''}"`,
+                            `"${lift.address || ''}"`,
+                            `"${lift.manufacturer || ''}"`,
+                            `"${lift.model || ''}"`,
+                            `"${lift.city || ''}"`,
+                            lift.status || 'active',
+                            lift.createdAt ? new Date(lift.createdAt).toLocaleDateString() : ''
+                        ];
+                        csvRows.push(row.join(','));
+                    });
+                    
+                    // Створюємо Blob та завантажуємо файл
+                    const csvContent = csvRows.join('\n');
+                    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const link = document.createElement('a');
+                    const url = URL.createObjectURL(blob);
+                    
+                    link.setAttribute('href', url);
+                    link.setAttribute('download', `lifts_export_${new Date().toISOString().slice(0,10)}.csv`);
+                    link.style.visibility = 'hidden';
+                    
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    console.log('✅ CSV експортовано успішно');
+                    if (typeof toastr !== 'undefined') {
+                        toastr.success('CSV файл завантажено!');
+                    }
+                } catch (error) {
+                    console.error('❌ Помилка експорту CSV:', error);
+                    alert('Помилка експорту CSV: ' + error.message);
+                }
+            });
+            console.log('✅ Обробник CSV додано');
+        } else {
+            console.warn('⚠️ Кнопка exportCSVBtn не знайдена');
+        }
+        
+        // Обробник експорту PDF
+        const exportPDFBtn = document.getElementById('exportPDFBtn');
+        if (exportPDFBtn) {
+            exportPDFBtn.addEventListener('click', function() {
+                console.log('📄 Експорт PDF...');
+                alert('Експорт PDF буде доступний у наступній версії.\n\nНаразі використовуйте експорт CSV.');
+                // TODO: Додати jsPDF бібліотеку та реалізувати експорт PDF
+            });
+            console.log('✅ Обробник PDF додано');
+        } else {
+            console.warn('⚠️ Кнопка exportPDFBtn не знайдена');
+        }
+    });
+    
     </script>
     
     <!-- Покращена логіка форми з валідацією -->
