@@ -561,7 +561,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
-                <button type="button" class="btn btn-primary" onclick="createRequest()">
+                <button type="button" class="btn btn-primary" onclick="window.serviceManager.createRequest()">
                     <i class="fas fa-save"></i> Створити заявку
                 </button>
             </div>
@@ -1232,7 +1232,7 @@ class ServiceRequestManager {
     }
 
     // Методи управління заявками
-    createRequest() {
+    async createRequest() {
         const form = $('#newRequestForm')[0];
         if (!form.checkValidity()) {
             form.reportValidity();
@@ -1240,48 +1240,56 @@ class ServiceRequestManager {
         }
 
         const newRequest = {
-            id: 'REQ-' + String(this.requests.length + 1).padStart(3, '0'),
             liftId: $('#requestLift').val(),
             liftAddress: $('#requestLift option:selected').data('address') || '',
             type: $('#requestType').val(),
             priority: $('#requestPriority').val(),
             status: 'new',
-            title: this.getTypeText($('#requestType').val()) + ' - ' + $('#requestLift option:selected').text().split(' - ')[1],
+            title: this.getTypeText($('#requestType').val()) + ' - ' + ($('#requestLift option:selected').data('address') || $('#requestLift option:selected').text()),
             description: $('#requestDescription').val(),
             technician: $('#requestTechnician').val() || null,
-            createdAt: new Date().toISOString(),
             scheduledAt: $('#requestScheduled').val() ? new Date($('#requestScheduled').val()).toISOString() : null,
-            completedAt: null,
-            createdBy: 'admin',
-            timeline: [
-                {
-                    timestamp: new Date().toISOString(),
-                    action: 'created',
-                    message: 'Заявку створено',
-                    user: 'Адміністратор'
-                }
-            ]
+            createdBy: 'admin'
         };
 
-        if (newRequest.technician) {
-            newRequest.status = 'assigned';
-            newRequest.timeline.push({
-                timestamp: new Date().toISOString(),
-                action: 'assigned',
-                message: `Призначено техніка ${this.getTechnicianName(newRequest.technician)}`,
-                user: 'Адміністратор'
-            });
+        if (!newRequest.liftId) {
+            toastr.error('Будь ласка, оберіть ліфт');
+            return;
         }
 
-        this.requests.unshift(newRequest);
-        this.saveRequests();
-        this.renderRequests();
-        this.updateStatistics();
+        try {
+            // Зберігаємо через API
+            const response = await AuthManager.fetchWithAuth('/api/requests', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newRequest)
+            });
 
-        $('#newRequestModal').modal('hide');
-        $('#newRequestForm')[0].reset();
+            if (!response) {
+                toastr.error('Помилка авторизації');
+                return;
+            }
 
-        toastr.success('Заявку створено успішно!');
+            const data = await response.json();
+
+            if (data.success) {
+                $('#newRequestModal').modal('hide');
+                $('#newRequestForm')[0].reset();
+                
+                // Оновлюємо список заявок
+                await this.loadRequests();
+                this.updateStatistics();
+                
+                toastr.success('Заявку створено успішно!');
+            } else {
+                toastr.error('Помилка створення заявки: ' + (data.message || 'невідома помилка'));
+            }
+        } catch (error) {
+            console.error('❌ Помилка створення заявки:', error);
+            toastr.error('Помилка створення заявки: ' + error.message);
+        }
     }
 
     viewRequest(requestId) {
@@ -1581,9 +1589,18 @@ async function openNewRequestModal() {
 }
 
 async function createRequest() {
-    // Завантажуємо список ліфтів перед показом модалки
+    // Завантажуємо список ліфтів тільки якщо select порожній
     if (window.serviceManager) {
-        await window.serviceManager.loadLifts();
+        const select = $('#requestLift');
+        const optionsCount = select.find('option').length;
+        
+        // Завантажуємо ліфти тільки якщо їх ще немає (крім дефолтної опції)
+        if (optionsCount <= 1) {
+            console.log('🔄 Завантаження ліфтів (select порожній)...');
+            await window.serviceManager.loadLifts();
+        } else {
+            console.log('✅ Ліфти вже завантажені (' + optionsCount + ' опцій)');
+        }
     }
     openNewRequestModal();
 }
