@@ -409,6 +409,70 @@ app.put('/api/requests/:id', authenticateToken, async (req, res) => {
     }
 });
 
+// PATCH /api/requests/:id/status - зміна статусу заявки
+app.patch('/api/requests/:id/status', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const requestId = new ObjectId(req.params.id);
+        const { status, technician } = req.body;
+        
+        console.log('🔄 Зміна статусу заявки:', req.params.id, '→', status);
+        
+        if (!status) {
+            return res.status(400).json({
+                success: false,
+                message: 'Статус обов\'язковий'
+            });
+        }
+        
+        const updateData = {
+            status: status,
+            updatedAt: new Date().toISOString(),
+            updatedBy: req.user.username
+        };
+        
+        // Якщо призначається технік
+        if (technician) {
+            updateData.technician = technician;
+            updateData.assignedAt = new Date().toISOString();
+        }
+        
+        // Якщо статус "completed" - додаємо час завершення
+        if (status === 'completed') {
+            updateData.completedAt = new Date().toISOString();
+        }
+        
+        // Якщо статус "in_progress" - додаємо час початку
+        if (status === 'in_progress' && !updateData.startedAt) {
+            updateData.startedAt = new Date().toISOString();
+        }
+        
+        const result = await db.collection('requests').updateOne(
+            { _id: requestId },
+            { $set: updateData }
+        );
+        
+        if (result.matchedCount === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Заявку не знайдено'
+            });
+        }
+        
+        res.json({
+            success: true,
+            message: 'Статус заявки оновлено успішно',
+            data: updateData
+        });
+    } catch (error) {
+        console.error('❌ Помилка зміни статусу:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка зміни статусу заявки'
+        });
+    }
+});
+
 app.delete('/api/requests/:id', authenticateToken, async (req, res) => {
     try {
         const { ObjectId } = require('mongodb');
