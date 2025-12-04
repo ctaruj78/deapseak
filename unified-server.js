@@ -16,9 +16,6 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Статичні файли
-app.use(express.static(path.join(__dirname)));
-
 // MongoDB підключення
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
 const DB_NAME = 'deapseak';
@@ -294,8 +291,19 @@ app.delete('/api/requests/:id', authenticateToken, async (req, res) => {
     }
 });
 
-// Головна сторінка
-app.get('/', (req, res) => {
+// Статичні файли - ОСТАННІ, щоб не перекривали API
+app.use(express.static(path.join(__dirname), {
+    index: ['index.html'],
+    extensions: ['html']
+}));
+
+// Fallback для SPA - якщо файл не знайдено, віддаємо index.html
+app.get('*', (req, res) => {
+    // Якщо це API запит - 404
+    if (req.path.startsWith('/api/')) {
+        return res.status(404).json({ success: false, message: 'API endpoint not found' });
+    }
+    // Інакше - віддаємо index.html для SPA роутингу
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
