@@ -88,6 +88,13 @@
             const urlParams = new URLSearchParams(window.location.search);
             const emailFromUrl = urlParams.get('email');
             const passwordFromUrl = urlParams.get('password');
+            const autoLoginRequested = emailFromUrl && passwordFromUrl;
+            
+            // Якщо запитано автологін - очищуємо старий токен
+            if (autoLoginRequested && typeof AuthManager !== 'undefined') {
+                console.log('🔄 Автологін запитано - очищуємо старі дані');
+                AuthManager.logout();
+            }
             
             if (emailFromUrl) {
                 document.getElementById('email').value = decodeURIComponent(emailFromUrl);
@@ -96,11 +103,6 @@
             if (passwordFromUrl) {
                 document.getElementById('password').value = decodeURIComponent(passwordFromUrl);
                 console.log('🔑 Password автозаповнено з URL');
-                // Автоматичний вхід якщо обидва параметри є
-                if (emailFromUrl) {
-                    console.log('🚀 Автоматичний вхід...');
-                    setTimeout(() => loginForm.requestSubmit(), 500);
-                }
             }
             
             // Перевіряємо чи користувач вже увійшов через AuthManager
@@ -114,7 +116,7 @@
                     localStorage.removeItem(AuthManager.TOKEN_KEY);
                     localStorage.removeItem(AuthManager.USER_KEY);
                 }
-            } else if (typeof AuthManager !== 'undefined' && AuthManager.isAuthenticated()) {
+            } else if (!autoLoginRequested && typeof AuthManager !== 'undefined' && AuthManager.isAuthenticated()) {
                 const user = AuthManager.getCurrentUser();
                 if (user && user.role) {
                     // Перевіряємо чи користувач хоче вийти (якщо в URL є параметр logout)
@@ -155,6 +157,15 @@
             // Очищуємо старі дані якщо є
             localStorage.removeItem('lm_session');
             localStorage.removeItem('lm_user');
+            
+            // Автоматичний submit якщо є параметри в URL
+            if (autoLoginRequested) {
+                console.log('🚀 Автоматичний вхід через 500ms...');
+                setTimeout(() => {
+                    console.log('📤 Відправка форми логіну...');
+                    loginForm.requestSubmit();
+                }, 500);
+            }
             
             // Функція перенаправлення за ролями (ГЛОБАЛЬНА)
             window.redirectUserByRole = function(role) {
