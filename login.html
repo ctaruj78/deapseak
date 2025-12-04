@@ -64,7 +64,8 @@
                             <strong>Адмін:</strong> admin@deapseak.com / admin123<br>
                             <strong>Диспетчер:</strong> dispatcher@deapseak.com / dispatcher123<br>
                             <strong>Технік 1:</strong> tech1@deapseak.com / tech123<br>
-                            <strong>Технік 2:</strong> tech2@deapseak.com / tech123
+                            <strong>Технік 2:</strong> tech2@deapseak.com / tech123<br>
+                            <strong>Клієнт:</strong> client@deapseak.com / client123
                         </small>
                     </div>
                 </div>
@@ -117,10 +118,10 @@
                                 <p>Користувач: <strong>${user.username}</strong></p>
                                 <p>Роль: <strong>${getRoleName(user.role)}</strong></p>
                                 <div style="margin-top: 30px;">
-                                    <button onclick="continueToPanel()" class="btn btn-primary btn-lg" style="margin: 5px;">
+                                    <button onclick="window.redirectUserByRole('${user.role}')" class="btn btn-primary btn-lg" style="margin: 5px;">
                                         <i class="fas fa-arrow-right"></i> Продовжити до панелі
                                     </button>
-                                    <button onclick="logoutAndChooseRole()" class="btn btn-outline-secondary btn-lg" style="margin: 5px;">
+                                    <button onclick="AuthManager.logout(); location.reload();" class="btn btn-outline-secondary btn-lg" style="margin: 5px;">
                                         <i class="fas fa-sign-out-alt"></i> Вийти та обрати іншу роль
                                     </button>
                                 </div>
@@ -136,8 +137,8 @@
             localStorage.removeItem('lm_session');
             localStorage.removeItem('lm_user');
             
-            // Функція перенаправлення за ролями
-            function redirectUserByRole(role) {
+            // Функція перенаправлення за ролями (ГЛОБАЛЬНА)
+            window.redirectUserByRole = function(role) {
                 // Очищуємо sessionStorage після редиректу
                 setTimeout(() => sessionStorage.removeItem('redirecting'), 100);
                 
@@ -158,7 +159,7 @@
                     default:
                         window.location.href = 'pages/admin/admin-dashboard.html';
                 }
-            }
+            };
             
             // Продовжити до панелі (для вже авторизованих)
             function continueToPanel() {
