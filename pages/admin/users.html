@@ -561,14 +561,14 @@
             async loadUsers() {
                 try {
                     console.log('🔄 Завантаження користувачів з API...');
-                    const response = await AuthManager.fetchWithAuth('/api/auth/users');
+                    const response = await AuthManager.fetchWithAuth('/api/users');
                     
                     if (!response.ok) {
                         throw new Error('Помилка завантаження користувачів');
                     }
 
                     const data = await response.json();
-                    this.allUsers = data.users || [];
+                    this.allUsers = Array.isArray(data) ? data : (data.users || []);
                     console.log('✅ Завантажено користувачів:', this.allUsers.length);
                     
                 } catch (error) {
@@ -795,45 +795,53 @@
                 $('#userPassword').val('').removeAttr('placeholder').prop('required', true);
             }
 
-            saveUser() {
-                const userId = $('#userId').val();
-                const userData = {
-                    id: userId || this.generateId(),
-                    firstName: $('#userFirstName').val(),
-                    lastName: $('#userLastName').val(),
-                    email: $('#userEmail').val(),
-                    role: $('#userRole').val(),
-                    status: $('#userStatus').val(),
-                    updatedAt: new Date().toISOString()
-                };
+            async saveUser() {
+                try {
+                    const userId = $('#userId').val();
+                    const userData = {
+                        firstName: $('#userFirstName').val(),
+                        lastName: $('#userLastName').val(),
+                        email: $('#userEmail').val(),
+                        role: $('#userRole').val(),
+                        status: $('#userStatus').val()
+                    };
 
-                const password = $('#userPassword').val();
-                if (password) {
-                    userData.password = this.hashPassword(password);
-                }
-
-                if (!userId) {
-                    userData.createdAt = new Date().toISOString();
-                    userData.password = userData.password || this.hashPassword('default123');
-                    this.allUsers.push(userData);
-                } else {
-                    const index = this.allUsers.findIndex(u => u.id === userId);
-                    if (index !== -1) {
-                        if (!password) {
-                            userData.password = this.allUsers[index].password;
-                        }
-                        this.allUsers[index] = { ...this.allUsers[index], ...userData };
+                    const password = $('#userPassword').val();
+                    if (password) {
+                        userData.password = password;
                     }
-                }
 
-                this.saveUsers();
-                this.filteredUsers = [...this.allUsers];
-                this.renderUsersTable();
-                this.renderPagination();
-                this.updateStats();
-                
-                $('#userModal').modal('hide');
-                this.showNotification('Користувача успішно збережено', 'success');
+                    let response;
+                    if (!userId) {
+                        console.log('➕ Створення нового користувача:', userData.email);
+                        response = await AuthManager.fetchWithAuth('/api/users', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(userData)
+                        });
+                    } else {
+                        console.log('✏️ Оновлення користувача:', userId);
+                        response = await AuthManager.fetchWithAuth(`/api/users/${userId}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(userData)
+                        });
+                    }
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.error || 'Помилка збереження користувача');
+                    }
+
+                    $('#userModal').modal('hide');
+                    this.showNotification('Користувача успішно збережено', 'success');
+                    
+                    await this.loadUsers();
+                    
+                } catch (error) {
+                    console.error('❌ Помилка збереження користувача:', error);
+                    this.showNotification(error.message || 'Не вдалося зберегти користувача', 'danger');
+                }
             }
 
             toggleUserStatus(id) {

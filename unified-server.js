@@ -284,15 +284,119 @@ app.get('/api/users', authenticateToken, async (req, res) => {
             projection: { password: 0 } // Не віддаємо паролі
         }).toArray();
         
-        res.json({
-            success: true,
-            data: users
-        });
+        // Віддаємо масив напряму (сторінка очікує масив)
+        res.json(users);
     } catch (error) {
         console.error('❌ Помилка отримання користувачів:', error);
         res.status(500).json({
             success: false,
             message: 'Помилка отримання користувачів'
+        });
+    }
+});
+
+// POST /api/users - створення користувача
+app.post('/api/users', authenticateToken, async (req, res) => {
+    try {
+        const { email, password, firstName, lastName, role, status } = req.body;
+
+        // Перевірка обов'язкових полів
+        if (!email || !password || !firstName || !lastName || !role) {
+            return res.status(400).json({
+                success: false,
+                error: 'Заповніть всі обов\'язкові поля'
+            });
+        }
+
+        // Перевірка чи email вже існує
+        const existingUser = await db.collection('users').findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({
+                success: false,
+                error: 'Користувач з таким email вже існує'
+            });
+        }
+
+        // Хешування пароля
+        const bcrypt = require('bcryptjs');
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const newUser = {
+            email,
+            password: hashedPassword,
+            firstName,
+            lastName,
+            role,
+            status: status || 'active',
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+
+        const result = await db.collection('users').insertOne(newUser);
+        
+        // Віддаємо користувача без пароля
+        const { password: _, ...userWithoutPassword } = newUser;
+        
+        console.log('✅ Створено користувача:', email);
+        res.status(201).json({
+            success: true,
+            data: { ...userWithoutPassword, _id: result.insertedId }
+        });
+    } catch (error) {
+        console.error('❌ Помилка створення користувача:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Помилка створення користувача'
+        });
+    }
+});
+
+// PUT /api/users/:id - оновлення користувача
+app.put('/api/users/:id', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const userId = new ObjectId(req.params.id);
+        const { email, password, firstName, lastName, role, status } = req.body;
+
+        const updateData = {
+            updatedAt: new Date()
+        };
+
+        if (email) updateData.email = email;
+        if (firstName) updateData.firstName = firstName;
+        if (lastName) updateData.lastName = lastName;
+        if (role) updateData.role = role;
+        if (status) updateData.status = status;
+
+        // Якщо є новий пароль - хешуємо
+        if (password) {
+            const bcrypt = require('bcryptjs');
+            updateData.password = await bcrypt.hash(password, 10);
+        }
+
+        const result = await db.collection('users').findOneAndUpdate(
+            { _id: userId },
+            { $set: updateData },
+            { returnDocument: 'after', projection: { password: 0 } }
+        );
+
+        if (!result) {
+            return res.status(404).json({
+                success: false,
+                error: 'Користувача не знайдено'
+            });
+        }
+
+        console.log('✅ Оновлено користувача:', userId);
+        res.json({
+            success: true,
+            data: result
+        });
+    } catch (error) {
+        console.error('❌ Помилка оновлення користувача:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Помилка оновлення користувача'
         });
     }
 });
