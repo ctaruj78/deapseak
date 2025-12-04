@@ -84,6 +84,25 @@
         document.addEventListener('DOMContentLoaded', () => {
             const loginForm = document.getElementById('login-form');
             
+            // Автозаповнення з URL параметрів (для швидкого тестування)
+            const urlParams = new URLSearchParams(window.location.search);
+            const emailFromUrl = urlParams.get('email');
+            const passwordFromUrl = urlParams.get('password');
+            
+            if (emailFromUrl) {
+                document.getElementById('email').value = decodeURIComponent(emailFromUrl);
+                console.log('📧 Email автозаповнено з URL');
+            }
+            if (passwordFromUrl) {
+                document.getElementById('password').value = decodeURIComponent(passwordFromUrl);
+                console.log('🔑 Password автозаповнено з URL');
+                // Автоматичний вхід якщо обидва параметри є
+                if (emailFromUrl) {
+                    console.log('🚀 Автоматичний вхід...');
+                    setTimeout(() => loginForm.requestSubmit(), 500);
+                }
+            }
+            
             // Перевіряємо чи користувач вже увійшов через AuthManager
             // Додаємо захист від циклу редиректів
             const redirecting = sessionStorage.getItem('redirecting');
