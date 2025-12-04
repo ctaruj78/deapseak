@@ -652,19 +652,20 @@
                 }
 
                 paginatedUsers.forEach(user => {
+                    const userId = user._id || user.id;
                     const row = `
                         <tr>
-                            <td>${user.id}</td>
+                            <td>${userId}</td>
                             <td>${user.firstName} ${user.lastName}</td>
                             <td>${user.email}</td>
                             <td><span class="role-badge role-${user.role}">${this.getRoleLabel(user.role)}</span></td>
                             <td><span class="status-badge status-${user.status}">${this.getStatusLabel(user.status)}</span></td>
                             <td>${this.formatDate(user.createdAt)}</td>
                             <td class="action-buttons">
-                                <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#userModal" data-user-id="${user.id}">
+                                <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#userModal" data-user-id="${userId}">
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                <button class="btn btn-sm ${user.status === 'active' ? 'btn-warning' : 'btn-success'}" onclick="userManager.toggleUserStatus('${user.id}')">
+                                <button class="btn btn-sm ${user.status === 'active' ? 'btn-warning' : 'btn-success'}" onclick="userManager.toggleUserStatus('${userId}')">
                                     <i class="fas ${user.status === 'active' ? 'fa-ban' : 'fa-check'}"></i>
                                 </button>
                             </td>
@@ -777,9 +778,9 @@
             }
 
             editUser(id) {
-                const user = this.allUsers.find(u => u.id === id);
+                const user = this.allUsers.find(u => u._id === id || u.id === id);
                 if (user) {
-                    $('#userId').val(user.id);
+                    $('#userId').val(user._id || user.id);
                     $('#userFirstName').val(user.firstName);
                     $('#userLastName').val(user.lastName);
                     $('#userEmail').val(user.email);
@@ -844,14 +845,31 @@
                 }
             }
 
-            toggleUserStatus(id) {
-                const user = this.allUsers.find(u => u.id === id);
-                if (user) {
-                    user.status = user.status === 'active' ? 'inactive' : 'active';
-                    this.saveUsers();
-                    this.renderUsersTable();
-                    this.updateStats();
-                    this.showNotification(`Статус користувача змінено на ${this.getStatusLabel(user.status)}`, 'success');
+            async toggleUserStatus(id) {
+                try {
+                    const user = this.allUsers.find(u => u._id === id);
+                    if (!user) {
+                        throw new Error('Користувача не знайдено');
+                    }
+
+                    const newStatus = user.status === 'active' ? 'inactive' : 'active';
+                    
+                    const response = await AuthManager.fetchWithAuth(`/api/users/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status: newStatus })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Помилка зміни статусу');
+                    }
+
+                    this.showNotification(`Статус користувача змінено на ${this.getStatusLabel(newStatus)}`, 'success');
+                    await this.loadUsers();
+                    
+                } catch (error) {
+                    console.error('❌ Помилка зміни статусу:', error);
+                    this.showNotification('Не вдалося змінити статус користувача', 'danger');
                 }
             }
 
