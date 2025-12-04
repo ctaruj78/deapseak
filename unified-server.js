@@ -183,6 +183,151 @@ app.get('/api/lifts', authenticateToken, async (req, res) => {
     }
 });
 
+// POST /api/lifts - створення нового ліфта
+app.post('/api/lifts', authenticateToken, async (req, res) => {
+    try {
+        const newLift = {
+            ...req.body,
+            createdAt: new Date().toISOString(),
+            createdBy: req.user.username,
+            updatedAt: new Date().toISOString()
+        };
+        
+        const result = await db.collection('lifts').insertOne(newLift);
+        
+        res.json({
+            success: true,
+            message: 'Ліфт створено успішно',
+            data: {
+                _id: result.insertedId,
+                ...newLift
+            }
+        });
+    } catch (error) {
+        console.error('❌ Помилка створення ліфта:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка створення ліфта'
+        });
+    }
+});
+
+// PUT /api/lifts/:id - оновлення ліфта
+app.put('/api/lifts/:id', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const liftId = new ObjectId(req.params.id);
+        
+        const updateData = {
+            ...req.body,
+            updatedAt: new Date().toISOString(),
+            updatedBy: req.user.username
+        };
+        
+        const result = await db.collection('lifts').updateOne(
+            { _id: liftId },
+            { $set: updateData }
+        );
+        
+        if (result.matchedCount === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Ліфт не знайдено'
+            });
+        }
+        
+        res.json({
+            success: true,
+            message: 'Ліфт оновлено успішно'
+        });
+    } catch (error) {
+        console.error('❌ Помилка оновлення ліфта:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка оновлення ліфта'
+        });
+    }
+});
+
+// DELETE /api/lifts/:id - видалення ліфта
+app.delete('/api/lifts/:id', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const liftId = new ObjectId(req.params.id);
+        
+        const result = await db.collection('lifts').deleteOne({ _id: liftId });
+        
+        if (result.deletedCount === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Ліфт не знайдено'
+            });
+        }
+        
+        res.json({
+            success: true,
+            message: 'Ліфт видалено успішно'
+        });
+    } catch (error) {
+        console.error('❌ Помилка видалення ліфта:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка видалення ліфта'
+        });
+    }
+});
+
+// GET /api/users - отримання користувачів
+app.get('/api/users', authenticateToken, async (req, res) => {
+    try {
+        const users = await db.collection('users').find({}, {
+            projection: { password: 0 } // Не віддаємо паролі
+        }).toArray();
+        
+        res.json({
+            success: true,
+            data: users
+        });
+    } catch (error) {
+        console.error('❌ Помилка отримання користувачів:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка отримання користувачів'
+        });
+    }
+});
+
+// GET /api/users/:id - отримання конкретного користувача
+app.get('/api/users/:id', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const userId = new ObjectId(req.params.id);
+        
+        const user = await db.collection('users').findOne(
+            { _id: userId },
+            { projection: { password: 0 } }
+        );
+        
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'Користувача не знайдено'
+            });
+        }
+        
+        res.json({
+            success: true,
+            data: user
+        });
+    } catch (error) {
+        console.error('❌ Помилка отримання користувача:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка отримання користувача'
+        });
+    }
+});
+
 // Заявки на обслуговування
 app.get('/api/requests', authenticateToken, async (req, res) => {
     try {
