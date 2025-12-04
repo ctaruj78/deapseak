@@ -28,6 +28,25 @@ server.log
 *-backup.js
 *-old.js
 *-broken.js
+*.OLD
+*.old
+*.bak
+*.backup
+
+# Temporary
+temp/
+tmp/
+
+# Uploads
+uploads/*
+!uploads/.gitkeep
+
+# Archive
+archive/
+
+# Server PIDs
+*.pid
+server.pid
 *.backup
 
 # OS generated files

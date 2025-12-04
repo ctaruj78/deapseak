@@ -1,11 +1,10 @@
 class AppConfig {
     // Автоматичне визначення базового URL для Codespaces
     static getBaseUrl() {
-        // ВАЖЛИВО: Завжди використовуємо localhost навіть в Codespaces!
-        // GitHub Codespaces має проблеми з CORS та multipart/form-data через tunnel
-        // Внутрішній localhost URL працює напряму без tunnel проблем
-        console.log('💻 Backend URL: http://localhost:3001 (direct connection)');
-        return 'http://localhost:3001';
+        // UNIFIED SERVER на порту 5000
+        // Єдина точка входу для frontend + API
+        console.log('💻 Unified Server URL: http://localhost:5000');
+        return 'http://localhost:5000';
         
         // Стара логіка (не працює в Codespaces через CORS/tunnel issues):
         // if (window.location.hostname.includes('github.dev')) {
