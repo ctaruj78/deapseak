@@ -97,10 +97,38 @@
             } else if (typeof AuthManager !== 'undefined' && AuthManager.isAuthenticated()) {
                 const user = AuthManager.getCurrentUser();
                 if (user && user.role) {
-                    console.log('✅ Користувач вже авторизований, перенаправляємо...');
-                    sessionStorage.setItem('redirecting', 'true');
-                    redirectUserByRole(user.role);
-                    return;
+                    // Перевіряємо чи користувач хоче вийти (якщо в URL є параметр logout)
+                    const urlParams = new URLSearchParams(window.location.search);
+                    if (urlParams.get('logout') === 'true') {
+                        console.log('🚪 Користувач хоче вийти, очищуємо дані...');
+                        AuthManager.logout();
+                        return;
+                    }
+                    
+                    console.log('✅ Користувач вже авторизований:', user.username, '(' + user.role + ')');
+                    
+                    // Показуємо повідомлення з можливістю вийти
+                    const loginContainer = document.querySelector('.login-container');
+                    if (loginContainer) {
+                        loginContainer.innerHTML = `
+                            <div style="text-align: center; padding: 40px;">
+                                <i class="fas fa-user-check" style="font-size: 64px; color: #28a745; margin-bottom: 20px;"></i>
+                                <h3>Ви вже авторизовані</h3>
+                                <p>Користувач: <strong>${user.username}</strong></p>
+                                <p>Роль: <strong>${getRoleName(user.role)}</strong></p>
+                                <div style="margin-top: 30px;">
+                                    <button onclick="continueToPanel()" class="btn btn-primary btn-lg" style="margin: 5px;">
+                                        <i class="fas fa-arrow-right"></i> Продовжити до панелі
+                                    </button>
+                                    <button onclick="logoutAndChooseRole()" class="btn btn-outline-secondary btn-lg" style="margin: 5px;">
+                                        <i class="fas fa-sign-out-alt"></i> Вийти та обрати іншу роль
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    return; // Не робимо автоматичний редирект
                 }
             }
             
@@ -130,6 +158,35 @@
                     default:
                         window.location.href = 'pages/admin/admin-dashboard.html';
                 }
+            }
+            
+            // Продовжити до панелі (для вже авторизованих)
+            function continueToPanel() {
+                const user = AuthManager.getCurrentUser();
+                if (user && user.role) {
+                    sessionStorage.setItem('redirecting', 'true');
+                    redirectUserByRole(user.role);
+                }
+            }
+            
+            // Вийти та обрати іншу роль
+            function logoutAndChooseRole() {
+                if (confirm('Ви впевнені що хочете вийти?')) {
+                    AuthManager.logout();
+                    location.reload();
+                }
+            }
+            
+            // Отримати назву ролі українською
+            function getRoleName(role) {
+                const roleNames = {
+                    'admin': 'Адміністратор',
+                    'dispatcher': 'Диспетчер',
+                    'technician': 'Технік',
+                    'tech': 'Технік',
+                    'client': 'Клієнт'
+                };
+                return roleNames[role] || role;
             }
             
             // Показ повідомлень
