@@ -139,7 +139,14 @@ function authenticateToken(req, res, next) {
                   req.headers['x-auth-token'] || 
                   req.cookies?.auth_token;
 
+    console.log('🔐 Auth check:', {
+        hasAuthHeader: !!authHeader,
+        hasToken: !!token,
+        tokenPreview: token ? token.substring(0, 20) + '...' : 'none'
+    });
+
     if (!token) {
+        console.log('❌ Токен не надано');
         return res.status(401).json({
             success: false,
             message: 'Токен авторизації не надано'
@@ -148,12 +155,15 @@ function authenticateToken(req, res, next) {
 
     jwt.verify(token, JWT_SECRET, (err, user) => {
         if (err) {
-            console.log('❌ Невалідний токен:', err.message);
+            console.log('❌ JWT verify error:', err.message);
+            console.log('🔑 JWT_SECRET:', JWT_SECRET);
+            console.log('📝 Token:', token.substring(0, 50) + '...');
             return res.status(403).json({
                 success: false,
-                message: 'Невалідний токен'
+                message: 'Невалідний токен: ' + err.message
             });
         }
+        console.log('✅ Token valid, user:', user.username);
         req.user = user;
         next();
     });
