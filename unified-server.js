@@ -1197,7 +1197,8 @@ app.post('/api/ai/chat', authenticateToken, async (req, res) => {
                                 requirement: point.requirement,
                                 description: point.description,
                                 explanation: point.client_explanation,
-                                violations: point.common_violations || []
+                                violations: point.common_violations || [],
+                                officialSource: reg.official_source || null
                             };
                             break;
                         }
@@ -1217,8 +1218,14 @@ app.post('/api/ai/chat', authenticateToken, async (req, res) => {
                       `💡 Explicação / Пояснення:\n${foundInRegulations.explanation}\n\n`;
             
             if (foundInRegulations.violations.length > 0) {
-                response += `⚠️ Violações comuns / Типові порушення:\n` +
-                           foundInRegulations.violations.map(v => `🔴 ${v}`).join('\n');
+                response += `⚠️ Violações comuns / Típові порушення:\n` +
+                           foundInRegulations.violations.map(v => `🔴 ${v}`).join('\n') + '\n\n';
+            }
+            
+            // Add official source link
+            if (foundInRegulations.officialSource) {
+                response += `📜 **Офіційний текст закону / Texto oficial:**\n` +
+                           `${foundInRegulations.officialSource}`;
             }
         }
         // Otherwise use manual responses below
@@ -1489,7 +1496,8 @@ app.post('/api/ai/chat', authenticateToken, async (req, res) => {
                                 requirement: point.requirement,
                                 description: point.description,
                                 explanation: point.client_explanation,
-                                violations: point.common_violations
+                                violations: point.common_violations,
+                                officialSource: reg.official_source || null
                             };
                             break;
                         }
@@ -1504,11 +1512,21 @@ app.post('/api/ai/chat', authenticateToken, async (req, res) => {
                           `💡 Para clientes / Для клієнтів:\n${specificArticle.explanation}\n\n` +
                           `⚠️ Violações comuns / Типові порушення:\n` +
                           specificArticle.violations.map(v => `❌ ${v}`).join('\n');
+                
+                // Add official source link
+                if (specificArticle.officialSource) {
+                    response += `\n\n📜 **Офіційний текст закону / Texto oficial:**\n` +
+                               `${specificArticle.officialSource}`;
+                }
             } else {
                 // General response with all regulations
-                const regList = portugueseRegulations.regulations.map(r => 
-                    `• **${r.number}** (${r.date.split('-')[0]}) - ${r.title}`
-                ).join('\n');
+                const regList = portugueseRegulations.regulations.map(r => {
+                    let line = `• **${r.number}** (${r.date.split('-')[0]}) - ${r.title}`;
+                    if (r.official_source) {
+                        line += `\n  📜 [Texto oficial](${r.official_source})`;
+                    }
+                    return line;
+                }).join('\n\n');
                 
                 response = `📚 Regulamentação portuguesa / Португальські регламенти:\n\n` +
                           `Total de ${portugueseRegulations.regulations.length} regulamentos na base:\n\n` +
