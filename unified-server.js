@@ -1,16 +1,36 @@
+// ============================================
+// UNIFIED SERVER - DeapSeaK v2
+// Один сервер для Frontend + API + WebSocket
+// ============================================
+
+require('dotenv').config();
+
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { MongoClient } = require('mongodb');
+const multer = require('multer');
+const fs = require('fs').promises;
 
 const app = express();
 const PORT = process.env.PORT || 5000; // Unified Server на порту 5000
 
-// Middleware
+// Middleware - CORS для Codespaces
 app.use(cors({
-    origin: ['http://localhost:5000', 'http://127.0.0.1:5000', 'http://localhost:3002'],
+    origin: function(origin, callback) {
+        // Дозволити запити без origin (Postman, curl) або з будь-якого origin
+        if (!origin || 
+            origin.includes('localhost') || 
+            origin.includes('127.0.0.1') ||
+            origin.includes('github.dev') ||
+            origin.includes('app.github.dev')) {
+            callback(null, true);
+        } else {
+            callback(null, true); // В dev режимі дозволяємо все
+        }
+    },
     credentials: true
 }));
 app.use(express.json());
@@ -165,6 +185,96 @@ function authenticateToken(req, res, next) {
         next();
     });
 }
+
+// Multer configuration for PDF uploads
+const storage = multer.diskStorage({
+    destination: async (req, file, cb) => {
+        const uploadDir = path.join(__dirname, 'uploads', 'pdfs');
+        try {
+            await fs.mkdir(uploadDir, { recursive: true });
+            cb(null, uploadDir);
+        } catch (error) {
+            cb(error);
+        }
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, 'report-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+
+const upload = multer({
+    storage: storage,
+    limits: {
+        fileSize: 10 * 1024 * 1024 // 10MB
+    },
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype === 'application/pdf') {
+            cb(null, true);
+        } else {
+            cb(new Error('Only PDF files are allowed'));
+        }
+    }
+});
+
+// PDF Parser Service
+const pdfParser = require('./services/pdf-parser');
+
+// PDF Upload and Analysis endpoint
+app.post('/api/pdf/upload', authenticateToken, upload.single('pdfReport'), async (req, res) => {
+    try {
+        console.log('📄 PDF upload request received');
+        console.log('👤 User:', req.user?.username || 'Unknown');
+        console.log('📁 File:', req.file?.originalname || 'No file');
+        
+        if (!req.file) {
+            console.error('❌ No file in request');
+            return res.status(400).json({
+                success: false,
+                error: 'No PDF file uploaded. Please select a PDF file.'
+            });
+        }
+
+        console.log('📄 PDF uploaded:', req.file.filename, 'by', req.user.username);
+        console.log('📏 File size:', req.file.size, 'bytes');
+        console.log('📍 File path:', req.file.path);
+
+        // Parse PDF and extract analysis
+        console.log('🔍 Starting PDF analysis...');
+        const result = await pdfParser.parsePDF(req.file.path);
+        console.log('📊 Analysis result:', result.success ? 'Success' : 'Failed');
+
+        // Clean up the uploaded file
+        await pdfParser.cleanupFile(req.file.path);
+
+        if (result.success) {
+            console.log('✅ PDF analysis completed:', result.analysis.violations.length, 'violations found');
+            res.json({
+                success: true,
+                analysis: result.analysis
+            });
+        } else {
+            console.error('❌ PDF analysis failed:', result.error);
+            res.status(500).json({
+                success: false,
+                error: result.error || 'Failed to analyze PDF'
+            });
+        }
+    } catch (error) {
+        console.error('❌ PDF upload error:', error);
+        console.error('Error stack:', error.stack);
+        
+        // Clean up file on error
+        if (req.file) {
+            await pdfParser.cleanupFile(req.file.path).catch(() => {});
+        }
+        
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Internal server error during PDF processing'
+        });
+    }
+});
 
 // Захищені маршрути
 app.get('/api/lifts', authenticateToken, async (req, res) => {
@@ -600,6 +710,645 @@ app.delete('/api/requests/:id', authenticateToken, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Помилка видалення заявки'
+        });
+    }
+});
+
+// ============================================
+// SETTINGS API
+// ============================================
+
+// GET /api/settings - отримання налаштувань користувача
+app.get('/api/settings', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        
+        // Шукаємо налаштування користувача
+        let userSettings = await db.collection('user_settings').findOne({ userId });
+        
+        // Якщо немає - створюємо дефолтні
+        if (!userSettings) {
+            userSettings = {
+                userId,
+                language: 'uk',
+                theme: 'light',
+                notifications: {
+                    email: true,
+                    push: true,
+                    sms: false
+                },
+                display: {
+                    itemsPerPage: 25,
+                    dateFormat: 'DD/MM/YYYY',
+                    timeFormat: '24h'
+                },
+                createdAt: new Date().toISOString()
+            };
+            
+            await db.collection('user_settings').insertOne(userSettings);
+        }
+        
+        res.json({
+            success: true,
+            settings: userSettings
+        });
+    } catch (error) {
+        console.error('❌ Помилка отримання налаштувань:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка отримання налаштувань'
+        });
+    }
+});
+
+// PUT /api/settings - оновлення налаштувань
+app.put('/api/settings', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const newSettings = req.body;
+        
+        const result = await db.collection('user_settings').updateOne(
+            { userId },
+            { 
+                $set: {
+                    ...newSettings,
+                    userId,
+                    updatedAt: new Date().toISOString()
+                }
+            },
+            { upsert: true }
+        );
+        
+        res.json({
+            success: true,
+            message: 'Налаштування збережено',
+            modified: result.modifiedCount
+        });
+    } catch (error) {
+        console.error('❌ Помилка збереження налаштувань:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка збереження налаштувань'
+        });
+    }
+});
+
+// PUT /api/settings/language - оновлення мови
+app.put('/api/settings/language', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { language } = req.body;
+        
+        if (!language) {
+            return res.status(400).json({
+                success: false,
+                message: 'Мова не вказана'
+            });
+        }
+        
+        const result = await db.collection('user_settings').updateOne(
+            { userId },
+            { 
+                $set: {
+                    language,
+                    updatedAt: new Date().toISOString()
+                }
+            },
+            { upsert: true }
+        );
+        
+        res.json({
+            success: true,
+            message: 'Мову змінено',
+            language
+        });
+    } catch (error) {
+        console.error('❌ Помилка зміни мови:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка зміни мови'
+        });
+    }
+});
+
+// PUT /api/settings/theme - оновлення теми
+app.put('/api/settings/theme', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { theme } = req.body;
+        
+        if (!theme) {
+            return res.status(400).json({
+                success: false,
+                message: 'Тема не вказана'
+            });
+        }
+        
+        const result = await db.collection('user_settings').updateOne(
+            { userId },
+            { 
+                $set: {
+                    theme,
+                    updatedAt: new Date().toISOString()
+                }
+            },
+            { upsert: true }
+        );
+        
+        res.json({
+            success: true,
+            message: 'Тему змінено',
+            theme
+        });
+    } catch (error) {
+        console.error('❌ Помилка зміни теми:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка зміни теми'
+        });
+    }
+});
+
+// ============================================
+// AI ASSISTANT ENDPOINTS
+// ============================================
+
+// Load regulations data
+const portugueseRegulations = require('./data/portugal-lift-regulations.json');
+const regulationsSeed = require('./data/portuguese-regulations-seed.js');
+
+// Функція аналізу звіту інспекції
+function analyzeInspectionReport(reportText) {
+    console.log('🔍 Аналіз звіту, довжина тексту:', reportText.length);
+    
+    // Визначення порушень з тексту
+    const violations = [];
+    const lines = reportText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    
+    // Клаузи та їх категорії
+    const knownViolations = {
+        // Критичні порушення (C1)
+        'bloqueio.*porta.*defeituoso': { severity: 'C1', category: 'Segurança de Portas', points: 15 },
+        'porta.*sem.*sensor': { severity: 'C1', category: 'Segurança de Portas', points: 15 },
+        'travagem.*defeituoso': { severity: 'C1', category: 'Sistema de Travagem', points: 20 },
+        'pára-quedas.*ausente': { severity: 'C1', category: 'Sistema de Segurança', points: 25 },
+        'cabos.*desgast': { severity: 'C1', category: 'Cabos e Suspensão', points: 20 },
+        
+        // Moderados (C2)
+        'falta.*iluminação.*emergência': { severity: 'C2', category: 'Iluminação', points: 8 },
+        'ucm.*não.*instalado': { severity: 'C2', category: 'UCM', points: 10 },
+        'alarme.*não.*funcional': { severity: 'C2', category: 'Sistema de Alarme', points: 10 },
+        'manutenção.*atrasada': { severity: 'C2', category: 'Manutenção', points: 8 },
+        'documentação.*incompleta': { severity: 'C2', category: 'Documentação', points: 5 },
+        
+        // Leves (C3)
+        'botões.*sem.*braille': { severity: 'C3', category: 'Acessibilidade', points: 3 },
+        'sinalização.*faltando': { severity: 'C3', category: 'Sinalização', points: 2 },
+        'pintura.*desgastada': { severity: 'C3', category: 'Estético', points: 1 },
+        'limpeza.*inadequada': { severity: 'C3', category: 'Manutenção', points: 2 }
+    };
+    
+    // Аналіз кожної лінії
+    lines.forEach((line, index) => {
+        const lineLower = line.toLowerCase();
+        
+        for (const [pattern, data] of Object.entries(knownViolations)) {
+            const regex = new RegExp(pattern, 'i');
+            if (regex.test(lineLower)) {
+                violations.push({
+                    id: violations.length + 1,
+                    description: line,
+                    severity: data.severity,
+                    category: data.category,
+                    points: data.points,
+                    article: getRelatedArticle(data.category),
+                    recommendation: getRecommendation(data.category),
+                    deadline: getDeadline(data.severity)
+                });
+                break;
+            }
+        }
+        
+        // Якщо не знайдено відповідності, але лінія виглядає як порушення
+        if (line.length > 10 && !violations.some(v => v.description === line)) {
+            if (lineLower.includes('defeituoso') || lineLower.includes('ausente') || 
+                lineLower.includes('não') || lineLower.includes('falta')) {
+                violations.push({
+                    id: violations.length + 1,
+                    description: line,
+                    severity: 'C2',
+                    category: 'Geral',
+                    points: 5,
+                    article: 'Art. Geral',
+                    recommendation: 'Corrigir conforme regulamentação',
+                    deadline: '30 dias'
+                });
+            }
+        }
+    });
+    
+    // Підрахунок статистики
+    const totalPoints = violations.reduce((sum, v) => sum + v.points, 0);
+    const c1Count = violations.filter(v => v.severity === 'C1').length;
+    const c2Count = violations.filter(v => v.severity === 'C2').length;
+    const c3Count = violations.filter(v => v.severity === 'C3').length;
+    
+    // Визначення статусу
+    let status = 'APROVADO';
+    let statusColor = 'green';
+    if (c1Count > 0) {
+        status = 'REPROVADO - Crítico';
+        statusColor = 'red';
+    } else if (c2Count > 2) {
+        status = 'CONDICIONAL';
+        statusColor = 'orange';
+    } else if (totalPoints > 15) {
+        status = 'CONDICIONAL';
+        statusColor = 'orange';
+    }
+    
+    // Формування резюме
+    const summary = `📋 **Результат аналізу звіту**\n\n` +
+                   `**Статус:** ${status}\n` +
+                   `**Всього порушень:** ${violations.length}\n` +
+                   `• Критичні (C1): ${c1Count}\n` +
+                   `• Помірні (C2): ${c2Count}\n` +
+                   `• Легкі (C3): ${c3Count}\n\n` +
+                   `**Загальна оцінка:** ${totalPoints} балів\n\n` +
+                   (c1Count > 0 ? `⚠️ УВАГА: Виявлено критичні порушення! Експлуатація небезпечна.\n` : '') +
+                   (c2Count > 0 ? `⚡ Потрібні корективні дії протягом 30 днів.\n` : '') +
+                   `\nДетальний аналіз кожного пункту див. нижче.`;
+    
+    return {
+        violations,
+        summary,
+        totalPoints,
+        status,
+        statusColor,
+        counts: { c1: c1Count, c2: c2Count, c3: c3Count }
+    };
+}
+
+function getRelatedArticle(category) {
+    const articles = {
+        'Segurança de Portas': 'Art. 6.2.1 - DL 163/2006',
+        'Sistema de Travagem': 'Art. 6.3.1 - DL 163/2006',
+        'Sistema de Segurança': 'Art. 6.4 - DL 163/2006',
+        'Cabos e Suspensão': 'Art. 6.5.2 - DL 163/2006',
+        'Iluminação': 'Art. 6.7.3 - DL 163/2006',
+        'UCM': 'Art. 8.1 - DL 163/2006',
+        'Sistema de Alarme': 'Art. 6.8 - DL 163/2006',
+        'Manutenção': 'Art. 12 - Decreto 320/2002',
+        'Documentação': 'Art. 14 - Decreto 320/2002',
+        'Acessibilidade': 'Art. 6.9 - DL 163/2006',
+        'Sinalização': 'Art. 6.7.1 - DL 163/2006'
+    };
+    return articles[category] || 'Regulamentação Geral';
+}
+
+function getRecommendation(category) {
+    const recommendations = {
+        'Segurança de Portas': 'Substituir ou reparar dispositivo de bloqueio. Instalar sensores de segurança.',
+        'Sistema de Travagem': 'Revisão completa do sistema de travagem por técnico certificado.',
+        'Sistema de Segurança': 'Instalação de pára-quedas conforme normas EN 81.',
+        'Cabos e Suspensão': 'Substituição de cabos desgastados. Inspeção de polias e fixações.',
+        'Iluminação': 'Instalar iluminação de emergência com bateria autônoma.',
+        'UCM': 'Instalar Unidade de Controlo e Manobra certificada.',
+        'Sistema de Alarme': 'Reparar ou substituir sistema de alarme. Testar conexão.',
+        'Manutenção': 'Regularizar contrato de manutenção preventiva mensal.',
+        'Documentação': 'Completar documentação técnica e registos de manutenção.',
+        'Acessibilidade': 'Instalar botões com identificação Braille.',
+        'Sinalização': 'Instalar sinalização de segurança obrigatória.'
+    };
+    return recommendations[category] || 'Consultar técnico certificado para resolução.';
+}
+
+function getDeadline(severity) {
+    const deadlines = {
+        'C1': 'Imediato - suspender operação',
+        'C2': '30 dias',
+        'C3': '90 dias'
+    };
+    return deadlines[severity] || '30 dias';
+}
+
+// AI Chat endpoint
+app.post('/api/ai/chat', authenticateToken, async (req, res) => {
+    try {
+        const { message, context } = req.body;
+        
+        if (!message) {
+            return res.status(400).json({
+                success: false,
+                message: 'Message is required'
+            });
+        }
+
+        console.log('🤖 AI Chat request:', message.substring(0, 100), 'from', req.user.email || req.user.username);
+        
+        // Перевірка чи це звіт інспекції
+        if (context && context.reportText) {
+            console.log('📋 Аналіз звіту інспекції...');
+            const analysisResult = analyzeInspectionReport(context.reportText);
+            return res.json({
+                success: true,
+                data: {
+                    action: 'inspection_analysis',
+                    response: analysisResult.summary,
+                    data: {
+                        analysis: analysisResult
+                    }
+                }
+            });
+        }
+
+        // Simple AI response based on keywords
+        let response = '';
+        const lowerMessage = message.toLowerCase();
+
+        // Check for regulations queries
+        if (lowerMessage.includes('regulament') || lowerMessage.includes('lei') || 
+            lowerMessage.includes('norma') || lowerMessage.includes('artigo')) {
+            response = `📚 Sobre regulamentações:\n\n` +
+                      `Temos ${portugueseRegulations.regulations.length} regulamentos catalogados.\n\n` +
+                      `Principais documentos:\n` +
+                      `• Decreto-Lei 163/2006 - Regulamento de Segurança\n` +
+                      `• Decreto 320/2002 - Inspeções Periódicas\n` +
+                      `• Portaria 528/2008 - Certificação de Técnicos\n\n` +
+                      `Use a aba "Legislação" para pesquisa detalhada.`;
+        }
+        // Check for inspection queries
+        else if (lowerMessage.includes('inspe') || lowerMessage.includes('vistoria')) {
+            response = `🔍 Sobre inspeções:\n\n` +
+                      `As inspeções periódicas são obrigatórias:\n` +
+                      `• Elevadores novos: Primeira inspeção após 6 meses\n` +
+                      `• Elevadores existentes: Anual\n` +
+                      `• Elevadores antigos (>15 anos): Semestral\n\n` +
+                      `A inspeção verifica:\n` +
+                      `✓ Dispositivos de segurança\n` +
+                      `✓ Estado das portas\n` +
+                      `✓ Sistema de travagem\n` +
+                      `✓ Cabos e polias\n` +
+                      `✓ Documentação técnica`;
+        }
+        // Check for safety queries
+        else if (lowerMessage.includes('segur') || lowerMessage.includes('acident') || 
+                 lowerMessage.includes('risco')) {
+            response = `⚠️ Sobre segurança:\n\n` +
+                      `Principais riscos em elevadores:\n` +
+                      `🔴 Críticos (C1):\n` +
+                      `• Portas sem sensores de segurança\n` +
+                      `• Sistema de travagem deficiente\n` +
+                      `• Ausência de pára-quedas\n\n` +
+                      `🟠 Moderados (C2):\n` +
+                      `• Manutenção atrasada\n` +
+                      `• Documentação incompleta\n` +
+                      `• Iluminação inadequada\n\n` +
+                      `🟡 Leves (C3):\n` +
+                      `• Sinalização faltando\n` +
+                      `• Pequenos desgastes estéticos`;
+        }
+        // Check for maintenance queries
+        else if (lowerMessage.includes('manutenç') || lowerMessage.includes('manutençao')) {
+            response = `🔧 Sobre manutenção:\n\n` +
+                      `Manutenção preventiva obrigatória:\n` +
+                      `• Frequência: Mensal\n` +
+                      `• Empresa: Deve ser certificada\n` +
+                      `• Documentação: Obrigatório registo\n\n` +
+                      `Itens verificados:\n` +
+                      `✓ Lubrificação de componentes\n` +
+                      `✓ Ajuste de portas\n` +
+                      `✓ Teste de dispositivos de segurança\n` +
+                      `✓ Verificação de cabos\n` +
+                      `✓ Limpeza da casa de máquinas`;
+        }
+        // Check for cost queries
+        else if (lowerMessage.includes('custo') || lowerMessage.includes('preço') || 
+                 lowerMessage.includes('valor')) {
+            response = `💰 Custos estimados:\n\n` +
+                      `Manutenção regular:\n` +
+                      `• Mensal: €50-150\n` +
+                      `• Anual: €600-1.800\n\n` +
+                      `Inspeções:\n` +
+                      `• Inspeção periódica: €150-300\n` +
+                      `• Inspeção extraordinária: €200-400\n\n` +
+                      `Reparações comuns:\n` +
+                      `• Troca de portas: €500-2.000\n` +
+                      `• Sistema de segurança: €1.000-5.000\n` +
+                      `• Modernização completa: €15.000-40.000`;
+        }
+        // Default helpful response
+        else {
+            response = `👋 Olá! Sou o assistente DeapSeaK.\n\n` +
+                      `Posso ajudar com:\n` +
+                      `📚 Regulamentação portuguesa de elevadores\n` +
+                      `🔍 Informações sobre inspeções\n` +
+                      `⚠️ Questões de segurança\n` +
+                      `🔧 Manutenção preventiva\n` +
+                      `💰 Estimativas de custos\n\n` +
+                      `Pergunta específica: "${message}"\n\n` +
+                      `Tente perguntar sobre:\n` +
+                      `• "Quais são as regulamentações principais?"\n` +
+                      `• "Como funciona a inspeção?"\n` +
+                      `• "Quais os principais riscos de segurança?"\n` +
+                      `• "Quanto custa a manutenção?"`;
+        }
+
+        res.json({
+            success: true,
+            data: {
+                response,
+                timestamp: new Date().toISOString()
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ AI chat error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erro ao processar mensagem'
+        });
+    }
+});
+
+// AI Consult endpoint (alias for chat for legal questions)
+app.post('/api/ai/consult', authenticateToken, async (req, res) => {
+    try {
+        const { question } = req.body;
+        
+        if (!question) {
+            return res.status(400).json({
+                success: false,
+                message: 'Question is required'
+            });
+        }
+
+        console.log('⚖️ Legal consult:', question, 'from', req.user.username);
+
+        // Use same logic as chat
+        let answer = '';
+        const lowerQuestion = question.toLowerCase();
+
+        // Legal-specific responses
+        if (lowerQuestion.includes('responsabilid') || lowerQuestion.includes('culpa')) {
+            answer = `⚖️ Responsabilidades Legais:\n\n` +
+                    `O proprietário do elevador é legalmente responsável por:\n` +
+                    `• Manutenção regular (mensal)\n` +
+                    `• Inspeções periódicas obrigatórias\n` +
+                    `• Documentação técnica atualizada\n` +
+                    `• Segurança dos utilizadores\n\n` +
+                    `Em caso de acidente:\n` +
+                    `🔴 Responsabilidade Civil - Indemnizações\n` +
+                    `🔴 Responsabilidade Criminal - Se houver negligência\n` +
+                    `🔴 Coimas Administrativas - €500 a €50.000\n\n` +
+                    `Recomendação: Manter seguro de responsabilidade civil.`;
+        }
+        else if (lowerQuestion.includes('coima') || lowerQuestion.includes('multa') || 
+                 lowerQuestion.includes('penalid')) {
+            answer = `💰 Coimas e Penalidades:\n\n` +
+                    `Não conformidades C1 (Críticas):\n` +
+                    `• Coima: €5.000 - €50.000\n` +
+                    `• Interdição imediata do elevador\n` +
+                    `• Possível processo criminal\n\n` +
+                    `Não conformidades C2 (Moderadas):\n` +
+                    `• Coima: €500 - €5.000\n` +
+                    `• Prazo para correção: 30 dias\n\n` +
+                    `Não conformidades C3 (Leves):\n` +
+                    `• Advertência ou coima: €100 - €500\n` +
+                    `• Prazo para correção: 90 dias\n\n` +
+                    `Falta de inspeção:\n` +
+                    `• Coima: €1.000 - €10.000\n` +
+                    `• Elevador pode ser interditado`;
+        }
+        else if (lowerQuestion.includes('prazo') || lowerQuestion.includes('tempo')) {
+            answer = `⏰ Prazos Legais:\n\n` +
+                    `Inspeções:\n` +
+                    `• Elevadores novos: 6 meses após instalação\n` +
+                    `• Elevadores normais: Anualmente\n` +
+                    `• Elevadores >15 anos: Semestralmente\n\n` +
+                    `Correções após inspeção:\n` +
+                    `• C1 (Crítico): Imediato (0-7 dias)\n` +
+                    `• C2 (Moderado): 30 dias\n` +
+                    `• C3 (Leve): 90 dias\n\n` +
+                    `Manutenção:\n` +
+                    `• Preventiva: Mensal obrigatório\n` +
+                    `• Registo: Manter por 5 anos`;
+        }
+        else {
+            // Fallback to general AI chat response
+            const chatResponse = await this.handleChatMessage(question);
+            answer = chatResponse;
+        }
+
+        res.json({
+            success: true,
+            data: {
+                answer,
+                question,
+                timestamp: new Date().toISOString(),
+                sources: [
+                    'Decreto-Lei 163/2006',
+                    'Decreto 320/2002',
+                    'Portaria 528/2008'
+                ]
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ AI consult error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erro ao processar consulta'
+        });
+    }
+});
+
+// Get all regulations
+app.get('/api/ai/regulations', authenticateToken, async (req, res) => {
+    try {
+        console.log('📚 Regulations request from', req.user.username);
+        
+        res.json({
+            success: true,
+            data: {
+                regulations: portugueseRegulations.regulations,
+                metadata: portugueseRegulations.metadata,
+                total: portugueseRegulations.regulations.length
+            }
+        });
+    } catch (error) {
+        console.error('❌ Regulations error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erro ao carregar regulamentações'
+        });
+    }
+});
+
+// Search regulations
+app.get('/api/ai/regulations/search', authenticateToken, async (req, res) => {
+    try {
+        const { q } = req.query;
+        
+        if (!q) {
+            return res.status(400).json({
+                success: false,
+                message: 'Search query required'
+            });
+        }
+
+        console.log('🔍 Regulation search:', q, 'from', req.user.username);
+
+        const query = q.toLowerCase();
+        const results = portugueseRegulations.regulations.filter(reg => {
+            return reg.title.toLowerCase().includes(query) ||
+                   reg.summary.toLowerCase().includes(query) ||
+                   reg.number.toLowerCase().includes(query) ||
+                   reg.scope.some(s => s.toLowerCase().includes(query));
+        });
+
+        res.json({
+            success: true,
+            data: {
+                results,
+                query: q,
+                total: results.length
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ Regulation search error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erro na pesquisa'
+        });
+    }
+});
+
+// Get specific regulation by ID
+app.get('/api/ai/regulations/:id', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const regulation = portugueseRegulations.regulations.find(r => r.id === id);
+        
+        if (!regulation) {
+            return res.status(404).json({
+                success: false,
+                message: 'Regulamento não encontrado'
+            });
+        }
+
+        res.json({
+            success: true,
+            data: regulation
+        });
+
+    } catch (error) {
+        console.error('❌ Regulation fetch error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erro ao carregar regulamento'
         });
     }
 });
