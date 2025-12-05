@@ -276,6 +276,57 @@ app.post('/api/pdf/upload', authenticateToken, upload.single('pdfReport'), async
     }
 });
 
+// Portuguese Regulations Search API
+app.get('/api/regulations', authenticateToken, async (req, res) => {
+    try {
+        const { search } = req.query;
+        
+        // Load regulations
+        const fs = require('fs');
+        const regulationsPath = path.join(__dirname, 'data', 'portugal-lift-regulations.json');
+        const regulationsData = JSON.parse(fs.readFileSync(regulationsPath, 'utf8'));
+        
+        if (!search) {
+            // Return all regulations
+            return res.json({
+                success: true,
+                data: regulationsData.regulations,
+                metadata: regulationsData.metadata,
+                total: regulationsData.regulations.length
+            });
+        }
+        
+        // Search in regulations
+        const searchLower = search.toLowerCase();
+        const results = regulationsData.regulations.filter(reg => {
+            return (
+                (reg.title && reg.title.toLowerCase().includes(searchLower)) ||
+                (reg.summary && reg.summary.toLowerCase().includes(searchLower)) ||
+                (reg.number && reg.number.toLowerCase().includes(searchLower)) ||
+                (reg.scope && reg.scope.some(s => s && s.toLowerCase().includes(searchLower))) ||
+                (reg.inspection_points && reg.inspection_points.some(point => 
+                    (point.requirement && point.requirement.toLowerCase().includes(searchLower)) ||
+                    (point.description && point.description.toLowerCase().includes(searchLower)) ||
+                    (point.client_explanation && point.client_explanation.toLowerCase().includes(searchLower))
+                ))
+            );
+        });
+        
+        res.json({
+            success: true,
+            data: results,
+            query: search,
+            total: results.length
+        });
+    } catch (error) {
+        console.error('❌ Regulations search error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
 // Захищені маршрути
 app.get('/api/lifts', authenticateToken, async (req, res) => {
     try {
