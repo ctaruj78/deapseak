@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест PDF Аналізу - Deapseak</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+        
+        .test-section {
+            margin: 30px 0;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .test-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 300px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin-bottom: 20px;
+            resize: vertical;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .result-panel {
+            margin-top: 30px;
+            padding: 25px;
+            background: white;
+            border-radius: 15px;
+            border: 2px solid #ddd;
+            display: none;
+        }
+        
+        .result-panel.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .result-panel h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .violation-card {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            border-left: 5px solid #ffc107;
+        }
+        
+        .violation-card.C1 {
+            border-left-color: #dc3545;
+            background: #fff5f5;
+        }
+        
+        .violation-card.C2 {
+            border-left-color: #ff9800;
+            background: #fff8f0;
+        }
+        
+        .violation-card.C3 {
+            border-left-color: #ffc107;
+            background: #fffbf0;
+        }
+        
+        .violation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .classification {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 14px;
+        }
+        
+        .C1 .classification {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .C2 .classification {
+            background: #ff9800;
+            color: white;
+        }
+        
+        .C3 .classification {
+            background: #ffc107;
+            color: #333;
+        }
+        
+        .article {
+            font-weight: 600;
+            color: #667eea;
+            font-size: 16px;
+        }
+        
+        .description {
+            color: #333;
+            line-height: 1.6;
+            margin: 10px 0;
+        }
+        
+        .format-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #e9ecef;
+            border-radius: 15px;
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 10px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 1em;
+            opacity: 0.9;
+        }
+        
+        .success-message {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 15px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            overflow-x: auto;
+            font-size: 13px;
+        }
+        
+        .metadata {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+        
+        .metadata-item {
+            display: flex;
+            padding: 8px 0;
+            border-bottom: 1px solid #bbdefb;
+        }
+        
+        .metadata-item:last-child {
+            border-bottom: none;
+        }
+        
+        .metadata-label {
+            font-weight: 600;
+            color: #1976d2;
+            min-width: 150px;
+        }
+        
+        .metadata-value {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Тест PDF Парсингу - 4 Формати</h1>
+        
+        <!-- Test Section 1: Format 1 -->
+        <div class="test-section">
+            <h2>📋 Формат 1: C1 Art.º 45 - опис</h2>
+            <textarea id="format1">RELATÓRIO DE INSPEÇÃO TÉCNICA
+Número: 2024-001
+Data: 05/12/2024
+Matrícula: 12345
+
+NÃO CONFORMIDADES IDENTIFICADAS:
+
+C1 Art.º 12 - Falta de dispositivos de segurança nas portas da cabina
+C2 Art.º 13 - Ausência de manutenção preventiva nos últimos 6 meses
+C3 Art.º 20 - Sinalização de capacidade ilegível
+C1 Art.º 18 - Sistema de travagem de emergência não funcional
+C2 Art.º 45 - Ventilação inadequada na cabine</textarea>
+            
+            <div class="button-group">
+                <button class="btn-primary" onclick="testFormat(1)">🧪 Тест Формату 1</button>
+            </div>
+        </div>
+        
+        <!-- Test Section 2: Format 2 -->
+        <div class="test-section">
+            <h2>📋 Формат 2: Artigo 45º - опис (C2)</h2>
+            <textarea id="format2">CERTIFICADO DE CONFORMIDADE
+Auto N.º: 2024-002
+Realizada em: 05/12/2024
+
+DEFICIÊNCIAS ENCONTRADAS:
+
+Artigo 12º - Dispositivos de segurança comprometidos (C1)
+Artigo 13º - Histórico de manutenção incompleto (C2)
+Artigo 45º - Sistema de ventilação obstruído (C2)
+Artigo 18º - Ausência de sistema de travagem auxiliar (C1)
+Artigo 14º - Inspeção periódica atrasada (C2)</textarea>
+            
+            <div class="button-group">
+                <button class="btn-primary" onclick="testFormat(2)">🧪 Тест Формату 2</button>
+            </div>
+        </div>
+        
+        <!-- Test Section 3: Format 3 -->
+        <div class="test-section">
+            <h2>📋 Формат 3: • Deficiência em ... Art 45 (C1)</h2>
+            <textarea id="format3">VISTORIA TÉCNICA
+Técnico: João Silva
+Local: Rua das Flores, 123
+
+LISTA DE DEFICIÊNCIAS:
+
+• Deficiência crítica no sistema de segurança das portas Art 12 (C1)
+• Falta de registos de manutenção preventiva Art 13 (C2)
+• Problemas na ventilação da cabine Art 45 (C2)
+• Sistema de travagem de emergência inoperante Art 18 (C1)
+• Sinalização de segurança danificada Art 20 (C3)
+• Documentação técnica incompleta Art 15 (C2)</textarea>
+            
+            <div class="button-group">
+                <button class="btn-primary" onclick="testFormat(3)">🧪 Тест Формату 3</button>
+            </div>
+        </div>
+        
+        <!-- Test Section 4: Format 4 (Table) -->
+        <div class="test-section">
+            <h2>📋 Формат 4: Tabela (C1 | 45 | опис)</h2>
+            <textarea id="format4">RELATÓRIO DE NÃO CONFORMIDADES
+Empresa: Elevadores Portugal SA
+
+CLASSIFICAÇÃO | ARTIGO | DESCRIÇÃO
+------------------------------------------
+C1 | 12 | Falha total nos sensores de porta
+C2 | 13 | Manutenção atrasada há 8 meses
+C2 | 45 | Sistema de ar condicionado desligado
+C1 | 18 | Travagem de emergência não testada
+C3 | 20 | Placas informativas desatualizadas
+C2 | 14 | Última inspeção há 14 meses
+C2 | 15 | Manuais técnicos não disponíveis no local</textarea>
+            
+            <div class="button-group">
+                <button class="btn-primary" onclick="testFormat(4)">🧪 Тест Формату 4</button>
+            </div>
+        </div>
+        
+        <!-- Test All Formats -->
+        <div class="test-section">
+            <h2>🚀 Змішаний Тест - Всі 4 Формати</h2>
+            <textarea id="mixed">RELATÓRIO COMPLETO DE INSPEÇÃO
+N.º: 2024-MIX-001
+Data: 05/12/2024
+Matrícula: 99999
+Local: Centro Comercial Lisboa
+Inspector: Maria Costa
+Entidade: SGS Portugal
+
+=== ANÁLISE DETALHADA ===
+
+Formato 1 (Standard):
+C1 Art.º 12 - Sistema de segurança das portas completamente ausente
+C2 Art.º 13 - Sem contrato de manutenção ativo
+
+Formato 2 (Article First):
+Artigo 45º - Ventilação bloqueada por objetos (C2)
+Artigo 18º - Freio de emergência corroído e não funcional (C1)
+
+Formato 3 (Bullet Points):
+• Deficiência grave na proteção contra sobrecarga Art 12 (C1)
+• Ausência de histórico de manutenções Art 13 (C2)
+• Sistema de alarme não operacional Art 15 (C2)
+
+Formato 4 (Table):
+CLASSE | ART | PROBLEMA
+C1 | 18 | Cabos de aço com sinais de ruptura
+C2 | 14 | Inspeção anual vencida há 2 meses
+C3 | 20 | Iluminação de emergência queimada
+
+CONCLUSÃO: REPROVADO - Deficiências críticas impedem operação segura
+
+Ação Necessária: Desativar elevador imediatamente até correção das não conformidades C1
+
+Próxima Inspeção: Após conclusão dos reparos obrigatórios</textarea>
+            
+            <div class="button-group">
+                <button class="btn-primary" onclick="testMixed()">🔥 Тест Всіх Форматів</button>
+                <button class="btn-secondary" onclick="clearResults()">🗑️ Очистити</button>
+            </div>
+        </div>
+        
+        <!-- Results Panel -->
+        <div id="results" class="result-panel"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000';
+
+        async function testFormat(formatNum) {
+            const textarea = document.getElementById(`format${formatNum}`);
+            const text = textarea.value.trim();
+            
+            if (!text) {
+                alert('⚠️ Введіть текст для тестування!');
+                return;
+            }
+            
+            await analyzeText(text, `Формат ${formatNum}`);
+        }
+
+        async function testMixed() {
+            const textarea = document.getElementById('mixed');
+            const text = textarea.value.trim();
+            
+            if (!text) {
+                alert('⚠️ Введіть текст для тестування!');
+                return;
+            }
+            
+            await analyzeText(text, 'Змішаний Тест (Всі 4 Формати)');
+        }
+
+        async function analyzeText(text, title) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.className = 'result-panel show';
+            resultsDiv.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>⏳ Аналізуємо текст звіту...</p>
+                </div>
+            `;
+
+            try {
+                const response = await fetch(`${API_URL}/api/ai/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: 'Аналізуй цей звіт інспекції',
+                        context: {
+                            reportText: text
+                        }
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                console.log('📊 Response:', data);
+
+                if (data.success && data.analysis) {
+                    displayResults(data.analysis, title);
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error-message">
+                            <h3>❌ Помилка Аналізу</h3>
+                            <p>${data.error || 'Невідома помилка'}</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+
+            } catch (error) {
+                console.error('❌ Error:', error);
+                resultsDiv.innerHTML = `
+                    <div class="error-message">
+                        <h3>❌ Помилка Запиту</h3>
+                        <p>${error.message}</p>
+                        <p>Переконайтеся що unified-server працює на порті 5000</p>
+                    </div>
+                `;
+            }
+        }
+
+        function displayResults(analysis, title) {
+            const resultsDiv = document.getElementById('results');
+            
+            let html = `<h3>📊 Результати: ${title}</h3>`;
+
+            // Statistics
+            if (analysis.summary) {
+                html += `
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-number">${analysis.summary.total || 0}</div>
+                            <div class="stat-label">Всього порушень</div>
+                        </div>
+                        <div class="stat-card" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
+                            <div class="stat-number">${analysis.summary.critical || 0}</div>
+                            <div class="stat-label">Критичних (C1)</div>
+                        </div>
+                        <div class="stat-card" style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);">
+                            <div class="stat-number">${analysis.summary.medium || 0}</div>
+                            <div class="stat-label">Середніх (C2)</div>
+                        </div>
+                        <div class="stat-card" style="background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);">
+                            <div class="stat-number">${analysis.summary.low || 0}</div>
+                            <div class="stat-label">Легких (C3)</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Metadata
+            if (analysis.metadata && Object.keys(analysis.metadata).length > 0) {
+                html += `
+                    <div class="metadata">
+                        <h4>📄 Метадані Звіту:</h4>
+                `;
+                
+                if (analysis.metadata.reportNumber) {
+                    html += `<div class="metadata-item"><span class="metadata-label">Номер звіту:</span><span class="metadata-value">${analysis.metadata.reportNumber}</span></div>`;
+                }
+                if (analysis.metadata.date) {
+                    html += `<div class="metadata-item"><span class="metadata-label">Дата:</span><span class="metadata-value">${analysis.metadata.date}</span></div>`;
+                }
+                if (analysis.metadata.liftId) {
+                    html += `<div class="metadata-item"><span class="metadata-label">Матріcula:</span><span class="metadata-value">${analysis.metadata.liftId}</span></div>`;
+                }
+                if (analysis.metadata.location) {
+                    html += `<div class="metadata-item"><span class="metadata-label">Локація:</span><span class="metadata-value">${analysis.metadata.location}</span></div>`;
+                }
+                if (analysis.metadata.inspector) {
+                    html += `<div class="metadata-item"><span class="metadata-label">Інспектор:</span><span class="metadata-value">${analysis.metadata.inspector}</span></div>`;
+                }
+                if (analysis.metadata.company) {
+                    html += `<div class="metadata-item"><span class="metadata-label">Компанія:</span><span class="metadata-value">${analysis.metadata.company}</span></div>`;
+                }
+                
+                html += `</div>`;
+            }
+
+            // Violations
+            if (analysis.violations && analysis.violations.length > 0) {
+                html += `<h4 style="margin-top: 30px; color: #333;">🚨 Виявлені Порушення:</h4>`;
+                
+                analysis.violations.forEach((v, index) => {
+                    html += `
+                        <div class="violation-card ${v.classification}">
+                            <div class="violation-header">
+                                <span class="classification">${v.classification} - ${v.classificationInfo?.level || 'N/A'}</span>
+                                <span class="article">Artigo ${v.article}</span>
+                            </div>
+                            <div class="description">
+                                <strong>Опис:</strong> ${v.description}
+                            </div>
+                    `;
+                    
+                    if (v.articleInfo) {
+                        html += `
+                            <div style="margin-top: 15px; padding: 15px; background: rgba(255,255,255,0.7); border-radius: 8px;">
+                                <div style="font-weight: 600; color: #667eea; margin-bottom: 8px;">${v.articleInfo.title}</div>
+                                <div style="color: #555; font-size: 14px;">${v.articleInfo.description}</div>
+                                <div style="margin-top: 10px; color: #333;">
+                                    <div><strong>💡 Чому важливо:</strong> ${v.articleInfo.why}</div>
+                                    <div style="margin-top: 5px;"><strong>🔧 Рішення:</strong> ${v.articleInfo.solution}</div>
+                                    <div style="margin-top: 5px;"><strong>⏰ Термін:</strong> ${v.classificationInfo?.deadline || 'N/A'}</div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    html += `
+                            <span class="format-badge">Формат: ${v.format}</span>
+                        </div>
+                    `;
+                });
+            } else {
+                html += `
+                    <div class="success-message">
+                        ✅ CERTIFICADO APROVADO
+                        <br>
+                        <span style="font-size: 0.9em; font-weight: normal;">Порушень не виявлено</span>
+                    </div>
+                `;
+            }
+
+            // Conclusion
+            if (analysis.conclusion) {
+                html += `
+                    <div style="margin-top: 30px; padding: 20px; background: ${analysis.conclusion.approved ? '#d4edda' : '#f8d7da'}; border-radius: 15px;">
+                        <h4 style="color: ${analysis.conclusion.approved ? '#155724' : '#721c24'};">
+                            ${analysis.conclusion.approved ? '✅ APROVADO' : '❌ REPROVADO'}
+                        </h4>
+                `;
+                
+                if (analysis.conclusion.actionRequired) {
+                    html += `<p style="margin-top: 10px;"><strong>Необхідні дії:</strong> ${analysis.conclusion.actionRequired}</p>`;
+                }
+                if (analysis.conclusion.nextInspectionDate) {
+                    html += `<p style="margin-top: 5px;"><strong>Наступна інспекція:</strong> ${analysis.conclusion.nextInspectionDate}</p>`;
+                }
+                
+                html += `</div>`;
+            }
+
+            resultsDiv.innerHTML = html;
+        }
+
+        function clearResults() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.className = 'result-panel';
+            resultsDiv.innerHTML = '';
+        }
+
+        // Test connection on load
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch(`${API_URL}/api/health`);
+                const data = await response.json();
+                console.log('✅ Server connected:', data);
+            } catch (error) {
+                console.warn('⚠️ Server not available:', error.message);
+                alert('⚠️ Увага: Сервер не доступний. Переконайтеся що unified-server працює на порті 5000');
+            }
+        });
+    </script>
+</body>
+</html>
