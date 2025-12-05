@@ -267,6 +267,20 @@ function extractViolations(text) {
             /LOCALIZAÇÃO/i,
             /^\s*C[123]\s*$/,  // Просто літера С1/С2/С3 окремо
             /^(C[123])\s*[-–—]\s*$/,  // С1 - без опису
+            // 🔥 ЛЕГЕНДА - пояснення класифікацій (НЕ порушення!)
+            /Correspondente\s+a\s+situações\s+de/i,
+            /elevado\s+risco\s+para\s+a\s+segurança/i,
+            /médio\s+risco\s+para\s+a\s+segurança/i,
+            /não\s+representam\s+um\s+risco\s+directo/i,
+            /resolução\s+deve\s+ser\s+imediata/i,
+            /imobilização\s+das\s+instalações/i,
+            /não\s+obrigam\s+à\s+imobilização/i,
+            /inspeção\s+periódica\s+seguinte/i,
+            // 🔥 Footer/header info
+            /Página\s*\d+\s*de\s*\d+/i,
+            /Impresso\s+ELEV/i,
+            /Documento\s+impresso\s+em/i,
+            /NOTA:\s+O\s+dispositivo\s+elétrico/i,
         ];
         
         // Шукаємо всі C1/C2/C3 в тексті
@@ -328,6 +342,19 @@ function extractViolations(text) {
                 /^(SIM|NÃO|OK|N\/A)$/i,  // Односложні відповіді
                 /CLÁUSULAS?\s+QUE/i,  // Частина заголовка
                 /APLICÁVEIS\s+FACE/i,  // Частина заголовка
+                // 🔥 Фільтр легенди і footer
+                /Correspondente\s+a\s+situações/i,
+                /elevado\s+risco.*imediata/i,
+                /médio\s+risco.*imobilização/i,
+                /não\s+representam.*risco\s+directo/i,
+                /inspeção\s+periódica\s+seguinte/i,
+                /Página\s*\d+\s*de\s*\d+/i,
+                /Impresso\s+ELEV/i,
+                /Documento\s+impresso/i,
+                /^\d{6}\s+Documento/i,  // Номер документу
+                // 🔥 Технічні нотатки (не порушення)
+                /^NOTA:.*dispositivo\s+elétrico/i,
+                /soleira\s+móvel.*extremidades/i,
             ];
             
             const isDescriptionExcluded = descriptionExcludePatterns.some(pattern => pattern.test(description));
@@ -344,7 +371,18 @@ function extractViolations(text) {
             
             console.log(`✅ Valid violation found: ${classification} - "${description.substring(0, 60)}..."`);
             
-            const key = `${classification}-${articleNum}-${description.substring(0, 50)}`;
+            // 🔑 Унікальний ключ: опис може бути однаковим, але якщо стаття різна - це різні порушення
+            // Проте якщо опис ПОВНІСТЮ однаковий (>80 chars) - це ймовірно дублікат
+            const descKey = description.length > 80 ? description.substring(0, 80) : description;
+            const key = `${classification}-${articleNum}-${descKey}`;
+            
+            // 🔍 Перевірка на повний дублікат опису (може бути помилка у класифікації)
+            const duplicateDesc = Array.from(seen).find(k => k.includes(descKey));
+            if (duplicateDesc) {
+                console.log(`⚠️ Possible duplicate with different classification - keeping first occurrence`);
+                return;
+            }
+            
             if (!seen.has(key)) {
                 seen.add(key);
                 violations.push(createViolation(classification, articleNum, description, 'contextual'));
