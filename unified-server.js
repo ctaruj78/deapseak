@@ -1169,8 +1169,226 @@ app.post('/api/ai/chat', authenticateToken, async (req, res) => {
         
         console.log(`💬 Chat received: "${message}" | lowercase: "${lowerMessage}"`);
 
-        // Check for door queries FIRST (most common)
-        if (lowerMessage.includes('porta') || lowerMessage.includes('batente') ||
+        // CABOS E POLIAS / ТРОСИ ТА ШКІВИ
+        if (lowerMessage.includes('cabo') || lowerMessage.includes('трос') || 
+            lowerMessage.includes('polia') || lowerMessage.includes('шків') ||
+            lowerMessage.includes('suspensão') || lowerMessage.includes('підвіс')) {
+            response = `⚙️ Cabos e polias / Троси та шківи:\n\n` +
+                      `Requisitos / Вимоги:\n` +
+                      `• Mínimo 2 cabos independentes / Мінімум 2 незалежні троси\n` +
+                      `• Diâmetro conforme carga / Діаметр згідно навантаження\n` +
+                      `• Coeficiente de segurança ≥12 / Коефіцієнт безпеки ≥12\n` +
+                      `• Inspeção mensal obrigatória / Огляд щомісяця обов'язковий\n\n` +
+                      `📖 Regulamento: Artigo 32.º - Decreto 513/70\n\n` +
+                      `⚠️ Violações críticas C1:\n` +
+                      `🔴 Cabos com fios partidos >10% / Троси з обривами >10%\n` +
+                      `🔴 Desgaste >10% do diâmetro / Знос >10% діаметра\n` +
+                      `🔴 Oxidação severa / Сильна корозія\n` +
+                      `🔴 Polias desgastadas/rachadas / Шківи зношені/тріснуті\n\n` +
+                      `🔧 Substituição: cada 4-6 anos ou quando desgastados\n` +
+                      `   Заміна: кожні 4-6 років або при зносі`;
+        }
+        // MOTOR E FREIO / МОТОР І ГАЛЬМА
+        else if (lowerMessage.includes('motor') || lowerMessage.includes('мотор') ||
+                 lowerMessage.includes('freio') || lowerMessage.includes('travão') ||
+                 lowerMessage.includes('гальм') || lowerMessage.includes('freno')) {
+            response = `🔧 Motor e sistema de travagem / Мотор і гальмівна система:\n\n` +
+                      `Componentes essenciais / Основні компоненти:\n` +
+                      `• Motor elétrico (tração) / Електродвигун (тяга)\n` +
+                      `• Freio eletromagnético / Електромагнітне гальмо\n` +
+                      `• Redutor de velocidade / Редуктор швидкості\n` +
+                      `• Sistema de emergência / Система аварійна\n\n` +
+                      `📖 Regulamento: Artigo 28.º - Decreto 513/70\n\n` +
+                      `⚠️ Violações críticas C1:\n` +
+                      `🔴 Freio não funciona automaticamente / Гальмо не спрацьовує автоматично\n` +
+                      `🔴 Motor sem proteção térmica / Мотор без термозахисту\n` +
+                      `🔴 Ruído excessivo (>80dB) / Надмірний шум (>80дБ)\n` +
+                      `🔴 Aquecimento anormal / Аномальне нагрівання\n\n` +
+                      `🔧 Manutenção: lubrificação mensal, verificação trimestral\n` +
+                      `   Обслуговування: мастило щомісяця, перевірка щокварталу`;
+        }
+        // PARA-QUEDAS / ПАРАШУТ
+        else if (lowerMessage.includes('para-quedas') || lowerMessage.includes('paraquedas') ||
+                 lowerMessage.includes('парашут') || lowerMessage.includes('limitador')) {
+            response = `🪂 Para-quedas de segurança / Парашут безпеки:\n\n` +
+                      `Função / Функція:\n` +
+                      `Bloqueia cabine se velocidade >115% nominal\n` +
+                      `Блокує кабіну якщо швидкість >115% номінальної\n\n` +
+                      `Componentes / Компоненти:\n` +
+                      `• Limitador de velocidade / Обмежувач швидкості\n` +
+                      `• Cunhas de travamento / Клини блокування\n` +
+                      `• Cabo de acionamento / Трос приводу\n` +
+                      `• Sistema de gatilho / Система тригера\n\n` +
+                      `📖 Regulamento: Artigo 37.º - Decreto 513/70\n\n` +
+                      `⚠️ Violações críticas C1:\n` +
+                      `🔴 Para-quedas ausente / Відсутній парашут\n` +
+                      `🔴 Não testado nos últimos 5 anos / Не випробуваний 5 років\n` +
+                      `🔴 Cabo do limitador partido / Трос обмежувача обірваний\n` +
+                      `🔴 Cunhas desgastadas / Клини зношені\n\n` +
+                      `🧪 Teste obrigatório: cada 5 anos por entidade certificada\n` +
+                      `   Випробування: кожні 5 років сертифікованою організацією`;
+        }
+        // ILUMINAÇÃO / ОСВІТЛЕННЯ
+        else if (lowerMessage.includes('iluminação') || lowerMessage.includes('luz') ||
+                 lowerMessage.includes('освітлен') || lowerMessage.includes('світл') ||
+                 lowerMessage.includes('emergência')) {
+            response = `💡 Iluminação e emergência / Освітлення та аварійне:\n\n` +
+                      `Requisitos / Вимоги:\n` +
+                      `• Iluminação normal: ≥50 lux / Нормальне: ≥50 люкс\n` +
+                      `• Luz de emergência: ≥5 lux / Аварійне: ≥5 люкс\n` +
+                      `• Autonomia bateria: ≥1 hora / Автономія: ≥1 год\n` +
+                      `• Ativação automática / Автоматичне увімкнення\n\n` +
+                      `📖 Regulamento: Artigo 46.º - Decreto 513/70\n\n` +
+                      `⚠️ Violações:\n` +
+                      `🟠 C2: Luz emergência não funciona / Аварійне не працює\n` +
+                      `🟠 C2: Iluminação <50 lux / Освітлення <50 люкс\n` +
+                      `🟡 C3: Lâmpadas queimadas / Лампи перегоріли\n\n` +
+                      `🔧 Verificação: teste mensal de luz emergência\n` +
+                      `   Перевірка: тест аварійного світла щомісяця`;
+        }
+        // CASA DE MÁQUINAS / МАШИННЕ ВІДДІЛЕННЯ
+        else if (lowerMessage.includes('casa de máquinas') || lowerMessage.includes('casa máquinas') ||
+                 lowerMessage.includes('машинн') || lowerMessage.includes('sala motor')) {
+            response = `🏠 Casa de máquinas / Машинне відділення:\n\n` +
+                      `Requisitos / Вимоги:\n` +
+                      `• Acesso exclusivo pessoal autorizado / Доступ лише персоналу\n` +
+                      `• Iluminação adequada (≥200 lux) / Освітлення (≥200 люкс)\n` +
+                      `• Ventilação natural/forçada / Вентиляція природна/примусова\n` +
+                      `• Altura mínima 2m / Мінімальна висота 2м\n` +
+                      `• Extintor de incêndios / Вогнегасник\n\n` +
+                      `📖 Regulamento: Artigo 51.º - Decreto 513/70\n\n` +
+                      `⚠️ Violações:\n` +
+                      `🟠 C2: Acesso não seguro / Небезпечний доступ\n` +
+                      `🟠 C2: Sem extintor / Без вогнегасника\n` +
+                      `🟠 C2: Ventilação insuficiente / Недостатня вентиляція\n` +
+                      `🟡 C3: Sujidade excessiva / Надмірне забруднення\n\n` +
+                      `🧹 Limpeza: mensal, organização permanente\n` +
+                      `   Прибирання: щомісяця, постійний порядок`;
+        }
+        // BOTÕES E PAINEL / КНОПКИ ТА ПАНЕЛЬ
+        else if (lowerMessage.includes('botão') || lowerMessage.includes('botões') ||
+                 lowerMessage.includes('кнопк') || lowerMessage.includes('painel') ||
+                 lowerMessage.includes('botoeira') || lowerMessage.includes('панель')) {
+            response = `🔘 Botões e painéis / Кнопки та панелі:\n\n` +
+                      `Requisitos / Вимоги:\n` +
+                      `• Altura: 0,90m - 1,35m / Висота: 0,90м - 1,35м\n` +
+                      `• Botão alarme vermelho / Кнопка тривоги червона\n` +
+                      `• Identificação em Braille / Ідентифікація Брайлем\n` +
+                      `• Iluminação dos botões / Підсвітка кнопок\n` +
+                      `• Números legíveis / Читабельні номери\n\n` +
+                      `📖 Regulamento: Artigo 44.º - Decreto 513/70\n\n` +
+                      `⚠️ Violações:\n` +
+                      `🔴 C1: Botão alarme não funciona / Тривога не працює\n` +
+                      `🟠 C2: Botões sem identificação / Без ідентифікації\n` +
+                      `🟠 C2: Altura inadequada / Неправильна висота\n` +
+                      `🟡 C3: Botões desgastados / Зношені кнопки\n\n` +
+                      `♿ Acessibilidade: Braille obrigatório desde 2006\n` +
+                      `   Доступність: Брайль обов'язковий з 2006`;
+        }
+        // AMORTECEDORES / АМОРТИЗАТОРИ
+        else if (lowerMessage.includes('amortecedor') || lowerMessage.includes('buffer') ||
+                 lowerMessage.includes('амортиз') || lowerMessage.includes('poço')) {
+            response = `🛡️ Amortecedores e poço / Амортизатори та шахта:\n\n` +
+                      `Componentes / Компоненти:\n` +
+                      `• Amortecedores na base / Амортизатори в основі\n` +
+                      `• Poço (fossa) mínimo 1,2m / Яма мінімум 1,2м\n` +
+                      `• Drenagem de água / Дренаж води\n` +
+                      `• Acesso para manutenção / Доступ для обслуговування\n\n` +
+                      `📖 Regulamento: Artigo 34.º - Decreto 513/70\n\n` +
+                      `⚠️ Violações:\n` +
+                      `🔴 C1: Amortecedores ausentes / Відсутні амортизатори\n` +
+                      `🔴 C1: Poço <1m profundidade / Яма <1м глибини\n` +
+                      `🟠 C2: Água acumulada no poço / Вода в ямі\n` +
+                      `🟠 C2: Amortecedores desgastados / Зношені амортизатори\n\n` +
+                      `🔧 Verificação: visual mensal, teste anual\n` +
+                      `   Перевірка: візуально щомісяця, тест щороку`;
+        }
+        // QUADRO ELÉTRICO / ЕЛЕКТРОЩИТ
+        else if (lowerMessage.includes('quadro') || lowerMessage.includes('elétrico') ||
+                 lowerMessage.includes('електр') || lowerMessage.includes('fusível') ||
+                 lowerMessage.includes('disjuntor') || lowerMessage.includes('запобіжн')) {
+            response = `⚡ Quadro elétrico / Електричний щит:\n\n` +
+                      `Componentes / Компоненти:\n` +
+                      `• Disjuntores principais / Головні автомати\n` +
+                      `• Proteção diferencial 30mA / Диференційний захист 30мА\n` +
+                      `• Fusíveis por circuito / Запобіжники по колах\n` +
+                      `• Contactores de potência / Силові контактори\n` +
+                      `• Terra de proteção / Захисне заземлення\n\n` +
+                      `📖 Regulamento: Artigo 27.º - Decreto 513/70\n\n` +
+                      `⚠️ Violações:\n` +
+                      `🔴 C1: Sem proteção diferencial / Без диференційного захисту\n` +
+                      `🔴 C1: Terra ausente/defeituosa / Відсутнє/несправне заземлення\n` +
+                      `🟠 C2: Quadro sem identificação / Щит без маркування\n` +
+                      `🟠 C2: Cabos expostos / Оголені кабелі\n\n` +
+                      `🔧 Manutenção: inspeção trimestral, termografia anual\n` +
+                      `   Обслуговування: огляд щоквартал, термографія щороку`;
+        }
+        // SOBRECARGA / ПЕРЕВАНТАЖЕННЯ
+        else if (lowerMessage.includes('sobrecarga') || lowerMessage.includes('carga') ||
+                 lowerMessage.includes('перевантаж') || lowerMessage.includes('peso') ||
+                 lowerMessage.includes('capacidade') || lowerMessage.includes('kg')) {
+            response = `⚖️ Sobrecarga e capacidade / Перевантаження та вантажність:\n\n` +
+                      `Requisitos / Вимоги:\n` +
+                      `• Placa de carga visível / Табличка вантажності видима\n` +
+                      `• Alarme sonoro >110% / Звуковий сигнал >110%\n` +
+                      `• Bloqueio portas >125% / Блокування дверей >125%\n` +
+                      `• Pessoas: 80kg cada / Люди: 80кг кожен\n\n` +
+                      `Exemplos / Приклади:\n` +
+                      `• 450kg = 6 pessoas / 6 осіб\n` +
+                      `• 630kg = 8 pessoas / 8 осіб\n` +
+                      `• 1000kg = 13 pessoas / 13 осіб\n\n` +
+                      `📖 Regulamento: Artigo 41.º - Decreto 513/70\n\n` +
+                      `⚠️ Violações:\n` +
+                      `🔴 C1: Sem alarme sobrecarga / Без сигналу перевантаження\n` +
+                      `🟠 C2: Placa de carga ilegível / Табличка нечитабельна\n` +
+                      `🟠 C2: Alarme não funciona / Сигнал не працює\n\n` +
+                      `⚠️ NUNCA ultrapassar capacidade - risco colapso cabos!\n` +
+                      `   НІКОЛИ не перевищувати вантажність - ризик обриву!`;
+        }
+        // TELEFONE/INTERFONE / ТЕЛЕФОН/ДОМОФОН
+        else if (lowerMessage.includes('telefone') || lowerMessage.includes('interfone') ||
+                 lowerMessage.includes('телефон') || lowerMessage.includes('домофон') ||
+                 lowerMessage.includes('alarme') || lowerMessage.includes('тривог')) {
+            response = `📞 Telefone e alarme / Телефон та тривога:\n\n` +
+                      `Requisitos / Вимоги:\n` +
+                      `• Comunicação bidirecional / Двостороннє спілкування\n` +
+                      `• Funciona sem energia / Працює без електрики\n` +
+                      `• Botão alarme vermelho / Кнопка червона\n` +
+                      `• Ligação 24/7 à central / Зв'язок 24/7 з диспетчером\n` +
+                      `• Identificação automática da cabine / Авто-ідентифікація кабіни\n\n` +
+                      `📖 Regulamento: Artigo 48.º - Decreto 513/70\n\n` +
+                      `⚠️ Violações:\n` +
+                      `🔴 C1: Telefone não funciona / Телефон не працює\n` +
+                      `🔴 C1: Sem resposta da central / Диспетчер не відповідає\n` +
+                      `🟠 C2: Botão alarme defeituoso / Кнопка тривоги несправна\n` +
+                      `🟠 C2: Comunicação intermitente / Переривчастий зв'язок\n\n` +
+                      `🧪 Teste obrigatório: semanal (registro em livro)\n` +
+                      `   Випробування: щотижня (запис у журналі)`;
+        }
+        // NIVELAMENTO / ВИРІВНЮВАННЯ
+        else if (lowerMessage.includes('nivelamento') || lowerMessage.includes('nível') ||
+                 lowerMessage.includes('вирівнюван') || lowerMessage.includes('рівн') ||
+                 lowerMessage.includes('desnível')) {
+            response = `📏 Nivelamento de portas / Вирівнювання дверей:\n\n` +
+                      `Tolerância / Допуск:\n` +
+                      `• Máximo: ±20mm (2cm) / Максимум: ±20мм (2см)\n` +
+                      `• Ideal: ±10mm (1cm) / Ідеально: ±10мм (1см)\n` +
+                      `• Precisão: ±5mm elevadores novos / Точність: ±5мм нові ліфти\n\n` +
+                      `Causas desnivelamento / Причини нерівності:\n` +
+                      `• Desgaste dos cabos / Знос тросів\n` +
+                      `• Freio mal ajustado / Погано налаштоване гальмо\n` +
+                      `• Encoder desregulado / Розрегульований енкодер\n` +
+                      `• Variação de carga / Зміна навантаження\n\n` +
+                      `📖 Regulamento: Artigo 42.º - Decreto 513/70\n\n` +
+                      `⚠️ Violações:\n` +
+                      `🔴 C1: Desnível >30mm / Нерівність >30мм\n` +
+                      `🟠 C2: Desnível 20-30mm / Нерівність 20-30мм\n` +
+                      `🟡 C3: Desnível 15-20mm / Нерівність 15-20мм\n\n` +
+                      `🔧 Ajuste: regulação mensal, recalibração anual\n` +
+                      `   Налаштування: регулювання щомісяця, калібрування щороку`;
+        }
+        // Check for door queries
+        else if (lowerMessage.includes('porta') || lowerMessage.includes('batente') ||
             lowerMessage.includes('дверей') || lowerMessage.includes('двері') || 
             lowerMessage.includes('дверц') || lowerMessage.includes('fechadura')) {
             response = `🚪 Portas de elevador / Двері ліфта:\n\n` +
@@ -1341,6 +1559,146 @@ app.post('/api/ai/chat', authenticateToken, async (req, res) => {
                       `• Sistema de segurança / Система безпеки: €1.000-5.000\n` +
                       `• Modernização completa / Повна модернізація: €15.000-40.000`;
         }
+        // GUIAS E SAPATAS / НАПРАВЛЯЮЧІ ТА ЧЕРЕВИКИ
+        else if (lowerMessage.includes('guia') || lowerMessage.includes('направля') ||
+                 lowerMessage.includes('sapata') || lowerMessage.includes('черевик') ||
+                 lowerMessage.includes('corrediça')) {
+            response = `🛤️ Guias e sapatas / Направляючі та черевики:\n\n` +
+                      `Componentes / Компоненти:\n` +
+                      `• Guias metálicas verticais / Металеві вертикальні направляючі\n` +
+                      `• Sapatas deslizantes / Ковзні черевики\n` +
+                      `• Roletes de guiamento / Ролики керування\n` +
+                      `• Lubrificação das guias / Мастило направляючих\n\n` +
+                      `📖 Regulamento: Artigo 33.º - Decreto 513/70\n\n` +
+                      `⚠️ Violações:\n` +
+                      `🔴 C1: Guias deformadas/tortas / Направляючі деформовані\n` +
+                      `🟠 C2: Sapatas desgastadas >50% / Черевики зношені >50%\n` +
+                      `🟠 C2: Sem lubrificação / Без мастила\n` +
+                      `🟡 C3: Ruído excessivo / Надмірний шум\n\n` +
+                      `🔧 Lubrificação: mensal, inspeção trimestral\n` +
+                      `   Мастило: щомісяця, огляд щокварталу`;
+        }
+        // CONTRAPESO / ПРОТИВАГА
+        else if (lowerMessage.includes('contrapeso') || lowerMessage.includes('противаг') ||
+                 lowerMessage.includes('balanceamento')) {
+            response = `⚖️ Contrapeso / Противага:\n\n` +
+                      `Função / Функція:\n` +
+                      `Balanceia peso da cabine + 40-50% carga\n` +
+                      `Балансує вагу кабіни + 40-50% навантаження\n\n` +
+                      `Requisitos / Вимоги:\n` +
+                      `• Massa calculada precisamente / Маса розрахована точно\n` +
+                      `• Blocos fixos com segurança / Блоки надійно закріплені\n` +
+                      `• Cabos independentes / Незалежні троси\n` +
+                      `• Proteção contra queda / Захист від падіння\n\n` +
+                      `📖 Regulamento: Artigo 35.º - Decreto 513/70\n\n` +
+                      `⚠️ Violações:\n` +
+                      `🔴 C1: Blocos soltos / Блоки розкріплені\n` +
+                      `🔴 C1: Cabos com desgaste / Троси зношені\n` +
+                      `🟠 C2: Balanceamento incorreto / Невірне балансування\n\n` +
+                      `🔧 Verificação: inspeção visual mensal\n` +
+                      `   Перевірка: візуальний огляд щомісяця`;
+        }
+        // SENSOR / ДАТЧИК
+        else if (lowerMessage.includes('sensor') || lowerMessage.includes('датчик') ||
+                 lowerMessage.includes('fotocélula') || lowerMessage.includes('фотоелемент')) {
+            response = `👁️ Sensores de segurança / Датчики безпеки:\n\n` +
+                      `Tipos / Типи:\n` +
+                      `• Fotocélulas nas portas / Фотоелементи на дверях\n` +
+                      `• Sensor de sobrecarga / Датчик перевантаження\n` +
+                      `• Sensor de velocidade / Датчик швидкості\n` +
+                      `• Sensores de posição / Датчики положення\n` +
+                      `• Detector de fumaça / Детектор диму\n\n` +
+                      `📖 Regulamento: Artigo 40.º - Decreto 513/70\n\n` +
+                      `⚠️ Violações:\n` +
+                      `🔴 C1: Fotocélulas não funcionam / Фотоелементи не працюють\n` +
+                      `🔴 C1: Sensor sobrecarga ausente / Датчик перевантаження відсутній\n` +
+                      `🟠 C2: Sensores sujos/desalinhados / Датчики брудні/не вирівняні\n\n` +
+                      `🧪 Teste: semanal (fotocélulas), mensal (outros)\n` +
+                      `   Випробування: щотижня (фотоелементи), щомісяця (інші)`;
+        }
+        // VELOCIDADE / ШВИДКІСТЬ
+        else if (lowerMessage.includes('velocidade') || lowerMessage.includes('швидкість') ||
+                 lowerMessage.includes('rápido') || lowerMessage.includes('lento') ||
+                 lowerMessage.includes('m/s')) {
+            response = `🚀 Velocidade do elevador / Швидкість ліфта:\n\n` +
+                      `Categorias / Категорії:\n` +
+                      `• Lento: 0,5-1,0 m/s / Повільний: 0,5-1,0 м/с\n` +
+                      `• Normal: 1,0-2,5 m/s / Нормальний: 1,0-2,5 м/с\n` +
+                      `• Rápido: 2,5-6,0 m/s / Швидкий: 2,5-6,0 м/с\n` +
+                      `• Alta velocidade: >6,0 m/s / Висока швидкість: >6,0 м/с\n\n` +
+                      `Limites / Обмеження:\n` +
+                      `• Residencial: máx 1,6 m/s / Житловий: макс 1,6 м/с\n` +
+                      `• Comercial: máx 4,0 m/s / Комерційний: макс 4,0 м/с\n\n` +
+                      `📖 Regulamento: Artigo 29.º - Decreto 513/70\n\n` +
+                      `⚠️ Problemas:\n` +
+                      `• Velocidade irregular → verificar motor/encoder\n` +
+                      `  Нерівномірна швидкість → перевірити мотор/енкодер\n` +
+                      `• Muito rápido → perigo! Ajustar limitador\n` +
+                      `  Занадто швидко → небезпека! Налаштувати обмежувач`;
+        }
+        // MODERNIZAÇÃO / МОДЕРНІЗАЦІЯ
+        else if (lowerMessage.includes('modernização') || lowerMessage.includes('модерніз') ||
+                 lowerMessage.includes('atualização') || lowerMessage.includes('оновлен') ||
+                 lowerMessage.includes('retrofit')) {
+            response = `🔄 Modernização de elevadores / Модернізація ліфтів:\n\n` +
+                      `Quando necessário / Коли потрібно:\n` +
+                      `• Elevador >20 anos / Ліфт >20 років\n` +
+                      `• Peças descontinuadas / Запчастини знятті з виробництва\n` +
+                      `• Múltiplas falhas C1 / Багато порушень C1\n` +
+                      `• Consumo energético alto / Високе споживання енергії\n\n` +
+                      `Componentes modernizados / Модернізовані компоненти:\n` +
+                      `• Motor inversor (economia 40%) / Інверторний двигун (економія 40%)\n` +
+                      `• Painel touchscreen / Панель сенсорна\n` +
+                      `• Portas automáticas / Автоматичні двері\n` +
+                      `• LED iluminação / LED освітлення\n` +
+                      `• Sistema segurança digital / Цифрова система безпеки\n\n` +
+                      `💰 Custo / Вартість:\n` +
+                      `• Parcial: €8.000-15.000 / Часткова\n` +
+                      `• Completa: €20.000-50.000 / Повна\n\n` +
+                      `⏱️ Prazo: 2-4 semanas / Термін: 2-4 тижні`;
+        }
+        // RUÍDO / ШУМ
+        else if (lowerMessage.includes('ruído') || lowerMessage.includes('barulho') ||
+                 lowerMessage.includes('шум') || lowerMessage.includes('som') ||
+                 lowerMessage.includes('vibração')) {
+            response = `🔊 Ruído e vibrações / Шум та вібрації:\n\n` +
+                      `Limites legais / Законні обмеження:\n` +
+                      `• Cabine em movimento: <55 dB / Кабіна в русі: <55 дБ\n` +
+                      `• Casa de máquinas: <75 dB / Машинне відділення: <75 дБ\n` +
+                      `• Período noturno (22h-7h): <40 dB / Нічний період: <40 дБ\n\n` +
+                      `Causas comuns / Поширені причини:\n` +
+                      `• Guias desalinhadas / Направляючі не вирівняні\n` +
+                      `• Rolamentos desgastados / Підшипники зношені\n` +
+                      `• Motor desbalanceado / Мотор розбалансований\n` +
+                      `• Falta de lubrificação / Відсутнє мастило\n\n` +
+                      `📖 Regulamento: Artigo 52.º - Decreto 513/70\n\n` +
+                      `⚠️ Ação:\n` +
+                      `🟠 C2: Ruído >65 dB / Шум >65 дБ\n` +
+                      `🟡 C3: Ruído 55-65 dB / Шум 55-65 дБ\n\n` +
+                      `🔧 Solução: lubrificação, alinhamento, substituição peças\n` +
+                      `   Рішення: мастило, вирівнювання, заміна деталей`;
+        }
+        // CERTIFICADO / СЕРТИФІКАТ
+        else if (lowerMessage.includes('certificado') || lowerMessage.includes('сертифікат') ||
+                 lowerMessage.includes('licença') || lowerMessage.includes('ліцензі') ||
+                 lowerMessage.includes('homologação')) {
+            response = `📜 Certificados e licenças / Сертифікати та ліцензії:\n\n` +
+                      `Documentos obrigatórios / Обов'язкові документи:\n` +
+                      `• Livro de Registo / Книга реєстрації (sempre na cabine / завжди в кабіні)\n` +
+                      `• Certificado de conformidade / Сертифікат відповідності\n` +
+                      `• Relatório inspeção periódica / Звіт періодичної інспекції\n` +
+                      `• Certificados componentes segurança / Сертифікати безпеки\n` +
+                      `• Contrato manutenção válido / Договір обслуговування дійсний\n\n` +
+                      `📖 Regulamento: Artigo 62.º - Decreto 513/70\n\n` +
+                      `Renovações / Поновлення:\n` +
+                      `• Inspeção periódica: anual / Періодична інспекція: щорічно\n` +
+                      `• Teste para-quedas: 5 anos / Випробування парашута: 5 років\n` +
+                      `• Manutenção: mensal / Обслуговування: щомісяця\n\n` +
+                      `⚠️ Sem documentos válidos:\n` +
+                      `🔴 Proibido usar elevador! / Заборонено користуватись ліфтом!\n\n` +
+                      `💰 Multas: €500-5.000 por falta documentação\n` +
+                      `   Штрафи: €500-5.000 за відсутність документів`;
+        }
         // Default helpful response (PT + UA)
         else {
             response = `👋 Olá! Sou o assistente DeapSeaK. / Вітаю! Я AI Асистент DeapSeaK.\n\n` +
@@ -1351,14 +1709,17 @@ app.post('/api/ai/chat', authenticateToken, async (req, res) => {
                       `🔧 Manutenção preventiva / Профілактичне обслуговування\n` +
                       `💰 Estimativas de custos / Орієнтовна вартість\n\n` +
                       `Sua pergunta / Ваше питання: "${message}"\n\n` +
-                      `💡 Tente perguntar / Спробуйте запитати:\n` +
-                      `• "Quais regulamentações principais?" / "Які основні регламенти?"\n` +
-                      `• "Como funciona a inspeção?" / "Як проходить інспекція?"\n` +
-                      `• "Principais riscos de segurança?" / "Головні ризики безпеки?"\n` +
-                      `• "Quanto custa a manutenção?" / "Скільки коштує обслуговування?"\n` +
-                      `• "O que fazer se parar?" / "Що робити якщо зупинився?"\n` +
-                      `• "Requisitos de ventilação?" / "Вимоги до вентиляції?"\n` +
-                      `• "Prazos C1, C2, C3?" / "Терміни усунення C1, C2, C3?"`;
+                      `💡 Pergunte sobre / Запитайте про:\n` +
+                      `🚪 Portas e batentes / Двері та косяки\n` +
+                      `⚙️ Cabos, polias, motor / Троси, шківи, мотор\n` +
+                      `🪂 Para-quedas, freios / Парашут, гальма\n` +
+                      `💡 Iluminação, ventilação / Освітлення, вентиляція\n` +
+                      `📞 Telefone, alarme / Телефон, тривога\n` +
+                      `⚖️ Sobrecarga, nivelamento / Перевантаження, вирівнювання\n` +
+                      `🔊 Ruído, vibrações / Шум, вібрації\n` +
+                      `🔧 Manutenção, modernização / Обслуговування, модернізація\n` +
+                      `📜 Certificados, documentos / Сертифікати, документи\n` +
+                      `💰 Custos e prazos / Вартість та терміни`;
         }
 
         res.json({
