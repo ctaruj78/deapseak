@@ -4,69 +4,67 @@
 
 ---
 
-## 🚀 Швидкий старт (НОВИНКА!)
+## 🚀 Швидкий старт
 
-### Автоматичний запуск одною командою:
-
-```bash
-./auto-start.sh
-```
-
-або через npm:
+### Запуск системи однією командою:
 
 ```bash
-npm run auto-start
+./start-unified.sh
 ```
 
-**Скрипт автоматично зробить:**
-- ✅ Перевірить всі залежності (Node.js, npm, MongoDB)
-- ✅ Запустить MongoDB якщо потрібно  
-- ✅ Встановить npm пакети
-- ✅ Створить .env файл
-- ✅ Запустить Backend (API + WebSocket)
-- ✅ Запустить Frontend
-- ✅ Покаже статус та корисні посилання
+**Скрипт автоматично:**
+- ✅ Зупинить попередні процеси
+- ✅ Перевірить MongoDB (має бути запущена)
+- ✅ Встановить залежності якщо потрібно
+- ✅ Запустить Unified Server на **PORT 5000**
+- ✅ Перевірить health endpoint
+- ✅ Покаже корисні посилання
 
-**🎉 Готово за 30 секунд!** Відкрийте: **http://localhost:5000**
+**🎉 Готово за 10 секунд!** Відкрийте: **http://localhost:5000**
 
 ---
 
 ### Інші команди:
 
 ```bash
-npm run stop           # Зупинити всі сервери
-npm run restart        # Перезапустити систему
+# Запуск системи
+./start-unified.sh     # Запустити Unified Server (рекомендовано)
+
+# Зупинка
+pkill -f "node.*unified-server"  # Зупинити сервер
+
+# Логи
+tail -f logs/unified-server.log  # Переглянути логи в реальному часі
+
+# Перевірки
 npm run check-ports    # Перевірити конфігурацію портів
-npm run cleanup        # Очистити проект (тести, backup, дублікати)
-npm run analyze-logs   # Проаналізувати console.log в коді
-npm run audit          # Показати посилання на system audit
-tail -f logs/*.log     # Переглянути логи в реальному часі
+npm run cleanup        # Очистити проект
+npm run analyze-logs   # Проаналізувати console.log
 ```
 
 📖 **Детальна документація:** [QUICK-START.md](QUICK-START.md)
 
 ---
 
-## 📊 Доступні сервіси після запуску
+## 📊 Unified Server Architecture
 
-### Локальна розробка:
+### Один сервер для всього:
 
 | Сервіс | URL | Опис |
 |--------|-----|------|
 | 🌐 **Frontend** | http://localhost:5000 | Веб-інтерфейс |
-| 🔗 **API** | http://localhost:3001/api | REST API |
-| 💬 **WebSocket** | ws://localhost:3002 | Real-time оновлення |
+| 🔗 **API** | http://localhost:5000/api/* | REST API |
+| 💬 **WebSocket** | ws://localhost:5000 | Real-time оновлення |
+| 🤖 **AI Chat** | http://localhost:5000/api/ai/chat | AI асистент |
 | 🗄️ **MongoDB** | mongodb://localhost:27017 | База даних |
 
 ### GitHub Codespaces:
 
 | Сервіс | URL Pattern | Опис |
 |--------|-------------|------|
-| 🌐 **Frontend** | `https://YOUR-CODESPACE-5000.app.github.dev` | Веб-інтерфейс |
-| 🔗 **API** | `https://YOUR-CODESPACE-3001.app.github.dev/api` | REST API |
-| 💬 **WebSocket** | `wss://YOUR-CODESPACE-3002.app.github.dev` | Real-time оновлення |
+| 🌐 **Всі сервіси** | `https://YOUR-CODESPACE-5000.app.github.dev` | Unified Server |
 
-⚠️ **Важливо для Codespaces**: Порт 3001 має бути публічним! Див. [CODESPACES-PORT-FIX.md](CODESPACES-PORT-FIX.md)
+✅ **Тільки ОДИН порт 5000** - все на одному сервері!
 
 ---
 
