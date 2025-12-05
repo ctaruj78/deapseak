@@ -617,13 +617,17 @@
             .then(res => res.json())
             .then(data => {
                 document.getElementById('typingIndicator').classList.remove('active');
+                console.log('Chat response:', data);
                 if (data.success) {
-                    addChatMessage(data.response || data.message, false);
+                    // API returns data.data.response, not data.response
+                    const response = data.data?.response || data.response || data.message;
+                    addChatMessage(response, false);
                 } else {
-                    addChatMessage('❌ Помилка: ' + (data.error || 'Щось пішло не так'), false);
+                    addChatMessage('❌ Помилка: ' + (data.error || data.message || 'Щось пішло не так'), false);
                 }
             })
             .catch(err => {
+                console.error('Chat error:', err);
                 document.getElementById('typingIndicator').classList.remove('active');
                 addChatMessage('❌ Помилка з\'єднання з сервером', false);
             });
@@ -699,18 +703,22 @@
             })
             .then(res => res.json())
             .then(data => {
+                console.log('Legal response:', data);
                 if (data.success) {
+                    // API returns data.data.response, not data.response
+                    const response = data.data?.response || data.response || data.message;
                     responseDiv.innerHTML = `
                         <div class="alert alert-success">
                             <h5><i class="fas fa-check-circle"></i> Юридична консультація</h5>
-                            <div>${(data.response || data.message).replace(/\n/g, '<br>')}</div>
+                            <div>${response.replace(/\n/g, '<br>')}</div>
                         </div>
                     `;
                 } else {
-                    responseDiv.innerHTML = `<div class="alert alert-danger">❌ Помилка: ${data.error || 'Щось пішло не так'}</div>`;
+                    responseDiv.innerHTML = `<div class="alert alert-danger">❌ Помилка: ${data.error || data.message || 'Щось пішло не так'}</div>`;
                 }
             })
             .catch(err => {
+                console.error('Legal error:', err);
                 responseDiv.innerHTML = '<div class="alert alert-danger">❌ Помилка з\'єднання з сервером</div>';
             });
         }
@@ -812,10 +820,9 @@
             
             const formData = new FormData();
             if (currentAnalysisFile) {
-                formData.append('pdf', currentAnalysisFile);
+                formData.append('pdfReport', currentAnalysisFile);
                 console.log('📄 PDF file attached:', currentAnalysisFile.name);
             }
-            formData.append('message', manualText || 'Проаналізуй цей PDF звіт інспекції');
             
             const token = getAuthToken();
             console.log('🔑 Token present:', !!token);
@@ -824,8 +831,8 @@
                 headers['Authorization'] = `Bearer ${token}`;
             }
             
-            console.log('📤 Sending analysis request...');
-            fetch(`${API_URL}/api/ai/chat`, {
+            console.log('📤 Sending analysis request to /api/pdf/upload...');
+            fetch(`${API_URL}/api/pdf/upload`, {
                 method: 'POST',
                 headers: headers,
                 body: formData
@@ -838,8 +845,8 @@
             })
             .then(data => {
                 console.log('📊 Analysis response:', data);
-                if (data.success && data.analysisResult) {
-                    displayAnalysisResults(data.analysisResult);
+                if (data.success && data.analysis) {
+                    displayAnalysisResults(data.analysis);
                 } else {
                     resultsContent.innerHTML = `<div class="alert alert-danger">❌ Помилка: ${data.error || data.message || 'Не вдалося проаналізувати звіт'}</div>`;
                 }
