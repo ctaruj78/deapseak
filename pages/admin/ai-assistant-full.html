@@ -445,7 +445,7 @@
                                                     </div>
                                                     <div class="card-body">
                                                         <div class="input-group mb-3">
-                                                            <input type="text" id="regulationSearch" class="form-control" placeholder="Пошук за ключовими словами (напр. 'ventilação', 'portas', 'iluminação')...">
+                                                            <input type="text" id="regulationSearch" class="form-control" placeholder="Пошук за ключовими словами (напр. 'ventilação', 'portas', 'iluminação')..." onkeypress="if(event.key==='Enter') searchRegulations()">
                                                             <div class="input-group-append">
                                                                 <button class="btn btn-success" onclick="searchRegulations()">
                                                                     <i class="fas fa-search"></i> Шукати
@@ -453,23 +453,23 @@
                                                             </div>
                                                         </div>
                                                         
-                                                        <div id="regulationsResults">
-                                                            <h6 class="text-muted">Популярні теми:</h6>
-                                                            <div class="btn-group-vertical btn-block">
-                                                                <button class="btn btn-outline-primary text-left" onclick="searchRegulations('ventilação')">
-                                                                    <i class="fas fa-wind"></i> Вентиляція
-                                                                </button>
-                                                                <button class="btn btn-outline-primary text-left" onclick="searchRegulations('portas de segurança')">
-                                                                    <i class="fas fa-door-closed"></i> Двері безпеки
-                                                                </button>
-                                                                <button class="btn btn-outline-primary text-left" onclick="searchRegulations('iluminação emergência')">
-                                                                    <i class="fas fa-lightbulb"></i> Аварійне освітлення
-                                                                </button>
-                                                                <button class="btn btn-outline-primary text-left" onclick="searchRegulations('manutenção preventiva')">
-                                                                    <i class="fas fa-tools"></i> Профілактичне обслуговування
-                                                                </button>
-                                                            </div>
+                                                        <h6 class="text-muted mt-3">Популярні теми:</h6>
+                                                        <div class="btn-group-vertical btn-block mb-3">
+                                                            <button class="btn btn-outline-primary text-left" onclick="searchRegulations('ventilação')">
+                                                                <i class="fas fa-wind"></i> Вентиляція
+                                                            </button>
+                                                            <button class="btn btn-outline-primary text-left" onclick="searchRegulations('portas de segurança')">
+                                                                <i class="fas fa-door-closed"></i> Двері безпеки
+                                                            </button>
+                                                            <button class="btn btn-outline-primary text-left" onclick="searchRegulations('iluminação emergência')">
+                                                                <i class="fas fa-lightbulb"></i> Аварійне освітлення
+                                                            </button>
+                                                            <button class="btn btn-outline-primary text-left" onclick="searchRegulations('manutenção preventiva')">
+                                                                <i class="fas fa-tools"></i> Профілактичне обслуговування
+                                                            </button>
                                                         </div>
+                                                        
+                                                        <div id="regulationsResults"></div>
                                                     </div>
                                                 </div>
                                             </div>
