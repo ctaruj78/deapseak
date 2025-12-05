@@ -274,8 +274,8 @@ JWT_REFRESH_SECRET=your-super-secret-refresh-key-change-this-in-production
 JWT_EXPIRE=24h
 JWT_REFRESH_EXPIRE=7d
 
-# Server
-PORT=3001
+# Server - Unified Server на порту 5000
+PORT=5000
 NODE_ENV=development
 
 # Frontend

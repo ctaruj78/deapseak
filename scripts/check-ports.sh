@@ -13,15 +13,16 @@ echo "🔍 ПЕРЕВІРКА КОНФІГУРАЦІЇ ПОРТІВ"
 echo "═══════════════════════════════════════════════════════════"
 echo ""
 
-# Визначаємо правильні порти (з config.js)
-CORRECT_API_PORT=3001
-CORRECT_WS_PORT=3002
+# Визначаємо правильні порти (Unified Server архітектура)
+CORRECT_API_PORT=5000
+CORRECT_WS_PORT=5000
 CORRECT_FRONTEND_PORT=5000
 
-echo "📋 Правильна конфігурація портів:"
+echo "📋 Правильна конфігурація портів (Unified Server):"
 echo "   🌐 Frontend: $CORRECT_FRONTEND_PORT"
 echo "   🔗 API:      $CORRECT_API_PORT"
 echo "   💬 WebSocket: $CORRECT_WS_PORT"
+echo "   ⚡ Все на єдиному порту: 5000"
 echo ""
 
 # Функція для пошуку неправильних портів
