@@ -1,0 +1,720 @@
+{
+  "metadata": {
+    "country": "Portugal",
+    "last_updated": "2025-12-01",
+    "language": "pt-PT",
+    "scope": "Regulamentação de Elevadores e Inspeções",
+    "version": "1.1"
+  },
+  "regulations": [
+    {
+      "id": "DEC_513_1970",
+      "type": "decreto",
+      "number": "513/70",
+      "date": "1970-10-28",
+      "title": "Regulamento de Segurança dos Ascensores",
+      "status": "vigente_parcial",
+      "summary": "Regulamento histórico de segurança de ascensores, ainda aplicável a elevadores antigos não modernizados. Base fundamental da regulamentação portuguesa de elevadores.",
+      "scope": [
+        "Requisitos técnicos para elevadores instalados antes de 1999",
+        "Especificações de caixa de elevador",
+        "Requisitos de portas e proteções",
+        "Dispositivos de segurança obrigatórios",
+        "Modernização de elevadores antigos"
+      ],
+      "inspection_points": [
+        {
+          "point": "art_14",
+          "article": "Artigo 14.º",
+          "requirement": "Caixa de elevador fechada",
+          "description": "Caixa deve ser totalmente fechada com paredes resistentes",
+          "client_explanation": "A caixa do elevador (espaço onde cabina sobe e desce) deve estar completamente fechada para evitar quedas ou acidentes.",
+          "common_violations": [
+            "Parede da caixa danificada ou com buracos",
+            "Acesso não autorizado à caixa",
+            "Porta de visita sem tranca"
+          ]
+        },
+        {
+          "point": "art_23",
+          "article": "Artigo 23.º",
+          "requirement": "Portas de piso com fechadura",
+          "description": "Portas de patamar devem ter fecho automático e não abrir com cabina fora do piso",
+          "client_explanation": "Portas de cada andar devem trancar automaticamente e só abrir quando cabina está parada no andar. Fundamental para evitar quedas.",
+          "common_violations": [
+            "Porta abre com cabina fora do nível",
+            "Fecho da porta não funciona",
+            "Porta pode ser forçada manualmente"
+          ]
+        },
+        {
+          "point": "art_28",
+          "article": "Artigo 28.º",
+          "requirement": "Para-quedas obrigatório",
+          "description": "Sistema de travagem automática em caso de rutura de cabos",
+          "client_explanation": "Para-quedas é um dispositivo que trava automaticamente o elevador se os cabos partirem. Salva vidas!",
+          "common_violations": [
+            "Para-quedas não testado regularmente",
+            "Para-quedas desregulado ou defeituoso",
+            "Ausência de certificado de teste"
+          ]
+        },
+        {
+          "point": "art_33",
+          "article": "Artigo 33.º",
+          "requirement": "Limitador de velocidade",
+          "description": "Dispositivo que ativa para-quedas se velocidade exceder limite",
+          "client_explanation": "Se elevador começar a descer muito rápido, este dispositivo ativa os travões automaticamente.",
+          "common_violations": [
+            "Limitador não calibrado",
+            "Cabo do limitador gasto",
+            "Teste do limitador em atraso"
+          ]
+        },
+        {
+          "point": "art_37",
+          "article": "Artigo 37.º",
+          "requirement": "Amortecedores no fundo da caixa",
+          "description": "Amortecedores hidráulicos ou de mola no poço",
+          "client_explanation": "No fundo da caixa existem 'almofadas' que absorvem impacto se elevador descer demais.",
+          "common_violations": [
+            "Amortecedores com fuga de óleo",
+            "Amortecedores de mola partidos",
+            "Falta de inspeção de amortecedores"
+          ]
+        },
+        {
+          "point": "art_41",
+          "article": "Artigo 41.º",
+          "requirement": "Iluminação da cabina",
+          "description": "Cabina deve ter iluminação adequada ligada independentemente",
+          "client_explanation": "Luz dentro do elevador deve estar sempre ligada quando elevador funciona, mesmo que haja falta de luz no prédio.",
+          "common_violations": [
+            "Luz da cabina partilha circuito com luz do prédio",
+            "Iluminação insuficiente",
+            "Lâmpadas queimadas"
+          ]
+        },
+        {
+          "point": "art_45",
+          "article": "Artigo 45.º",
+          "requirement": "Ventilação da cabina",
+          "description": "Cabina deve ter ventilação natural ou forçada",
+          "client_explanation": "Deve haver circulação de ar na cabina para pessoas não passarem mal se ficarem presas.",
+          "common_violations": [
+            "Ventilação obstruída",
+            "Ausência de grelhas de ventilação",
+            "Ventilação insuficiente (<1% da área)"
+          ]
+        },
+        {
+          "point": "art_52",
+          "article": "Artigo 52.º",
+          "requirement": "Botão de alarme",
+          "description": "Botão de alarme sonoro na cabina",
+          "client_explanation": "Botão vermelho que toca campainha ou sirene para pedir ajuda se ficar preso.",
+          "common_violations": [
+            "Alarme não funciona",
+            "Som do alarme não audível fora da cabina",
+            "Botão de alarme danificado"
+          ]
+        },
+        {
+          "point": "art_57",
+          "article": "Artigo 57.º",
+          "requirement": "Placa de identificação na cabina",
+          "description": "Placa com lotação máxima, peso máximo e fabricante",
+          "client_explanation": "Placa metálica que indica quantas pessoas e quanto peso máximo o elevador aguenta.",
+          "common_violations": [
+            "Placa ausente ou ilegível",
+            "Informação de lotação incorreta",
+            "Placa não corresponde às características reais"
+          ]
+        },
+        {
+          "point": "art_62",
+          "article": "Artigo 62.º",
+          "requirement": "Livro de registo de manutenção",
+          "description": "Registo de todas as manutenções, reparações e inspeções",
+          "client_explanation": "Caderno onde técnico anota todas as visitas, trabalhos feitos e problemas encontrados.",
+          "common_violations": [
+            "Livro ausente ou não atualizado",
+            "Registos incompletos",
+            "Falta de assinatura do técnico"
+          ]
+        }
+      ],
+      "penalties": "Interdição do elevador até regularização; responsabilidade civil e criminal em caso de acidente",
+      "url": "https://diariodarepublica.pt/dr/detalhe/decreto/513-1970-147794",
+      "notes": "Regulamento histórico mas ainda vigente para elevadores antigos. Elevadores instalados após 1999 devem cumprir DL 320/2002 e normas EN harmonizadas. Muitos elevadores antigos ainda funcionam sob este regulamento."
+    },
+    {
+      "id": "DL_320_2002",
+      "type": "decreto_lei",
+      "number": "320/2002",
+      "date": "2002-12-28",
+      "title": "Aproximação das legislações dos Estados-Membros relativas aos elevadores",
+      "status": "vigente",
+      "summary": "Transpõe para a ordem jurídica interna a Diretiva n.º 95/16/CE, relativa aos elevadores. Define requisitos essenciais de segurança.",
+      "scope": [
+        "Requisitos de segurança",
+        "Marcação CE",
+        "Declaração de conformidade",
+        "Instalação e colocação em serviço"
+      ],
+      "inspection_points": [
+        {
+          "point": "art_3_1",
+          "article": "Artigo 3.º, n.º 1",
+          "requirement": "Requisitos essenciais de segurança do Anexo I",
+          "description": "O elevador deve cumprir todos os requisitos essenciais de segurança",
+          "client_explanation": "O seu elevador deve cumprir normas de segurança europeias obrigatórias: portas de segurança, sistemas de travagem, proteção contra quedas, etc.",
+          "common_violations": [
+            "Portas sem dispositivo de bloqueio",
+            "Falta de iluminação de emergência",
+            "Sistemas de alarme não funcionais"
+          ]
+        },
+        {
+          "point": "art_5_1",
+          "article": "Artigo 5.º, n.º 1",
+          "requirement": "Marcação CE obrigatória",
+          "description": "Todos os elevadores devem ter marcação CE visível",
+          "client_explanation": "A placa CE deve estar visível na cabina, confirmando que o elevador cumpre normas europeias.",
+          "common_violations": [
+            "Marcação CE ausente ou ilegível",
+            "Placa de identificação danificada"
+          ]
+        }
+      ],
+      "penalties": "Coimas de €500 a €44.890 (artigo 19.º)",
+      "url": "https://diariodarepublica.pt/dr/detalhe/decreto-lei/320-2002-466044"
+    },
+    {
+      "id": "DL_163_2006",
+      "type": "decreto_lei",
+      "number": "163/2006",
+      "date": "2006-08-08",
+      "title": "Acessibilidade aos edifícios e estabelecimentos",
+      "status": "vigente",
+      "summary": "Define condições de acessibilidade a edifícios públicos, privados e edifícios habitacionais.",
+      "scope": [
+        "Acessibilidade para pessoas com mobilidade condicionada",
+        "Dimensões mínimas de cabinas",
+        "Comandos e botoeiras acessíveis",
+        "Sinalização em Braille"
+      ],
+      "inspection_points": [
+        {
+          "point": "anexo_2_4_5",
+          "article": "Anexo, ponto 2.4.5",
+          "requirement": "Dimensões mínimas da cabina",
+          "description": "Cabina com no mínimo 1,10m (largura) x 1,40m (profundidade)",
+          "client_explanation": "Para edifícios públicos e novos, o elevador deve ter espaço suficiente para cadeira de rodas (mínimo 1,10m x 1,40m).",
+          "common_violations": [
+            "Cabina inferior a 1,10m x 1,40m",
+            "Porta com largura inferior a 0,80m"
+          ]
+        },
+        {
+          "point": "anexo_2_4_5_7",
+          "article": "Anexo, ponto 2.4.5.7",
+          "requirement": "Botoeiras acessíveis",
+          "description": "Botões entre 0,90m e 1,20m de altura, com números em relevo e Braille",
+          "client_explanation": "Os botões devem estar à altura acessível, com números em relevo e Braille para pessoas com deficiência visual.",
+          "common_violations": [
+            "Botões acima de 1,20m",
+            "Falta de números em Braille",
+            "Números em relevo ausentes"
+          ]
+        },
+        {
+          "point": "anexo_2_4_5_9",
+          "article": "Anexo, ponto 2.4.5.9",
+          "requirement": "Sinalização sonora e visual",
+          "description": "Sinal sonoro e visual indicando piso e direção",
+          "client_explanation": "O elevador deve emitir som ao chegar e mostrar visualmente qual o piso, ajudando pessoas com deficiências.",
+          "common_violations": [
+            "Ausência de sinal sonoro",
+            "Display de piso não funcional"
+          ]
+        }
+      ],
+      "penalties": "Coimas conforme legislação municipal",
+      "url": "https://diariodarepublica.pt/dr/detalhe/decreto-lei/163-2006-540650"
+    },
+    {
+      "id": "PORT_1135_2000",
+      "type": "portaria",
+      "number": "1135/2000",
+      "date": "2000-11-29",
+      "title": "Regulamento de Segurança de Ascensores Eléctricos de Passageiros",
+      "status": "vigente_parcial",
+      "summary": "Regulamento técnico específico para ascensores elétricos de passageiros (ainda aplicável a elevadores antigos).",
+      "scope": [
+        "Especificações técnicas para elevadores antigos",
+        "Modernização obrigatória",
+        "Requisitos de segurança pré-2002"
+      ],
+      "inspection_points": [
+        {
+          "point": "art_52",
+          "article": "Artigo 52.º",
+          "requirement": "Inspeção periódica obrigatória",
+          "description": "Inspeções anuais ou bienais conforme uso",
+          "client_explanation": "Elevadores de uso intenso (prédios, hospitais): inspeção anual. Uso normal: inspeção de 2 em 2 anos.",
+          "common_violations": [
+            "Inspeção em atraso",
+            "Relatório de inspeção não disponível"
+          ]
+        },
+        {
+          "point": "art_28",
+          "article": "Artigo 28.º",
+          "requirement": "Dispositivo de paragem de emergência",
+          "description": "Para-quedas deve funcionar corretamente",
+          "client_explanation": "Sistema que trava o elevador automaticamente em caso de queda - obrigatório e deve ser testado regularmente.",
+          "common_violations": [
+            "Para-quedas desregulado",
+            "Teste do para-quedas não realizado"
+          ]
+        }
+      ],
+      "penalties": "Interdição até regularização",
+      "url": "https://diariodarepublica.pt/dr/detalhe/portaria/1135-2000-576648"
+    },
+    {
+      "id": "DL_9_2007",
+      "type": "decreto_lei",
+      "number": "9/2007",
+      "date": "2007-01-17",
+      "title": "Regulamento Geral do Ruído",
+      "status": "vigente",
+      "summary": "Estabelece limites de ruído, incluindo equipamentos como elevadores.",
+      "scope": [
+        "Níveis máximos de ruído",
+        "Ruído de equipamentos em edifícios",
+        "Período noturno"
+      ],
+      "inspection_points": [
+        {
+          "point": "art_13",
+          "article": "Artigo 13.º",
+          "requirement": "Limites de ruído em edifícios habitacionais",
+          "description": "Ruído de elevadores não pode exceder limites legais (período diurno: 55 dB, noturno: 45 dB)",
+          "client_explanation": "O ruído do elevador não pode incomodar vizinhos. Durante o dia máximo 55 dB, à noite 45 dB.",
+          "common_violations": [
+            "Motor barulhento",
+            "Falta de isolamento acústico",
+            "Ruído de portas excessivo"
+          ]
+        }
+      ],
+      "penalties": "Coimas de €250 a €2.500 (pessoas singulares)",
+      "url": "https://diariodarepublica.pt/dr/detalhe/decreto-lei/9-2007-517555"
+    },
+    {
+      "id": "EN_81_20_50",
+      "type": "norma_europeia",
+      "number": "EN 81-20:2014 + EN 81-50:2014",
+      "date": "2014-09-01",
+      "title": "Normas de segurança para elevadores - Parte 20 e 50",
+      "status": "vigente_obrigatoria",
+      "summary": "Normas técnicas harmonizadas que substituíram EN 81-1 e EN 81-2. Obrigatórias para elevadores novos desde 2017.",
+      "scope": [
+        "Requisitos técnicos de segurança",
+        "Componentes de segurança",
+        "Testes e ensaios obrigatórios"
+      ],
+      "inspection_points": [
+        {
+          "point": "5_4_2_1",
+          "article": "Secção 5.4.2.1",
+          "requirement": "Dispositivo de bloqueio de portas",
+          "description": "Portas de piso devem ter dispositivo de bloqueio eletromecânico",
+          "client_explanation": "As portas do elevador devem trancar automaticamente e só abrir quando a cabina está parada no piso.",
+          "common_violations": [
+            "Bloqueio de porta defeituoso",
+            "Porta abre fora do piso"
+          ]
+        },
+        {
+          "point": "5_6_7",
+          "article": "Secção 5.6.7",
+          "requirement": "Iluminação de emergência",
+          "description": "Iluminação mínima de 5 lux durante 1 hora em caso de falha",
+          "client_explanation": "Se faltar luz, o elevador deve ter iluminação de emergência automática por pelo menos 1 hora.",
+          "common_violations": [
+            "Bateria de emergência descarregada",
+            "Luz de emergência não funcional"
+          ]
+        },
+        {
+          "point": "5_6_8",
+          "article": "Secção 5.6.8",
+          "requirement": "Sistema de alarme bidirecional",
+          "description": "Comunicação de emergência com exterior (interfone ou GSM)",
+          "client_explanation": "Deve haver botão de alarme com comunicação bidirecional (falar e ouvir) para pedir ajuda.",
+          "common_violations": [
+            "Interfone sem som",
+            "Sistema GSM sem sinal",
+            "Bateria do sistema descarregada"
+          ]
+        },
+        {
+          "point": "5_10_1",
+          "article": "Secção 5.10.1",
+          "requirement": "Proteção contra velocidade excessiva descendente",
+          "description": "Dispositivo UCM (Unintended Car Movement) obrigatório",
+          "client_explanation": "Sistema que impede movimento inesperado da cabina, especialmente descida descontrolada.",
+          "common_violations": [
+            "UCM não instalado (elevadores antigos)",
+            "UCM desativado ou defeituoso"
+          ]
+        }
+      ],
+      "penalties": "Não conformidade impede certificação CE",
+      "url": "https://eur-lex.europa.eu/legal-content/PT/TXT/?uri=uriserv:OJ.C_.2016.173.01.0001.01.POR",
+      "note": "Normas harmonizadas EN 81-20:2014 e EN 81-50:2014 (transpostas como NP EN 81-20 e NP EN 81-50 em Portugal). Referência na Diretiva 2014/33/UE (Elevadores). Lista oficial de normas harmonizadas publicada no Jornal Oficial da UE."
+    },
+    {
+      "id": "EN_81_70",
+      "type": "norma_europeia",
+      "number": "EN 81-70",
+      "date": "2018",
+      "title": "Regras de segurança para construção e instalação de elevadores - Aplicações especiais para elevadores de passageiros e monta-cargas - Parte 70: Acessibilidade de elevadores para pessoas incluindo pessoas com deficiência",
+      "status": "vigente",
+      "summary": "Norma europeia que define requisitos específicos de acessibilidade para pessoas com deficiências físicas, visuais e auditivas.",
+      "scope": [
+        "Acessibilidade para pessoas com mobilidade reduzida",
+        "Requisitos para pessoas com deficiência visual",
+        "Requisitos para pessoas com deficiência auditiva",
+        "Dimensões mínimas de cabina",
+        "Sistemas de informação e comunicação"
+      ],
+      "inspection_points": [
+        {
+          "point": "5_2_1",
+          "article": "Secção 5.2.1",
+          "requirement": "Largura mínima da porta - 800mm",
+          "description": "Porta da cabina deve ter largura livre mínima de 800mm",
+          "client_explanation": "Porta com 80cm de largura permite passagem de cadeiras de rodas. Portas mais estreitas não são acessíveis.",
+          "common_violations": [
+            "Porta com largura inferior a 800mm",
+            "Batente reduz largura útil abaixo de 800mm"
+          ]
+        },
+        {
+          "point": "5_3_1",
+          "article": "Secção 5.3.1",
+          "requirement": "Dimensões mínimas da cabina - 1100mm x 1400mm",
+          "description": "Cabina deve ter pelo menos 1,10m de largura e 1,40m de profundidade",
+          "client_explanation": "Estas dimensões permitem que cadeira de rodas entre, rode e saia confortavelmente.",
+          "common_violations": [
+            "Cabina com dimensões inferiores a 1100x1400mm",
+            "Espelhos ou decorações que reduzem espaço útil"
+          ]
+        },
+        {
+          "point": "5_4_1",
+          "article": "Secção 5.4.1",
+          "requirement": "Corrimão na cabina",
+          "description": "Corrimão a 900mm de altura em três lados (exceto porta)",
+          "client_explanation": "Corrimões ajudam pessoas com mobilidade reduzida a manter equilíbrio dentro do elevador.",
+          "common_violations": [
+            "Ausência de corrimão",
+            "Corrimão em altura incorreta (diferente de 900mm)",
+            "Corrimão em apenas um lado"
+          ]
+        },
+        {
+          "point": "5_5_1",
+          "article": "Secção 5.5.1",
+          "requirement": "Espelho na parede oposta à porta",
+          "description": "Espelho vertical de 350mm de largura mínima na parede oposta à porta",
+          "client_explanation": "Espelho permite pessoa em cadeira de rodas ver se alguém está atrás quando sai de costas.",
+          "common_violations": [
+            "Ausência de espelho",
+            "Espelho muito pequeno (<350mm)",
+            "Espelho mal posicionado"
+          ]
+        },
+        {
+          "point": "5_9_1",
+          "article": "Secção 5.9.1",
+          "requirement": "Botoeiras acessíveis - altura 900mm a 1100mm",
+          "description": "Botões entre 0,90m e 1,10m do piso, com números em relevo e Braille",
+          "client_explanation": "Altura permite acesso fácil em cadeira de rodas. Números em relevo e Braille ajudam pessoas cegas.",
+          "common_violations": [
+            "Botões acima de 1100mm",
+            "Botões abaixo de 900mm",
+            "Ausência de números em Braille",
+            "Números em relevo mal feitos ou ausentes"
+          ]
+        },
+        {
+          "point": "5_9_2",
+          "article": "Secção 5.9.2",
+          "requirement": "Indicação tátil e visual de confirmação",
+          "description": "Botão deve acender quando pressionado e emitir sinal sonoro",
+          "client_explanation": "Luz confirma visualmente que botão foi apertado. Som confirma para pessoas cegas.",
+          "common_violations": [
+            "Botões sem luz de confirmação",
+            "Ausência de feedback sonoro",
+            "Som muito baixo ou inaudível"
+          ]
+        },
+        {
+          "point": "5_10_1",
+          "article": "Secção 5.10.1",
+          "requirement": "Indicadores de piso sonoros e visuais",
+          "description": "Anúncio sonoro e display visual indicando piso ao chegar",
+          "client_explanation": "Som e display ajudam tanto pessoas cegas quanto pessoas surdas a saber onde estão.",
+          "common_violations": [
+            "Ausência de anúncio sonoro",
+            "Display não funcional",
+            "Som muito baixo",
+            "Sem indicação de direção (subida/descida)"
+          ]
+        },
+        {
+          "point": "5_10_2",
+          "article": "Secção 5.10.2",
+          "requirement": "Sinal sonoro diferenciado para direção",
+          "description": "Um som para subida, outro som diferente para descida",
+          "client_explanation": "Sons diferentes ajudam pessoas cegas a saber se elevador está a subir ou descer.",
+          "common_violations": [
+            "Mesmo som para ambas direções",
+            "Ausência de som direcional"
+          ]
+        },
+        {
+          "point": "5_11_1",
+          "article": "Secção 5.11.1",
+          "requirement": "Tempo mínimo de porta aberta - 5 segundos",
+          "description": "Porta deve permanecer aberta pelo menos 5 segundos após abertura completa",
+          "client_explanation": "Tempo extra permite que pessoas em cadeira de rodas ou com mobilidade reduzida entrem com calma.",
+          "common_violations": [
+            "Porta fecha muito rápido (<5 segundos)",
+            "Sensor de presença desativado",
+            "Temporizador mal ajustado"
+          ]
+        },
+        {
+          "point": "5_11_2",
+          "article": "Secção 5.11.2",
+          "requirement": "Reabertura de porta por sensor",
+          "description": "Cortina de luz ou sensor deve reabrir porta se detetar obstáculo",
+          "client_explanation": "Sensor impede que porta feche sobre pessoa, especialmente em cadeira de rodas.",
+          "common_violations": [
+            "Sensor não funcional",
+            "Sensor mal calibrado",
+            "Ausência de sensor de presença"
+          ]
+        },
+        {
+          "point": "5_12_1",
+          "article": "Secção 5.12.1",
+          "requirement": "Sistema de comunicação bidirecional com identificação de chamada",
+          "description": "Alarme deve identificar de qual elevador vem a chamada",
+          "client_explanation": "Se há vários elevadores no prédio, central precisa saber qual está com problema para enviar ajuda certa.",
+          "common_violations": [
+            "Sistema não identifica elevador",
+            "Comunicação apenas unidirecional",
+            "Ausência de display ou voz identificando elevador"
+          ]
+        },
+        {
+          "point": "5_13_1",
+          "article": "Secção 5.13.1",
+          "requirement": "Iluminação mínima na cabina - 100 lux",
+          "description": "Iluminação normal de pelo menos 100 lux ao nível do piso",
+          "client_explanation": "Luz adequada é essencial para pessoas com baixa visão lerem botões e displays.",
+          "common_violations": [
+            "Iluminação inferior a 100 lux",
+            "Lâmpadas queimadas não substituídas",
+            "Distribuição desigual de luz"
+          ]
+        }
+      ],
+      "penalties": "Obrigatório para edifícios públicos e novos edifícios residenciais",
+      "url": "https://eur-lex.europa.eu/legal-content/PT/TXT/?uri=uriserv:OJ.C_.2016.173.01.0001.01.POR",
+      "note": "Norma harmonizada EN 81-70:2018 (transposta como NP EN 81-70 em Portugal). Aplicação obrigatória conforme Decreto-Lei 163/2006 (acessibilidade). Texto completo disponível através do IPQ (www.ipq.pt/loja/normas) ou consulta gratuita em bibliotecas públicas portuguesas."
+    }
+  ],
+  "inspection_schedule": {
+    "residential_low_use": {
+      "frequency": "24 months",
+      "description": "Edifícios residenciais com uso normal",
+      "legal_basis": "Portaria 1135/2000, Art. 52.º"
+    },
+    "residential_high_use": {
+      "frequency": "12 months",
+      "description": "Edifícios com uso intensivo (>10 pisos ou >100 pessoas)",
+      "legal_basis": "Portaria 1135/2000, Art. 52.º"
+    },
+    "commercial": {
+      "frequency": "12 months",
+      "description": "Edifícios comerciais, hotéis, hospitais",
+      "legal_basis": "Portaria 1135/2000, Art. 52.º"
+    },
+    "modernization_required": {
+      "deadline": "Conforme diretiva local",
+      "description": "Elevadores anteriores a 1999 devem ser modernizados",
+      "priority_items": [
+        "Instalação de UCM (proteção contra movimento descontrolado)",
+        "Sistema de alarme bidirecional",
+        "Iluminação de emergência",
+        "Bloqueio eletromecânico de portas"
+      ]
+    }
+  },
+  "common_inspection_failures": [
+    {
+      "category": "Portas de segurança",
+      "failures": [
+        "Bloqueio de porta não funciona corretamente",
+        "Porta de cabina sem contacto de segurança",
+        "Folga excessiva entre porta e batente (>6mm)",
+        "Porta de piso abre com cabina fora do nível"
+      ],
+      "severity": "critical",
+      "legal_basis": "EN 81-20, secção 5.4"
+    },
+    {
+      "category": "Sistema de travagem",
+      "failures": [
+        "Freio desregulado ou gasto",
+        "Verificação de para-quedas não realizada",
+        "Limitador de velocidade sem certificado"
+      ],
+      "severity": "critical",
+      "legal_basis": "EN 81-20, secção 5.6.3"
+    },
+    {
+      "category": "Iluminação e alarme",
+      "failures": [
+        "Iluminação de emergência não funciona",
+        "Bateria de backup descarregada",
+        "Sistema de alarme sem comunicação bidirecional",
+        "Telefone de emergência não testado"
+      ],
+      "severity": "high",
+      "legal_basis": "EN 81-20, secções 5.6.7 e 5.6.8"
+    },
+    {
+      "category": "Acessibilidade",
+      "failures": [
+        "Botões sem Braille",
+        "Botões acima de 1,20m de altura",
+        "Falta de sinal sonoro",
+        "Cabina inferior às dimensões mínimas"
+      ],
+      "severity": "medium",
+      "legal_basis": "DL 163/2006"
+    },
+    {
+      "category": "Documentação",
+      "failures": [
+        "Livro de registo não atualizado",
+        "Certificado de inspeção em falta",
+        "Declaração CE não disponível",
+        "Manual de instruções ausente"
+      ],
+      "severity": "medium",
+      "legal_basis": "DL 320/2002"
+    },
+    {
+      "category": "UCM (Movimento descontrolado)",
+      "failures": [
+        "Dispositivo UCM não instalado",
+        "UCM não testado anualmente",
+        "UCM desativado por técnico"
+      ],
+      "severity": "critical",
+      "legal_basis": "EN 81-20, secção 5.10.1"
+    }
+  ],
+  "client_faq": [
+    {
+      "question": "O inspetor marcou 'bloqueio de porta defeituoso'. O que significa?",
+      "answer": "Significa que a porta do elevador não está a trancar corretamente. Isto é perigoso porque alguém pode abrir a porta quando a cabina não está no piso. É uma violação crítica e deve ser reparada imediatamente.",
+      "regulation": "EN 81-20, secção 5.4.2.1",
+      "urgency": "critical",
+      "estimated_cost": "€300-€800"
+    },
+    {
+      "question": "Tenho falta de iluminação de emergência. É grave?",
+      "answer": "Sim, é obrigatório ter luz de emergência que funcione por pelo menos 1 hora se faltar energia. Se alguém ficar preso, precisa de luz. Geralmente é só trocar a bateria (€100-€200) ou a luminária (€200-€400).",
+      "regulation": "EN 81-20, secção 5.6.7",
+      "urgency": "high",
+      "estimated_cost": "€100-€400"
+    },
+    {
+      "question": "O relatório diz 'UCM não instalado'. O que é UCM?",
+      "answer": "UCM (Unintended Car Movement) é um sistema que impede movimento inesperado da cabina, especialmente descida descontrolada. Obrigatório em elevadores novos desde 2014. Se tem elevador antigo, pode ser exigida modernização.",
+      "regulation": "EN 81-20, secção 5.10.1",
+      "urgency": "critical",
+      "estimated_cost": "€2.000-€5.000"
+    },
+    {
+      "question": "Falta Braille nos botões. Preciso corrigir?",
+      "answer": "Se o edifício é público ou foi construído/renovado após 2007, sim, é obrigatório ter números em relevo e Braille nos botões entre 0,90m e 1,20m de altura.",
+      "regulation": "DL 163/2006, Anexo 2.4.5.7",
+      "urgency": "medium",
+      "estimated_cost": "€150-€400"
+    },
+    {
+      "question": "De quanto em quanto tempo preciso fazer inspeção?",
+      "answer": "Depende do uso: Residencial normal: cada 2 anos. Residencial intensivo (>10 pisos): anual. Comercial/hotel/hospital: anual.",
+      "regulation": "Portaria 1135/2000, Art. 52.º",
+      "urgency": "info",
+      "estimated_cost": "€150-€300 por inspeção"
+    },
+    {
+      "question": "O alarme não funciona. Posso usar o elevador?",
+      "answer": "Tecnicamente não deveria. O sistema de alarme bidirecional é obrigatório por segurança - se alguém ficar preso, precisa pedir ajuda. Deve reparar urgentemente.",
+      "regulation": "EN 81-20, secção 5.6.8",
+      "urgency": "critical",
+      "estimated_cost": "€300-€800"
+    }
+  ],
+  "official_monitoring_sources": {
+    "note": "Consulte sempre fontes oficiais para informação atualizada sobre legislação de elevadores em Portugal",
+    "sources": [
+      {
+        "entity": "Diário da República",
+        "url": "https://diariodarepublica.pt",
+        "description": "Publicação oficial de legislação portuguesa",
+        "type": "Legislação oficial"
+      },
+      {
+        "entity": "DGEG - Direção Geral de Energia e Geologia",
+        "url": "https://www.dgeg.gov.pt",
+        "description": "Entidade reguladora de elevadores em Portugal - Informações oficiais sobre inspeções e requisitos",
+        "type": "Regulador oficial"
+      },
+      {
+        "entity": "ASAE - Autoridade de Segurança Alimentar e Económica",
+        "url": "https://www.asae.gov.pt",
+        "description": "Fiscalização de elevadores em estabelecimentos comerciais",
+        "type": "Fiscalização"
+      },
+      {
+        "entity": "IPQ - Instituto Português da Qualidade",
+        "url": "https://www.ipq.pt",
+        "description": "Organismo nacional de normalização - Normas portuguesas NP EN (incluindo NP EN 81-20, NP EN 81-50, NP EN 81-70)",
+        "type": "Normalização"
+      }
+    ]
+  },
+  "glossary": {
+    "UCM": "Unintended Car Movement - Sistema de proteção contra movimento descontrolado da cabina",
+    "Para-quedas": "Dispositivo mecânico que trava a cabina em caso de queda livre",
+    "Limitador de velocidade": "Dispositivo que ativa o para-quedas se a velocidade exceder o limite",
+    "Marcação CE": "Certificação europeia de conformidade com normas de segurança",
+    "Bloqueio eletromecânico": "Trava elétrica e mecânica que impede abertura de porta fora do piso",
+    "Inspeção periódica": "Verificação obrigatória de segurança realizada por entidade certificada",
+    "Modernização": "Atualização de elevador antigo para cumprir normas atuais"
+  }
+}
