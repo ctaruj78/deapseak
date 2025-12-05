@@ -742,11 +742,49 @@
         let recognition = null;
         let regulationsLoaded = false;
 
+        // Helper function to get token from any storage location
+        function getAuthToken() {
+            return localStorage.getItem('token') || 
+                   localStorage.getItem('lm_token') || 
+                   localStorage.getItem('deapseak_token');
+        }
+
+        // Check authentication on load
+        function checkAuthentication() {
+            const token = getAuthToken();
+            
+            console.log('🔐 Перевірка автентифікації...');
+            console.log('Token exists:', !!token);
+            
+            if (!token) {
+                console.warn('❌ Токен не знайдено, перенаправлення на логін');
+                // Зберігаємо поточну сторінку для повернення після логіну
+                sessionStorage.setItem('redirect_after_login', window.location.href);
+                window.location.href = '/login.html';
+                return false;
+            }
+            
+            // Normalize token - зберігаємо в головному ключі якщо його там немає
+            if (!localStorage.getItem('token') && token) {
+                localStorage.setItem('token', token);
+                console.log('✅ Токен нормалізовано');
+            }
+            
+            console.log('✅ Токен знайдено, доступ дозволено');
+            return true;
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', init);
 
         function init() {
             console.log('AI Assistant Init Started');
+            
+            // Check authentication first
+            if (!checkAuthentication()) {
+                return; // Stop initialization if not authenticated
+            }
+            
             loadUserData();
             console.log('User data loaded:', currentUser);
             setupTabs();
@@ -835,7 +873,7 @@
             input.value = '';
 
             try {
-                const token = localStorage.getItem('token');
+                const token = getAuthToken();
                 const response = await fetch('/api/ai/chat', {
                     method: 'POST',
                     headers: {
@@ -1000,8 +1038,8 @@
             answerDiv.innerHTML = '<div class="loading-center"><div class="spinner"></div></div>';
 
             try {
-                const token = localStorage.getItem('token');
-                const response = await fetch('/api/legal/consult', {
+                const token = getAuthToken();
+                const response = await fetch('/api/ai/consult', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1028,17 +1066,34 @@
             let urgencyClass = 'urgency-medium';
             let urgencyText = 'Інформація';
             
-            if (data.urgency === 'critical') {
+            // Check urgency from answer content
+            if (data.answer && data.answer.includes('🔴')) {
                 urgencyClass = 'urgency-critical';
-                urgencyText = '🚨 Критично';
+                urgencyText = '🚨 Crítico';
+            } else if (data.answer && data.answer.includes('🟠')) {
+                urgencyClass = 'urgency-high';
+                urgencyText = '⚠️ Importante';
+            } else if (data.urgency === 'critical') {
+                urgencyClass = 'urgency-critical';
+                urgencyText = '🚨 Crítico';
             } else if (data.urgency === 'high') {
                 urgencyClass = 'urgency-high';
-                urgencyText = '⚠️ Високий пріоритет';
+                urgencyText = '⚠️ Alta Prioridade';
             }
             
-            let html = '<h3>💡 Відповідь</h3>';
+            let html = '<h3>💡 Resposta Legal</h3>';
             html += `<span class="urgency-badge ${urgencyClass}">${urgencyText}</span>`;
-            html += `<div style="margin-top: 20px; line-height: 1.8;">${data.answer.replace(/\n/g, '<br>')}</div>`;
+            html += `<div style="margin-top: 20px; line-height: 1.8; white-space: pre-line;">${data.answer || data.response || 'Sem resposta'}</div>`;
+            
+            // Show sources if available
+            if (data.sources && data.sources.length > 0) {
+                html += '<div style="margin-top: 20px; padding: 15px; background: #f7fafc; border-left: 4px solid #667eea; border-radius: 8px;">';
+                html += '<strong>📚 Fontes Legais:</strong><br>';
+                data.sources.forEach(source => {
+                    html += `<span style="color: #667eea;">• ${source}</span><br>`;
+                });
+                html += '</div>';
+            }
             
             if (data.regulation) {
                 html += `<p style="margin-top: 20px; color: #667eea; font-weight: 600;">📜 ${data.regulation}</p>`;
@@ -1053,9 +1108,9 @@
             grid.innerHTML = '<div class="loading-center"><div class="spinner"></div></div>';
 
             try {
-                const token = localStorage.getItem('token');
+                const token = getAuthToken();
                 
-                const response = await fetch('/api/legal/regulations', {
+                const response = await fetch('/api/ai/regulations', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
@@ -1279,7 +1334,21 @@
             formData.append('pdfReport', file);
 
             try {
-                const token = localStorage.getItem('token');
+                // Шукаємо токен в усіх можливих місцях
+                const token = getAuthToken();
+                
+                console.log('🔐 Токен для PDF upload:', token ? (token.substring(0, 20) + '...') : 'NOT FOUND');
+                
+                if (!token) {
+                    console.error('❌ Токен не знайдено');
+                    alert('Ви не авторизовані. Будь ласка, увійдіть в систему.');
+                    sessionStorage.setItem('redirect_after_login', window.location.href);
+                    window.location.href = '/login.html';
+                    return;
+                }
+
+                console.log('📤 Відправка PDF на сервер...');
+                
                 const response = await fetch('/api/pdf/upload', {
                     method: 'POST',
                     headers: {
@@ -1288,28 +1357,52 @@
                     body: formData
                 });
 
+                console.log('📥 Відповідь сервера:', response.status, response.statusText);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ HTTP error:', response.status, errorText);
+                    throw new Error(`Server error: ${response.status} - ${errorText}`);
+                }
+
                 const result = await response.json();
+                console.log('📊 Результат парсингу:', result);
                 
                 if (result.success && result.analysis) {
                     // Відображення результату парсингу
                     console.log('✅ PDF успішно оброблено:', result);
                     
-                    // Автоматично показати результати
-                    displayPDFAnalysisResult(result.analysis);
-                    
-                    // Також заповнити текстове поле для можливості редагування
+                    // Якщо є порушення - відобразити результати та вставити текст
                     if (result.analysis.violations && result.analysis.violations.length > 0) {
+                        // Автоматично показати результати
+                        displayPDFAnalysisResult(result.analysis);
+                        
+                        // Також заповнити текстове поле для можливості редагування
                         const violationsText = result.analysis.violations.map(v => 
                             `${v.classification} Art.º ${v.article} - ${v.description}`
                         ).join('\n');
                         document.getElementById('inspectionReport').value = violationsText;
+                    } else {
+                        // Якщо порушень немає - показати повідомлення
+                        const resultDiv = document.getElementById('analysisResult');
+                        resultDiv.style.display = 'block';
+                        resultDiv.innerHTML = `
+                            <div style="background: linear-gradient(135deg, #48bb78, #38a169); color: white; padding: 30px; border-radius: 15px; text-align: center; margin: 20px 0;">
+                                <i class="fas fa-check-circle" style="font-size: 64px; margin-bottom: 15px;"></i>
+                                <h2 style="margin: 0 0 10px 0;">✅ CERTIFICADO APROVADO</h2>
+                                <p style="margin: 0; font-size: 18px;">Nenhuma não conformidade detectada</p>
+                                <p style="margin: 10px 0 0 0; opacity: 0.9;">O elevador encontra-se em conformidade com o regulamento</p>
+                            </div>
+                        `;
                     }
                 } else {
-                    alert('Помилка обробки PDF: ' + (result.error || 'Unknown error'));
+                    const errorMsg = result.error || 'Unknown error';
+                    console.error('❌ Помилка обробки:', errorMsg);
+                    alert('Помилка обробки PDF: ' + errorMsg);
                 }
             } catch (error) {
-                console.error('PDF upload error:', error);
-                alert('Не вдалося завантажити PDF файл');
+                console.error('❌ PDF upload error:', error);
+                alert('Не вдалося завантажити PDF файл: ' + error.message);
             }
         }
         
@@ -1391,20 +1484,30 @@
                         </div>
                     </div>`;
                 });
-            } else {
-                html += '<p style="text-align: center; color: #48bb78; font-size: 18px; padding: 30px;">✅ Порушень не виявлено</p>';
             }
             
-            // Висновок
+            // Висновок (ЗАВЖДИ показуємо, навіть якщо 0 порушень)
             if (analysis.conclusion) {
                 html += '<div style="background: #edf2f7; padding: 20px; border-radius: 10px; margin-top: 20px;">';
                 html += '<h3 style="margin: 0 0 15px 0; color: #2d3748;">📝 Висновок</h3>';
-                html += `<p><strong>Статус:</strong> ${analysis.conclusion.approved ? '✅ СХВАЛЕНО' : '❌ НЕ СХВАЛЕНО'}</p>`;
+                
+                // Show status with appropriate color
+                const statusColor = analysis.conclusion.approved ? '#48bb78' : '#e53e3e';
+                const statusIcon = analysis.conclusion.approved ? '✅' : '❌';
+                html += `<div style="background: ${analysis.conclusion.approved ? '#c6f6d5' : '#fed7d7'}; padding: 15px; border-radius: 8px; margin-bottom: 15px;">`;
+                html += `<p style="margin: 0; font-size: 18px; font-weight: bold; color: ${statusColor};">${statusIcon} ${analysis.conclusion.approved ? 'CERTIFICADO APROVADO' : 'NÃO APROVADO'}</p>`;
+                html += `</div>`;
+                
                 if (analysis.conclusion.actionRequired) {
-                    html += `<p><strong>Необхідні дії:</strong> ${analysis.conclusion.actionRequired}</p>`;
+                    html += `<div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; white-space: pre-line;">`;
+                    html += `<strong>📋 Informação:</strong><br>${analysis.conclusion.actionRequired}`;
+                    html += `</div>`;
                 }
                 if (analysis.conclusion.nextInspectionDate) {
-                    html += `<p><strong>Наступна інспекція:</strong> ${analysis.conclusion.nextInspectionDate}</p>`;
+                    html += `<p><strong>📅 Próxima inspeção:</strong> ${analysis.conclusion.nextInspectionDate}</p>`;
+                }
+                if (analysis.conclusion.estimatedCost) {
+                    html += `<p><strong>💰 Custo estimado:</strong> ${analysis.conclusion.estimatedCost}</p>`;
                 }
                 html += '</div>';
             }
@@ -1427,7 +1530,7 @@
             resultDiv.innerHTML = '<div class="loading-center"><div class="spinner"></div></div>';
 
             try {
-                const token = localStorage.getItem('token');
+                const token = getAuthToken();
                 const response = await fetch('/api/ai/chat', {
                     method: 'POST',
                     headers: {
@@ -1595,7 +1698,7 @@
             }
             
             try {
-                const token = localStorage.getItem('token');
+                const token = getAuthToken();
                 const response = await fetch('/api/export/pdf', {
                     method: 'POST',
                     headers: {
@@ -1637,7 +1740,7 @@
             }
             
             try {
-                const token = localStorage.getItem('token');
+                const token = getAuthToken();
                 const response = await fetch('/api/export/excel', {
                     method: 'POST',
                     headers: {
@@ -1683,7 +1786,7 @@
             }
             
             try {
-                const token = localStorage.getItem('token');
+                const token = getAuthToken();
                 const response = await fetch('/api/action-plan/generate', {
                     method: 'POST',
                     headers: {
@@ -1786,7 +1889,7 @@
             }
             
             try {
-                const token = localStorage.getItem('token');
+                const token = getAuthToken();
                 const response = await fetch('/api/action-plan/export-pdf', {
                     method: 'POST',
                     headers: {
@@ -1842,7 +1945,7 @@
             }
 
             try {
-                const token = localStorage.getItem('token');
+                const token = getAuthToken();
                 if (!token) {
                     alert('Autenticação necessária');
                     window.location.href = '/login.html';
@@ -1893,7 +1996,7 @@
             if (!window.currentAnalysis?.violations) return;
 
             try {
-                const token = localStorage.getItem('token');
+                const token = getAuthToken();
                 const response = await fetch('/api/email/send-critical-alert', {
                     method: 'POST',
                     headers: {
@@ -1940,7 +2043,7 @@
             }
 
             try {
-                const token = localStorage.getItem('token');
+                const token = getAuthToken();
                 if (!token) {
                     alert('Autenticação necessária');
                     window.location.href = '/login.html';
