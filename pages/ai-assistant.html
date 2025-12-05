@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Assistant - DeapSeaK</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -292,6 +293,53 @@
             transform: none;
         }
         
+        .ai-voice-btn, .ai-speak-btn {
+            padding: 15px 20px;
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .ai-speak-btn {
+            background: #10b981;
+        }
+        
+        .ai-voice-btn:hover {
+            background: #7c3aed;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4);
+        }
+        
+        .ai-speak-btn:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+        }
+        
+        .ai-voice-btn.recording {
+            background: #ef4444;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        .ai-speak-btn.speaking {
+            background: #ef4444;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+            }
+        }
+        
         .suggestions {
             display: flex;
             gap: 10px;
@@ -438,6 +486,12 @@
                 placeholder="Faça sua pergunta... (ex: Código E01, porta não fecha, peça LOCK-DOOR-001)"
                 onkeypress="handleKeyPress(event)"
             >
+            <button class="ai-voice-btn" id="voiceBtn" onclick="toggleVoiceInput()" title="Falar / Говорити">
+                <i class="fas fa-microphone"></i>
+            </button>
+            <button class="ai-speak-btn" id="speakBtn" onclick="toggleSpeech()" title="Ouvir resposta / Прослухати" style="display: none;">
+                <i class="fas fa-volume-up"></i>
+            </button>
             <button class="ai-send-btn" id="sendBtn" onclick="sendMessage()">
                 Enviar
             </button>
@@ -447,6 +501,110 @@
     <script>
         const API_URL = window.location.origin;
         let messageHistory = [];
+        let lastResponse = '';
+        let speechRecognition = null;
+        let isSpeaking = false;
+        
+        // Ініціалізація Web Speech API
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            speechRecognition = new SpeechRecognition();
+            speechRecognition.continuous = false;
+            speechRecognition.interimResults = false;
+            speechRecognition.lang = 'pt-PT'; // Португальська мова
+            
+            speechRecognition.onstart = () => {
+                const voiceBtn = document.getElementById('voiceBtn');
+                voiceBtn.classList.add('recording');
+                voiceBtn.innerHTML = '<i class="fas fa-stop-circle"></i>';
+            };
+            
+            speechRecognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('userInput').value = transcript;
+                sendMessage();
+            };
+            
+            speechRecognition.onend = () => {
+                const voiceBtn = document.getElementById('voiceBtn');
+                voiceBtn.classList.remove('recording');
+                voiceBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+            };
+            
+            speechRecognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                const voiceBtn = document.getElementById('voiceBtn');
+                voiceBtn.classList.remove('recording');
+                voiceBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+            };
+        } else {
+            // Вимкнути кнопку мікрофона якщо не підтримується
+            window.addEventListener('load', () => {
+                const voiceBtn = document.getElementById('voiceBtn');
+                if (voiceBtn) {
+                    voiceBtn.disabled = true;
+                    voiceBtn.title = 'Voice input not supported / Голосове введення не підтримується';
+                    voiceBtn.style.opacity = '0.5';
+                }
+            });
+        }
+        
+        // Голосове введення
+        function toggleVoiceInput() {
+            if (speechRecognition) {
+                try {
+                    speechRecognition.start();
+                } catch (error) {
+                    console.error('Speech recognition start error:', error);
+                }
+            }
+        }
+        
+        // Text-to-Speech озвучування
+        function toggleSpeech() {
+            if ('speechSynthesis' in window) {
+                if (isSpeaking) {
+                    window.speechSynthesis.cancel();
+                    isSpeaking = false;
+                    const speakBtn = document.getElementById('speakBtn');
+                    speakBtn.classList.remove('speaking');
+                    speakBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                    return;
+                }
+                
+                if (!lastResponse) return;
+                
+                // Очистка від Markdown та форматування
+                const cleanText = lastResponse
+                    .replace(/\*\*/g, '')
+                    .replace(/\*/g, '')
+                    .replace(/#{1,6}\s/g, '')
+                    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+                    .replace(/```[\s\S]*?```/g, '')
+                    .replace(/`([^`]+)`/g, '$1');
+                
+                const utterance = new SpeechSynthesisUtterance(cleanText);
+                utterance.lang = 'pt-PT';
+                utterance.rate = 0.9;
+                utterance.pitch = 1;
+                
+                const speakBtn = document.getElementById('speakBtn');
+                
+                utterance.onstart = () => {
+                    isSpeaking = true;
+                    speakBtn.classList.add('speaking');
+                    speakBtn.innerHTML = '<i class="fas fa-stop"></i>';
+                };
+                
+                utterance.onend = () => {
+                    isSpeaking = false;
+                    speakBtn.classList.remove('speaking');
+                    speakBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                };
+                
+                window.speechSynthesis.speak(utterance);
+            }
+        }
         
         // Carregar capacidades do AI
         async function loadCapabilities() {
@@ -574,6 +732,15 @@
             
             // Scroll para baixo
             chatArea.scrollTop = chatArea.scrollHeight;
+            
+            // Зберегти останню відповідь AI та показати кнопку озвучування
+            if (sender === 'ai') {
+                lastResponse = text;
+                const speakBtn = document.getElementById('speakBtn');
+                if (speakBtn) {
+                    speakBtn.style.display = 'block';
+                }
+            }
             
             messageHistory.push({ text, sender, time });
         }
