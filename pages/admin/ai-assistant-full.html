@@ -574,6 +574,27 @@
         console.log('🌐 API URL:', API_URL);
 
         let currentAnalysisFile = null;
+        
+        // Helper функція для отримання токена
+        function getAuthToken() {
+            return localStorage.getItem('token') || 
+                   localStorage.getItem('lm_token') || 
+                   localStorage.getItem('deapseak_token') ||
+                   sessionStorage.getItem('token');
+        }
+        
+        // Helper функція для headers з токеном
+        function getAuthHeaders(contentType = 'application/json') {
+            const headers = {};
+            const token = getAuthToken();
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            if (contentType) {
+                headers['Content-Type'] = contentType;
+            }
+            return headers;
+        }
 
         // Chat functions
         function sendChatMessage() {
@@ -590,7 +611,7 @@
             // Send to API
             fetch(`${API_URL}/api/ai/chat`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(),
                 body: JSON.stringify({ message })
             })
             .then(res => res.json())
@@ -670,7 +691,7 @@
             
             fetch(`${API_URL}/api/ai/chat`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(),
                 body: JSON.stringify({ 
                     message: `Юридична консультація: ${question}`,
                     context: 'legal'
@@ -709,7 +730,7 @@
             
             fetch(`${API_URL}/api/ai/chat`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(),
                 body: JSON.stringify({ 
                     message: `Знайди інформацію про норми PT щодо: ${query}`,
                     context: 'regulations'
@@ -795,8 +816,15 @@
             }
             formData.append('message', manualText || 'Проаналізуй цей PDF звіт інспекції');
             
+            const token = getAuthToken();
+            const headers = {};
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
             fetch(`${API_URL}/api/ai/chat`, {
                 method: 'POST',
+                headers: headers,
                 body: formData
             })
             .then(res => res.json())
