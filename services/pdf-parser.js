@@ -172,21 +172,36 @@ function extractMetadata(text) {
     }
     
     // Інспектор - більше варіантів і форматів
-    let inspectorMatch = text.match(/(?:TÉCNICO|Técnico|Inspetor|Inspector|Responsável)\s*(?:RESPONSÁVEL)?\s*:?\s*([A-ZÇÁÉÍÓÚÂÊÔÃ][a-zçáéíóúâêôã\s]{2,60}?)(?:\n|CLÁUSULAS|C[123]|$)/i);
+    let inspectorMatch = text.match(/(?:TÉCNICO|Técnico|Inspetor|Inspector|Responsável|DIRECTOR\s+TÉCNICO)\s*(?:RESPONSÁVEL)?\s*:?\s*([A-ZÇÁÉÍÓÚÂÊÔÃ][a-zçáéíóúâêôã\s]{2,60}?)(?:\n|CLÁUSULAS|C[123]|Página|$)/i);
     
     if (!inspectorMatch) {
-        // Альтернативний формат: шукаємо ім'я після "por" або в кінці
-        inspectorMatch = text.match(/(?:realizada|efetuada|por)\s+([A-ZÇÁÉÍÓÚÂÊÔÃ][a-zçáéíóúâêôã]+(?:\s+[A-ZÇÁÉÍÓÚÂÊÔÃ][a-zçáéíóúâêôã]+){1,3})/i);
+        // Альтернатива 1: шукаємо ім'я після "por"
+        inspectorMatch = text.match(/(?:realizada|efetuada|elaborado|assinado)\s+por\s+([A-ZÇÁÉÍÓÚÂÊÔÃ][a-zçáéíóúâêôã]+(?:\s+[A-ZÇÁÉÍÓÚÂÊÔÃ][a-zçáéíóúâêôã]+){1,4})/i);
+    }
+    
+    if (!inspectorMatch) {
+        // Альтернатива 2: шукаємо перед Página (часто підпис в кінці)
+        inspectorMatch = text.match(/([A-ZÇÁÉÍÓÚÂÊÔÃ][a-zçáéíóúâêôã]+(?:\s+[A-ZÇÁÉÍÓÚÂÊÔÃ][a-zçáéíóúâêôã]+){2,4})\s+Página\s*\d+/i);
     }
     
     if (inspectorMatch) {
         let inspector = inspectorMatch[1].trim();
         // Очищаємо від зайвого
-        inspector = inspector.replace(/\s*(CLÁUSULAS|C[123]|ELEVADOR).*$/i, '').trim();
-        if (inspector.length >= 3 && inspector.length <= 60) {
+        inspector = inspector
+            .replace(/\s*(CLÁUSULAS|C[123]|ELEVADOR|Página|Impresso).*$/i, '')
+            .replace(/^(O|A)\s+/i, '')  // Видаляємо артиклі
+            .trim();
+        if (inspector.length >= 5 && inspector.length <= 60) {
             metadata.inspector = inspector;
         }
     }
+    
+    console.log('📝 Inspector detection attempts:', {
+        técnico: !!text.match(/TÉCNICO|Técnico/i),
+        director: !!text.match(/DIRECTOR\s+TÉCNICO/i),
+        por: !!text.match(/por\s+[A-Z]/),
+        found: metadata.inspector
+    });
     
     // Компанія - більше варіантів
     const companyMatch = text.match(/(?:EMPRESA|Entidade|Organismo)\s*(?:DE\s+MANUTENÇÃO)?\s*:?\s*([A-ZÇ][A-Za-zÇçÁÉÍÓÚÂÊÔÃ\s,.-]{5,80}?)(?:\n|TÉCNICO|CLÁUSULAS|$)/i);
@@ -306,15 +321,6 @@ function extractViolations(text) {
             const contextEnd = Math.min(text.length, position + 400);
             const context = text.substring(contextStart, contextEnd);
             
-            // ⛔ ФІЛЬТР 1: Виключаємо якщо контекст містить виключені фрази
-            const matchedPattern = excludePatterns.find(pattern => pattern.test(context));
-            if (matchedPattern) {
-                // Показуємо ПЕРШІ 100 символів контексту для діагностики
-                const preview = context.substring(0, 150).replace(/\n/g, ' ');
-                console.log(`⏭️ Skipping ${classification} - pattern: ${matchedPattern} - context: "${preview}..."`);
-                return;
-            }
-            
             // Шукаємо номер статті поруч
             const articleMatch = context.match(/Art\.?º?\s*(\d+[a-z]?\.?\d*)|artigo\s*(\d+)/i);
             const articleNum = articleMatch ? (articleMatch[1] || articleMatch[2]) : '0';
@@ -332,7 +338,7 @@ function extractViolations(text) {
             
             let description = descriptionMatch ? descriptionMatch[1].trim() : '';
             
-            // ⛔ ФІЛЬТР 2: Якщо опису немає взагалі
+            // ⛔ ФІЛЬТР 1: Якщо опису немає взагалі
             if (!description || description.length < 10) {
                 console.log(`⏭️ Skipping ${classification} - no description found`);
                 return;
@@ -578,26 +584,35 @@ async function parsePDF(filePath) {
         console.log(`📊 Analysis result: ${violations.length} violations found (C1: ${stats.critical}, C2: ${stats.medium}, C3: ${stats.low})`);
         
         // 🎯 Визначення статусу на основі порушень
-        const hasCritical = stats.critical > 0;
+        const hasCritical = stats.critical > 0;  // C1
+        const hasMedium = stats.medium > 0;      // C2
         const hasViolations = stats.total > 0;
         
-        // Якщо немає порушень - APROVADO
+        // Логіка APROVADO/REPROVADO:
+        // C1 або C2 = REPROVADO (FAILED)
+        // Тільки C3 (≤5) = APROVADO з застереженнями
+        // Немає порушень = APROVADO
         let passed = !hasViolations;
         let finalReportType = 'certificate';
         let finalConclusion = {
             ...conclusion,
-            approved: !hasViolations  // Перевизначаємо базуючись на реальних порушеннях
+            approved: !hasViolations
         };
         
-        if (hasCritical) {
+        if (hasCritical || hasMedium) {
+            // C1 або C2 - завжди REPROVADO!
             passed = false;
             finalReportType = 'failed';
             finalConclusion.approved = false;
-        } else if (hasViolations && stats.total <= 5) {
+            console.log(`❌ REPROVADO: має C1=${stats.critical} або C2=${stats.medium}`);
+        } else if (stats.low > 0 && stats.low <= 5) {
+            // Тільки C3, не більше 5 - APROVADO з застереженнями
             passed = true;
             finalReportType = 'approved_with_c3';
             finalConclusion.approved = true;
-        } else if (hasViolations && stats.total > 5) {
+            console.log(`✅ APROVADO з застереженнями: тільки C3=${stats.low}`);
+        } else if (stats.low > 5) {
+            // Більше 5 C3 - REPROVADO
             passed = false;
             finalReportType = 'failed';
             finalConclusion.approved = false;
