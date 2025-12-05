@@ -558,9 +558,20 @@
     <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
 
     <script>
-        const API_URL = window.location.hostname === 'localhost' 
-            ? 'http://localhost:5000'
-            : `https://${window.location.hostname.replace('3000', '5000')}`;
+        // API URL detection для Codespaces та localhost
+        let API_URL;
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            API_URL = 'http://localhost:5000';
+        } else if (window.location.hostname.includes('github.dev') || window.location.hostname.includes('app.github.dev')) {
+            // GitHub Codespaces - замінюємо порт в URL
+            const currentUrl = window.location.origin;
+            API_URL = currentUrl.replace(/-\d+\.app\.github\.dev/, '-5000.app.github.dev');
+        } else {
+            // Fallback - просто змінюємо порт
+            API_URL = window.location.origin.replace(':3000', ':5000');
+        }
+        
+        console.log('🌐 API URL:', API_URL);
 
         let currentAnalysisFile = null;
 

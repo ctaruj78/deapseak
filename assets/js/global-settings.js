@@ -26,6 +26,12 @@
     function applyTheme(theme) {
         const body = document.body;
         
+        // Якщо body ще не існує - чекаємо
+        if (!body) {
+            console.warn('⚠️ Body not ready, deferring theme application');
+            return;
+        }
+        
         // Видаляємо всі класи тем
         body.classList.remove('theme-light', 'theme-dark');
         
