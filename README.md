@@ -337,3 +337,54 @@ GitHub Copilot & Development Team
 - 📞 **Диспетчер**: Консультує по телефону з базою законів
 - 👨‍💼 **Адмін**: Масовий аналіз звітів компанії
 
+
+---
+
+## 🤖 AI Асистент - Нові можливості!
+
+### Голосовий AI для технічних консультацій:
+
+- 🎤 **Голосове введення (Speech-to-Text)**
+  - Говоріть замість друку - 3-4x швидше!
+  - Португальська мова (pt-PT)
+  - Ідеально для техніків на об'єкті
+
+- 🔊 **Озвучування відповідей (Text-to-Speech)**
+  - Слухайте інструкції hands-free
+  - Працюйте з інструментом в руках
+  - Автоматична очистка від Markdown
+
+- 📚 **База португальських законів:**
+  - 7 регламентів (513/70, 320/2002, 163/2006, etc.)
+  - 34+ статті з поясненнями
+  - 📜 Посилання на офіційні тексти (Diário da República)
+  - Типові порушення C1/C2/C3
+
+- 🔧 **25+ технічних термінів:**
+  - Cabos e polias, Motor e freio, Para-quedas
+  - Iluminação, Casa de máquinas, Botões
+  - Кожен термін з регламентом та порушеннями
+
+- 🌍 **Білінгва PT/UA:**
+  - Португальська та українська паралельно
+  - Зручно для змішаних команд
+
+### Доступ для всіх ролей:
+
+- 👨‍💼 **Адміністратор:** http://localhost:5000/pages/admin/ai-assistant-full.html
+- 🔧 **Технік:** http://localhost:5000/pages/tech/ai-assistant.html
+- 👤 **Клієнт:** http://localhost:5000/pages/client/ai-assistant.html
+- 📞 **Диспетчер:** http://localhost:5000/pages/dispatcher/ai-assistant.html
+
+### Приклади запитів:
+
+```
+"Artigo 23"           → Portas de piso com fechadura
+"caixa elevador"      → Artigo 14.º (auto-match)
+"motor parado"        → Діагностика + інструкції
+"quais regulamentos"  → Список всіх 7 законів
+"para-quedas"         → Artigo 37.º + порушення
+```
+
+📖 **Детальна документація:** [VOICE-FEATURES-GUIDE.md](docs/VOICE-FEATURES-GUIDE.md)
+
