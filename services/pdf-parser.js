@@ -268,33 +268,28 @@ function extractViolations(text) {
         }
         
         // ⚠️ ВИКЛЮЧЕННЯ: Патерни які НЕ є реальними порушеннями
+        // ВАЖЛИВО: Використовуємо ТОЧНІ фрази, щоб не виключити реальні порушення!
         const excludePatterns = [
             /NOTA\s+DE\s+CLÁUSULAS/i,
-            /CLÁUSULAS?\s+DE\s+CUMPRIMENTO/i,
-            /AS\s+CLÁUSULAS?\s+QUE\s+A\s+SEGUIR/i,
-            /SÃO\s+APLICÁVEIS\s+FACE\s+AO/i,
-            /REGULAMENTO\s+DE\s+SEGURANÇA/i,
+            /CLÁUSULAS?\s+DE\s+CUMPRIMENTO\s+OBRIGATÓRIO/i,  // Повна фраза!
+            /AS\s+CLÁUSULAS?\s+QUE\s+A\s+SEGUIR\s+SE\s+INDICAM/i,  // Повна фраза!
+            /SÃO\s+APLICÁVEIS\s+FACE\s+AO\s+REGULAMENTO/i,  // Повна фраза!
+            /REGULAMENTO\s+DE\s+SEGURANÇA\s+DE\s+ELEVADORES/i,  // Повна фраза!
             /CLASSIFICAÇÃO\s*:?\s*C[123]/i,
-            /TIPO\s+DE\s+INSPEÇÃO/i,
-            /DATA\s+(DA\s+)?INSPEÇÃO/i,
-            /ELEVADOR\s+N[ºo]/i,
-            /LOCALIZAÇÃO/i,
+            /TIPO\s+DE\s+INSPEÇÃO\s*:/i,  // З двокрапкою!
+            /DATA\s+(DA\s+)?INSPEÇÃO\s*:/i,  // З двокрапкою!
+            /ELEVADOR\s+N[ºo]\s*:/i,  // З двокрапкою!
+            /LOCALIZAÇÃO\s*:/i,  // З двокрапкою!
             /^\s*C[123]\s*$/,  // Просто літера С1/С2/С3 окремо
             /^(C[123])\s*[-–—]\s*$/,  // С1 - без опису
-            // 🔥 ЛЕГЕНДА - пояснення класифікацій (НЕ порушення!)
-            /Correspondente\s+a\s+situações\s+de/i,
-            /elevado\s+risco\s+para\s+a\s+segurança/i,
-            /médio\s+risco\s+para\s+a\s+segurança/i,
-            /não\s+representam\s+um\s+risco\s+directo/i,
-            /resolução\s+deve\s+ser\s+imediata/i,
-            /imobilização\s+das\s+instalações/i,
-            /não\s+obrigam\s+à\s+imobilização/i,
-            /inspeção\s+periódica\s+seguinte/i,
-            // 🔥 Footer/header info
-            /Página\s*\d+\s*de\s*\d+/i,
-            /Impresso\s+ELEV/i,
-            /Documento\s+impresso\s+em/i,
-            /NOTA:\s+O\s+dispositivo\s+elétrico/i,
+            // 🔥 ЛЕГЕНДА - ТОЧНІ фрази (не часткові!)
+            /^C[123]\s*[-–—]?\s*Correspondente\s+a\s+situações\s+de\s+(elevado|médio)\s+risco/i,  // Починається з C1/C2/C3
+            /imediata\.\s*Estas\s+cláusulas\s+dão\s+lugar\s+à\s+imobilização/i,  // Унікальна частина легенди
+            /não\s+obrigam\s+à\s+imobilização\s+das\s+instalações\./i,  // Унікальна частина легенди C2
+            /inspeção\s+periódica\s+seguinte\.\s*Página/i,  // Легенда C3 + footer
+            // 🔥 Footer/header info - ТОЧНІ фрази
+            /Página\s*\d+\s*de\s*\d+\s+Impresso\s+ELEV/i,  // Повна фраза footer
+            /Documento\s+impresso\s+em\s*:\s*\d{2}\/\d{2}\/\d{4}/i,  // Повна фраза з датою
         ];
         
         // Шукаємо всі C1/C2/C3 в тексті
@@ -348,27 +343,27 @@ function extractViolations(text) {
                 .replace(/\s*\([^)]*C[123][^)]*\)\s*$/, '') // Видаляємо класифікацію в кінці якщо є
                 .trim();
             
-            // ⛔ ФІЛЬТР 3: Виключаємо спеціальні випадки
+            // ⛔ ФІЛЬТР 3: Виключаємо спеціальні випадки в ОПИСІ
+            // ВАЖЛИВО: Перевіряємо ШО опис ПОВНІСТЮ складається з цього, не частково!
             const descriptionExcludePatterns = [
-                /^\d+[-\/]\d+[-\/]\d+$/,  // Тільки дата
-                /^[\d\s.:-]+$/,  // Тільки цифри і розділювачі
-                /^[A-Z\s]{2,15}$/,  // Тільки великі літери (заголовки)
+                /^\d+[-\/]\d+[-\/]\d+$/,  // ТІЛЬКИ дата
+                /^[\d\s.:-]+$/,  // ТІЛЬКИ цифри і розділювачі
+                /^[A-Z\s]{2,15}$/,  // ТІЛЬКИ великі літери (заголовки)
                 /^(SIM|NÃO|OK|N\/A)$/i,  // Односложні відповіді
-                /CLÁUSULAS?\s+QUE/i,  // Частина заголовка
-                /APLICÁVEIS\s+FACE/i,  // Частина заголовка
-                // 🔥 Фільтр легенди і footer
-                /Correspondente\s+a\s+situações/i,
-                /elevado\s+risco.*imediata/i,
-                /médio\s+risco.*imobilização/i,
-                /não\s+representam.*risco\s+directo/i,
-                /inspeção\s+periódica\s+seguinte/i,
-                /Página\s*\d+\s*de\s*\d+/i,
-                /Impresso\s+ELEV/i,
-                /Documento\s+impresso/i,
-                /^\d{6}\s+Documento/i,  // Номер документу
-                // 🔥 Технічні нотатки (не порушення)
-                /^NOTA:.*dispositivo\s+elétrico/i,
-                /soleira\s+móvel.*extremidades/i,
+                /^(AS\s+)?CLÁUSULAS?\s+QUE\s+A\s+SEGUIR/i,  // Повний заголовок
+                /^SÃO\s+APLICÁVEIS\s+FACE/i,  // Повний заголовок
+                // 🔥 Фільтр ПОВНОЇ легенди (не часткової!)
+                /^Correspondente\s+a\s+situações\s+de\s+(elevado|médio)/i,  // Починається з цього
+                /resolução\s+deve\s+ser\s+imediata\.\s*Estas\s+cláusulas/i,  // Точна фраза легенди
+                /não\s+obrigam\s+à\s+imobilização\s+das\s+instalações\.$/i,  // Закінчується так
+                /inspeção\s+periódica\s+seguinte\.\s*(Página|$)/i,  // Легенда C3
+                // 🔥 Footer - повні фрази
+                /Página\s*\d+\s*de\s*\d+\s+Impresso/i,
+                /Impresso\s+ELEV\/\d+\.\d+\s+\d+/i,  // Точний формат
+                /Documento\s+impresso\s+em\s*:\s*\d{2}\/\d{2}/i,
+                /^\d{6}\s+Documento\s+impresso/i,  // Номер + текст
+                // 🔥 Технічні нотатки (повні)
+                /^NOTA:\s*O\s+dispositivo\s+elétrico.*extremidades/i,  // Повна нотатка
             ];
             
             const isDescriptionExcluded = descriptionExcludePatterns.some(pattern => pattern.test(description));
