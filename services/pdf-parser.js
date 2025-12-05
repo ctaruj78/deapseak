@@ -307,9 +307,11 @@ function extractViolations(text) {
             const context = text.substring(contextStart, contextEnd);
             
             // ⛔ ФІЛЬТР 1: Виключаємо якщо контекст містить виключені фрази
-            const isExcluded = excludePatterns.some(pattern => pattern.test(context));
-            if (isExcluded) {
-                console.log(`⏭️ Skipping ${classification} - matches exclusion pattern`);
+            const matchedPattern = excludePatterns.find(pattern => pattern.test(context));
+            if (matchedPattern) {
+                // Показуємо ПЕРШІ 100 символів контексту для діагностики
+                const preview = context.substring(0, 150).replace(/\n/g, ' ');
+                console.log(`⏭️ Skipping ${classification} - pattern: ${matchedPattern} - context: "${preview}..."`);
                 return;
             }
             
@@ -568,6 +570,7 @@ async function parsePDF(filePath) {
         
         // Витягування даних
         const metadata = extractMetadata(text);
+        console.log('🔍 Extracted metadata:', JSON.stringify(metadata, null, 2));
         const violations = extractViolations(text);
         const conclusion = extractConclusion(text);
         const stats = getViolationsStats(violations);
