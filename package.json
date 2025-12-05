@@ -11,6 +11,7 @@
   "dependencies": {
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.2",
+    "canvas": "^3.2.0",
     "chart.js": "^4.5.0",
     "concurrently": "^9.2.1",
     "cors": "^2.8.5",
@@ -28,6 +29,8 @@
     "morgan": "^1.10.1",
     "multer": "^2.0.2",
     "nodemailer": "^7.0.10",
+    "pdf-parse": "^1.1.1",
+    "pdf2json": "^3.0.5",
     "pdfkit": "^0.17.2",
     "puppeteer": "^24.29.1",
     "qrcode": "^1.5.4",
@@ -39,10 +42,10 @@
     "xlsx": "^0.18.5"
   },
   "scripts": {
-    "start": "node backend/app.js",
-    "dev": "nodemon backend/app.js",
-    "websocket": "node websocket-server.js",
-    "dev:all": "concurrently \"npm run dev\" \"npm run websocket\"",
+    "start": "PORT=5000 node unified-server.js",
+    "dev": "PORT=5000 nodemon unified-server.js",
+    "websocket": "echo 'WebSocket вже в unified-server.js'",
+    "dev:all": "npm run dev",
     "auto-start": "bash auto-start.sh",
     "stop": "bash stop-servers.sh",
     "restart": "npm run stop && npm run auto-start",

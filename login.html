@@ -298,17 +298,24 @@
                         const token = data.data?.token || data.token;
                         const user = data.data?.user || data.user;
                         
-                        // Зберігаємо токен
-                        localStorage.setItem('lm_token', token);
-                        localStorage.setItem('deapseak_token', token);
+                        console.log('💾 Зберігаю токен:', token?.substring(0, 20) + '...');
+                        console.log('👤 Зберігаю користувача:', user);
+                        
+                        // Зберігаємо токен у всіх форматах для сумісності
+                        localStorage.setItem('token', token);           // Головний токен
+                        localStorage.setItem('lm_token', token);        // Старий формат
+                        localStorage.setItem('deapseak_token', token);  // V2 формат
+                        
+                        // Зберігаємо користувача
+                        localStorage.setItem('user', JSON.stringify(user));           // Головний
+                        localStorage.setItem('lm_session', JSON.stringify(user));     // Старий формат
                         
                         // Збереження через AuthManager (новий метод)
                         if (typeof AuthManager !== 'undefined') {
                             AuthManager.login(token, user);
                         }
                         
-                        // Також зберігаємо в старому форматі для сумісності
-                        localStorage.setItem('lm_session', JSON.stringify(user));
+                        console.log('✅ Токен збережено в localStorage');
                         
                         showMessage('Успішний вхід! Перенаправлення...', 'success');
                         

@@ -2,7 +2,10 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"
+    <!-- Global Settings -->
+    <script src="../../assets/js/global-settings.js"></script>
+    <link rel="stylesheet" href="../../assets/css/theme-dark.css">>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -937,15 +940,15 @@
                                     </div>
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label for="enhancedLiftCapacity">Пасажиромісткість (осіб)</label>
+                                            <label for="enhancedLiftCapacity">Вантажопідйомність (кг)</label>
                                             <div class="input-group">
-                                                <input type="number" id="enhancedLiftCapacity" name="liftCapacity" class="form-control" min="2" max="50" value="4" placeholder="осіб">
+                                                <input type="number" id="enhancedLiftCapacity" name="liftCapacity" class="form-control" min="150" max="5000" step="10" value="300" placeholder="кг">
                                                 <div class="input-group-append">
-                                                    <span class="input-group-text">осіб</span>
+                                                    <span class="input-group-text">кг</span>
                                                 </div>
                                             </div>
                                             <small class="form-text text-muted">
-                                                <i class="fas fa-info-circle"></i> Вага автоматично розраховується (1 особа ≈ 75 кг)
+                                                <i class="fas fa-info-circle"></i> Кількість осіб розраховується автоматично (1 особа ≈ 75 кг)
                                             </small>
                                         </div>
                                     </div>
@@ -4896,15 +4899,35 @@
                     const csvRows = [headers.join(',')];
                     
                     lifts.forEach(lift => {
+                        // Правильне витягування адреси
+                        let addressStr = '';
+                        if (lift.address) {
+                            if (typeof lift.address === 'string') {
+                                addressStr = lift.address;
+                            } else if (lift.address.street) {
+                                addressStr = lift.address.street;
+                            } else if (lift.address.full) {
+                                addressStr = lift.address.full;
+                            }
+                        }
+                        
+                        // Правильне витягування міста
+                        let cityStr = '';
+                        if (lift.address && lift.address.city) {
+                            cityStr = lift.address.city;
+                        } else if (lift.city) {
+                            cityStr = lift.city;
+                        }
+                        
                         const row = [
                             lift._id || '',
-                            `"${lift.name || ''}"`,
-                            `"${lift.address || ''}"`,
+                            `"${lift.name || lift.municipalNumber || ''}"`,
+                            `"${addressStr}"`,
                             `"${lift.manufacturer || ''}"`,
                             `"${lift.model || ''}"`,
-                            `"${lift.city || ''}"`,
-                            lift.status || 'active',
-                            lift.createdAt ? new Date(lift.createdAt).toLocaleDateString() : ''
+                            `"${cityStr}"`,
+                            lift.status || 'operational',
+                            lift.createdAt ? new Date(lift.createdAt).toLocaleDateString('uk-UA') : ''
                         ];
                         csvRows.push(row.join(','));
                     });

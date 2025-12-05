@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test PDF Upload</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .section {
+            background: #f5f5f5;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .error {
+            color: red;
+            padding: 10px;
+            background: #ffebee;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            color: green;
+            padding: 10px;
+            background: #e8f5e9;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        pre {
+            background: #fff;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 PDF Upload Test</h1>
+
+    <div class="section">
+        <h2>1. Check Token</h2>
+        <button onclick="checkToken()">Check Token</button>
+        <div id="tokenStatus"></div>
+    </div>
+
+    <div class="section">
+        <h2>2. Login (if needed)</h2>
+        <input type="email" id="email" placeholder="Email" value="admin@deapseak.com">
+        <input type="password" id="password" placeholder="Password" value="admin123">
+        <button onclick="login()">Login</button>
+        <div id="loginStatus"></div>
+    </div>
+
+    <div class="section">
+        <h2>3. Upload PDF</h2>
+        <input type="file" id="pdfFile" accept="application/pdf">
+        <button onclick="uploadPDF()">Upload PDF</button>
+        <div id="uploadStatus"></div>
+        <pre id="analysisResult"></pre>
+    </div>
+
+    <script>
+        function checkToken() {
+            const token = localStorage.getItem('token');
+            const statusDiv = document.getElementById('tokenStatus');
+            
+            if (token) {
+                statusDiv.innerHTML = `<div class="success">✅ Token exists: ${token.substring(0, 50)}...</div>`;
+            } else {
+                statusDiv.innerHTML = `<div class="error">❌ No token found. Please login.</div>`;
+            }
+        }
+
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const statusDiv = document.getElementById('loginStatus');
+
+            try {
+                statusDiv.innerHTML = '⏳ Logging in...';
+
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const result = await response.json();
+
+                if (result.success && result.token) {
+                    localStorage.setItem('token', result.token);
+                    localStorage.setItem('user', JSON.stringify(result.user));
+                    statusDiv.innerHTML = `<div class="success">✅ Login successful! Token saved.</div>`;
+                    checkToken();
+                } else {
+                    statusDiv.innerHTML = `<div class="error">❌ Login failed: ${result.message}</div>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function uploadPDF() {
+            const fileInput = document.getElementById('pdfFile');
+            const statusDiv = document.getElementById('uploadStatus');
+            const resultDiv = document.getElementById('analysisResult');
+
+            if (!fileInput.files[0]) {
+                statusDiv.innerHTML = `<div class="error">❌ Please select a PDF file</div>`;
+                return;
+            }
+
+            const token = localStorage.getItem('token');
+            if (!token) {
+                statusDiv.innerHTML = `<div class="error">❌ No token. Please login first.</div>`;
+                return;
+            }
+
+            try {
+                statusDiv.innerHTML = '⏳ Uploading PDF...';
+                resultDiv.textContent = '';
+
+                const formData = new FormData();
+                formData.append('pdfReport', fileInput.files[0]);
+
+                console.log('📤 Uploading:', fileInput.files[0].name);
+                console.log('🔑 Token:', token.substring(0, 50) + '...');
+
+                const response = await fetch('/api/pdf/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                console.log('📥 Response status:', response.status);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+
+                const result = await response.json();
+                console.log('📊 Result:', result);
+
+                if (result.success) {
+                    statusDiv.innerHTML = `<div class="success">✅ PDF analyzed successfully!</div>`;
+                    resultDiv.textContent = JSON.stringify(result.analysis, null, 2);
+                } else {
+                    statusDiv.innerHTML = `<div class="error">❌ Analysis failed: ${result.error}</div>`;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                statusDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        // Auto-check token on load
+        window.addEventListener('load', checkToken);
+    </script>
+</body>
+</html>

@@ -2,7 +2,10 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"
+    <!-- Global Settings -->
+    <script src="../../assets/js/global-settings.js"></script>
+    <link rel="stylesheet" href="../../assets/css/theme-dark.css">>
     <title>Заявки на обслуговування - LiftMaster Pro</title>
 
     <!-- AdminLTE CSS -->
@@ -1434,7 +1437,12 @@ class ServiceRequestManager {
 
     async saveEditedRequest() {
         try {
-            const requestId = $('#editRequestId').val();
+            // Використовуємо реальний MongoDB _id замість display ID (REQ-001)
+            const requestId = this.currentRequest._id;
+            
+            if (!requestId) {
+                throw new Error('ID заявки не знайдено');
+            }
             
             const updateData = {
                 priority: $('#editRequestPriority').val(),
@@ -1442,6 +1450,8 @@ class ServiceRequestManager {
                 description: $('#editRequestDescription').val(),
                 scheduledDate: $('#editScheduledAt').val() || undefined
             };
+            
+            console.log('🔄 Оновлення заявки:', requestId, updateData);
             
             const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}`, {
                 method: 'PUT',
@@ -1470,15 +1480,41 @@ class ServiceRequestManager {
         }
     }
 
-    deleteRequest(requestId) {
+    async deleteRequest(requestId) {
+        // Знаходимо заявку за display ID
+        const request = this.requests.find(r => r.id === requestId);
+        if (!request) {
+            toastr.error('Заявку не знайдено');
+            return;
+        }
+        
         if (!confirm('Ви впевнені, що хочете видалити цю заявку?')) return;
 
-        this.requests = this.requests.filter(r => r.id !== requestId);
-        this.saveRequests();
-        this.renderRequests();
-        this.updateStatistics();
-
-        toastr.success('Заявку видалено');
+        try {
+            // Використовуємо реальний MongoDB _id для API
+            const mongoId = request._id;
+            
+            if (mongoId) {
+                // Видаляємо через API якщо є _id
+                const response = await AuthManager.fetchWithAuth(`/api/requests/${mongoId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (!response || !response.ok) {
+                    throw new Error('Помилка видалення через API');
+                }
+            }
+            
+            // Видаляємо з локального масиву
+            this.requests = this.requests.filter(r => r.id !== requestId);
+            this.renderRequests();
+            this.updateStatistics();
+            
+            toastr.success('Заявку видалено');
+        } catch (error) {
+            console.error('❌ Помилка видалення заявки:', error);
+            toastr.error('Не вдалося видалити заявку: ' + error.message);
+        }
     }
 
     applyFilters() {
@@ -1589,19 +1625,7 @@ async function openNewRequestModal() {
 }
 
 async function createRequest() {
-    // Завантажуємо список ліфтів тільки якщо select порожній
-    if (window.serviceManager) {
-        const select = $('#requestLift');
-        const optionsCount = select.find('option').length;
-        
-        // Завантажуємо ліфти тільки якщо їх ще немає (крім дефолтної опції)
-        if (optionsCount <= 1) {
-            console.log('🔄 Завантаження ліфтів (select порожній)...');
-            await window.serviceManager.loadLifts();
-        } else {
-            console.log('✅ Ліфти вже завантажені (' + optionsCount + ' опцій)');
-        }
-    }
+    // Просто відкриваємо модальне вікно - ліфти вже завантажені в openNewRequestModal
     openNewRequestModal();
 }
 
@@ -1770,7 +1794,11 @@ async function addComment() {
     }
     
     try {
-        const requestId = window.serviceManager.currentRequest.id;
+        const requestId = window.serviceManager.currentRequest._id;
+        
+        if (!requestId) {
+            throw new Error('ID заявки не знайдено');
+        }
         
         console.log(`Додавання коментаря до заявки ${requestId}`);
         
@@ -1825,7 +1853,11 @@ async function completeRequest() {
     }
     
     try {
-        const requestId = window.serviceManager.currentRequest.id;
+        const requestId = window.serviceManager.currentRequest._id;
+        
+        if (!requestId) {
+            throw new Error('ID заявки не знайдено');
+        }
         
         console.log(`Завершення заявки ${requestId}`);
         
@@ -1887,7 +1919,11 @@ async function reopenRequest() {
     }
     
     try {
-        const requestId = window.serviceManager.currentRequest.id;
+        const requestId = window.serviceManager.currentRequest._id;
+        
+        if (!requestId) {
+            throw new Error('ID заявки не знайдено');
+        }
         
         console.log(`Повернення заявки ${requestId} в роботу`);
         

@@ -1,18 +1,21 @@
 # 🚀 DeapSeaK v2 - Quick Start Guide
 
-## Що змінилося?
+## Що змінилося в v2?
 
-✅ **Створено нову модульну архітектуру в папці `backend/`**
+✅ **UNIFIED SERVER - Все на одному порті 5000!**
 
-- MongoDB моделі з Mongoose
-- JWT автентифікація
-- Role-based авторизація (admin, dispatcher, technician, client)
-- Геопросторові запити для ліфтів
-- Повна історія запитів та коментарів
+- ✅ Frontend + API + WebSocket на одному порті
+- ✅ MongoDB з Mongoose моделями
+- ✅ JWT автентифікація
+- ✅ Role-based авторизація (admin, client, dispatcher, tech, guest)
+- ✅ Геопросторові запити для ліфтів
+- ✅ Email notifications (nodemailer)
+- ✅ PDF parsing Portuguese inspection reports
+- ✅ AI Assistant з 32 регуляціями
 
-⚠️ **Старий `api-server.js` НЕ ЧІПАВСЯ і продовжує працювати!**
+⚠️ **Старі файли `api-server.js`, `websocket-server.js`, `frontend-server.js` БІЛЬШЕ НЕ ВИКОРИСТОВУЮТЬСЯ!**
 
-## Як запустити обидва сервери паралельно
+## Швидкий запуск
 
 ### 1. Встановити MongoDB
 
@@ -36,88 +39,78 @@ brew services start mongodb-community
 
 ### 2. Налаштувати .env
 
-```bash
-# Скопіювати приклад
-cp .env.example .env
+### 2. Налаштувати .env (опціонально)
 
-# Відредагувати (мінімально потрібно):
-nano .env
+```bash
+# Скопіювати приклад якщо потрібно
+cp .env.example .env
 ```
 
-Мінімальні налаштування:
+Мінімальні налаштування (за замовчуванням вже правильні):
 ```bash
 NODE_ENV=development
-PORT=3002
+PORT=5000                                      # Unified server port
 MONGODB_URI=mongodb://localhost:27017/deapseak
-JWT_SECRET=your-secret-key-change-in-production
+JWT_SECRET=deapseak-secret-key-2024
 ```
 
-### 3. Запустити старий API (порт 3001)
+### 3. Запустити Unified Server (ОДИН порт 5000)
 
 ```bash
-# Термінал 1
-node api-server.js
-# Працює на http://localhost:3001
+# Автоматичний запуск (рекомендовано)
+./auto-start.sh
+
+# Або вручну
+node unified-server.js
+
+# Працює на http://localhost:5000
+# API: http://localhost:5000/api/*
+# WebSocket: ws://localhost:5000
 ```
 
-### 4. Запустити новий модульний backend (порт 3002)
+### 4. Перевірити що працює
 
 ```bash
-# Термінал 2
-node backend/app.js
-# Або з nodemon:
-npm run dev
+# Health check
+curl http://localhost:5000/api/health
 
-# Працює на http://localhost:3002
+# Отримати список користувачів
+curl http://localhost:5000/api/users
+
+# Frontend
+open http://localhost:5000/login.html
 ```
 
-### 5. Перевірити що працює
+## 🧪 Тестування API
+
+### Логін (отримання JWT token)
 
 ```bash
-# Старий API
-curl http://localhost:3001/api/users
-
-# Новий API
-curl http://localhost:3002/health
-curl http://localhost:3002/api/auth/users
-```
-
-## 🧪 Тестування нового API
-
-### Реєстрація користувача
-
-```bash
-curl -X POST http://localhost:3002/api/auth/register \
+curl -X POST http://localhost:5000/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
-    "username": "tech1",
-    "email": "tech@deapseak.com",
-    "password": "password123",
-    "firstName": "Олександр",
-    "lastName": "Петренко",
-    "role": "technician"
-  }'
-```
-
-### Вхід
-
-```bash
-curl -X POST http://localhost:3002/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "login": "tech@deapseak.com",
-    "password": "password123"
+    "email": "admin@deapseak.com",
+    "password": "admin123"
   }'
 ```
 
 Збережіть отриманий `token` для наступних запитів.
 
-### Створення ліфта (потрібен token admin/dispatcher)
+### Отримати список ліфтів (потрібен token)
 
 ```bash
 TOKEN="your-jwt-token-here"
 
-curl -X POST http://localhost:3002/api/lifts \
+curl -X GET http://localhost:5000/api/lifts \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### Створення ліфта (потрібен token admin)
+
+```bash
+TOKEN="your-jwt-token-here"
+
+curl -X POST http://localhost:5000/api/lifts \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{
@@ -154,77 +147,105 @@ deapseak/
 │   ├── app.js                 # Express app + server
 │   ├── config/
 │   │   └── database.js        # MongoDB connection
-│   ├── models/
-│   │   ├── User.js            # User model + bcrypt
-│   │   ├── Lift.js            # Lift model + geospatial
-│   │   └── Request.js         # Request/ticket model
-│   ├── controllers/
-│   │   ├── authController.js  # Auth logic
-│   │   ├── liftController.js  # Lift CRUD
-│   │   └── requestController.js
-│   ├── routes/
-│   │   ├── authRoutes.js      # /api/auth
-│   │   ├── liftRoutes.js      # /api/lifts
-│   │   └── requestRoutes.js   # /api/requests
-│   └── middleware/
-│       ├── auth.js            # JWT middleware
-│       ├── roleAuth.js        # RBAC middleware
-│       └── errorHandler.js    # Error handling
-└── .env.example               # 🆕 Оновлений приклад конфігурації
+## 📁 Структура Unified Server
+
+```
+unified-server.js          # 🆕 Все в одному файлі (Express + Socket.IO)
+├── Static Files           # Frontend на /
+├── API Routes             # REST API на /api/*
+├── WebSocket Server       # Socket.IO на ws://
+├── MongoDB Connection     # База даних deapseak
+└── Services:
+    ├── services/pdf-parser.js           # Парсинг PDF звітів
+    ├── services/export-service.js       # PDF/Excel експорт
+    ├── services/action-plan-generator.js # Генерація планів дій
+    ├── services/email-service.js        # Email notifications
+    ├── services/ai-helpers.js           # AI база знань
+    └── services/unified-ai.js           # AI асистент
 ```
 
 ## 🔑 Ролі та доступ
 
-| Роль | Доступ |
-|------|--------|
-| **admin** | Повний доступ до всього |
-| **dispatcher** | Управління ліфтами, призначення запитів |
-| **technician** | Перегляд призначених запитів, оновлення статусів |
-| **client** | Створення запитів, перегляд своїх ліфтів |
+| Роль | Email | Пароль | Доступ |
+|------|-------|--------|--------|
+| **admin** | admin@deapseak.com | admin123 | Повний доступ |
+| **client** | client1@deapseak.com | client123 | Свої ліфти/заявки |
+| **dispatcher** | dispatcher@deapseak.com | dispatcher123 | Управління заявками |
+| **tech** | tech1@deapseak.com | tech123 | Виконання робіт |
 
-## 🔄 Наступні кроки
+## 🎯 Доступні сторінки
 
-1. ✅ Модульний backend створено
-2. ✅ MongoDB моделі з валідацією
-3. ✅ Middleware (auth, RBAC, errors)
-4. ✅ Controllers з бізнес-логікою
-5. ✅ RESTful routes
-6. ⏳ Тестування паралельно зі старим API
-7. ⏳ Поступова міграція frontend
-8. ⏳ Міграція даних в MongoDB
+- 🔐 http://localhost:5000/login.html - Логін
+- 👨‍💼 http://localhost:5000/pages/admin/ - Адмін панель
+- 📞 http://localhost:5000/pages/dispatcher/ - Диспетчер
+- 🔧 http://localhost:5000/pages/tech/ - Технік
+- 👤 http://localhost:5000/pages/client/ - Клієнт
+- 🤖 http://localhost:5000/pages/ai-assistant/ - AI Асистент
+
+## 🔄 Що запускає auto-start.sh
+
+1. ✅ Перевіряє Node.js, npm, MongoDB
+2. ✅ Встановлює npm залежності
+3. ✅ Запускає MongoDB
+4. ✅ Зупиняє старі процеси на порту 5000
+5. ✅ Запускає unified-server.js
+6. ✅ Перевіряє що сервер працює
+7. ✅ Показує корисні посилання
 
 ## 🆘 Troubleshooting
 
 **MongoDB не запускається:**
 ```bash
-# Перевірити статус
-sudo systemctl status mongodb
+# Автоматичний запуск через скрипт
+./auto-start.sh
 
-# Подивитись логи
-sudo journalctl -u mongodb
-
-# Перезапустити
-sudo systemctl restart mongodb
+# Або вручну
+sudo systemctl start mongod
+sudo systemctl status mongod
 ```
 
-**Порт зайнятий:**
+**Порт 5000 зайнятий:**
 ```bash
-# Знайти процес на порту 3002
-lsof -i :3002
+# Зупинити всі сервери
+./stop-servers.sh
 
-# Вбити процес
+# Або вручну знайти процес
+lsof -i :5000
 kill -9 <PID>
 ```
 
 **JWT помилки:**
-- Перевірте що `JWT_SECRET` встановлено в `.env`
-- Токен передається в header: `Authorization: Bearer <token>`
-- Токен дійсний 7 днів (за замовчуванням)
+- Перевірте що ви залогінені через /login.html
+- Токен дійсний 7 днів
+- Токен зберігається в localStorage
 
-## 📚 Документація API
+**Ліфти не з'являються:**
+```bash
+# Створити демо-дані
+node -e "require('./scripts/create-demo-lifts.js')"
 
-Повну документацію API дивись в `backend/README.md`
+# Або через MongoDB
+mongosh deapseak --eval "db.lifts.countDocuments()"
+```
 
-Або відкрийте в браузері:
-- http://localhost:3002/ - API info
-- http://localhost:3002/health - Health check
+## 📚 Додаткова документація
+
+- [README.md](README.md) - Головна документація
+- [QUICK-START.md](QUICK-START.md) - Детальний швидкий старт
+- [AUTO-START-COMPLETE.md](AUTO-START-COMPLETE.md) - Про auto-start.sh
+- [EMAIL-NOTIFICATIONS-GUIDE.md](EMAIL-NOTIFICATIONS-GUIDE.md) - Email система
+- [IMPLEMENTATION-COMPLETE.md](IMPLEMENTATION-COMPLETE.md) - Звіт реалізації
+
+## 🎉 Готово!
+
+Тепер у вас працює повноцінна система на **одному порті 5000**:
+- ✅ Frontend (HTML/CSS/JS)
+- ✅ REST API (/api/*)
+- ✅ WebSocket (Socket.IO)
+- ✅ MongoDB база даних
+- ✅ JWT автентифікація
+- ✅ Email notifications
+- ✅ PDF parsing
+- ✅ AI Assistant
+
+**Відкрийте http://localhost:5000 і почніть працювати!** 🚀

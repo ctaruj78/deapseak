@@ -14,8 +14,17 @@ class SettingsManager {
 
     // Отримати локальні налаштування
     getLocalSettings() {
-        const stored = localStorage.getItem('user_settings');
-        return stored ? JSON.parse(stored) : this.getDefaultSettings();
+        try {
+            const stored = localStorage.getItem('user_settings');
+            // Перевірка на "undefined" рядок або null
+            if (!stored || stored === 'undefined' || stored === 'null') {
+                return this.getDefaultSettings();
+            }
+            return JSON.parse(stored);
+        } catch (error) {
+            console.warn('Failed to parse stored settings, using defaults:', error);
+            return this.getDefaultSettings();
+        }
     }
 
     // Дефолтні налаштування
@@ -138,6 +147,11 @@ class SettingsManager {
             this.settings.language = language;
             this.saveLocal(this.settings);
             
+            // Застосовуємо через GlobalSettings якщо доступний
+            if (typeof GlobalSettings !== 'undefined' && GlobalSettings.applyLanguage) {
+                GlobalSettings.applyLanguage(language);
+            }
+            
             // Оновлюємо i18n
             if (typeof i18n !== 'undefined') {
                 i18n.setLanguage(language);
@@ -173,7 +187,14 @@ class SettingsManager {
 
             this.settings.theme = theme;
             this.saveLocal(this.settings);
-            this.applyTheme(theme);
+            
+            // Застосовуємо через GlobalSettings якщо доступний
+            if (typeof GlobalSettings !== 'undefined' && GlobalSettings.applyTheme) {
+                GlobalSettings.applyTheme(theme);
+            } else {
+                // Fallback на локальний метод
+                this.applyTheme(theme);
+            }
             
             return true;
         } catch (error) {
@@ -302,8 +323,10 @@ class SettingsManager {
     }
 }
 
-// Глобальний екземпляр
-const settingsManager = new SettingsManager();
+// Глобальний екземпляр (робимо доступним через window)
+window.settingsManager = new SettingsManager();
+// Також створюємо const для сумісності
+const settingsManager = window.settingsManager;
 
 // НЕ ініціалізуємо автоматично - буде викликано вручну зі сторінки
 // після завантаження всіх залежностей
