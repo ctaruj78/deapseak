@@ -121,7 +121,7 @@ function detectReportType(text) {
 }
 
 /**
- * Витягує метадані звіту
+ * Витягує метадані звіту (покращена версія)
  */
 function extractMetadata(text) {
     const metadata = {
@@ -133,42 +133,59 @@ function extractMetadata(text) {
         company: null
     };
     
-    // Номер звіту
-    const reportNumMatch = text.match(/(?:Relatório|Certificado|Auto)\s*(?:N\.?º|Nº|n\.?)\s*:?\s*(\d+[-\/]\d+)/i);
+    // Номер звіту - більше варіантів
+    const reportNumMatch = text.match(/(?:Relatório|Certificado|Auto|NOTA)\s*(?:N\.?º|Nº|n\.?|DE\s+CLÁUSULAS)?\s*:?\s*(\d+[-\/]\d+)/i);
     if (reportNumMatch) {
         metadata.reportNumber = reportNumMatch[1];
     }
     
-    // Дата
-    const dateMatch = text.match(/(?:Data|Emitido em|Realizada em)\s*:?\s*(\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})/i);
+    // Дата - більше варіантів
+    const dateMatch = text.match(/(?:DATA|Data|Emitido|Realizada)(?:\s+DA\s+INSPEÇÃO|\s+em)?\s*:?\s*(\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})/i);
     if (dateMatch) {
         metadata.date = dateMatch[1];
     }
     
-    // ID ліфта (матrícula)
-    const liftIdMatch = text.match(/(?:Matrícula|Ascensor)\s*(?:N\.?º|Nº|n\.?)?\s*:?\s*(\d+)/i);
+    // ID ліфта (матrícula) - ELEVADOR Nº
+    const liftIdMatch = text.match(/(?:ELEVADOR|Matrícula|Ascensor)\s*(?:N\.?º|Nº|n\.?)?\s*:?\s*(\d+)/i);
     if (liftIdMatch) {
         metadata.liftId = liftIdMatch[1];
     }
     
-    // Локація
-    const locationMatch = text.match(/(?:Local|Morada|Endereço)\s*:?\s*([^\n]{10,100})/i);
+    // Локація - LOCALIZAÇÃO:
+    const locationMatch = text.match(/(?:LOCALIZAÇÃO|Local|Morada|Endereço)\s*:?\s*([^\n]{10,150})/i);
     if (locationMatch) {
         metadata.location = locationMatch[1].trim();
     }
     
-    // Інспектор
-    const inspectorMatch = text.match(/(?:Técnico|Inspetor|Inspector)\s*:?\s*([A-ZÇÁÉÍÓÚÂÊÔÃ][a-zçáéíóúâêôã\s]+)/i);
+    // Інспектор - більше варіантів і форматів
+    let inspectorMatch = text.match(/(?:TÉCNICO|Técnico|Inspetor|Inspector|Responsável)\s*(?:RESPONSÁVEL)?\s*:?\s*([A-ZÇÁÉÍÓÚÂÊÔÃ][a-zçáéíóúâêôã\s]{2,60}?)(?:\n|CLÁUSULAS|C[123]|$)/i);
+    
+    if (!inspectorMatch) {
+        // Альтернативний формат: шукаємо ім'я після "por" або в кінці
+        inspectorMatch = text.match(/(?:realizada|efetuada|por)\s+([A-ZÇÁÉÍÓÚÂÊÔÃ][a-zçáéíóúâêôã]+(?:\s+[A-ZÇÁÉÍÓÚÂÊÔÃ][a-zçáéíóúâêôã]+){1,3})/i);
+    }
+    
     if (inspectorMatch) {
-        metadata.inspector = inspectorMatch[1].trim();
+        let inspector = inspectorMatch[1].trim();
+        // Очищаємо від зайвого
+        inspector = inspector.replace(/\s*(CLÁUSULAS|C[123]|ELEVADOR).*$/i, '').trim();
+        if (inspector.length >= 3 && inspector.length <= 60) {
+            metadata.inspector = inspector;
+        }
     }
     
-    // Компанія
-    const companyMatch = text.match(/(?:Entidade|Empresa|Organismo)\s*:?\s*([A-Z][A-Za-z\s,.-]{5,50})/);
+    // Компанія - більше варіантів
+    const companyMatch = text.match(/(?:EMPRESA|Entidade|Organismo)\s*(?:DE\s+MANUTENÇÃO)?\s*:?\s*([A-ZÇ][A-Za-zÇçÁÉÍÓÚÂÊÔÃ\s,.-]{5,80}?)(?:\n|TÉCNICO|CLÁUSULAS|$)/i);
     if (companyMatch) {
-        metadata.company = companyMatch[1].trim();
+        let company = companyMatch[1].trim();
+        // Очищаємо
+        company = company.replace(/\s*(TÉCNICO|CLÁUSULAS|C[123]).*$/i, '').trim();
+        if (company.length >= 5) {
+            metadata.company = company;
+        }
     }
     
+    console.log('📄 Metadata extracted:', metadata);
     return metadata;
 }
 
@@ -236,6 +253,22 @@ function extractViolations(text) {
             console.log('📋 Found clause section - using contextual extraction');
         }
         
+        // ⚠️ ВИКЛЮЧЕННЯ: Патерни які НЕ є реальними порушеннями
+        const excludePatterns = [
+            /NOTA\s+DE\s+CLÁUSULAS/i,
+            /CLÁUSULAS?\s+DE\s+CUMPRIMENTO/i,
+            /AS\s+CLÁUSULAS?\s+QUE\s+A\s+SEGUIR/i,
+            /SÃO\s+APLICÁVEIS\s+FACE\s+AO/i,
+            /REGULAMENTO\s+DE\s+SEGURANÇA/i,
+            /CLASSIFICAÇÃO\s*:?\s*C[123]/i,
+            /TIPO\s+DE\s+INSPEÇÃO/i,
+            /DATA\s+(DA\s+)?INSPEÇÃO/i,
+            /ELEVADOR\s+N[ºo]/i,
+            /LOCALIZAÇÃO/i,
+            /^\s*C[123]\s*$/,  // Просто літера С1/С2/С3 окремо
+            /^(C[123])\s*[-–—]\s*$/,  // С1 - без опису
+        ];
+        
         // Шукаємо всі C1/C2/C3 в тексті
         const classificationMatches = [...text.matchAll(/\b(C[123])\b/g)];
         
@@ -245,10 +278,17 @@ function extractViolations(text) {
             const classification = classMatch[1];
             const position = classMatch.index;
             
-            // Беремо контекст навколо класифікації
-            const contextStart = Math.max(0, position - 80);
-            const contextEnd = Math.min(text.length, position + 350);
+            // Беремо контекст навколо класифікації (ширший для перевірки)
+            const contextStart = Math.max(0, position - 150);
+            const contextEnd = Math.min(text.length, position + 400);
             const context = text.substring(contextStart, contextEnd);
+            
+            // ⛔ ФІЛЬТР 1: Виключаємо якщо контекст містить виключені фрази
+            const isExcluded = excludePatterns.some(pattern => pattern.test(context));
+            if (isExcluded) {
+                console.log(`⏭️ Skipping ${classification} - matches exclusion pattern`);
+                return;
+            }
             
             // Шукаємо номер статті поруч
             const articleMatch = context.match(/Art\.?º?\s*(\d+[a-z]?\.?\d*)|artigo\s*(\d+)/i);
@@ -265,7 +305,13 @@ function extractViolations(text) {
                 descriptionMatch = afterClass.match(/C[123]\s*[-–—:.]?\s*(.{15,200}?)(?:\n|$)/);
             }
             
-            let description = descriptionMatch ? descriptionMatch[1].trim() : 'Não conformidade detectada';
+            let description = descriptionMatch ? descriptionMatch[1].trim() : '';
+            
+            // ⛔ ФІЛЬТР 2: Якщо опису немає взагалі
+            if (!description || description.length < 10) {
+                console.log(`⏭️ Skipping ${classification} - no description found`);
+                return;
+            }
             
             // Очищаємо опис від зайвого
             description = description
@@ -274,10 +320,29 @@ function extractViolations(text) {
                 .replace(/\s*\([^)]*C[123][^)]*\)\s*$/, '') // Видаляємо класифікацію в кінці якщо є
                 .trim();
             
-            // Якщо опис занадто короткий або це просто дата/номер, пропускаємо
-            if (description.length < 10 || /^\d+[-\/]\d+[-\/]\d+$/.test(description) || /^[\d\s.:-]+$/.test(description)) {
+            // ⛔ ФІЛЬТР 3: Виключаємо спеціальні випадки
+            const descriptionExcludePatterns = [
+                /^\d+[-\/]\d+[-\/]\d+$/,  // Тільки дата
+                /^[\d\s.:-]+$/,  // Тільки цифри і розділювачі
+                /^[A-Z\s]{2,15}$/,  // Тільки великі літери (заголовки)
+                /^(SIM|NÃO|OK|N\/A)$/i,  // Односложні відповіді
+                /CLÁUSULAS?\s+QUE/i,  // Частина заголовка
+                /APLICÁVEIS\s+FACE/i,  // Частина заголовка
+            ];
+            
+            const isDescriptionExcluded = descriptionExcludePatterns.some(pattern => pattern.test(description));
+            if (isDescriptionExcluded) {
+                console.log(`⏭️ Skipping ${classification} - description is noise: "${description.substring(0, 50)}"`);
                 return;
             }
+            
+            // ⛔ ФІЛЬТР 4: Якщо опис занадто короткий після очищення
+            if (description.length < 15) {
+                console.log(`⏭️ Skipping ${classification} - description too short: "${description}"`);
+                return;
+            }
+            
+            console.log(`✅ Valid violation found: ${classification} - "${description.substring(0, 60)}..."`);
             
             const key = `${classification}-${articleNum}-${description.substring(0, 50)}`;
             if (!seen.has(key)) {
@@ -443,6 +508,34 @@ async function parsePDF(filePath) {
         
         console.log(`📊 Analysis result: ${violations.length} violations found (C1: ${stats.critical}, C2: ${stats.medium}, C3: ${stats.low})`);
         
+        // 🎯 Визначення статусу на основі порушень
+        const hasCritical = stats.critical > 0;
+        const hasViolations = stats.total > 0;
+        
+        // Якщо немає порушень - APROVADO
+        let passed = !hasViolations;
+        let finalReportType = 'certificate';
+        let finalConclusion = {
+            ...conclusion,
+            approved: !hasViolations  // Перевизначаємо базуючись на реальних порушеннях
+        };
+        
+        if (hasCritical) {
+            passed = false;
+            finalReportType = 'failed';
+            finalConclusion.approved = false;
+        } else if (hasViolations && stats.total <= 5) {
+            passed = true;
+            finalReportType = 'approved_with_c3';
+            finalConclusion.approved = true;
+        } else if (hasViolations && stats.total > 5) {
+            passed = false;
+            finalReportType = 'failed';
+            finalConclusion.approved = false;
+        }
+        
+        console.log(`✅ Final verdict: ${passed ? 'APROVADO' : 'REPROVADO'} (${finalReportType})`);
+        
         // Формат для unified-server.js
         return {
             success: true,
@@ -451,22 +544,22 @@ async function parsePDF(filePath) {
                 metadata,
                 violations,
                 stats,
-                conclusion,
+                conclusion: finalConclusion,
                 summary: {
                     total: stats.total,
                     critical: stats.critical,
                     medium: stats.medium,
                     low: stats.low
                 },
-                passed: stats.critical === 0 && stats.total < 5,
-                reportType: stats.critical === 0 ? (stats.total === 0 ? 'certificate' : 'approved_with_c3') : 'failed'
+                passed: passed,
+                reportType: finalReportType
             },
             // Legacy format для сумісності
             reportType,
             metadata,
             violations,
             stats,
-            conclusion,
+            conclusion: finalConclusion,
             rawText: text,
             pageCount: pdfData.numpages,
             info: pdfData.info
