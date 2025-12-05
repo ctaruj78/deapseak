@@ -1168,9 +1168,62 @@ app.post('/api/ai/chat', authenticateToken, async (req, res) => {
         const lowerMessage = message.toLowerCase();
         
         console.log(`💬 Chat received: "${message}" | lowercase: "${lowerMessage}"`);
-
+        
+        // SEARCH IN REGULATIONS DATABASE FIRST
+        // Check if question contains Portuguese technical terms from regulations
+        let foundInRegulations = null;
+        for (const reg of portugueseRegulations.regulations) {
+            if (reg.inspection_points) {
+                for (const point of reg.inspection_points) {
+                    // Check if message contains keywords from regulation
+                    const keywords = [
+                        point.requirement?.toLowerCase(),
+                        point.description?.toLowerCase(),
+                        point.client_explanation?.toLowerCase()
+                    ].filter(Boolean).join(' ');
+                    
+                    // Extract key terms
+                    const terms = ['caixa', 'porta', 'fechadura', 'patamar', 'cabina', 'proteção', 
+                                   'dispositivo', 'segurança', 'motor', 'cabo', 'guia', 'freio', 'travagem',
+                                   'para-quedas', 'paraquedas', 'limitador', 'velocidade', 'iluminação',
+                                   'ventilação', 'alarme', 'telefone', 'sobrecarga', 'carga', 'amortecedor'];
+                    
+                    for (const term of terms) {
+                        if (lowerMessage.includes(term) && keywords.includes(term)) {
+                            foundInRegulations = {
+                                regulation: `${reg.number} (${reg.date.split('-')[0]})`,
+                                title: reg.title,
+                                article: point.article,
+                                requirement: point.requirement,
+                                description: point.description,
+                                explanation: point.client_explanation,
+                                violations: point.common_violations || []
+                            };
+                            break;
+                        }
+                    }
+                    if (foundInRegulations) break;
+                }
+            }
+            if (foundInRegulations) break;
+        }
+        
+        // If found in regulations database, use that
+        if (foundInRegulations) {
+            response = `📖 ${foundInRegulations.article} - Decreto ${foundInRegulations.regulation}\n` +
+                      `${foundInRegulations.title}\n\n` +
+                      `**${foundInRegulations.requirement}**\n\n` +
+                      `${foundInRegulations.description}\n\n` +
+                      `💡 Explicação / Пояснення:\n${foundInRegulations.explanation}\n\n`;
+            
+            if (foundInRegulations.violations.length > 0) {
+                response += `⚠️ Violações comuns / Типові порушення:\n` +
+                           foundInRegulations.violations.map(v => `🔴 ${v}`).join('\n');
+            }
+        }
+        // Otherwise use manual responses below
         // CABOS E POLIAS / ТРОСИ ТА ШКІВИ
-        if (lowerMessage.includes('cabo') || lowerMessage.includes('трос') || 
+        else if (lowerMessage.includes('cabo') || lowerMessage.includes('трос') || 
             lowerMessage.includes('polia') || lowerMessage.includes('шків') ||
             lowerMessage.includes('suspensão') || lowerMessage.includes('підвіс')) {
             response = `⚙️ Cabos e polias / Троси та шківи:\n\n` +
@@ -1414,15 +1467,58 @@ app.post('/api/ai/chat', authenticateToken, async (req, res) => {
         else if (lowerMessage.includes('regulament') || lowerMessage.includes('lei') || 
             lowerMessage.includes('norma') || lowerMessage.includes('artigo') ||
             lowerMessage.includes('закон') || lowerMessage.includes('регламент') ||
-            lowerMessage.includes('норм') || lowerMessage.includes('правил')) {
-            response = `📚 Sobre regulamentações / Про регламенти:\n\n` +
-                      `Temos ${portugueseRegulations.regulations.length} regulamentos catalogados.\n` +
-                      `У базі ${portugueseRegulations.regulations.length} португальських законів про ліфти.\n\n` +
-                      `Principais documentos / Основні документи:\n` +
-                      `• Decreto-Lei 163/2006 - Regulamento de Segurança\n` +
-                      `• Decreto 320/2002 - Inspeções Periódicas\n` +
-                      `• Portaria 528/2008 - Certificação de Técnicos\n\n` +
-                      `📖 Use a aba "Legislação PT" / Вкладка "Legislação PT" для детального пошуку.`;
+            lowerMessage.includes('норм') || lowerMessage.includes('правил') ||
+            lowerMessage.includes('decreto')) {
+            
+            // Search for specific article if mentioned
+            let specificArticle = null;
+            const articleMatch = lowerMessage.match(/artigo?\s*(\d+)/i) || lowerMessage.match(/art\.?\s*(\d+)/i);
+            
+            if (articleMatch) {
+                const articleNum = articleMatch[1];
+                // Search in regulations database
+                for (const reg of portugueseRegulations.regulations) {
+                    if (reg.inspection_points) {
+                        const point = reg.inspection_points.find(p => 
+                            p.article && p.article.includes(articleNum)
+                        );
+                        if (point) {
+                            specificArticle = {
+                                regulation: `${reg.number} - ${reg.title}`,
+                                article: point.article,
+                                requirement: point.requirement,
+                                description: point.description,
+                                explanation: point.client_explanation,
+                                violations: point.common_violations
+                            };
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            if (specificArticle) {
+                response = `📖 ${specificArticle.article} - ${specificArticle.regulation}\n\n` +
+                          `**${specificArticle.requirement}**\n\n` +
+                          `${specificArticle.description}\n\n` +
+                          `💡 Para clientes / Для клієнтів:\n${specificArticle.explanation}\n\n` +
+                          `⚠️ Violações comuns / Типові порушення:\n` +
+                          specificArticle.violations.map(v => `❌ ${v}`).join('\n');
+            } else {
+                // General response with all regulations
+                const regList = portugueseRegulations.regulations.map(r => 
+                    `• **${r.number}** (${r.date.split('-')[0]}) - ${r.title}`
+                ).join('\n');
+                
+                response = `📚 Regulamentação portuguesa / Португальські регламенти:\n\n` +
+                          `Total de ${portugueseRegulations.regulations.length} regulamentos na base:\n\n` +
+                          `${regList}\n\n` +
+                          `📖 Base de dados atualizada: ${portugueseRegulations.metadata.last_updated}\n\n` +
+                          `💡 Para pesquisar artigo específico, pergunte:\n` +
+                          `"Artigo 23 decreto 513" ou "art 14"\n` +
+                          `Для пошуку конкретної статті запитайте:\n` +
+                          `"Artigo 23" або "art 14"`;
+            }
         }
         // Check for inspection queries
         else if (lowerMessage.includes('inspe') || lowerMessage.includes('vistoria') ||
