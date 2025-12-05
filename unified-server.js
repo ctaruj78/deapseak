@@ -968,7 +968,7 @@ function analyzeInspectionReport(reportText) {
     }
     
     // Формування резюме
-    const summary = `📋 **Результат аналізу звіту**\n\n` +
+    const summaryText = `📋 **Результат аналізу звіту**\n\n` +
                    `**Статус:** ${status}\n` +
                    `**Всього порушень:** ${violations.length}\n` +
                    `• Критичні (C1): ${c1Count}\n` +
@@ -979,13 +979,63 @@ function analyzeInspectionReport(reportText) {
                    (c2Count > 0 ? `⚡ Потрібні корективні дії протягом 30 днів.\n` : '') +
                    `\nДетальний аналіз кожного пункту див. нижче.`;
     
+    // Конвертація violations у формат для frontend
+    const formattedViolations = violations.map(v => ({
+        id: v.id,
+        article: v.article,
+        description: v.description,
+        riskCategory: v.severity,
+        regulation: {
+            code: v.article,
+            name: v.category,
+            articleTitle: v.category,
+            articleExplanation: v.recommendation
+        },
+        riskInfo: {
+            description: `Термін усунення: ${v.deadline}`
+        }
+    }));
+    
+    // Формування рекомендацій
+    const recommendations = [];
+    if (c1Count > 0) {
+        recommendations.push({
+            icon: '🛑',
+            text: 'Негайно припинити експлуатацію ліфта до усунення критичних порушень'
+        });
+    }
+    if (c2Count > 0) {
+        recommendations.push({
+            icon: '⏰',
+            text: 'Усунути помірні порушення протягом 30 днів'
+        });
+    }
+    if (c3Count > 0) {
+        recommendations.push({
+            icon: '📝',
+            text: 'Запланувати усунення легких порушень протягом 90 днів'
+        });
+    }
+    recommendations.push({
+        icon: '🔧',
+        text: 'Звернутися до сертифікованої компанії для проведення робіт'
+    });
+    
     return {
-        violations,
-        summary,
+        summary: {
+            total: violations.length,
+            critical: c1Count,
+            medium: c2Count,
+            low: c3Count
+        },
+        violations: formattedViolations,
+        recommendations,
+        passed: c1Count === 0 && totalPoints < 15,
+        reportType: c1Count === 0 && c2Count === 0 ? 'approved_with_c3' : (c1Count === 0 ? 'certificate' : 'failed'),
+        summaryText,
         totalPoints,
         status,
-        statusColor,
-        counts: { c1: c1Count, c2: c2Count, c3: c3Count }
+        statusColor
     };
 }
 
