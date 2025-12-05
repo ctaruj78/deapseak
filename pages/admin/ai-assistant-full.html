@@ -453,23 +453,12 @@
                                                             </div>
                                                         </div>
                                                         
-                                                        <h6 class="text-muted mt-3">Популярні теми:</h6>
-                                                        <div class="btn-group-vertical btn-block mb-3">
-                                                            <button class="btn btn-outline-primary text-left" onclick="searchRegulations('ventilação')">
-                                                                <i class="fas fa-wind"></i> Вентиляція
-                                                            </button>
-                                                            <button class="btn btn-outline-primary text-left" onclick="searchRegulations('portas de segurança')">
-                                                                <i class="fas fa-door-closed"></i> Двері безпеки
-                                                            </button>
-                                                            <button class="btn btn-outline-primary text-left" onclick="searchRegulations('iluminação emergência')">
-                                                                <i class="fas fa-lightbulb"></i> Аварійне освітлення
-                                                            </button>
-                                                            <button class="btn btn-outline-primary text-left" onclick="searchRegulations('manutenção preventiva')">
-                                                                <i class="fas fa-tools"></i> Профілактичне обслуговування
-                                                            </button>
+                                                        <div id="regulationsResults">
+                                                            <div class="text-center text-muted py-4">
+                                                                <div class="spinner-border" role="status"></div>
+                                                                <p class="mt-2">Завантаження законів...</p>
+                                                            </div>
                                                         </div>
-                                                        
-                                                        <div id="regulationsResults"></div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -724,6 +713,197 @@
         }
 
         // Regulations functions
+        function loadAllRegulations() {
+            const resultsDiv = document.getElementById('regulationsResults');
+            resultsDiv.innerHTML = '<div class="text-center"><div class="spinner-border text-success" role="status"></div><p class="mt-2">Завантаження законів...</p></div>';
+            
+            fetch(`${API_URL}/api/regulations`, {
+                method: 'GET',
+                headers: getAuthHeaders()
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log('All regulations loaded:', data);
+                if (data.success && data.data) {
+                    displayRegulationsList(data.data);
+                } else {
+                    resultsDiv.innerHTML = `<div class="alert alert-danger">❌ Помилка завантаження законів</div>`;
+                }
+            })
+            .catch(err => {
+                console.error('Regulations error:', err);
+                resultsDiv.innerHTML = '<div class="alert alert-danger">❌ Помилка з\'єднання з сервером</div>';
+            });
+        }
+        
+        function displayRegulationsList(regulations) {
+            const resultsDiv = document.getElementById('regulationsResults');
+            
+            let html = `
+                <div class="alert alert-info mb-3">
+                    <strong><i class="fas fa-book"></i> Всього законів: ${regulations.length}</strong>
+                    <button class="btn btn-sm btn-primary float-right" onclick="document.getElementById('regulationSearch').focus()">
+                        <i class="fas fa-search"></i> Пошук
+                    </button>
+                </div>
+            `;
+            
+            regulations.forEach(reg => {
+                const statusColor = reg.status === 'vigente' ? 'success' : 
+                                  reg.status === 'vigente_obrigatoria' ? 'danger' : 
+                                  reg.status === 'vigente_parcial' ? 'warning' : 'secondary';
+                const statusText = reg.status === 'vigente' ? 'Діючий' : 
+                                 reg.status === 'vigente_obrigatoria' ? "Обов'язковий" : 
+                                 reg.status === 'vigente_parcial' ? 'Частково діючий' : reg.status;
+                
+                html += `
+                    <div class="card mb-3 shadow-sm">
+                        <div class="card-header bg-gradient-primary">
+                            <h5 class="mb-0">
+                                <i class="fas fa-gavel"></i> ${reg.title}
+                            </h5>
+                            <small class="text-white-50">
+                                <strong>${reg.number}</strong> від ${reg.date}
+                                <span class="badge badge-${statusColor} float-right">${statusText}</span>
+                            </small>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted mb-2"><small><strong>Тип:</strong> ${reg.type.toUpperCase()}</small></p>
+                            ${reg.summary ? `<p class="mb-3">${reg.summary}</p>` : ''}
+                            
+                            ${reg.scope && reg.scope.length > 0 ? `
+                                <div class="mb-3">
+                                    <h6 class="text-primary"><i class="fas fa-list-ul"></i> Основні пункти:</h6>
+                                    <ul class="mb-0">
+                                        ${reg.scope.slice(0, 3).map(s => `<li>${s}</li>`).join('')}
+                                        ${reg.scope.length > 3 ? `<li class="text-muted"><em>... та ще ${reg.scope.length - 3} пунктів</em></li>` : ''}
+                                    </ul>
+                                </div>
+                            ` : ''}
+                            
+                            <div class="text-right mt-3">
+                                <button class="btn btn-outline-primary btn-sm" onclick='showRegulationDetails(${JSON.stringify(reg).replace(/'/g, "&apos;")})'>
+                                    <i class="fas fa-info-circle"></i> Детальніше
+                                </button>
+                                ${reg.url ? `<a href="${reg.url}" target="_blank" class="btn btn-outline-secondary btn-sm ml-2">
+                                    <i class="fas fa-external-link-alt"></i> Офіційний текст
+                                </a>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            resultsDiv.innerHTML = html;
+        }
+        
+        function showRegulationDetails(regulation) {
+            const resultsDiv = document.getElementById('regulationsResults');
+            
+            const statusColor = regulation.status === 'vigente' ? 'success' : 
+                              regulation.status === 'vigente_obrigatoria' ? 'danger' : 
+                              regulation.status === 'vigente_parcial' ? 'warning' : 'secondary';
+            const statusText = regulation.status === 'vigente' ? 'Діючий' : 
+                             regulation.status === 'vigente_obrigatoria' ? "Обов'язковий" : 
+                             regulation.status === 'vigente_parcial' ? 'Частково діючий' : regulation.status;
+            
+            let html = `
+                <button class="btn btn-link mb-3" onclick="loadAllRegulations()">
+                    <i class="fas fa-arrow-left"></i> Повернутись до списку
+                </button>
+                
+                <div class="card shadow">
+                    <div class="card-header bg-gradient-primary">
+                        <h4 class="mb-1"><i class="fas fa-gavel"></i> ${regulation.title}</h4>
+                        <p class="mb-0 text-white-50">
+                            <strong>${regulation.number}</strong> від ${regulation.date}
+                            <span class="badge badge-${statusColor} ml-2">${statusText}</span>
+                        </p>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Тип документу:</strong> ${regulation.type.toUpperCase()}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Статус:</strong> <span class="badge badge-${statusColor}">${statusText}</span></p>
+                            </div>
+                        </div>
+                        
+                        ${regulation.summary ? `
+                            <div class="alert alert-info">
+                                <h6><i class="fas fa-info-circle"></i> Опис</h6>
+                                <p class="mb-0">${regulation.summary}</p>
+                            </div>
+                        ` : ''}
+                        
+                        ${regulation.scope && regulation.scope.length > 0 ? `
+                            <div class="mt-4">
+                                <h5 class="text-primary"><i class="fas fa-list"></i> Сфера застосування</h5>
+                                <ul>
+                                    ${regulation.scope.map(s => `<li>${s}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                        
+                        ${regulation.inspection_points && regulation.inspection_points.length > 0 ? `
+                            <div class="mt-4">
+                                <h5 class="text-primary"><i class="fas fa-clipboard-check"></i> Пункти інспекції (${regulation.inspection_points.length})</h5>
+                                ${regulation.inspection_points.map(point => `
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-light">
+                                            <strong>${point.article}</strong> - ${point.requirement}
+                                        </div>
+                                        <div class="card-body">
+                                            ${point.client_explanation ? `
+                                                <p><strong>Пояснення для клієнта:</strong><br>
+                                                ${point.client_explanation}</p>
+                                            ` : ''}
+                                            ${point.description ? `
+                                                <p><strong>Опис:</strong><br>
+                                                ${point.description}</p>
+                                            ` : ''}
+                                            ${point.common_violations && point.common_violations.length > 0 ? `
+                                                <p><strong>Типові порушення:</strong></p>
+                                                <ul>
+                                                    ${point.common_violations.map(v => `<li>${v}</li>`).join('')}
+                                                </ul>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                        
+                        ${regulation.penalties ? `
+                            <div class="alert alert-warning mt-4">
+                                <h6><i class="fas fa-exclamation-triangle"></i> Санкції</h6>
+                                <p class="mb-0">${regulation.penalties}</p>
+                            </div>
+                        ` : ''}
+                        
+                        ${regulation.notes ? `
+                            <div class="alert alert-secondary mt-4">
+                                <h6><i class="fas fa-sticky-note"></i> Примітки</h6>
+                                <p class="mb-0">${regulation.notes}</p>
+                            </div>
+                        ` : ''}
+                        
+                        ${regulation.url ? `
+                            <div class="text-center mt-4">
+                                <a href="${regulation.url}" target="_blank" class="btn btn-primary">
+                                    <i class="fas fa-external-link-alt"></i> Переглянути офіційний текст
+                                </a>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            
+            resultsDiv.innerHTML = html;
+            resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
         function searchRegulations(query) {
             if (!query) {
                 query = document.getElementById('regulationSearch').value.trim();
@@ -734,7 +914,7 @@
             }
             
             const resultsDiv = document.getElementById('regulationsResults');
-            resultsDiv.innerHTML = '<div class="spinner-border text-success" role="status"></div> <span>Шукаю...</span>';
+            resultsDiv.innerHTML = '<div class="text-center"><div class="spinner-border text-success" role="status"></div><p class="mt-2">Шукаю...</p></div>';
             
             fetch(`${API_URL}/api/regulations?search=${encodeURIComponent(query)}`, {
                 method: 'GET',
@@ -742,57 +922,30 @@
             })
             .then(res => res.json())
             .then(data => {
-                console.log('Regulations response:', data);
+                console.log('Regulations search response:', data);
                 if (data.success && data.data) {
                     if (data.data.length === 0) {
                         resultsDiv.innerHTML = `
                             <div class="alert alert-warning">
                                 <i class="fas fa-info-circle"></i> Не знайдено результатів для "${query}"
+                                <button class="btn btn-sm btn-primary float-right" onclick="loadAllRegulations()">
+                                    Показати всі закони
+                                </button>
                             </div>
                         `;
                         return;
                     }
                     
-                    let html = `<div class="alert alert-info"><strong>Знайдено: ${data.total}</strong> регламентів</div>`;
+                    let html = `
+                        <div class="alert alert-success">
+                            <strong>Знайдено: ${data.total}</strong> результатів для "${query}"
+                            <button class="btn btn-sm btn-primary float-right" onclick="loadAllRegulations()">
+                                <i class="fas fa-list"></i> Показати всі
+                            </button>
+                        </div>
+                    `;
                     
-                    data.data.forEach(reg => {
-                        html += `
-                            <div class="card mb-3">
-                                <div class="card-header bg-primary text-white">
-                                    <h5 class="mb-0">
-                                        <i class="fas fa-gavel"></i> ${reg.title}
-                                        <small class="float-right">${reg.number} (${reg.date})</small>
-                                    </h5>
-                                </div>
-                                <div class="card-body">
-                                    <p><strong>Tipo:</strong> ${reg.type.toUpperCase()}</p>
-                                    <p><strong>Status:</strong> <span class="badge badge-${reg.status === 'vigente' ? 'success' : 'warning'}">${reg.status}</span></p>
-                                    ${reg.summary ? `<p>${reg.summary}</p>` : ''}
-                                    
-                                    ${reg.scope && reg.scope.length > 0 ? `
-                                        <h6 class="mt-3"><i class="fas fa-list"></i> Âmbito:</h6>
-                                        <ul>
-                                            ${reg.scope.slice(0, 5).map(s => `<li>${s}</li>`).join('')}
-                                            ${reg.scope.length > 5 ? `<li><em>... e mais ${reg.scope.length - 5}</em></li>` : ''}
-                                        </ul>
-                                    ` : ''}
-                                    
-                                    ${reg.inspection_points && reg.inspection_points.length > 0 ? `
-                                        <h6 class="mt-3"><i class="fas fa-clipboard-check"></i> Pontos de Inspeção:</h6>
-                                        ${reg.inspection_points.slice(0, 3).map(point => `
-                                            <div class="border-left border-primary pl-3 mb-2">
-                                                <strong>${point.article}:</strong> ${point.requirement}<br>
-                                                <small class="text-muted">${point.client_explanation || point.description}</small>
-                                            </div>
-                                        `).join('')}
-                                        ${reg.inspection_points.length > 3 ? `<p class="text-muted"><em>... e mais ${reg.inspection_points.length - 3} pontos</em></p>` : ''}
-                                    ` : ''}
-                                </div>
-                            </div>
-                        `;
-                    });
-                    
-                    resultsDiv.innerHTML = html;
+                    displayRegulationsList(data.data);
                 } else {
                     resultsDiv.innerHTML = `<div class="alert alert-danger">❌ Помилка: ${data.error || data.message}</div>`;
                 }
@@ -1009,6 +1162,21 @@
             
             resultsContent.innerHTML = html;
         }
+        
+        // Auto-load regulations when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load all regulations initially
+            loadAllRegulations();
+            
+            // Also reload when user clicks on regulations tab
+            document.querySelector('a[href="#regulations"]').addEventListener('click', function() {
+                // Only reload if results div is empty or shows error
+                const resultsDiv = document.getElementById('regulationsResults');
+                if (!resultsDiv.innerHTML || resultsDiv.innerHTML.includes('Помилка')) {
+                    loadAllRegulations();
+                }
+            });
+        });
     </script>
 </body>
 </html>
