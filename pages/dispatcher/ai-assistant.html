@@ -953,8 +953,8 @@
                                 <button class="btn btn-outline-primary btn-sm" onclick='showRegulationDetails(${JSON.stringify(reg).replace(/'/g, "&apos;")})'>
                                     <i class="fas fa-info-circle"></i> Детальніше
                                 </button>
-                                ${reg.url ? `<a href="${reg.url}" target="_blank" class="btn btn-outline-secondary btn-sm ml-2">
-                                    <i class="fas fa-external-link-alt"></i> Офіційний текст
+                                ${reg.official_source ? `<a href="${reg.official_source}" target="_blank" class="btn btn-outline-success btn-sm ml-2">
+                                    <i class="fas fa-scroll"></i> Офіційний текст
                                 </a>` : ''}
                             </div>
                         </div>
