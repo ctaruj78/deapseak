@@ -140,6 +140,55 @@
                 transform: translateY(-10px);
             }
         }
+        
+        /* Voice buttons */
+        .voice-btn, .speak-btn {
+            padding: 8px 12px;
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-left: 5px;
+        }
+        
+        .speak-btn {
+            background: #10b981;
+        }
+        
+        .voice-btn:hover {
+            background: #7c3aed;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4);
+        }
+        
+        .speak-btn:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+        }
+        
+        .voice-btn.recording {
+            background: #ef4444;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        .speak-btn.speaking {
+            background: #ef4444;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+            }
+        }
     </style>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed" data-required-role="admin">
@@ -331,6 +380,12 @@
                                                     <div class="input-group">
                                                         <input type="text" id="chatInput" placeholder="Напишіть повідомлення..." class="form-control" onkeypress="if(event.key==='Enter') sendChatMessage()">
                                                         <span class="input-group-append">
+                                                            <button type="button" class="voice-btn" id="voiceBtn" onclick="toggleVoiceInput()" title="Falar / Говорити">
+                                                                <i class="fas fa-microphone"></i>
+                                                            </button>
+                                                            <button type="button" class="speak-btn" id="speakBtn" onclick="toggleSpeech()" title="Ouvir / Прослухати" style="display: none;">
+                                                                <i class="fas fa-volume-up"></i>
+                                                            </button>
                                                             <button type="button" class="btn btn-primary" onclick="sendChatMessage()">
                                                                 <i class="fas fa-paper-plane"></i>
                                                             </button>
@@ -547,6 +602,110 @@
     <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
 
     <script>
+        // Voice features
+        let lastResponse = '';
+        let speechRecognition = null;
+        let isSpeaking = false;
+        
+        // Ініціалізація Web Speech API
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            speechRecognition = new SpeechRecognition();
+            speechRecognition.continuous = false;
+            speechRecognition.interimResults = false;
+            speechRecognition.lang = 'pt-PT';
+            
+            speechRecognition.onstart = () => {
+                const voiceBtn = document.getElementById('voiceBtn');
+                voiceBtn.classList.add('recording');
+                voiceBtn.innerHTML = '<i class="fas fa-stop-circle"></i>';
+            };
+            
+            speechRecognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('chatInput').value = transcript;
+                sendChatMessage();
+            };
+            
+            speechRecognition.onend = () => {
+                const voiceBtn = document.getElementById('voiceBtn');
+                voiceBtn.classList.remove('recording');
+                voiceBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+            };
+            
+            speechRecognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                const voiceBtn = document.getElementById('voiceBtn');
+                voiceBtn.classList.remove('recording');
+                voiceBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+            };
+        } else {
+            window.addEventListener('load', () => {
+                const voiceBtn = document.getElementById('voiceBtn');
+                if (voiceBtn) {
+                    voiceBtn.disabled = true;
+                    voiceBtn.title = 'Voice input not supported';
+                    voiceBtn.style.opacity = '0.5';
+                }
+            });
+        }
+        
+        // Голосове введення
+        function toggleVoiceInput() {
+            if (speechRecognition) {
+                try {
+                    speechRecognition.start();
+                } catch (error) {
+                    console.error('Speech recognition start error:', error);
+                }
+            }
+        }
+        
+        // Text-to-Speech озвучування
+        function toggleSpeech() {
+            if ('speechSynthesis' in window) {
+                if (isSpeaking) {
+                    window.speechSynthesis.cancel();
+                    isSpeaking = false;
+                    const speakBtn = document.getElementById('speakBtn');
+                    speakBtn.classList.remove('speaking');
+                    speakBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                    return;
+                }
+                
+                if (!lastResponse) return;
+                
+                const cleanText = lastResponse
+                    .replace(/\*\*/g, '')
+                    .replace(/\*/g, '')
+                    .replace(/#{1,6}\s/g, '')
+                    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+                    .replace(/```[\s\S]*?```/g, '')
+                    .replace(/`([^`]+)`/g, '$1');
+                
+                const utterance = new SpeechSynthesisUtterance(cleanText);
+                utterance.lang = 'pt-PT';
+                utterance.rate = 0.9;
+                utterance.pitch = 1;
+                
+                const speakBtn = document.getElementById('speakBtn');
+                
+                utterance.onstart = () => {
+                    isSpeaking = true;
+                    speakBtn.classList.add('speaking');
+                    speakBtn.innerHTML = '<i class="fas fa-stop"></i>';
+                };
+                
+                utterance.onend = () => {
+                    isSpeaking = false;
+                    speakBtn.classList.remove('speaking');
+                    speakBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                };
+                
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+        
         // API URL detection для Codespaces та localhost
         let API_URL;
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
@@ -645,6 +804,15 @@
             
             container.insertBefore(msgDiv, typingIndicator);
             container.scrollTop = container.scrollHeight;
+            
+            // Зберегти останню відповідь AI та показати кнопку озвучування
+            if (!isUser) {
+                lastResponse = text;
+                const speakBtn = document.getElementById('speakBtn');
+                if (speakBtn) {
+                    speakBtn.style.display = 'inline-block';
+                }
+            }
         }
 
         function clearChat() {
