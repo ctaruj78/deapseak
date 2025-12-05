@@ -813,29 +813,39 @@
             const formData = new FormData();
             if (currentAnalysisFile) {
                 formData.append('pdf', currentAnalysisFile);
+                console.log('📄 PDF file attached:', currentAnalysisFile.name);
             }
             formData.append('message', manualText || 'Проаналізуй цей PDF звіт інспекції');
             
             const token = getAuthToken();
+            console.log('🔑 Token present:', !!token);
             const headers = {};
             if (token) {
                 headers['Authorization'] = `Bearer ${token}`;
             }
             
+            console.log('📤 Sending analysis request...');
             fetch(`${API_URL}/api/ai/chat`, {
                 method: 'POST',
                 headers: headers,
                 body: formData
             })
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) {
+                    console.error('❌ Server response:', res.status, res.statusText);
+                }
+                return res.json();
+            })
             .then(data => {
+                console.log('📊 Analysis response:', data);
                 if (data.success && data.analysisResult) {
                     displayAnalysisResults(data.analysisResult);
                 } else {
-                    resultsContent.innerHTML = `<div class="alert alert-danger">❌ Помилка: ${data.error || 'Не вдалося проаналізувати звіт'}</div>`;
+                    resultsContent.innerHTML = `<div class="alert alert-danger">❌ Помилка: ${data.error || data.message || 'Не вдалося проаналізувати звіт'}</div>`;
                 }
             })
             .catch(err => {
+                console.error('❌ Fetch error:', err);
                 resultsContent.innerHTML = '<div class="alert alert-danger">❌ Помилка з\'єднання з сервером</div>';
             });
         }
