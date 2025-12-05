@@ -56,6 +56,20 @@ const regulationArticles = {
         why: 'Previne sufocação em caso de paragem prolongada',
         solution: 'Instalar ou reparar sistema de ventilação',
         urgency: 'MÉDIO'
+    },
+    '78': {
+        title: 'Proteção de partes móveis da máquina',
+        explanation: 'Peças salientes e móveis devem estar protegidas',
+        why: 'Previne acidentes corporais graves com máquinas',
+        solution: 'Instalar resguardos certificados em todas as rodas e partes móveis',
+        urgency: 'ALTO'
+    },
+    '85': {
+        title: 'Segurança no acesso à casa das máquinas',
+        explanation: 'Proteções adequadas no acesso e componentes mecânicos',
+        why: 'Evita acidentes durante manutenção e inspeção',
+        solution: 'Implementar barreiras de proteção e sinalização adequada',
+        urgency: 'ALTO'
     }
 };
 
@@ -371,21 +385,15 @@ function extractViolations(text) {
             
             console.log(`✅ Valid violation found: ${classification} - "${description.substring(0, 60)}..."`);
             
-            // 🔑 Унікальний ключ: опис може бути однаковим, але якщо стаття різна - це різні порушення
-            // Проте якщо опис ПОВНІСТЮ однаковий (>80 chars) - це ймовірно дублікат
-            const descKey = description.length > 80 ? description.substring(0, 80) : description;
-            const key = `${classification}-${articleNum}-${descKey}`;
-            
-            // 🔍 Перевірка на повний дублікат опису (може бути помилка у класифікації)
-            const duplicateDesc = Array.from(seen).find(k => k.includes(descKey));
-            if (duplicateDesc) {
-                console.log(`⚠️ Possible duplicate with different classification - keeping first occurrence`);
-                return;
-            }
+            // 🔑 Унікальний ключ: класифікація + стаття + опис
+            // Якщо та сама проблема має C2 і C3 - це ДВІ різні порушення!
+            const key = `${classification}-${articleNum}-${description.substring(0, 100)}`;
             
             if (!seen.has(key)) {
                 seen.add(key);
                 violations.push(createViolation(classification, articleNum, description, 'contextual'));
+            } else {
+                console.log(`⏭️ Skipping exact duplicate: ${classification} Art.${articleNum}`);
             }
         });
     }
@@ -401,13 +409,35 @@ function createViolation(classification, article, description, format) {
     const articleNum = article.toString();
     const articleInfo = regulationArticles[articleNum] || {
         title: `Artigo ${articleNum}`,
-        explanation: 'Consultar regulamentação',
-        why: 'Verificar norma técnica',
-        solution: 'Consultar técnico certificado',
+        explanation: 'Consultar regulamentação completa',
+        why: 'Verificar detalhes na norma técnica aplicável',
+        solution: 'Consultar técnico certificado para avaliação e correção',
         urgency: 'AVALIAR'
     };
     
     const classInfo = classificationInfo[classification.toUpperCase()] || classificationInfo['C2'];
+    
+    // 📋 Створюємо детальне пояснення чому потрібно усунути
+    const whyFix = `
+🚨 **Classificação ${classification} - ${classInfo.level}**
+
+⚠️ **Risco:** ${classInfo.meaning}
+
+📜 **Base Legal:** ${articleInfo.title} (Artigo ${articleNum})
+${articleInfo.explanation}
+
+💡 **Por que eliminar:**
+${articleInfo.why}
+
+⏰ **Prazo obrigatório:** ${classInfo.deadline}
+
+⚖️ **Consequências legais:** ${classInfo.legalConsequence}
+
+🔧 **Como corrigir:**
+${articleInfo.solution}
+
+📋 **Ação requerida:** ${classInfo.action}
+    `.trim();
     
     return {
         classification: classification.toUpperCase(),
@@ -437,13 +467,16 @@ function createViolation(classification, article, description, format) {
             urgency: articleInfo.urgency
         },
         
+        // 🎯 Детальне пояснення чому усунути
+        detailedExplanation: whyFix,
+        
         // Для compatibility з frontend
         riskCategory: classification.toUpperCase(),
         regulation: {
             code: `Art.º ${articleNum}`,
             name: articleInfo.title,
             articleTitle: articleInfo.title,
-            articleExplanation: `${articleInfo.explanation}\n\n💡 Por que é importante: ${articleInfo.why}\n\n🔧 Solução: ${articleInfo.solution}`
+            articleExplanation: whyFix
         },
         riskInfo: {
             description: `Prazo: ${classInfo.deadline} | ${classInfo.action}`
