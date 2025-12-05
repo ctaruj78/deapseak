@@ -173,7 +173,7 @@ function extractMetadata(text) {
 }
 
 /**
- * Витягує порушення з тексту (4 формати) + повна інформація
+ * Витягує порушення з тексту (5 форматів!) + повна інформація
  */
 function extractViolations(text) {
     const violations = [];
@@ -222,6 +222,69 @@ function extractViolations(text) {
             seen.add(key);
             violations.push(createViolation(match[1], match[2], match[3].trim(), 'table'));
         }
+    }
+    
+    // ⭐ Формат 5: Контекстний пошук для "NOTA DE CLÁUSULAS" та інших форматів
+    // Якщо попередні формати нічого не знайшли, але є класифікації C1/C2/C3
+    if (violations.length === 0) {
+        console.log('🔍 Trying contextual search for C1/C2/C3...');
+        
+        // Перевіряємо чи це звіт з клаузами
+        const hasClauseSection = /NOTA\s+DE\s+CLÁUSULAS|CLÁUSULAS?\s+DE\s+CUMPRIMENTO|NÃO\s+CONFORMIDADES?/i.test(text);
+        
+        if (hasClauseSection) {
+            console.log('📋 Found clause section - using contextual extraction');
+        }
+        
+        // Шукаємо всі C1/C2/C3 в тексті
+        const classificationMatches = [...text.matchAll(/\b(C[123])\b/g)];
+        
+        console.log(`🔎 Found ${classificationMatches.length} C1/C2/C3 classifications in text`);
+        
+        classificationMatches.forEach((classMatch) => {
+            const classification = classMatch[1];
+            const position = classMatch.index;
+            
+            // Беремо контекст навколо класифікації
+            const contextStart = Math.max(0, position - 80);
+            const contextEnd = Math.min(text.length, position + 350);
+            const context = text.substring(contextStart, contextEnd);
+            
+            // Шукаємо номер статті поруч
+            const articleMatch = context.match(/Art\.?º?\s*(\d+[a-z]?\.?\d*)|artigo\s*(\d+)/i);
+            const articleNum = articleMatch ? (articleMatch[1] || articleMatch[2]) : '0';
+            
+            // Витягуємо опис після C1/C2/C3
+            const afterClass = text.substring(position);
+            
+            // Шукаємо опис після класифікації (до наступного C або кінця рядка)
+            let descriptionMatch = afterClass.match(/C[123]\s*[-–—:.]?\s*(.{15,300}?)(?:\n\n|C[123]|$)/s);
+            
+            if (!descriptionMatch) {
+                // Альтернатива: беремо просто текст після класифікації
+                descriptionMatch = afterClass.match(/C[123]\s*[-–—:.]?\s*(.{15,200}?)(?:\n|$)/);
+            }
+            
+            let description = descriptionMatch ? descriptionMatch[1].trim() : 'Não conformidade detectada';
+            
+            // Очищаємо опис від зайвого
+            description = description
+                .replace(/^\s*[-–—:.]\s*/, '') // Видаляємо початкові розділювачі
+                .replace(/\s+/g, ' ') // Нормалізуємо пробіли
+                .replace(/\s*\([^)]*C[123][^)]*\)\s*$/, '') // Видаляємо класифікацію в кінці якщо є
+                .trim();
+            
+            // Якщо опис занадто короткий або це просто дата/номер, пропускаємо
+            if (description.length < 10 || /^\d+[-\/]\d+[-\/]\d+$/.test(description) || /^[\d\s.:-]+$/.test(description)) {
+                return;
+            }
+            
+            const key = `${classification}-${articleNum}-${description.substring(0, 50)}`;
+            if (!seen.has(key)) {
+                seen.add(key);
+                violations.push(createViolation(classification, articleNum, description, 'contextual'));
+            }
+        });
     }
     
     console.log(`📋 Extracted ${violations.length} violations from text`);
