@@ -145,50 +145,52 @@
         }
       ],
       "penalties": "Interdição do elevador até regularização; responsabilidade civil e criminal em caso de acidente",
-      "url": "https://diariodarepublica.pt/dr/detalhe/decreto/513-1970-147794",
+      "official_source": "https://diariodarepublica.pt/dr/detalhe/decreto-lei/513-1970-602299",
       "notes": "Regulamento histórico mas ainda vigente para elevadores antigos. Elevadores instalados após 1999 devem cumprir DL 320/2002 e normas EN harmonizadas. Muitos elevadores antigos ainda funcionam sob este regulamento."
     },
     {
       "id": "DL_320_2002",
       "type": "decreto_lei",
       "number": "320/2002",
-      "date": "2002-12-28",
-      "title": "Aproximação das legislações dos Estados-Membros relativas aos elevadores",
+      "date": "2002-12-15",
+      "title": "Regulamento das Condições de Segurança dos Ascensores",
       "status": "vigente",
-      "summary": "Transpõe para a ordem jurídica interna a Diretiva n.º 95/16/CE, relativa aos elevadores. Define requisitos essenciais de segurança.",
+      "summary": "Regulamento atual de segurança de elevadores em Portugal. Define inspeções periódicas obrigatórias, requisitos técnicos e sanções. Base da regulamentação moderna.",
       "scope": [
-        "Requisitos de segurança",
-        "Marcação CE",
-        "Declaração de conformidade",
-        "Instalação e colocação em serviço"
+        "Inspeções periódicas obrigatórias (anuais)",
+        "Entidades certificadas para inspeções",
+        "Requisitos de manutenção",
+        "Livro de registo obrigatório",
+        "Sanções e multas por incumprimento"
       ],
       "inspection_points": [
         {
           "point": "art_3_1",
           "article": "Artigo 3.º, n.º 1",
-          "requirement": "Requisitos essenciais de segurança do Anexo I",
-          "description": "O elevador deve cumprir todos os requisitos essenciais de segurança",
-          "client_explanation": "O seu elevador deve cumprir normas de segurança europeias obrigatórias: portas de segurança, sistemas de travagem, proteção contra quedas, etc.",
+          "requirement": "Inspeção periódica anual obrigatória",
+          "description": "Todo elevador deve ter inspeção anual por entidade certificada",
+          "client_explanation": "O seu elevador deve ser inspecionado todos os anos por empresa certificada. É obrigatório por lei!",
           "common_violations": [
-            "Portas sem dispositivo de bloqueio",
-            "Falta de iluminação de emergência",
-            "Sistemas de alarme não funcionais"
+            "Inspeção em atraso (>12 meses)",
+            "Inspeção feita por entidade não certificada",
+            "Ausência de certificado de inspeção"
           ]
         },
         {
           "point": "art_5_1",
           "article": "Artigo 5.º, n.º 1",
-          "requirement": "Marcação CE obrigatória",
-          "description": "Todos os elevadores devem ter marcação CE visível",
-          "client_explanation": "A placa CE deve estar visível na cabina, confirmando que o elevador cumpre normas europeias.",
+          "requirement": "Livro de registo atualizado",
+          "description": "Todas as manutenções e inspeções devem constar no livro de registo",
+          "client_explanation": "Deve existir um caderno onde técnico regista todas as visitas e trabalhos. Inspetores verificam este livro.",
           "common_violations": [
-            "Marcação CE ausente ou ilegível",
-            "Placa de identificação danificada"
+            "Livro ausente ou desatualizado",
+            "Registos incompletos ou ilegíveis",
+            "Falta de assinaturas dos técnicos"
           ]
         }
       ],
-      "penalties": "Coimas de €500 a €44.890 (artigo 19.º)",
-      "url": "https://diariodarepublica.pt/dr/detalhe/decreto-lei/320-2002-466044"
+      "penalties": "Coimas de €250 a €3.740 para proprietários; interdição em caso de perigo",
+      "official_source": "https://diariodarepublica.pt/dr/detalhe/decreto-lei/320-2002-261060"
     },
     {
       "id": "DL_163_2006",
@@ -241,7 +243,7 @@
         }
       ],
       "penalties": "Coimas conforme legislação municipal",
-      "url": "https://diariodarepublica.pt/dr/detalhe/decreto-lei/163-2006-540650"
+      "official_source": "https://diariodarepublica.pt/dr/detalhe/decreto-lei/163-2006-539690"
     },
     {
       "id": "PORT_1135_2000",
@@ -311,7 +313,7 @@
         }
       ],
       "penalties": "Coimas de €250 a €2.500 (pessoas singulares)",
-      "url": "https://diariodarepublica.pt/dr/detalhe/decreto-lei/9-2007-517555"
+      "official_source": "https://diariodarepublica.pt/dr/detalhe/decreto-lei/9-2007-518208"
     },
     {
       "id": "EN_81_20_50",
