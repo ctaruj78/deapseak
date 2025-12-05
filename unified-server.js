@@ -1163,96 +1163,202 @@ app.post('/api/ai/chat', authenticateToken, async (req, res) => {
             });
         }
 
-        // Simple AI response based on keywords
+        // Simple AI response based on keywords (PT + UA)
         let response = '';
         const lowerMessage = message.toLowerCase();
+        
+        console.log(`💬 Chat received: "${message}" | lowercase: "${lowerMessage}"`);
 
+        // Check for door queries FIRST (most common)
+        if (lowerMessage.includes('porta') || lowerMessage.includes('batente') ||
+            lowerMessage.includes('дверей') || lowerMessage.includes('двері') || 
+            lowerMessage.includes('дверц') || lowerMessage.includes('fechadura')) {
+            response = `🚪 Portas de elevador / Двері ліфта:\n\n` +
+                      `Requisitos obrigatórios / Обов'язкові вимоги:\n` +
+                      `✅ Fechamento automático / Автоматичне замикання\n` +
+                      `✅ Sensores de segurança / Датчики безпеки\n` +
+                      `✅ Não abrem fora do nível / Не відкриваються поза рівнем\n` +
+                      `✅ Sistema de bloqueio / Система блокування\n\n` +
+                      `📖 Regulamento: Artigo 23.º - Decreto 513/70\n\n` +
+                      `⚠️ Violações críticas C1:\n` +
+                      `🔴 Porta abre quando cabine está entre andares\n` +
+                      `   Двері відкриваються між поверхами\n` +
+                      `🔴 Fechadura mecânica defeituosa\n` +
+                      `   Механічний замок несправний\n` +
+                      `🔴 Sem sensores de reencravamento\n` +
+                      `   Без датчиків повторного замикання\n` +
+                      `🔴 Possível forçar abertura manualmente\n` +
+                      `   Можна відкрити силою\n\n` +
+                      `💡 Batente de porta: deve ter proteção anti-esmagamento\n` +
+                      `   Дверний косяк: має бути захист від защемлення`;
+        }
         // Check for regulations queries
-        if (lowerMessage.includes('regulament') || lowerMessage.includes('lei') || 
-            lowerMessage.includes('norma') || lowerMessage.includes('artigo')) {
-            response = `📚 Sobre regulamentações:\n\n` +
-                      `Temos ${portugueseRegulations.regulations.length} regulamentos catalogados.\n\n` +
-                      `Principais documentos:\n` +
+        else if (lowerMessage.includes('regulament') || lowerMessage.includes('lei') || 
+            lowerMessage.includes('norma') || lowerMessage.includes('artigo') ||
+            lowerMessage.includes('закон') || lowerMessage.includes('регламент') ||
+            lowerMessage.includes('норм') || lowerMessage.includes('правил')) {
+            response = `📚 Sobre regulamentações / Про регламенти:\n\n` +
+                      `Temos ${portugueseRegulations.regulations.length} regulamentos catalogados.\n` +
+                      `У базі ${portugueseRegulations.regulations.length} португальських законів про ліфти.\n\n` +
+                      `Principais documentos / Основні документи:\n` +
                       `• Decreto-Lei 163/2006 - Regulamento de Segurança\n` +
                       `• Decreto 320/2002 - Inspeções Periódicas\n` +
                       `• Portaria 528/2008 - Certificação de Técnicos\n\n` +
-                      `Use a aba "Legislação" para pesquisa detalhada.`;
+                      `📖 Use a aba "Legislação PT" / Вкладка "Legislação PT" для детального пошуку.`;
         }
         // Check for inspection queries
-        else if (lowerMessage.includes('inspe') || lowerMessage.includes('vistoria')) {
-            response = `🔍 Sobre inspeções:\n\n` +
+        else if (lowerMessage.includes('inspe') || lowerMessage.includes('vistoria') ||
+                 lowerMessage.includes('інспекц') || lowerMessage.includes('перевір') ||
+                 lowerMessage.includes('огляд')) {
+            response = `🔍 Sobre inspeções / Про інспекції:\n\n` +
                       `As inspeções periódicas são obrigatórias:\n` +
-                      `• Elevadores novos: Primeira inspeção após 6 meses\n` +
-                      `• Elevadores existentes: Anual\n` +
-                      `• Elevadores antigos (>15 anos): Semestral\n\n` +
-                      `A inspeção verifica:\n` +
-                      `✓ Dispositivos de segurança\n` +
-                      `✓ Estado das portas\n` +
-                      `✓ Sistema de travagem\n` +
-                      `✓ Cabos e polias\n` +
-                      `✓ Documentação técnica`;
+                      `Періодичні інспекції обов'язкові:\n` +
+                      `• Elevadores novos / Нові ліфти: 6 meses / через 6 місяців\n` +
+                      `• Elevadores existentes / Існуючі: Anual / Щорічно\n` +
+                      `• Elevadores antigos (>15 anos) / Старі (>15 років): Semestral / Раз на півроку\n\n` +
+                      `O que é verificado / Що перевіряється:\n` +
+                      `✓ Dispositivos de segurança / Пристрої безпеки\n` +
+                      `✓ Estado das portas / Стан дверей\n` +
+                      `✓ Sistema de travagem / Система гальмування\n` +
+                      `✓ Cabos e polias / Троси та ролики\n` +
+                      `✓ Documentação técnica / Технічна документація`;
         }
         // Check for safety queries
         else if (lowerMessage.includes('segur') || lowerMessage.includes('acident') || 
-                 lowerMessage.includes('risco')) {
-            response = `⚠️ Sobre segurança:\n\n` +
-                      `Principais riscos em elevadores:\n` +
-                      `🔴 Críticos (C1):\n` +
-                      `• Portas sem sensores de segurança\n` +
-                      `• Sistema de travagem deficiente\n` +
-                      `• Ausência de pára-quedas\n\n` +
-                      `🟠 Moderados (C2):\n` +
-                      `• Manutenção atrasada\n` +
-                      `• Documentação incompleta\n` +
-                      `• Iluminação inadequada\n\n` +
-                      `🟡 Leves (C3):\n` +
-                      `• Sinalização faltando\n` +
-                      `• Pequenos desgastes estéticos`;
+                 lowerMessage.includes('risco') || lowerMessage.includes('безпек') ||
+                 lowerMessage.includes('небезпек') || lowerMessage.includes('ризик') ||
+                 lowerMessage.includes('аварі')) {
+            response = `⚠️ Sobre segurança / Про безпеку:\n\n` +
+                      `Principais riscos / Головні ризики:\n` +
+                      `🔴 Críticos / Критичні (C1):\n` +
+                      `• Portas sem sensores / Двері без датчиків безпеки\n` +
+                      `• Sistema de travagem deficiente / Дефектна система гальмування\n` +
+                      `• Ausência de pára-quedas / Відсутність парашута\n\n` +
+                      `🟠 Moderados / Середні (C2):\n` +
+                      `• Manutenção atrasada / Прострочене обслуговування\n` +
+                      `• Documentação incompleta / Неповна документація\n` +
+                      `• Iluminação inadequada / Недостатнє освітлення\n\n` +
+                      `🟡 Leves / Легкі (C3):\n` +
+                      `• Sinalização faltando / Відсутня сигналізація\n` +
+                      `• Pequenos desgastes / Незначний знос`;
         }
         // Check for maintenance queries
-        else if (lowerMessage.includes('manutenç') || lowerMessage.includes('manutençao')) {
-            response = `🔧 Sobre manutenção:\n\n` +
+        else if (lowerMessage.includes('manutenç') || lowerMessage.includes('manutençao') ||
+                 lowerMessage.includes('обслуго') || lowerMessage.includes('обслужив') ||
+                 lowerMessage.includes('ремонт') || lowerMessage.includes('то ')) {
+            response = `🔧 Sobre manutenção / Про обслуговування:\n\n` +
                       `Manutenção preventiva obrigatória:\n` +
-                      `• Frequência: Mensal\n` +
-                      `• Empresa: Deve ser certificada\n` +
-                      `• Documentação: Obrigatório registo\n\n` +
-                      `Itens verificados:\n` +
-                      `✓ Lubrificação de componentes\n` +
-                      `✓ Ajuste de portas\n` +
-                      `✓ Teste de dispositivos de segurança\n` +
-                      `✓ Verificação de cabos\n` +
-                      `✓ Limpeza da casa de máquinas`;
+                      `Профілактичне обслуговування обов'язкове:\n` +
+                      `• Frequência / Частота: Mensal / Щомісяця\n` +
+                      `• Empresa / Компанія: Certificada / Сертифікована\n` +
+                      `• Documentação / Документація: Registo obrigatório / Обов'язковий реєстр\n\n` +
+                      `Itens verificados / Що перевіряється:\n` +
+                      `✓ Lubrificação / Мастило компонентів\n` +
+                      `✓ Ajuste de portas / Налаштування дверей\n` +
+                      `✓ Teste de segurança / Тест пристроїв безпеки\n` +
+                      `✓ Verificação de cabos / Перевірка тросів\n` +
+                      `✓ Limpeza casa de máquinas / Чистка машинного відділення`;
+        }
+        // Check for ventilation queries
+        else if (lowerMessage.includes('ventil') || lowerMessage.includes('вентиляц') ||
+                 lowerMessage.includes('повітр') || lowerMessage.includes('провітр')) {
+            response = `🌬️ Sobre ventilação / Про вентиляцію:\n\n` +
+                      `Requisitos / Вимоги:\n` +
+                      `• Mínimo 1% da área da cabine\n` +
+                      `  Мінімум 1% від площі кабіни\n` +
+                      `• Ventilação natural ou forçada\n` +
+                      `  Природна або примусова вентиляція\n` +
+                      `• Grelhas não devem estar bloqueadas\n` +
+                      `  Гратки не повинні бути заблоковані\n\n` +
+                      `📖 Regulamento / Регламент: Artigo 45.º - Decreto 513/70\n\n` +
+                      `Violações comuns / Типові порушення:\n` +
+                      `❌ Ventilação bloqueada / Заблокована\n` +
+                      `❌ Grelhas ausentes / Відсутні гратки\n` +
+                      `❌ Área <1% / Площа <1%`;
+        }
+        // Check for emergency/stuck queries
+        else if (lowerMessage.includes('зупини') || lowerMessage.includes('застря') ||
+                 lowerMessage.includes('аварій') || lowerMessage.includes('між поверх') ||
+                 lowerMessage.includes('parad') || lowerMessage.includes('pres')) {
+            response = `🆘 Se o elevador parar / Якщо ліфт зупинився:\n\n` +
+                      `1️⃣ Pressione o botão de alarme 🔔 / Натисніть кнопку тривоги\n` +
+                      `2️⃣ Ligue para o operador (número na placa) / Зателефонуйте диспетчеру\n` +
+                      `3️⃣ NÃO tente sair sozinho! / НЕ намагайтесь вийти самостійно!\n` +
+                      `4️⃣ Mantenha a calma - há ventilação / Зберігайте спокій - є вентиляція\n` +
+                      `5️⃣ Aguarde o técnico / Чекайте на техніка\n\n` +
+                      `⏱️ Tempo máximo de espera / Максимальний час: 30 minutos / хвилин\n\n` +
+                      `❌ PROIBIDO / ЗАБОРОНЕНО:\n` +
+                      `• Forçar portas / Відкривати двері силою\n` +
+                      `• Sair pelo teto / Вилазити через люк\n` +
+                      `• Pular na cabine / Стрибати в кабіні`;
+        }
+        // Check for documents queries
+        else if (lowerMessage.includes('document') || lowerMessage.includes('докумен') ||
+                 lowerMessage.includes('папер') || lowerMessage.includes('які потрібн')) {
+            response = `📄 Documentos para inspeção / Документи для інспекції:\n\n` +
+                      `Documentos obrigatórios / Обов'язкові документи:\n` +
+                      `✓ Passaporte técnico / Технічний паспорт ліфта\n` +
+                      `✓ Livro de registos de manutenção / Книга реєстрації обслуговування\n` +
+                      `✓ Certificados de componentes de segurança / Сертифікати безпеки\n` +
+                      `✓ Relatórios de inspeções anteriores / Попередні звіти інспекцій\n` +
+                      `✓ Contrato de manutenção / Договір на обслуговування\n` +
+                      `✓ Protocolos de testes / Протоколи випробувань\n\n` +
+                      `📖 Regulamento / Регламент: Artigo 62.º - Decreto 513/70\n\n` +
+                      `⚠️ Sem estes documentos a inspeção pode ser recusada!\n` +
+                      `Без цих документів інспекція може відмовити!`;
+        }
+        // Check for deadline/time queries
+        else if (lowerMessage.includes('термін') || lowerMessage.includes('скільки часу') ||
+                 lowerMessage.includes('коли') || lowerMessage.includes('prazo') ||
+                 lowerMessage.includes('c1') || lowerMessage.includes('c2') || lowerMessage.includes('c3')) {
+            response = `⏰ Prazos de correção / Терміни усунення порушень:\n\n` +
+                      `🔴 C1 - Críticos / Критичні:\n` +
+                      `• Prazo / Термін: IMEDIATO / НЕГАЙНО\n` +
+                      `• Ação / Дія: Parar operação / Зупинити експлуатацію\n` +
+                      `• Consequências / Наслідки: Multa + responsabilidade criminal\n` +
+                      `  Штраф + кримінальна відповідальність\n\n` +
+                      `🟠 C2 - Moderados / Середні:\n` +
+                      `• Prazo / Термін: 30 dias / днів\n` +
+                      `• Ação / Дія: Corrigir até próxima inspeção / До наступної інспекції\n\n` +
+                      `🟡 C3 - Leves / Легкі:\n` +
+                      `• Prazo / Термін: 90 dias / днів\n` +
+                      `• Ação / Дія: Corrigir quando possível / Виправити при можливості\n\n` +
+                      `📖 Fonte / Джерело: Decreto 320/2002`;
         }
         // Check for cost queries
         else if (lowerMessage.includes('custo') || lowerMessage.includes('preço') || 
-                 lowerMessage.includes('valor')) {
-            response = `💰 Custos estimados:\n\n` +
-                      `Manutenção regular:\n` +
-                      `• Mensal: €50-150\n` +
-                      `• Anual: €600-1.800\n\n` +
-                      `Inspeções:\n` +
-                      `• Inspeção periódica: €150-300\n` +
-                      `• Inspeção extraordinária: €200-400\n\n` +
-                      `Reparações comuns:\n` +
-                      `• Troca de portas: €500-2.000\n` +
-                      `• Sistema de segurança: €1.000-5.000\n` +
-                      `• Modernização completa: €15.000-40.000`;
+                 lowerMessage.includes('valor') || lowerMessage.includes('ціна') ||
+                 lowerMessage.includes('вартість') || lowerMessage.includes('скільки коштує')) {
+            response = `💰 Custos estimados / Орієнтовна вартість:\n\n` +
+                      `Manutenção regular / Регулярне обслуговування:\n` +
+                      `• Mensal / Щомісяця: €50-150\n` +
+                      `• Anual / Щорічно: €600-1.800\n\n` +
+                      `Inspeções / Інспекції:\n` +
+                      `• Inspeção periódica / Планова: €150-300\n` +
+                      `• Inspeção extraordinária / Позапланова: €200-400\n\n` +
+                      `Reparações comuns / Типові ремонти:\n` +
+                      `• Troca de portas / Заміна дверей: €500-2.000\n` +
+                      `• Sistema de segurança / Система безпеки: €1.000-5.000\n` +
+                      `• Modernização completa / Повна модернізація: €15.000-40.000`;
         }
-        // Default helpful response
+        // Default helpful response (PT + UA)
         else {
-            response = `👋 Olá! Sou o assistente DeapSeaK.\n\n` +
-                      `Posso ajudar com:\n` +
-                      `📚 Regulamentação portuguesa de elevadores\n` +
-                      `🔍 Informações sobre inspeções\n` +
-                      `⚠️ Questões de segurança\n` +
-                      `🔧 Manutenção preventiva\n` +
-                      `💰 Estimativas de custos\n\n` +
-                      `Pergunta específica: "${message}"\n\n` +
-                      `Tente perguntar sobre:\n` +
-                      `• "Quais são as regulamentações principais?"\n` +
-                      `• "Como funciona a inspeção?"\n` +
-                      `• "Quais os principais riscos de segurança?"\n` +
-                      `• "Quanto custa a manutenção?"`;
+            response = `👋 Olá! Sou o assistente DeapSeaK. / Вітаю! Я AI Асистент DeapSeaK.\n\n` +
+                      `Posso ajudar com / Можу допомогти з:\n` +
+                      `📚 Regulamentação portuguesa / Португальські регламенти\n` +
+                      `🔍 Informações sobre inspeções / Інформація про інспекції\n` +
+                      `⚠️ Questões de segurança / Питання безпеки\n` +
+                      `🔧 Manutenção preventiva / Профілактичне обслуговування\n` +
+                      `💰 Estimativas de custos / Орієнтовна вартість\n\n` +
+                      `Sua pergunta / Ваше питання: "${message}"\n\n` +
+                      `💡 Tente perguntar / Спробуйте запитати:\n` +
+                      `• "Quais regulamentações principais?" / "Які основні регламенти?"\n` +
+                      `• "Como funciona a inspeção?" / "Як проходить інспекція?"\n` +
+                      `• "Principais riscos de segurança?" / "Головні ризики безпеки?"\n` +
+                      `• "Quanto custa a manutenção?" / "Скільки коштує обслуговування?"\n` +
+                      `• "O que fazer se parar?" / "Що робити якщо зупинився?"\n` +
+                      `• "Requisitos de ventilação?" / "Вимоги до вентиляції?"\n` +
+                      `• "Prazos C1, C2, C3?" / "Терміни усунення C1, C2, C3?"`;
         }
 
         res.json({
