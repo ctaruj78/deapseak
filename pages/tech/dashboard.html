@@ -12,6 +12,9 @@
     <script src="/assets/js/universal-websocket.js"></script>
     <!-- Auth Manager -->
     <script src="../../assets/js/auth.js"></script>
+    
+    <!-- MongoDB ObjectId Converter -->
+    <script src="../../assets/js/id-converter.js"></script>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed" data-required-role="tech">
     <div class="wrapper">
@@ -30,7 +33,7 @@
 
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="../../login.html" role="button">
+                    <a class="nav-link" href="../../pages/auth/login.html" role="button">
                         <i class="fas fa-sign-out-alt"></i> Вийти
                     </a>
                 </li>
@@ -56,7 +59,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="assignments.html" class="nav-link">
+                            <a href="tasks.html" class="nav-link">
                                 <i class="nav-icon fas fa-clipboard-list"></i>
                                 <p>Мої заявки</p>
                             </a>
@@ -74,7 +77,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="ai-assistant.html" class="nav-link">
+                            <a href="../ai-assistant/ai-assistant.html" class="nav-link">
                                 <i class="nav-icon fas fa-robot"></i>
                                 <p>AI Асистент</p>
                                 <span class="badge badge-success right">Новинка</span>
@@ -365,6 +368,15 @@
             }
             
             todayTasks.forEach(task => {
+                // Convert MongoDB ObjectId to string
+                const taskId = window.safeId ? window.safeId(task) : ((task._id && task._id.toString) ? task._id.toString() : (task._id || task.id || ''));
+                const liftId = task.lift ? (window.safeId ? window.safeId(task.lift) : ((task.lift._id && task.lift._id.toString) ? task.lift._id.toString() : (task.lift._id || task.lift.id || ''))) : '';
+                
+                if (!taskId) {
+                    console.error('❌ Завдання без ID:', task);
+                    return;
+                }
+                
                 const row = document.createElement('tr');
                 
                 // Час завдання
@@ -395,25 +407,25 @@
                     <td>${statusBadge}</td>
                     <td>
                         <div class="btn-group btn-group-sm">
-                            <button class="btn btn-outline-info" onclick="openTaskDetails('${task._id || task.id}')" title="Деталі">
+                            <button class="btn btn-outline-info" onclick="openTaskDetails('${taskId}')" title="Деталі">
                                 <i class="fas fa-eye"></i>
                             </button>
-                            ${task.lift?._id ? 
-                                `<button class="btn btn-outline-success" onclick="showRoute('${task.lift._id}')" title="Маршрут до ліфта">
+                            ${liftId ? 
+                                `<button class="btn btn-outline-success" onclick="showRoute('${liftId}')" title="Маршрут до ліфта">
                                     <i class="fas fa-route"></i>
                                 </button>` : ''
                             }
                             ${task.status === 'assigned' ? 
-                                `<button class="btn btn-outline-primary" onclick="startTask('${task._id || task.id}')" title="Почати">
+                                `<button class="btn btn-outline-primary" onclick="startTask('${taskId}')" title="Почати">
                                     <i class="fas fa-play"></i>
                                 </button>` : ''
                             }
                             ${task.status === 'in_progress' ? 
-                                `<button class="btn btn-outline-success" onclick="completeTask('${task._id || task.id}')" title="Завершити">
+                                `<button class="btn btn-outline-success" onclick="completeTask('${taskId}')" title="Завершити">
                                     <i class="fas fa-check"></i>
                                 </button>` : ''
                             }
-                            <button class="btn btn-outline-warning" onclick="addTaskNote('${task._id || task.id}')" title="Додати примітку">
+                            <button class="btn btn-outline-warning" onclick="addTaskNote('${taskId}')" title="Додати примітку">
                                 <i class="fas fa-sticky-note"></i>
                             </button>
                         </div>

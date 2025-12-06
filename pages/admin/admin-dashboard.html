@@ -14,8 +14,6 @@
     <link rel="stylesheet" href="../../assets/css/theme-dark.css">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Auth Manager -->
-    <script src="../../assets/js/auth.js"></script>
     
     <style>
         .stats-box {
@@ -91,7 +89,7 @@
                     </div>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="../../login.html" role="button">
+                    <a class="nav-link" href="../../pages/auth/login.html" role="button">
                         <i class="fas fa-sign-out-alt"></i> Вийти
                     </a>
                 </li>
@@ -508,7 +506,6 @@
     
     <!-- 🌍 Система багатомовності -->
     <script src="../../assets/js/i18n.js"></script>
-    <script src="../../assets/js/init-i18n.js"></script>
     
     <!-- Security Manager -->
     <script src="../../assets/js/auth.js" onload="console.log('✅ AuthManager завантажено')" onerror="console.error('❌ Помилка завантаження AuthManager')"></script>
@@ -525,8 +522,9 @@
                 return;
             }
             
+            let userData;
             try {
-                const userData = JSON.parse(userSession);
+                userData = JSON.parse(userSession);
                 if (!userData || userData.role !== 'admin') {
                     localStorage.removeItem('lm_session');
                     window.location.href = '../../login.html';
@@ -536,7 +534,9 @@
                 localStorage.removeItem('lm_session');
                 window.location.href = '../../login.html';
                 return;
-            }            console.log('✅ Адмін сесія валідна:', userData.username);
+            }
+            
+            console.log('✅ Адмін сесія валідна:', userData.username);
             
             // Показуємо ім'я користувача
             $('.user-panel .info a').text(`${userData.firstName || userData.username} ${userData.lastName || ''}`);
@@ -551,6 +551,7 @@
         async function loadDashboardData() {
             try {
                 console.log('📊 Завантаження статистики дашборду...');
+                const startTime = performance.now();
                 
                 // Показуємо індикатори завантаження
                 $('#totalUsers').html('<i class="fas fa-spinner fa-spin"></i>');
@@ -559,25 +560,29 @@
                 
                 // Паралельно завантажуємо всі дані
                 const [usersResponse, liftsResponse, requestsResponse] = await Promise.all([
-                    AuthManager.fetchWithAuth('/api/auth/users').catch(e => ({ users: [] })),
-                    AuthManager.fetchWithAuth('/api/lifts').catch(e => ({ lifts: [] })),
-                    AuthManager.fetchWithAuth('/api/requests').catch(e => ({ requests: [] }))
+                    AuthManager.fetchWithAuth('/api/users').then(r => r.json()).catch(e => ({ data: [] })),
+                    AuthManager.fetchWithAuth('/api/lifts').then(r => r.json()).catch(e => ({ data: [] })),
+                    AuthManager.fetchWithAuth('/api/requests').then(r => r.json()).catch(e => ({ data: [] }))
                 ]);
                 
-                // Оновлюємо статистику
-                const totalUsers = usersResponse.users?.length || 0;
-                const totalLifts = liftsResponse.lifts?.length || 0;
-                const allRequests = requestsResponse.requests || [];
-                const activeRequests = allRequests.filter(r => 
-                    r.status === 'pending' || r.status === 'in_progress'
+                // Швидкий парсинг даних
+                const users = Array.isArray(usersResponse) ? usersResponse : (usersResponse.data || []);
+                const lifts = liftsResponse.data || [];
+                const requests = requestsResponse.data || [];
+                
+                const totalUsers = users.length;
+                const totalLifts = lifts.length;
+                const activeRequests = requests.filter(r => 
+                    r.status === 'new' || r.status === 'assigned' || r.status === 'in_progress' || r.status === 'pending'
                 ).length;
                 
                 $('#totalUsers').text(totalUsers);
                 $('#totalLifts').text(totalLifts);
                 $('#activeRequests').text(activeRequests);
-                $('#totalRevenue').text('N/A'); // TODO: Додати API для доходів
+                $('#totalRevenue').text('N/A');
                 
-                console.log('✅ Статистика завантажена:', { totalUsers, totalLifts, activeRequests });
+                const loadTime = (performance.now() - startTime).toFixed(0);
+                console.log(`✅ Статистика завантажена за ${loadTime}ms:`, { totalUsers, totalLifts, activeRequests });
                 
                 // Оновлюємо час
                 $('#lastUpdate').text(new Date().toLocaleTimeString('uk-UA'));
@@ -626,7 +631,5 @@
             }
         }
     </script>
-    <!-- AI Assistant Widget -->
-    <script src="/components/ai-widget.js"></script>
 </body>
 </html>

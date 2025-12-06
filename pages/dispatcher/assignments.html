@@ -12,6 +12,9 @@
     <!-- Auth Manager -->
     <script src="../../assets/js/auth.js"></script>
     
+    <!-- MongoDB ObjectId Converter -->
+    <script src="../../assets/js/id-converter.js"></script>
+    
     <!-- Додаткові стилі -->
     <style>
         .assignment-card {
@@ -721,12 +724,19 @@
                 container.innerHTML = '';
                 
                 assignments.forEach(assignment => {
+                    // Convert MongoDB ObjectId to string
+                    const assignmentId = window.safeId ? window.safeId(assignment) : ((assignment._id && assignment._id.toString) ? assignment._id.toString() : (assignment._id || assignment.id || ''));
+                    if (!assignmentId) {
+                        console.error('❌ Призначення без ID:', assignment);
+                        return;
+                    }
+                    
                     const card = document.createElement('div');
                     card.className = `assignment-card ${assignment.priority}-priority`;
                     card.innerHTML = `
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h5 class="card-title mb-0">#${assignment.id}</h5>
+                                <h5 class="card-title mb-0">#${assignmentId}</h5>
                                 <span class="priority-badge priority-${assignment.priority}">
                                     ${this.getPriorityText(assignment.priority)}
                                 </span>
@@ -761,7 +771,7 @@
                             </div>
                             
                             <div class="assignment-actions">
-                                <button class="btn btn-sm btn-info" onclick="dispatcherManager.viewAssignment('${assignment.id}')">
+                                <button class="btn btn-sm btn-info" onclick="dispatcherManager.viewAssignment('${assignmentId}')">
                                     <i class="fas fa-eye"></i> Переглянути
                                 </button>
                                 <div class="dropdown">
@@ -769,15 +779,16 @@
                                         <i class="fas fa-user-cog"></i> Призначити
                                     </button>
                                     <div class="dropdown-menu">
-                                        ${this.technicians.filter(t => t.active).map(tech => 
-                                            `<a class="dropdown-item" href="#" onclick="dispatcherManager.assignRequest('${assignment.id}', '${tech.id}')">
+                                        ${this.technicians.filter(t => t.active).map(tech => {
+                                            const techId = window.safeId ? window.safeId(tech) : ((tech._id && tech._id.toString) ? tech._id.toString() : (tech._id || tech.id || ''));
+                                            return `<a class="dropdown-item" href="#" onclick="dispatcherManager.assignRequest('${assignmentId}', '${techId}')">
                                                 ${tech.name}
-                                            </a>`
-                                        ).join('')}
+                                            </a>`;
+                                        }).join('')}
                                     </div>
                                 </div>
                                 ${assignment.status === 'new' ? `
-                                    <button class="btn btn-sm btn-success" onclick="dispatcherManager.approveRequest('${assignment.id}')">
+                                    <button class="btn btn-sm btn-success" onclick="dispatcherManager.approveRequest('${assignmentId}')">
                                         <i class="fas fa-check"></i> Підтвердити
                                     </button>
                                 ` : ''}

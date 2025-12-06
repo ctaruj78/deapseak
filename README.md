@@ -4,23 +4,79 @@
 
 ---
 
+## 📁 Структура Проекту
+
+```
+deapseak/
+├── 📄 unified-server.js          # Головний сервер (Frontend + API + WebSocket)
+├── 📄 index.html                 # Головна сторінка
+├── 📄 package.json               # Залежності
+│
+├── 📁 pages/                     # HTML сторінки
+│   ├── auth/                     # login.html, register.html
+│   ├── ai-assistant/             # AI асистент з PDF аналізом
+│   ├── admin/                    # Адмін панель
+│   ├── dispatcher/               # Диспетчер
+│   ├── technician/               # Технік
+│   └── client/                   # Клієнт
+│
+├── 📁 services/                  # Бізнес-логіка
+│   └── pdf-parser.js             # Парсер PDF сертифікатів
+│
+├── 📁 models/                    # MongoDB моделі
+├── 📁 assets/                    # CSS, JS, зображення
+├── 📁 data/                      # JSON дані (регуляції)
+├── 📁 scripts/                   # Скрипти запуску
+├── 📁 tests/manual/              # Ручні тести
+├── 📁 archive/old-servers/       # Застарілі сервери
+└── 📁 docs/archive/              # Історична документація
+```
+
+---
+
 ## 🚀 Швидкий старт
 
-### Запуск системи однією командою:
+### ⚡ ОДИН скрипт для запуску всього:
 
 ```bash
-./start-unified.sh
+./autostart.sh
 ```
 
 **Скрипт автоматично:**
-- ✅ Зупинить попередні процеси
-- ✅ Перевірить MongoDB (має бути запущена)
-- ✅ Встановить залежності якщо потрібно
-- ✅ Запустить Unified Server на **PORT 5000**
-- ✅ Перевірить health endpoint
-- ✅ Покаже корисні посилання
+- ✅ Зупинить старі процеси (MongoDB + Server)
+- ✅ Запустить MongoDB автоматично
+- ✅ Встановить npm залежності
+- ✅ Запустить Unified Server на PORT 5000
+- ✅ Перевірить всі сервіси
+- ✅ Покаже правильний URL для браузера
+- ✅ Спробує відкрити браузер автоматично
 
-**🎉 Готово за 10 секунд!** Відкрийте: **http://localhost:5000**
+**🎉 Готово за 10 секунд!**
+
+---
+
+### ⚠️ ВАЖЛИВО: Як правильно відкривати систему
+
+#### ❌ НЕПРАВИЛЬНО:
+Не відкривайте файл напряму з провідника (`file:///...`)!
+Посилання та API не працюватимуть через CORS policy.
+
+#### ✅ ПРАВИЛЬНО:
+Після запуску `./autostart.sh` відкрийте в браузері:
+
+**Локально:**
+```
+http://localhost:5000
+```
+
+**GitHub Codespaces:**
+```
+https://<CODESPACE_NAME>-5000.app.github.dev
+```
+
+Скрипт автоматично покаже правильний URL! 🎯
+
+📖 **Детальна інструкція:** [HOW-TO-OPEN.md](HOW-TO-OPEN.md)
 
 ---
 
@@ -28,18 +84,23 @@
 
 ```bash
 # Запуск системи
-./start-unified.sh     # Запустити Unified Server (рекомендовано)
+./start-unified.sh     # ⭐ Запустити Unified Server (ЗАВЖДИ використовуйте цей!)
+
+# MongoDB
+pgrep mongod           # Перевірити чи запущено
+mongod --dbpath ~/mongodb-data --fork --logpath ~/mongodb-data/mongod.log  # Запустити вручну
 
 # Зупинка
 pkill -f "node.*unified-server"  # Зупинити сервер
+pkill -f mongod                   # Зупинити MongoDB
 
 # Логи
 tail -f logs/unified-server.log  # Переглянути логи в реальному часі
+tail -f ~/mongodb-data/mongod.log # MongoDB логи
 
 # Перевірки
-npm run check-ports    # Перевірити конфігурацію портів
-npm run cleanup        # Очистити проект
-npm run analyze-logs   # Проаналізувати console.log
+curl http://localhost:5000/api/health  # Перевірити API
+ps aux | grep -E "node|mongod"          # Переглянути процеси
 ```
 
 📖 **Детальна документація:** [QUICK-START.md](QUICK-START.md)

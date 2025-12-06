@@ -228,6 +228,10 @@
     <!-- Service Integration -->
     <!-- Система авторизації -->
     <script src="../../assets/js/auth.js"></script>
+    
+    <!-- MongoDB ObjectId Converter -->
+    <script src="../../assets/js/id-converter.js"></script>
+    
     <script src="../../assets/js/service-integration.js"></script>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -874,9 +878,16 @@
                 tbody.innerHTML = '';
                 
                 tasks.forEach(task => {
+                    // Convert MongoDB ObjectId to string
+                    const taskId = window.safeId ? window.safeId(task) : ((task._id && task._id.toString) ? task._id.toString() : (task._id || task.id || ''));
+                    if (!taskId) {
+                        console.error('❌ Завдання без ID:', task);
+                        return;
+                    }
+                    
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>#${task.id}</td>
+                        <td>#${taskId}</td>
                         <td>${task.liftId || 'Загальне'}</td>
                         <td>${task.type || 'Обслуговування'}</td>
                         <td>
@@ -891,16 +902,16 @@
                         </td>
                         <td>${new Date(task.createdAt).toLocaleDateString()}</td>
                         <td>
-                            <button class="btn btn-sm btn-info btn-icon" onclick="techTaskManager.viewTask('${task.id}')" title="Переглянути">
+                            <button class="btn btn-sm btn-info btn-icon" onclick="techTaskManager.viewTask('${taskId}')" title="Переглянути">
                                 <i class="fas fa-eye"></i>
                             </button>
                             ${task.status === 'new' ? `
-                                <button class="btn btn-sm btn-success btn-icon" onclick="techTaskManager.startTask('${task.id}')" title="Розпочати">
+                                <button class="btn btn-sm btn-success btn-icon" onclick="techTaskManager.startTask('${taskId}')" title="Розпочати">
                                     <i class="fas fa-play"></i>
                                 </button>
                             ` : ''}
                             ${task.status === 'in_progress' ? `
-                                <button class="btn btn-sm btn-warning btn-icon" onclick="techTaskManager.completeTask('${task.id}')" title="Завершити">
+                                <button class="btn btn-sm btn-warning btn-icon" onclick="techTaskManager.completeTask('${taskId}')" title="Завершити">
                                     <i class="fas fa-check"></i>
                                 </button>
                             ` : ''}

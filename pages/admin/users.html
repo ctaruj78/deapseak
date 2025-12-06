@@ -31,6 +31,7 @@
         
         .role-admin { background-color: #dc3545; color: white; }
         .role-technician { background-color: #fd7e14; color: white; }
+        .role-tech { background-color: #fd7e14; color: white; }
         .role-dispatcher { background-color: #20c997; color: white; }
         .role-client { background-color: #6f42c1; color: white; }
         
@@ -106,7 +107,7 @@
             <!-- Right navbar links -->
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="login.html" role="button">
+                    <a class="nav-link" href="../auth/login.html" role="button">
                         <i class="fas fa-sign-out-alt"></i> Вийти
                     </a>
                 </li>
@@ -327,7 +328,7 @@
                                 <div class="icon">
                                     <i class="fas fa-users"></i>
                                 </div>
-                                <a href="#" class="small-box-footer">Детальніше <i class="fas fa-arrow-circle-right"></i></a>
+                                <a href="#" class="small-box-footer" onclick="userManager.filterByRole('all'); return false;">Детальніше <i class="fas fa-arrow-circle-right"></i></a>
                             </div>
                         </div>
                         <div class="col-lg-3 col-6">
@@ -339,7 +340,7 @@
                                 <div class="icon">
                                     <i class="fas fa-user-check"></i>
                                 </div>
-                                <a href="#" class="small-box-footer">Детальніше <i class="fas fa-arrow-circle-right"></i></a>
+                                <a href="#" class="small-box-footer" onclick="userManager.filterByStatus('active'); return false;">Детальніше <i class="fas fa-arrow-circle-right"></i></a>
                             </div>
                         </div>
                         <div class="col-lg-3 col-6">
@@ -351,7 +352,7 @@
                                 <div class="icon">
                                     <i class="fas fa-tools"></i>
                                 </div>
-                                <a href="#" class="small-box-footer">Детальніше <i class="fas fa-arrow-circle-right"></i></a>
+                                <a href="#" class="small-box-footer" onclick="userManager.filterByRole('tech'); return false;">Детальніше <i class="fas fa-arrow-circle-right"></i></a>
                             </div>
                         </div>
                         <div class="col-lg-3 col-6">
@@ -363,7 +364,7 @@
                                 <div class="icon">
                                     <i class="fas fa-user-shield"></i>
                                 </div>
-                                <a href="#" class="small-box-footer">Детальніше <i class="fas fa-arrow-circle-right"></i></a>
+                                <a href="#" class="small-box-footer" onclick="userManager.filterByRole('admin'); return false;">Детальніше <i class="fas fa-arrow-circle-right"></i></a>
                             </div>
                         </div>
                     </div>
@@ -539,6 +540,9 @@
     <!-- Auth Manager -->
     <script src="../../assets/js/auth.js?v=20241203"></script>
     
+    <!-- MongoDB ObjectId Converter -->
+    <script src="../../assets/js/id-converter.js"></script>
+    
     <!-- 🌍 Система багатомовності -->
     <script src="../../assets/js/i18n.js"></script>
     <script src="../../assets/js/init-i18n.js"></script>
@@ -571,8 +575,8 @@
                     }
 
                     const data = await response.json();
-                    this.allUsers = Array.isArray(data) ? data : (data.users || []);
-                    console.log('✅ Завантажено користувачів:', this.allUsers.length);
+                    this.allUsers = Array.isArray(data) ? data : (data.data || data.users || []);
+                    console.log('✅ Завантажено користувачів:', this.allUsers.length, this.allUsers);
                     
                 } catch (error) {
                     console.error('❌ Помилка завантаження користувачів:', error);
@@ -654,15 +658,30 @@
                     return;
                 }
 
-                paginatedUsers.forEach(user => {
-                    const userId = user._id || user.id;
+                paginatedUsers.forEach((user, index) => {
+                    // ✅ ВИПРАВЛЕННЯ: Конвертуємо ObjectId в string
+                    const userId = (user._id && user._id.toString) ? user._id.toString() : (user._id || user.id || '');
+                    
+                    if (!userId) {
+                        console.error('❌ Користувач без ID:', user);
+                        return; // Пропускаємо користувачів без ID
+                    }
+                    
+                    // Генеруємо красивий ID у форматі UZK-001
+                    const displayId = `UZK-${String(start + index + 1).padStart(3, '0')}`;
+                    
+                    // Формуємо ім'я з fallback
+                    const displayName = (user.firstName && user.lastName) 
+                        ? `${user.firstName} ${user.lastName}` 
+                        : user.email.split('@')[0];
+                    
                     const row = `
                         <tr>
-                            <td>${userId}</td>
-                            <td>${user.firstName} ${user.lastName}</td>
+                            <td>${displayId}</td>
+                            <td>${displayName}</td>
                             <td>${user.email}</td>
                             <td><span class="role-badge role-${user.role}">${this.getRoleLabel(user.role)}</span></td>
-                            <td><span class="status-badge status-${user.status}">${this.getStatusLabel(user.status)}</span></td>
+                            <td><span class="status-badge status-${user.status || 'active'}">${this.getStatusLabel(user.status || 'active')}</span></td>
                             <td>${this.formatDate(user.createdAt)}</td>
                             <td class="action-buttons">
                                 <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#userModal" data-user-id="${userId}">
@@ -670,6 +689,9 @@
                                 </button>
                                 <button class="btn btn-sm ${user.status === 'active' ? 'btn-warning' : 'btn-success'}" onclick="userManager.toggleUserStatus('${userId}')">
                                     <i class="fas ${user.status === 'active' ? 'fa-ban' : 'fa-check'}"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="userManager.deleteUser('${userId}')" title="Видалити користувача">
+                                    <i class="fas fa-trash"></i>
                                 </button>
                             </td>
                         </tr>
@@ -744,7 +766,7 @@
             updateStats() {
                 $('#totalUsers').text(this.allUsers.length);
                 $('#activeUsers').text(this.allUsers.filter(u => u.status === 'active').length);
-                $('#technicianUsers').text(this.allUsers.filter(u => u.role === 'technician').length);
+                $('#technicianUsers').text(this.allUsers.filter(u => u.role === 'technician' || u.role === 'tech').length);
                 $('#adminUsers').text(this.allUsers.filter(u => u.role === 'admin').length);
             }
 
@@ -770,7 +792,15 @@
                 const statusFilter = $('#statusFilter').val();
 
                 this.filteredUsers = this.allUsers.filter(user => {
-                    const roleMatch = roleFilter === 'all' || user.role === roleFilter;
+                    let roleMatch = roleFilter === 'all';
+                    if (!roleMatch) {
+                        // Підтримка обох варіантів: tech та technician
+                        if (roleFilter === 'technician') {
+                            roleMatch = user.role === 'technician' || user.role === 'tech';
+                        } else {
+                            roleMatch = user.role === roleFilter;
+                        }
+                    }
                     const statusMatch = statusFilter === 'all' || user.status === statusFilter;
                     return roleMatch && statusMatch;
                 });
@@ -778,6 +808,34 @@
                 this.currentPage = 1;
                 this.renderUsersTable();
                 this.renderPagination();
+            }
+
+            filterByRole(role) {
+                if (role === 'all') {
+                    $('#roleFilter').val('all');
+                } else if (role === 'tech') {
+                    $('#roleFilter').val('technician');
+                } else {
+                    $('#roleFilter').val(role);
+                }
+                $('#statusFilter').val('all');
+                this.applyFilters();
+                
+                // Прокручуємо до таблиці
+                $('html, body').animate({
+                    scrollTop: $('#usersTable').offset().top - 100
+                }, 500);
+            }
+
+            filterByStatus(status) {
+                $('#roleFilter').val('all');
+                $('#statusFilter').val(status);
+                this.applyFilters();
+                
+                // Прокручуємо до таблиці
+                $('html, body').animate({
+                    scrollTop: $('#usersTable').offset().top - 100
+                }, 500);
             }
 
             editUser(id) {
@@ -876,10 +934,41 @@
                 }
             }
 
+            async deleteUser(id) {
+                const user = this.allUsers.find(u => u._id === id);
+                if (!user) {
+                    this.showNotification('Користувача не знайдено', 'danger');
+                    return;
+                }
+
+                const confirmMsg = `Ви впевнені, що хочете ВИДАЛИТИ користувача ${user.firstName} ${user.lastName}?\n\nЦю дію НЕ можна скасувати!`;
+                if (!confirm(confirmMsg)) {
+                    return;
+                }
+
+                try {
+                    const response = await AuthManager.fetchWithAuth(`/api/users/${id}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Помилка видалення користувача');
+                    }
+
+                    this.showNotification('Користувача успішно видалено', 'success');
+                    await this.loadUsers();
+                    
+                } catch (error) {
+                    console.error('❌ Помилка видалення:', error);
+                    this.showNotification('Не вдалося видалити користувача', 'danger');
+                }
+            }
+
             getRoleLabel(role) {
                 const roles = {
                     'admin': 'Адміністратор',
                     'technician': 'Технік',
+                    'tech': 'Технік',
                     'client': 'Клієнт',
                     'dispatcher': 'Диспетчер'
                 };
@@ -891,7 +980,7 @@
                     'active': 'Активний',
                     'inactive': 'Неактивний'
                 };
-                return statuses[status] || status;
+                return statuses[status] || 'Активний';
             }
 
             formatDate(dateString) {

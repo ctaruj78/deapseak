@@ -706,6 +706,10 @@
 
 <!-- Система авторизації -->
 <script src="../../assets/js/auth.js"></script>
+
+<!-- MongoDB ObjectId Converter -->
+<script src="../../assets/js/id-converter.js"></script>
+
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js"></script>
 
@@ -787,19 +791,22 @@ class ServiceRequestManager {
             if (response && response.ok) {
                 const result = await response.json();
                 
-                // API v2 повертає: { success: true, data: { requests: [...] } }
+                console.log('📥 API відповідь:', result);
+                
+                // API повертає: { success: true, data: [...] }
                 if (result.success && result.data) {
-                    const apiRequests = result.data.requests || result.data;
+                    const apiRequests = Array.isArray(result.data) ? result.data : (result.data.requests || []);
+                    
+                    console.log('📊 Заявок отримано:', apiRequests.length);
                     
                     // Конвертуємо формат API в формат сторінки
                     this.requests = apiRequests.map((req, index) => {
                         // Генеруємо красивий ID
                         const displayId = `REQ-${String(index + 1).padStart(3, '0')}`;
                         
-                        // Отримуємо дані ліфта
-                        const liftData = req.lift || {};
-                        const liftId = liftData.municipalNumber || liftData._id || 'Невідомий';
-                        const liftAddress = liftData.address || 'Адреса невідома';
+                        // Використовуємо збережені дані про ліфт з заявки
+                        const liftId = req.liftMunicipalNumber || req.liftId || 'Невідомий';
+                        const liftAddress = req.liftAddress || 'Адреса невідома';
                         
                         // Отримуємо дані техніка
                         const techData = req.assignedTo || {};
@@ -812,7 +819,8 @@ class ServiceRequestManager {
                             _id: req._id, // Зберігаємо реальний MongoDB ID
                             liftId: liftId,
                             liftAddress: liftAddress,
-                            type: this.mapStatusToType(req.status),
+                            liftMunicipalNumber: req.liftMunicipalNumber || liftId,
+                            type: req.type || 'maintenance', // Використовуємо req.type, а не status
                             priority: req.priority || 'medium',
                             status: req.status || 'new',
                             title: req.title || 'Без назви',
@@ -823,7 +831,7 @@ class ServiceRequestManager {
                             scheduledAt: req.scheduledDate,
                             completedAt: req.completedDate,
                             createdBy: req.client?._id || req.client,
-                            liftObjectId: liftData._id,
+                            liftObjectId: req.liftId,
                             timeline: req.comments?.map(c => ({
                                 timestamp: c.createdAt,
                                 action: 'comment',
@@ -1048,16 +1056,25 @@ class ServiceRequestManager {
             lifts.forEach(lift => {
                 // Формуємо читабельну назву ліфта
                 const municipalNumber = lift.municipalNumber || lift.name || 'Без номера';
-                const address = lift.address || 'Адреса не вказана';
-                const city = lift.city ? `, ${lift.city}` : '';
+                
+                // ✅ ВИПРАВЛЕННЯ: address може бути об'єктом {street, city, zipCode}
+                let addressText = 'Адреса не вказана';
+                if (typeof lift.address === 'object' && lift.address !== null) {
+                    const parts = [];
+                    if (lift.address.street) parts.push(lift.address.street);
+                    if (lift.address.city) parts.push(lift.address.city);
+                    addressText = parts.join(', ') || 'Адреса не вказана';
+                } else if (typeof lift.address === 'string') {
+                    addressText = lift.address;
+                }
                 
                 // Формат: "№123 - вул. Хрещатик, 1, Київ"
-                const displayText = `№${municipalNumber} - ${address}${city}`;
+                const displayText = `№${municipalNumber} - ${addressText}`;
                 
                 console.log('➕ Додаємо ліфт:', displayText);
                 select.append(`
                     <option value="${lift._id}" 
-                            data-address="${address}" 
+                            data-address="${addressText}" 
                             data-municipal="${municipalNumber}">
                         ${displayText}
                     </option>
@@ -1072,13 +1089,23 @@ class ServiceRequestManager {
                 editSelect.empty().append('<option value="">Оберіть ліфт...</option>');
                 lifts.forEach(lift => {
                     const municipalNumber = lift.municipalNumber || lift.name || 'Без номера';
-                    const address = lift.address || 'Адреса не вказана';
-                    const city = lift.city ? `, ${lift.city}` : '';
-                    const displayText = `№${municipalNumber} - ${address}${city}`;
+                    
+                    // ✅ ВИПРАВЛЕННЯ: address може бути об'єктом
+                    let addressText = 'Адреса не вказана';
+                    if (typeof lift.address === 'object' && lift.address !== null) {
+                        const parts = [];
+                        if (lift.address.street) parts.push(lift.address.street);
+                        if (lift.address.city) parts.push(lift.address.city);
+                        addressText = parts.join(', ') || 'Адреса не вказана';
+                    } else if (typeof lift.address === 'string') {
+                        addressText = lift.address;
+                    }
+                    
+                    const displayText = `№${municipalNumber} - ${addressText}`;
                     
                     editSelect.append(`
                         <option value="${lift._id}" 
-                                data-address="${address}" 
+                                data-address="${addressText}" 
                                 data-municipal="${municipalNumber}">
                             ${displayText}
                         </option>
@@ -1101,12 +1128,23 @@ class ServiceRequestManager {
         tbody.empty();
 
         this.requests.forEach(request => {
+            // ✅ ВИПРАВЛЕННЯ: Конвертуємо ObjectId в string для onclick
+            const requestId = (request._id && request._id.toString) ? request._id.toString() : (request._id || request.id || '');
+            
+            // Красивий ID для відображення
+            const displayId = request.id || `REQ-${requestId.substring(requestId.length - 6)}`;
+            
+            if (!requestId) {
+                console.error('❌ Запит без ID:', request);
+                return; // Пропускаємо запити без ID
+            }
+            
             const row = `
-                <tr class="request-row" data-id="${request.id}">
-                    <td><strong>${request.id}</strong></td>
+                <tr class="request-row" data-id="${requestId}">
+                    <td><strong>${displayId}</strong></td>
                     <td>
-                        <div>${request.liftId}</div>
-                        <small class="text-muted">${request.liftAddress}</small>
+                        <div>${request.liftMunicipalNumber || request.liftId || 'ID невідомий'}</div>
+                        <small class="text-muted">${request.liftAddress || 'Адреса невідома'}</small>
                     </td>
                     <td>
                         <span class="request-type-badge ${request.type}">
@@ -1141,13 +1179,13 @@ class ServiceRequestManager {
                     </td>
                     <td>
                         <div class="btn-group">
-                            <button class="btn btn-info btn-sm" onclick="serviceManager.viewRequest('${request.id}')" title="Переглянути">
+                            <button class="btn btn-info btn-sm" onclick="serviceManager.viewRequest('${requestId}')" title="Переглянути">
                                 <i class="fas fa-eye"></i>
                             </button>
-                            <button class="btn btn-warning btn-sm" onclick="serviceManager.editRequest('${request.id}')" title="Редагувати">
+                            <button class="btn btn-warning btn-sm" onclick="serviceManager.editRequest('${requestId}')" title="Редагувати">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn btn-danger btn-sm" onclick="serviceManager.deleteRequest('${request.id}')" title="Видалити">
+                            <button class="btn btn-danger btn-sm" onclick="serviceManager.deleteRequest('${requestId}')" title="Видалити">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -1244,16 +1282,24 @@ class ServiceRequestManager {
 
         const newRequest = {
             liftId: $('#requestLift').val(),
-            liftAddress: $('#requestLift option:selected').data('address') || '',
             type: $('#requestType').val(),
             priority: $('#requestPriority').val(),
             status: 'new',
-            title: this.getTypeText($('#requestType').val()) + ' - ' + ($('#requestLift option:selected').data('address') || $('#requestLift option:selected').text()),
             description: $('#requestDescription').val(),
             technician: $('#requestTechnician').val() || null,
             scheduledAt: $('#requestScheduled').val() ? new Date($('#requestScheduled').val()).toISOString() : null,
             createdBy: 'admin'
         };
+
+        // Отримуємо дані ліфта з option
+        const selectedOption = $('#requestLift option:selected');
+        const liftAddress = selectedOption.attr('data-address') || selectedOption.text().split(' - ')[1] || 'Адреса невідома';
+        const liftMunicipalNumber = selectedOption.attr('data-municipal') || 'Невідомий';
+        
+        // Додаємо дані ліфта
+        newRequest.liftAddress = liftAddress;
+        newRequest.liftMunicipalNumber = liftMunicipalNumber;
+        newRequest.title = this.getTypeText(newRequest.type) + ' - ' + liftAddress;
 
         if (!newRequest.liftId) {
             toastr.error('Будь ласка, оберіть ліфт');
@@ -1296,12 +1342,19 @@ class ServiceRequestManager {
     }
 
     viewRequest(requestId) {
-        const request = this.requests.find(r => r.id === requestId);
-        if (!request) return;
+        const request = this.requests.find(r => {
+            const id = (r._id && r._id.toString) ? r._id.toString() : (r._id || r.id);
+            return id === requestId;
+        });
+        if (!request) {
+            console.error('Заявку не знайдено:', requestId);
+            return;
+        }
 
         this.currentRequest = request;
         
-        $('#viewRequestTitle').text(`Заявка ${request.id}`);
+        const displayId = request.id || requestId.substring(0, 8);
+        $('#viewRequestTitle').text(`Заявка ${displayId}`);
         
         const details = `
             <div class="request-info">
@@ -1506,7 +1559,10 @@ class ServiceRequestManager {
             }
             
             // Видаляємо з локального масиву
-            this.requests = this.requests.filter(r => r.id !== requestId);
+            this.requests = this.requests.filter(r => {
+                const id = (r._id && r._id.toString) ? r._id.toString() : (r._id || r.id);
+                return id !== requestId;
+            });
             this.renderRequests();
             this.updateStatistics();
             
@@ -1531,6 +1587,73 @@ class ServiceRequestManager {
     clearFilters() {
         $('#filterType, #filterStatus, #filterPriority, #filterTechnician').val('');
         this.applyFilters();
+    }
+
+    async editRequest(requestId) {
+        console.log('✏️ Редагування заявки:', requestId);
+        
+        try {
+            // Завантажуємо заявку з API
+            const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}`);
+            
+            if (!response || !response.ok) {
+                throw new Error('Не вдалося завантажити заявку');
+            }
+            
+            const result = await response.json();
+            
+            if (result.success && result.request) {
+                this.currentRequest = result.request;
+                
+                // Заповнюємо форму редагування
+                $('#editRequestId').val(this.currentRequest._id);
+                $('#editRequestTitle').val(this.currentRequest.title || '');
+                $('#editRequestDescription').val(this.currentRequest.description || '');
+                $('#editRequestPriority').val(this.currentRequest.priority || 'medium');
+                $('#editRequestStatus').val(this.currentRequest.status || 'new');
+                
+                // Відкриваємо модальне вікно
+                $('#editRequestModal').modal('show');
+            } else {
+                throw new Error('Заявку не знайдено');
+            }
+        } catch (error) {
+            console.error('❌ Помилка завантаження заявки:', error);
+            toastr.error('Не вдалося завантажити заявку: ' + error.message);
+        }
+    }
+
+    async saveEditedRequest() {
+        try {
+            const requestId = $('#editRequestId').val();
+            const updateData = {
+                title: $('#editRequestTitle').val(),
+                description: $('#editRequestDescription').val(),
+                priority: $('#editRequestPriority').val(),
+                status: $('#editRequestStatus').val()
+            };
+            
+            const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}`, {
+                method: 'PUT',
+                body: JSON.stringify(updateData)
+            });
+            
+            if (!response || !response.ok) {
+                throw new Error('Не вдалося оновити заявку');
+            }
+            
+            // Закриваємо модальне вікно
+            $('#editRequestModal').modal('hide');
+            
+            // Перезавантажуємо список
+            await this.loadRequests();
+            this.renderRequests();
+            
+            toastr.success('Заявку успішно оновлено');
+        } catch (error) {
+            console.error('❌ Помилка оновлення заявки:', error);
+            toastr.error('Не вдалося оновити заявку: ' + error.message);
+        }
     }
 }
 

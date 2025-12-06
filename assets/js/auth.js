@@ -1,3 +1,12 @@
+/**
+ * ═══════════════════════════════════════════════════════════
+ * AUTH MANAGER - СИСТЕМА АВТОРИЗАЦІЇ
+ * ═══════════════════════════════════════════════════════════
+ * ⚠️ ВАЖЛИВО: ВСІ API ЗАПИТИ ЙДУТЬ ЧЕРЕЗ UNIFIED SERVER НА ПОРТ 5000
+ * ⚠️ НІКОЛИ НЕ ЗМІНЮЙТЕ ПОРТ БЕЗ ЯВНОГО ЗАПИТУ КОРИСТУВАЧА!
+ * ═══════════════════════════════════════════════════════════
+ */
+
 class AuthManager {
     static TOKEN_KEY = 'liftmanager_jwt';
     static USER_KEY = 'liftmanager_user';
@@ -21,7 +30,7 @@ class AuthManager {
         document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
         
         console.log('👋 Користувач вийшов з системи');
-        window.location.href = '/login.html';
+        window.location.href = '/pages/auth/login.html';
     }
 
     static isAuthenticated() {
@@ -84,7 +93,10 @@ class AuthManager {
     }
 
     static getApiUrl(endpoint) {
-        // ✅ UNIFIED SERVER - все на порту 5000
+        // ═══════════════════════════════════════════════════════════
+        // ⚠️ UNIFIED SERVER - ВСЕ НА ПОРТУ 5000
+        // ⚠️ НЕ ЗМІНЮЙТЕ ЦЕЙ ПОРТ БЕЗ ЯВНОГО ЗАПИТУ!
+        // ═══════════════════════════════════════════════════════════
         return `${window.location.origin}${endpoint}`;
     }
 
@@ -125,6 +137,10 @@ class AuthManager {
             'forgot-password.html',
             'index.html',
             'demo.html',
+            'crm-demo.html',
+            'ai-demo.html',
+            'qr-scanner.html',
+            'qr-generator.html',
             'test-',
             'debug-'
         ];
@@ -136,7 +152,7 @@ class AuthManager {
         
         if (!this.isAuthenticated()) {
             sessionStorage.setItem('redirect_after_login', window.location.href);
-            window.location.href = '/login.html';
+            window.location.href = '/pages/auth/login.html';
             return;
         }
     }

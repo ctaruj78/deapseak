@@ -320,104 +320,6 @@ class SimpleLiftModal {
         console.log(`📢 Message shown: ${message}`);
     }
     
-    // Додамо можливість тестування
-    testSave() {
-        console.log('🧪 Running test save...');
-        
-        const testData = {
-            municipalNumber: 'TEST-' + Date.now(),
-            serialNumber: 'SER-TEST-' + Date.now(), 
-            brand: 'TestBrand',
-            model: 'TestModel',
-            address: 'Тестова адреса ' + Date.now()
-        };
-        
-        // Заповнюємо форму тестовими даними
-        Object.keys(testData).forEach(key => {
-            $(`#${key}`).val(testData[key]);
-        });
-        
-        // Запускаємо збереження
-        this.handleFormSubmit();
-    }
-    
-    manualRefreshTable() {
-        console.log('🔄 Attempting manual table refresh...');
-        
-        // Знаходимо таблицю ліфтів (спробуємо обидва можливих селектори)
-        let tbody = $('#liftsTable tbody');
-        if (tbody.length === 0) {
-            tbody = $('#lifts-table-body');
-        }
-        if (tbody.length === 0) {
-            console.log('❌ Table tbody not found');
-            return;
-        }
-        
-        console.log('📋 Found table, updating with', window.allLifts.length, 'lifts');
-        
-        // Очищаємо таблицю
-        tbody.empty();
-        
-        // Додаємо ліфти відповідно до заголовків: 
-        // Муніципальний №, Модель, Тип, Локація, Клієнт, Email, Статус, Останнє ТО, Наступне ТО, Дії
-        if (window.allLifts && window.allLifts.length > 0) {
-            window.allLifts.forEach((lift, index) => {
-                const lastMaintenance = lift.lastInspection ? 
-                    new Date(lift.lastInspection).toLocaleDateString('uk-UA') : 'Не вказано';
-                const nextMaintenance = lift.nextInspection ? 
-                    new Date(lift.nextInspection).toLocaleDateString('uk-UA') : 'Не вказано';
-                
-                // Показуємо додаткову інформацію якщо це додатковий ліфт
-                let municipalNumberDisplay = lift.municipalNumber || 'Не вказано';
-                if (lift.isAdditionalLift && lift.liftNumberInBuilding) {
-                    municipalNumberDisplay += ` <small class="text-muted">(Ліфт #${lift.liftNumberInBuilding})</small>`;
-                }
-                
-                // Додаємо іконку якщо це група ліфтів
-                let addressDisplay = lift.address || 'Не вказано';
-                if (lift.liftsCountAtAddress && lift.liftsCountAtAddress > 1) {
-                    addressDisplay += ` <i class="fas fa-building text-info" title="У будівлі ${lift.liftsCountAtAddress} ліфтів"></i>`;
-                }
-                
-                const rowClass = lift.isAdditionalLift ? 'table-secondary' : '';
-                
-                const row = `
-                    <tr class="${rowClass}">
-                        <td>${municipalNumberDisplay}</td>
-                        <td>${lift.model || 'Не вказано'}</td>
-                        <td>${lift.type || 'passenger'}</td>
-                        <td>${addressDisplay}</td>
-                        <td>${lift.clientName || 'Не вказано'}</td>
-                        <td>${lift.clientEmail || 'Не вказано'}</td>
-                        <td><span class="badge badge-${this.getStatusColor(lift.status)}">${this.getStatusText(lift.status)}</span></td>
-                        <td>${lastMaintenance}</td>
-                        <td>${nextMaintenance}</td>
-                        <td>
-                            <button class="btn btn-sm btn-primary edit-lift" data-lift-id="${lift.id}" title="Редагувати ліфт ${lift.municipalNumber}">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn btn-sm btn-danger delete-lift" data-lift-id="${lift.id}" title="Видалити ліфт ${lift.municipalNumber}">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                            <button class="btn btn-sm btn-info view-lift" data-lift-id="${lift.id}" title="Переглянути ліфт ${lift.municipalNumber}">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="btn btn-sm btn-success create-ticket" data-lift-id="${lift.id}" title="Створити заявку для ліфта ${lift.municipalNumber}">
-                                <i class="fas fa-ticket-alt"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `;
-                tbody.append(row);
-            });
-            console.log('✅ Manual table refresh completed');
-        } else {
-            tbody.append('<tr><td colspan="10" class="text-center">Немає ліфтів</td></tr>');
-            console.log('ℹ️ No lifts to display');
-        }
-    }
-    
     getStatusColor(status) {
         switch (status) {
             case 'operational': return 'success';
@@ -591,6 +493,15 @@ class SimpleLiftModal {
     
     openTicketModal(lift) {
         console.log('🎫 Opening ticket modal for lift:', lift);
+        
+        // Convert MongoDB ObjectId to string
+        const liftId = window.safeId ? window.safeId(lift) : ((lift._id && lift._id.toString) ? lift._id.toString() : (lift._id || lift.id || ''));
+        if (!liftId) {
+            console.error('❌ Ліфт без ID:', lift);
+            this.showMessage('Помилка: ID ліфта не знайдено', 'error');
+            return;
+        }
+        
         const modalHtml = `
             <div class="modal fade" id="ticketModal" tabindex="-1">
                 <div class="modal-dialog">
@@ -630,7 +541,7 @@ class SimpleLiftModal {
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
-                            <button type="button" class="btn btn-primary" onclick="window.simpleLiftModal.createTicketForLift('${lift.id}')">Створити заявку</button>
+                            <button type="button" class="btn btn-primary" onclick="window.simpleLiftModal.createTicketForLift('${liftId}')">Створити заявку</button>
                         </div>
                     </div>
                 </div>

@@ -26,6 +26,12 @@ const liftSchema = new mongoose.Schema({
         ref: 'User',
         index: true
     },
+    // Додаткові дані клієнта (для випадків коли немає User в БД)
+    clientName: String,
+    clientEmail: String,
+    clientPhone: String,
+    contactPerson: String,
+    intercomCode: String,
     technician: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
@@ -33,11 +39,16 @@ const liftSchema = new mongoose.Schema({
     },
     manufacturer: { type: String, required: true },
     model: { type: String, required: true },
+    serialNumber: String,
+    type: { type: String, default: 'passenger' },
     capacity: { type: Number, required: true },
+    speed: Number,
     floors: { type: Number, required: true },
     installationDate: Date,
     lastInspectionDate: Date,
     nextInspectionDate: { type: Date, index: true },
+    inspectionFrequency: { type: Number, default: 6 }, // місяців
+    maintenanceNotes: String,
     status: {
         type: String,
         enum: ['operational', 'maintenance', 'repair', 'out_of_service', 'inspection'],

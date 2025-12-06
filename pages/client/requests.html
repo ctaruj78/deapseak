@@ -193,6 +193,9 @@
     </style>
     
     <!-- Service Integration -->
+    <!-- MongoDB ObjectId Converter -->
+    <script src="../../assets/js/id-converter.js"></script>
+    
     <script src="../../assets/js/service-integration.js"></script>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -836,9 +839,16 @@
                 tbody.innerHTML = '';
                 
                 requests.forEach(request => {
+                    // Convert MongoDB ObjectId to string
+                    const requestId = window.safeId ? window.safeId(request) : ((request._id && request._id.toString) ? request._id.toString() : (request._id || request.id || ''));
+                    if (!requestId) {
+                        console.error('❌ Запит без ID:', request);
+                        return;
+                    }
+                    
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>#${request.id}</td>
+                        <td>#${requestId}</td>
                         <td>${request.liftId || 'Загальне'}</td>
                         <td>${request.type || 'Обслуговування'}</td>
                         <td>
@@ -853,16 +863,16 @@
                         </td>
                         <td>${new Date(request.createdAt).toLocaleDateString()}</td>
                         <td>
-                            <button class="btn btn-sm btn-info btn-icon" onclick="clientRequestsManager.viewRequest('${request.id}')" title="Переглянути">
+                            <button class="btn btn-sm btn-info btn-icon" onclick="clientRequestsManager.viewRequest('${requestId}')" title="Переглянути">
                                 <i class="fas fa-eye"></i>
                             </button>
                             ${request.status === 'new' ? `
-                                <button class="btn btn-sm btn-danger btn-icon" onclick="clientRequestsManager.cancelRequest('${request.id}')" title="Скасувати">
+                                <button class="btn btn-sm btn-danger btn-icon" onclick="clientRequestsManager.cancelRequest('${requestId}')" title="Скасувати">
                                     <i class="fas fa-times"></i>
                                 </button>
                             ` : ''}
                             ${request.status === 'completed' ? `
-                                <button class="btn btn-sm btn-warning btn-icon" onclick="clientRequestsManager.rateTechnician('${request.id}')" title="Оцінити">
+                                <button class="btn btn-sm btn-warning btn-icon" onclick="clientRequestsManager.rateTechnician('${requestId}')" title="Оцінити">
                                     <i class="fas fa-star"></i>
                                 </button>
                             ` : ''}

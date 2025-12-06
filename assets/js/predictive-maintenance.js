@@ -188,7 +188,8 @@ class PredictiveMaintenanceSystem {
         
         this.maintenanceData.set(liftId, condition);
         
-        console.log(`🔍 Проаналізовано ліфт ${liftId}: ризик ${(condition.failureRisk * 100).toFixed(1)}%`);
+        const riskPercent = ((condition.failureRisk || 0) * 100).toFixed(1);
+        console.log(`🔍 Проаналізовано ліфт ${liftId}: ризик ${riskPercent}%`);
     }
 
     calculateUsageIntensity(lift) {
@@ -212,6 +213,20 @@ class PredictiveMaintenanceSystem {
 
     assessComponentConditions(lift, ageInYears) {
         const components = {};
+        
+        // Перевіряємо чи config.componentWeights існує
+        if (!this.config || !this.config.componentWeights) {
+            console.warn('⚠️ componentWeights не визначено, використовуємо базові компоненти');
+            this.config = this.config || {};
+            this.config.componentWeights = {
+                motor: 0.25,
+                cables: 0.20,
+                brakes: 0.20,
+                doors: 0.15,
+                control_system: 0.10,
+                safety_systems: 0.10
+            };
+        }
         
         // Розраховуємо стан компонентів на основі віку та типу ліфта
         Object.keys(this.config.componentWeights).forEach(component => {
@@ -283,23 +298,38 @@ class PredictiveMaintenanceSystem {
 
     calculateFailureRisk(condition) {
         let totalRisk = 0;
+        let totalWeight = 0;
         
         // Ризик на основі компонентів
-        Object.entries(condition.componentConditions).forEach(([component, data]) => {
-            const weight = this.config.componentWeights[component];
-            const componentRisk = 1 - data.condition;
-            totalRisk += componentRisk * weight;
-        });
+        if (condition.componentConditions && Object.keys(condition.componentConditions).length > 0) {
+            Object.entries(condition.componentConditions).forEach(([component, data]) => {
+                const weight = this.config.componentWeights[component] || 0.1;
+                const componentRisk = 1 - (data.condition || 0.5);
+                totalRisk += componentRisk * weight;
+                totalWeight += weight;
+            });
+            
+            // Нормалізуємо ризик
+            if (totalWeight > 0) {
+                totalRisk = totalRisk / totalWeight;
+            }
+        } else {
+            // Базовий ризик якщо немає даних про компоненти
+            totalRisk = 0.3;
+        }
         
         // Коригування на основі віку
-        const ageRiskMultiplier = Math.min(condition.age / 20, 1.5); // Макс 1.5x після 20 років
+        const age = condition.age || 0;
+        const ageRiskMultiplier = Math.min(age / 20, 1.5); // Макс 1.5x після 20 років
         totalRisk *= (1 + ageRiskMultiplier * 0.3);
         
         // Коригування на основі інтенсивності використання
-        totalRisk *= (1 + (condition.usageIntensity - 1) * 0.2);
+        const usageIntensity = condition.usageIntensity || 1.0;
+        totalRisk *= (1 + (usageIntensity - 1) * 0.2);
         
         // Коригування на основі факторів навколишнього середовища
-        totalRisk *= condition.environmentalFactors.degradationMultiplier;
+        const envMultiplier = condition.environmentalFactors?.degradationMultiplier || 1.0;
+        totalRisk *= envMultiplier;
         
         // Коригування на основі часу з останньої інспекції
         const daysSinceInspection = condition.lastInspection ? 
@@ -309,7 +339,13 @@ class PredictiveMaintenanceSystem {
             totalRisk *= 1.2; // Збільшуємо ризик якщо давно не було інспекції
         }
         
-        return Math.min(totalRisk, 0.99); // Макс 99% ризик
+        // Перевіряємо чи результат валідний
+        if (isNaN(totalRisk) || !isFinite(totalRisk)) {
+            console.warn('⚠️ Некоректний розрахунок ризику, використовуємо базовий:', condition);
+            totalRisk = 0.3;
+        }
+        
+        return Math.min(Math.max(totalRisk, 0), 0.99); // Обмежуємо від 0% до 99%
     }
 
     generateMaintenanceRecommendations(condition) {

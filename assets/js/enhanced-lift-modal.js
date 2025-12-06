@@ -325,11 +325,10 @@ class EnhancedLiftModal {
             inspectionFrequency: parseInt($('#enhancedInspectionFrequency').val()) || 6,
             maintenanceNotes: $('#enhancedMaintenanceNotes').val() || '',
             // Додаткові поля за замовчуванням
-            floorsCount: 5,
+            floorsCount: parseInt($('#enhancedFloorsCount').val()) || 5,
             doorsCount: 2,
             buildingName: '',
             floorLocation: 'ground',
-            accessCode: '',
             qrAccessLevel: 'public',
             enableQrTracking: false,
             interventionHistory: [],
@@ -498,13 +497,13 @@ class EnhancedLiftModal {
             const testClientId = '6915a14c8c41cac851f25c7e';
             
             // Конвертуємо дані в формат API v2
-            // Координати: використовуємо реальні якщо є, інакше Київ за замовчуванням
+            // Координати: використовуємо реальні якщо є, інакше Лісабон за замовчуванням
             const hasCoords = liftData.lat && liftData.lng && 
                              !isNaN(parseFloat(liftData.lat)) && 
                              !isNaN(parseFloat(liftData.lng));
             
-            const finalLat = hasCoords ? parseFloat(liftData.lat) : 50.4501;
-            const finalLng = hasCoords ? parseFloat(liftData.lng) : 30.5234;
+            const finalLat = hasCoords ? parseFloat(liftData.lat) : 38.7223; // Лісабон
+            const finalLng = hasCoords ? parseFloat(liftData.lng) : -9.1393; // Лісабон
             
             console.log('📍 Координати для збереження:', { 
                 hasCoords, 
@@ -526,15 +525,20 @@ class EnhancedLiftModal {
                 installationDate: liftData.installationYear ? `${liftData.installationYear}-01-01` : null,
                 address: {
                     street: liftData.address,
-                    city: 'Київ', // TODO: витягти з форми
+                    city: 'Lisboa', // Лісабон
                     zipCode: liftData.postcode,
-                    country: 'Ukraine'
+                    country: 'Portugal' // Португалія
                 },
                 location: {
                     type: 'Point',
                     coordinates: [finalLng, finalLat] // [longitude, latitude]
                 },
                 client: testClientId, // ID клієнта
+                clientName: liftData.clientName,
+                clientEmail: liftData.clientEmail,
+                clientPhone: liftData.clientPhone,
+                contactPerson: liftData.contactPerson,
+                intercomCode: liftData.accessCode,
                 status: liftData.status || 'operational',
                 lastInspectionDate: liftData.lastMaintenance,
                 nextInspectionDate: liftData.nextMaintenance,

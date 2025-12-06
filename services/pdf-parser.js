@@ -172,7 +172,7 @@ function extractMetadata(text) {
     }
     
     // Інспектор - більше варіантів і форматів
-    let inspectorMatch = text.match(/(?:TÉCNICO|Técnico|Inspetor|Inspector|Responsável|DIRECTOR\s+TÉCNICO)\s*(?:RESPONSÁVEL)?\s*:?\s*([A-ZÇÁÉÍÓÚÂÊÔÃ][a-zçáéíóúâêôã\s]{2,60}?)(?:\n|CLÁUSULAS|C[123]|Página|$)/i);
+    let inspectorMatch = text.match(/(?:TÉCNICO|Técnico|Inspetor|Inspector|Responsável|DIRECTOR\s+TÉCNICO|Assinado\s+por|Assinatura|Elaborado\s+por)\s*(?:RESPONSÁVEL)?\s*:?\s*([A-ZÇÁÉÍÓÚÂÊÔÃ][a-zçáéíóúâêôã\s]{2,60}?)(?:\n|CLÁUSULAS|C[123]|Página|Art|$)/i);
     
     if (!inspectorMatch) {
         // Альтернатива 1: шукаємо ім'я після "por"
@@ -182,6 +182,11 @@ function extractMetadata(text) {
     if (!inspectorMatch) {
         // Альтернатива 2: шукаємо перед Página (часто підпис в кінці)
         inspectorMatch = text.match(/([A-ZÇÁÉÍÓÚÂÊÔÃ][a-zçáéíóúâêôã]+(?:\s+[A-ZÇÁÉÍÓÚÂÊÔÃ][a-zçáéíóúâêôã]+){2,4})\s+Página\s*\d+/i);
+    }
+    
+    if (!inspectorMatch) {
+        // Альтернатива 3: шукаємо біля підпису або сертифікату
+        inspectorMatch = text.match(/(?:certificado|atesto|certifica)\s+(?:que|por)\s+([A-ZÇÁÉÍÓÚÂÊÔÃ][a-zçáéíóúâêôã]+(?:\s+[A-ZÇÁÉÍÓÚÂÊÔÃ][a-zçáéíóúâêôã]+){1,4})/i);
     }
     
     if (inspectorMatch) {
@@ -286,25 +291,29 @@ function extractViolations(text) {
         // ВАЖЛИВО: Використовуємо ТОЧНІ фрази, щоб не виключити реальні порушення!
         const excludePatterns = [
             /NOTA\s+DE\s+CLÁUSULAS/i,
-            /CLÁUSULAS?\s+DE\s+CUMPRIMENTO\s+OBRIGATÓRIO/i,  // Повна фраза!
-            /AS\s+CLÁUSULAS?\s+QUE\s+A\s+SEGUIR\s+SE\s+INDICAM/i,  // Повна фраза!
-            /SÃO\s+APLICÁVEIS\s+FACE\s+AO\s+REGULAMENTO/i,  // Повна фраза!
-            /REGULAMENTO\s+DE\s+SEGURANÇA\s+DE\s+ELEVADORES/i,  // Повна фраза!
+            /CLÁUSULAS?\s+DE\s+CUMPRIMENTO\s+OBRIGATÓRIO/i,
+            /AS\s+CLÁUSULAS?\s+QUE\s+A\s+SEGUIR\s+SE\s+INDICAM/i,
+            /SÃO\s+APLICÁVEIS\s+FACE\s+AO\s+REGULAMENTO/i,
+            /REGULAMENTO\s+DE\s+SEGURANÇA\s+DE\s+ELEVADORES/i,
             /CLASSIFICAÇÃO\s*:?\s*C[123]/i,
-            /TIPO\s+DE\s+INSPEÇÃO\s*:/i,  // З двокрапкою!
-            /DATA\s+(DA\s+)?INSPEÇÃO\s*:/i,  // З двокрапкою!
-            /ELEVADOR\s+N[ºo]\s*:/i,  // З двокрапкою!
-            /LOCALIZAÇÃO\s*:/i,  // З двокрапкою!
-            /^\s*C[123]\s*$/,  // Просто літера С1/С2/С3 окремо
-            /^(C[123])\s*[-–—]\s*$/,  // С1 - без опису
-            // 🔥 ЛЕГЕНДА - ТОЧНІ фрази (не часткові!)
-            /^C[123]\s*[-–—]?\s*Correspondente\s+a\s+situações\s+de\s+(elevado|médio)\s+risco/i,  // Починається з C1/C2/C3
-            /imediata\.\s*Estas\s+cláusulas\s+dão\s+lugar\s+à\s+imobilização/i,  // Унікальна частина легенди
-            /não\s+obrigam\s+à\s+imobilização\s+das\s+instalações\./i,  // Унікальна частина легенди C2
-            /inspeção\s+periódica\s+seguinte\.\s*Página/i,  // Легенда C3 + footer
-            // 🔥 Footer/header info - ТОЧНІ фрази
-            /Página\s*\d+\s*de\s*\d+\s+Impresso\s+ELEV/i,  // Повна фраза footer
-            /Documento\s+impresso\s+em\s*:\s*\d{2}\/\d{2}\/\d{4}/i,  // Повна фраза з датою
+            /TIPO\s+DE\s+INSPEÇÃO\s*:/i,
+            /DATA\s+(DA\s+)?INSPEÇÃO\s*:/i,
+            /ELEVADOR\s+N[ºo]\s*:/i,
+            /LOCALIZAÇÃO\s*:/i,
+            /^\s*C[123]\s*$/,
+            /^(C[123])\s*[-–—]\s*$/,
+            // 🔥 ЛЕГЕНДА - більш строгі перевірки
+            /^C[123]\s*[-–—]?\s*Correspondente\s+a\s+situações/i,
+            /^Correspondente\s+a\s+situações\s+de\s+(elevado|médio|baixo)\s+risco/i,
+            /cuja\s+resolução\s+deve\s+ser\s+imediata/i,
+            /imediata\.\s*Estas\s+cláusulas\s+dão\s+lugar\s+à\s+imobilização/i,
+            /não\s+obrigam\s+à\s+imobilização\s+das\s+instalações/i,
+            /devem\s+ser\s+corrigidas\s+na\s+próxima\s+inspeção/i,
+            /inspeção\s+periódica\s+seguinte/i,
+            // 🔥 Footer/header
+            /Página\s*\d+\s*de\s*\d+/i,
+            /Impresso\s+ELEV/i,
+            /Documento\s+impresso\s+em/i,
         ];
         
         // Шукаємо всі C1/C2/C3 в тексті
@@ -329,11 +338,12 @@ function extractViolations(text) {
             const afterClass = text.substring(position);
             
             // Шукаємо опис після класифікації (до наступного C або кінця рядка)
-            let descriptionMatch = afterClass.match(/C[123]\s*[-–—:.]?\s*(.{15,300}?)(?:\n\n|C[123]|$)/s);
+            // Покращена регулярка: зупиняємося на наступному C1/C2/C3, подвійному переносі, або Página
+            let descriptionMatch = afterClass.match(/C[123]\s*[-–—:.]?\s*(.{15,300}?)(?:\n\n|C[123]|Página|P\s*á\s*g\s*i\s*n\s*a|CLÁUSULAS|$)/s);
             
             if (!descriptionMatch) {
-                // Альтернатива: беремо просто текст після класифікації
-                descriptionMatch = afterClass.match(/C[123]\s*[-–—:.]?\s*(.{15,200}?)(?:\n|$)/);
+                // Альтернатива: беремо текст до переносу або Artigo
+                descriptionMatch = afterClass.match(/C[123]\s*[-–—:.]?\s*(.{15,200}?)(?:\n|Art\.?º?\s*\d|$)/);
             }
             
             let description = descriptionMatch ? descriptionMatch[1].trim() : '';
@@ -357,21 +367,34 @@ function extractViolations(text) {
                 /^\d+[-\/]\d+[-\/]\d+$/,  // ТІЛЬКИ дата
                 /^[\d\s.:-]+$/,  // ТІЛЬКИ цифри і розділювачі
                 /^[A-Z\s]{2,15}$/,  // ТІЛЬКИ великі літери (заголовки)
-                /^(SIM|NÃO|OK|N\/A)$/i,  // Односложні відповіді
-                /^(AS\s+)?CLÁUSULAS?\s+QUE\s+A\s+SEGUIR/i,  // Повний заголовок
-                /^SÃO\s+APLICÁVEIS\s+FACE/i,  // Повний заголовок
-                // 🔥 Фільтр ПОВНОЇ легенди (не часткової!)
-                /^Correspondente\s+a\s+situações\s+de\s+(elevado|médio)/i,  // Починається з цього
-                /resolução\s+deve\s+ser\s+imediata\.\s*Estas\s+cláusulas/i,  // Точна фраза легенди
-                /não\s+obrigam\s+à\s+imobilização\s+das\s+instalações\.$/i,  // Закінчується так
-                /inspeção\s+periódica\s+seguinte\.\s*(Página|$)/i,  // Легенда C3
-                // 🔥 Footer - повні фрази
-                /Página\s*\d+\s*de\s*\d+\s+Impresso/i,
-                /Impresso\s+ELEV\/\d+\.\d+\s+\d+/i,  // Точний формат
-                /Documento\s+impresso\s+em\s*:\s*\d{2}\/\d{2}/i,
-                /^\d{6}\s+Documento\s+impresso/i,  // Номер + текст
-                // 🔥 Технічні нотатки (повні)
-                /^NOTA:\s*O\s+dispositivo\s+elétrico.*extremidades/i,  // Повна нотатка
+                /^[A-Z][A-Z\s]+$/,  // Тільки великі літери (заголовки)
+                /^(SIM|NÃO|OK|N\/A|APROVADO|REPROVADO)$/i,  // Односложні відповіді
+                /^(AS\s+)?CLÁUSULAS?\s+QUE\s+A\s+SEGUIR/i,
+                /^SÃO\s+APLICÁVEIS\s+FACE/i,
+                /^FACE\s+AO\s+REGULAMENTO/i,
+                // 🔥 ЛЕГЕНДА - строгіша перевірка
+                /^Correspondente\s+a\s+situações/i,
+                /situações\s+de\s+(elevado|médio|baixo)\s+risco/i,
+                /cuja\s+resolução\s+deve\s+ser/i,
+                /deve\s+ser\s+imediata/i,
+                /Estas\s+cláusulas\s+dão\s+lugar/i,
+                /dão\s+lugar\s+à\s+imobilização/i,
+                /não\s+obrigam\s+à\s+imobilização/i,
+                /devem\s+ser\s+corrigidas\s+na/i,
+                /na\s+próxima\s+inspeção/i,
+                /inspeção\s+periódica\s+seguinte/i,
+                // 🔥 Footer
+                /Página\s*\d+/i,
+                /Impresso\s+ELEV/i,
+                /Documento\s+impresso/i,
+                /^\d{6}\s+Documento/i,
+                // 🔥 Технічні нотатки
+                /^NOTA:/i,
+                /^O\s+dispositivo\s+elétrico/i,
+                // 🔥 Метадані звіту
+                /^TÉCNICO\s+RESPONSÁVEL/i,
+                /^DIRECTOR\s+TÉCNICO/i,
+                /^ENTIDADE\s+INSPETORA/i,
             ];
             
             const isDescriptionExcluded = descriptionExcludePatterns.some(pattern => pattern.test(description));
@@ -383,6 +406,26 @@ function extractViolations(text) {
             // ⛔ ФІЛЬТР 4: Якщо опис занадто короткий після очищення
             if (description.length < 15) {
                 console.log(`⏭️ Skipping ${classification} - description too short: "${description}"`);
+                return;
+            }
+            
+            // ⛔ ФІЛЬТР 5: Перевірка чи це не легенда (додаткова перевірка)
+            const legendKeywords = [
+                'Correspondente', 'situações de', 'resolução deve', 'imobilização',
+                'próxima inspeção', 'periódica seguinte', 'Estas cláusulas'
+            ];
+            const hasMultipleLegendKeywords = legendKeywords.filter(kw => 
+                description.includes(kw)
+            ).length >= 2;
+            
+            if (hasMultipleLegendKeywords) {
+                console.log(`⏭️ Skipping ${classification} - looks like legend text: "${description.substring(0, 50)}"`);
+                return;
+            }
+            
+            // ⛔ ФІЛЬТР 6: Якщо опис є номером артикля без тексту
+            if (/^Art\.?º?\s*\d+\s*$/.test(description)) {
+                console.log(`⏭️ Skipping ${classification} - only article number: "${description}"`);
                 return;
             }
             

@@ -45,7 +45,7 @@
                 
                 <div class="row">
                     <!-- Адміністратор -->
-                    <div class="col-md-4 mb-4">
+                    <div class="col-md-3 mb-4">
                         <div class="card role-card admin-card h-100">
                             <div class="card-body text-center">
                                 <div class="role-icon text-danger">
@@ -67,7 +67,7 @@
                     </div>
                     
                     <!-- Диспетчер -->
-                    <div class="col-md-4 mb-4">
+                    <div class="col-md-3 mb-4">
                         <div class="card role-card dispatcher-card h-100">
                             <div class="card-body text-center">
                                 <div class="role-icon text-warning">
@@ -89,7 +89,7 @@
                     </div>
                     
                     <!-- Технік -->
-                    <div class="col-md-4 mb-4">
+                    <div class="col-md-3 mb-4">
                         <div class="card role-card tech-card h-100">
                             <div class="card-body text-center">
                                 <div class="role-icon text-success">
@@ -105,6 +105,30 @@
                                 </ul>
                                 <a href="crm-unified.html?role=tech" class="btn btn-success btn-block">
                                     <i class="fas fa-sign-in-alt"></i> Увійти як Технік
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Клієнт -->
+                    <div class="col-md-3 mb-4">
+                        <div class="card role-card h-100" style="border-top: 5px solid #17a2b8;">
+                            <div class="card-body text-center">
+                                <div class="role-icon text-info">
+                                    <i class="fas fa-user-tie"></i>
+                                </div>
+                                <h3 class="card-title">Клієнт</h3>
+                                <p class="card-text">Моніторинг власних ліфтів:</p>
+                                <ul class="list-unstyled text-left">
+                                    <li><i class="fas fa-check text-success"></i> Мої ліфти</li>
+                                    <li><i class="fas fa-check text-success"></i> AI асистент</li>
+                                    <li><i class="fas fa-check text-success"></i> Історія обслуговування</li>
+                                    <li><i class="fas fa-check text-success"></i> Прогноз технічного стану</li>
+                                    <li><i class="fas fa-check text-success"></i> Запити на обслуговування</li>
+                                    <li><i class="fas fa-times text-danger"></i> <del>Управління системою</del></li>
+                                </ul>
+                                <a href="crm-unified.html?role=client" class="btn btn-info btn-block">
+                                    <i class="fas fa-sign-in-alt"></i> Увійти як Клієнт
                                 </a>
                             </div>
                         </div>
@@ -125,17 +149,21 @@
                                     показуючи тільки необхідний функціонал без дублювання коду.
                                 </p>
                                 <div class="row text-center">
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <i class="fas fa-code text-primary fa-2x"></i>
-                                        <p class="mt-2"><strong>Менше коду</strong><br>Один компонент замість трьох</p>
+                                        <p class="mt-2"><strong>Менше коду</strong><br>Один компонент замість чотирьох</p>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <i class="fas fa-sync text-success fa-2x"></i>
                                         <p class="mt-2"><strong>Легше підтримка</strong><br>Зміни в одному місці</p>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <i class="fas fa-shield-alt text-warning fa-2x"></i>
                                         <p class="mt-2"><strong>Безпека</strong><br>Рольовий контроль доступу</p>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <i class="fas fa-users text-info fa-2x"></i>
+                                        <p class="mt-2"><strong>4 ролі</strong><br>Адмін, Диспетчер, Технік, Клієнт</p>
                                     </div>
                                 </div>
                             </div>

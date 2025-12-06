@@ -1,7 +1,9 @@
-// ============================================
+// ═══════════════════════════════════════════════════════════
 // UNIFIED SERVER - DeapSeaK v2
-// Один сервер для Frontend + API + WebSocket
-// ============================================
+// ═══════════════════════════════════════════════════════════
+// ⚠️ ВАЖЛИВО: Один сервер для Frontend + API + WebSocket
+// ⚠️ ФІКСОВАНИЙ ПОРТ: 5000 (НІКОЛИ НЕ ЗМІНЮЙТЕ БЕЗ ЗАПИТУ!)
+// ═══════════════════════════════════════════════════════════
 
 require('dotenv').config();
 
@@ -15,7 +17,11 @@ const multer = require('multer');
 const fs = require('fs').promises;
 
 const app = express();
-const PORT = process.env.PORT || 5000; // Unified Server на порту 5000
+// ═══════════════════════════════════════════════════════════
+// ⚠️ КРИТИЧНО: ФІКСОВАНИЙ ПОРТ 5000 - НЕ ЗМІНЮЙТЕ!
+// ═══════════════════════════════════════════════════════════
+const PORT = parseInt(process.env.DEAPSEAK_PORT || '5000', 10);
+console.log(`🔧 Налаштування порту: DEAPSEAK_PORT=${process.env.DEAPSEAK_PORT}, final PORT=${PORT}`);
 
 // Middleware - CORS для Codespaces
 app.use(cors({
@@ -40,15 +46,25 @@ app.use(express.urlencoded({ extended: true }));
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
 const DB_NAME = 'deapseak';
 let db;
+let mongoClient;
 
-MongoClient.connect(MONGODB_URI, { 
-    useUnifiedTopology: true 
-}).then(client => {
-    console.log('MongoDB connected:', MONGODB_URI, 'DB:', DB_NAME);
-    db = client.db(DB_NAME);
-}).catch(err => {
-    console.error('MongoDB connection error:', err);
-});
+// Async функція для підключення до MongoDB
+async function connectMongo() {
+    try {
+        mongoClient = await MongoClient.connect(MONGODB_URI, { 
+            useUnifiedTopology: true 
+        });
+        db = mongoClient.db(DB_NAME);
+        console.log('✅ MongoDB connected:', MONGODB_URI, 'DB:', DB_NAME);
+        return db;
+    } catch (err) {
+        console.error('❌ MongoDB connection error:', err);
+        throw err;
+    }
+}
+
+// Підключаємося при старті
+connectMongo();
 
 // JWT secret
 const JWT_SECRET = process.env.JWT_SECRET || 'deapseak_secret_key_2024';
@@ -69,6 +85,15 @@ app.post('/api/auth/login', async (req, res) => {
         const { email, username, password } = req.body;
         
         console.log('🔐 Запит на логін:', { email, username, passwordLength: password?.length });
+        
+        // Перевірка підключення до DB
+        if (!db) {
+            console.error('❌ DB не підключена');
+            return res.status(503).json({
+                success: false,
+                message: 'База даних недоступна'
+            });
+        }
         
         if (!password) {
             return res.status(400).json({
@@ -154,10 +179,12 @@ function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1] || 
                   req.headers['x-auth-token'] || 
-                  req.cookies?.auth_token;
+                  req.cookies?.auth_token ||
+                  req.query?.token; // Додаємо підтримку токена в query параметрі (для CORS workaround)
 
     console.log('🔐 Auth check:', {
         hasAuthHeader: !!authHeader,
+        hasQueryToken: !!req.query?.token,
         hasToken: !!token,
         tokenPreview: token ? token.substring(0, 20) + '...' : 'none'
     });
@@ -217,8 +244,8 @@ const upload = multer({
     }
 });
 
-// PDF Parser Service
-const pdfParser = require('./services/pdf-parser');
+// PDF Parser Service - ПОКРАЩЕНА ВЕРСІЯ
+const pdfParser = require('./services/pdf-parser-enhanced');
 
 // PDF Upload and Analysis endpoint
 app.post('/api/pdf/upload', authenticateToken, upload.single('pdfReport'), async (req, res) => {
@@ -347,6 +374,16 @@ app.get('/api/lifts', authenticateToken, async (req, res) => {
 // POST /api/lifts - створення нового ліфта
 app.post('/api/lifts', authenticateToken, async (req, res) => {
     try {
+        console.log('📝 POST /api/lifts - Отримані дані:', {
+            clientName: req.body.clientName,
+            clientEmail: req.body.clientEmail,
+            clientPhone: req.body.clientPhone,
+            intercomCode: req.body.intercomCode,
+            contactPerson: req.body.contactPerson,
+            address: req.body.address,
+            location: req.body.location
+        });
+        
         const newLift = {
             ...req.body,
             createdAt: new Date().toISOString(),
@@ -373,11 +410,47 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
     }
 });
 
+// GET /api/lifts/:id - отримання одного ліфта
+app.get('/api/lifts/:id', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const liftId = new ObjectId(req.params.id);
+        
+        const lift = await db.collection('lifts').findOne({ _id: liftId });
+        
+        if (!lift) {
+            return res.status(404).json({
+                success: false,
+                message: 'Ліфт не знайдено'
+            });
+        }
+        
+        res.json({
+            success: true,
+            lift: lift
+        });
+    } catch (error) {
+        console.error('❌ Помилка отримання ліфта:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка отримання ліфта'
+        });
+    }
+});
+
 // PUT /api/lifts/:id - оновлення ліфта
 app.put('/api/lifts/:id', authenticateToken, async (req, res) => {
     try {
         const { ObjectId } = require('mongodb');
         const liftId = new ObjectId(req.params.id);
+        
+        console.log('📝 PUT /api/lifts/:id - Отримані дані:', {
+            clientName: req.body.clientName,
+            clientEmail: req.body.clientEmail,
+            clientPhone: req.body.clientPhone,
+            intercomCode: req.body.intercomCode,
+            contactPerson: req.body.contactPerson
+        });
         
         const updateData = {
             ...req.body,
@@ -406,6 +479,123 @@ app.put('/api/lifts/:id', authenticateToken, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Помилка оновлення ліфта'
+        });
+    }
+});
+
+// POST /api/lifts/:id/contract - завантаження контракту
+app.post('/api/lifts/:id/contract', authenticateToken, upload.single('contract'), async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const liftId = new ObjectId(req.params.id);
+        
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: 'Файл контракту не завантажено'
+            });
+        }
+        
+        console.log('📄 Contract uploaded:', {
+            filename: req.file.filename,
+            originalName: req.file.originalname,
+            path: req.file.path,
+            size: req.file.size
+        });
+        
+        const contractData = {
+            contractFile: `/uploads/pdfs/${req.file.filename}`, // Повний шлях для відображення
+            contractNumber: req.body.contractNumber || 'Без номера',
+            startDate: req.body.startDate || null,
+            endDate: req.body.endDate || null,
+            description: req.body.notes || '',
+            filename: req.file.filename,
+            originalName: req.file.originalname,
+            path: req.file.path,
+            size: req.file.size,
+            uploadedAt: new Date().toISOString(),
+            uploadedBy: req.user.username
+        };
+        
+        const result = await db.collection('lifts').updateOne(
+            { _id: liftId },
+            { 
+                $set: { 
+                    maintenanceContract: contractData, // Змінено з contract на maintenanceContract
+                    updatedAt: new Date().toISOString()
+                } 
+            }
+        );
+        
+        if (result.matchedCount === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Ліфт не знайдено'
+            });
+        }
+        
+        res.json({
+            success: true,
+            message: 'Контракт успішно завантажено',
+            contract: contractData
+        });
+    } catch (error) {
+        console.error('❌ Помилка завантаження контракту:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка завантаження контракту'
+        });
+    }
+});
+
+// POST /api/lifts/:id/inspection-report - додавання звіту інспекції
+app.post('/api/lifts/:id/inspection-report', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const liftId = new ObjectId(req.params.id);
+        
+        console.log('📋 Adding inspection report to lift:', liftId);
+        console.log('📝 Report data:', req.body);
+        
+        const reportData = {
+            date: req.body.inspectionDate || new Date().toISOString(),
+            type: req.body.inspectionType || 'routine',
+            inspector: req.user.username,
+            notes: req.body.comments || req.body.findings || '',
+            status: req.body.status || 'passed',
+            photos: [],
+            reportFile: null,
+            reportType: req.body.inspectionType || 'routine'
+        };
+        
+        const result = await db.collection('lifts').updateOne(
+            { _id: liftId },
+            { 
+                $push: { inspectionHistory: reportData },
+                $set: { 
+                    lastInspectionDate: reportData.date,
+                    updatedAt: new Date().toISOString()
+                }
+            }
+        );
+        
+        if (result.matchedCount === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Ліфт не знайдено'
+            });
+        }
+        
+        res.json({
+            success: true,
+            message: 'Звіт інспекції успішно додано',
+            report: reportData
+        });
+    } catch (error) {
+        console.error('❌ Помилка додавання звіту:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка додавання звіту'
         });
     }
 });
@@ -445,8 +635,11 @@ app.get('/api/users', authenticateToken, async (req, res) => {
             projection: { password: 0 } // Не віддаємо паролі
         }).toArray();
         
-        // Віддаємо масив напряму (сторінка очікує масив)
-        res.json(users);
+        // Повертаємо в форматі { success: true, data: [...] } для сумісності
+        res.json({
+            success: true,
+            data: users
+        });
     } catch (error) {
         console.error('❌ Помилка отримання користувачів:', error);
         res.status(500).json({
@@ -562,6 +755,43 @@ app.put('/api/users/:id', authenticateToken, async (req, res) => {
     }
 });
 
+// DELETE /api/users/:id - видалення користувача
+app.delete('/api/users/:id', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const userId = new ObjectId(req.params.id);
+        
+        // Перевіряємо що користувач не видаляє сам себе
+        if (req.user.userId === req.params.id) {
+            return res.status(400).json({
+                success: false,
+                message: 'Ви не можете видалити свій власний акаунт'
+            });
+        }
+        
+        const result = await db.collection('users').deleteOne({ _id: userId });
+        
+        if (result.deletedCount === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Користувача не знайдено'
+            });
+        }
+        
+        console.log('✅ Видалено користувача:', userId);
+        res.json({
+            success: true,
+            message: 'Користувача успішно видалено'
+        });
+    } catch (error) {
+        console.error('❌ Помилка видалення користувача:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка видалення користувача'
+        });
+    }
+});
+
 // GET /api/users/:id - отримання конкретного користувача
 app.get('/api/users/:id', authenticateToken, async (req, res) => {
     try {
@@ -610,14 +840,85 @@ app.get('/api/requests', authenticateToken, async (req, res) => {
     }
 });
 
+// GET /api/requests/:id - отримання однієї заявки
+app.get('/api/requests/:id', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const requestId = new ObjectId(req.params.id);
+        
+        const request = await db.collection('requests').findOne({ _id: requestId });
+        
+        if (!request) {
+            return res.status(404).json({
+                success: false,
+                message: 'Заявку не знайдено'
+            });
+        }
+        
+        res.json({
+            success: true,
+            request: request
+        });
+    } catch (error) {
+        console.error('❌ Помилка отримання заявки:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка отримання заявки'
+        });
+    }
+});
+
 app.post('/api/requests', authenticateToken, async (req, res) => {
     try {
+        const { ObjectId } = require('mongodb');
+        
+        // Отримуємо інформацію про ліфт, якщо вказано liftId
+        let liftData = null;
+        if (req.body.liftId) {
+            try {
+                const liftId = new ObjectId(req.body.liftId);
+                liftData = await db.collection('lifts').findOne({ _id: liftId });
+                
+                if (liftData) {
+                    console.log('✅ Знайдено ліфт для заявки:', {
+                        id: liftData._id,
+                        address: liftData.address,
+                        client: liftData.client
+                    });
+                }
+            } catch (e) {
+                console.warn('⚠️ Помилка отримання даних ліфта:', e.message);
+            }
+        }
+        
         const newRequest = {
             ...req.body,
+            // Якщо знайшли ліфт - збагачуємо дані
+            liftAddress: (() => {
+                if (!liftData?.address) return req.body.liftAddress || 'Адреса невідома';
+                
+                // Якщо address - об'єкт, формуємо рядок
+                if (typeof liftData.address === 'object') {
+                    const parts = [];
+                    if (liftData.address.street) parts.push(liftData.address.street);
+                    if (liftData.address.city) parts.push(liftData.address.city);
+                    return parts.join(', ') || 'Адреса невідома';
+                }
+                return liftData.address;
+            })(),
+            liftClient: liftData?.client || req.body.liftClient || 'Клієнт невідомий',
+            liftMunicipalNumber: liftData?.municipalNumber || req.body.liftMunicipalNumber || '',
+            liftLocation: liftData?.location || req.body.liftLocation || null,
             createdAt: new Date().toISOString(),
             createdBy: req.user.username,
             updatedAt: new Date().toISOString()
         };
+        
+        console.log('📝 Створення заявки з даними:', {
+            liftId: newRequest.liftId,
+            liftAddress: newRequest.liftAddress,
+            liftClient: newRequest.liftClient
+        });
         
         const result = await db.collection('requests').insertOne(newRequest);
         

@@ -66,7 +66,7 @@
         const settings = getStoredSettings();
         
         if (!settings) {
-            console.log('📦 No stored settings found, using defaults');
+            console.log('📦 No stored settings found, using defaults (LIGHT theme)');
             applyTheme('light');
             applyLanguage('uk');
             return;
@@ -74,9 +74,12 @@
         
         console.log('📦 Applying stored settings:', settings);
         
-        // Застосовуємо тему
+        // Застосовуємо тему (за замовчуванням СВІТЛА)
         if (settings.theme) {
             applyTheme(settings.theme);
+        } else {
+            // Якщо в налаштуваннях немає теми - застосовуємо світлу
+            applyTheme('light');
         }
         
         // Застосовуємо мову

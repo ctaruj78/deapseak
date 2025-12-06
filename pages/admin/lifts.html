@@ -1841,12 +1841,15 @@
     <!-- 🔌 КОНФІГУРАЦІЯ ПОРТІВ (завантажується ПЕРШОЮ!) -->
     <script src="../../assets/js/config.js?v=20241116"></script>
     
+    <!-- 🔧 MongoDB ObjectId Converter -->
+    <script src="../../assets/js/id-converter.js"></script>
+    
     <!-- 🌍 Система багатомовності -->
     <script src="../../assets/js/i18n.js?v=20241117"></script>
     <script src="../../assets/js/init-i18n.js?v=20241117"></script>
     
     <!-- Система авторизації -->
-    <script src="../../assets/js/auth.js?v=20241116"></script>
+    <script src="../../assets/js/auth.js?v=20241206"></script>
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
@@ -1859,13 +1862,29 @@
     <script src="../../assets/js/ar-helper.js"></script>
     <script src="../../assets/js/common.js"></script>
     <script src="../../assets/js/lift-utils.js"></script>
-    <script src="../../assets/js/lifts.js?v=20241116"></script>
-    <script src="../../assets/js/simple-lift-modal.js?v=20241116"></script>
-    <script src="../../assets/js/form-validator.js?v=20241116"></script>
-    <script src="../../assets/js/enhanced-lift-modal.js?v=20241116"></script>
-    <script src="../../assets/js/test-lift-saving.js?v=20241116"></script>
+    <script src="../../assets/js/lifts.js?v=20241206"></script>
+    <script src="../../assets/js/simple-lift-modal.js?v=20241206"></script>
+    <script src="../../assets/js/form-validator.js?v=20241206"></script>
+    <script src="../../assets/js/enhanced-lift-modal.js?v=20241206"></script>
 
     <script>
+        // 🧹 Функція для очищення тестових даних (тимчасова, для розробки)
+        window.clearTestData = function() {
+            const confirm = window.confirm('Ви впевнені? Це видалить всі тестові дані з localStorage.');
+            if (confirm) {
+                let removed = 0;
+                Object.keys(localStorage).forEach(key => {
+                    if (key.includes('lift') || key === 'lifts' || key === 'allLifts') {
+                        localStorage.removeItem(key);
+                        removed++;
+                    }
+                });
+                console.log(`✅ Видалено ${removed} тестових записів`);
+                alert(`Видалено ${removed} записів. Сторінка буде оновлена.`);
+                location.reload(true);
+            }
+        };
+        
         // Глобальна змінна для збереження PDF файлу
         let currentPDFFile = null;
 
@@ -3610,7 +3629,14 @@
 
         // Додати рядки ліфтів
         lifts.forEach(lift => {
-            const liftId = lift._id || lift.id || Math.random().toString(36);
+            // ✅ ВИПРАВЛЕННЯ: Конвертуємо ObjectId в string
+            const liftId = (lift._id && lift._id.toString) ? lift._id.toString() : (lift._id || lift.id || '');
+            
+            if (!liftId) {
+                console.error('❌ Ліфт без ID:', lift);
+                return; // Пропускаємо ліфти без ID
+            }
+            
             const statusClass = getStatusClass(lift.status || 'operational');
             const statusText = getStatusText(lift.status || 'operational');
             
@@ -3783,10 +3809,10 @@
             
             let lift;
             if (result && result.success && result.data) {
-                console.log('✅ Ліфт завантажено з API:', result.data);
-                // apiCall wraps API response, so result.data contains the full API response
-                // API returns { success: true, data: {...lift} }, so we need result.data.data
-                lift = result.data.data || result.data;
+                // apiCall повертає { success: true, data: {API response} }
+                // API response: { success: true, lift: {...} }
+                lift = result.data.lift;
+                console.log('✅ Ліфт завантажено з API:', lift);
             } else if (result && !result.success) {
                 console.log('⚠️ API помилка:', result.message);
                 // Fallback до localStorage
@@ -3866,8 +3892,8 @@
                 
                 // Координати з location.coordinates
                 const coords = lift.location?.coordinates || [];
-                const latitude = coords[1] || lift.latitude || null;
-                const longitude = coords[0] || lift.longitude || null;
+                const latitude = coords[1] || lift.latitude || 38.7223; // Лісабон за замовчуванням
+                const longitude = coords[0] || lift.longitude || -9.1393; // Лісабон за замовчуванням
                 
                 console.log('📍 Координати ліфта:', { 
                     coords, 
@@ -4071,11 +4097,11 @@
             const result = await apiCall(`/api/lifts/${liftId}`, 'GET');
             
             let lift;
-            if (result.success && result.data) {
-                console.log('✅ Ліфт завантажено з API:', result.data);
-                // apiCall wraps API response, so result.data contains the full API response
-                // API returns { success: true, data: {...lift} }, so we need result.data.data
-                lift = result.data.data || result.data;
+            if (result && result.success && result.data) {
+                // apiCall повертає { success: true, data: {API response} }
+                // API response: { success: true, lift: {...} }
+                lift = result.data.lift;
+                console.log('✅ Ліфт завантажено з API:', lift);
             } else {
                 // Fallback до localStorage
                 console.log('⚠️ Завантаження з localStorage (API не доступний)');
@@ -4119,8 +4145,8 @@
             
             // Координати з location.coordinates або старого формату
             const coords = lift.location?.coordinates || [];
-            const lat = coords[1] || lift.latitude || '';
-            const lng = coords[0] || lift.longitude || '';
+            const lat = coords[1] || lift.latitude || 38.7223; // Лісабон за замовчуванням
+            const lng = coords[0] || lift.longitude || -9.1393; // Лісабон за замовчуванням
             $('#enhancedLiftLat').val(lat);
             $('#enhancedLiftLng').val(lng);
             
@@ -4271,10 +4297,10 @@
             const result = await apiCall(`/api/lifts/${liftId}`, 'GET');
             
             let lift;
-            if (result.success && result.data) {
-                console.log('✅ Ліфт завантажено з API:', result.data);
-                // apiCall wraps API response: result.data contains { success, data: {...lift} }
-                lift = result.data.data || result.data;
+            if (result.success) {
+                console.log('✅ Ліфт завантажено з API:', result);
+                // API повертає { success: true, data: {...} }
+                lift = result.data?.lift || result.data || result.lift;
             } else {
                 // Fallback до localStorage
                 const lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
@@ -4288,6 +4314,10 @@
             
             console.log('🏷️ Дані ліфта для QR:', lift);
             console.log('📊 Ключі об\'єкта:', Object.keys(lift));
+            console.log('🆔 lift._id:', lift._id);
+            console.log('🆔 lift.id:', lift.id);
+            console.log('📍 lift.municipalNumber:', lift.municipalNumber);
+            console.log('📍 lift.address:', lift.address);
             
             // Перевіряємо наявність бібліотеки QRCode
             if (typeof QRCode === 'undefined') {
@@ -4300,16 +4330,21 @@
             let addressStr = 'Адреса не вказана';
             if (typeof address === 'object' && address !== null) {
                 // Новий формат: address = { street, city, zipCode, country }
-                addressStr = address.street 
-                    ? `${address.street}${address.city ? ', ' + address.city : ''}` 
-                    : 'Адреса не вказана';
+                const parts = [];
+                if (address.street) parts.push(address.street);
+                if (address.city) parts.push(address.city);
+                addressStr = parts.join(', ') || 'Адреса не вказана';
             } else if (typeof address === 'string' && address) {
                 // Старий формат: address = "вул. Хрещатик, 1"
                 addressStr = address;
             }
             
+            const municipalNumber = lift.municipalNumber || 'Без номера';
+            
+            console.log('📍 Відформатовані дані:', { municipalNumber, addressStr });
+            
             // Заповнюємо інформацію про ліфт
-            $('#qr-municipal-number').text(lift.municipalNumber || 'Без номера');
+            $('#qr-municipal-number').text(municipalNumber);
             $('#qr-address').text(addressStr);
             
             // Очищуємо контейнер QR коду
