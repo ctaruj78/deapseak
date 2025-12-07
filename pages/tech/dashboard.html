@@ -77,7 +77,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="../ai-assistant/ai-assistant.html" class="nav-link">
+                            <a href="/pages/ai-assistant-universal.html" class="nav-link">
                                 <i class="nav-icon fas fa-robot"></i>
                                 <p>AI Асистент</p>
                                 <span class="badge badge-success right">Новинка</span>
@@ -208,7 +208,7 @@
             // Перевірка авторизації
             const sessionData = localStorage.getItem('lm_session');
             if (!sessionData) {
-                window.location.href = '../../login.html';
+                window.location.replace('/pages/auth/login.html');
                 return;
             }
 
@@ -218,13 +218,13 @@
                 
                 if (new Date(session.expiresAt) <= now) {
                     localStorage.removeItem('lm_session');
-                    window.location.href = '../../login.html';
+                    window.location.replace('/pages/auth/login.html');
                     return;
                 }
 
                 if (session.user && (session.user.role !== 'tech' && session.user.role !== 'technician')) {
                     alert('Доступ заборонено. Необхідні права техніка.');
-                    window.location.href = '../../login.html';
+                    window.location.replace('/pages/auth/login.html');
                     return;
                 }
 
@@ -237,7 +237,7 @@
             } catch (error) {
                 console.error('Session error:', error);
                 localStorage.removeItem('lm_session');
-                window.location.href = '../../login.html';
+                window.location.replace('/pages/auth/login.html');
             }
         });
 

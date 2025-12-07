@@ -1513,7 +1513,7 @@ class CRMUnified {
             'settings': '/pages/admin/settings.html',
             
             // Розумні модулі
-            'ai-assistant': '/pages/ai-assistant/ai-assistant.html',
+            'ai-assistant': '/pages/ai-assistant-universal.html',
             'ar-helper': '/pages/ar-helper/index.html',
             'voice-control': '/pages/voice-control/index.html',
             'knowledge-manager': '/pages/knowledge-manager/index.html',

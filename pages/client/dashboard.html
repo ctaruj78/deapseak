@@ -351,7 +351,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="../ai-assistant/ai-assistant.html" class="nav-link">
+                            <a href="/pages/ai-assistant-universal.html" class="nav-link">
                                 <i class="nav-icon fas fa-robot"></i>
                                 <p>AI Асистент</p>
                                 <span class="badge badge-success right">Новинка</span>
@@ -673,7 +673,7 @@
                     // Fallback якщо AuthManager не завантажений
                     localStorage.clear();
                     sessionStorage.clear();
-                    window.location.href = '/login.html';
+                    window.location.replace('/pages/auth/login.html');
                 }
             }
         }
@@ -797,16 +797,11 @@
                     }
 
                     const data = await response.json();
-                    console.log('✅ Ліфти завантажено:', data.data?.length || 0);
+                    const clientLifts = data.data || [];
                     
-                    // Отримуємо дані користувача для фільтрації
-                    const userData = AuthManager.getCurrentUser();
-                    const allLifts = data.data || [];
+                    console.log('✅ Ліфти завантажено:', clientLifts.length);
                     
-                    // Фільтруємо ліфти за клієнтом (якщо потрібно)
-                    const clientLifts = userData?.role === 'client' && userData?._id
-                        ? allLifts.filter(lift => lift.client === userData._id || lift.clientId === userData._id)
-                        : allLifts;
+                    // ✅ API вже повертає тільки ліфти цього клієнта (фільтрація на сервері)
                     
                     return clientLifts;
                 } catch (error) {

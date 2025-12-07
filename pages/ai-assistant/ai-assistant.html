@@ -33,6 +33,28 @@
             background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
             color: white;
             padding: 30px;
+            position: relative;
+        }
+
+        .ai-header .back-button {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.3s;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .ai-header .back-button:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateX(-5px);
+        }
+
+        .ai-header .header-content {
             text-align: center;
         }
 
@@ -553,8 +575,13 @@
 <body>
     <div class="ai-container">
         <div class="ai-header">
-            <h1>🤖 AI Асистент DeapSeaK Pro</h1>
-            <p>Розумний помічник • Юридичний консультант • Аналітика</p>
+            <a href="/pages/admin/admin-dashboard.html" class="back-button">
+                <i class="fas fa-arrow-left"></i> Назад до панелі
+            </a>
+            <div class="header-content">
+                <h1>🤖 AI Асистент DeapSeaK Pro</h1>
+                <p>Розумний помічник • Юридичний консультант • Аналітика</p>
+            </div>
         </div>
 
         <div class="ai-tabs">
@@ -760,7 +787,7 @@
                 console.warn('❌ Токен не знайдено, перенаправлення на логін');
                 // Зберігаємо поточну сторінку для повернення після логіну
                 sessionStorage.setItem('redirect_after_login', window.location.href);
-                window.location.href = '/login.html';
+                window.location.replace('/pages/auth/login.html');
                 return false;
             }
             
@@ -1343,7 +1370,7 @@
                     console.error('❌ Токен не знайдено');
                     alert('Ви не авторизовані. Будь ласка, увійдіть в систему.');
                     sessionStorage.setItem('redirect_after_login', window.location.href);
-                    window.location.href = '/login.html';
+                    window.location.replace('/pages/auth/login.html');
                     return;
                 }
 
@@ -1948,7 +1975,7 @@
                 const token = getAuthToken();
                 if (!token) {
                     alert('Autenticação necessária');
-                    window.location.href = '/login.html';
+                    window.location.replace('/pages/auth/login.html');
                     return;
                 }
 
@@ -2046,7 +2073,7 @@
                 const token = getAuthToken();
                 if (!token) {
                     alert('Autenticação necessária');
-                    window.location.href = '/login.html';
+                    window.location.replace('/pages/auth/login.html');
                     return;
                 }
 

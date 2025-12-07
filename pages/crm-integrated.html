@@ -331,7 +331,7 @@ class CRMController {
     checkAuth() {
         const token = localStorage.getItem('authToken');
         if (!token) {
-            window.location.href = '/login.html';
+            window.location.replace('/pages/auth/login.html');
             return;
         }
         

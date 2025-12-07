@@ -398,7 +398,7 @@
                             </ul>
                         </li>
                         <li class="nav-item">
-                            <a href="../ai-assistant/ai-assistant.html" class="nav-link">
+                            <a href="/pages/ai-assistant-universal.html" class="nav-link">
                                 <i class="nav-icon fas fa-robot"></i>
                                 <p>AI Асистент</p>
                                 <span class="badge badge-success right">Новинка</span>
@@ -774,7 +774,7 @@
             if (confirm('Ви впевнені, що хочете вийти з системи?')) {
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('userData');
-                window.location.href = '../../login.html';
+                window.location.replace('/pages/auth/login.html');
             }
         }
 

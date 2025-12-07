@@ -2330,7 +2330,7 @@ $(document).ready(function() {
     // Перевірка авторизації при завантаженні сторінки
     const sessionData = localStorage.getItem('lm_session');
     if (!sessionData) {
-        window.location.href = '../login.html';
+        window.location.replace('/pages/auth/login.html');
         return;
     }
 
@@ -2340,20 +2340,20 @@ $(document).ready(function() {
         
         if (new Date(session.expiresAt) <= now) {
             localStorage.removeItem('lm_session');
-            window.location.href = '../login.html';
+            window.location.replace('/pages/auth/login.html');
             return;
         }
 
         if (session.user && session.user.role !== 'client') {
             alert('Доступ заборонено. Необхідні права клієнта.');
-            window.location.href = '../login.html';
+            window.location.replace('/pages/auth/login.html');
             return;
         }
         
     } catch (error) {
         console.error('Session error:', error);
         localStorage.removeItem('lm_session');
-        window.location.href = '../login.html';
+        window.location.replace('/pages/auth/login.html');
         return;
     }
 

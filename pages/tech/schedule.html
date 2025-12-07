@@ -646,7 +646,7 @@
             if (confirm('Ви впевнені, що хочете вийти з системи?')) {
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('userData');
-                window.location.href = '../../login.html';
+                window.location.replace('/pages/auth/login.html');
             }
         }
 

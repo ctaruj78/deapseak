@@ -7,7 +7,7 @@
     <meta http-equiv="refresh" content="0; url=unified-analytics.html">
     <script>
         // JavaScript редирект як backup
-        window.location.href = 'unified-analytics.html';
+        window.location.replace('/pages/admin/unified-analytics.html');
     </script>
     
     <!-- AdminLTE CSS -->
@@ -373,6 +373,13 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+
+    <!-- Load sidebar dynamically -->
+    <script>
+        $(document).ready(function() {
+            $(".main-sidebar").load("includes/sidebar.html");
+        });
+    </script>
     
     <!-- 🌍 Система багатомовності -->
     <script src="../../assets/js/i18n.js"></script>

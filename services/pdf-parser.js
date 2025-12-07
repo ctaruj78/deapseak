@@ -8,6 +8,15 @@ const fs = require('fs');
 
 // 📚 База знань португальського законодавства про ліфти
 const regulationArticles = {
+    // Decreto 513/70 - Artigos críticos de segurança
+    '9': {
+        title: 'Vedação da caixa (Art. 9º Dec. 513/70)',
+        explanation: 'A caixa deve ser vedada em toda a altura com materiais resistentes ao fogo',
+        why: 'Caixa mal vedada permite entrada de objetos ou pessoas, causando quedas ou choques',
+        solution: 'Vedar caixa completamente com materiais incombustíveis certificados',
+        urgency: 'ALTO',
+        regulation: 'Decreto 513/70, Artigo 9º'
+    },
     '12': {
         title: 'Dispositivos de segurança nas portas',
         explanation: 'Sensores que evitam que o elevador se mova com portas abertas',
@@ -23,11 +32,12 @@ const regulationArticles = {
         urgency: 'MÉDIO'
     },
     '14': {
-        title: 'Inspeções periódicas',
-        explanation: 'Inspeções anuais por técnico certificado',
-        why: 'Garante conformidade contínua',
-        solution: 'Agendar inspeção com entidade acreditada',
-        urgency: 'ALTO'
+        title: 'Caixa sobre locais acessíveis (Art. 14º Dec. 513/70)',
+        explanation: 'Caixa não pode situar-se sobre locais acessíveis sem pára-quedas',
+        why: 'Em caso de ruptura de cabos, cabina ou contrapeso podem cair sobre pessoas causando morte',
+        solution: 'Instalar pára-quedas em todos os órgãos suspensos ou reforçar estrutura inferior',
+        urgency: 'CRÍTICO',
+        regulation: 'Decreto 513/70, Artigo 14º'
     },
     '15': {
         title: 'Documentação técnica completa',
@@ -50,26 +60,291 @@ const regulationArticles = {
         solution: 'Instalar sinalização conforme normas',
         urgency: 'BAIXO'
     },
-    '45': {
-        title: 'Ventilação adequada na cabine',
-        explanation: 'Sistema de ventilação para conforto e segurança',
-        why: 'Previne sufocação em caso de paragem prolongada',
-        solution: 'Instalar ou reparar sistema de ventilação',
-        urgency: 'MÉDIO'
+    '33': {
+        title: 'Resistência mecânica das portas (Art. 33º Dec. 513/70)',
+        explanation: 'Portas devem ter estrutura metálica e resistir a 30 kgf sem deformação',
+        why: 'Portas fracas podem ceder quando alguém se apoia, causando queda na caixa do elevador',
+        solution: 'Substituir portas por modelos com estrutura metálica certificada',
+        urgency: 'ALTO',
+        regulation: 'Decreto 513/70, Artigo 33º'
+    },
+    '39': {
+        title: 'Encravamento das portas (Art. 39º Dec. 513/70)',
+        explanation: 'Todas as portas devem ter dispositivos de encravamento seguros',
+        why: 'Sem encravamento, porta pode abrir com cabina ausente, causando queda fatal na caixa',
+        solution: 'Instalar dispositivos de encravamento certificados em todas as portas de patamar',
+        urgency: 'CRÍTICO',
+        regulation: 'Decreto 513/70, Artigo 39º'
+    },
+    '44': {
+        title: 'Constituição da cabina (Art. 44º Dec. 513/70)',
+        explanation: 'Cabina deve ser fechada com materiais não inflamáveis',
+        why: 'Materiais inflamáveis em incêndio libertam gases tóxicos que podem matar ocupantes presos',
+        solution: 'Revestir cabina com materiais incombustíveis certificados',
+        urgency: 'ALTO',
+        regulation: 'Decreto 513/70, Artigo 44º'
+    },
+    '52': {
+        title: 'Ventilação da cabina (Art. 52º Dec. 513/70)',
+        explanation: 'Cabina deve ter ventilação adequada para pessoas presas em avarias',
+        why: 'Sem ventilação, pessoas podem sufocar se ficarem presas horas durante avaria',
+        solution: 'Instalar aberturas de ventilação com malha de segurança',
+        urgency: 'MÉDIO',
+        regulation: 'Decreto 513/70, Artigo 52º'
+    },
+    '53': {
+        title: 'Iluminação da cabina (Art. 53º Dec. 513/70)',
+        explanation: 'Cabina deve ter iluminação permanente independente',
+        why: 'No escuro, pessoas presas entram em pânico e podem ferir-se tentando sair',
+        solution: 'Instalar iluminação de emergência com bateria autónoma',
+        urgency: 'MÉDIO',
+        regulation: 'Decreto 513/70, Artigo 53º'
+    },
+    '65': {
+        title: 'Pára-quedas obrigatório (Art. 65º Dec. 513/70)',
+        explanation: 'Cabina deve ter pára-quedas comandado por limitador de velocidade',
+        why: 'Se cabos partirem, cabina cai em queda livre esmagando ocupantes - MORTE CERTA',
+        solution: 'Instalar sistema de pára-quedas certificado com limitador de velocidade',
+        urgency: 'CRÍTICO',
+        regulation: 'Decreto 513/70, Artigo 65º'
+    },
+    '67': {
+        title: 'Limitador de velocidade (Art. 67º Dec. 513/70)',
+        explanation: 'Dispositivo que aciona pára-quedas se velocidade exceder limite',
+        why: 'Sem limitador, excesso de velocidade não é detectado e pára-quedas não atua causando acidente',
+        solution: 'Instalar e selar limitador de velocidade calibrado conforme norma',
+        urgency: 'CRÍTICO',
+        regulation: 'Decreto 513/70, Artigo 67º'
+    },
+    '77': {
+        title: 'Folgas em cabinas sem portas (Art. 77º Dec. 513/70)',
+        explanation: 'Folga entre cabina e parede não pode exceder 2 cm',
+        why: 'Folgas excessivas podem prender dedos, braços ou crianças inteiras causando esmagamento',
+        solution: 'Ajustar guias e alinhamento para reduzir folga a máximo 2 cm',
+        urgency: 'ALTO',
+        regulation: 'Decreto 513/70, Artigo 77º'
     },
     '78': {
-        title: 'Proteção de partes móveis da máquina',
-        explanation: 'Peças salientes e móveis devem estar protegidas',
-        why: 'Previne acidentes corporais graves com máquinas',
-        solution: 'Instalar resguardos certificados em todas as rodas e partes móveis',
-        urgency: 'ALTO'
+        title: 'Folgas entre soleiras (Art. 78º Dec. 513/70)',
+        explanation: 'Folga entre soleira de cabina e porta de patamar máximo 2 cm (portas manuais) ou 3,5 cm (automáticas)',
+        why: 'Folgas excessivas podem prender roupas, sapatos ou causar quedas, especialmente crianças e idosos',
+        solution: 'Ajustar mecanicamente as soleiras para garantir folga conforme norma',
+        urgency: 'ALTO',
+        regulation: 'Decreto 513/70, Artigo 78º'
+    },
+    '81': {
+        title: 'Sistema de freio (Art. 81º Dec. 513/70)',
+        explanation: 'Freio deve imobilizar automaticamente na falta de corrente',
+        why: 'Falha do freio permite descida descontrolada esmagando ocupantes ou pessoas no patamar',
+        solution: 'Substituir sistema de frenagem por modelo certificado com atuação automática',
+        urgency: 'CRÍTICO',
+        regulation: 'Decreto 513/70, Artigo 81º'
     },
     '85': {
-        title: 'Segurança no acesso à casa das máquinas',
-        explanation: 'Proteções adequadas no acesso e componentes mecânicos',
-        why: 'Evita acidentes durante manutenção e inspeção',
-        solution: 'Implementar barreiras de proteção e sinalização adequada',
-        urgency: 'ALTO'
+        title: 'Proteção de peças móveis (Art. 85º Dec. 513/70)',
+        explanation: 'Volantes, engrenagens e correias devem ter resguardos',
+        why: 'Peças móveis sem proteção podem causar amputações, esmagamentos ou morte do técnico durante manutenção',
+        solution: 'Instalar resguardos certificados em todas as peças salientes e móveis',
+        urgency: 'CRÍTICO',
+        regulation: 'Decreto 513/70, Artigo 85º'
+    },
+    '97': {
+        title: 'Avisos na cabina (Art. 97º Dec. 513/70)',
+        explanation: 'Cabina deve ter placa com carga máxima e contacto de conservação',
+        why: 'Sem avisos, utilizadores sobrecarregam cabina causando ruptura de cabos ou falha de freios',
+        solution: 'Afixar placas indeléveis com carga máxima, lotação e contacto de emergência',
+        urgency: 'MÉDIO',
+        regulation: 'Decreto 513/70, Artigo 97º'
+    },
+    '108': {
+        title: 'Periodicidade de manutenção (Art. 108º Dec. 513/70)',
+        explanation: 'Inspeção mensal obrigatória e revisão semestral completa',
+        why: 'Sem manutenção regular, defeitos acumulam-se até falha catastrófica',
+        solution: 'Contratar empresa certificada para manutenção mensal e revisão semestral',
+        urgency: 'ALTO',
+        regulation: 'Decreto 513/70, Artigo 108º'
+    },
+    '109': {
+        title: 'Substituição de cabos (Art. 109º Dec. 513/70)',
+        explanation: 'Cabos com >10% fios partidos ou corrosão devem ser substituídos IMEDIATAMENTE',
+        why: 'Cabos deteriorados podem romper causando queda livre da cabina - MORTE CERTA',
+        solution: 'Substituir imediatamente todos os cabos de suspensão por novos certificados',
+        urgency: 'CRÍTICO',
+        regulation: 'Decreto 513/70, Artigo 109º'
+    },
+    '110': {
+        title: 'Livro de registo (Art. 110º Dec. 513/70)',
+        explanation: 'Casa das máquinas deve ter livro com registo de todas as manutenções',
+        why: 'Sem registo, impossível rastrear quando foi última manutenção ou que problemas foram detetados',
+        solution: 'Adquirir livro aprovado pela DGEG e registar todas as intervenções',
+        urgency: 'MÉDIO',
+        regulation: 'Decreto 513/70, Artigo 110º'
+    },
+    'NOTA': {
+        title: 'Dispositivo elétrico na soleira móvel',
+        explanation: 'O dispositivo pode não funcionar corretamente nas extremidades',
+        why: 'Falhas nas extremidades podem não detetar obstáculos, causando acidentes ao fechar portas',
+        solution: 'Verificar e ajustar sensores nas extremidades ou substituir por sistema mais eficaz',
+        urgency: 'MÉDIO'
+    },
+    
+    // Decreto-Lei 320/2002 - Manutenção e Inspecção
+    'DL320-3': {
+        title: 'Manutenção regular obrigatória (Art. 3º DL 320/2002)',
+        explanation: 'Elevador deve ter contrato de manutenção com EMA inscrita na DGE',
+        why: 'Sem manutenção regular, defeitos acumulam-se até falha catastrófica causando morte',
+        solution: 'Celebrar contrato de manutenção (simples ou completa) com EMA certificada',
+        urgency: 'CRÍTICO',
+        regulation: 'Decreto-Lei 320/2002, Artigo 3º',
+        deadline: 'Imediato',
+        penalty: '€1000 a €5000 + responsabilidade criminal'
+    },
+    'DL320-4': {
+        title: 'Contrato de manutenção obrigatório (Art. 4º DL 320/2002)',
+        explanation: 'Proprietário deve ter contrato válido com EMA',
+        why: 'Elevador sem contrato não tem responsável legal pela segurança',
+        solution: 'Assinar contrato de manutenção antes de entrada em serviço',
+        urgency: 'ALTO',
+        regulation: 'Decreto-Lei 320/2002, Artigo 4º',
+        penalty: '€1000 a €5000'
+    },
+    'DL320-5': {
+        title: 'Identificação da EMA na cabina (Art. 5º DL 320/2002)',
+        explanation: 'Cabina deve ter placa visível com EMA, contactos e tipo de contrato',
+        why: 'Sem identificação, utilizadores não sabem quem contactar em emergência',
+        solution: 'Afixar placa legível com nome EMA, telefone e tipo contrato',
+        urgency: 'MÉDIO',
+        regulation: 'Decreto-Lei 320/2002, Artigo 5º'
+    },
+    'DL320-6': {
+        title: 'EMA sem registo na DGE (Art. 6º DL 320/2002)',
+        explanation: 'EMA deve estar inscrita no registo oficial da DGE',
+        why: 'EMA sem registo pode não ter competência técnica nem seguro obrigatório',
+        solution: 'Verificar se EMA tem registo DGE válido antes de contratar',
+        urgency: 'CRÍTICO',
+        regulation: 'Decreto-Lei 320/2002, Artigo 6º',
+        penalty: '€7500 a €37500 para EMA'
+    },
+    'DL320-8': {
+        title: 'Inspecção periódica (Art. 8º DL 320/2002)',
+        explanation: 'Elevador deve ter inspecção periódica conforme periodicidade: 2, 4 ou 6 anos',
+        why: 'Sem inspecção, defeitos críticos não são detetados causando acidentes mortais',
+        solution: 'Requerer inspecção à Câmara Municipal antes do prazo expirar',
+        urgency: 'ALTO',
+        regulation: 'Decreto-Lei 320/2002, Artigo 8º',
+        deadline: '2 anos (comercial), 4 anos (misto/grande), 6 anos (habitacional)',
+        penalty: '€250 a €5000'
+    },
+    'DL320-9': {
+        title: 'Participação de acidentes (Art. 9º DL 320/2002)',
+        explanation: 'EMA e proprietário devem participar acidentes à Câmara Municipal',
+        why: 'Acidentes não reportados impedem investigação e prevenção de mortes futuras',
+        solution: 'Comunicar acidente em 3 dias (imediato se morte) à Câmara Municipal',
+        urgency: 'CRÍTICO',
+        regulation: 'Decreto-Lei 320/2002, Artigo 9º',
+        deadline: '3 dias (imediato se vítimas mortais)',
+        penalty: 'Responsabilidade criminal'
+    },
+    'DL320-11': {
+        title: 'Elevador selado (Art. 11º DL 320/2002)',
+        explanation: 'Elevador selado pela Câmara Municipal não pode funcionar',
+        why: 'Selagem indica risco grave - funcionar pode matar',
+        solution: 'Corrigir defeitos, solicitar reinspecção, aguardar desselagem',
+        urgency: 'CRÍTICO',
+        regulation: 'Decreto-Lei 320/2002, Artigo 11º',
+        penalty: 'Responsabilidade criminal em caso de acidente'
+    },
+    'DL320-17': {
+        title: 'Cabina sem porta (Art. 17º DL 320/2002)',
+        explanation: 'Cabinas sem porta devem ser remodeladas em 5 anos (edifícios comerciais)',
+        why: 'Cabina sem porta permite queda durante movimento ou contacto com caixa',
+        solution: 'Instalar porta automática certificada na cabina',
+        urgency: 'ALTO',
+        regulation: 'Decreto-Lei 320/2002, Artigo 17º',
+        deadline: '5 anos (comercial), dispensado em habitacional',
+        penalty: 'Obrigação de remodelação'
+    },
+    'DL320-17-CARGA': {
+        title: 'Controlo de carga (Art. 17º DL 320/2002)',
+        explanation: 'Elevador deve ter dispositivo de controlo de sobrecarga',
+        why: 'Sobrecarga pode causar ruptura de cabos ou falha de freios matando todos',
+        solution: 'Instalar dispositivo que impede arranque com excesso de carga',
+        urgency: 'ALTO',
+        regulation: 'Decreto-Lei 320/2002, Artigo 17º n.º5',
+        deadline: '3 anos desde publicação',
+        penalty: 'Obrigação de instalação'
+    },
+    
+    // ==================== DECRETO-LEI 295/98 - MARCAÇÃO CE E CONFORMIDADE ====================
+    'DL295-4': {
+        title: 'Sem Marcação CE de conformidade (Art. 4º + 11º DL 295/98)',
+        explanation: 'Ascensor ou componente colocado no mercado SEM marcação CE',
+        why: 'Equipamento não verificado por organismo notificado pode ter falhas graves de segurança causando acidentes fatais - cabos não testados, freios sem certificação, portas sem encravamento verificado',
+        solution: 'Submeter a exame CE de tipo por organismo notificado + obter declaração de conformidade + apor marcação CE antes de comercializar',
+        urgency: 'CRÍTICO',
+        regulation: 'Decreto-Lei 295/98, Artigos 4º, 6º, 9º',
+        deadline: 'Imediato - proibição de venda/instalação',
+        penalty: '€2.494 a €44.892 + proibição de mercado pelo Ministro Economia'
+    },
+    'DL295-5': {
+        title: 'Canalizações na caixa do ascensor (Art. 5º n.º3 DL 295/98)',
+        explanation: 'Caixa contém canalizações ou instalações além das necessárias ao funcionamento',
+        why: 'Canalizações de gás podem causar explosão, água pode inundar poço electrocutando técnicos, esgoto contamina durante resgate',
+        solution: 'Remover TODAS canalizações estranhas - apenas elétricas e hidráulicas do ascensor',
+        urgency: 'ALTO',
+        regulation: 'Decreto-Lei 295/98, Artigo 5º n.º3',
+        deadline: '30 dias',
+        penalty: '€1.496 a €24.940'
+    },
+    'DL295-7-INDEVIDA': {
+        title: 'Marcação CE indevida - Falsa conformidade (Art. 7º + 9º DL 295/98)',
+        explanation: 'Marcação CE aposta SEM cumprir procedimentos de avaliação ou requisitos essenciais',
+        why: 'Falsa certificação esconde perigos reais - público confia em segurança inexistente causando mortes',
+        solution: 'Retirar marcação + submeter a avaliação correta por organismo notificado + corrigir não-conformidades',
+        urgency: 'CRÍTICO',
+        regulation: 'Decreto-Lei 295/98, Artigos 7º, 9º',
+        deadline: 'Imediato - prazo fixado por fiscalização',
+        penalty: 'Proibição mercado/serviço + €2.494 a €44.892 + responsabilidade criminal em caso acidente'
+    },
+    'DL295-ANEXO-I-2.2': {
+        title: 'Cabina sem acessibilidade para deficientes (Anexo I n.º2.2 DL 295/98)',
+        explanation: 'Cabina com dimensões que permitem mas não facilita acesso a pessoas deficientes',
+        why: 'Cadeiras de rodas ou bengalas podem encravar em portas estreitas causando quedas ou esmagamentos',
+        solution: 'Adaptar cabina: alargar porta, instalar corrimões, botões acessíveis, sinalização tátil',
+        urgency: 'MODERADO',
+        regulation: 'Decreto-Lei 295/98, Anexo I n.º2.2',
+        deadline: 'Próxima remodelação ou 6 meses se prédio público',
+        penalty: 'Incluído em não-conformidade - proibição de entrada em serviço'
+    },
+    'DL295-ANEXO-I-4.4': {
+        title: 'Dispositivo anti-queda desativado - Movimento sem proteção (Anexo I n.º4.4 DL 295/98)',
+        explanation: 'Ascensor pode mover-se quando dispositivo Art. 4.2 (pára-quedas) não está operacional',
+        why: 'Se pára-quedas falhar OU estiver desligado, cabina cai em queda livre esmagando ocupantes - MORTE GARANTIDA',
+        solution: 'Instalar bloqueio que impede movimento se pára-quedas não operacional + verificar circuito segurança',
+        urgency: 'CRÍTICO',
+        regulation: 'Decreto-Lei 295/98, Anexo I n.º4.4',
+        deadline: '0 dias - DESATIVAR ELEVADOR IMEDIATAMENTE',
+        penalty: 'Proibição entrada em serviço + responsabilidade criminal se continuar operação'
+    },
+    'DL295-ANEXO-III': {
+        title: 'Marcação CE com grafismo incorreto (Anexo III DL 295/98)',
+        explanation: 'Marcação CE não respeita grafismo oficial ou dimensões mínimas (5mm)',
+        why: 'Marcação adulterada pode esconder origem duvidosa ou falsificação',
+        solution: 'Apor marcação CE com grafismo correto segundo Anexo III + dimensão mínima 5mm',
+        urgency: 'MODERADO',
+        regulation: 'Decreto-Lei 295/98, Anexo III',
+        deadline: '7 dias',
+        penalty: 'Incluído em marcação CE indevida - €2.494 a €44.892'
+    },
+    'DL295-ANEXO-IV': {
+        title: 'Componente de segurança sem certificação (Anexo IV DL 295/98)',
+        explanation: 'Componente crítico (encravamento, pára-quedas, limitador, amortecedor) sem exame CE',
+        why: 'Componente não testado pode falhar causando queda livre, esmagamento, electrocussão',
+        solution: 'Substituir por componente certificado COM declaração CE + número organismo notificado',
+        urgency: 'CRÍTICO',
+        regulation: 'Decreto-Lei 295/98, Anexo IV + Art. 11º',
+        deadline: 'Imediato - componente NÃO pode ser instalado',
+        penalty: '€2.494 a €44.892 por componente + proibição instalação'
     }
 };
 
@@ -314,6 +589,13 @@ function extractViolations(text) {
             /Página\s*\d+\s*de\s*\d+/i,
             /Impresso\s+ELEV/i,
             /Documento\s+impresso\s+em/i,
+            // 🔥 ЗАГОЛОВКИ СЕКЦІЙ - НЕ порушення!
+            /AS\s+CLÁUSULAS\s+A\s+SEGUIR\s+INDICADAS/i,
+            /APLICADAS\s+NO\s+DECURSO\s+DE\s+INSPEÇÃO/i,
+            /DEVERÃO\s+SER\s+REGULARIZADAS/i,
+            /NO\s+MAIS\s+CURTO\s+ESPAÇO\s+DE\s+TEMPO/i,
+            /NÃO\s+PODERÁ\s+ULTRAPASSAR\s+A\s+DATA/i,
+            /PRÓXIMA\s+INSPEÇÃO?\s+PERIÓDICA/i,
         ];
         
         // Шукаємо всі C1/C2/C3 в тексті
@@ -755,5 +1037,7 @@ module.exports = {
     extractMetadata,
     extractViolations,
     extractConclusion,
-    getViolationsStats
+    getViolationsStats,
+    regulationArticles,
+    classificationInfo
 };

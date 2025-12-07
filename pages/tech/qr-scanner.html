@@ -400,7 +400,7 @@ document.addEventListener("DOMContentLoaded", function() {
     
     // Перевірка авторизації
     if (!isAuthenticated()) {
-        window.location.href = '../../login.html';
+        window.location.replace('/pages/auth/login.html');
         return;
     }
     
@@ -408,7 +408,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const user = getCurrentUser();
     if (user && user.role !== 'technician' && user.role !== 'admin' && user.role !== 'dispatcher') {
         // Якщо не технік, адмін або диспетчер - перенаправляємо
-        window.location.href = '../../index.html';
+        window.location.replace('/index.html');
         return;
     }
     
@@ -1093,7 +1093,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // Кнопка виходу
     document.getElementById('logout-button').addEventListener('click', function() {
         logout();
-        window.location.href = '../../login.html';
+        window.location.replace('/pages/auth/login.html');
     });
     
     // Ініціалізація

@@ -30,7 +30,10 @@ class LiftsManager {
             });
             
             if (response.ok) {
-                this.lifts = await response.json();
+                const result = await response.json();
+                // API повертає {success: true, data: [...]}
+                this.lifts = result.data || result;
+                console.log('✅ Завантажено ліфтів з API:', this.lifts.length);
                 localStorage.setItem('lifts', JSON.stringify(this.lifts));
             } else {
                 throw new Error('API недоступне');

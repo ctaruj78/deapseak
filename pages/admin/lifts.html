@@ -218,6 +218,33 @@
             overflow-x: auto;
         }
         
+        /* Компактний режим таблиці */
+        #lifts-table-body tr {
+            line-height: 1.2;
+        }
+        
+        #lifts-table-body td {
+            padding: 0.4rem 0.5rem !important;
+            font-size: 0.875rem;
+            vertical-align: middle;
+        }
+        
+        #lifts-table-body .btn-group-sm .btn {
+            padding: 0.2rem 0.4rem;
+            font-size: 0.75rem;
+        }
+        
+        #lifts-table-body .badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+        }
+        
+        #lifts-table thead th {
+            padding: 0.5rem;
+            font-size: 0.875rem;
+            white-space: nowrap;
+        }
+        
         /* Стилі для QR-кодів */
         .qr-preview-mini {
             padding: 15px;
@@ -490,12 +517,6 @@
                             </a>
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
-                                    <a href="qr-generator.html" class="nav-link">
-                                        <i class="fas fa-plus-circle nav-icon"></i>
-                                        <p>Генератор QR-кодів</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
                                     <a href="qr-management.html" class="nav-link">
                                         <i class="fas fa-cog nav-icon"></i>
                                         <p>Керування QR-кодами</p>
@@ -603,7 +624,7 @@
                         </li>
 
                         <li class="nav-item">
-                            <a href="../ai-assistant/ai-assistant.html" class="nav-link">
+                            <a href="/pages/ai-assistant-universal.html" class="nav-link">
                                 <i class="nav-icon fas fa-robot"></i>
                                 <p>AI Асистент</p>
                             </a>
@@ -1333,15 +1354,62 @@
                     <!-- Секція звітів інспекцій -->
                     <div class="row mt-3">
                         <div class="col-12">
-                            <h6>Звіти інспекцій</h6>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6>Звіти інспекцій</h6>
+                                <button type="button" class="btn btn-sm btn-primary" onclick="showAddReportModal()">
+                                    <i class="fas fa-plus"></i> Додати звіт
+                                </button>
+                            </div>
+                            
+                            <!-- Фільтри -->
+                            <div class="card mb-2">
+                                <div class="card-body p-2">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <select id="filter-report-type" class="form-control form-control-sm" onchange="filterReports()">
+                                                <option value="">Всі типи</option>
+                                                <option value="inspection">Інспекції</option>
+                                                <option value="maintenance">ТО</option>
+                                                <option value="repair">Ремонти</option>
+                                                <option value="emergency">Аварії</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <select id="filter-report-period" class="form-control form-control-sm" onchange="filterReports()">
+                                                <option value="all">Весь час</option>
+                                                <option value="30">Останні 30 днів</option>
+                                                <option value="90">Останні 3 місяці</option>
+                                                <option value="365">Останній рік</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="text" id="filter-report-search" class="form-control form-control-sm" 
+                                                   placeholder="Пошук..." onkeyup="filterReports()">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <button class="btn btn-sm btn-secondary btn-block" onclick="clearReportFilters()">
+                                                <i class="fas fa-times"></i> Скинути
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <div id="inspection-reports-list">
                                 <div class="alert alert-info">
                                     <i class="fas fa-info-circle"></i> Завантаження звітів...
                                 </div>
                             </div>
-                            <button type="button" class="btn btn-sm btn-primary" onclick="showAddReportModal()">
-                                <i class="fas fa-plus"></i> Додати звіт
-                            </button>
+                            
+                            <!-- Пагінація -->
+                            <div id="reports-pagination" class="d-flex justify-content-between align-items-center mt-2" style="display: none !important;">
+                                <small class="text-muted">
+                                    Показано <span id="reports-showing">0</span> з <span id="reports-total">0</span>
+                                </small>
+                                <button id="load-more-reports" class="btn btn-sm btn-outline-primary" onclick="loadMoreReports()" style="display: none;">
+                                    <i class="fas fa-chevron-down"></i> Завантажити ще
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -1837,6 +1905,13 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+
+    <!-- Load sidebar dynamically -->
+    <script>
+        $(document).ready(function() {
+            $(".main-sidebar").load("includes/sidebar.html");
+        });
+    </script>
     
     <!-- 🔌 КОНФІГУРАЦІЯ ПОРТІВ (завантажується ПЕРШОЮ!) -->
     <script src="../../assets/js/config.js?v=20241116"></script>
@@ -2171,7 +2246,7 @@
                 } else {
                     localStorage.clear();
                     sessionStorage.clear();
-                    window.location.href = '/login.html';
+                    window.location.replace('/pages/auth/login.html');
                 }
             }
         }
@@ -4557,15 +4632,20 @@
     // Функції для роботи зі звітами інспекцій
     // ============================================
     
+    let allReports = []; // Всі звіти
+    let filteredReports = []; // Відфільтровані звіти
+    let displayedReportsCount = 0; // Скільки показано
+    const REPORTS_PER_PAGE = 20; // По 20 на сторінку
+    
     async function loadInspectionReports(liftId, lift) {
         const container = document.getElementById('inspection-reports-list');
         if (!container) return;
         
         try {
             // Використовуємо inspectionHistory з моделі ліфта
-            const reports = lift.inspectionHistory || [];
+            allReports = lift.inspectionHistory || [];
             
-            if (reports.length === 0) {
+            if (allReports.length === 0) {
                 container.innerHTML = `
                     <div class="alert alert-warning">
                         <i class="fas fa-exclamation-triangle"></i> Жодного звіту ще не додано
@@ -4574,9 +4654,92 @@
                 return;
             }
             
-            // Відображаємо звіти
-            let html = '<div class="list-group">';
-            reports.forEach((report, index) => {
+            // Сортуємо по даті (найновіші спочатку)
+            allReports.sort((a, b) => {
+                const dateA = new Date(a.inspectionDate || a.date || 0);
+                const dateB = new Date(b.inspectionDate || b.date || 0);
+                return dateB - dateA;
+            });
+            
+            // Застосовуємо фільтри
+            filterReports();
+        } catch (error) {
+            console.error('❌ Помилка завантаження звітів:', error);
+            container.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle"></i> Помилка завантаження звітів
+                </div>
+            `;
+        }
+    }
+    
+    function filterReports() {
+        const typeFilter = document.getElementById('filter-report-type')?.value || '';
+        const periodFilter = document.getElementById('filter-report-period')?.value || 'all';
+        const searchFilter = document.getElementById('filter-report-search')?.value.toLowerCase() || '';
+        
+        // Фільтруємо по типу
+        filteredReports = allReports.filter(report => {
+            // Тип
+            if (typeFilter && (report.inspectionType || report.type) !== typeFilter) {
+                return false;
+            }
+            
+            // Період
+            if (periodFilter !== 'all') {
+                const reportDate = new Date(report.inspectionDate || report.date);
+                const daysDiff = (Date.now() - reportDate) / (1000 * 60 * 60 * 24);
+                if (daysDiff > parseInt(periodFilter)) {
+                    return false;
+                }
+            }
+            
+            // Пошук
+            if (searchFilter) {
+                const searchableText = [
+                    report.inspectionType || '',
+                    report.type || '',
+                    report.comments || '',
+                    report.findings || '',
+                    report.notes || '',
+                    report.inspectorName || ''
+                ].join(' ').toLowerCase();
+                
+                if (!searchableText.includes(searchFilter)) {
+                    return false;
+                }
+            }
+            
+            return true;
+        });
+        
+        // Скидаємо лічильник
+        displayedReportsCount = 0;
+        
+        // Рендеримо
+        renderReports();
+    }
+    
+    function renderReports() {
+        const container = document.getElementById('inspection-reports-list');
+        if (!container) return;
+        
+        if (filteredReports.length === 0) {
+            container.innerHTML = `
+                <div class="alert alert-warning">
+                    <i class="fas fa-search"></i> Звітів не знайдено за вказаними критеріями
+                </div>
+            `;
+            updateReportsPagination(0, 0);
+            return;
+        }
+        
+        // Показуємо перші REPORTS_PER_PAGE записів
+        const toShow = Math.min(displayedReportsCount + REPORTS_PER_PAGE, filteredReports.length);
+        const reportsToDisplay = filteredReports.slice(0, toShow);
+        
+        let html = '<div class="list-group">';
+        reportsToDisplay.forEach((report, index) => {
                 const date = report.inspectionDate || report.date 
                     ? new Date(report.inspectionDate || report.date).toLocaleDateString('uk-UA') 
                     : 'Невідома дата';
@@ -4619,14 +4782,40 @@
             html += '</div>';
             
             container.innerHTML = html;
-        } catch (error) {
-            console.error('❌ Помилка завантаження звітів:', error);
-            container.innerHTML = `
-                <div class="alert alert-danger">
-                    <i class="fas fa-exclamation-circle"></i> Помилка завантаження звітів
-                </div>
-            `;
+            displayedReportsCount = toShow;
+            updateReportsPagination(toShow, filteredReports.length);
         }
+        
+        function updateReportsPagination(showing, total) {
+            const pagination = document.getElementById('reports-pagination');
+            const loadMoreBtn = document.getElementById('load-more-reports');
+            const showingEl = document.getElementById('reports-showing');
+            const totalEl = document.getElementById('reports-total');
+            
+            if (showingEl) showingEl.textContent = showing;
+            if (totalEl) totalEl.textContent = total;
+            
+            if (total > 0) {
+                pagination.style.display = 'flex';
+                if (showing < total && loadMoreBtn) {
+                    loadMoreBtn.style.display = 'block';
+                } else if (loadMoreBtn) {
+                    loadMoreBtn.style.display = 'none';
+                }
+            } else {
+                pagination.style.display = 'none';
+            }
+        }
+        
+        function loadMoreReports() {
+            renderReports();
+        }
+        
+        function clearReportFilters() {
+            document.getElementById('filter-report-type').value = '';
+            document.getElementById('filter-report-period').value = 'all';
+            document.getElementById('filter-report-search').value = '';
+            filterReports();
     }
     
     function showAddReportModal() {
@@ -4810,7 +4999,7 @@
             // Перевіряємо автентифікацію
             if (!AuthManager.isAuthenticated()) {
                 alert('Сесія прострочена. Будь ласка, увійдіть знову');
-                window.location.href = '/login.html';
+                window.location.replace('/pages/auth/login.html');
                 return;
             }
             
@@ -4825,7 +5014,7 @@
             const token = AuthManager.getAuthToken(); // Виправлено: getAuthToken замість getToken
             if (!token) {
                 alert('Токен не знайдено. Будь ласка, увійдіть знову');
-                window.location.href = '/login.html';
+                window.location.replace('/pages/auth/login.html');
                 return;
             }
             
@@ -4914,6 +5103,62 @@
     // ========================
     document.addEventListener('DOMContentLoaded', function() {
         console.log('📊 Ініціалізація обробників експорту...');
+        
+        // ✅ ДОДАНО: Обробник пошуку ліфтів
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', function(e) {
+                const query = e.target.value.toLowerCase().trim();
+                console.log('🔍 Пошук ліфтів:', query);
+                
+                if (!window.allLiftsData || window.allLiftsData.length === 0) {
+                    console.warn('⚠️ Дані ліфтів ще не завантажені');
+                    return;
+                }
+                
+                if (!query) {
+                    // Показати всі ліфти
+                    displayLiftsInTable(window.allLiftsData);
+                    return;
+                }
+                
+                // Фільтруємо ліфти
+                const filtered = window.allLiftsData.filter(lift => {
+                    const municipalNumber = (lift.municipalNumber || '').toLowerCase();
+                    const manufacturer = (lift.manufacturer || '').toLowerCase();
+                    const model = (lift.model || '').toLowerCase();
+                    const type = (lift.type || '').toLowerCase();
+                    const id = ((lift._id || lift.id) || '').toString().toLowerCase();
+                    
+                    // Адреса з об'єкта
+                    let addressStr = '';
+                    if (typeof lift.address === 'object' && lift.address) {
+                        addressStr = `${lift.address.street || ''} ${lift.address.city || ''}`.toLowerCase();
+                    } else if (typeof lift.address === 'string') {
+                        addressStr = lift.address.toLowerCase();
+                    }
+                    
+                    // Клієнт
+                    let clientStr = '';
+                    if (typeof lift.client === 'object' && lift.client) {
+                        clientStr = `${lift.client.firstName || ''} ${lift.client.lastName || ''} ${lift.client.email || ''}`.toLowerCase();
+                    } else if (lift.clientName) {
+                        clientStr = lift.clientName.toLowerCase();
+                    }
+                    
+                    return municipalNumber.includes(query) ||
+                           manufacturer.includes(query) ||
+                           model.includes(query) ||
+                           type.includes(query) ||
+                           id.includes(query) ||
+                           addressStr.includes(query) ||
+                           clientStr.includes(query);
+                });
+                
+                console.log(`✅ Знайдено ліфтів: ${filtered.length} з ${window.allLiftsData.length}`);
+                displayLiftsInTable(filtered);
+            });
+        }
         
         // Обробник експорту CSV
         const exportCSVBtn = document.getElementById('exportCSVBtn');

@@ -200,7 +200,7 @@
         const userData = localStorage.getItem('userData');
         
         if (!token || !userData) {
-            window.location.href = '/login.html';
+            window.location.replace('/pages/auth/login.html');
             return;
         }
         

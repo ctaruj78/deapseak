@@ -227,12 +227,6 @@
                             </a>
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
-                                    <a href="../admin/qr-generator.html" class="nav-link">
-                                        <i class="fas fa-plus-circle nav-icon"></i>
-                                        <p>Генератор QR-кодів</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
                                     <a href="../admin/qr-management.html" class="nav-link">
                                         <i class="fas fa-cog nav-icon"></i>
                                         <p>Керування QR-кодами</p>
@@ -648,7 +642,7 @@
             if (confirm('Ви впевнені, що хочете вийти з системи?')) {
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('userData');
-                window.location.href = '../../login.html';
+                window.location.replace('/pages/auth/login.html');
             }
         }
 

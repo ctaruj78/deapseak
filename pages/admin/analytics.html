@@ -69,13 +69,7 @@
                                 <i class="right fas fa-angle-left"></i>
                             </p>
                         </a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                <a href="qr-generator.html" class="nav-link">
-                                    <i class="fas fa-plus-circle nav-icon"></i>
-                                    <p>Генератор QR-кодів</p>
-                                </a>
-                            </li>
+                            <ul class="nav nav-treeview">
                             <li class="nav-item">
                                 <a href="qr-management.html" class="nav-link">
                                     <i class="fas fa-cog nav-icon"></i>
@@ -150,7 +144,7 @@
                     </li>
 
                     <li class="nav-item">
-                        <a href="../ai-assistant/ai-assistant.html" class="nav-link">
+                        <a href="/pages/ai-assistant-universal.html" class="nav-link">
                             <i class="nav-icon fas fa-robot"></i>
                             <p>AI Асистент</p>
                         </a>
@@ -511,6 +505,13 @@
 <!-- AdminLTE App -->
     <!-- AdminLTE App -->
     <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+
+    <!-- Load sidebar dynamically -->
+    <script>
+        $(document).ready(function() {
+            $(".main-sidebar").load("includes/sidebar.html");
+        });
+    </script>
     
     <!-- 🌍 Система багатомовності -->
     <script src="../../assets/js/i18n.js"></script>

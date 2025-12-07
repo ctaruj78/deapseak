@@ -30,7 +30,10 @@ class AuthManager {
         document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
         
         console.log('👋 Користувач вийшов з системи');
-        window.location.href = '/pages/auth/login.html';
+        
+        // Очищуємо історію браузера перед редиректом
+        window.history.replaceState(null, '', '/pages/auth/login.html');
+        window.location.replace('/pages/auth/login.html');
     }
 
     static isAuthenticated() {
@@ -151,13 +154,47 @@ class AuthManager {
         }
         
         if (!this.isAuthenticated()) {
+            console.log('❌ Користувач не авторизований, редірект на логін');
+            
+            // Зберігаємо поточний URL для редиректу після логіну
             sessionStorage.setItem('redirect_after_login', window.location.href);
-            window.location.href = '/pages/auth/login.html';
+            
+            // ЗАВЖДИ використовуємо АБСОЛЮТНИЙ шлях з кореня
+            const loginPath = '/pages/auth/login.html';
+            
+            // Перевіряємо, щоб не створювати нескінченний цикл
+            if (pathname !== loginPath && !pathname.includes('login.html')) {
+                // Очищуємо історію і робимо редірект
+                window.history.replaceState(null, '', loginPath);
+                window.location.replace(loginPath);
+            }
             return;
+        }
+    }
+}
+
+// Автоматична перевірка при завантаженні сторінки
+if (typeof window !== 'undefined') {
+    // ОДИН раз при завантаженні DOM
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            AuthManager.checkAuthOnPageLoad();
+        });
+    } else if (document.readyState === 'interactive' || document.readyState === 'complete') {
+        // Якщо DOM вже завантажений, виконуємо перевірку
+        // Але тільки якщо не було виконано раніше
+        if (!window.__authCheckExecuted) {
+            window.__authCheckExecuted = true;
+            AuthManager.checkAuthOnPageLoad();
         }
     }
 }
 
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = AuthManager;
+}
+
+// Створюємо глобальний об'єкт auth для зручного використання в HTML
+if (typeof window !== 'undefined') {
+    window.auth = AuthManager;
 }

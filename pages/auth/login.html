@@ -12,7 +12,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../../assets/css/main.css">
     <link rel="stylesheet" href="../../assets/css/auth.css">
-    <script src="../../assets/js/config.js"></script>
 </head>
 <body class="hold-transition login-page bg-light">
     <div class="login-box">
@@ -73,8 +72,13 @@
         </div>
     </div>
     <!-- Scripts -->
+    <!-- jQuery (Must be first!) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Config -->
+    <script src="../../assets/js/config.js"></script>
+    <!-- Bootstrap -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- AdminLTE -->
     <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
     
     <!-- Система авторизації -->
@@ -172,22 +176,23 @@
                 // Очищуємо sessionStorage після редиректу
                 setTimeout(() => sessionStorage.removeItem('redirecting'), 100);
                 
+                // Використовуємо АБСОЛЮТНІ шляхи від кореня сайту
                 switch (role) {
                     case 'admin':
-                        window.location.href = '../admin/admin-dashboard.html';
+                        window.location.replace('/pages/admin/admin-dashboard.html');
                         break;
                     case 'dispatcher':
-                        window.location.href = '../dispatcher/dashboard.html';
+                        window.location.replace('/pages/dispatcher/dashboard.html');
                         break;
                     case 'technician':
                     case 'tech':
-                        window.location.href = '../tech/dashboard.html';
+                        window.location.replace('/pages/tech/dashboard.html');
                         break;
                     case 'client':
-                        window.location.href = '../client/dashboard.html';
+                        window.location.replace('/pages/client/dashboard.html');
                         break;
                     default:
-                        window.location.href = '../admin/admin-dashboard.html';
+                        window.location.replace('/pages/admin/admin-dashboard.html');
                 }
             };
             
@@ -239,19 +244,28 @@
                 }, 5000);
             }
             
-            // Обробка форми входу
-            loginForm.addEventListener('submit', async (e) => {
+            // Обробка форми входу - ТІЛЬКИ ОДИН РАЗ
+            let isSubmitting = false;
+            
+            const handleLogin = async (e) => {
                 e.preventDefault();
-                e.stopPropagation(); // Зупиняємо поширення події
+                e.stopPropagation();
+                e.stopImmediatePropagation();
                 
-                // Перевіряємо чи форма вже обробляється
-                if (loginForm.dataset.processing === 'true') {
-                    console.log('⏸️ Форма вже обробляється, ігноруємо повторний submit');
-                    return;
+                // Подвійна перевірка - глобальна та на формі
+                if (isSubmitting || loginForm.dataset.processing === 'true') {
+                    console.log('⏸️ Форма вже обробляється, БЛОКУЄМО повторний submit');
+                    return false;
                 }
                 
-                // Встановлюємо прапорець обробки
+                // Встановлюємо обидва прапорці
+                isSubmitting = true;
                 loginForm.dataset.processing = 'true';
+                console.log('🔒 Форму ЗАБЛОКОВАНО для обробки');
+                
+                // Видаляємо обробник події щоб запобігти повторному виклику
+                loginForm.removeEventListener('submit', handleLogin);
+                console.log('🗑️ Submit обробник ВИДАЛЕНО');
                 
                 const submitButton = loginForm.querySelector('button[type="submit"]');
                 const originalButtonText = submitButton.innerHTML;
@@ -263,12 +277,17 @@
                 
                 console.log('🔐 Форма логіну відправлена - v2.0 ' + new Date().toISOString());
                 console.log('📝 Email:', email);
-                console.log('� Password length:', password ? password.length : 0);
-                console.log('🌍 Current port:', window.location.port);
+                console.log('🔑 Password length:', password ? password.length : 0);
                 
                 if (!email || !password) {
                     showMessage('Введіть email/логін та пароль');
-                    return;
+                    isSubmitting = false;
+                    loginForm.dataset.processing = 'false';
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalButtonText;
+                    // Повертаємо обробник
+                    loginForm.addEventListener('submit', handleLogin);
+                    return false;
                 }
                 
                 try {
@@ -331,36 +350,51 @@
                         
                         showMessage('Успішний вхід! Перенаправлення...', 'success');
                         
+                        // ⚠️ НЕ розблоковуємо кнопку - користувач перенаправляється
+                        // Це запобігає повторному кліку під час перенаправлення
+                        
                         // Перевіряємо чи є збережене перенаправлення
                         const redirectUrl = sessionStorage.getItem('redirect_after_login');
                         
                         // Перенаправлення через 500мс
                         setTimeout(() => {
                             if (redirectUrl) {
-                                // Очищуємо збережений URL
                                 sessionStorage.removeItem('redirect_after_login');
-                                // Перенаправляємо туди куди хотів потрапити користувач
                                 window.location.href = redirectUrl;
                             } else {
-                                // Стандартне перенаправлення за роллю
                                 redirectUserByRole(user.role);
                             }
                         }, 500);
                         
                     } else {
+                        // Помилка - розблоковуємо форму
                         showMessage(data.message || 'Помилка входу');
                         console.error('❌ Помилка входу:', data);
+                        isSubmitting = false;
+                        loginForm.dataset.processing = 'false';
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = originalButtonText;
+                        // Повертаємо обробник для повторної спроби
+                        loginForm.addEventListener('submit', handleLogin);
                     }
                 } catch (error) {
+                    // Помилка - розблоковуємо форму
                     console.error('❌ Критична помилка входу:', error);
                     showMessage('Сталася помилка під час входу. Перевірте з\'єднання з сервером.');
-                } finally {
-                    // Завжди відновлюємо кнопку та знімаємо прапорець обробки
+                    isSubmitting = false;
                     loginForm.dataset.processing = 'false';
                     submitButton.disabled = false;
                     submitButton.innerHTML = originalButtonText;
+                    // Повертаємо обробник для повторної спроби
+                    loginForm.addEventListener('submit', handleLogin);
                 }
-            });
+                
+                return false;
+            };
+            
+            // Прикріплюємо обробник
+            loginForm.addEventListener('submit', handleLogin);
+            console.log('✅ Login form handler attached');
         });
     </script>
 </body>

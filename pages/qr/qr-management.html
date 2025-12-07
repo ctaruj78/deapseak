@@ -262,15 +262,15 @@
                             </a>
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
-                                    <a href="qr-generator.html" class="nav-link">
-                                        <i class="fas fa-plus-circle nav-icon"></i>
-                                        <p>Генератор QR-кодів</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
                                     <a href="qr-management.html" class="nav-link active">
                                         <i class="fas fa-cog nav-icon"></i>
                                         <p>Керування QR-кодами</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="qr-analytics.html" class="nav-link">
+                                        <i class="fas fa-chart-bar nav-icon"></i>
+                                        <p>Аналітика QR-кодів</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
@@ -324,10 +324,10 @@
                     <div class="row mb-2">
                         <div class="col-sm-6">
                             <h1 style="color: white; font-weight: 600; margin-bottom: 5px;">
-                                <i class="fas fa-qrcode mr-3"></i>Керування QR-кодами
+                                <i class="fas fa-qrcode mr-3"></i>QR-коди ліфтів
                             </h1>
                             <p style="color: rgba(255,255,255,0.8); margin: 0; font-size: 1.1rem;">
-                                Централізоване управління QR-кодами системи
+                                Перегляд, друк та управління QR-кодами для ліфтів
                             </p>
                         </div>
                         <div class="col-sm-6">
@@ -346,59 +346,45 @@
                 <div class="container-fluid">
                     <!-- Статистика -->
                     <div class="row mb-4">
-                        <div class="col-lg-3 col-6">
+                        <div class="col-lg-4 col-6">
                             <div class="small-box bg-info stats-card total">
                                 <div class="inner">
                                     <h3 id="totalQRCodes">0</h3>
-                                    <p>Всього QR-кодів</p>
+                                    <p>Всього ліфтів</p>
                                 </div>
                                 <div class="icon">
-                                    <i class="fas fa-qrcode"></i>
+                                    <i class="fas fa-elevator"></i>
                                 </div>
                                 <a href="#" class="small-box-footer" onclick="qrManager.resetFilters()">
-                                    Детальніше <i class="fas fa-arrow-circle-right"></i>
+                                    Переглянути всі <i class="fas fa-arrow-circle-right"></i>
                                 </a>
                             </div>
                         </div>
-                        <div class="col-lg-3 col-6">
+                        <div class="col-lg-4 col-6">
                             <div class="small-box bg-success stats-card active">
                                 <div class="inner">
                                     <h3 id="activeQRCodes">0</h3>
-                                    <p>Активних кодів</p>
+                                    <p>Працюючих ліфтів</p>
                                 </div>
                                 <div class="icon">
                                     <i class="fas fa-check-circle"></i>
                                 </div>
                                 <a href="#" class="small-box-footer" onclick="qrManager.filterByStatus('active')">
-                                    Детальніше <i class="fas fa-arrow-circle-right"></i>
+                                    Фільтрувати <i class="fas fa-arrow-circle-right"></i>
                                 </a>
                             </div>
                         </div>
-                        <div class="col-lg-3 col-6">
-                            <div class="small-box bg-secondary stats-card inactive">
+                        <div class="col-lg-4 col-6">
+                            <div class="small-box bg-warning stats-card inactive">
                                 <div class="inner">
                                     <h3 id="inactiveQRCodes">0</h3>
-                                    <p>Неактивних кодів</p>
+                                    <p>На ремонті / Зупинені</p>
                                 </div>
                                 <div class="icon">
-                                    <i class="fas fa-ban"></i>
+                                    <i class="fas fa-tools"></i>
                                 </div>
                                 <a href="#" class="small-box-footer" onclick="qrManager.filterByStatus('inactive')">
-                                    Детальніше <i class="fas fa-arrow-circle-right"></i>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="col-lg-3 col-6">
-                            <div class="small-box bg-danger stats-card expired">
-                                <div class="inner">
-                                    <h3 id="expiredQRCodes">0</h3>
-                                    <p>Протермінованих</p>
-                                </div>
-                                <div class="icon">
-                                    <i class="fas fa-exclamation-triangle"></i>
-                                </div>
-                                <a href="#" class="small-box-footer" onclick="qrManager.filterByStatus('expired')">
-                                    Детальніше <i class="fas fa-arrow-circle-right"></i>
+                                    Фільтрувати <i class="fas fa-arrow-circle-right"></i>
                                 </a>
                             </div>
                         </div>
@@ -418,41 +404,27 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
-                                        <div class="col-md-3">
+                                        <div class="col-md-4">
                                             <div class="form-group">
-                                                <label>Статус:</label>
-                                                <select id="statusFilter" class="form-control select2">
+                                                <label>Статус ліфта:</label>
+                                                <select id="statusFilter" class="form-control">
                                                     <option value="all">Всі статуси</option>
                                                     <option value="active">Активні</option>
                                                     <option value="inactive">Неактивні</option>
-                                                    <option value="expired">Протерміновані</option>
                                                 </select>
                                             </div>
                                         </div>
-                                        <div class="col-md-3">
+                                        <div class="col-md-4">
                                             <div class="form-group">
-                                                <label>Тип коду:</label>
-                                                <select id="typeFilter" class="form-control select2">
-                                                    <option value="all">Всі типи</option>
-                                                    <option value="lift">Для ліфтів</option>
-                                                    <option value="technician">Для техніків</option>
-                                                    <option value="location">Для локацій</option>
-                                                    <option value="equipment">Для обладнання</option>
-                                                    <option value="maintenance">Для ТО</option>
-                                                </select>
+                                                <label>Місто:</label>
+                                                <input type="text" id="cityFilter" class="form-control" placeholder="Фільтр по місту...">
                                             </div>
                                         </div>
-                                        <div class="col-md-3">
-                                            <div class="form-group">
-                                                <label>Період створення:</label>
-                                                <input type="text" id="dateRangeFilter" class="form-control daterangepicker">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
+                                        <div class="col-md-4">
                                             <div class="form-group">
                                                 <label>Пошук:</label>
                                                 <div class="input-group">
-                                                    <input type="text" id="searchInput" class="form-control" placeholder="Пошук QR-кодів...">
+                                                    <input type="text" id="searchInput" class="form-control" placeholder="Адреса, номер, QR код...">
                                                     <div class="input-group-append">
                                                         <button class="btn btn-primary" onclick="qrManager.searchQR()">
                                                             <i class="fas fa-search"></i>
@@ -468,11 +440,11 @@
                                         <i class="fas fa-sync"></i> Скинути фільтри
                                     </button>
                                     <button class="btn btn-info ml-2" id="exportCSVBtn">
-    <i class="fas fa-download"></i> Експорт в CSV
-</button>
-                                   <button class="btn btn-success ml-2" data-toggle="modal" data-target="#generateQRModal">
-    <i class="fas fa-plus"></i> Створити QR-код
-</button>
+                                        <i class="fas fa-file-excel"></i> Експорт в Excel
+                                    </button>
+                                    <button class="btn btn-success ml-2" id="printSelectedBtn">
+                                        <i class="fas fa-print"></i> Друкувати вибрані
+                                    </button>
                                 </div>
                             </div>
                         </div>

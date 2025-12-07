@@ -276,12 +276,6 @@
                             </a>
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
-                                    <a href="qr-generator.html" class="nav-link">
-                                        <i class="fas fa-plus-circle nav-icon"></i>
-                                        <p>Генератор QR-кодів</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
                                     <a href="qr-management.html" class="nav-link active">
                                         <i class="fas fa-cog nav-icon"></i>
                                         <p>Керування QR-кодами</p>
@@ -383,7 +377,7 @@
                         </li>
 
                         <li class="nav-item">
-                            <a href="../ai-assistant/ai-assistant.html" class="nav-link">
+                            <a href="/pages/ai-assistant-universal.html" class="nav-link">
                                 <i class="nav-icon fas fa-robot"></i>
                                 <p>AI Асистент</p>
                             </a>
@@ -431,59 +425,45 @@
                 <div class="container-fluid">
                     <!-- Статистика -->
                     <div class="row mb-4">
-                        <div class="col-lg-3 col-6">
+                        <div class="col-lg-4 col-6">
                             <div class="small-box bg-info stats-card total">
                                 <div class="inner">
                                     <h3 id="totalQRCodes">0</h3>
-                                    <p>Всього QR-кодів</p>
+                                    <p>Всього ліфтів</p>
                                 </div>
                                 <div class="icon">
-                                    <i class="fas fa-qrcode"></i>
+                                    <i class="fas fa-elevator"></i>
                                 </div>
                                 <a href="#" class="small-box-footer" onclick="qrManager.resetFilters()">
-                                    Детальніше <i class="fas fa-arrow-circle-right"></i>
+                                    Переглянути всі <i class="fas fa-arrow-circle-right"></i>
                                 </a>
                             </div>
                         </div>
-                        <div class="col-lg-3 col-6">
+                        <div class="col-lg-4 col-6">
                             <div class="small-box bg-success stats-card active">
                                 <div class="inner">
                                     <h3 id="activeQRCodes">0</h3>
-                                    <p>Активних кодів</p>
+                                    <p>Працюючих ліфтів</p>
                                 </div>
                                 <div class="icon">
                                     <i class="fas fa-check-circle"></i>
                                 </div>
                                 <a href="#" class="small-box-footer" onclick="qrManager.filterByStatus('active')">
-                                    Детальніше <i class="fas fa-arrow-circle-right"></i>
+                                    Фільтрувати <i class="fas fa-arrow-circle-right"></i>
                                 </a>
                             </div>
                         </div>
-                        <div class="col-lg-3 col-6">
-                            <div class="small-box bg-secondary stats-card inactive">
+                        <div class="col-lg-4 col-6">
+                            <div class="small-box bg-warning stats-card inactive">
                                 <div class="inner">
                                     <h3 id="inactiveQRCodes">0</h3>
-                                    <p>Неактивних кодів</p>
+                                    <p>На ремонті / Зупинені</p>
                                 </div>
                                 <div class="icon">
-                                    <i class="fas fa-ban"></i>
+                                    <i class="fas fa-tools"></i>
                                 </div>
                                 <a href="#" class="small-box-footer" onclick="qrManager.filterByStatus('inactive')">
-                                    Детальніше <i class="fas fa-arrow-circle-right"></i>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="col-lg-3 col-6">
-                            <div class="small-box bg-danger stats-card expired">
-                                <div class="inner">
-                                    <h3 id="expiredQRCodes">0</h3>
-                                    <p>Протермінованих</p>
-                                </div>
-                                <div class="icon">
-                                    <i class="fas fa-exclamation-triangle"></i>
-                                </div>
-                                <a href="#" class="small-box-footer" onclick="qrManager.filterByStatus('expired')">
-                                    Детальніше <i class="fas fa-arrow-circle-right"></i>
+                                    Фільтрувати <i class="fas fa-arrow-circle-right"></i>
                                 </a>
                             </div>
                         </div>
@@ -503,61 +483,27 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
-                                        <div class="col-md-2">
+                                        <div class="col-md-4">
                                             <div class="form-group">
-                                                <label>Статус:</label>
-                                                <select id="statusFilter" class="form-control select2">
+                                                <label>Статус ліфта:</label>
+                                                <select id="statusFilter" class="form-control">
                                                     <option value="all">Всі статуси</option>
                                                     <option value="active">Активні</option>
                                                     <option value="inactive">Неактивні</option>
-                                                    <option value="expired">Протерміновані</option>
                                                 </select>
                                             </div>
                                         </div>
-                                        <div class="col-md-2">
+                                        <div class="col-md-4">
                                             <div class="form-group">
-                                                <label>Тип коду:</label>
-                                                <select id="typeFilter" class="form-control select2">
-                                                    <option value="all">Всі типи</option>
-                                                    <option value="lift">Для ліфтів</option>
-                                                    <option value="technician">Для техніків</option>
-                                                    <option value="location">Для локацій</option>
-                                                    <option value="equipment">Для обладнання</option>
-                                                    <option value="maintenance">Для ТО</option>
-                                                </select>
+                                                <label>Місто:</label>
+                                                <input type="text" id="cityFilter" class="form-control" placeholder="Фільтр по місту...">
                                             </div>
                                         </div>
-                                        <div class="col-md-2">
-                                            <div class="form-group">
-                                                <label>Група (заглушка):</label>
-                                                <select id="groupFilter" class="form-control select2">
-                                                    <option value="all">Всі групи</option>
-                                                    <option value="group1">Група 1</option>
-                                                    <option value="group2">Група 2</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-2">
-                                            <div class="form-group">
-                                                <label>Локація (заглушка):</label>
-                                                <select id="locationFilter" class="form-control select2">
-                                                    <option value="all">Всі локації</option>
-                                                    <option value="loc1">Локація 1</option>
-                                                    <option value="loc2">Локація 2</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-2">
-                                            <div class="form-group">
-                                                <label>Період створення:</label>
-                                                <input type="text" id="dateRangeFilter" class="form-control daterangepicker">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-2">
+                                        <div class="col-md-4">
                                             <div class="form-group">
                                                 <label>Пошук:</label>
                                                 <div class="input-group">
-                                                    <input type="text" id="searchInput" class="form-control" placeholder="Пошук QR-кодів...">
+                                                    <input type="text" id="searchInput" class="form-control" placeholder="Адреса, номер, QR код...">
                                                     <div class="input-group-append">
                                                         <button class="btn btn-primary" onclick="qrManager.searchQR()">
                                                             <i class="fas fa-search"></i>
@@ -567,117 +513,16 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="row mt-2">
-                                        <div class="col-12 text-right">
-                                            <button class="btn btn-outline-info btn-sm" id="saveFilterBtn" title="Зберегти фільтр" aria-label="Зберегти фільтр" disabled>
-                                                <i class="fas fa-save"></i> Зберегти фільтр (заглушка)
-                                            </button>
-                                        </div>
-                                    </div>
                                 </div>
                                 <div class="card-footer">
                                     <button class="btn btn-secondary" onclick="qrManager.resetFilters()">
                                         <i class="fas fa-sync"></i> Скинути фільтри
                                     </button>
                                     <button class="btn btn-info ml-2" id="exportCSVBtn">
-                                        <i class="fas fa-download"></i> Експорт в CSV
+                                        <i class="fas fa-file-excel"></i> Експорт в Excel
                                     </button>
-                                    <button class="btn btn-warning ml-2" id="exportPDFBtn" title="Експорт у PDF" aria-label="Експорт у PDF">
-                                        <i class="fas fa-file-pdf"></i> PDF
-                                    </button>
-                                    <button class="btn btn-success ml-2" id="exportXLSXBtn" title="Експорт у XLSX" aria-label="Експорт у XLSX">
-                                        <i class="fas fa-file-excel"></i> XLSX
-                                    </button>
-                                    <button class="btn btn-secondary ml-2" id="exportJSONBtn" title="Експорт у JSON" aria-label="Експорт у JSON">
-                                        <i class="fas fa-file-code"></i> JSON
-                                    </button>
-<!-- Секція інтеграції з API -->
-<div class="card mt-4" id="apiIntegrationCard">
-    <div class="card-header bg-light">
-        <h5 class="card-title mb-0"><i class="fas fa-plug"></i> Інтеграції та API</h5>
-    </div>
-    <div class="card-body">
-        <div class="row">
-            <!-- Імпорт з зовнішніх джерел -->
-            <div class="col-md-6">
-                <h6 class="text-primary"><i class="fas fa-download"></i> Імпорт даних</h6>
-                <div class="mb-3">
-                    <button class="btn btn-outline-primary btn-sm" onclick="qrManager.importFromLifts()">
-                        <i class="fas fa-elevator"></i> Імпорт з ліфтів
-                    </button>
-                    <small class="form-text text-muted d-block">Створити QR-коди для всіх ліфтів з системи</small>
-                </div>
-                <div class="mb-3">
-                    <button class="btn btn-outline-info btn-sm" onclick="qrManager.importFromLocations()">
-                        <i class="fas fa-map-marker-alt"></i> Імпорт локацій
-                    </button>
-                    <small class="form-text text-muted d-block">Створити QR-коди для ключових локацій</small>
-                </div>
-            </div>
-
-            <!-- Експорт та синхронізація -->
-            <div class="col-md-6">
-                <h6 class="text-success"><i class="fas fa-upload"></i> Експорт та синхронізація</h6>
-                <div class="mb-3">
-                    <button class="btn btn-outline-success btn-sm" onclick="qrManager.exportToCloud()">
-                        <i class="fas fa-cloud"></i> Синхронізувати з хмарою
-                    </button>
-                    <small class="form-text text-muted d-block">Зберегти QR-коди в хмарному сховищі</small>
-                </div>
-                <div class="mb-3">
-                    <button class="btn btn-outline-warning btn-sm" onclick="qrManager.syncWithMobile()">
-                        <i class="fas fa-mobile-alt"></i> Синхр. з мобільним додатком
-                    </button>
-                    <small class="form-text text-muted d-block">Оновити дані в мобільному додатку техніків</small>
-                </div>
-            </div>
-        </div>
-
-        <!-- API налаштування -->
-        <div class="mt-4">
-            <h6 class="text-info"><i class="fas fa-cogs"></i> API Налаштування</h6>
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label class="form-label">API Endpoint</label>
-                        <input type="url" class="form-control form-control-sm" id="apiEndpoint"
-                               placeholder="https://api.liftmaster.com/qr" value="https://api.liftmaster.com/qr">
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label class="form-label">API Key</label>
-                        <input type="password" class="form-control form-control-sm" id="apiKey"
-                               placeholder="Введіть API ключ">
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label class="form-label">&nbsp;</label>
-                        <div>
-                            <button class="btn btn-primary btn-sm" onclick="qrManager.testAPIConnection()">
-                                <i class="fas fa-plug"></i> Перевірити з'єднання
-                            </button>
-                            <button class="btn btn-secondary btn-sm ml-1" onclick="qrManager.saveAPISettings()">
-                                <i class="fas fa-save"></i> Зберегти
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Статус API -->
-        <div class="mt-3">
-            <div class="alert alert-info" id="apiStatusAlert" style="display: none;">
-                <i class="fas fa-info-circle"></i>
-                <span id="apiStatusMessage">Перевірка з'єднання з API...</span>
-            </div>
-        </div>
-    </div>
-</div>
-                                    <button class="btn btn-success ml-2" data-toggle="modal" data-target="#generateQRModal">
-                                        <i class="fas fa-plus"></i> Створити QR-код
+                                    <button class="btn btn-success ml-2" id="printSelectedBtn">
+                                        <i class="fas fa-print"></i> Друкувати вибрані
                                     </button>
                                 </div>
                             </div>
@@ -766,29 +611,28 @@
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header bg-info">
-                    <h5 class="modal-title">Деталі QR-коду</h5>
-                    <button type="button" class="btn btn-light btn-sm mr-2" id="printQRBtn" title="Друкувати" aria-label="Друкувати QR-код"><i class="fas fa-print"></i></button>
+                    <h5 class="modal-title" id="viewQRModalTitle">Деталі QR-коду</h5>
+                    <button type="button" class="btn btn-light btn-sm mr-2" id="printQRBtn" title="Друкувати" aria-label="Друкувати QR-код"><i class="fas fa-print"></i> Друк</button>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Закрити"><span>&times;</span></button>
                 </div>
                 <div class="modal-body">
-                    <ul class="nav nav-tabs mb-3" id="qrViewTabs" role="tablist">
-                        <li class="nav-item">
-                            <a class="nav-link active" id="qr-details-tab" data-toggle="tab" href="#qrDetailsTab" role="tab" aria-controls="qrDetailsTab" aria-selected="true">Деталі</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" id="qr-history-tab" data-toggle="tab" href="#qrHistoryTab" role="tab" aria-controls="qrHistoryTab" aria-selected="false">Історія</a>
-                        </li>
-                    </ul>
-                    <div class="tab-content">
-                        <div class="tab-pane fade show active" id="qrDetailsTab" role="tabpanel" aria-labelledby="qr-details-tab">
-                            <div id="viewQRContent">
-                                <!-- Дані будуть підставлені через JS -->
+                    <div class="row">
+                        <!-- QR Code Display -->
+                        <div class="col-md-5 text-center">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div id="qrCodeCanvas" class="mb-3"></div>
+                                    <h5 id="qrCodeText" class="text-primary"></h5>
+                                    <button class="btn btn-sm btn-success mt-2" id="downloadQRBtn">
+                                        <i class="fas fa-download"></i> Завантажити PNG
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                        <div class="tab-pane fade" id="qrHistoryTab" role="tabpanel" aria-labelledby="qr-history-tab">
-                            <div id="qrHistoryContent" class="text-muted text-center p-4">
-                                <i class="fas fa-history fa-2x mb-2"></i>
-                                <p>Історія змін та сканувань буде доступна найближчим часом.</p>
+                        <!-- Details -->
+                        <div class="col-md-7">
+                            <div id="viewQRContent">
+                                <!-- Дані будуть підставлені через JS -->
                             </div>
                         </div>
                     </div>
@@ -1157,6 +1001,16 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/adminlte@3.2/dist/js/adminlte.min.js"></script>
+
+    <!-- Load sidebar dynamically -->
+    <script>
+        $(document).ready(function() {
+            $(".main-sidebar").load("includes/sidebar.html");
+        });
+    </script>
+    
+    <!-- QR Code Library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     
     <!-- 🌍 Система багатомовності -->
     <script src="../../assets/js/i18n.js"></script>
@@ -1170,16 +1024,162 @@
     <script src="https://cdn.jsdelivr.net/npm/daterangepicker@3.1/daterangepicker.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-    <script src="assets/js/modules/qr-manager.js"></script>
+    <script src="../../assets/js/config.js"></script>
+    <script src="../../assets/js/auth.js"></script>
+    <script src="../../assets/js/modules/qr-manager.js"></script>
     <script>
     // Ініціалізація QR Manager одразу після завантаження скрипта
     console.log('Initializing QR Manager...');
-    if (typeof qrManager !== 'undefined') {
-        qrManager.init();
-        console.log('QR Manager initialized successfully');
-    } else {
-        console.error('QR Manager script not loaded');
-    }
+    
+    // Обробники кнопок експорту
+    $(document).ready(function() {
+        // Експорт CSV
+        $('#exportCSVBtn').on('click', function() {
+            console.log('Експорт CSV...');
+            showNotification('Експорт у CSV тимчасово недоступний', 'info');
+        });
+        
+        // Експорт PDF
+        $('#exportPDFBtn').on('click', function() {
+            console.log('Експорт PDF...');
+            showNotification('Експорт у PDF тимчасово недоступний', 'info');
+        });
+        
+        // Експорт XLSX
+        $('#exportXLSXBtn').on('click', function() {
+            console.log('Експорт XLSX...');
+            showNotification('Експорт у XLSX тимчасово недоступний', 'info');
+        });
+        
+        // Експорт JSON
+        $('#exportJSONBtn').on('click', function() {
+            console.log('Експорт JSON...');
+            showNotification('Експорт у JSON тимчасово недоступний', 'info');
+        });
+        
+        // Масові дії - видалення
+        $('#bulkDeleteBtn').on('click', function() {
+            const count = $('.qr-checkbox:checked').length;
+            if (count === 0) {
+                showNotification('Виберіть QR-коди для видалення', 'warning');
+                return;
+            }
+            $('#bulkDeleteCount').text(count);
+            $('#bulkDeleteModal').modal('show');
+        });
+        
+        // Масові дії - зміна статусу
+        $('#bulkStatusBtn').on('click', function() {
+            const count = $('.qr-checkbox:checked').length;
+            if (count === 0) {
+                showNotification('Виберіть QR-коди для зміни статусу', 'warning');
+                return;
+            }
+            $('#bulkStatusCount').text(count);
+            $('#bulkStatusModal').modal('show');
+        });
+        
+        // Масові дії - експорт
+        $('#bulkExportBtn').on('click', function() {
+            const count = $('.qr-checkbox:checked').length;
+            if (count === 0) {
+                showNotification('Виберіть QR-коди для експорту', 'warning');
+                return;
+            }
+            showNotification(`Експорт ${count} QR-кодів...`, 'info');
+        });
+        
+        // Підтвердження масового видалення
+        $('#confirmBulkDeleteBtn').on('click', function() {
+            const checkedBoxes = $('.qr-checkbox:checked');
+            checkedBoxes.closest('tr').fadeOut(300, function() {
+                $(this).remove();
+            });
+            $('#bulkDeleteModal').modal('hide');
+            showNotification('QR-коди успішно видалено', 'success');
+            $('#bulkActionsPanel').hide();
+        });
+        
+        // Підтвердження зміни статусу
+        $('#confirmBulkStatusBtn').on('click', function() {
+            const newStatus = $('#bulkStatusSelect').val();
+            const checkedBoxes = $('.qr-checkbox:checked');
+            
+            checkedBoxes.each(function() {
+                const row = $(this).closest('tr');
+                const statusBadge = row.find('.badge');
+                
+                // Оновлюємо статус
+                statusBadge.removeClass('badge-success badge-secondary badge-danger');
+                if (newStatus === 'active') {
+                    statusBadge.addClass('badge-success').text('Активний');
+                } else if (newStatus === 'inactive') {
+                    statusBadge.addClass('badge-secondary').text('Неактивний');
+                } else if (newStatus === 'expired') {
+                    statusBadge.addClass('badge-danger').text('Протермінований');
+                }
+            });
+            
+            $('#bulkStatusModal').modal('hide');
+            showNotification('Статус успішно змінено', 'success');
+        });
+        
+        // Вибір всіх
+        $('#selectAll').on('change', function() {
+            $('.qr-checkbox').prop('checked', this.checked);
+            updateBulkActions();
+        });
+        
+        // Обробка вибору окремих чекбоксів
+        $(document).on('change', '.qr-checkbox', function() {
+            updateBulkActions();
+        });
+        
+        function updateBulkActions() {
+            const count = $('.qr-checkbox:checked').length;
+            if (count > 0) {
+                $('#bulkActionsPanel').show();
+                $('#bulkSelectedCount').text(count);
+            } else {
+                $('#bulkActionsPanel').hide();
+            }
+        }
+        
+        // Друк QR-коду
+        $('#printQRBtn').on('click', function() {
+            window.print();
+        });
+        
+        // Функція показу сповіщень
+        function showNotification(message, type = 'info') {
+            const alertClass = type === 'success' ? 'alert-success' : 
+                             type === 'error' ? 'alert-danger' :
+                             type === 'warning' ? 'alert-warning' : 'alert-info';
+            
+            const notification = $(`
+                <div class="alert ${alertClass} alert-dismissible fade show alert-notification" role="alert" style="position: fixed; top: 80px; right: 20px; z-index: 9999; min-width: 300px;">
+                    <strong>${message}</strong>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            `);
+            
+            $('body').append(notification);
+            
+            setTimeout(() => {
+                notification.alert('close');
+            }, 3000);
+        }
+        
+        // Ініціалізація qrManager
+        if (typeof qrManager !== 'undefined') {
+            qrManager.init();
+            console.log('QR Manager initialized successfully');
+        } else {
+            console.error('QR Manager script not loaded');
+        }
+    });
     </script>
 
     <!-- AI Assistant Include -->

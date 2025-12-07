@@ -62,7 +62,6 @@
         }
 
         .stats-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border-radius: 15px;
             padding: 20px;
@@ -74,6 +73,23 @@
             font-size: 2.5rem;
             margin-bottom: 5px;
             font-weight: 700;
+        }
+
+        /* Різні кольори для кожного типу заявок */
+        .stats-card.request-emergency {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .stats-card.request-maintenance {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .stats-card.request-repair {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .stats-card.request-inspection {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
         }
 
         .filter-panel {
@@ -223,12 +239,6 @@
                         </a>
                         <ul class="nav nav-treeview">
                             <li class="nav-item">
-                                <a href="qr-generator.html" class="nav-link">
-                                    <i class="fas fa-plus nav-icon"></i>
-                                    <p>Генератор QR</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
                                 <a href="qr-management.html" class="nav-link">
                                     <i class="fas fa-cogs nav-icon"></i>
                                     <p>Управління QR</p>
@@ -329,31 +339,47 @@
                 <!-- Statistics Cards -->
                 <div class="row mb-4">
                     <div class="col-lg-3 col-md-6">
-                        <div class="stats-card request-emergency">
-                            <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
-                            <h3 id="emergencyCount">5</h3>
-                            <p>Аварійні</p>
+                        <div class="small-box bg-danger">
+                            <div class="inner">
+                                <h3 id="emergencyCount">5</h3>
+                                <p>Аварійні</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
                         </div>
                     </div>
                     <div class="col-lg-3 col-md-6">
-                        <div class="stats-card request-maintenance">
-                            <i class="fas fa-wrench fa-2x mb-2"></i>
-                            <h3 id="maintenanceCount">12</h3>
-                            <p>Планові ТО</p>
+                        <div class="small-box bg-info">
+                            <div class="inner">
+                                <h3 id="maintenanceCount">12</h3>
+                                <p>Планові ТО</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-wrench"></i>
+                            </div>
                         </div>
                     </div>
                     <div class="col-lg-3 col-md-6">
-                        <div class="stats-card request-repair">
-                            <i class="fas fa-tools fa-2x mb-2"></i>
-                            <h3 id="repairCount">8</h3>
-                            <p>Ремонти</p>
+                        <div class="small-box bg-warning">
+                            <div class="inner">
+                                <h3 id="repairCount">8</h3>
+                                <p>Ремонти</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-tools"></i>
+                            </div>
                         </div>
                     </div>
                     <div class="col-lg-3 col-md-6">
-                        <div class="stats-card request-inspection">
-                            <i class="fas fa-clipboard-check fa-2x mb-2"></i>
-                            <h3 id="inspectionCount">3</h3>
-                            <p>Інспекції</p>
+                        <div class="small-box bg-success">
+                            <div class="inner">
+                                <h3 id="inspectionCount">3</h3>
+                                <p>Інспекції</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-clipboard-check"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -698,6 +724,13 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+
+    <!-- Load sidebar dynamically -->
+    <script>
+        $(document).ready(function() {
+            $(".main-sidebar").load("includes/sidebar.html");
+        });
+    </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
 <!-- 🌍 Система багатомовності -->
@@ -1783,7 +1816,7 @@ function assignTechnician() {
     // Перевірка наявності AuthManager
     if (typeof AuthManager === 'undefined') {
         alert('Для виконання цієї дії потрібна авторизація.\nБудь ласка, увійдіть через сторінку логіну.');
-        window.location.href = '../../login.html';
+        window.location.replace('/pages/auth/login.html');
         return;
     }
     
@@ -1797,7 +1830,7 @@ function assignTechnician() {
     // Перевірка авторизації
     if (!AuthManager.isAuthenticated()) {
         alert('Ваша сесія закінчилась.\nБудь ласка, увійдіть знову.');
-        window.location.href = '../../login.html';
+        window.location.replace('/pages/auth/login.html');
         return;
     }
     
@@ -1821,13 +1854,13 @@ async function changeRequestStatus(newStatus) {
     // Перевірка наявності AuthManager
     if (typeof AuthManager === 'undefined') {
         alert('Для виконання цієї дії потрібна авторизація.\nБудь ласка, увійдіть через сторінку логіну.');
-        window.location.href = '../../login.html';
+        window.location.replace('/pages/auth/login.html');
         return;
     }
     
     if (!AuthManager.isAuthenticated()) {
         alert('Ваша сесія закінчилась.\nБудь ласка, увійдіть знову.');
-        window.location.href = '../../login.html';
+        window.location.replace('/pages/auth/login.html');
         return;
     }
     
@@ -1890,13 +1923,13 @@ async function addComment() {
     // Перевірка наявності AuthManager
     if (typeof AuthManager === 'undefined') {
         alert('Для виконання цієї дії потрібна авторизація.\nБудь ласка, увійдіть через сторінку логіну.');
-        window.location.href = '../../login.html';
+        window.location.replace('/pages/auth/login.html');
         return;
     }
     
     if (!AuthManager.isAuthenticated()) {
         alert('Ваша сесія закінчилась.\nБудь ласка, увійдіть знову.');
-        window.location.href = '../../login.html';
+        window.location.replace('/pages/auth/login.html');
         return;
     }
     
@@ -1956,13 +1989,13 @@ async function completeRequest() {
     // Перевірка наявності AuthManager
     if (typeof AuthManager === 'undefined') {
         alert('Для виконання цієї дії потрібна авторизація.\nБудь ласка, увійдіть через сторінку логіну.');
-        window.location.href = '../../login.html';
+        window.location.replace('/pages/auth/login.html');
         return;
     }
     
     if (!AuthManager.isAuthenticated()) {
         alert('Ваша сесія закінчилась.\nБудь ласка, увійдіть знову.');
-        window.location.href = '../../login.html';
+        window.location.replace('/pages/auth/login.html');
         return;
     }
     
@@ -2015,13 +2048,13 @@ async function reopenRequest() {
     // Перевірка наявності AuthManager
     if (typeof AuthManager === 'undefined') {
         alert('Для виконання цієї дії потрібна авторизація.\nБудь ласка, увійдіть через сторінку логіну.');
-        window.location.href = '../../login.html';
+        window.location.replace('/pages/auth/login.html');
         return;
     }
     
     if (!AuthManager.isAuthenticated()) {
         alert('Ваша сесія закінчилась.\nБудь ласка, увійдіть знову.');
-        window.location.href = '../../login.html';
+        window.location.replace('/pages/auth/login.html');
         return;
     }
     
@@ -2081,13 +2114,13 @@ async function showAssignTechnicianModal() {
     // Перевірка наявності AuthManager
     if (typeof AuthManager === 'undefined') {
         alert('Для виконання цієї дії потрібна авторизація.\nБудь ласка, увійдіть через сторінку логіну.');
-        window.location.href = '../../login.html';
+        window.location.replace('/pages/auth/login.html');
         return;
     }
     
     if (!AuthManager.isAuthenticated()) {
         alert('Ваша сесія закінчилась.\nБудь ласка, увійдіть знову.');
-        window.location.href = '../../login.html';
+        window.location.replace('/pages/auth/login.html');
         return;
     }
     
@@ -2095,7 +2128,7 @@ async function showAssignTechnicianModal() {
         console.log('Завантаження списку техніків...');
         
         // Завантаження списку техніків (без фільтру role в URL, фільтруємо на клієнті)
-        const response = await AuthManager.fetchWithAuth('/api/auth/users');
+        const response = await AuthManager.fetchWithAuth('/api/users');
         
         if (!response || !response.ok) {
             throw new Error('Не вдалося завантажити список техніків');
@@ -2202,13 +2235,13 @@ async function submitTechnicianAssignment() {
     // Перевірка наявності AuthManager
     if (typeof AuthManager === 'undefined') {
         alert('Для виконання цієї дії потрібна авторизація.\nБудь ласка, увійдіть через сторінку логіну.');
-        window.location.href = '../../login.html';
+        window.location.replace('/pages/auth/login.html');
         return;
     }
     
     if (!AuthManager.isAuthenticated()) {
         alert('Ваша сесія закінчилась.\nБудь ласка, увійдіть знову.');
-        window.location.href = '../../login.html';
+        window.location.replace('/pages/auth/login.html');
         return;
     }
     
@@ -2273,7 +2306,7 @@ function getCurrentAssignmentId() {
 
 function logout() {
     if (confirm('Ви дійсно хочете вийти?')) {
-        window.location.href = '../auth/login.html';
+        window.location.replace('/pages/auth/login.html');
     }
 }
 
@@ -2300,6 +2333,54 @@ $(document).ready(function() {
     
     // Ініціалізуємо serviceManager в будь-якому випадку
     window.serviceManager = new ServiceRequestManager();
+    
+    // ✅ ДОДАНО: Обробник пошуку заявок
+    $('#searchInput').on('input', function(e) {
+        const query = $(this).val().toLowerCase().trim();
+        console.log('🔍 Пошук заявок:', query);
+        
+        if (!window.serviceManager || !window.serviceManager.requests) {
+            console.warn('⚠️ Дані заявок ще не завантажені');
+            return;
+        }
+        
+        const allRequests = window.serviceManager.requests;
+        
+        if (!query) {
+            // Показати всі заявки
+            window.serviceManager.renderRequests();
+            return;
+        }
+        
+        // Фільтруємо заявки
+        const filtered = allRequests.filter(req => {
+            const id = ((req._id || req.id) || '').toString().toLowerCase();
+            const title = (req.title || '').toLowerCase();
+            const type = (req.type || '').toLowerCase();
+            const status = (req.status || '').toLowerCase();
+            const description = (req.description || '').toLowerCase();
+            const liftAddress = (req.liftAddress || '').toLowerCase();
+            const liftMunicipal = (req.liftMunicipalNumber || '').toLowerCase();
+            const priority = (req.priority || '').toLowerCase();
+            
+            return id.includes(query) ||
+                   title.includes(query) ||
+                   type.includes(query) ||
+                   status.includes(query) ||
+                   description.includes(query) ||
+                   liftAddress.includes(query) ||
+                   liftMunicipal.includes(query) ||
+                   priority.includes(query);
+        });
+        
+        console.log(`✅ Знайдено заявок: ${filtered.length} з ${allRequests.length}`);
+        
+        // Тимчасово замінюємо requests на відфільтровані
+        const originalRequests = window.serviceManager.requests;
+        window.serviceManager.requests = filtered;
+        window.serviceManager.renderRequests();
+        window.serviceManager.requests = originalRequests; // Повертаємо назад
+    });
 });
 
 // Toastr налаштування

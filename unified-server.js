@@ -15,8 +15,82 @@ const bcrypt = require('bcrypt');
 const { MongoClient } = require('mongodb');
 const multer = require('multer');
 const fs = require('fs').promises;
+const https = require('https');
 
 const app = express();
+
+// ═══════════════════════════════════════════════════════════
+// 🌍 GEOCODING - Конвертація адреси в координати
+// ═══════════════════════════════════════════════════════════
+// Використовує OpenStreetMap Nominatim API (безкоштовно)
+async function geocodeAddress(address) {
+    return new Promise((resolve, reject) => {
+        // Формуємо адресу для запиту
+        let searchAddress = '';
+        if (typeof address === 'string') {
+            searchAddress = address;
+        } else if (typeof address === 'object' && address !== null) {
+            // Об'єкт адреси: {street, city, zipCode, country}
+            const parts = [
+                address.street,
+                address.zipCode,
+                address.city,
+                address.country
+            ].filter(Boolean);
+            searchAddress = parts.join(', ');
+        }
+        
+        if (!searchAddress) {
+            console.warn('⚠️ Geocoding: порожня адреса');
+            return resolve(null);
+        }
+        
+        // URL для Nominatim API
+        const encodedAddress = encodeURIComponent(searchAddress);
+        const url = `https://nominatim.openstreetmap.org/search?q=${encodedAddress}&format=json&limit=1`;
+        
+        console.log('🌍 Geocoding:', searchAddress);
+        
+        https.get(url, {
+            headers: {
+                'User-Agent': 'DeapSeaK-LiftManagement/2.0'
+            }
+        }, (response) => {
+            let data = '';
+            
+            response.on('data', (chunk) => {
+                data += chunk;
+            });
+            
+            response.on('end', () => {
+                try {
+                    const results = JSON.parse(data);
+                    
+                    if (results && results.length > 0) {
+                        const lat = parseFloat(results[0].lat);
+                        const lon = parseFloat(results[0].lon);
+                        
+                        console.log(`✅ Geocoded: ${searchAddress} → [${lon}, ${lat}]`);
+                        
+                        resolve({
+                            type: 'Point',
+                            coordinates: [lon, lat] // GeoJSON формат: [longitude, latitude]
+                        });
+                    } else {
+                        console.warn('⚠️ Geocoding: адреса не знайдена:', searchAddress);
+                        resolve(null);
+                    }
+                } catch (error) {
+                    console.error('❌ Geocoding parse error:', error);
+                    resolve(null);
+                }
+            });
+        }).on('error', (error) => {
+            console.error('❌ Geocoding request error:', error);
+            resolve(null); // Не блокуємо створення ліфта якщо геокодування не спрацювало
+        });
+    });
+}
 // ═══════════════════════════════════════════════════════════
 // ⚠️ КРИТИЧНО: ФІКСОВАНИЙ ПОРТ 5000 - НЕ ЗМІНЮЙТЕ!
 // ═══════════════════════════════════════════════════════════
@@ -357,7 +431,42 @@ app.get('/api/regulations', authenticateToken, async (req, res) => {
 // Захищені маршрути
 app.get('/api/lifts', authenticateToken, async (req, res) => {
     try {
-        const lifts = await db.collection('lifts').find({}).toArray();
+        const { ObjectId } = require('mongodb');
+        let query = {};
+        
+        // 🔐 ФІЛЬТРАЦІЯ ПО РОЛЯХ
+        if (req.user.role === 'client') {
+            // Клієнт бачить тільки свої ліфти (де він власник)
+            query.clientId = req.user.userId;
+            console.log(`👤 Клієнт ${req.user.username} запитує свої ліфти (clientId: ${req.user.userId})`);
+        } else if (req.user.role === 'technician') {
+            // Технік бачить ліфти з призначених йому запитів
+            const requests = await db.collection('requests')
+                .find({ 
+                    technician: req.user.userId,
+                    status: { $in: ['pending', 'in_progress', 'assigned'] }
+                })
+                .toArray();
+            
+            const liftIds = [...new Set(requests.map(r => r.liftId).filter(Boolean))];
+            
+            if (liftIds.length > 0) {
+                query._id = { $in: liftIds.map(id => new ObjectId(id)) };
+                console.log(`🔧 Технік ${req.user.username} запитує ${liftIds.length} ліфтів з активних завдань`);
+            } else {
+                // Якщо немає завдань, повертаємо порожній масив
+                console.log(`🔧 Технік ${req.user.username} не має активних завдань`);
+                return res.json({ success: true, data: [] });
+            }
+        } else if (req.user.role === 'admin' || req.user.role === 'dispatcher') {
+            // Адмін і диспетчер бачать всі ліфти
+            console.log(`👨‍💼 ${req.user.role} ${req.user.username} запитує всі ліфти`);
+        }
+        
+        const lifts = await db.collection('lifts').find(query).toArray();
+        
+        console.log(`✅ Знайдено ліфтів: ${lifts.length}`);
+        
         res.json({
             success: true,
             data: lifts
@@ -374,6 +483,15 @@ app.get('/api/lifts', authenticateToken, async (req, res) => {
 // POST /api/lifts - створення нового ліфта
 app.post('/api/lifts', authenticateToken, async (req, res) => {
     try {
+        // 🔐 ПЕРЕВІРКА ПРАВ - тільки admin/dispatcher можуть створювати ліфти
+        if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
+            console.warn(`⚠️ ${req.user.role} ${req.user.username} намагається створити ліфт`);
+            return res.status(403).json({
+                success: false,
+                message: 'Тільки адміністратор або диспетчер можуть створювати ліфти'
+            });
+        }
+        
         console.log('📝 POST /api/lifts - Отримані дані:', {
             clientName: req.body.clientName,
             clientEmail: req.body.clientEmail,
@@ -384,8 +502,33 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
             location: req.body.location
         });
         
+        // 🌍 ГЕОКОДУВАННЯ: конвертуємо адресу в координати
+        let locationData = req.body.location;
+        
+        if (req.body.address) {
+            console.log('🔍 Спроба геокодування адреси...');
+            const geocodedLocation = await geocodeAddress(req.body.address);
+            
+            if (geocodedLocation) {
+                locationData = geocodedLocation;
+                console.log('✅ Використано геокодовані координати:', geocodedLocation.coordinates);
+            } else if (!req.body.location || !req.body.location.coordinates) {
+                console.warn('⚠️ Геокодування не вдалося і координати не надані вручну');
+            }
+        }
+        
+        // 🏷️ АВТОМАТИЧНА ГЕНЕРАЦІЯ QR КОДУ
+        const municipalNumber = req.body.municipalNumber || '';
+        const qrCode = municipalNumber 
+            ? `LIFT-${municipalNumber.toUpperCase().replace(/\s+/g, '-')}` 
+            : `LIFT-${Date.now().toString(36).toUpperCase()}`;
+        
+        console.log('🏷️ Згенеровано QR код:', qrCode);
+        
         const newLift = {
             ...req.body,
+            qrCode: qrCode, // ✅ QR код генерується автоматично
+            location: locationData, // Використовуємо геокодовані координати або ручні
             createdAt: new Date().toISOString(),
             createdBy: req.user.username,
             updatedAt: new Date().toISOString()
@@ -425,6 +568,32 @@ app.get('/api/lifts/:id', authenticateToken, async (req, res) => {
             });
         }
         
+        // 🔐 ПЕРЕВІРКА ПРАВ ДОСТУПУ
+        if (req.user.role === 'client' && lift.clientId !== req.user.userId) {
+            console.warn(`⚠️ Клієнт ${req.user.username} намагається отримати чужий ліфт ${liftId}`);
+            return res.status(403).json({
+                success: false,
+                message: 'Немає доступу до цього ліфта'
+            });
+        }
+        
+        if (req.user.role === 'technician') {
+            // Перевіряємо чи є у техніка активний запит на цей ліфт
+            const hasAccess = await db.collection('requests').findOne({
+                liftId: liftId.toString(),
+                technician: req.user.userId,
+                status: { $in: ['pending', 'in_progress', 'assigned'] }
+            });
+            
+            if (!hasAccess) {
+                console.warn(`⚠️ Технік ${req.user.username} намагається отримати ліфт ${liftId} без завдання`);
+                return res.status(403).json({
+                    success: false,
+                    message: 'Немає активного завдання для цього ліфта'
+                });
+            }
+        }
+        
         res.json({
             success: true,
             lift: lift
@@ -444,19 +613,61 @@ app.put('/api/lifts/:id', authenticateToken, async (req, res) => {
         const { ObjectId } = require('mongodb');
         const liftId = new ObjectId(req.params.id);
         
+        // 🔐 ПЕРЕВІРКА ПРАВ ДОСТУПУ
+        const lift = await db.collection('lifts').findOne({ _id: liftId });
+        
+        if (!lift) {
+            return res.status(404).json({
+                success: false,
+                message: 'Ліфт не знайдено'
+            });
+        }
+        
+        // Клієнт може оновлювати тільки свої ліфти
+        if (req.user.role === 'client' && lift.clientId !== req.user.userId) {
+            console.warn(`⚠️ Клієнт ${req.user.username} намагається оновити чужий ліфт ${liftId}`);
+            return res.status(403).json({
+                success: false,
+                message: 'Немає прав для оновлення цього ліфта'
+            });
+        }
+        
+        // Технік не може редагувати ліфти
+        if (req.user.role === 'technician') {
+            console.warn(`⚠️ Технік ${req.user.username} намагається оновити ліфт ${liftId}`);
+            return res.status(403).json({
+                success: false,
+                message: 'Техніки не можуть редагувати ліфти'
+            });
+        }
+        
         console.log('📝 PUT /api/lifts/:id - Отримані дані:', {
             clientName: req.body.clientName,
             clientEmail: req.body.clientEmail,
             clientPhone: req.body.clientPhone,
             intercomCode: req.body.intercomCode,
-            contactPerson: req.body.contactPerson
+            contactPerson: req.body.contactPerson,
+            address: req.body.address
         });
         
-        const updateData = {
+        // 🌍 ГЕОКОДУВАННЯ: якщо адреса змінилась, перераховуємо координати
+        let updateData = {
             ...req.body,
             updatedAt: new Date().toISOString(),
             updatedBy: req.user.username
         };
+        
+        if (req.body.address) {
+            console.log('🔍 Адреса змінена, виконуємо геокодування...');
+            const geocodedLocation = await geocodeAddress(req.body.address);
+            
+            if (geocodedLocation) {
+                updateData.location = geocodedLocation;
+                console.log('✅ Оновлено координати:', geocodedLocation.coordinates);
+            } else {
+                console.warn('⚠️ Геокодування не вдалося, координати залишаються без змін');
+            }
+        }
         
         const result = await db.collection('lifts').updateOne(
             { _id: liftId },
@@ -605,6 +816,15 @@ app.delete('/api/lifts/:id', authenticateToken, async (req, res) => {
     try {
         const { ObjectId } = require('mongodb');
         const liftId = new ObjectId(req.params.id);
+        
+        // 🔐 ПЕРЕВІРКА ПРАВ - тільки admin може видаляти
+        if (req.user.role !== 'admin') {
+            console.warn(`⚠️ ${req.user.role} ${req.user.username} намагається видалити ліфт ${liftId}`);
+            return res.status(403).json({
+                success: false,
+                message: 'Тільки адміністратор може видаляти ліфти'
+            });
+        }
         
         const result = await db.collection('lifts').deleteOne({ _id: liftId });
         
@@ -997,6 +1217,9 @@ app.patch('/api/requests/:id/status', authenticateToken, async (req, res) => {
             updatedBy: req.user.username
         };
         
+        // Операції для видалення полів
+        const unsetFields = {};
+        
         // Якщо призначається технік
         if (technician) {
             updateData.technician = technician;
@@ -1009,13 +1232,30 @@ app.patch('/api/requests/:id/status', authenticateToken, async (req, res) => {
         }
         
         // Якщо статус "in_progress" - додаємо час початку
-        if (status === 'in_progress' && !updateData.startedAt) {
-            updateData.startedAt = new Date().toISOString();
+        if (status === 'in_progress') {
+            if (!updateData.startedAt) {
+                updateData.startedAt = new Date().toISOString();
+            }
+            
+            // Якщо повертаємо завершену заявку в роботу - видаляємо дані завершення
+            unsetFields.completedAt = '';
+            unsetFields.completedBy = '';
+            unsetFields.resolution = '';
+            unsetFields.workDone = '';
+            unsetFields.partsUsed = '';
+            
+            console.log('🔄 Повернення завершеної заявки в роботу - видалення даних завершення');
+        }
+        
+        // Підготовка операції оновлення
+        const updateOperation = { $set: updateData };
+        if (Object.keys(unsetFields).length > 0) {
+            updateOperation.$unset = unsetFields;
         }
         
         const result = await db.collection('requests').updateOne(
             { _id: requestId },
-            { $set: updateData }
+            updateOperation
         );
         
         if (result.matchedCount === 0) {
@@ -1035,6 +1275,134 @@ app.patch('/api/requests/:id/status', authenticateToken, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Помилка зміни статусу заявки'
+        });
+    }
+});
+
+// POST /api/requests/:id/comment - додати коментар до заявки
+app.post('/api/requests/:id/comment', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const requestId = new ObjectId(req.params.id);
+        const { comment } = req.body;
+        
+        console.log('💬 Додавання коментаря до заявки:', req.params.id);
+        
+        if (!comment || !comment.trim()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Коментар не може бути порожнім'
+            });
+        }
+        
+        // Створюємо об'єкт коментаря
+        const newComment = {
+            id: new ObjectId().toString(),
+            text: comment.trim(),
+            author: {
+                id: req.user.userId,
+                username: req.user.username,
+                role: req.user.role
+            },
+            createdAt: new Date().toISOString()
+        };
+        
+        // Додаємо коментар до масиву
+        const result = await db.collection('requests').updateOne(
+            { _id: requestId },
+            { 
+                $push: { comments: newComment },
+                $set: { 
+                    updatedAt: new Date().toISOString(),
+                    updatedBy: req.user.username
+                }
+            }
+        );
+        
+        if (result.matchedCount === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Заявку не знайдено'
+            });
+        }
+        
+        console.log('✅ Коментар додано успішно');
+        
+        res.json({
+            success: true,
+            message: 'Коментар додано успішно',
+            data: newComment
+        });
+    } catch (error) {
+        console.error('❌ Помилка додавання коментаря:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка додавання коментаря'
+        });
+    }
+});
+
+// POST /api/requests/:id/complete - завершити заявку
+app.post('/api/requests/:id/complete', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const requestId = new ObjectId(req.params.id);
+        const { resolution, workDone, partsUsed } = req.body;
+        
+        console.log('✅ Завершення заявки:', req.params.id);
+        
+        if (!resolution || !resolution.trim()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Опис виконаної роботи обов\'язковий'
+            });
+        }
+        
+        const updateData = {
+            status: 'completed',
+            resolution: resolution.trim(),
+            completedAt: new Date().toISOString(),
+            completedBy: {
+                id: req.user.userId,
+                username: req.user.username,
+                role: req.user.role
+            },
+            updatedAt: new Date().toISOString(),
+            updatedBy: req.user.username
+        };
+        
+        // Додаткові дані якщо є
+        if (workDone) {
+            updateData.workDone = workDone;
+        }
+        if (partsUsed && Array.isArray(partsUsed)) {
+            updateData.partsUsed = partsUsed;
+        }
+        
+        const result = await db.collection('requests').updateOne(
+            { _id: requestId },
+            { $set: updateData }
+        );
+        
+        if (result.matchedCount === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Заявку не знайдено'
+            });
+        }
+        
+        console.log('✅ Заявку завершено успішно');
+        
+        res.json({
+            success: true,
+            message: 'Заявку завершено успішно',
+            data: updateData
+        });
+    } catch (error) {
+        console.error('❌ Помилка завершення заявки:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка завершення заявки'
         });
     }
 });

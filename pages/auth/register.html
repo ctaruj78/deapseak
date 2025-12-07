@@ -211,7 +211,7 @@
                     localStorage.setItem('users', JSON.stringify(users));
                     
                     alert('Реєстрація успішна! Тепер ви можете увійти в систему.');
-                    window.location.href = 'login.html';
+                    window.location.replace('/pages/auth/login.html');
                 } else {
                     // Реальный API запрос для регистрации
                     $.ajax({
@@ -222,7 +222,7 @@
                         success: function(response) {
                             if (response.success) {
                                 alert('Реєстрація успішна! Тепер ви можете увійти в систему.');
-                                window.location.href = 'login.html';
+                                window.location.replace('/pages/auth/login.html');
                             } else {
                                 $('#register-error').text(response.message || 'Помилка реєстрації').show();
                             }

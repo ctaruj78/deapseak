@@ -613,7 +613,7 @@
             if (confirm('Ви впевнені, що хочете вийти з системи?')) {
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('userData');
-                window.location.href = '../../login.html';
+                window.location.replace('/pages/auth/login.html');
             }
         }
 
@@ -1022,7 +1022,7 @@
                 assignTechnician: async function(requestId) {
                     try {
                         // Завантажуємо список техніків
-                        const response = await AuthManager.fetchWithAuth('/api/auth/users?role=tech');
+                        const response = await AuthManager.fetchWithAuth('/api/users?role=technician');
                         
                         if (!response || !response.ok) {
                             throw new Error('Не вдалося завантажити список техніків');
