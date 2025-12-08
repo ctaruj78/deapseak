@@ -95,147 +95,106 @@ class UnifiedAnalyticsEngine {
     async loadAllData() {
         console.log('📚 Завантаження аналітичних даних...');
         
+        let lifts = [];
+        
         try {
-            // Пробуємо завантажити з API
-            let lifts = [];
-            let inspections = [];
-            let qrScans = [];
-            let maintenanceRequests = [];
-            
-            try {
-                // Завантажуємо ліфти з API
-                const token = localStorage.getItem('token');
-                if (token) {
-                    console.log('🔑 Використовуємо токен для запиту ліфтів з unified-analytics...');
-                    const response = await fetch('/api/lifts', {
-                        method: 'GET',
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    
-                    if (response.ok) {
-                        const data = await response.json();
-                        console.log('📦 Отримані дані з API (unified-analytics):', data);
-                        
-                        // Обробляємо різні формати відповіді
-                        lifts = data.lifts || data.data || data || [];
-                        if (!Array.isArray(lifts)) {
-                            lifts = [];
-                        }
-                        
-                        console.log('✅ Завантажено з API:', lifts.length, 'ліфтів');
-                    } else if (response.status === 401 || response.status === 403) {
-                        console.warn('⚠️ Токен невалідний або прострочений, перенаправлення на логін...');
-                        localStorage.removeItem('token');
-                        localStorage.removeItem('user');
-                        alert('Сесія застаріла. Будь ласка, увійдіть знову.');
-                        window.location.href = '/login.html';
-                        return;
-                    } else {
-                        console.warn('⚠️ API повернув помилку:', response.status);
-                        const errorData = await response.json();
-                        console.error('Деталі помилки:', errorData);
+            // Завантажуємо ліфти з API
+            const token = localStorage.getItem('token');
+            if (token) {
+                console.log('🔑 Використовуємо токен для запиту ліфтів...');
+                const response = await fetch('/api/lifts', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
                     }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('📦 Отримані дані з API:', data);
+                    lifts = data.lifts || data.data || data || [];
+                    if (!Array.isArray(lifts)) {
+                        lifts = [];
+                    }
+                    console.log('✅ Завантажено з API:', lifts.length, 'ліфтів');
+                } else if (response.status === 401 || response.status === 403) {
+                    console.warn('⚠️ Токен невалідний, перенаправлення на логін...');
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    alert('Сесія застаріла. Будь ласка, увійдіть знову.');
+                    window.location.href = '/login.html';
+                    return;
+                } else {
+                    console.warn('⚠️ API повернув помилку:', response.status);
                 }
-            } catch (apiError) {
-                console.warn('⚠️ API недоступний, використовую localStorage:', apiError.message);
             }
-            
-            // Fallback на localStorage якщо API не дав результатів
-            if (lifts.length === 0) {
-                lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
-                console.log('📦 Завантажено з localStorage:', lifts.length, 'ліфтів');
-            }
-            
-            // Якщо немає даних - показуємо порожню аналітику
-            if (lifts.length === 0) {
-                console.warn('⚠️ Немає ліфтів в базі даних. Додайте ліфти через адмін панель.');
-            }
-            
-            // Завантажуємо інші дані з localStorage
-            inspections = JSON.parse(localStorage.getItem('scheduled_inspections') || '[]');
-            qrScans = JSON.parse(localStorage.getItem('qr_scan_history') || '[]');
-            maintenanceRequests = JSON.parse(localStorage.getItem('maintenanceRequests') || '[]');
-            const systemLog = JSON.parse(localStorage.getItem('system_critical_log') || '[]');
-            
-            // Генеруємо демо дані для QR сканів якщо порожньо
-            if (qrScans.length === 0 && lifts.length > 0) {
-                qrScans = this.generateDemoQRScans(lifts);
-                localStorage.setItem('qr_scan_history', JSON.stringify(qrScans));
-                console.log('🎲 Згенеровано демо QR скани:', qrScans.length);
-            }
-            
-            // Генеруємо демо запити на ТО якщо порожньо
-            if (maintenanceRequests.length === 0 && lifts.length > 0) {
-                maintenanceRequests = this.generateDemoMaintenanceRequests(lifts);
-                localStorage.setItem('maintenanceRequests', JSON.stringify(maintenanceRequests));
-                console.log('🎲 Згенеровано демо запити ТО:', maintenanceRequests.length);
-            }
-            
-            // Структуруємо дані
-            this.data = {
-                lifts: {
-                    raw: lifts,
-                    total: lifts.length,
-                    active: lifts.filter(l => l.status === 'active' || l.status === 'online').length,
-                    maintenance: lifts.filter(l => l.status === 'maintenance').length,
-                    offline: lifts.filter(l => l.status === 'offline').length,
-                    locationGroups: this.groupByLocation(lifts)
-                },
-                
-                maintenance: {
-                    raw: maintenanceRequests,
-                    total: maintenanceRequests.length,
-                    pending: maintenanceRequests.filter(r => r.status === 'pending').length,
-                    inProgress: maintenanceRequests.filter(r => r.status === 'in-progress').length,
-                    completed: maintenanceRequests.filter(r => r.status === 'completed').length,
-                    overdue: this.getOverdueMaintenances(maintenanceRequests)
-                },
-                
-                qr: {
-                    raw: qrScans,
-                    total: qrScans.length,
-                    today: this.getScansToday(qrScans),
-                    thisWeek: this.getScansThisWeek(qrScans),
-                    topUsers: this.getTopQRUsers(qrScans),
-                    timeDistribution: this.getQRTimeDistribution(qrScans)
-                },
-                
-                inspections: {
-                    raw: inspections,
-                    total: inspections.length,
-                    upcoming: this.getUpcomingInspections(inspections),
-                    completed: inspections.filter(i => i.status === 'completed').length,
-                    overdue: inspections.filter(i => new Date(i.scheduledDate) < new Date() && i.status !== 'completed').length
-                },
-                
-                system: {
-                    uptime: this.calculateSystemUptime(),
-                    performance: this.getSystemPerformance(),
-                    alerts: this.getSystemAlerts(systemLog),
-                    lastUpdate: new Date().toISOString()
-                }
-            };
-            
-            // Кешуємо для швидкого доступу
-            this.cache.set('analytics_data', this.data);
-            this.cache.set('last_update', Date.now());
-            
-            console.log('📊 Дані завантажено:', this.data);
-            
-        } catch (error) {
-            console.error('❌ Помилка завантаження даних:', error);
-            // Створюємо порожню структуру для безпеки
-            this.data = {
-                lifts: { raw: [], total: 0, active: 0, maintenance: 0, offline: 0, locationGroups: {} },
-                maintenance: { raw: [], total: 0, pending: 0, inProgress: 0, completed: 0, overdue: 0 },
-                qr: { raw: [], total: 0, today: 0, thisWeek: 0, topUsers: [], timeDistribution: {} },
-                inspections: { raw: [], total: 0, upcoming: 0, completed: 0, overdue: 0 },
-                system: { uptime: 0, performance: 100, alerts: [], lastUpdate: new Date().toISOString() }
-            };
+        } catch (apiError) {
+            console.warn('⚠️ API недоступний:', apiError.message);
         }
+        
+        // Fallback на localStorage
+        if (lifts.length === 0) {
+            lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
+            console.log('📦 Завантажено з localStorage:', lifts.length, 'ліфтів');
+        }
+        
+        // Завантажуємо основні дані
+        const inspections = JSON.parse(localStorage.getItem('scheduled_inspections') || '[]');
+        const qrScans = JSON.parse(localStorage.getItem('qr_scan_history') || '[]');
+        const maintenanceRequests = JSON.parse(localStorage.getItem('maintenanceRequests') || '[]');
+        const systemLog = JSON.parse(localStorage.getItem('system_critical_log') || '[]');
+        
+        // Структуруємо дані
+        this.data = {
+            lifts: {
+                raw: lifts,
+                total: lifts.length,
+                active: lifts.filter(l => l.status === 'active').length,
+                maintenance: lifts.filter(l => l.status === 'maintenance').length,
+                offline: lifts.filter(l => l.status === 'offline').length,
+                locationGroups: this.groupByLocation(lifts)
+            },
+            
+            maintenance: {
+                raw: maintenanceRequests,
+                total: maintenanceRequests.length,
+                pending: maintenanceRequests.filter(r => r.status === 'pending').length,
+                inProgress: maintenanceRequests.filter(r => r.status === 'in-progress').length,
+                completed: maintenanceRequests.filter(r => r.status === 'completed').length,
+                overdue: this.getOverdueMaintenances(maintenanceRequests)
+            },
+            
+            qr: {
+                raw: qrScans,
+                total: qrScans.length,
+                today: this.getScansToday(qrScans),
+                thisWeek: this.getScansThisWeek(qrScans),
+                topUsers: this.getTopQRUsers(qrScans),
+                timeDistribution: this.getQRTimeDistribution(qrScans)
+            },
+            
+            inspections: {
+                raw: inspections,
+                total: inspections.length,
+                upcoming: this.getUpcomingInspections(inspections),
+                completed: inspections.filter(i => i.status === 'completed').length,
+                overdue: inspections.filter(i => new Date(i.scheduledDate) < new Date() && i.status !== 'completed').length
+            },
+            
+            system: {
+                uptime: this.calculateSystemUptime(),
+                performance: this.getSystemPerformance(),
+                alerts: this.getSystemAlerts(systemLog),
+                lastUpdate: new Date().toISOString()
+            }
+        };
+        
+        // Кешуємо для швидкого доступу
+        this.cache.set('analytics_data', this.data);
+        this.cache.set('last_update', Date.now());
+        
+        console.log('📊 Дані завантажено:', this.data);
     }
 
     /**
@@ -682,9 +641,6 @@ class UnifiedAnalyticsEngine {
      * ⚡ Реал-тайм оновлення
      */
     startRealTimeUpdates() {
-        // Зберігаємо початкові дані для порівняння
-        this.saveHistoricalData();
-        
         this.realTimeUpdateInterval = setInterval(async () => {
             try {
                 await this.loadAllData();
@@ -692,44 +648,12 @@ class UnifiedAnalyticsEngine {
                 this.checkAlerts();
                 this.updateCharts();
                 
-                // Зберігаємо історичні дані кожен день
-                const lastSave = this.cache.get('last_historical_save') || 0;
-                const dayInMs = 24 * 60 * 60 * 1000;
-                if (Date.now() - lastSave > dayInMs) {
-                    this.saveHistoricalData();
-                }
-                
                 console.log('🔄 Дані оновлено:', new Date().toLocaleTimeString());
                 
             } catch (error) {
                 console.error('❌ Помилка оновлення даних:', error);
             }
         }, this.config.updateInterval);
-    }
-    
-    /**
-     * 💾 Збереження історичних даних для порівняння
-     */
-    saveHistoricalData() {
-        const now = new Date();
-        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-        
-        // Зберігаємо дані минулого тижня
-        const lastWeekKey = `analytics_${weekAgo.toISOString().split('T')[0]}`;
-        if (!localStorage.getItem(lastWeekKey)) {
-            this.cache.set('last_week_scans', this.data.qr.thisWeek);
-        }
-        
-        // Зберігаємо дані минулого місяця
-        const lastMonthKey = `analytics_${monthAgo.toISOString().split('T')[0]}`;
-        if (!localStorage.getItem(lastMonthKey)) {
-            this.cache.set('last_month_lifts', this.data.lifts.total);
-        }
-        
-        this.cache.set('last_historical_save', Date.now());
-        console.log('💾 Історичні дані збережено');
-    }
     }
 
     /**
@@ -834,35 +758,15 @@ class UnifiedAnalyticsEngine {
         const qrActivity = [];
         const maintenanceActivity = [];
         
-        // Отримуємо реальні дані з логів
-        const qrScans = this.data.qr.raw || [];
-        const maintenanceLog = this.data.maintenance.raw || [];
-        
         for (let i = 6; i >= 0; i--) {
             const date = new Date();
             date.setDate(date.getDate() - i);
             labels.push(date.toLocaleDateString('uk-UA', { weekday: 'short' }));
             
-            const dateStr = date.toISOString().split('T')[0];
-            
-            // Підраховуємо QR скани за цей день
-            const dayScans = qrScans.filter(scan => {
-                const scanDate = new Date(scan.timestamp || scan.date);
-                return scanDate.toISOString().split('T')[0] === dateStr;
-            }).length;
-            
-            // Підраховуємо обслуговування за цей день
-            const dayMaintenance = maintenanceLog.filter(m => {
-                const mDate = new Date(m.date || m.createdAt);
-                return mDate.toISOString().split('T')[0] === dateStr;
-            }).length;
-            
-            // Активність ліфтів (базується на поточних даних)
-            const avgLiftsActivity = this.data.lifts.active || 40;
-            liftsActivity.push(avgLiftsActivity + Math.floor(Math.random() * 10) - 5);
-            
-            qrActivity.push(dayScans);
-            maintenanceActivity.push(dayMaintenance);
+            // Генеруємо випадкові дані для демо
+            liftsActivity.push(Math.floor(Math.random() * 50) + 30);
+            qrActivity.push(Math.floor(Math.random() * 20) + 10);
+            maintenanceActivity.push(Math.floor(Math.random() * 8) + 2);
         }
         
         return { labels, liftsActivity, qrActivity, maintenanceActivity };
@@ -873,31 +777,13 @@ class UnifiedAnalyticsEngine {
         const planned = [];
         const emergency = [];
         
-        const maintenanceLog = this.data.maintenance.raw || [];
-        
         for (let i = 29; i >= 0; i--) {
             const date = new Date();
             date.setDate(date.getDate() - i);
             labels.push(date.toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' }));
             
-            const dateStr = date.toISOString().split('T')[0];
-            
-            // Реальні планові ТО
-            const dayPlanned = maintenanceLog.filter(m => {
-                const mDate = new Date(m.date || m.createdAt);
-                return mDate.toISOString().split('T')[0] === dateStr && 
-                       (m.type === 'planned' || m.priority === 'low' || m.priority === 'medium');
-            }).length;
-            
-            // Реальні екстрені ТО
-            const dayEmergency = maintenanceLog.filter(m => {
-                const mDate = new Date(m.date || m.createdAt);
-                return mDate.toISOString().split('T')[0] === dateStr && 
-                       (m.type === 'emergency' || m.priority === 'critical' || m.priority === 'high');
-            }).length;
-            
-            planned.push(dayPlanned);
-            emergency.push(dayEmergency);
+            planned.push(Math.floor(Math.random() * 5) + 1);
+            emergency.push(Math.floor(Math.random() * 2));
         }
         
         return { labels, planned, emergency };
@@ -908,27 +794,13 @@ class UnifiedAnalyticsEngine {
         const breakdown = [];
         const load = [];
         
-        // Використовуємо predictive maintenance якщо доступний
-        const predictiveData = this.predictions.get('failure_predictions') || [];
-        
         for (let i = 0; i < 7; i++) {
             const date = new Date();
             date.setDate(date.getDate() + i);
             labels.push(date.toLocaleDateString('uk-UA', { weekday: 'short' }));
             
-            // Якщо є реальні прогнози
-            if (predictiveData[i]) {
-                breakdown.push(predictiveData[i].breakdownRisk || 0);
-                load.push(predictiveData[i].loadFactor || 0);
-            } else {
-                // Базовий розрахунок на основі поточних даних
-                const avgRisk = this.data.maintenance.pending / Math.max(this.data.lifts.total, 1) * 100 || 15;
-                const avgLoad = this.data.lifts.active / Math.max(this.data.lifts.total, 1) * 100 || 75;
-                
-                breakdown.push(Math.max(0, Math.min(100, avgRisk + (Math.random() * 10 - 5))));
-                load.push(Math.max(0, Math.min(100, avgLoad + (Math.random() * 10 - 5))));
-            }
-        }
+            // Генеруємо прогнози
+            breakdown.push(Math.max(0, Math.min(100, Math.random() * 30 + 10)));
             load.push(Math.max(0, Math.min(100, Math.random() * 40 + 40)));
         }
         
@@ -937,75 +809,30 @@ class UnifiedAnalyticsEngine {
 
     // Розрахунки змін для KPI
     calculateLiftsChange() {
-        // Реальний розрахунок на основі історичних даних
-        const lastMonthData = this.cache.get('last_month_lifts') || this.data.lifts.total;
-        if (lastMonthData === 0) return 'Немає даних';
-        
-        const change = ((this.data.lifts.total - lastMonthData) / lastMonthData * 100).toFixed(1);
-        if (change > 0) {
-            return `+${change}% цього місяця`;
-        } else if (change < 0) {
-            return `${change}% цього місяця`;
-        } else {
-            return 'Без змін';
-        }
+        // Простий розрахунок для демо
+        return '+2% цього місяця';
     }
 
     calculateActiveChange() {
-        if (this.data.lifts.total === 0) return '0% онлайн';
         const percentage = Math.round((this.data.lifts.active / this.data.lifts.total) * 100);
         return `${percentage}% онлайн`;
     }
 
     calculateScansChange() {
-        // Реальний розрахунок на основі QR сканів
-        const lastWeekScans = this.cache.get('last_week_scans') || this.data.qr.thisWeek;
-        if (lastWeekScans === 0) return 'Немає даних';
-        
-        const change = ((this.data.qr.thisWeek - lastWeekScans) / lastWeekScans * 100).toFixed(1);
-        if (change > 0) {
-            return `+${change}% за тиждень`;
-        } else if (change < 0) {
-            return `${change}% за тиждень`;
-        } else {
-            return 'Без змін';
-        }
+        return '+15% за тиждень';
     }
 
     calculateMaintenanceChange() {
-        const pending = this.data.maintenance.pending;
-        const overdue = this.data.maintenance.overdue;
-        
-        if (overdue > 0) {
-            return `⚠️ ${overdue} прострочено`;
-        } else if (pending > 10) {
-            return 'Потребує уваги';
-        } else if (pending > 5) {
-            return 'Планово';
-        } else {
-            return '✅ Все добре';
-        }
+        return this.data.maintenance.pending > 10 ? 'Потребує уваги' : 'Планово';
     }
 
     calculateQRActivityDrop() {
-        // Реальний розрахунок падіння активності
-        const todayScans = this.data.qr.today;
-        const averageDaily = this.data.qr.thisWeek / 7;
-        
-        if (averageDaily === 0) return 0;
-        
-        const drop = Math.max(0, Math.round((1 - todayScans / averageDaily) * 100));
-        return drop;
+        // Для демо повертаємо випадкове значення
+        return Math.floor(Math.random() * 25);
     }
 
     calculateSystemUptime() {
-        // Розрахунок на основі системних логів
-        const alerts = this.data.system.alerts || [];
-        const criticalAlerts = alerts.filter(a => a.level === 'critical').length;
-        
-        // Кожен критичний алерт знижує uptime на 0.1%
-        const uptime = Math.max(95, 100 - (criticalAlerts * 0.1));
-        return uptime.toFixed(1);
+        return 99.9; // Для демо
     }
 
     getSystemPerformance() {
@@ -1985,78 +1812,6 @@ document.addEventListener('DOMContentLoaded', function() {
             
             setTimeout(tryActivate, 1000);
         }
-    }
-    
-    /**
-     * 🎲 Генерація демо QR сканів для аналітики
-     */
-    generateDemoQRScans(lifts) {
-        const scans = [];
-        const now = new Date();
-        
-        // Генеруємо скани за останні 30 днів
-        for (let i = 0; i < 30; i++) {
-            const date = new Date(now);
-            date.setDate(date.getDate() - i);
-            
-            // Випадкова кількість сканів на день (5-20)
-            const scansPerDay = Math.floor(Math.random() * 16) + 5;
-            
-            for (let j = 0; j < scansPerDay; j++) {
-                const randomLift = lifts[Math.floor(Math.random() * lifts.length)];
-                const hour = Math.floor(Math.random() * 24);
-                const minute = Math.floor(Math.random() * 60);
-                
-                const scanDate = new Date(date);
-                scanDate.setHours(hour, minute, 0, 0);
-                
-                scans.push({
-                    id: `scan_${Date.now()}_${i}_${j}`,
-                    liftId: randomLift.id || randomLift._id,
-                    timestamp: scanDate.toISOString(),
-                    date: scanDate.toISOString(),
-                    userId: `user_${Math.floor(Math.random() * 10)}`,
-                    userName: `Користувач ${Math.floor(Math.random() * 10)}`,
-                    type: 'inspection'
-                });
-            }
-        }
-        
-        return scans;
-    }
-    
-    /**
-     * 🎲 Генерація демо запитів на ТО
-     */
-    generateDemoMaintenanceRequests(lifts) {
-        const requests = [];
-        const statuses = ['pending', 'in-progress', 'completed'];
-        const priorities = ['low', 'medium', 'high', 'critical'];
-        const now = new Date();
-        
-        // Генеруємо 10-15 запитів
-        const count = Math.floor(Math.random() * 6) + 10;
-        
-        for (let i = 0; i < count; i++) {
-            const randomLift = lifts[Math.floor(Math.random() * lifts.length)];
-            const daysAgo = Math.floor(Math.random() * 60);
-            const requestDate = new Date(now);
-            requestDate.setDate(requestDate.getDate() - daysAgo);
-            
-            requests.push({
-                id: `req_${Date.now()}_${i}`,
-                liftId: randomLift.id || randomLift._id,
-                status: statuses[Math.floor(Math.random() * statuses.length)],
-                priority: priorities[Math.floor(Math.random() * priorities.length)],
-                type: Math.random() > 0.5 ? 'planned' : 'emergency',
-                description: 'Планове технічне обслуговування',
-                createdAt: requestDate.toISOString(),
-                date: requestDate.toISOString(),
-                scheduledDate: new Date(requestDate.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString()
-            });
-        }
-        
-        return requests;
     }
 });
 
