@@ -700,7 +700,7 @@ function exportAnalytics() {
 // Завантаження Chart.js якщо не завантажений
 if (typeof Chart === 'undefined') {
     const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+    script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
     script.onload = function() {
         initializeCharts();
     };
