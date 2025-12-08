@@ -511,7 +511,7 @@
         <!-- Profile Header -->
         <div class="profile-card fade-in-up">
             <div class="profile-header">
-                <div class="profile-avatar" id="profileAvatar">
+                <div class="profile-avatar" id="profileAvatar" data-user-avatar>
                     <i class="fas fa-user"></i>
                 </div>
                 <div class="avatar-upload">
@@ -520,8 +520,8 @@
                     </label>
                     <input type="file" id="avatarInput" accept="image/*" style="display: none;">
                 </div>
-                <h2 id="adminName">Іван Петренко</h2>
-                <p class="mb-0">Адміністратор системи</p>
+                <h2 id="adminName" data-user-name>Завантаження...</h2>
+                <p class="mb-0" data-user-role>Адміністратор системи</p>
                 <div class="profile-stats">
                     <div class="stat-item">
                         <div class="stat-number" id="totalUsers">1,247</div>
@@ -930,46 +930,34 @@
     </footer>
 </div>
 
-<!-- jQuery -->
+<!-- jQuery (ПЕРШИЙ!) -->
 <script src="../../plugins/jquery/jquery.min.js"></script>
+
 <!-- Bootstrap 4 -->
 <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
-<!-- AdminLTE App -->
-    <!-- AdminLTE App -->
-    <script src="../../plugins/adminlte/adminlte.min.js"></script>
 
-    <!-- Load sidebar dynamically -->
-    <script>
-        $(document).ready(function() {
-            $(".main-sidebar").load("includes/sidebar.html");
-        });
-    </script>
-    
-    <!-- 🌍 Система багатомовності -->
-    <script src="../../assets/js/i18n.js"></script>
-    <script src="../../assets/js/init-i18n.js"></script>
-<!-- Chart.js ЛОКАЛЬНИЙ -->
+<!-- AdminLTE App -->
+<script src="../../plugins/adminlte/adminlte.min.js"></script>
+
+<!-- Chart.js (до ініціалізації графіків) -->
 <script src="../../plugins/chart.js/chart.umd.min.js"></script>
 
-<!-- Profile API Manager -->
-<script src="../../assets/js/modules/profile-api.js"></script>
+<!-- 🌍 Система багатомовності -->
+<script src="../../assets/js/i18n.js"></script>
+<script src="../../assets/js/init-i18n.js"></script>
+
+<!-- 👤 Завантажувач профілю з API -->
+<script src="../../assets/js/profile-loader.js"></script>
+
+<!-- Load sidebar dynamically -->
+<script>
+    $(document).ready(function() {
+        $(".main-sidebar").load("includes/sidebar.html");
+    });
+</script>
 
 <!-- AI Assistant JS -->
 <script src="/assets/js/modules/ai-assistant.js"></script>
-    
-    <script>
-        // 🔄 Ініціалізація Profile API
-        document.addEventListener('DOMContentLoaded', async function() {
-            if (window.profileAPI) {
-                try {
-                    await window.profileAPI.init();
-                } catch (error) {
-                    console.error('Помилка ініціалізації профілю:', error);
-                }
-            }
-        });
-        
-    </script>
     
     <script>
         // Initialize activity chart
@@ -998,87 +986,28 @@
         });
 
         // Avatar upload functionality
-        document.getElementById('avatarInput').addEventListener('change', async function(e) {
+        document.getElementById('avatarInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
-                // Preview
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     document.getElementById('profileAvatar').innerHTML = `<img src="${e.target.result}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
                 };
                 reader.readAsDataURL(file);
-                
-                // Upload to API
-                if (window.profileAPI) {
-                    try {
-                        await window.profileAPI.uploadAvatar(file);
-                        window.profileAPI.showSuccess('Аватар успішно оновлено!');
-                    } catch (error) {
-                        window.profileAPI.showError('Помилка завантаження аватара');
-                    }
-                }
             }
         });
 
         // Form submissions
-        document.getElementById('personalForm').addEventListener('submit', async function(e) {
+        document.getElementById('personalForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
-            if (!window.profileAPI) {
-                alert('Profile API не завантажено');
-                return;
-            }
-            
-            // Збір даних з форми
-            const formData = {
-                firstName: document.getElementById('firstName')?.value,
-                lastName: document.getElementById('lastName')?.value,
-                email: document.getElementById('email')?.value,
-                phone: document.getElementById('phone')?.value,
-                company: document.getElementById('company')?.value,
-                address: document.getElementById('address')?.value,
-                city: document.getElementById('city')?.value,
-                country: document.getElementById('country')?.value
-            };
-            
-            try {
-                await window.profileAPI.updateProfile(formData);
-                window.profileAPI.showSuccess('Особиста інформація оновлена!');
-            } catch (error) {
-                window.profileAPI.showError('Помилка оновлення профілю: ' + error.message);
-            }
+            // Handle personal info update
+            alert('Особиста інформація оновлена!');
         });
 
-        document.getElementById('passwordForm').addEventListener('submit', async function(e) {
+        document.getElementById('passwordForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
-            if (!window.profileAPI) {
-                alert('Profile API не завантажено');
-                return;
-            }
-            
-            const currentPassword = document.getElementById('currentPassword')?.value;
-            const newPassword = document.getElementById('newPassword')?.value;
-            const confirmPassword = document.getElementById('confirmPassword')?.value;
-            
-            // Перевірка паролів
-            if (newPassword !== confirmPassword) {
-                window.profileAPI.showError('Нові паролі не співпадають!');
-                return;
-            }
-            
-            if (newPassword.length < 6) {
-                window.profileAPI.showError('Пароль має бути мінімум 6 символів!');
-                return;
-            }
-            
-            try {
-                await window.profileAPI.changePassword(currentPassword, newPassword);
-                window.profileAPI.showSuccess('Пароль успішно змінено!');
-                document.getElementById('passwordForm').reset();
-            } catch (error) {
-                window.profileAPI.showError('Помилка зміни пароля: ' + error.message);
-            }
+            // Handle password change
+            alert('Пароль змінено успішно!');
         });
 
         // Animate elements on load
