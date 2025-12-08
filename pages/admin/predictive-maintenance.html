@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css">
     
+    <!-- Toastr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.css">
+    
     <style>
         .risk-indicator {
             display: inline-block;
@@ -533,6 +536,9 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
 
+<!-- Toastr JS -->
+<script src="https://cdn.jsdelivr.net/npm/toastr@2.1.4/toastr.min.js"></script>
+
     <!-- Load sidebar dynamically -->
     <script>
         $(document).ready(function() {
@@ -546,10 +552,182 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
 
 <!-- EventBus and Predictive Maintenance -->
-<script src="/assets/js/system-eventbus.js"></script>
-<script src="/assets/js/predictive-maintenance.js"></script>
+<script src="/assets/js/system-eventbus.js?v=1.5"></script>
+<script src="/assets/js/predictive-maintenance.js?v=1.5"></script>
 
 <script>
+/**
+ * 🔮 Глобальні функції для onclick handlers
+ * ВАЖЛИВО: Оголошуються ДО класу, щоб бути доступними одразу
+ */
+
+// Запустити повний аналіз
+window.runAnalysis = function() {
+    if (window.predictiveMaintenance) {
+        toastr.info('Запуск повного аналізу...');
+        predictiveMaintenance.runFullAnalysis();
+    }
+};
+
+// Експорт прогнозів
+window.exportPredictions = function() {
+    if (window.predictiveMaintenance) {
+        const data = {
+            predictions: predictiveMaintenance.getSystemPredictions(),
+            alerts: predictiveMaintenance.getActiveAlerts(),
+            statistics: JSON.parse(localStorage.getItem('maintenance_statistics') || '{}'),
+            exportedAt: new Date().toISOString()
+        };
+        
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `predictive-maintenance-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        toastr.success('Дані експортовано!');
+    }
+};
+
+// Підтвердити всі алерти
+window.acknowledgeAllAlerts = function() {
+    console.log('Підтверджуємо всі алерти...');
+    
+    const alertButtons = document.querySelectorAll('#allAlertsList button[onclick*="acknowledgeAlert"]');
+    alertButtons.forEach(button => {
+        const match = button.onclick.toString().match(/acknowledgeAlert\((\d+)\)/);
+        if (match) {
+            acknowledgeAlert(parseInt(match[1]));
+        }
+    });
+    
+    toastr.success('Всі алерти підтверджено!');
+};
+
+// Експорт графіка
+window.exportSchedule = function() {
+    const scheduleData = {
+        month: new Date().getMonth() + 1,
+        year: new Date().getFullYear(),
+        events: [],
+        exportedAt: new Date().toISOString()
+    };
+    
+    const today = new Date();
+    for (let i = 1; i <= 30; i++) {
+        if (Math.random() > 0.8) {
+            scheduleData.events.push({
+                date: `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`,
+                lift: `Ліфт-${String(Math.floor(Math.random() * 20) + 1).padStart(3, '0')}`,
+                type: 'maintenance',
+                description: 'Планове технічне обслуговування'
+            });
+        }
+    }
+    
+    const blob = new Blob([JSON.stringify(scheduleData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `maintenance-schedule-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    toastr.success('Графік експортовано!');
+};
+
+// Підтвердити окремий алерт
+window.acknowledgeAlert = function(alertId) {
+    console.log('Підтверджуємо алерт:', alertId);
+    
+    const alertCard = document.querySelector(`[data-alert-id="${alertId}"]`);
+    if (alertCard) {
+        alertCard.style.opacity = '0.5';
+        alertCard.querySelector('button').disabled = true;
+        
+        setTimeout(() => {
+            alertCard.remove();
+            toastr.success('Алерт підтверджено');
+        }, 500);
+    }
+};
+
+// Показати матрицю ризиків
+window.showRiskMatrix = function() {
+    console.log('📊 Відкриття матриці ризиків...');
+    
+    if (!window.predictiveMaintenance) {
+        toastr.error('Система прогнозування не готова');
+        return;
+    }
+
+    const predictions = predictiveMaintenance.getSystemPredictions();
+    console.log('📊 Predictions:', predictions);
+    
+    const nextMonth = predictions.nextMonth || {};
+    const riskMatrix = nextMonth.riskMatrix || [];
+    
+    console.log('📊 Risk Matrix:', riskMatrix);
+    
+    if (riskMatrix.length === 0) {
+        toastr.warning('Немає даних для матриці ризиків');
+        return;
+    }
+
+    // Генеруємо HTML таблицю
+    let tableHtml = `
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>Ліфт</th>
+                        <th>Адреса</th>
+                        <th>Ризик (%)</th>
+                        <th>Рівень</th>
+                        <th>Рекомендація</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+
+    riskMatrix.forEach(item => {
+        const liftId = item.liftId || 'N/A';
+        const address = item.address || item.location || '-';
+        const risk = item.risk || item.riskScore || 0;
+        const level = item.level || (risk > 70 ? 'HIGH' : risk > 40 ? 'MEDIUM' : 'LOW');
+        const recommendation = item.recommendation || 'Моніторинг';
+        
+        const badgeClass = level === 'HIGH' ? 'danger' : level === 'MEDIUM' ? 'warning' : 'success';
+        
+        tableHtml += `
+            <tr>
+                <td><strong>${liftId}</strong></td>
+                <td>${address}</td>
+                <td><span class="badge badge-${badgeClass}">${risk.toFixed(1)}%</span></td>
+                <td><span class="badge badge-${badgeClass}">${level}</span></td>
+                <td>${recommendation}</td>
+            </tr>
+        `;
+    });
+
+    tableHtml += `
+                </tbody>
+            </table>
+        </div>
+    `;
+
+    // Оновлюємо модальне вікно
+    const modalBody = document.getElementById('riskMatrixContent');
+    if (modalBody) {
+        modalBody.innerHTML = tableHtml;
+        $('#riskMatrixModal').modal('show');
+    } else {
+        console.error('❌ Модальне вікно riskMatrixContent не знайдено');
+    }
+};
+
 /**
  * 🔮 Predictive Maintenance Dashboard Controller
  */
@@ -687,28 +865,50 @@ class PredictiveMaintenanceDashboard {
     }
 
     updateOverviewStats(stats) {
+        console.log('📊 updateOverviewStats отримав дані:', stats);
+        
         $('#highRiskCount').text(stats.highRiskLifts || 0);
         $('#mediumRiskCount').text(stats.mediumRiskLifts || 0);
         $('#lowRiskCount').text(stats.lowRiskLifts || 0);
         $('#avgAge').text(Math.round(stats.averageAge || 0));
+        
+        console.log('✅ Картки KPI оновлено:', {
+            high: $('#highRiskCount').text(),
+            medium: $('#mediumRiskCount').text(),
+            low: $('#lowRiskCount').text(),
+            age: $('#avgAge').text()
+        });
     }
 
     updatePredictions(predictions) {
-        if (!predictions) return;
+        if (!predictions) {
+            console.warn('⚠️ Немає даних прогнозів');
+            // Встановлюємо значення за замовчуванням
+            $('#nextMonthCost').text('₴0');
+            $('#nextMonthDetails').text('Немає даних');
+            $('#nextQuarterCost').text('₴0');
+            $('#nextQuarterDetails').text('Немає даних');
+            $('#nextYearCost').text('₴0');
+            $('#nextYearDetails').text('Немає даних');
+            return;
+        }
         
-        const formatCurrency = (amount) => new Intl.NumberFormat('uk-UA').format(Math.round(amount));
+        const formatCurrency = (amount) => new Intl.NumberFormat('uk-UA').format(Math.round(amount || 0));
         
         // Наступний місяць
-        $('#nextMonthCost').text(`₴${formatCurrency(predictions.nextMonth.estimatedCosts)}`);
-        $('#nextMonthDetails').text(`${predictions.nextMonth.expectedFailures} відмов очікується`);
+        const nextMonth = predictions.nextMonth || {};
+        $('#nextMonthCost').text(`₴${formatCurrency(nextMonth.estimatedCosts || 0)}`);
+        $('#nextMonthDetails').text(`${nextMonth.expectedFailures || 0} відмов очікується`);
         
         // Наступний квартал  
-        $('#nextQuarterCost').text(`₴${formatCurrency(predictions.nextQuarter.estimatedCosts)}`);
-        $('#nextQuarterDetails').text(`${predictions.nextQuarter.maintenanceNeeded} ТО потрібно`);
+        const nextQuarter = predictions.nextQuarter || {};
+        $('#nextQuarterCost').text(`₴${formatCurrency(nextQuarter.estimatedCosts || 0)}`);
+        $('#nextQuarterDetails').text(`${nextQuarter.maintenanceNeeded || 0} ТО потрібно`);
         
         // Наступний рік
-        $('#nextYearCost').text(`₴${formatCurrency(predictions.nextYear.estimatedCosts)}`);
-        $('#nextYearDetails').text(`${Math.round(predictions.nextYear.expectedFailures)} капремонтів`);
+        const nextYear = predictions.nextYear || {};
+        $('#nextYearCost').text(`₴${formatCurrency(nextYear.estimatedCosts || 0)}`);
+        $('#nextYearDetails').text(`${Math.round(nextYear.expectedFailures || 0)} капремонтів`);
     }
 
     updateAlerts(alerts) {
@@ -750,12 +950,17 @@ class PredictiveMaintenanceDashboard {
             const riskClass = this.getRiskClass(data.failureRisk);
             const riskText = this.getRiskText(data.failureRisk);
             
+            // Використовуємо municipalNumber та address з даних
+            const displayName = data.municipalNumber || liftId;
+            const address = data.address || 'Адреса не вказана';
+            
             const liftHtml = `
                 <div class="card mb-3">
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-3">
-                                <h5>Ліфт ${liftId}</h5>
+                                <h5>Ліфт ${displayName}</h5>
+                                <p class="text-muted small mb-2">${address}</p>
                                 <span class="risk-indicator risk-${riskClass}">${riskText}</span>
                                 <p class="mt-2 mb-0">Вік: ${data.age.toFixed(1)} років</p>
                             </div>
@@ -779,16 +984,21 @@ class PredictiveMaintenanceDashboard {
         if (!components) return '<p class="text-muted">Дані недоступні</p>';
         
         return Object.entries(components).map(([name, data]) => {
-            const percentage = Math.round(data.condition * 100);
+            // Перевіряємо чи data.condition існує та є числом
+            const conditionValue = (typeof data === 'object' && typeof data.condition === 'number') 
+                ? data.condition 
+                : (typeof data === 'number' ? data : 0);
+            
+            const percentage = Math.round(conditionValue * 100);
             const color = percentage > 70 ? '#28a745' : percentage > 40 ? '#ffc107' : '#dc3545';
             
             return `
                 <div class="component-status">
-                    <span style="min-width: 120px;">${this.translateComponent(name)}:</span>
-                    <div class="status-bar">
+                    <span style="min-width: 150px; display: inline-block;">${this.translateComponent(name)}:</span>
+                    <div class="status-bar" style="width: 150px; display: inline-block; margin: 0 10px;">
                         <div class="status-fill" style="width: ${percentage}%; background-color: ${color};"></div>
                     </div>
-                    <span>${percentage}%</span>
+                    <span style="min-width: 40px; display: inline-block;">${percentage}%</span>
                 </div>
             `;
         }).join('');
@@ -1162,132 +1372,6 @@ class PredictiveMaintenanceDashboard {
         html += '</div>';
         container.innerHTML = html;
     }
-}
-
-// Глобальні функції
-function runAnalysis() {
-    if (window.predictiveMaintenance) {
-        toastr.info('Запуск повного аналізу...');
-        predictiveMaintenance.runFullAnalysis();
-    }
-}
-
-function exportPredictions() {
-    if (window.predictiveMaintenance) {
-        const data = {
-            predictions: predictiveMaintenance.getSystemPredictions(),
-            alerts: predictiveMaintenance.getActiveAlerts(),
-            statistics: JSON.parse(localStorage.getItem('maintenance_statistics') || '{}'),
-            exportedAt: new Date().toISOString()
-        };
-        
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `predictive-maintenance-${new Date().toISOString().split('T')[0]}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-        
-        toastr.success('Дані експортовано!');
-    }
-}
-
-function acknowledgeAllAlerts() {
-    console.log('Підтверджуємо всі алерти...');
-    
-    // Знаходимо всі неприйняті алерти та підтверджуємо їх
-    const alertButtons = document.querySelectorAll('#allAlertsList button[onclick*="acknowledgeAlert"]');
-    alertButtons.forEach(button => {
-        const alertId = button.onclick.toString().match(/acknowledgeAlert\((\d+)\)/)[1];
-        acknowledgeAlert(parseInt(alertId));
-    });
-    
-    toastr.success('Всі алерти підтверджено!');
-}
-
-function exportSchedule() {
-    const scheduleData = {
-        month: new Date().getMonth() + 1,
-        year: new Date().getFullYear(),
-        events: [],
-        exportedAt: new Date().toISOString()
-    };
-    
-    // Генеруємо календарні події
-    const today = new Date();
-    for (let i = 1; i <= 30; i++) {
-        if (Math.random() > 0.8) { // 20% шанс події
-            scheduleData.events.push({
-                date: `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`,
-                lift: `Ліфт-${String(Math.floor(Math.random() * 20) + 1).padStart(3, '0')}`,
-                type: 'maintenance',
-                description: 'Планове технічне обслуговування'
-            });
-        }
-    }
-    
-    const blob = new Blob([JSON.stringify(scheduleData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `maintenance-schedule-${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    
-    toastr.success('Графік експортовано!');
-}
-
-function acknowledgeAlert(alertId) {
-    if (window.predictiveMaintenance) {
-        predictiveMaintenance.acknowledgeAlert(alertId);
-        toastr.success('Алерт підтверджено');
-        
-        // Оновлюємо відображення
-        setTimeout(() => {
-            window.dashboardController.loadDashboardData();
-        }, 500);
-    }
-}
-
-function showRiskMatrix() {
-    // Генеруємо матрицю ризиків
-    let matrixHtml = '<div class="table-responsive"><table class="table table-bordered">';
-    matrixHtml += '<thead><tr><th>Ліфт</th><th>Адреса</th><th>Вік</th><th>Ризик відмови</th><th>Останнє ТО</th><th>Статус</th></tr></thead><tbody>';
-    
-    if (window.predictiveMaintenance && predictiveMaintenance.maintenanceData) {
-        predictiveMaintenance.maintenanceData.forEach((data, liftId) => {
-            // Знаходимо оригінальний ліфт з повними даними
-            const lift = predictiveMaintenance.lifts?.find(l => 
-                (l._id || l.id) === liftId || l.municipalNumber === liftId
-            );
-            
-            const displayName = lift?.municipalNumber || liftId;
-            const address = lift ? `${lift.address?.street || ''}, ${lift.address?.city || ''}`.trim() : '';
-            const riskClass = window.dashboardController.getRiskClass(data.failureRisk);
-            const lastMaintenance = data.lastInspection ? 
-                new Date(data.lastInspection).toLocaleDateString('uk-UA') : 'Невідомо';
-            
-            // Перевіряємо чи ризик є числом
-            const riskValue = isNaN(data.failureRisk) ? 0 : Math.round(data.failureRisk * 100);
-            
-            matrixHtml += `
-                <tr>
-                    <td><strong>${displayName}</strong></td>
-                    <td>${address || '-'}</td>
-                    <td>${(data.age || 0).toFixed(1)} років</td>
-                    <td><span class="risk-indicator risk-${riskClass}">${riskValue}%</span></td>
-                    <td>${lastMaintenance}</td>
-                    <td>${data.status || 'operational'}</td>
-                </tr>
-            `;
-        });
-    }
-    
-    matrixHtml += '</tbody></table></div>';
-    
-    $('#riskMatrixContent').html(matrixHtml);
-    $('#riskMatrixModal').modal('show');
 }
 
 // Ініціалізація при завантаженні

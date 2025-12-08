@@ -101,17 +101,75 @@ class PredictiveMaintenanceSystem {
         console.log('📚 Завантаження історичних даних технічного обслуговування...');
         
         try {
-            // Завантажуємо дані ліфтів
+            // Завантажуємо дані ліфтів з API
             let lifts = [];
             let inspections = [];
             let maintenanceLog = [];
             
+            // Спробуємо завантажити з API
             try {
-                lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
+                const token = localStorage.getItem('token');
+                if (token) {
+                    console.log('🔑 Використовуємо токен для запиту ліфтів...');
+                    const response = await fetch('/api/lifts', {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        console.log('📦 Отримані дані з API:', data);
+                        
+                        // API може повертати {lifts: [...]} або просто [...]
+                        if (Array.isArray(data)) {
+                            lifts = data;
+                        } else if (data.lifts && Array.isArray(data.lifts)) {
+                            lifts = data.lifts;
+                        } else if (data.data && Array.isArray(data.data)) {
+                            lifts = data.data;
+                        } else {
+                            console.warn('⚠️ API повернув дані в несподіваному форматі:', typeof data);
+                            lifts = [];
+                        }
+                        
+                        console.log(`✅ Завантажено ${lifts.length} ліфтів з API`);
+                        if (lifts.length > 0) {
+                            console.log('📋 Перші ліфти:', lifts.slice(0, 2).map(l => l.municipalNumber || l._id));
+                        }
+                    } else {
+                        const errorText = await response.text();
+                        console.warn(`⚠️ API /api/lifts повернув помилку ${response.status}:`, errorText);
+                    }
+                } else {
+                    console.warn('⚠️ Токен не знайдено в localStorage');
+                }
             } catch (e) {
-                console.warn('⚠️ Не вдалося завантажити дані ліфтів з localStorage');
-                lifts = [];
+                console.error('❌ Помилка запиту до API /api/lifts:', e);
+                console.warn('⚠️ Спробуємо localStorage як fallback');
             }
+            
+            // Fallback на localStorage якщо API не спрацював
+            if (lifts.length === 0) {
+                try {
+                    lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
+                    console.log(`📦 Завантажено ${lifts.length} ліфтів з localStorage`);
+                } catch (e) {
+                    console.warn('⚠️ Не вдалося завантажити дані ліфтів з localStorage');
+                    lifts = [];
+                }
+            }
+            
+            // Якщо немає жодних ліфтів - створюємо демо-дані
+            if (lifts.length === 0) {
+                console.warn('⚠️ Немає ліфтів в системі. Створюємо демо-дані...');
+                lifts = this.generateDemoLifts();
+                this.lifts = lifts;
+                console.log(`🎭 Створено ${lifts.length} демо-ліфтів для тестування`);
+            }
+            
+            // Зберігаємо посилання на масив ліфтів для використання в інших методах
+            this.lifts = lifts;
             
             try {
                 inspections = JSON.parse(localStorage.getItem('scheduled_inspections') || '[]');
@@ -158,7 +216,7 @@ class PredictiveMaintenanceSystem {
     }
 
     analyzeElevatorCondition(lift) {
-        const liftId = lift.id || lift.municipalNumber;
+        const liftId = lift._id || lift.id || lift.municipalNumber;
         
         // Розраховуємо вік ліфта
         const installationDate = new Date(lift.installationDate || lift.createdAt || Date.now());
@@ -168,6 +226,8 @@ class PredictiveMaintenanceSystem {
         // Базовий аналіз стану
         const condition = {
             liftId: liftId,
+            municipalNumber: lift.municipalNumber || liftId,
+            address: lift.address ? `${lift.address.street || ''}, ${lift.address.city || ''}`.trim() : 'Адреса не вказана',
             age: ageInYears,
             status: lift.status || 'active',
             lastInspection: this.getLastInspectionDate(liftId),
@@ -300,43 +360,58 @@ class PredictiveMaintenanceSystem {
         let totalRisk = 0;
         let totalWeight = 0;
         
-        // Ризик на основі компонентів
+        // 1. РИЗИК НА ОСНОВІ КОМПОНЕНТІВ (вага 30%)
         if (condition.componentConditions && Object.keys(condition.componentConditions).length > 0) {
             Object.entries(condition.componentConditions).forEach(([component, data]) => {
                 const weight = this.config.componentWeights[component] || 0.1;
                 const componentRisk = 1 - (data.condition || 0.5);
-                totalRisk += componentRisk * weight;
-                totalWeight += weight;
+                totalRisk += componentRisk * weight * 0.3;
+                totalWeight += weight * 0.3;
             });
-            
-            // Нормалізуємо ризик
-            if (totalWeight > 0) {
-                totalRisk = totalRisk / totalWeight;
-            }
         } else {
-            // Базовий ризик якщо немає даних про компоненти
-            totalRisk = 0.3;
+            totalRisk += 0.3 * 0.3; // Базовий ризик якщо немає даних
+            totalWeight += 0.3;
         }
         
-        // Коригування на основі віку
+        // 2. РИЗИК НА ОСНОВІ ВІКУ (вага 15%)
         const age = condition.age || 0;
-        const ageRiskMultiplier = Math.min(age / 20, 1.5); // Макс 1.5x після 20 років
-        totalRisk *= (1 + ageRiskMultiplier * 0.3);
+        let ageRisk = 0;
+        if (age < 5) ageRisk = 0.1;
+        else if (age < 10) ageRisk = 0.2;
+        else if (age < 15) ageRisk = 0.4;
+        else if (age < 20) ageRisk = 0.6;
+        else ageRisk = 0.8;
+        totalRisk += ageRisk * 0.15;
+        totalWeight += 0.15;
         
-        // Коригування на основі інтенсивності використання
+        // 3. РИЗИК НА ОСНОВІ ІНТЕНСИВНОСТІ ВИКОРИСТАННЯ (вага 10%)
         const usageIntensity = condition.usageIntensity || 1.0;
-        totalRisk *= (1 + (usageIntensity - 1) * 0.2);
+        const usageRisk = Math.min(usageIntensity / 2, 0.9);
+        totalRisk += usageRisk * 0.1;
+        totalWeight += 0.1;
         
-        // Коригування на основі факторів навколишнього середовища
-        const envMultiplier = condition.environmentalFactors?.degradationMultiplier || 1.0;
-        totalRisk *= envMultiplier;
+        // 4. РИЗИК НА ОСНОВІ ІСТОРІЇ РЕМОНТІВ ТА ІНСПЕКЦІЙ (вага 35%) - НОВИЙ!
+        const historyRisk = this.calculateHistoryBasedRisk(condition.maintenanceHistory);
+        totalRisk += historyRisk * 0.35;
+        totalWeight += 0.35;
         
-        // Коригування на основі часу з останньої інспекції
+        // 5. РИЗИК НА ОСНОВІ ЧАСУ З ОСТАННЬОЇ ІНСПЕКЦІЇ (вага 10%)
         const daysSinceInspection = condition.lastInspection ? 
             (Date.now() - new Date(condition.lastInspection).getTime()) / (1000 * 60 * 60 * 24) : 365;
         
-        if (daysSinceInspection > 180) {
-            totalRisk *= 1.2; // Збільшуємо ризик якщо давно не було інспекції
+        let inspectionRisk = 0;
+        if (daysSinceInspection > 365) inspectionRisk = 0.9;
+        else if (daysSinceInspection > 180) inspectionRisk = 0.6;
+        else if (daysSinceInspection > 90) inspectionRisk = 0.3;
+        else inspectionRisk = 0.1;
+        totalRisk += inspectionRisk * 0.1;
+        totalWeight += 0.1;
+        
+        // Нормалізуємо ризик
+        if (totalWeight > 0) {
+            totalRisk = totalRisk / totalWeight;
+        } else {
+            totalRisk = 0.5; // Середній ризик якщо немає даних
         }
         
         // Перевіряємо чи результат валідний
@@ -348,10 +423,121 @@ class PredictiveMaintenanceSystem {
         return Math.min(Math.max(totalRisk, 0), 0.99); // Обмежуємо від 0% до 99%
     }
 
+    /**
+     * 📊 НОВИЙ МЕТОД: Розрахунок ризику на основі історії втручань
+     */
+    calculateHistoryBasedRisk(history) {
+        if (!history || history.length === 0) {
+            return 0.5; // Середній ризик якщо немає історії
+        }
+        
+        let historyRisk = 0;
+        const now = Date.now();
+        
+        // Аналізуємо останні 2 роки (730 днів)
+        const recentHistory = history.filter(event => {
+            const eventDate = new Date(event.date).getTime();
+            const daysAgo = (now - eventDate) / (1000 * 60 * 60 * 24);
+            return daysAgo <= 730;
+        });
+        
+        // 1. ЧАСТОТА ВТРУЧАНЬ - чим більше, тим гірше
+        const interventionFrequency = recentHistory.length / 730; // втручань на день
+        const frequencyRisk = Math.min(interventionFrequency * 100, 0.4); // макс 0.4
+        
+        // 2. СЕРЙОЗНІСТЬ ВТРУЧАНЬ
+        let severityScore = 0;
+        const severityWeights = {
+            'critical': 1.0,
+            'high': 0.7,
+            'medium': 0.4,
+            'low': 0.1
+        };
+        
+        recentHistory.forEach(event => {
+            const severity = event.severity || 'medium';
+            severityScore += severityWeights[severity] || 0.4;
+        });
+        
+        const avgSeverity = recentHistory.length > 0 ? severityScore / recentHistory.length : 0;
+        const severityRisk = Math.min(avgSeverity, 0.3); // макс 0.3
+        
+        // 3. ТРЕНД ПОГІРШЕННЯ - чи збільшується частота проблем?
+        const trendRisk = this.analyzeTrend(recentHistory);
+        
+        // 4. ТИП ВТРУЧАНЬ - аварійні ремонти = високий ризик
+        const emergencyCount = recentHistory.filter(e => 
+            e.type === 'emergency' || e.type === 'repair' || e.inspectionType === 'repair'
+        ).length;
+        const emergencyRatio = recentHistory.length > 0 ? emergencyCount / recentHistory.length : 0;
+        const emergencyRisk = Math.min(emergencyRatio * 0.5, 0.2); // макс 0.2
+        
+        // 5. ПОВТОРЮВАНІ ПРОБЛЕМИ - чи є однакові проблеми?
+        const repeatRisk = this.detectRepeatIssues(recentHistory);
+        
+        // Сумарний ризик з історії
+        historyRisk = frequencyRisk + severityRisk + trendRisk + emergencyRisk + repeatRisk;
+        
+        console.log(`📊 Аналіз історії: частота=${frequencyRisk.toFixed(2)}, серйозність=${severityRisk.toFixed(2)}, тренд=${trendRisk.toFixed(2)}, аварії=${emergencyRisk.toFixed(2)}, повтори=${repeatRisk.toFixed(2)} => ВСЬОГО=${historyRisk.toFixed(2)}`);
+        
+        return Math.min(historyRisk, 0.99);
+    }
+
+    /**
+     * 📈 Аналіз тренду погіршення стану
+     */
+    analyzeTrend(history) {
+        if (history.length < 3) return 0; // Мало даних для тренду
+        
+        // Розділяємо історію на 2 періоди
+        const midPoint = Math.floor(history.length / 2);
+        const recentPeriod = history.slice(0, midPoint);
+        const olderPeriod = history.slice(midPoint);
+        
+        // Порівнюємо частоту втручань
+        const recentFreq = recentPeriod.length;
+        const olderFreq = olderPeriod.length;
+        
+        if (recentFreq > olderFreq * 1.5) {
+            return 0.15; // Сильне погіршення
+        } else if (recentFreq > olderFreq) {
+            return 0.08; // Помірне погіршення
+        } else {
+            return 0; // Стабільно або покращення
+        }
+    }
+
+    /**
+     * 🔁 Виявлення повторюваних проблем
+     */
+    detectRepeatIssues(history) {
+        if (history.length < 2) return 0;
+        
+        // Групуємо по типу проблеми
+        const issueTypes = {};
+        history.forEach(event => {
+            const type = event.inspectionType || event.type || 'unknown';
+            issueTypes[type] = (issueTypes[type] || 0) + 1;
+        });
+        
+        // Шукаємо повторювані проблеми (більше 2 разів)
+        const repeatedIssues = Object.values(issueTypes).filter(count => count > 2).length;
+        
+        if (repeatedIssues >= 3) {
+            return 0.15; // Багато повторюваних проблем
+        } else if (repeatedIssues >= 2) {
+            return 0.08; // Деякі повторювані проблеми
+        } else if (repeatedIssues >= 1) {
+            return 0.03; // Одна повторювана проблема
+        }
+        
+        return 0;
+    }
+
     generateMaintenanceRecommendations(condition) {
         const recommendations = [];
         
-        // Рекомендації на основі стану компонентів
+        // 1. РЕКОМЕНДАЦІЇ НА ОСНОВІ СТАНУ КОМПОНЕНТІВ
         Object.entries(condition.componentConditions).forEach(([component, data]) => {
             if (data.riskLevel === 'high') {
                 recommendations.push({
@@ -359,7 +545,8 @@ class PredictiveMaintenanceSystem {
                     component: component,
                     action: 'immediate_inspection',
                     priority: 'critical',
-                    description: `Негайна перевірка ${component} - високий ризик відмови`,
+                    description: `⚠️ Негайна перевірка ${component} - високий ризик відмови`,
+                    reason: `Стан компонента: ${(data.condition * 100).toFixed(0)}%`,
                     estimatedCost: this.estimateMaintenanceCost(component, 'urgent'),
                     timeframe: '1-3 дні'
                 });
@@ -369,31 +556,189 @@ class PredictiveMaintenanceSystem {
                     component: component,
                     action: 'scheduled_maintenance',
                     priority: 'medium',
-                    description: `Планове ТО для ${component} - середній ризик`,
+                    description: `🔧 Планове ТО для ${component} - середній ризик`,
+                    reason: `Стан компонента: ${(data.condition * 100).toFixed(0)}%`,
                     estimatedCost: this.estimateMaintenanceCost(component, 'preventive'),
                     timeframe: '1-2 тижні'
                 });
             }
         });
         
-        // Загальні рекомендації на основі віку
+        // 2. РЕКОМЕНДАЦІЇ НА ОСНОВІ ІСТОРІЇ ВТРУЧАНЬ
+        if (condition.maintenanceHistory && condition.maintenanceHistory.length > 0) {
+            const historyRecommendations = this.generateHistoryBasedRecommendations(condition.maintenanceHistory, condition);
+            recommendations.push(...historyRecommendations);
+        }
+        
+        // 3. РЕКОМЕНДАЦІЇ НА ОСНОВІ ВІКУ
         if (condition.age > 15) {
             recommendations.push({
                 type: 'assessment',
                 component: 'system',
                 action: 'full_assessment',
                 priority: 'medium',
-                description: 'Повна оцінка системи - ліфт старше 15 років',
+                description: '📊 Повна оцінка системи - ліфт старше 15 років',
+                reason: `Вік ліфта: ${condition.age.toFixed(1)} років`,
                 estimatedCost: 5000,
                 timeframe: '1 місяць'
             });
         }
         
+        // 4. РЕКОМЕНДАЦІЇ НА ОСНОВІ ЧАСУ З ОСТАННЬОЇ ІНСПЕКЦІЇ
+        const daysSinceInspection = condition.lastInspection ? 
+            (Date.now() - new Date(condition.lastInspection).getTime()) / (1000 * 60 * 60 * 24) : 365;
+        
+        if (daysSinceInspection > 365) {
+            recommendations.push({
+                type: 'urgent',
+                component: 'system',
+                action: 'overdue_inspection',
+                priority: 'critical',
+                description: '⏰ ПРОСТРОЧЕНА інспекція - більше року без перевірки',
+                reason: `Остання інспекція: ${Math.floor(daysSinceInspection)} днів тому`,
+                estimatedCost: 3000,
+                timeframe: 'НЕГАЙНО'
+            });
+        } else if (daysSinceInspection > 180) {
+            recommendations.push({
+                type: 'preventive',
+                component: 'system',
+                action: 'upcoming_inspection',
+                priority: 'high',
+                description: '📅 Час планової інспекції - пройшло більше 6 місяців',
+                reason: `Остання інспекція: ${Math.floor(daysSinceInspection)} днів тому`,
+                estimatedCost: 2500,
+                timeframe: '1-2 тижні'
+            });
+        }
+        
+        // 5. РЕКОМЕНДАЦІЇ НА ОСНОВІ ЗАГАЛЬНОГО РИЗИКУ
+        if (condition.failureRisk > 0.8) {
+            recommendations.push({
+                type: 'urgent',
+                component: 'system',
+                action: 'risk_mitigation',
+                priority: 'critical',
+                description: '🚨 КРИТИЧНИЙ РИЗИК - необхідна комплексна перевірка',
+                reason: `Рівень ризику: ${(condition.failureRisk * 100).toFixed(0)}%`,
+                estimatedCost: 8000,
+                timeframe: 'НЕГАЙНО'
+            });
+        }
+        
         // Сортуємо за пріоритетом
-        return recommendations.sort((a, b) => {
-            const priorityOrder = { 'critical': 3, 'high': 2, 'medium': 1, 'low': 0 };
-            return priorityOrder[b.priority] - priorityOrder[a.priority];
+        const priorityOrder = { 'critical': 4, 'high': 3, 'medium': 2, 'low': 1, 'info': 0 };
+        return recommendations.sort((a, b) => 
+            (priorityOrder[b.priority] || 0) - (priorityOrder[a.priority] || 0)
+        );
+    }
+
+    /**
+     * 🔍 НОВИЙ МЕТОД: Генерація рекомендацій на основі історії
+     */
+    generateHistoryBasedRecommendations(history, condition) {
+        const recommendations = [];
+        
+        // Аналізуємо останні 2 роки
+        const now = Date.now();
+        const recentHistory = history.filter(event => {
+            const eventDate = new Date(event.date).getTime();
+            const daysAgo = (now - eventDate) / (1000 * 60 * 60 * 24);
+            return daysAgo <= 730;
         });
+        
+        // 1. Виявляємо повторювані проблеми
+        const issueTypes = {};
+        recentHistory.forEach(event => {
+            const type = event.inspectionType || event.type || 'unknown';
+            issueTypes[type] = (issueTypes[type] || 0) + 1;
+        });
+        
+        Object.entries(issueTypes).forEach(([type, count]) => {
+            if (count >= 3) {
+                recommendations.push({
+                    type: 'analysis',
+                    component: type,
+                    action: 'root_cause_analysis',
+                    priority: 'high',
+                    description: `🔬 Провести детальний аналіз - ${type} повторюється ${count} разів`,
+                    reason: `Виявлено повторювану проблему`,
+                    estimatedCost: 4000,
+                    timeframe: '1 тиждень'
+                });
+            }
+        });
+        
+        // 2. Аналізуємо частоту аварійних ремонтів
+        const emergencyCount = recentHistory.filter(e => 
+            e.type === 'emergency' || e.type === 'repair' || e.severity === 'critical'
+        ).length;
+        
+        if (emergencyCount >= 3) {
+            recommendations.push({
+                type: 'urgent',
+                component: 'system',
+                action: 'preventive_overhaul',
+                priority: 'critical',
+                description: `⚡ Необхідний капітальний ремонт - ${emergencyCount} аварійних втручань за 2 роки`,
+                reason: `Занадто часті аварійні ситуації`,
+                estimatedCost: 25000,
+                timeframe: '1 місяць'
+            });
+        } else if (emergencyCount >= 2) {
+            recommendations.push({
+                type: 'preventive',
+                component: 'system',
+                action: 'comprehensive_check',
+                priority: 'high',
+                description: `🔍 Комплексна діагностика - виявлено ${emergencyCount} аварії`,
+                reason: `Підвищена частота аварійних ситуацій`,
+                estimatedCost: 6000,
+                timeframe: '2 тижні'
+            });
+        }
+        
+        // 3. Аналізуємо тренд
+        if (recentHistory.length >= 6) {
+            const midPoint = Math.floor(recentHistory.length / 2);
+            const recentPeriod = recentHistory.slice(0, midPoint);
+            const olderPeriod = recentHistory.slice(midPoint);
+            
+            if (recentPeriod.length > olderPeriod.length * 1.5) {
+                recommendations.push({
+                    type: 'preventive',
+                    component: 'system',
+                    action: 'maintenance_program',
+                    priority: 'high',
+                    description: '📈 Впровадити посилену програму ТО - тренд погіршення стану',
+                    reason: `Частота проблем збільшилась на ${((recentPeriod.length / olderPeriod.length - 1) * 100).toFixed(0)}%`,
+                    estimatedCost: 12000,
+                    timeframe: '1 місяць'
+                });
+            }
+        }
+        
+        // 4. Перевіряємо критичні інспекції
+        const criticalInspections = recentHistory.filter(e => e.severity === 'critical');
+        if (criticalInspections.length > 0 && criticalInspections[0]) {
+            const lastCritical = criticalInspections[0];
+            const daysSince = (now - new Date(lastCritical.date).getTime()) / (1000 * 60 * 60 * 24);
+            
+            if (daysSince < 30) {
+                recommendations.push({
+                    type: 'urgent',
+                    component: 'system',
+                    action: 'follow_up_inspection',
+                    priority: 'critical',
+                    description: `🔴 Контрольна перевірка після критичної інспекції ${Math.floor(daysSince)} днів тому`,
+                    reason: `Критична проблема потребує моніторингу`,
+                    estimatedCost: 3500,
+                    timeframe: '3-5 днів'
+                });
+            }
+        }
+        
+        return recommendations;
     }
 
     estimateMaintenanceCost(component, type) {
@@ -729,21 +1074,47 @@ class PredictiveMaintenanceSystem {
             nextMonth: {
                 expectedFailures: 0,
                 maintenanceNeeded: 0,
-                estimatedCosts: 0
+                estimatedCosts: 0,
+                riskMatrix: [] // Додаємо матрицю ризиків
             },
             nextQuarter: {
                 expectedFailures: 0,
                 maintenanceNeeded: 0,
-                estimatedCosts: 0
+                estimatedCosts: 0,
+                riskMatrix: []
             },
             nextYear: {
                 expectedFailures: 0,
                 maintenanceNeeded: 0,
-                estimatedCosts: 0
+                estimatedCosts: 0,
+                riskMatrix: []
             }
         };
         
+        // Генеруємо матрицю ризиків з даних
         this.maintenanceData.forEach((data, liftId) => {
+            // Знаходимо повну інформацію про ліфт
+            const lift = this.lifts?.find(l => 
+                (l._id || l.id) === liftId || l.municipalNumber === liftId
+            );
+            
+            // Додаємо в матрицю ризиків
+            const riskItem = {
+                liftId: data.municipalNumber || liftId,
+                address: data.address || 'Адреса не вказана',
+                risk: (data.failureRisk || 0) * 100,
+                riskScore: data.failureRisk || 0,
+                level: data.failureRisk > 0.6 ? 'HIGH' : 
+                       data.failureRisk > 0.3 ? 'MEDIUM' : 'LOW',
+                recommendation: data.recommendations?.length > 0 
+                    ? data.recommendations[0].description 
+                    : 'Моніторинг',
+                age: data.age || 0,
+                location: data.address
+            };
+            
+            predictions.nextMonth.riskMatrix.push(riskItem);
+            
             // Прогноз на місяць
             if (data.failureRisk > this.config.riskThresholds.high) {
                 predictions.nextMonth.expectedFailures++;
@@ -753,17 +1124,22 @@ class PredictiveMaintenanceSystem {
             if (data.failureRisk > this.config.riskThresholds.medium) {
                 predictions.nextMonth.maintenanceNeeded++;
             }
-            
-            // Прогноз на квартал (спрощено)
-            predictions.nextQuarter.expectedFailures = predictions.nextMonth.expectedFailures * 2.5;
-            predictions.nextQuarter.maintenanceNeeded = predictions.nextMonth.maintenanceNeeded * 2;
-            predictions.nextQuarter.estimatedCosts = predictions.nextMonth.estimatedCosts * 2.2;
-            
-            // Прогноз на рік (спрощено)
-            predictions.nextYear.expectedFailures = predictions.nextMonth.expectedFailures * 8;
-            predictions.nextYear.maintenanceNeeded = predictions.nextMonth.maintenanceNeeded * 6;
-            predictions.nextYear.estimatedCosts = predictions.nextMonth.estimatedCosts * 7;
         });
+        
+        // Сортуємо матрицю за ризиком (найбільший ризик спочатку)
+        predictions.nextMonth.riskMatrix.sort((a, b) => b.riskScore - a.riskScore);
+        
+        // Прогноз на квартал (спрощено)
+        predictions.nextQuarter.expectedFailures = Math.round(predictions.nextMonth.expectedFailures * 2.5);
+        predictions.nextQuarter.maintenanceNeeded = Math.round(predictions.nextMonth.maintenanceNeeded * 2);
+        predictions.nextQuarter.estimatedCosts = Math.round(predictions.nextMonth.estimatedCosts * 2.2);
+        predictions.nextQuarter.riskMatrix = [...predictions.nextMonth.riskMatrix];
+        
+        // Прогноз на рік (спрощено)
+        predictions.nextYear.expectedFailures = Math.round(predictions.nextMonth.expectedFailures * 8);
+        predictions.nextYear.maintenanceNeeded = Math.round(predictions.nextMonth.maintenanceNeeded * 6);
+        predictions.nextYear.estimatedCosts = Math.round(predictions.nextMonth.estimatedCosts * 7);
+        predictions.nextYear.riskMatrix = [...predictions.nextMonth.riskMatrix];
         
         this.predictions.set('system_predictions', {
             ...predictions,
@@ -772,10 +1148,21 @@ class PredictiveMaintenanceSystem {
         });
         
         console.log('🔮 Прогнози згенеровано:', predictions);
+        console.log(`📊 Матриця ризиків: ${predictions.nextMonth.riskMatrix.length} ліфтів`);
     }
 
     // Допоміжні методи
     getLastInspectionDate(liftId) {
+        // Шукаємо у самому об'єкті ліфта
+        const lift = this.lifts?.find(l => (l._id || l.id) === liftId);
+        if (lift?.inspectionHistory && lift.inspectionHistory.length > 0) {
+            const sorted = [...lift.inspectionHistory].sort((a, b) => 
+                new Date(b.inspectionDate || b.date) - new Date(a.inspectionDate || a.date)
+            );
+            return sorted[0].inspectionDate || sorted[0].date;
+        }
+        
+        // Fallback на localStorage
         const inspections = JSON.parse(localStorage.getItem('scheduled_inspections') || '[]');
         const liftInspections = inspections
             .filter(i => i.liftId === liftId && i.status === 'completed')
@@ -785,8 +1172,80 @@ class PredictiveMaintenanceSystem {
     }
 
     getMaintenanceHistory(liftId) {
+        // Збираємо всю історію з різних джерел
+        const history = [];
+        
+        // 1. Історія інспекцій з об'єкта ліфта
+        const lift = this.lifts?.find(l => (l._id || l.id) === liftId);
+        if (lift?.inspectionHistory) {
+            lift.inspectionHistory.forEach(inspection => {
+                history.push({
+                    type: 'inspection',
+                    date: inspection.inspectionDate || inspection.date,
+                    status: inspection.status || 'completed',
+                    inspectionType: inspection.inspectionType || inspection.type,
+                    severity: this.categorizeInspectionSeverity(inspection),
+                    findings: inspection.findings || inspection.comments || '',
+                    source: 'lift_object'
+                });
+            });
+        }
+        
+        // 2. Історія з localStorage
         const maintenanceLog = JSON.parse(localStorage.getItem('maintenance_log') || '[]');
-        return maintenanceLog.filter(log => log.liftId === liftId);
+        maintenanceLog
+            .filter(log => log.liftId === liftId)
+            .forEach(log => {
+                history.push({
+                    ...log,
+                    source: 'maintenance_log'
+                });
+            });
+        
+        // 3. Scheduled inspections
+        const inspections = JSON.parse(localStorage.getItem('scheduled_inspections') || '[]');
+        inspections
+            .filter(i => i.liftId === liftId && i.status === 'completed')
+            .forEach(inspection => {
+                history.push({
+                    type: 'scheduled_inspection',
+                    date: inspection.date,
+                    status: inspection.status,
+                    source: 'scheduled_inspections'
+                });
+            });
+        
+        // Сортуємо по даті (найновіші спочатку)
+        return history.sort((a, b) => new Date(b.date) - new Date(a.date));
+    }
+
+    categorizeInspectionSeverity(inspection) {
+        const status = inspection.status?.toLowerCase();
+        const type = (inspection.inspectionType || inspection.type || '').toLowerCase();
+        const findings = (inspection.findings || inspection.comments || '').toLowerCase();
+        
+        // Критичний рівень
+        if (status === 'failed' || type === 'emergency' || type === 'repair') {
+            return 'critical';
+        }
+        
+        // Високий рівень якщо є ключові слова в описі
+        const highSeverityKeywords = ['аварі', 'поломк', 'небезпек', 'ризик', 'негайн', 'критич'];
+        if (highSeverityKeywords.some(keyword => findings.includes(keyword))) {
+            return 'high';
+        }
+        
+        // Середній рівень для ремонтних робіт
+        if (type === 'maintenance' || type === 'repair') {
+            return 'medium';
+        }
+        
+        // Низький рівень для планових перевірок
+        if (status === 'passed' || status === 'completed') {
+            return 'low';
+        }
+        
+        return 'medium'; // За замовчуванням
     }
 
     getElevatorById(liftId) {
@@ -808,6 +1267,39 @@ class PredictiveMaintenanceSystem {
         const alerts = JSON.parse(localStorage.getItem('maintenance_alerts') || '[]');
         return alerts.filter(alert => !alert.acknowledged).length;
     }
+    
+    generateDemoLifts() {
+        // Генеруємо 5 демо-ліфтів з різними характеристиками
+        const demoLifts = [];
+        const addresses = [
+            { street: 'Rua da Liberdade, 123', city: 'Lisboa' },
+            { street: 'Avenida da República, 456', city: 'Porto' },
+            { street: 'Rua Augusta, 789', city: 'Coimbra' },
+            { street: 'Praça do Comércio, 12', city: 'Lisboa' },
+            { street: 'Rua das Flores, 34', city: 'Porto' }
+        ];
+        
+        for (let i = 1; i <= 5; i++) {
+            const ageYears = 3 + Math.random() * 12; // 3-15 років
+            const installDate = new Date();
+            installDate.setFullYear(installDate.getFullYear() - ageYears);
+            
+            demoLifts.push({
+                _id: `demo_lift_${i}`,
+                municipalNumber: `DEMO-${String(i).padStart(3, '0')}`,
+                address: addresses[i - 1],
+                installationDate: installDate.toISOString(),
+                status: Math.random() > 0.8 ? 'maintenance' : 'operational',
+                type: Math.random() > 0.5 ? 'passenger' : 'freight',
+                capacity: 400 + Math.floor(Math.random() * 600),
+                floors: 3 + Math.floor(Math.random() * 10),
+                manufacturer: ['Otis', 'Schindler', 'KONE', 'ThyssenKrupp'][Math.floor(Math.random() * 4)],
+                createdAt: installDate.toISOString()
+            });
+        }
+        
+        return demoLifts;
+    }
 
     updateSystemStatistics() {
         const stats = {
@@ -822,17 +1314,35 @@ class PredictiveMaintenanceSystem {
         
         let totalAge = 0;
         
+        console.log('📊 Підрахунок статистики для', this.maintenanceData.size, 'ліфтів');
+        console.log('🎯 Пороги ризику:', this.config.riskThresholds);
+        
         this.maintenanceData.forEach((data, liftId) => {
             totalAge += data.age;
             stats.totalEstimatedCosts += this.estimateTotalMaintenanceCost(data);
             
-            if (data.failureRisk > this.config.riskThresholds.high) {
+            const riskPercent = (data.failureRisk * 100).toFixed(1);
+            let category = '';
+            
+            // Високий ризик = все >60% (включає critical >80%)
+            if (data.failureRisk > this.config.riskThresholds.medium) {
                 stats.highRiskLifts++;
-            } else if (data.failureRisk > this.config.riskThresholds.medium) {
+                if (data.failureRisk > this.config.riskThresholds.high) {
+                    category = 'КРИТИЧНИЙ (у високому)';
+                } else {
+                    category = 'ВИСОКИЙ';
+                }
+            } else if (data.failureRisk > this.config.riskThresholds.low) {
+                // Середній ризик = 30-60%
                 stats.mediumRiskLifts++;
+                category = 'СЕРЕДНІЙ';
             } else {
+                // Низький ризик = <30%
                 stats.lowRiskLifts++;
+                category = 'НИЗЬКИЙ';
             }
+            
+            console.log(`  ${liftId}: ризик ${data.failureRisk.toFixed(3)} (${riskPercent}%) → ${category}`);
             
             if (data.recommendations.length > 0) {
                 stats.upcomingMaintenanceCount++;
@@ -840,6 +1350,13 @@ class PredictiveMaintenanceSystem {
         });
         
         stats.averageAge = totalAge / stats.totalLifts || 0;
+        
+        console.log('✅ Фінальна статистика:', {
+            'Високий ризик': stats.highRiskLifts,
+            'Середній ризик': stats.mediumRiskLifts,
+            'Низький ризик': stats.lowRiskLifts,
+            'Середній вік': stats.averageAge.toFixed(1)
+        });
         
         localStorage.setItem('maintenance_statistics', JSON.stringify(stats));
         
@@ -1057,26 +1574,141 @@ class PredictiveMaintenanceSystem {
      * 🔮 Отримання системних прогнозів для аналітики
      */
     getSystemPredictions() {
-        if (!this.isInitialized) {
-            // Повертаємо тестові дані якщо система не ініціалізована
+        // Спочатку намагаємось отримати згенеровані прогнози
+        const savedPredictions = this.predictions.get('system_predictions');
+        
+        if (savedPredictions) {
+            console.log('📊 getSystemPredictions повертає збережені прогнози:', savedPredictions);
+            return savedPredictions;
+        }
+        
+        // Якщо немає збережених - завантажуємо статистику та генеруємо базові дані
+        const stats = JSON.parse(localStorage.getItem('maintenance_statistics') || '{}');
+        
+        if (!this.isInitialized || !stats.totalLifts) {
+            console.warn('⚠️ Система не ініціалізована або немає статистики, використовую демо дані');
             return {
+                nextMonth: {
+                    expectedFailures: 2,
+                    maintenanceNeeded: 8,
+                    estimatedCosts: 15000,
+                    riskMatrix: []
+                },
+                nextQuarter: {
+                    expectedFailures: 5,
+                    maintenanceNeeded: 20,
+                    estimatedCosts: 35000,
+                    riskMatrix: []
+                },
+                nextYear: {
+                    expectedFailures: 15,
+                    maintenanceNeeded: 60,
+                    estimatedCosts: 120000,
+                    riskMatrix: []
+                },
                 riskLevels: [15, 25, 35, 20, 45, 30],
                 totalLifts: 45,
                 highRiskLifts: 8,
+                mediumRiskLifts: 12,
+                lowRiskLifts: 25,
                 scheduledMaintenance: 12
             };
         }
 
-        // Тут має бути справжня логіка прогнозування
-        // Поки повертаємо базові розрахунки
-        const predictions = this.predictions.get('fallback') || {
-            riskLevels: [10, 20, 30, 25, 40, 35],
-            totalLifts: this.maintenanceData.size || 45,
-            highRiskLifts: Math.floor(this.maintenanceData.size * 0.15) || 8,
-            scheduledMaintenance: Math.floor(this.maintenanceData.size * 0.25) || 12
+        // Генеруємо базові прогнози на основі статистики
+        const predictions = {
+            nextMonth: {
+                expectedFailures: stats.highRiskLifts || 0,
+                maintenanceNeeded: stats.highRiskLifts + stats.mediumRiskLifts || 0,
+                estimatedCosts: (stats.highRiskLifts || 0) * 5000,
+                riskMatrix: this.generateQuickRiskMatrix()
+            },
+            nextQuarter: {
+                expectedFailures: Math.round((stats.highRiskLifts || 0) * 2.5),
+                maintenanceNeeded: Math.round((stats.highRiskLifts + stats.mediumRiskLifts || 0) * 2),
+                estimatedCosts: Math.round((stats.highRiskLifts || 0) * 5000 * 2.2),
+                riskMatrix: []
+            },
+            nextYear: {
+                expectedFailures: Math.round((stats.highRiskLifts || 0) * 8),
+                maintenanceNeeded: Math.round((stats.highRiskLifts + stats.mediumRiskLifts || 0) * 6),
+                estimatedCosts: Math.round((stats.highRiskLifts || 0) * 5000 * 7),
+                riskMatrix: []
+            },
+            riskLevels: this.generateRiskLevelsChart(stats),
+            totalLifts: stats.totalLifts || 0,
+            highRiskLifts: stats.highRiskLifts || 0,
+            mediumRiskLifts: stats.mediumRiskLifts || 0,
+            lowRiskLifts: stats.lowRiskLifts || 0,
+            scheduledMaintenance: stats.upcomingMaintenanceCount || 0,
+            averageAge: stats.averageAge || 0
         };
-
+        
+        console.log('📊 getSystemPredictions згенерував базові прогнози:', predictions);
+        
         return predictions;
+    }
+    
+    /**
+     * Швидка генерація матриці ризиків з поточних даних
+     */
+    generateQuickRiskMatrix() {
+        const matrix = [];
+        
+        console.log('📋 Генерація матриці ризиків для', this.maintenanceData.size, 'ліфтів');
+        
+        this.maintenanceData.forEach((data, liftId) => {
+            const riskPercent = Math.round((data.failureRisk || 0) * 100);
+            let level;
+            
+            // Правильна класифікація відповідно до порогів
+            if (data.failureRisk > 0.6) {
+                level = 'HIGH';  // >60% - високий
+            } else if (data.failureRisk > 0.3) {
+                level = 'MEDIUM';  // 30-60% - середній
+            } else {
+                level = 'LOW';  // <30% - низький
+            }
+            
+            console.log(`  ${data.municipalNumber || liftId}: ${(data.failureRisk * 100).toFixed(1)}% → ${level}`);
+            
+            matrix.push({
+                liftId: data.municipalNumber || liftId,
+                address: data.address || 'Адреса не вказана',
+                risk: riskPercent,
+                riskScore: data.failureRisk || 0,
+                level: level,
+                recommendation: data.recommendations?.length > 0 
+                    ? data.recommendations[0].description 
+                    : 'Моніторинг',
+                age: data.age || 0,
+                location: data.address
+            });
+        });
+        
+        // Сортуємо за ризиком
+        matrix.sort((a, b) => b.riskScore - a.riskScore);
+        
+        return matrix;
+    }
+    
+    /**
+     * Генерує дані для графіка рівнів ризику
+     */
+    generateRiskLevelsChart(stats) {
+        // Генеруємо масив для 6 місяців на основі поточної статистики
+        const baseHigh = stats.highRiskLifts || 0;
+        const baseMedium = stats.mediumRiskLifts || 0;
+        const baseLow = stats.lowRiskLifts || 0;
+        
+        // Прогнозуємо зростання високого ризику (припускаємо +5% щомісяця)
+        const riskLevels = [];
+        for (let i = 0; i < 6; i++) {
+            const growth = 1 + (i * 0.05); // 5% зростання на місяць
+            riskLevels.push(Math.round(baseHigh * growth + baseMedium * (growth - 1)));
+        }
+        
+        return riskLevels;
     }
 
     /**

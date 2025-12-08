@@ -468,6 +468,8 @@ function loadUserInfo() {
 async function loadClientLifts() {
     try {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
+        console.log('👤 Поточний користувач:', user);
+        
         const response = await fetch('/api/lifts', {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
@@ -479,20 +481,26 @@ async function loadClientLifts() {
             const data = await response.json();
             const allLifts = data.data?.lifts || data.lifts || [];
             
-            // Фільтруємо тільки ліфти цього клієнта
-            clientLifts = allLifts.filter(lift => 
-                lift.client === user.id || lift.client === user._id
-            );
+            console.log('📊 Всього ліфтів з API:', allLifts.length);
+            console.log('📋 Приклад ліфта:', allLifts[0]);
             
-            console.log(`✅ Завантажено ${clientLifts.length} ліфтів клієнта`);
+            // Фільтруємо тільки ліфти цього клієнта
+            clientLifts = allLifts.filter(lift => {
+                const liftClient = lift.client?._id || lift.client;
+                const userId = user._id || user.id;
+                return liftClient === userId || String(liftClient) === String(userId);
+            });
+            
+            console.log(`✅ Ліфти клієнта (після фільтрації):`, clientLifts.length);
+            console.log('📋 Дані клієнтських ліфтів:', clientLifts);
         } else {
-            console.error('Помилка завантаження ліфтів');
+            console.error('❌ Помилка завантаження ліфтів:', response.status);
             // Fallback на localStorage
             const allLifts = JSON.parse(localStorage.getItem('lifts') || '[]');
             clientLifts = allLifts.filter(lift => lift.client === user.id);
         }
     } catch (error) {
-        console.error('Помилка:', error);
+        console.error('❌ Помилка:', error);
         clientLifts = [];
     }
 }
@@ -669,7 +677,7 @@ function createPredictionCard(lift, prediction) {
                     <!-- Адреса -->
                     <p class="mb-2">
                         <i class="fas fa-map-marker-alt text-primary"></i>
-                        <strong>${lift.address?.street || ''}, ${lift.address?.city || ''}</strong>
+                        <strong>${lift.address?.street || 'Адреса не вказана'}, ${lift.address?.city || ''}</strong>
                     </p>
                     
                     <!-- Основна інформація -->

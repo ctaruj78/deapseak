@@ -539,7 +539,7 @@ function extractViolations(text) {
         }
     }
     
-    // Формат 4: Tabела (C1 | 45 | опис)
+    // Формат 4: Tabela (C1 | 45 | опис)
     const format4Regex = /([C][123])\s*[|\t]\s*(\d+[a-z]?\.?\d*\.?\d*)\s*[|\t]\s*([^\n]{10,200})/gi;
     
     while ((match = format4Regex.exec(text)) !== null) {
@@ -550,16 +550,119 @@ function extractViolations(text) {
         }
     }
     
-    // ⭐ Формат 5: Контекстний пошук для "NOTA DE CLÁUSULAS" та інших форматів
-    // Якщо попередні формати нічого не знайшли, але є класифікації C1/C2/C3
+    // Формат 5: Нумерований список з складними артикулами
+    // Приклад: "4 - ART. 320 8 1 B C2 Artigo 8°.1 - Não foi completada..."
+    // Приклад: "1 - ART. 740 74 A C2 De acordo com o Decreto-Lei..."
+    // ⚠️ ВАЖЛИВО: Зупиняємося на "Nota :" або наступному порушенні
+    const format5Regex = /(\d+)\s*[-–]\s*ART\.?\s+(\d+(?:\s+\d+)*)\s+([A-Z])\s+(C[123])\s+(.{15,400}?)(?=\s*\d+\s*[-–]\s*ART\.|Nota\s*:|$)/gis;
+    
+    while ((match = format5Regex.exec(text)) !== null) {
+        const violationNum = match[1]; // Номер порушення (1, 2, 3...)
+        const rawArticle = match[2].trim(); // "320 8 1" або "740 74"
+        const letter = match[3]; // A, B, C, D...
+        const classification = match[4];
+        let description = match[5].trim();
+        
+        // Витягуємо правильний номер артикулу:
+        // "740 74" → це "Decreto-Lei 740/74", беремо останнє "74"
+        // "320 8 1" → це "DL 320/2002 Artigo 8.1", беремо перше "320"
+        const numbers = rawArticle.split(/\s+/).map(n => parseInt(n));
+        let articleNum;
+        
+        if (numbers.length === 1) {
+            articleNum = numbers[0].toString(); // "105" → "105"
+        } else if (numbers.length === 2 && numbers[0] === 740) {
+            // Спеціальний випадок: "740 74" це Decreto-Lei 740/74
+            articleNum = numbers[1].toString(); // → "74"
+        } else {
+            // Для "320 8 1" та інших - беремо перше число (основний артикул)
+            articleNum = numbers[0].toString(); // "320 8 1" → "320"
+        }
+        
+        // Очищаємо опис від зайвих символів
+        description = description
+            .replace(/^[-–—:.\s]+/, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+        
+        // Видаляємо тільки номери сторінок в кінці (наприклад: "текст 4 -")
+        description = description.replace(/\s+\d+\s*[-–—]*\s*$/g, '').trim();
+        
+        // Якщо опис занадто довгий, обрізаємо до розумної довжини
+        if (description.length > 500) {
+            const cutPoint = description.substring(0, 500).lastIndexOf('.');
+            if (cutPoint > 200) {
+                description = description.substring(0, cutPoint + 1).trim();
+            } else {
+                description = description.substring(0, 500).trim() + '...';
+            }
+        }
+        
+        // 🔧 КОРЕКЦІЯ КЛАСИФІКАЦІЇ для Format 5
+        let correctedClassification = classification;
+        
+        // Артикулі що ЗАВЖДИ C3 (низький ризик)
+        const alwaysC3Articles = ['900', '901', '902'];
+        
+        // Перевірка чи це NOTA (примітка)
+        const isNota = /^NOTA\s*:/i.test(description) || /^O\s+dispositivo\s+elétrico/i.test(description);
+        
+        if (alwaysC3Articles.includes(articleNum) || isNota) {
+            if (correctedClassification !== 'C3') {
+                console.log(`🔧 Format 5: Correcting Art.${articleNum} from ${correctedClassification} to C3 (NOTA)`);
+                correctedClassification = 'C3';
+            }
+        }
+        
+        // Уніфікований ключ дедуплікації (такий самий як в Format 6)
+        const key = `${correctedClassification}-${articleNum}-${description.substring(0, 100)}`;
+        if (!seen.has(key)) {
+            seen.add(key);
+            console.log(`✅ Format 5 match: ${correctedClassification} Art.${articleNum} (${letter}) - "${description.substring(0, 60)}..."`);
+            violations.push(createViolation(correctedClassification, articleNum, description, 'numbered_list'));
+        }
+    }
+    
+    // Формат 5B: NOTA (примітки) - завжди C3
+    // Приклад: "Nota : Verificou-se que as portas interiores..."
+    // Ці записи йдуть після основних порушень і є інформаційними
+    const notaRegex = /(?:NOTA|Nota)\s*:\s*(.{30,400}?)(?=\d+\s*[-–]\s*ART\.|NOTA|Nota|$)/gis;
+    
+    while ((match = notaRegex.exec(text)) !== null) {
+        let description = match[1].trim();
+        
+        // Очищаємо опис
+        description = description
+            .replace(/\s+/g, ' ')
+            .replace(/[-–—]+$/, '')
+            .trim();
+        
+        // Пропускаємо занадто короткі або загальні примітки
+        if (description.length < 30 || /^(O|A|As|Os)\s+\w+\s+\w+$/i.test(description)) {
+            continue;
+        }
+        
+        // NOTA завжди C3 і артикул 900
+        const key = `C3-900-${description.substring(0, 100)}`;
+        if (!seen.has(key)) {
+            seen.add(key);
+            console.log(`✅ Format 5B (NOTA): C3 Art.900 - "${description.substring(0, 60)}..."`);
+            violations.push(createViolation('C3', '900', `NOTA: ${description}`, 'nota'));
+        }
+    }
+    
+    // ⭐ Формат 6: Контекстний пошук для "NOTA DE CLÁUSULAS" та інших форматів
+    // Використовується коли формати 1-5 не знайшли порушень
     if (violations.length === 0) {
-        console.log('🔍 Trying contextual search for C1/C2/C3...');
+        console.log('🔍 No violations found in formats 1-5, trying contextual search for C1/C2/C3...');
         
         // Перевіряємо чи це звіт з клаузами
         const hasClauseSection = /NOTA\s+DE\s+CLÁUSULAS|CLÁUSULAS?\s+DE\s+CUMPRIMENTO|NÃO\s+CONFORMIDADES?/i.test(text);
         
         if (hasClauseSection) {
             console.log('📋 Found clause section - using contextual extraction');
+        } else {
+            console.log('⚠️ Using contextual search without clause section header');
         }
         
         // ⚠️ ВИКЛЮЧЕННЯ: Патерни які НЕ є реальними порушеннями
@@ -713,15 +816,52 @@ function extractViolations(text) {
             
             console.log(`✅ Valid violation found: ${classification} - "${description.substring(0, 60)}..."`);
             
+            // 🔧 КОРЕКЦІЯ КЛАСИФІКАЦІЇ: Деякі артикулі мають фіксовану класифікацію
+            // ⚠️ ВАЖЛИВО: Довіряємо класифікації з PDF (її ставить сертифікований інспектор)
+            // Виправляємо ТІЛЬКИ якщо маємо точні дані з регламенту що класифікація неправильна
+            let correctedClassification = classification;
+            
+            // Артикулі що ЗАВЖДИ C3 (низький ризик - примітки, документація)
+            // Тільки конкретні артикулі підтверджені регламентом, БЕЗ автоматичного >= 900
+            const alwaysC3Articles = ['900', '901', '902', 'NOTA'];
+            
+            // Артикулі що ЗАВЖДИ C2 (середній ризик)
+            const alwaysC2Articles = ['85', '86', '87'];
+            
+            // Артикулі що ЗАВЖДИ C1 (критичний ризик - безпека)
+            const alwaysC1Articles = ['14', '39', '9'];
+            
+            // Перевірка чи це NOTA (примітка) - завжди інформаційна, не порушення
+            const isNota = /^NOTA\s*:/i.test(description) || /^O\s+dispositivo\s+elétrico/i.test(description);
+            
+            if (alwaysC1Articles.includes(articleNum)) {
+                if (correctedClassification !== 'C1') {
+                    console.log(`🔧 Correcting classification: Art.${articleNum} is always C1 (was ${correctedClassification})`);
+                    correctedClassification = 'C1';
+                }
+            } else if (alwaysC2Articles.includes(articleNum)) {
+                if (correctedClassification !== 'C2') {
+                    console.log(`🔧 Correcting classification: Art.${articleNum} is always C2 (was ${correctedClassification})`);
+                    correctedClassification = 'C2';
+                }
+            } else if (alwaysC3Articles.includes(articleNum) || isNota) {
+                // ✅ ВИДАЛЕНО: || parseInt(articleNum) >= 900
+                // Тепер довіряємо PDF класифікації для всіх артикулів крім конкретно перелічених
+                if (correctedClassification !== 'C3') {
+                    console.log(`🔧 Correcting classification: Art.${articleNum} is always C3 (was ${correctedClassification})`);
+                    correctedClassification = 'C3';
+                }
+            }
+            
             // 🔑 Унікальний ключ: класифікація + стаття + опис
             // Якщо та сама проблема має C2 і C3 - це ДВІ різні порушення!
-            const key = `${classification}-${articleNum}-${description.substring(0, 100)}`;
+            const key = `${correctedClassification}-${articleNum}-${description.substring(0, 100)}`;
             
             if (!seen.has(key)) {
                 seen.add(key);
-                violations.push(createViolation(classification, articleNum, description, 'contextual'));
+                violations.push(createViolation(correctedClassification, articleNum, description, 'contextual'));
             } else {
-                console.log(`⏭️ Skipping exact duplicate: ${classification} Art.${articleNum}`);
+                console.log(`⏭️ Skipping exact duplicate: ${correctedClassification} Art.${articleNum}`);
             }
         });
     }

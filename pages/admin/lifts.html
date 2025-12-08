@@ -1436,6 +1436,35 @@
     <!-- Toast Container -->
     <div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
 
+    <!-- Модальне вікно перегляду звіту -->
+    <div class="modal fade" id="viewReportModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-file-alt"></i> Деталі звіту
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="report-details-content">
+                        <!-- Деталі звіту будуть тут -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times"></i> Закрити
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="printReport()">
+                        <i class="fas fa-print"></i> Друкувати
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Модальне вікно для додавання звіту -->
     <div class="modal fade" id="addReportModal" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog" role="document" style="max-height: 95vh; margin: 1.75rem auto;">
@@ -4759,7 +4788,7 @@
                 html += `
                     <div class="list-group-item">
                         <div class="d-flex justify-content-between align-items-start">
-                            <div>
+                            <div class="flex-grow-1">
                                 <h6 class="mb-1">
                                     <i class="fas fa-clipboard-check text-primary"></i>
                                     ${type} ${statusBadge}
@@ -4768,10 +4797,16 @@
                                 <p class="mb-1"><small><strong>Інспектор:</strong> ${inspector}</small></p>
                                 <p class="mb-1"><small>${notes}</small></p>
                             </div>
-                            <div>
+                            <div class="btn-group-vertical ml-2">
+                                <button class="btn btn-sm btn-outline-primary mb-1" onclick='viewReportDetails(${JSON.stringify(report).replace(/'/g, "&apos;")})' title="Переглянути деталі">
+                                    <i class="fas fa-eye"></i> Деталі
+                                </button>
+                                <button class="btn btn-sm btn-outline-success mb-1" onclick='printReportDirect(${JSON.stringify(report).replace(/'/g, "&apos;")})' title="Друкувати звіт">
+                                    <i class="fas fa-print"></i> Друк
+                                </button>
                                 ${fileUrl ? `
-                                    <a href="${fileUrl}" target="_blank" class="btn btn-sm btn-info">
-                                        <i class="fas fa-file-pdf"></i> Переглянути
+                                    <a href="${fileUrl}" target="_blank" class="btn btn-sm btn-outline-info" title="Відкрити PDF файл">
+                                        <i class="fas fa-file-pdf"></i> PDF
                                     </a>
                                 ` : ''}
                             </div>
@@ -4872,6 +4907,282 @@
             console.error('❌ Помилка додавання звіту:', error);
             alert('Помилка додавання звіту: ' + error.message);
         }
+    }
+    
+    // ============================================
+    // Функції перегляду та друку звітів
+    // ============================================
+    
+    function viewReportDetails(report) {
+        console.log('👁️ Перегляд звіту:', report);
+        
+        const date = report.inspectionDate || report.date 
+            ? new Date(report.inspectionDate || report.date).toLocaleDateString('uk-UA', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            }) 
+            : 'Невідома дата';
+        const type = report.inspectionType || report.type || 'Не вказано';
+        const notes = report.comments || report.findings || report.notes || 'Без коментарів';
+        const status = report.status || 'completed';
+        const inspector = report.inspectorName || 'Невідомий';
+        const fileUrl = report.fileUrl || report.file || null;
+        
+        // Статус badge
+        let statusBadge = '';
+        let statusClass = '';
+        if (status === 'passed' || status === 'completed') {
+            statusBadge = 'Пройдено';
+            statusClass = 'success';
+        } else if (status === 'failed') {
+            statusBadge = 'Не пройдено';
+            statusClass = 'danger';
+        } else {
+            statusBadge = 'Виконано';
+            statusClass = 'info';
+        }
+        
+        // Іконка по типу
+        let typeIcon = 'fa-clipboard-check';
+        if (type.toLowerCase().includes('ремонт') || type === 'repair') {
+            typeIcon = 'fa-wrench';
+        } else if (type.toLowerCase().includes('аварі') || type === 'emergency') {
+            typeIcon = 'fa-exclamation-triangle';
+        } else if (type.toLowerCase().includes('то') || type === 'maintenance') {
+            typeIcon = 'fa-tools';
+        }
+        
+        const detailsHtml = `
+            <div class="card">
+                <div class="card-header bg-${statusClass} text-white">
+                    <h5 class="mb-0">
+                        <i class="fas ${typeIcon}"></i> ${type}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p><strong><i class="fas fa-calendar"></i> Дата:</strong></p>
+                            <p class="ml-4">${date}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong><i class="fas fa-info-circle"></i> Статус:</strong></p>
+                            <p class="ml-4"><span class="badge badge-${statusClass}">${statusBadge}</span></p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <p><strong><i class="fas fa-user"></i> Інспектор:</strong></p>
+                            <p class="ml-4">${inspector}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <p><strong><i class="fas fa-comment"></i> Коментарі та висновки:</strong></p>
+                            <div class="ml-4 p-3 bg-light rounded">
+                                ${notes}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ${fileUrl ? `
+                        <div class="row">
+                            <div class="col-12">
+                                <p><strong><i class="fas fa-file-pdf"></i> Прикріплений файл:</strong></p>
+                                <a href="${fileUrl}" target="_blank" class="btn btn-outline-primary ml-4">
+                                    <i class="fas fa-external-link-alt"></i> Відкрити PDF файл
+                                </a>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+                <div class="card-footer text-muted">
+                    <small>
+                        <i class="fas fa-clock"></i> Створено: ${report.createdAt ? new Date(report.createdAt).toLocaleString('uk-UA') : 'Не вказано'}
+                    </small>
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('report-details-content').innerHTML = detailsHtml;
+        
+        // Зберігаємо звіт для друку
+        window.currentReportForPrint = report;
+        
+        $('#viewReportModal').modal('show');
+    }
+    
+    function printReport() {
+        if (window.currentReportForPrint) {
+            printReportDirect(window.currentReportForPrint);
+        }
+    }
+    
+    function printReportDirect(report) {
+        console.log('🖨️ Друк звіту:', report);
+        
+        const date = report.inspectionDate || report.date 
+            ? new Date(report.inspectionDate || report.date).toLocaleDateString('uk-UA', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            }) 
+            : 'Невідома дата';
+        const type = report.inspectionType || report.type || 'Не вказано';
+        const notes = report.comments || report.findings || report.notes || 'Без коментарів';
+        const status = report.status || 'completed';
+        const inspector = report.inspectorName || 'Невідомий';
+        
+        // Статус
+        let statusText = '';
+        if (status === 'passed' || status === 'completed') {
+            statusText = 'ПРОЙДЕНО';
+        } else if (status === 'failed') {
+            statusText = 'НЕ ПРОЙДЕНО';
+        } else {
+            statusText = 'ВИКОНАНО';
+        }
+        
+        // Отримуємо дані ліфта
+        const liftId = $('#detail-id').text() || '';
+        const liftLocation = $('#detail-location').text() || '';
+        const liftType = $('#detail-type').text() || '';
+        
+        const printContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>Звіт - ${type}</title>
+                <style>
+                    @media print {
+                        body { margin: 0; padding: 20px; }
+                    }
+                    body {
+                        font-family: Arial, sans-serif;
+                        line-height: 1.6;
+                        color: #333;
+                    }
+                    .header {
+                        text-align: center;
+                        border-bottom: 3px solid #007bff;
+                        padding-bottom: 20px;
+                        margin-bottom: 30px;
+                    }
+                    .header h1 {
+                        margin: 0;
+                        color: #007bff;
+                    }
+                    .header .status {
+                        font-size: 1.2em;
+                        font-weight: bold;
+                        margin-top: 10px;
+                        color: ${status === 'passed' || status === 'completed' ? '#28a745' : status === 'failed' ? '#dc3545' : '#17a2b8'};
+                    }
+                    .section {
+                        margin-bottom: 20px;
+                        page-break-inside: avoid;
+                    }
+                    .section h3 {
+                        background: #f8f9fa;
+                        padding: 10px;
+                        border-left: 4px solid #007bff;
+                        margin-bottom: 10px;
+                    }
+                    .info-row {
+                        display: flex;
+                        margin-bottom: 10px;
+                        padding: 5px 0;
+                    }
+                    .info-label {
+                        font-weight: bold;
+                        width: 200px;
+                    }
+                    .info-value {
+                        flex: 1;
+                    }
+                    .notes {
+                        background: #f8f9fa;
+                        padding: 15px;
+                        border-radius: 5px;
+                        margin-top: 10px;
+                    }
+                    .footer {
+                        margin-top: 40px;
+                        padding-top: 20px;
+                        border-top: 2px solid #dee2e6;
+                        text-align: center;
+                        font-size: 0.9em;
+                        color: #6c757d;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h1>🏢 ЗВІТ ПРО ${type.toUpperCase()}</h1>
+                    <div class="status">${statusText}</div>
+                </div>
+                
+                <div class="section">
+                    <h3>📍 Інформація про ліфт</h3>
+                    <div class="info-row">
+                        <div class="info-label">ID Ліфта:</div>
+                        <div class="info-value">${liftId}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Адреса:</div>
+                        <div class="info-value">${liftLocation}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Тип:</div>
+                        <div class="info-value">${liftType}</div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>📋 Деталі ${type.toLowerCase()}</h3>
+                    <div class="info-row">
+                        <div class="info-label">Дата:</div>
+                        <div class="info-value">${date}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Інспектор:</div>
+                        <div class="info-value">${inspector}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Статус:</div>
+                        <div class="info-value">${statusText}</div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>💬 Коментарі та висновки</h3>
+                    <div class="notes">
+                        ${notes}
+                    </div>
+                </div>
+                
+                <div class="footer">
+                    <p>Звіт створено ${new Date().toLocaleString('uk-UA')}</p>
+                    <p><strong>LiftMaster Pro</strong> - Система управління ліфтами</p>
+                </div>
+            </body>
+            </html>
+        `;
+        
+        // Відкриваємо новий виграв для друку
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(printContent);
+        printWindow.document.close();
+        
+        // Чекаємо завантаження та друкуємо
+        printWindow.onload = function() {
+            printWindow.focus();
+            printWindow.print();
+        };
     }
     
     // ============================================

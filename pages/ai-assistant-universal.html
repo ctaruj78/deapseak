@@ -72,6 +72,18 @@
             border-left-color: #17a2b8;
         }
         
+        .border-left-danger {
+            border-left: 3px solid #dc3545 !important;
+        }
+        
+        .border-left-warning {
+            border-left: 3px solid #ffc107 !important;
+        }
+        
+        .border-left-info {
+            border-left: 3px solid #17a2b8 !important;
+        }
+        
         .upload-area {
             border: 2px dashed #dee2e6;
             border-radius: 10px;
@@ -1379,6 +1391,14 @@
                                         <span class="badge badge-${badgeClass}">${v.classification}</span>
                                         <strong>Artigo ${v.article}</strong> - ${violationTitle}
                                     </h6>
+                                    
+                                    ${v.articleInfo?.description ? `
+                                        <div class="alert alert-light border-left-${badgeClass} mb-2">
+                                            <strong><i class="fas fa-book"></i> Текст клаузи:</strong>
+                                            <p class="mb-0 mt-1">${v.articleInfo.description}</p>
+                                        </div>
+                                    ` : ''}
+                                    
                                     <p class="mb-2"><strong>Порушення:</strong> ${v.description}</p>
                                     
                                     ${v.detailedExplanation ? `
