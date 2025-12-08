@@ -174,11 +174,14 @@
                                 <div class="card-header">
                                     <h3 class="card-title">Criar Orçamento</h3>
                                     <div class="card-tools">
-                                        <button class="btn btn-success btn-sm" onclick="generateInvoice()">
-                                            <i class="fas fa-plus"></i> Criar orçamento
+                                        <button type="button" class="btn btn-primary btn-sm" onclick="saveOrcamento()">
+                                            <i class="fas fa-save"></i> Guardar Orçamento
                                         </button>
-                                        <button class="btn btn-info btn-sm" onclick="loadTemplate()">
-                                            <i class="fas fa-file-import"></i> Carregar modelo
+                                        <button type="button" class="btn btn-success btn-sm" onclick="generateInvoice()">
+                                            <i class="fas fa-plus"></i> Novo número
+                                        </button>
+                                        <button type="button" class="btn btn-info btn-sm" onclick="loadTemplate()">
+                                            <i class="fas fa-file-import"></i> Modelo
                                         </button>
                                     </div>
                                 </div>
@@ -583,6 +586,89 @@
         function generateInvoice() {
             invoiceManager.generateInvoiceNumber();
             invoiceManager.updatePreview();
+        }
+
+        // Função para SALVAR orçamento no MongoDB
+        async function saveOrcamento() {
+            const servicos = [];
+            
+            $('#servicesTable tbody tr').each(function() {
+                const descricao = $(this).find('input[type="text"]').val();
+                const quantidade = parseFloat($(this).find('.qty').val()) || 0;
+                const precoUnitario = parseFloat($(this).find('.price').val()) || 0;
+                
+                if (descricao && quantidade > 0 && precoUnitario > 0) {
+                    servicos.push({
+                        descricao,
+                        quantidade,
+                        precoUnitario,
+                        total: quantidade * precoUnitario
+                    });
+                }
+            });
+            
+            if (servicos.length === 0) {
+                alert('Adicione pelo menos um serviço!');
+                return;
+            }
+            
+            const data = {
+                cliente: {
+                    nome: $('#clientName').val(),
+                    morada: $('#clientAddress').val(),
+                    email: $('#clientEmail').val()
+                },
+                servicos,
+                subtotal: parseFloat($('#subtotal').text().replace(' €', '')) || 0,
+                iva: parseFloat($('#tax').text().replace(' €', '')) || 0,
+                total: parseFloat($('#grandTotal').text().replace(' €', '')) || 0,
+                notas: $('#notes').val() || 'Este orçamento é válido por 30 dias a partir da data de apresentação.'
+            };
+            
+            // Validação
+            if (!data.cliente.nome || !data.cliente.email || !data.cliente.morada) {
+                alert('Preencha todos os dados do cliente!');
+                return;
+            }
+            
+            try {
+                const token = localStorage.getItem('liftmanager_jwt') || 
+                             localStorage.getItem('token') || 
+                             localStorage.getItem('lm_token');
+                
+                if (!token) {
+                    alert('Sessão expirada. Faça login novamente.');
+                    window.location.href = '../auth/login.html';
+                    return;
+                }
+                
+                const response = await fetch('/api/orcamentos', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(`✅ Orçamento ${result.data.numero} salvo com sucesso!`);
+                    // Redirecionar para lista de orçamentos
+                    if (confirm('Ver lista de orçamentos?')) {
+                        window.location.href = 'orcamentos-list.html';
+                    } else {
+                        // Limpar formulário
+                        location.reload();
+                    }
+                } else {
+                    alert('❌ Erro: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Erro ao salvar orçamento:', error);
+                alert('❌ Erro ao salvar orçamento: ' + error.message);
+            }
         }
 
         // Initialize when document is ready

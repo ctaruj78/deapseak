@@ -2748,6 +2748,238 @@ app.get('/api/ai/regulations/:id', authenticateToken, async (req, res) => {
     }
 });
 
+// ═══════════════════════════════════════════════════════════
+// 📊 ORÇAMENTOS API - Збереження та управління кошторисами
+// ═══════════════════════════════════════════════════════════
+
+// GET /api/orcamentos - Список всіх орçаментів
+app.get('/api/orcamentos', authenticateToken, async (req, res) => {
+    try {
+        const { status, page = 1, limit = 20, search } = req.query;
+        
+        const query = {};
+        
+        if (status) query.status = status;
+        
+        if (search) {
+            query.$or = [
+                { numero: new RegExp(search, 'i') },
+                { 'cliente.nome': new RegExp(search, 'i') },
+                { 'cliente.email': new RegExp(search, 'i') }
+            ];
+        }
+        
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+        
+        const orcamentos = await db.collection('orcamentos')
+            .find(query)
+            .sort({ data: -1 })
+            .skip(skip)
+            .limit(parseInt(limit))
+            .toArray();
+        
+        const total = await db.collection('orcamentos').countDocuments(query);
+        
+        res.json({
+            success: true,
+            data: orcamentos,
+            pagination: {
+                page: parseInt(page),
+                limit: parseInt(limit),
+                total,
+                pages: Math.ceil(total / parseInt(limit))
+            }
+        });
+    } catch (error) {
+        console.error('❌ Erro ao buscar orçamentos:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erro ao buscar orçamentos',
+            error: error.message
+        });
+    }
+});
+
+// GET /api/orcamentos/:id - Detalhe do orçamento
+app.get('/api/orcamentos/:id', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const orcamento = await db.collection('orcamentos')
+            .findOne({ _id: new ObjectId(req.params.id) });
+        
+        if (!orcamento) {
+            return res.status(404).json({
+                success: false,
+                message: 'Orçamento não encontrado'
+            });
+        }
+        
+        res.json({ success: true, data: orcamento });
+    } catch (error) {
+        console.error('❌ Erro ao buscar orçamento:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erro ao buscar orçamento',
+            error: error.message
+        });
+    }
+});
+
+// POST /api/orcamentos - Criar novo orçamento
+app.post('/api/orcamentos', authenticateToken, async (req, res) => {
+    try {
+        const { cliente, servicos, subtotal, iva, total, notas } = req.body;
+        
+        // Validação
+        if (!cliente || !cliente.nome || !cliente.email || !cliente.morada) {
+            return res.status(400).json({
+                success: false,
+                message: 'Dados do cliente incompletos'
+            });
+        }
+        
+        if (!servicos || servicos.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Pelo menos um serviço é obrigatório'
+            });
+        }
+        
+        // Gerar número automático (ORC-2024-12-001)
+        const ano = new Date().getFullYear();
+        const mes = String(new Date().getMonth() + 1).padStart(2, '0');
+        
+        const ultimoOrcamento = await db.collection('orcamentos')
+            .find({ numero: new RegExp(`^ORC-${ano}-${mes}`) })
+            .sort({ numero: -1 })
+            .limit(1)
+            .toArray();
+        
+        let sequencia = 1;
+        if (ultimoOrcamento.length > 0) {
+            const match = ultimoOrcamento[0].numero.match(/ORC-\d{4}-\d{2}-(\d{3})/);
+            if (match) sequencia = parseInt(match[1]) + 1;
+        }
+        
+        const numero = `ORC-${ano}-${mes}-${String(sequencia).padStart(3, '0')}`;
+        
+        // Calcular validade (30 dias)
+        const data = new Date();
+        const validadeAte = new Date(data);
+        validadeAte.setDate(validadeAte.getDate() + 30);
+        
+        const orcamento = {
+            numero,
+            data: data.toISOString(),
+            validadeAte: validadeAte.toISOString(),
+            cliente,
+            servicos,
+            subtotal,
+            iva,
+            total,
+            notas,
+            status: 'rascunho',
+            criadoPor: req.user.username,
+            criadoPorId: req.user.userId,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        };
+        
+        const result = await db.collection('orcamentos').insertOne(orcamento);
+        
+        console.log(`✅ Orçamento criado: ${numero} para ${cliente.nome}`);
+        
+        res.status(201).json({
+            success: true,
+            message: 'Orçamento criado com sucesso',
+            data: { ...orcamento, _id: result.insertedId }
+        });
+    } catch (error) {
+        console.error('❌ Erro ao criar orçamento:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erro ao criar orçamento',
+            error: error.message
+        });
+    }
+});
+
+// PUT /api/orcamentos/:id - Atualizar orçamento
+app.put('/api/orcamentos/:id', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const { cliente, servicos, subtotal, iva, total, notas, status } = req.body;
+        
+        const updateData = {
+            updatedAt: new Date().toISOString()
+        };
+        
+        if (cliente) updateData.cliente = cliente;
+        if (servicos) updateData.servicos = servicos;
+        if (subtotal !== undefined) updateData.subtotal = subtotal;
+        if (iva !== undefined) updateData.iva = iva;
+        if (total !== undefined) updateData.total = total;
+        if (notas) updateData.notas = notas;
+        if (status) updateData.status = status;
+        
+        const result = await db.collection('orcamentos').updateOne(
+            { _id: new ObjectId(req.params.id) },
+            { $set: updateData }
+        );
+        
+        if (result.matchedCount === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Orçamento não encontrado'
+            });
+        }
+        
+        res.json({
+            success: true,
+            message: 'Orçamento atualizado com sucesso'
+        });
+    } catch (error) {
+        console.error('❌ Erro ao atualizar orçamento:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erro ao atualizar orçamento',
+            error: error.message
+        });
+    }
+});
+
+// DELETE /api/orcamentos/:id - Deletar orçamento
+app.delete('/api/orcamentos/:id', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        
+        const result = await db.collection('orcamentos').deleteOne({
+            _id: new ObjectId(req.params.id)
+        });
+        
+        if (result.deletedCount === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Orçamento não encontrado'
+            });
+        }
+        
+        res.json({
+            success: true,
+            message: 'Orçamento deletado com sucesso'
+        });
+    } catch (error) {
+        console.error('❌ Erro ao deletar orçamento:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erro ao deletar orçamento',
+            error: error.message
+        });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════
+
 // Статичні файли - ОСТАННІ, щоб не перекривали API
 app.use(express.static(path.join(__dirname), {
     index: ['index.html'],
