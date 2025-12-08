@@ -248,6 +248,50 @@ app.post('/api/auth/login', async (req, res) => {
     }
 });
 
+// Отримання профілю поточного користувача
+app.get('/api/users/me', authenticateToken, async (req, res) => {
+    try {
+        console.log('👤 Запит профілю для користувача:', req.user);
+        
+        if (!db) {
+            return res.status(503).json({
+                success: false,
+                message: 'База даних недоступна'
+            });
+        }
+
+        const users = db.collection('users');
+        const { ObjectId } = require('mongodb');
+        
+        const user = await users.findOne({ _id: new ObjectId(req.user.id) });
+
+        if (!user) {
+            console.log('❌ Користувач не знайдений в БД:', req.user.id);
+            return res.status(404).json({
+                success: false,
+                message: 'Користувач не знайдений'
+            });
+        }
+
+        console.log('✅ Профіль знайдено:', user.username);
+
+        // Повертаємо профіль без пароля
+        const { password, ...userProfile } = user;
+        
+        res.json({
+            ...userProfile,
+            id: user._id.toString()
+        });
+
+    } catch (error) {
+        console.error('❌ Помилка завантаження профілю:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка завантаження профілю: ' + error.message
+        });
+    }
+});
+
 // Middleware для перевірки токена
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
