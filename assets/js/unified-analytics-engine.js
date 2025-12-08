@@ -1639,6 +1639,13 @@ window.initPredictiveAnalytics = function() {
 
 // Функція для ініціалізації графіка прогнозів
 function initPredictionChart() {
+    // Перевіряємо наявність Chart.js
+    if (typeof Chart === 'undefined') {
+        console.warn('⚠️ Chart.js ще не завантажився, чекаємо...');
+        setTimeout(initPredictionChart, 200);
+        return;
+    }
+    
     const canvas = document.getElementById('prediction-chart');
     if (!canvas) {
         console.warn('⚠️ Canvas prediction-chart не знайдено');
