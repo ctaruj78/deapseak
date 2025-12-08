@@ -126,8 +126,17 @@ class UnifiedAnalyticsEngine {
                         }
                         
                         console.log('✅ Завантажено з API:', lifts.length, 'ліфтів');
+                    } else if (response.status === 401 || response.status === 403) {
+                        console.warn('⚠️ Токен невалідний або прострочений, перенаправлення на логін...');
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        alert('Сесія застаріла. Будь ласка, увійдіть знову.');
+                        window.location.href = '/login.html';
+                        return;
                     } else {
                         console.warn('⚠️ API повернув помилку:', response.status);
+                        const errorData = await response.json();
+                        console.error('Деталі помилки:', errorData);
                     }
                 }
             } catch (apiError) {
