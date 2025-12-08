@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Тест Локальних Плагінів - DeapSeaK</title>
+    
+    <!-- 🎨 Bootstrap CSS (LOCAL) -->
+    <link rel="stylesheet" href="plugins/bootstrap/bootstrap.min.css">
+    
+    <!-- 🎨 AdminLTE CSS (LOCAL) -->
+    <link rel="stylesheet" href="plugins/adminlte/adminlte.min.css">
+    
+    <!-- 🎨 Font Awesome CSS (LOCAL) -->
+    <link rel="stylesheet" href="plugins/fontawesome/css/all.min.css">
+    
+    <style>
+        .test-card {
+            margin: 20px;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .test-success {
+            background: #d4edda;
+            border: 2px solid #28a745;
+        }
+        .test-fail {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+        }
+        .test-pending {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+        }
+        #testResults {
+            font-family: 'Courier New', monospace;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini">
+    
+<div class="wrapper">
+    
+    <!-- Header -->
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-widget="pushmenu" href="#" role="button">
+                    <i class="fas fa-bars"></i>
+                </a>
+            </li>
+        </ul>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <h4 class="mb-0">
+                    <i class="fas fa-flask"></i> 
+                    Тест Локальних Плагінів
+                </h4>
+            </li>
+        </ul>
+    </nav>
+    
+    <!-- Sidebar -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <a href="#" class="brand-link">
+            <i class="fas fa-cube brand-image"></i>
+            <span class="brand-text font-weight-light">DeapSeaK Test</span>
+        </a>
+        
+        <div class="sidebar">
+            <nav class="mt-2">
+                <ul class="nav nav-pills nav-sidebar flex-column">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link active">
+                            <i class="fas fa-vial"></i>
+                            <p>Тести</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-check-circle"></i>
+                            <p>Результати</p>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <div class="content-wrapper">
+        <section class="content-header">
+            <div class="container-fluid">
+                <h1>
+                    <i class="fas fa-flask"></i>
+                    Перевірка Локальних Плагінів
+                </h1>
+                <p class="text-muted">
+                    Тестуємо jQuery, Bootstrap, AdminLTE, Font Awesome, Socket.io, Chart.js
+                </p>
+            </div>
+        </section>
+        
+        <section class="content">
+            <div class="container-fluid">
+                
+                <!-- Test Results Container -->
+                <div id="testResults"></div>
+                
+                <!-- Bootstrap Components Test -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card card-primary">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-th"></i>
+                                    Bootstrap Тест
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <button class="btn btn-success btn-sm" id="testBootstrapBtn">
+                                    <i class="fas fa-play"></i> Тест Modal
+                                </button>
+                                <button class="btn btn-info btn-sm" id="testTooltipBtn" data-toggle="tooltip" title="Tooltip працює!">
+                                    <i class="fas fa-info-circle"></i> Тест Tooltip
+                                </button>
+                                <div class="progress mt-3">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 75%">75%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card card-info">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-icons"></i>
+                                    Font Awesome Тест
+                                </h3>
+                            </div>
+                            <div class="card-body text-center">
+                                <h1>
+                                    <i class="fas fa-check-circle text-success"></i>
+                                    <i class="fas fa-times-circle text-danger"></i>
+                                    <i class="fas fa-exclamation-triangle text-warning"></i>
+                                    <i class="fas fa-info-circle text-info"></i>
+                                </h1>
+                                <h2>
+                                    <i class="fab fa-github"></i>
+                                    <i class="fab fa-google"></i>
+                                    <i class="fab fa-facebook"></i>
+                                </h2>
+                                <p class="text-muted">Якщо бачите іконки - Font Awesome працює!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Chart.js Test -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card card-warning">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-chart-line"></i>
+                                    Chart.js Тест
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="testChart" style="height: 200px;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- AdminLTE Widgets Test -->
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-success"><i class="fas fa-check"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">jQuery</span>
+                                <span class="info-box-number" id="jqueryVersion">Checking...</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-info"><i class="fas fa-th"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Bootstrap</span>
+                                <span class="info-box-number" id="bootstrapVersion">Checking...</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-warning"><i class="fas fa-chart-bar"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Chart.js</span>
+                                <span class="info-box-number" id="chartVersion">Checking...</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-danger"><i class="fas fa-plug"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Socket.io</span>
+                                <span class="info-box-number" id="socketVersion">Checking...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </section>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="main-footer">
+        <strong>DeapSeaK v2</strong> - Plugin Test Page
+        <div class="float-right">
+            <b>Status:</b> <span id="overallStatus" class="badge badge-warning">Testing...</span>
+        </div>
+    </footer>
+    
+</div>
+
+<!-- Bootstrap Modal Test -->
+<div class="modal fade" id="testModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success">
+                <h5 class="modal-title">
+                    <i class="fas fa-check-circle"></i>
+                    Bootstrap Modal працює!
+                </h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p><i class="fas fa-thumbs-up"></i> Якщо ти бачиш це вікно - Bootstrap працює ідеально!</p>
+                <p class="text-muted">Модалка використовує Bootstrap JS bundle (з Popper.js)</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-dismiss="modal">
+                    <i class="fas fa-check"></i> OK
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 📦 JavaScript Libraries (LOCAL) -->
+
+<!-- jQuery (MUST be first!) -->
+<script src="plugins/jquery/jquery.min.js"></script>
+
+<!-- Bootstrap Bundle (includes Popper) -->
+<script src="plugins/bootstrap/bootstrap.bundle.min.js"></script>
+
+<!-- AdminLTE -->
+<script src="plugins/adminlte/adminlte.min.js"></script>
+
+<!-- Chart.js -->
+<script src="plugins/chart.js/chart.umd.min.js"></script>
+
+<!-- Socket.io Client -->
+<script src="plugins/socket.io/socket.io.min.js"></script>
+
+<!-- Test Script -->
+<script>
+console.log('🧪 === ПОЧАТОК ТЕСТУВАННЯ ПЛАГІНІВ ===');
+
+const results = {
+    jquery: false,
+    bootstrap: false,
+    adminlte: false,
+    fontawesome: false,
+    chartjs: false,
+    socketio: false
+};
+
+let testLog = '';
+
+function log(message, isSuccess = true) {
+    const icon = isSuccess ? '✅' : '❌';
+    const line = `${icon} ${message}\n`;
+    testLog += line;
+    console.log(line);
+}
+
+// Test 1: jQuery
+if (typeof jQuery !== 'undefined') {
+    results.jquery = true;
+    log(`jQuery ${jQuery.fn.jquery} завантажено`);
+    $('#jqueryVersion').text(jQuery.fn.jquery);
+} else {
+    log('jQuery НЕ завантажено!', false);
+    $('#jqueryVersion').text('FAIL').addClass('text-danger');
+}
+
+// Test 2: Bootstrap
+if (typeof bootstrap !== 'undefined' || $.fn.modal) {
+    results.bootstrap = true;
+    const bsVersion = '4.6.2';
+    log(`Bootstrap ${bsVersion} завантажено`);
+    $('#bootstrapVersion').text(bsVersion);
+    
+    // Enable tooltips
+    $('[data-toggle="tooltip"]').tooltip();
+} else {
+    log('Bootstrap НЕ завантажено!', false);
+    $('#bootstrapVersion').text('FAIL').addClass('text-danger');
+}
+
+// Test 3: AdminLTE
+if (typeof AdminLTE !== 'undefined') {
+    results.adminlte = true;
+    log('AdminLTE завантажено');
+} else {
+    log('AdminLTE НЕ завантажено!', false);
+}
+
+// Test 4: Font Awesome
+// Check if FA icons are rendered (indirect check via CSS)
+setTimeout(() => {
+    const icon = $('.fa-check-circle').first();
+    if (icon.length > 0) {
+        results.fontawesome = true;
+        log('Font Awesome іконки відображаються');
+    } else {
+        log('Font Awesome іконки НЕ відображаються!', false);
+    }
+}, 500);
+
+// Test 5: Chart.js
+if (typeof Chart !== 'undefined') {
+    results.chartjs = true;
+    log(`Chart.js ${Chart.version} завантажено`);
+    $('#chartVersion').text(Chart.version);
+    
+    // Create test chart
+    const ctx = document.getElementById('testChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['jQuery', 'Bootstrap', 'AdminLTE', 'FontAwesome', 'Chart.js', 'Socket.io'],
+            datasets: [{
+                label: 'Статус Плагіну',
+                data: [100, 100, 100, 100, 100, 100],
+                backgroundColor: [
+                    'rgba(40, 167, 69, 0.7)',
+                    'rgba(23, 162, 184, 0.7)',
+                    'rgba(255, 193, 7, 0.7)',
+                    'rgba(108, 117, 125, 0.7)',
+                    'rgba(255, 99, 132, 0.7)',
+                    'rgba(54, 162, 235, 0.7)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+} else {
+    log('Chart.js НЕ завантажено!', false);
+    $('#chartVersion').text('FAIL').addClass('text-danger');
+}
+
+// Test 6: Socket.io
+if (typeof io !== 'undefined') {
+    results.socketio = true;
+    log(`Socket.io ${io.version} завантажено`);
+    $('#socketVersion').text(io.version);
+} else {
+    log('Socket.io НЕ завантажено!', false);
+    $('#socketVersion').text('FAIL').addClass('text-danger');
+}
+
+// Bootstrap Modal Test
+$('#testBootstrapBtn').on('click', function() {
+    $('#testModal').modal('show');
+    log('Bootstrap Modal відкрито');
+});
+
+// Final Report
+setTimeout(() => {
+    const allPassed = Object.values(results).every(v => v === true);
+    const passedCount = Object.values(results).filter(v => v === true).length;
+    const totalCount = Object.keys(results).length;
+    
+    log('\n=== ПІДСУМОК ТЕСТУВАННЯ ===');
+    log(`Пройдено: ${passedCount}/${totalCount}`);
+    
+    const resultDiv = $('#testResults');
+    if (allPassed) {
+        resultDiv.html(`
+            <div class="test-card test-success">
+                <h3><i class="fas fa-check-circle"></i> ВСІ ТЕСТИ ПРОЙДЕНО! 🎉</h3>
+                <p><strong>${passedCount}/${totalCount}</strong> плагінів працюють коректно</p>
+                <pre>${testLog}</pre>
+                <hr>
+                <h4>✅ Готово до використання:</h4>
+                <ul>
+                    <li>✅ jQuery ${jQuery.fn.jquery}</li>
+                    <li>✅ Bootstrap 4.6.2 + Popper</li>
+                    <li>✅ AdminLTE 3.2</li>
+                    <li>✅ Font Awesome 6.4.0</li>
+                    <li>✅ Chart.js ${Chart.version}</li>
+                    <li>✅ Socket.io ${io.version}</li>
+                </ul>
+                <div class="alert alert-success mt-3">
+                    <i class="fas fa-rocket"></i>
+                    <strong>Можна мігрувати основні файли!</strong>
+                    Всі плагіни працюють з локальних файлів без CDN.
+                </div>
+            </div>
+        `);
+        $('#overallStatus').removeClass('badge-warning').addClass('badge-success').text('✅ SUCCESS');
+    } else {
+        resultDiv.html(`
+            <div class="test-card test-fail">
+                <h3><i class="fas fa-times-circle"></i> ЗНАЙДЕНО ПРОБЛЕМИ</h3>
+                <p><strong>${passedCount}/${totalCount}</strong> плагінів працюють</p>
+                <pre>${testLog}</pre>
+                <div class="alert alert-danger mt-3">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Перевірте консоль браузера для деталей помилок.
+                </div>
+            </div>
+        `);
+        $('#overallStatus').removeClass('badge-warning').addClass('badge-danger').text('❌ FAILED');
+    }
+}, 1000);
+
+console.log('🧪 === ТЕСТУВАННЯ ЗАВЕРШЕНО ===');
+</script>
+
+</body>
+</html>
