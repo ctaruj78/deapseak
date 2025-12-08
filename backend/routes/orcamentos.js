@@ -230,16 +230,129 @@ router.post('/:id/enviar', auth, async (req, res) => {
             });
         }
         
-        // TODO: Implementar envio por email (Nodemailer)
+        // ✅ Enviar por email via Brevo SMTP
+        const nodemailer = require('nodemailer');
+        const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: parseInt(process.env.SMTP_PORT),
+            secure: process.env.SMTP_SECURE === 'true',
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS
+            }
+        });
+
+        // Gerar HTML do orçamento
+        let servicosHTML = '<table style="width: 100%; border-collapse: collapse;"><tr><th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Descrição</th><th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Quantidade</th><th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Preço Unit.</th><th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Total</th></tr>';
+        
+        orcamento.servicos.forEach(s => {
+            servicosHTML += `
+                <tr>
+                    <td style="border: 1px solid #ddd; padding: 8px;">${s.descricao}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${s.quantidade}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">€${s.precoUnitario.toFixed(2)}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">€${(s.quantidade * s.precoUnitario).toFixed(2)}</td>
+                </tr>
+            `;
+        });
+        servicosHTML += '</table>';
+
+        const validadeDate = new Date(orcamento.validadeAte);
+        const validadeFormatted = validadeDate.toLocaleDateString('pt-PT', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric' 
+        });
+
+        const mailOptions = {
+            from: process.env.EMAIL_FROM,
+            to: orcamento.cliente.email,
+            subject: `Orçamento ${orcamento.numero} - FESTLIFT, LDA`,
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 700px; margin: 0 auto; border: 1px solid #ddd;">
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center;">
+                        <h1 style="margin: 0; font-size: 28px;">FESTLIFT, LDA</h1>
+                        <p style="margin: 5px 0 0 0; font-size: 14px;">Manutenção de Elevadores</p>
+                    </div>
+                    
+                    <div style="padding: 30px;">
+                        <h2 style="color: #333; border-bottom: 2px solid #667eea; padding-bottom: 10px;">
+                            Orçamento ${orcamento.numero}
+                        </h2>
+                        
+                        <div style="margin: 20px 0;">
+                            <p><strong>Cliente:</strong> ${orcamento.cliente.nome}</p>
+                            <p><strong>Email:</strong> ${orcamento.cliente.email}</p>
+                            ${orcamento.cliente.telefone ? `<p><strong>Telefone:</strong> ${orcamento.cliente.telefone}</p>` : ''}
+                            ${orcamento.cliente.morada ? `<p><strong>Morada:</strong> ${orcamento.cliente.morada}</p>` : ''}
+                        </div>
+
+                        <div style="margin: 20px 0;">
+                            <p><strong>Data:</strong> ${new Date(orcamento.data).toLocaleDateString('pt-PT')}</p>
+                            <p><strong>Validade:</strong> ${validadeFormatted}</p>
+                        </div>
+
+                        <h3 style="color: #667eea; margin-top: 30px;">Serviços</h3>
+                        ${servicosHTML}
+
+                        <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+                            <table style="width: 100%; font-size: 16px;">
+                                <tr>
+                                    <td style="text-align: right; padding: 5px;"><strong>Subtotal:</strong></td>
+                                    <td style="text-align: right; padding: 5px; width: 120px;">€${orcamento.subtotal.toFixed(2)}</td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align: right; padding: 5px;"><strong>IVA (23%):</strong></td>
+                                    <td style="text-align: right; padding: 5px;">€${orcamento.iva.toFixed(2)}</td>
+                                </tr>
+                                <tr style="border-top: 2px solid #667eea;">
+                                    <td style="text-align: right; padding: 10px 5px 5px 5px;"><strong style="font-size: 18px; color: #667eea;">TOTAL:</strong></td>
+                                    <td style="text-align: right; padding: 10px 5px 5px 5px;"><strong style="font-size: 18px; color: #667eea;">€${orcamento.total.toFixed(2)}</strong></td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        ${orcamento.notas ? `
+                            <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+                                <strong>Notas:</strong><br>
+                                ${orcamento.notas}
+                            </div>
+                        ` : ''}
+
+                        <div style="margin-top: 30px; padding: 20px; background: #e7f3ff; border-radius: 8px; text-align: center;">
+                            <p style="margin: 0; color: #0066cc;">
+                                <strong>Este orçamento é válido até ${validadeFormatted}</strong>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #ddd;">
+                        <p style="margin: 5px 0; font-size: 14px; color: #666;">
+                            <strong>FESTLIFT, LDA - Manutenção de Elevadores</strong><br>
+                            Email: info@festlift.pt | Tel: +351 XXX XXX XXX<br>
+                            <small>Este orçamento foi gerado automaticamente.</small>
+                        </p>
+                    </div>
+                </div>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+        
+        // Atualizar status do orçamento
         orcamento.status = 'enviado';
         orcamento.dataEnvio = new Date();
         orcamento.emailsEnviados.push({
             para: orcamento.cliente.email,
             assunto: `Orçamento ${orcamento.numero} - FESTLIFT, LDA`,
+            data: new Date(),
+            enviadoPor: req.user.userId,
             sucesso: true
         });
         
         await orcamento.save();
+        
+        console.log(`✅ Orçamento ${orcamento.numero} enviado para ${orcamento.cliente.email}`);
         
         res.json({
             success: true,

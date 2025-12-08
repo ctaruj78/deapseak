@@ -479,14 +479,60 @@
                 }
             },
 
-            testSendTemplate(templateId) {
+            async testSendTemplate(templateId) {
                 const email = prompt('Введіть email для тестового відправлення:');
-                if (email) {
-                    // Simulate sending email
-                    this.showNotification(`Тестовий email відправлено на ${email}`, 'info');
+                if (!email) return;
+                
+                // Валідація email
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    this.showNotification('Невірний формат email', 'error');
+                    return;
+                }
+
+                try {
+                    const token = localStorage.getItem('jwt_token') || 
+                                 localStorage.getItem('liftmanager_jwt') || 
+                                 localStorage.getItem('token');
                     
-                    // Here you would implement actual email sending logic
-                    console.log(`Sending test email to ${email} with template ${templateId}`);
+                    if (!token) {
+                        this.showNotification('Авторизація необхідна', 'error');
+                        window.location.href = '/pages/auth/login.html';
+                        return;
+                    }
+
+                    const template = this.templates.find(t => t.id === templateId);
+                    if (!template) {
+                        this.showNotification('Template не знайдено', 'error');
+                        return;
+                    }
+
+                    // Відправка через unified-server API
+                    const response = await fetch('/api/email/send-template', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            email: email,
+                            templateId: templateId,
+                            subject: template.subject,
+                            htmlContent: template.content
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        this.showNotification(`✅ Тестовий email відправлено на ${email}`, 'success');
+                    } else {
+                        this.showNotification(`❌ Помилка: ${result.error}`, 'error');
+                    }
+
+                } catch (error) {
+                    console.error('Помилка відправки email:', error);
+                    this.showNotification(`❌ Не вдалося відправити email: ${error.message}`, 'error');
                 }
             },
 

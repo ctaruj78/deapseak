@@ -3585,6 +3585,103 @@ app.post('/api/email/send-inspection-reminder', authenticateToken, async (req, r
     }
 });
 
+// POST /api/email/send-template - Відправити email з кастомного template
+app.post('/api/email/send-template', authenticateToken, async (req, res) => {
+    try {
+        const { email, templateId, subject, htmlContent } = req.body;
+
+        if (!email || !htmlContent) {
+            return res.status(400).json({
+                success: false,
+                error: 'Email та HTML контент є обов\'язковими'
+            });
+        }
+
+        const nodemailer = require('nodemailer');
+        const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: parseInt(process.env.SMTP_PORT),
+            secure: process.env.SMTP_SECURE === 'true',
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS
+            }
+        });
+
+        const mailOptions = {
+            from: process.env.EMAIL_FROM,
+            to: email,
+            subject: subject || 'Тестовий email - DeapSeaK',
+            html: htmlContent
+        };
+
+        await transporter.sendMail(mailOptions);
+        
+        console.log(`✅ Template email sent to ${email} (template: ${templateId || 'custom'})`);
+        res.json({ 
+            success: true, 
+            message: 'Email успішно відправлено',
+            templateId: templateId
+        });
+    } catch (error) {
+        console.error('❌ Error sending template email:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// POST /api/orcamentos/:id/enviar - АЛЬТЕРНАТИВНИЙ endpoint для відправки orçamento
+// (дублюється з backend/routes/orcamentos.js для сумісності)
+app.post('/api/orcamentos/:id/enviar', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const orcamento = await db.collection('orcamentos').findOne({
+            _id: new ObjectId(req.params.id)
+        });
+        
+        if (!orcamento) {
+            return res.status(404).json({
+                success: false,
+                message: 'Orçamento não encontrado'
+            });
+        }
+        
+        // Відправка через /api/email/send-orcamento
+        const emailResponse = await fetch(`http://localhost:${PORT}/api/email/send-orcamento`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': req.headers.authorization
+            },
+            body: JSON.stringify({
+                orcamentoId: req.params.id,
+                clientEmail: orcamento.cliente.email
+            })
+        });
+
+        const emailResult = await emailResponse.json();
+
+        if (emailResult.success) {
+            res.json({
+                success: true,
+                message: 'Orçamento enviado com sucesso',
+                data: orcamento
+            });
+        } else {
+            throw new Error(emailResult.error);
+        }
+    } catch (error) {
+        console.error('❌ Erro ao enviar orçamento:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erro ao enviar orçamento',
+            error: error.message
+        });
+    }
+});
+
 // ═══════════════════════════════════════════════════════════
 
 // Статичні файли - ОСТАННІ, щоб не перекривали API
