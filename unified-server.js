@@ -3381,6 +3381,210 @@ app.post('/api/email/send-orcamento', authenticateToken, async (req, res) => {
     }
 });
 
+// POST /api/email/send-contract - Відправити контракт клієнту
+app.post('/api/email/send-contract', authenticateToken, upload.single('pdf'), async (req, res) => {
+    try {
+        const { email, subject, message } = req.body;
+        const pdfFile = req.file;
+
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                error: 'Email є обов\'язковим'
+            });
+        }
+
+        const nodemailer = require('nodemailer');
+        const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: parseInt(process.env.SMTP_PORT),
+            secure: process.env.SMTP_SECURE === 'true',
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS
+            }
+        });
+
+        const mailOptions = {
+            from: process.env.EMAIL_FROM,
+            to: email,
+            subject: subject || 'Контракт - DeapSeaK',
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #007bff;">📄 Контракт на обслуговування</h2>
+                    <p>${message || 'Шановний клієнте! Надсилаємо вам контракт на обслуговування ліфта.'}</p>
+                    ${pdfFile ? '<p><strong>Контракт додано у вкладенні.</strong></p>' : ''}
+                    <hr>
+                    <p style="color: #666; font-size: 12px;">
+                        З повагою,<br>
+                        Команда DeapSeaK
+                    </p>
+                </div>
+            `
+        };
+
+        if (pdfFile) {
+            mailOptions.attachments = [{
+                filename: pdfFile.originalname,
+                path: pdfFile.path
+            }];
+        }
+
+        await transporter.sendMail(mailOptions);
+        
+        // Видалити тимчасовий файл
+        if (pdfFile) {
+            const fs = require('fs').promises;
+            await fs.unlink(pdfFile.path).catch(() => {});
+        }
+        
+        console.log(`✅ Contract sent to ${email}`);
+        res.json({ success: true, message: 'Контракт успішно відправлено' });
+    } catch (error) {
+        console.error('❌ Error sending contract:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// POST /api/email/send-inspection-pdf - Відправити PDF звіт інспекції
+app.post('/api/email/send-inspection-pdf', authenticateToken, upload.single('pdf'), async (req, res) => {
+    try {
+        const { email, subject, message } = req.body;
+        const pdfFile = req.file;
+
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                error: 'Email є обов\'язковим'
+            });
+        }
+
+        const nodemailer = require('nodemailer');
+        const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: parseInt(process.env.SMTP_PORT),
+            secure: process.env.SMTP_SECURE === 'true',
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS
+            }
+        });
+
+        const mailOptions = {
+            from: process.env.EMAIL_FROM,
+            to: email,
+            subject: subject || 'Звіт інспекції - DeapSeaK',
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #007bff;">📋 Звіт інспекції ліфта</h2>
+                    <p>${message || 'Шановний клієнте! Надсилаємо вам звіт інспекції вашого ліфта.'}</p>
+                    ${pdfFile ? '<p><strong>Звіт додано у вкладенні.</strong></p>' : ''}
+                    <div style="background: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin: 20px 0;">
+                        <p style="margin: 0;"><strong>⚠️ Важливо:</strong> Ознайомтеся зі звітом та зверніть увагу на рекомендації.</p>
+                    </div>
+                    <hr>
+                    <p style="color: #666; font-size: 12px;">
+                        З повагою,<br>
+                        Команда DeapSeaK
+                    </p>
+                </div>
+            `
+        };
+
+        if (pdfFile) {
+            mailOptions.attachments = [{
+                filename: pdfFile.originalname,
+                path: pdfFile.path
+            }];
+        }
+
+        await transporter.sendMail(mailOptions);
+        
+        // Видалити тимчасовий файл
+        if (pdfFile) {
+            const fs = require('fs').promises;
+            await fs.unlink(pdfFile.path).catch(() => {});
+        }
+        
+        console.log(`✅ Inspection PDF sent to ${email}`);
+        res.json({ success: true, message: 'Звіт інспекції успішно відправлено' });
+    } catch (error) {
+        console.error('❌ Error sending inspection PDF:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// POST /api/email/send-inspection-reminder - Відправити нагадування про інспекцію
+app.post('/api/email/send-inspection-reminder', authenticateToken, async (req, res) => {
+    try {
+        const { email, subject, message, inspectionDate, liftId } = req.body;
+
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                error: 'Email є обов\'язковим'
+            });
+        }
+
+        const nodemailer = require('nodemailer');
+        const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: parseInt(process.env.SMTP_PORT),
+            secure: process.env.SMTP_SECURE === 'true',
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS
+            }
+        });
+
+        const mailOptions = {
+            from: process.env.EMAIL_FROM,
+            to: email,
+            subject: subject || 'Нагадування про інспекцію ліфта',
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0;">
+                        <h2 style="margin: 0;">📅 Нагадування про інспекцію</h2>
+                    </div>
+                    <div style="padding: 20px; border: 1px solid #ddd; border-top: none;">
+                        <p>${message}</p>
+                        ${inspectionDate ? `
+                            <div style="background: #e7f3ff; padding: 15px; border-left: 4px solid #007bff; border-radius: 4px; margin: 20px 0;">
+                                <p style="margin: 0;"><strong>📅 Дата інспекції:</strong> ${inspectionDate}</p>
+                                ${liftId ? `<p style="margin: 5px 0 0 0;"><strong>🏢 Ліфт:</strong> ${liftId}</p>` : ''}
+                            </div>
+                        ` : ''}
+                        <p>Будь ласка, забезпечте доступ до ліфта в зазначену дату.</p>
+                    </div>
+                    <div style="background: #f8f9fa; padding: 15px; text-align: center; border: 1px solid #ddd; border-top: none; border-radius: 0 0 8px 8px;">
+                        <p style="margin: 0; color: #666; font-size: 12px;">
+                            З повагою,<br>
+                            <strong>Команда DeapSeaK</strong>
+                        </p>
+                    </div>
+                </div>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+        
+        console.log(`✅ Inspection reminder sent to ${email}`);
+        res.json({ success: true, message: 'Нагадування про інспекцію відправлено' });
+    } catch (error) {
+        console.error('❌ Error sending inspection reminder:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
 // ═══════════════════════════════════════════════════════════
 
 // Статичні файли - ОСТАННІ, щоб не перекривали API

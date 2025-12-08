@@ -2068,7 +2068,7 @@
             $('#emailModal').modal('show');
         }
 
-        function sendEmailWithPDF() {
+        async function sendEmailWithPDF() {
             const email = document.getElementById('clientEmail').value;
             const subject = document.getElementById('emailSubject').value;
             const message = document.getElementById('emailMessage').value;
@@ -2078,32 +2078,66 @@
                 return;
             }
 
-            // Тут буде логіка відправки email з PDF
-            const formData = new FormData();
-            formData.append('email', email);
-            formData.append('subject', subject);
-            formData.append('message', message);
-            formData.append('pdf', currentPDFFile);
-
-            // Імітація відправки (потрібно буде підключити backend)
-            console.log('Sending email to:', email);
-            console.log('Subject:', subject);
-            console.log('Message:', message);
-            console.log('PDF file:', currentPDFFile.name);
-
-            // 🚀 EventBus: Повідомляємо про відправку email
-            if (window.eventBus) {
-                eventBus.emit('email:sent', {
-                    email: email,
-                    subject: subject,
-                    hasAttachment: !!currentPDFFile,
-                    attachmentName: currentPDFFile?.name,
-                    type: 'inspection_report'
-                }, { source: 'email-system' });
+            // Валідація email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                alert('Невірний формат email');
+                return;
             }
 
-            alert('Звіт успішно надіслано на email: ' + email);
-            $('#emailModal').modal('hide');
+            try {
+                const token = localStorage.getItem('jwt_token') || 
+                             localStorage.getItem('liftmanager_jwt') || 
+                             localStorage.getItem('token');
+                
+                if (!token) {
+                    alert('Автентифікація необхідна');
+                    window.location.href = '/pages/auth/login.html';
+                    return;
+                }
+
+                // Підготовка даних для відправки
+                const formData = new FormData();
+                formData.append('email', email);
+                formData.append('subject', subject);
+                formData.append('message', message);
+                if (currentPDFFile) {
+                    formData.append('pdf', currentPDFFile);
+                }
+
+                // Відправка через Brevo SMTP API
+                const response = await fetch('/api/email/send-contract', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // 🚀 EventBus: Повідомляємо про відправку email
+                    if (window.eventBus) {
+                        eventBus.emit('email:sent', {
+                            email: email,
+                            subject: subject,
+                            hasAttachment: !!currentPDFFile,
+                            attachmentName: currentPDFFile?.name,
+                            type: 'contract'
+                        }, { source: 'email-system' });
+                    }
+
+                    alert('✅ Контракт успішно надіслано на email: ' + email);
+                    $('#emailModal').modal('hide');
+                } else {
+                    alert('❌ Помилка відправки: ' + result.error);
+                }
+
+            } catch (error) {
+                console.error('Помилка відправки email:', error);
+                alert('❌ Не вдалося відправити email: ' + error.message);
+            }
         }
 
         function removePDF() {
@@ -2582,27 +2616,57 @@
         }
     }
 
-    function sendInspectionEmail(inspection) {
+    async function sendInspectionEmail(inspection) {
         const template = document.getElementById('emailTemplate').value;
-        const formattedDate = new Date(inspection.date).toLocaleDateString();
+        const formattedDate = new Date(inspection.date).toLocaleDateString('uk-UA');
         const emailContent = template.replace('{INSPECTION_DATE}', formattedDate);
         
-        // Симуляція відправки email (в реальній системі - API виклик)
-        console.log('Відправка email:', {
-            to: inspection.clientEmail,
-            subject: `Нагадування про інспекцію ліфта - ${formattedDate}`,
-            content: emailContent
-        });
-        
-        toastr.success(`Email сповіщення надіслано на ${inspection.clientEmail}`);
-        
-        // Оновлюємо статус інспекції
-        let inspections = JSON.parse(localStorage.getItem('scheduled_inspections') || '[]');
-        const index = inspections.findIndex(i => i.id === inspection.id);
-        if (index !== -1) {
-            inspections[index].emailSent = true;
-            inspections[index].emailSentAt = new Date().toISOString();
-            localStorage.setItem('scheduled_inspections', JSON.stringify(inspections));
+        try {
+            const token = localStorage.getItem('jwt_token') || 
+                         localStorage.getItem('liftmanager_jwt') || 
+                         localStorage.getItem('token');
+            
+            if (!token) {
+                console.error('JWT token не знайдено');
+                return;
+            }
+
+            // Відправка через Brevo SMTP API
+            const response = await fetch('/api/email/send-inspection-reminder', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    email: inspection.clientEmail,
+                    subject: `Нагадування про інспекцію ліфта - ${formattedDate}`,
+                    message: emailContent,
+                    inspectionDate: formattedDate,
+                    liftId: inspection.liftId
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                toastr.success(`✅ Email нагадування надіслано на ${inspection.clientEmail}`);
+                
+                // Оновлюємо статус інспекції
+                let inspections = JSON.parse(localStorage.getItem('scheduled_inspections') || '[]');
+                const index = inspections.findIndex(i => i.id === inspection.id);
+                if (index !== -1) {
+                    inspections[index].emailSent = true;
+                    inspections[index].emailSentAt = new Date().toISOString();
+                    localStorage.setItem('scheduled_inspections', JSON.stringify(inspections));
+                }
+            } else {
+                toastr.error(`❌ Помилка відправки email: ${result.error}`);
+            }
+
+        } catch (error) {
+            console.error('Помилка відправки inspection email:', error);
+            toastr.error('❌ Не вдалося відправити email нагадування');
         }
     }
 
@@ -3307,7 +3371,7 @@
         $('#emailInspectionModal').modal('show');
     }
 
-    function sendEmailWithInspectionPDF() {
+    async function sendEmailWithInspectionPDF() {
         const email = document.getElementById('clientEmailInspection').value;
         const subject = document.getElementById('emailInspectionSubject').value;
         const message = document.getElementById('emailInspectionMessage').value;
@@ -3317,14 +3381,55 @@
             return;
         }
 
-        // Симуляція відправки email
-        console.log('Sending inspection email to:', email);
-        console.log('Subject:', subject);
-        console.log('Message:', message);
-        console.log('PDF file:', currentInspectionPDFFile.name);
+        // Валідація email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            alert('Невірний формат email');
+            return;
+        }
 
-        alert('Звіт інспекції успішно надіслано на email: ' + email);
-        $('#emailInspectionModal').modal('hide');
+        try {
+            const token = localStorage.getItem('jwt_token') || 
+                         localStorage.getItem('liftmanager_jwt') || 
+                         localStorage.getItem('token');
+            
+            if (!token) {
+                alert('Автентифікація необхідна');
+                window.location.href = '/pages/auth/login.html';
+                return;
+            }
+
+            // Підготовка даних для відправки
+            const formData = new FormData();
+            formData.append('email', email);
+            formData.append('subject', subject);
+            formData.append('message', message);
+            if (currentInspectionPDFFile) {
+                formData.append('pdf', currentInspectionPDFFile);
+            }
+
+            // Відправка через Brevo SMTP API
+            const response = await fetch('/api/email/send-inspection-pdf', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert('✅ Звіт інспекції успішно надіслано на email: ' + email);
+                $('#emailInspectionModal').modal('hide');
+            } else {
+                alert('❌ Помилка відправки: ' + result.error);
+            }
+
+        } catch (error) {
+            console.error('Помилка відправки email:', error);
+            alert('❌ Не вдалося відправити email: ' + error.message);
+        }
     }
 
     function archiveInspectionPDF() {
