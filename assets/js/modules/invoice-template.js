@@ -1,10 +1,12 @@
 $(function(){
-    if (!roleManager.hasPermission('invoices:create')) {
+    // Перевірка прав доступу (опціонально, якщо roleManager існує)
+    if (typeof roleManager !== 'undefined' && !roleManager.hasPermission('invoices:create')) {
         $('#invoiceForm :input').prop('disabled', true);
         CommonUtils.showNotification('Недостатньо прав для створення рахунку', 'error');
         if (window.notificationManager) notificationManager.showNotification('Недостатньо прав для створення рахунку', 'error');
         return;
     }
+    
     $('#invoiceForm').on('submit', async function(e){
         e.preventDefault();
         const formData = {
