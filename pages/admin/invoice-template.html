@@ -572,9 +572,16 @@
                 }
 
                 try {
-                    const token = localStorage.getItem('jwt_token');
+                    const token = localStorage.getItem('liftmanager_jwt') || 
+                                 localStorage.getItem('jwt_token') ||
+                                 localStorage.getItem('token') || 
+                                 localStorage.getItem('lm_token');
+                    
+                    console.log('🔑 Sending email with token:', token ? 'EXISTS' : 'NOT FOUND');
+                    console.log('🔑 Token keys in localStorage:', Object.keys(localStorage).filter(k => k.includes('token') || k.includes('jwt')));
+                    
                     if (!token) {
-                        alert('Autenticação necessária');
+                        alert('Autenticação necessária. Faça login novamente.');
                         window.location.href = '/pages/auth/login.html';
                         return;
                     }
@@ -694,6 +701,8 @@
                              localStorage.getItem('token') || 
                              localStorage.getItem('lm_token');
                 
+                console.log('💾 Saving orçamento with token:', token ? 'EXISTS' : 'NOT FOUND');
+                
                 if (!token) {
                     alert('Sessão expirada. Faça login novamente.');
                     window.location.href = '../auth/login.html';
@@ -734,6 +743,18 @@
 
         // Initialize when document is ready
         $(document).ready(function() {
+            // Перевірка авторизації
+            const token = localStorage.getItem('liftmanager_jwt') || 
+                         localStorage.getItem('jwt_token') ||
+                         localStorage.getItem('token') || 
+                         localStorage.getItem('lm_token');
+            
+            if (!token) {
+                alert('Sessão expirada. Faça login novamente.');
+                window.location.href = '/pages/auth/login.html';
+                return;
+            }
+            
             invoiceManager.init();
         });
     </script>
