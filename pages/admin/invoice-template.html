@@ -195,8 +195,8 @@
                                                     <textarea class="form-control" id="clientAddress" rows="3" placeholder="Morada completa do cliente"></textarea>
                                                 </div>
                                                 <div class="form-group">
-                                                    <label for="clientPhone">Telefone</label>
-                                                    <input type="tel" class="form-control" id="clientPhone" placeholder="+351 XXX XXX XXX">
+                                                    <label for="clientEmail">Email</label>
+                                                    <input type="email" class="form-control" id="clientEmail" placeholder="cliente@exemplo.pt" required>
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
@@ -328,7 +328,7 @@
                                                 <div id="previewClientInfo">
                                                     <strong id="previewClientName">Nome do Cliente</strong><br>
                                                     <span id="previewClientAddress">Morada do Cliente</span><br>
-                                                    Tel.: <span id="previewClientPhone">+351 XXX XXX XXX</span>
+                                                    Email: <span id="previewClientEmail">cliente@exemplo.pt</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -496,7 +496,7 @@
                 $('#previewInvoiceDate').text($('#invoiceDate').val());
                 $('#previewClientName').text($('#clientName').val() || 'Nome do Cliente');
                 $('#previewClientAddress').html($('#clientAddress').val().replace(/\n/g, '<br>') || 'Morada do Cliente');
-                $('#previewClientPhone').text($('#clientPhone').val() || '+351 XXX XXX XXX');
+                $('#previewClientEmail').text($('#clientEmail').val() || 'cliente@exemplo.pt');
                 $('#previewNotes').text($('#notes').val() || 'Este orçamento é válido por 30 dias a partir da data de apresentação.');
 
                 // Update services table
@@ -548,7 +548,7 @@
                 // Load predefined template
                 $('#clientName').val('Empresa Exemplo Lda');
                 $('#clientAddress').val('Rua Exemplo, 123\nLisboa, 1000-001');
-                $('#clientPhone').val('+351 21 123 4567');
+                $('#clientEmail').val('contato@exemplo.pt');
                 $('#notes').val('Este orçamento é válido por 30 dias a partir da data de apresentação.');
                 
                 this.updatePreview();
