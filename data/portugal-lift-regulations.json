@@ -1,14 +1,15 @@
 {
   "metadata": {
     "country": "Portugal",
-    "last_updated": "2025-12-07",
+    "last_updated": "2025-12-08",
     "language": "pt-PT",
     "scope": "Regulamentação de Elevadores e Inspeções",
-    "version": "2.0",
+    "version": "3.0",
     "generated_by": "DeapSeaK AI Knowledge Generator",
-    "laws_count": 3,
-    "total_articles": 29,
-    "total_violation_codes": 39
+    "laws_count": 4,
+    "total_articles": 48,
+    "total_violation_codes": 49,
+    "latest_addition": "Decreto Regulamentar n.º 13/80 - Alterações fundamentais ao Decreto 513/70"
   },
   "regulations": [
     {
@@ -1184,6 +1185,56 @@
       "regulation": "Decreto-Lei 295/98, Anexo IV + Art. 11º",
       "deadline": "Imediato - componente NÃO pode ser instalado",
       "penalty": "€2.494 a €44.892 por componente + proibição instalação"
+    },
+    {
+      "code": "DReg13-39-C1",
+      "title": "Encravamento portas não funciona (DReg 13/80 Art.39)",
+      "why": "Porta abre com cabina fora do patamar - RISCO DE QUEDA FATAL NA CAIXA..."
+    },
+    {
+      "code": "DReg13-40-C1",
+      "title": "Contrôle elétrico encravamento/fecho defeituoso (DReg 13/80 Art.40)",
+      "why": "Cabina pode movimentar com portas abertas - PERIGO DE MORTE..."
+    },
+    {
+      "code": "DReg13-111-C1",
+      "title": "Elevador antigo sem encravamento (DReg 13/80 Art.111)",
+      "why": "Não cumpre requisitos mínimos segurança modernos - DESATIVAR IMEDIATAMENTE..."
+    },
+    {
+      "code": "DReg13-111-C2",
+      "title": "Caixa aberta sem vedação adequada (DReg 13/80 Art.111)",
+      "why": "Pessoas podem cair na caixa ou tocar peças móveis - ACIDENTES GRAVES..."
+    },
+    {
+      "code": "DReg13-32-C1",
+      "title": "Porta abre para interior da caixa (DReg 13/80 Art.32)",
+      "why": "Risco queda na caixa ao abrir porta - PERIGO MORTAL..."
+    },
+    {
+      "code": "DReg13-42-C2",
+      "title": "Área cabina excede tabela sem anti-sobrecarga (DReg 13/80 Art.42)",
+      "why": "Sobrelotação pode causar rotura cabos e queda - MORTE CERTA..."
+    },
+    {
+      "code": "DReg13-63-C1",
+      "title": "Sistema igualização tensão cabos ausente (DReg 13/80 Art.63)",
+      "why": "Sobrecarga um cabo causa rotura prematura - QUEDA LIVRE..."
+    },
+    {
+      "code": "DReg13-86-C1",
+      "title": "Defeito terra permite movimento (DReg 13/80 Art.86)",
+      "why": "Falha isolamento crítica - CHOQUE ELÉTRICO FATAL..."
+    },
+    {
+      "code": "DReg13-93-C2",
+      "title": "Botão Stop ausente cabina sem portas (DReg 13/80 Art.93)",
+      "why": "Passageiros não podem parar elevador em emergência..."
+    },
+    {
+      "code": "DReg13-94-C2",
+      "title": "Alarme ausente ou inoperante (DReg 13/80 Art.94)",
+      "why": "Pessoas presas não podem solicitar ajuda - RISCO ASFIXIA..."
     }
   ],
   "classifications": {
@@ -1287,6 +1338,56 @@
         "code": "DL320-3",
         "title": "Manutenção regular obrigatória (Art. 3º DL 320/2002)",
         "why": "Sem manutenção regular, defeitos acumulam-se até falha catastrófica causando morte..."
+      },
+      {
+        "code": "DReg13-39-C1",
+        "title": "Encravamento portas não funciona (DReg 13/80 Art.39)",
+        "why": "Porta abre com cabina fora do patamar - RISCO DE QUEDA FATAL NA CAIXA..."
+      },
+      {
+        "code": "DReg13-40-C1",
+        "title": "Contrôle elétrico encravamento/fecho defeituoso (DReg 13/80 Art.40)",
+        "why": "Cabina pode movimentar com portas abertas - PERIGO DE MORTE..."
+      },
+      {
+        "code": "DReg13-111-C1",
+        "title": "Elevador antigo sem encravamento (DReg 13/80 Art.111)",
+        "why": "Não cumpre requisitos mínimos segurança modernos - DESATIVAR IMEDIATAMENTE..."
+      },
+      {
+        "code": "DReg13-111-C2",
+        "title": "Caixa aberta sem vedação adequada (DReg 13/80 Art.111)",
+        "why": "Pessoas podem cair na caixa ou tocar peças móveis - ACIDENTES GRAVES..."
+      },
+      {
+        "code": "DReg13-32-C1",
+        "title": "Porta abre para interior da caixa (DReg 13/80 Art.32)",
+        "why": "Risco queda na caixa ao abrir porta - PERIGO MORTAL..."
+      },
+      {
+        "code": "DReg13-42-C2",
+        "title": "Área cabina excede tabela sem anti-sobrecarga (DReg 13/80 Art.42)",
+        "why": "Sobrelotação pode causar rotura cabos e queda - MORTE CERTA..."
+      },
+      {
+        "code": "DReg13-63-C1",
+        "title": "Sistema igualização tensão cabos ausente (DReg 13/80 Art.63)",
+        "why": "Sobrecarga um cabo causa rotura prematura - QUEDA LIVRE..."
+      },
+      {
+        "code": "DReg13-86-C1",
+        "title": "Defeito terra permite movimento (DReg 13/80 Art.86)",
+        "why": "Falha isolamento crítica - CHOQUE ELÉTRICO FATAL..."
+      },
+      {
+        "code": "DReg13-93-C2",
+        "title": "Botão Stop ausente cabina sem portas (DReg 13/80 Art.93)",
+        "why": "Passageiros não podem parar elevador em emergência..."
+      },
+      {
+        "code": "DReg13-94-C2",
+        "title": "Alarme ausente ou inoperante (DReg 13/80 Art.94)",
+        "why": "Pessoas presas não podem solicitar ajuda - RISCO ASFIXIA..."
       }
     ]
   }
