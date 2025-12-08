@@ -140,27 +140,9 @@ class UnifiedAnalyticsEngine {
                 console.log('📦 Завантажено з localStorage:', lifts.length, 'ліфтів');
             }
             
-            // Якщо і localStorage порожній - завантажуємо демо дані з файлу
+            // Якщо немає даних - показуємо порожню аналітику
             if (lifts.length === 0) {
-                try {
-                    const demoResponse = await fetch('/data/lifts.json');
-                    if (demoResponse.ok) {
-                        lifts = await demoResponse.json();
-                        console.log('📄 Завантажено демо дані з файлу:', lifts.length, 'ліфтів');
-                        // Зберігаємо в localStorage для наступних разів
-                        localStorage.setItem('lifts', JSON.stringify(lifts));
-                    }
-                } catch (fileError) {
-                    console.warn('⚠️ Не вдалось завантажити демо дані:', fileError.message);
-                }
-            }
-            
-            // Останній fallback - генеруємо демо дані прямо в коді
-            if (lifts.length === 0) {
-                console.log('🎲 Генерую демо дані для unified-analytics...');
-                lifts = this.generateDemoLiftsData();
-                localStorage.setItem('lifts', JSON.stringify(lifts));
-                console.log('✅ Згеновано демо ліфтів:', lifts.length);
+                console.warn('⚠️ Немає ліфтів в базі даних. Додайте ліфти через адмін панель.');
             }
             
             // Завантажуємо інші дані з localStorage
@@ -2066,48 +2048,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         return requests;
-    }
-    
-    /**
-     * 🎲 Генерація демо даних ліфтів
-     */
-    generateDemoLiftsData() {
-        const addresses = [
-            { street: 'Rua Alexandre Ferreira 45', city: 'Lisboa', postal: '1000-001' },
-            { street: 'Avenida da Liberdade 123', city: 'Lisboa', postal: '1250-096' },
-            { street: 'Rua Damião de Góis 13', city: 'Torres Vedras', postal: '2560-355' },
-            { street: 'Praça do Comércio 78', city: 'Lisboa', postal: '1100-148' },
-            { street: 'Rua Garrett 56', city: 'Lisboa', postal: '1200-273' }
-        ];
-        
-        const statuses = ['active', 'active', 'active', 'maintenance', 'offline'];
-        const now = new Date();
-        
-        return addresses.map((addr, index) => {
-            const installYear = 2005 + Math.floor(Math.random() * 15);
-            const lastMaintenance = new Date(now);
-            lastMaintenance.setDate(lastMaintenance.getDate() - Math.floor(Math.random() * 90));
-            
-            return {
-                _id: `demo_lift_${index + 1}`,
-                id: `demo_lift_${index + 1}`,
-                municipalNumber: `CML ${1000 + index}/${100 + index * 10}`,
-                address: addr,
-                status: statuses[index],
-                capacity: 450 + Math.floor(Math.random() * 200),
-                manufacturer: ['OTIS', 'Schindler', 'ThyssenKrupp', 'KONE'][Math.floor(Math.random() * 4)],
-                installationDate: new Date(installYear, Math.floor(Math.random() * 12), 1).toISOString(),
-                lastMaintenance: lastMaintenance.toISOString(),
-                floors: 6 + Math.floor(Math.random() * 10),
-                components: {
-                    motor: 70 + Math.floor(Math.random() * 25),
-                    cables: 75 + Math.floor(Math.random() * 20),
-                    doors: 80 + Math.floor(Math.random() * 15),
-                    controller: 85 + Math.floor(Math.random() * 10),
-                    cabin: 90 + Math.floor(Math.random() * 8)
-                }
-            };
-        });
     }
 });
 

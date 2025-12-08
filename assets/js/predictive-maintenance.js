@@ -160,12 +160,9 @@ class PredictiveMaintenanceSystem {
                 }
             }
             
-            // Якщо немає жодних ліфтів - створюємо демо-дані
+            // Якщо немає жодних ліфтів - показуємо попередження
             if (lifts.length === 0) {
-                console.warn('⚠️ Немає ліфтів в системі. Створюємо демо-дані...');
-                lifts = this.generateDemoLifts();
-                this.lifts = lifts;
-                console.log(`🎭 Створено ${lifts.length} демо-ліфтів для тестування`);
+                console.warn('⚠️ Немає ліфтів в базі даних. Додайте ліфти через адмін панель.');
             }
             
             // Зберігаємо посилання на масив ліфтів для використання в інших методах
@@ -1266,39 +1263,6 @@ class PredictiveMaintenanceSystem {
     getActiveAlertsCount() {
         const alerts = JSON.parse(localStorage.getItem('maintenance_alerts') || '[]');
         return alerts.filter(alert => !alert.acknowledged).length;
-    }
-    
-    generateDemoLifts() {
-        // Генеруємо 5 демо-ліфтів з різними характеристиками
-        const demoLifts = [];
-        const addresses = [
-            { street: 'Rua da Liberdade, 123', city: 'Lisboa' },
-            { street: 'Avenida da República, 456', city: 'Porto' },
-            { street: 'Rua Augusta, 789', city: 'Coimbra' },
-            { street: 'Praça do Comércio, 12', city: 'Lisboa' },
-            { street: 'Rua das Flores, 34', city: 'Porto' }
-        ];
-        
-        for (let i = 1; i <= 5; i++) {
-            const ageYears = 3 + Math.random() * 12; // 3-15 років
-            const installDate = new Date();
-            installDate.setFullYear(installDate.getFullYear() - ageYears);
-            
-            demoLifts.push({
-                _id: `demo_lift_${i}`,
-                municipalNumber: `DEMO-${String(i).padStart(3, '0')}`,
-                address: addresses[i - 1],
-                installationDate: installDate.toISOString(),
-                status: Math.random() > 0.8 ? 'maintenance' : 'operational',
-                type: Math.random() > 0.5 ? 'passenger' : 'freight',
-                capacity: 400 + Math.floor(Math.random() * 600),
-                floors: 3 + Math.floor(Math.random() * 10),
-                manufacturer: ['Otis', 'Schindler', 'KONE', 'ThyssenKrupp'][Math.floor(Math.random() * 4)],
-                createdAt: installDate.toISOString()
-            });
-        }
-        
-        return demoLifts;
     }
 
     updateSystemStatistics() {
