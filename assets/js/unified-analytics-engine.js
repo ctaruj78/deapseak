@@ -1638,13 +1638,21 @@ window.initPredictiveAnalytics = function() {
 };
 
 // Функція для ініціалізації графіка прогнозів
-function initPredictionChart() {
-    // Перевіряємо наявність Chart.js
-    if (typeof Chart === 'undefined') {
-        console.warn('⚠️ Chart.js ще не завантажився, чекаємо...');
-        setTimeout(initPredictionChart, 200);
+function initPredictionChart(attemptCount = 0) {
+    // Максимум 50 спроб (10 секунд)
+    if (attemptCount > 50) {
+        console.error('❌ Chart.js не завантажився після 10 секунд, пропускаємо графік');
         return;
     }
+    
+    // Перевіряємо наявність Chart.js
+    if (typeof Chart === 'undefined') {
+        console.warn('⚠️ Chart.js ще не завантажився, чекаємо... (спроба ' + attemptCount + '/50)');
+        setTimeout(() => initPredictionChart(attemptCount + 1), 200);
+        return;
+    }
+    
+    console.log('✅ Chart.js завантажено, ініціалізуємо графік прогнозів');
     
     const canvas = document.getElementById('prediction-chart');
     if (!canvas) {
