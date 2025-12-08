@@ -426,29 +426,29 @@
                     <div class="col-lg-3 col-6">
                         <div class="metric-card primary">
                             <div class="metric-label">Всього ліфтів</div>
-                            <div class="metric-value text-primary" id="total-lifts">0</div>
-                            <div class="metric-change positive" id="lifts-change">+5% цього місяця</div>
+                            <div class="metric-value text-primary" id="total-lifts"><i class="fas fa-spinner fa-spin"></i></div>
+                            <div class="metric-change positive" id="lifts-change">Завантаження...</div>
                         </div>
                     </div>
                     <div class="col-lg-3 col-6">
                         <div class="metric-card success">
                             <div class="metric-label">Активних ліфтів</div>
-                            <div class="metric-value text-success" id="active-lifts">0</div>
-                            <div class="metric-change positive" id="active-change">98% онлайн</div>
+                            <div class="metric-value text-success" id="active-lifts"><i class="fas fa-spinner fa-spin"></i></div>
+                            <div class="metric-change positive" id="active-change">Завантаження...</div>
                         </div>
                     </div>
                     <div class="col-lg-3 col-6">
                         <div class="metric-card warning">
                         <div class="metric-label">QR сканувань</div>
-                            <div class="metric-value text-warning" id="qr-scans">0</div>
-                            <div class="metric-change positive" id="scans-change">+12% за тиждень</div>
+                            <div class="metric-value text-warning" id="qr-scans"><i class="fas fa-spinner fa-spin"></i></div>
+                            <div class="metric-change positive" id="scans-change">Завантаження...</div>
                         </div>
                     </div>
                     <div class="col-lg-3 col-6">
                         <div class="metric-card danger">
                             <div class="metric-label">Потребують ТО</div>
-                            <div class="metric-value text-danger" id="maintenance-needed">0</div>
-                            <div class="metric-change neutral" id="maintenance-change">Планово</div>
+                            <div class="metric-value text-danger" id="maintenance-needed"><i class="fas fa-spinner fa-spin"></i></div>
+                            <div class="metric-change neutral" id="maintenance-change">Завантаження...</div>
                         </div>
                     </div>
                 </div>
@@ -1425,6 +1425,10 @@ setTimeout(() => {
     }
 }, 2000);
 </script>
+
+<!-- 📊 Завантажувач статистики дашборду -->
+<script src="../../assets/js/dashboard-loader.js"></script>
+
     <!-- AI Assistant Widget -->
     <script src="/components/ai-widget.js"></script>
 </body>

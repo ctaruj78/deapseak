@@ -194,8 +194,12 @@ class DashboardLoader {
 
     setLoading() {
         const elements = [
+            // admin-dashboard.html
             'totalUsers', 'totalLifts', 'activeRequests', 'totalRevenue', 'activeLifts',
-            'qrCodes', 'systemUptime'
+            // profile.html
+            'qrCodes', 'systemUptime',
+            // unified-analytics.html
+            'total-lifts', 'active-lifts', 'qr-scans', 'maintenance-needed'
         ];
         elements.forEach(id => {
             const el = document.getElementById(id);
@@ -207,8 +211,12 @@ class DashboardLoader {
 
     setError() {
         const elements = [
+            // admin-dashboard.html
             'totalUsers', 'totalLifts', 'activeRequests', 'totalRevenue', 'activeLifts',
-            'qrCodes', 'systemUptime'
+            // profile.html
+            'qrCodes', 'systemUptime',
+            // unified-analytics.html
+            'total-lifts', 'active-lifts', 'qr-scans', 'maintenance-needed'
         ];
         elements.forEach(id => {
             const el = document.getElementById(id);
@@ -219,16 +227,22 @@ class DashboardLoader {
     }
 
     updateUI(stats) {
-        // Оновлюємо основні метрики
+        // Оновлюємо основні метрики (admin-dashboard.html)
         this.updateElement('totalUsers', stats.totalUsers);
         this.updateElement('totalLifts', stats.totalLifts);
         this.updateElement('activeRequests', stats.activeRequests);
         this.updateElement('activeLifts', stats.activeLifts);
         this.updateElement('totalRevenue', stats.totalRevenue === 0 ? 'N/A' : stats.totalRevenue);
         
-        // Додаткові елементи для profile.html (тільки header stats)
-        this.updateElement('qrCodes', stats.totalLifts); // QR = кількість ліфтів
-        this.updateElement('systemUptime', 'N/A'); // TODO: додати реальний uptime
+        // Елементи для profile.html
+        this.updateElement('qrCodes', stats.totalLifts);
+        this.updateElement('systemUptime', 'N/A');
+        
+        // Елементи для unified-analytics.html
+        this.updateElement('total-lifts', stats.totalLifts);
+        this.updateElement('active-lifts', stats.activeLifts);
+        this.updateElement('qr-scans', stats.totalLifts); // TODO: окремий лічильник QR сканувань
+        this.updateElement('maintenance-needed', 0); // TODO: лічильник ліфтів що потребують ТО
     }
 
     updateElement(id, value) {
