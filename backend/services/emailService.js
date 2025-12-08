@@ -2,23 +2,29 @@ const nodemailer = require('nodemailer');
 
 class EmailService {
     constructor() {
-        // Налаштування SMTP транспорту
+        // 📧 Brevo SMTP Configuration (FestLift Professional Email)
+        // 300 emails/day FREE, 99%+ deliverability, tracking included
         this.transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST || 'smtp.gmail.com',
-            port: process.env.SMTP_PORT || 587,
-            secure: false, // true for 465, false for other ports
+            host: process.env.SMTP_HOST,  // smtp-relay.brevo.com
+            port: parseInt(process.env.SMTP_PORT),  // 587 (TLS)
+            secure: process.env.SMTP_SECURE === 'true',  // false for TLS
             auth: {
-                user: process.env.SMTP_USER || 'your-email@gmail.com',
-                pass: process.env.SMTP_PASS || 'your-app-password'
+                user: process.env.SMTP_USER,  // 8b688f001@smtp-brevo.com
+                pass: process.env.SMTP_PASS   // SMTP Key (xsmtpsib-...)
             }
         });
+        
+        // Professional sender identity
+        this.from = process.env.EMAIL_FROM || 'DeapSeaK System <noreply@deapseak.com>';
+        
+        console.log('✅ Email Service initialized with Brevo SMTP');
     }
 
     // Відправити email про нову заявку
     async sendNewRequestNotification(request, client) {
         try {
             const mailOptions = {
-                from: `"DeapSeaK System" <${process.env.SMTP_USER}>`,
+                from: this.from,
                 to: client.email,
                 subject: `✅ Нова заявка #${request._id} створена`,
                 html: `
@@ -57,7 +63,7 @@ class EmailService {
     async sendTechnicianAssignedNotification(request, technician, client) {
         try {
             const mailOptions = {
-                from: `"DeapSeaK System" <${process.env.SMTP_USER}>`,
+                from: this.from,
                 to: client.email,
                 subject: `🔧 Техніка призначено для заявки #${request._id}`,
                 html: `
@@ -97,7 +103,7 @@ class EmailService {
     async sendTechnicianTaskNotification(request, technician) {
         try {
             const mailOptions = {
-                from: `"DeapSeaK System" <${process.env.SMTP_USER}>`,
+                from: this.from,
                 to: technician.email,
                 subject: `📋 Нове завдання: Заявка #${request._id}`,
                 html: `
@@ -138,7 +144,7 @@ class EmailService {
     async sendStatusChangeNotification(request, client, oldStatus, newStatus) {
         try {
             const mailOptions = {
-                from: `"DeapSeaK System" <${process.env.SMTP_USER}>`,
+                from: this.from,
                 to: client.email,
                 subject: `🔄 Статус заявки #${request._id} змінено`,
                 html: `
@@ -169,7 +175,7 @@ class EmailService {
     async sendRequestCompletedNotification(request, client) {
         try {
             const mailOptions = {
-                from: `"DeapSeaK System" <${process.env.SMTP_USER}>`,
+                from: this.from,
                 to: client.email,
                 subject: `✅ Заявка #${request._id} завершена`,
                 html: `
@@ -209,7 +215,7 @@ class EmailService {
     async sendPasswordResetEmail(email, resetUrl, firstName) {
         try {
             const mailOptions = {
-                from: `"DeapSeaK System" <${process.env.SMTP_USER}>`,
+                from: this.from,
                 to: email,
                 subject: '🔐 Скидання паролю - DeapSeaK',
                 html: `
@@ -294,7 +300,7 @@ class EmailService {
     async sendTestEmail(to) {
         try {
             const mailOptions = {
-                from: `"DeapSeaK System" <${process.env.SMTP_USER}>`,
+                from: this.from,
                 to: to,
                 subject: '✅ Test Email from DeapSeaK',
                 html: '<h1>Email service is working!</h1><p>This is a test email from your DeapSeaK system.</p>'

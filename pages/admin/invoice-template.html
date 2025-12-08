@@ -546,11 +546,62 @@
                 alert('Download de PDF será adicionado nas próximas versões');
             },
 
-            sendEmail() {
+            async sendEmail() {
+                // Перевірка чи орçаменто збережено
+                if (!window.lastSavedOrcamentoId) {
+                    const save = confirm('Orçamento não foi salvo. Deseja salvar antes de enviar?');
+                    if (save) {
+                        await saveOrcamento();
+                        if (!window.lastSavedOrcamentoId) {
+                            alert('Não foi possível salvar o orçamento');
+                            return;
+                        }
+                    } else {
+                        return;
+                    }
+                }
+
                 const clientEmail = prompt('Insira o email do cliente:');
-                if (clientEmail) {
-                    alert(`Orçamento será enviado para ${clientEmail}`);
-                    // Here you would implement email sending
+                if (!clientEmail) return;
+
+                // Валідація email
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(clientEmail)) {
+                    alert('Email inválido');
+                    return;
+                }
+
+                try {
+                    const token = localStorage.getItem('jwt_token');
+                    if (!token) {
+                        alert('Autenticação necessária');
+                        window.location.href = '/pages/auth/login.html';
+                        return;
+                    }
+
+                    const response = await fetch('/api/email/send-orcamento', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            orcamentoId: window.lastSavedOrcamentoId,
+                            clientEmail: clientEmail
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        alert(`✅ ${result.message}`);
+                    } else {
+                        alert(`❌ Erro: ${result.error}`);
+                    }
+
+                } catch (error) {
+                    console.error('Erro ao enviar email:', error);
+                    alert('Não foi possível enviar o email: ' + error.message);
                 }
             },
 
@@ -661,13 +712,16 @@
                 const result = await response.json();
                 
                 if (result.success) {
+                    // Зберігаємо ID для можливості відправки email
+                    window.lastSavedOrcamentoId = result.data._id;
+                    
                     alert(`✅ Orçamento ${result.data.numero} salvo com sucesso!`);
                     // Redirecionar para lista de orçamentos
                     if (confirm('Ver lista de orçamentos?')) {
                         window.location.href = 'orcamentos-list.html';
                     } else {
-                        // Limpar formulário
-                        location.reload();
+                        // Не перезавантажуємо, щоб можна було відправити email
+                        // location.reload();
                     }
                 } else {
                     alert('❌ Erro: ' + result.message);

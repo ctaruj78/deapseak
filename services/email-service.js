@@ -12,28 +12,28 @@ class EmailService {
     }
 
     init() {
-        // Налаштування транспортера
-        // Для production використовуйте реальні SMTP налаштування
+        // 📧 Brevo SMTP Configuration (Professional Email Service)
+        // 300 emails/day FREE, 99%+ deliverability, tracking included
         const emailConfig = {
-            host: process.env.SMTP_HOST || 'smtp.gmail.com',
-            port: parseInt(process.env.SMTP_PORT) || 587,
-            secure: false, // true для 465, false для інших портів
+            host: process.env.SMTP_HOST,  // smtp-relay.brevo.com
+            port: parseInt(process.env.SMTP_PORT),  // 587 (TLS)
+            secure: process.env.SMTP_SECURE === 'true',  // false for TLS
             auth: {
-                user: process.env.SMTP_USER || '',
-                pass: process.env.SMTP_PASS || ''
+                user: process.env.SMTP_USER,  // 8b688f001@smtp-brevo.com
+                pass: process.env.SMTP_PASS   // SMTP Key (xsmtpsib-...)
             }
         };
 
-        // Якщо немає налаштувань - використовуємо ethereal для тестування
-        if (!process.env.SMTP_USER) {
-            console.log('⚠️ SMTP not configured, using test mode');
-            // В тестовому режимі можна використати ethereal.email
-            // Для production налаштуйте .env файл з реальними SMTP credentials
+        // Перевірка чи налаштовано SMTP
+        if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+            console.log('⚠️ SMTP not configured! Set SMTP_USER and SMTP_PASS in .env');
+            console.log('   See BREVO-SETUP-GUIDE.md for setup instructions');
             this.testMode = true;
         } else {
             this.transporter = nodemailer.createTransport(emailConfig);
             this.testMode = false;
-            console.log('✅ Email service initialized');
+            console.log('✅ Email service initialized with Brevo SMTP');
+            console.log(`   Sender: ${this.from}`);
         }
     }
 

@@ -17,6 +17,9 @@ const multer = require('multer');
 const fs = require('fs').promises;
 const https = require('https');
 
+// 📧 Email Service (Brevo SMTP)
+const emailService = require('./backend/services/emailService');
+
 const app = express();
 
 // ═══════════════════════════════════════════════════════════
@@ -2973,6 +2976,406 @@ app.delete('/api/orcamentos/:id', authenticateToken, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Erro ao deletar orçamento',
+            error: error.message
+        });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════
+// 📧 EMAIL ENDPOINTS - Brevo SMTP Integration
+// ═══════════════════════════════════════════════════════════
+
+// POST /api/email/send-inspection-report - Відправити inspection report
+app.post('/api/email/send-inspection-report', authenticateToken, async (req, res) => {
+    try {
+        const { clientEmail, reportData } = req.body;
+        
+        if (!clientEmail || !reportData) {
+            return res.status(400).json({
+                success: false,
+                error: 'Email e dados do relatório são obrigatórios'
+            });
+        }
+
+        const nodemailer = require('nodemailer');
+        const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: parseInt(process.env.SMTP_PORT),
+            secure: process.env.SMTP_SECURE === 'true',
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS
+            }
+        });
+
+        // Підготовка HTML
+        let violationsHTML = '<h3>Deficiências Detectadas:</h3><ul>';
+        if (reportData.violations && reportData.violations.length > 0) {
+            reportData.violations.forEach(v => {
+                const priority = v.classification === 'C1' ? '🔴 CRÍTICO' : 
+                                v.classification === 'C2' ? '🟠 MÉDIO' : '🟡 BAIXO';
+                violationsHTML += `
+                    <li style="margin-bottom: 15px;">
+                        <strong>${priority}</strong><br>
+                        <strong>Artigo:</strong> ${v.article}<br>
+                        <strong>Descrição:</strong> ${v.description}<br>
+                        <strong>Consequências:</strong> ${v.consequences}<br>
+                        ${v.deadline ? `<strong>Prazo:</strong> ${v.deadline}<br>` : ''}
+                    </li>
+                `;
+            });
+        } else {
+            violationsHTML += '<li>Nenhuma deficiência encontrada</li>';
+        }
+        violationsHTML += '</ul>';
+
+        const mailOptions = {
+            from: process.env.EMAIL_FROM,
+            to: clientEmail,
+            subject: '📋 Relatório de Inspeção - FestLift',
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #007bff;">📋 Relatório de Inspeção</h2>
+                    <p>Segue o relatório de inspeção detalhado:</p>
+                    ${violationsHTML}
+                    <hr>
+                    <p style="color: #666; font-size: 12px;">
+                        Este é um email automático. Para mais informações, contacte FestLift.
+                    </p>
+                </div>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+        
+        console.log(`✅ Inspection report sent to ${clientEmail}`);
+        res.json({ success: true, message: 'Relatório enviado com sucesso' });
+    } catch (error) {
+        console.error('❌ Error sending inspection report:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// POST /api/email/send-critical-alert - Відправити критичний алерт
+app.post('/api/email/send-critical-alert', authenticateToken, async (req, res) => {
+    try {
+        const { clientEmail, violations, liftId } = req.body;
+        
+        if (!clientEmail || !violations) {
+            return res.status(400).json({
+                success: false,
+                error: 'Email e violações são obrigatórios'
+            });
+        }
+
+        const criticalViolations = violations.filter(v => v.classification === 'C1');
+        
+        if (criticalViolations.length === 0) {
+            return res.json({ success: true, message: 'Nenhuma deficiência crítica encontrada' });
+        }
+
+        const nodemailer = require('nodemailer');
+        const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: parseInt(process.env.SMTP_PORT),
+            secure: process.env.SMTP_SECURE === 'true',
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS
+            }
+        });
+
+        let alertHTML = '<h3>🚨 DEFICIÊNCIAS CRÍTICAS DETECTADAS</h3><ul>';
+        criticalViolations.forEach(v => {
+            alertHTML += `
+                <li style="background: #ffe5e5; padding: 15px; margin-bottom: 10px; border-left: 4px solid #dc3545;">
+                    <strong style="color: #dc3545;">🔴 ${v.article}</strong><br>
+                    <strong>Descrição:</strong> ${v.description}<br>
+                    <strong>Consequências:</strong> ${v.consequences}<br>
+                    <strong style="color: #dc3545;">⏰ PRAZO: ${v.deadline || 'IMEDIATO (0-7 dias)'}</strong>
+                </li>
+            `;
+        });
+        alertHTML += '</ul>';
+
+        const mailOptions = {
+            from: process.env.EMAIL_FROM,
+            to: clientEmail,
+            subject: '🚨 ALERTA CRÍTICO - Deficiências C1 Detectadas - FestLift',
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <div style="background: #dc3545; color: white; padding: 20px; border-radius: 8px 8px 0 0;">
+                        <h2 style="margin: 0;">🚨 ALERTA CRÍTICO</h2>
+                    </div>
+                    <div style="padding: 20px; border: 2px solid #dc3545;">
+                        <p><strong>Foram detectadas deficiências críticas (C1) que requerem ação imediata!</strong></p>
+                        ${liftId ? `<p><strong>Elevador:</strong> ${liftId}</p>` : ''}
+                        ${alertHTML}
+                        <div style="background: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin-top: 20px;">
+                            <p style="margin: 0;"><strong>⚠️ ATENÇÃO:</strong> As deficiências C1 podem resultar em:</p>
+                            <ul>
+                                <li>Risco de acidentes graves</li>
+                                <li>Responsabilidade criminal</li>
+                                <li>Multas pesadas</li>
+                                <li>Obrigação de desativar o elevador</li>
+                            </ul>
+                        </div>
+                        <p style="margin-top: 20px;"><strong>Contacte FestLift imediatamente para corrigir estas deficiências!</strong></p>
+                    </div>
+                </div>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+        
+        console.log(`✅ Critical alert sent to ${clientEmail} - ${criticalViolations.length} violations`);
+        res.json({ success: true, message: 'Alerta crítico enviado com sucesso' });
+    } catch (error) {
+        console.error('❌ Error sending critical alert:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// POST /api/email/send-action-plan - Відправити action plan
+app.post('/api/email/send-action-plan', authenticateToken, async (req, res) => {
+    try {
+        const { clientEmail, actionPlan, liftId } = req.body;
+        
+        if (!clientEmail || !actionPlan) {
+            return res.status(400).json({
+                success: false,
+                error: 'Email e plano de ação são obrigatórios'
+            });
+        }
+
+        const nodemailer = require('nodemailer');
+        const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: parseInt(process.env.SMTP_PORT),
+            secure: process.env.SMTP_SECURE === 'true',
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS
+            }
+        });
+
+        let planHTML = '<h3>📋 Plano de Ação Detalhado</h3>';
+        
+        if (actionPlan.immediate && actionPlan.immediate.length > 0) {
+            planHTML += '<h4 style="color: #dc3545;">🚨 Ações Imediatas (0-7 dias)</h4><ol>';
+            actionPlan.immediate.forEach(action => {
+                planHTML += `<li style="margin-bottom: 10px;">${action}</li>`;
+            });
+            planHTML += '</ol>';
+        }
+
+        if (actionPlan.shortTerm && actionPlan.shortTerm.length > 0) {
+            planHTML += '<h4 style="color: #ffc107;">⏰ Ações de Curto Prazo (30 dias)</h4><ol>';
+            actionPlan.shortTerm.forEach(action => {
+                planHTML += `<li style="margin-bottom: 10px;">${action}</li>`;
+            });
+            planHTML += '</ol>';
+        }
+
+        if (actionPlan.longTerm && actionPlan.longTerm.length > 0) {
+            planHTML += '<h4 style="color: #28a745;">📅 Ações de Longo Prazo</h4><ol>';
+            actionPlan.longTerm.forEach(action => {
+                planHTML += `<li style="margin-bottom: 10px;">${action}</li>`;
+            });
+            planHTML += '</ol>';
+        }
+
+        const mailOptions = {
+            from: process.env.EMAIL_FROM,
+            to: clientEmail,
+            subject: '📋 Plano de Ação - Correção de Deficiências - FestLift',
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #007bff;">📋 Plano de Ação</h2>
+                    ${liftId ? `<p><strong>Elevador:</strong> ${liftId}</p>` : ''}
+                    <p>Segue o plano de ação detalhado para correção das deficiências identificadas:</p>
+                    ${planHTML}
+                    <hr>
+                    <p><strong>FestLift está à disposição para executar todas estas correções.</strong></p>
+                    <p>Contacte-nos para agendar os trabalhos: <strong>info@festlift.pt</strong></p>
+                </div>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+        
+        console.log(`✅ Action plan sent to ${clientEmail}`);
+        res.json({ success: true, message: 'Plano de ação enviado com sucesso' });
+    } catch (error) {
+        console.error('❌ Error sending action plan:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// POST /api/email/send-orcamento - Відправити orçamento клієнту
+app.post('/api/email/send-orcamento', authenticateToken, async (req, res) => {
+    try {
+        const { orcamentoId, clientEmail } = req.body;
+        
+        if (!orcamentoId || !clientEmail) {
+            return res.status(400).json({
+                success: false,
+                error: 'ID do orçamento e email são obrigatórios'
+            });
+        }
+
+        const { ObjectId } = require('mongodb');
+        const orcamento = await db.collection('orcamentos').findOne({
+            _id: new ObjectId(orcamentoId)
+        });
+
+        if (!orcamento) {
+            return res.status(404).json({
+                success: false,
+                error: 'Orçamento não encontrado'
+            });
+        }
+
+        const nodemailer = require('nodemailer');
+        const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: parseInt(process.env.SMTP_PORT),
+            secure: process.env.SMTP_SECURE === 'true',
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS
+            }
+        });
+
+        // Gerar HTML do orçamento
+        let servicosHTML = '<table style="width: 100%; border-collapse: collapse;"><tr><th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Descrição</th><th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Quantidade</th><th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Preço Unit.</th><th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Total</th></tr>';
+        
+        orcamento.servicos.forEach(s => {
+            servicosHTML += `
+                <tr>
+                    <td style="border: 1px solid #ddd; padding: 8px;">${s.descricao}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${s.quantidade}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">€${s.precoUnitario.toFixed(2)}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">€${(s.quantidade * s.precoUnitario).toFixed(2)}</td>
+                </tr>
+            `;
+        });
+        servicosHTML += '</table>';
+
+        const validadeDate = new Date(orcamento.validadeAte);
+        const validadeFormatted = validadeDate.toLocaleDateString('pt-PT', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric' 
+        });
+
+        const mailOptions = {
+            from: process.env.EMAIL_FROM,
+            to: clientEmail,
+            subject: `Orçamento ${orcamento.numero} - FestLift`,
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 700px; margin: 0 auto; border: 1px solid #ddd;">
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center;">
+                        <h1 style="margin: 0; font-size: 28px;">FestLift</h1>
+                        <p style="margin: 5px 0 0 0; font-size: 14px;">Manutenção de Elevadores</p>
+                    </div>
+                    
+                    <div style="padding: 30px;">
+                        <h2 style="color: #333; border-bottom: 2px solid #667eea; padding-bottom: 10px;">
+                            Orçamento ${orcamento.numero}
+                        </h2>
+                        
+                        <div style="margin: 20px 0;">
+                            <p><strong>Cliente:</strong> ${orcamento.cliente.nome}</p>
+                            <p><strong>Email:</strong> ${orcamento.cliente.email}</p>
+                            ${orcamento.cliente.telefone ? `<p><strong>Telefone:</strong> ${orcamento.cliente.telefone}</p>` : ''}
+                            ${orcamento.cliente.morada ? `<p><strong>Morada:</strong> ${orcamento.cliente.morada}</p>` : ''}
+                        </div>
+
+                        <div style="margin: 20px 0;">
+                            <p><strong>Data:</strong> ${new Date(orcamento.data).toLocaleDateString('pt-PT')}</p>
+                            <p><strong>Validade:</strong> ${validadeFormatted}</p>
+                        </div>
+
+                        <h3 style="color: #667eea; margin-top: 30px;">Serviços</h3>
+                        ${servicosHTML}
+
+                        <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+                            <table style="width: 100%; font-size: 16px;">
+                                <tr>
+                                    <td style="text-align: right; padding: 5px;"><strong>Subtotal:</strong></td>
+                                    <td style="text-align: right; padding: 5px; width: 120px;">€${orcamento.subtotal.toFixed(2)}</td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align: right; padding: 5px;"><strong>IVA (23%):</strong></td>
+                                    <td style="text-align: right; padding: 5px;">€${orcamento.iva.toFixed(2)}</td>
+                                </tr>
+                                <tr style="border-top: 2px solid #667eea;">
+                                    <td style="text-align: right; padding: 10px 5px 5px 5px;"><strong style="font-size: 18px; color: #667eea;">TOTAL:</strong></td>
+                                    <td style="text-align: right; padding: 10px 5px 5px 5px;"><strong style="font-size: 18px; color: #667eea;">€${orcamento.total.toFixed(2)}</strong></td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        ${orcamento.notas ? `
+                            <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+                                <strong>Notas:</strong><br>
+                                ${orcamento.notas}
+                            </div>
+                        ` : ''}
+
+                        <div style="margin-top: 30px; padding: 20px; background: #e7f3ff; border-radius: 8px; text-align: center;">
+                            <p style="margin: 0; color: #0066cc;">
+                                <strong>Este orçamento é válido até ${validadeFormatted}</strong>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #ddd;">
+                        <p style="margin: 5px 0; font-size: 14px; color: #666;">
+                            <strong>FestLift - Manutenção de Elevadores</strong><br>
+                            Email: info@festlift.pt | Tel: +351 XXX XXX XXX<br>
+                            <small>Este orçamento foi gerado automaticamente.</small>
+                        </p>
+                    </div>
+                </div>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+        
+        // Atualizar orçamento com tracking
+        await db.collection('orcamentos').updateOne(
+            { _id: new ObjectId(orcamentoId) },
+            { 
+                $push: { 
+                    emailsEnviados: {
+                        email: clientEmail,
+                        dataEnvio: new Date().toISOString(),
+                        enviadoPor: req.user.userId
+                    }
+                }
+            }
+        );
+        
+        console.log(`✅ Orçamento ${orcamento.numero} sent to ${clientEmail}`);
+        res.json({ 
+            success: true, 
+            message: `Orçamento ${orcamento.numero} enviado com sucesso para ${clientEmail}` 
+        });
+    } catch (error) {
+        console.error('❌ Error sending orçamento:', error);
+        res.status(500).json({
+            success: false,
             error: error.message
         });
     }
