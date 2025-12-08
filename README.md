@@ -428,6 +428,39 @@ GitHub Copilot & Development Team
 
 ---
 
+---
+
+## 📧 Email System - Brevo Integration
+
+### Профессійна відправка орçаменtos!
+
+**Налаштовано Brevo (Sendinblue):**
+- ✅ **300 email/день БЕЗКОШТОВНО** 
+- ✅ Tracking: хто відкрив, коли, скільки разів
+- ✅ Deliverability 99%+ (не йде в spam)
+- ✅ Відправник: `FestLift <info@festlift.pt>`
+- ✅ Dashboard з аналітикою: https://app.brevo.com/
+
+**📖 Повна інструкція:** [BREVO-SETUP-GUIDE.md](BREVO-SETUP-GUIDE.md)
+
+**Швидкий старт:**
+```bash
+1. Реєстрація: https://www.brevo.com/ (2 хв)
+2. Dashboard → SMTP & API → Генеруй SMTP key
+3. Копіюй в .env:
+   SMTP_USER=твій-email-brevo
+   SMTP_PASS=smtp-api-key
+4. node test-brevo.js (тестування)
+```
+
+**Features:**
+- 📨 Відправка орçаменtos клієнтам
+- 📊 Статистика відкриттів
+- 🔄 Fallback на SMTP хостингу
+- 📧 Шаблони email (HTML)
+
+---
+
 ## 🤖 AI Асистент - Нові можливості!
 
 ### Голосовий AI для технічних консультацій:
