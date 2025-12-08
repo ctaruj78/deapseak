@@ -246,7 +246,7 @@
                                         <div class="row mt-3">
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label for="notes">Примітки</label>
+                                                    <label for="notes">Notas</label>
                                                     <textarea class="form-control" id="notes" rows="3" placeholder="Informação adicional ou condições"></textarea>
                                                 </div>
                                             </div>
@@ -392,10 +392,10 @@
 
         <!-- Footer -->
         <footer class="main-footer no-print">
-            <strong>&copy; 2024 <a href="#">LiftMaster Pro</a>.</strong>
-            Всі права захищені.
+            <strong>&copy; 2024 <a href="#">FestLift.LDA</a>.</strong>
+            Todos os direitos reservados.
             <div class="float-right d-none d-sm-inline-block">
-                <b>Версія</b> 3.2.0
+                <b>Versão</b> 3.2.0
             </div>
         </footer>
     </div>
@@ -546,10 +546,10 @@
 
             loadTemplate() {
                 // Load predefined template
-                $('#clientName').val('ТОВ "Приклад"');
-                $('#clientAddress').val('вул. Прикладна, 123\nКиїв, 01001');
-                $('#clientPhone').val('+380 44 123-45-67');
-                $('#notes').val('Оплата протягом 14 днів з дати виставлення рахунку. При несвоєчасній оплаті нараховується пеня 0,1% за кожен день прострочки.');
+                $('#clientName').val('Empresa Exemplo Lda');
+                $('#clientAddress').val('Rua Exemplo, 123\nLisboa, 1000-001');
+                $('#clientPhone').val('+351 21 123 4567');
+                $('#notes').val('Este orçamento é válido por 30 dias a partir da data de apresentação.');
                 
                 this.updatePreview();
             }
@@ -590,39 +590,5 @@
             invoiceManager.init();
         });
     </script>
-</body>
-</html>
-                                </div>
-                                <div class="form-group">
-                                    <label for="invoiceDate">Дата рахунку</label>
-                                    <input type="date" class="form-control" id="invoiceDate" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="invoiceAmount">Сума</label>
-                                    <input type="number" class="form-control" id="invoiceAmount" required>
-                                </div>
-                                <button type="submit" class="btn btn-info">Зберегти</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </div>
-        <footer class="main-footer">
-            <strong>Copyright &copy; 2024 <a href="admin-dashboard.html">LiftMaster Pro</a>.</strong>
-        </footer>
-    </div>
-    <script src="../../plugins/jquery/jquery.min.js"></script>
-    <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
-    <script src="../../plugins/adminlte/adminlte.min.js"></script>
-
-    <!-- Load sidebar dynamically -->
-    <script>
-        $(document).ready(function() {
-            $(".main-sidebar").load("includes/sidebar.html");
-        });
-    </script>
-    <script src="../../assets/js/modules/invoice-template.js"></script>
-    <script src="/components/ai-widget.js"></script>
 </body>
 </html>
