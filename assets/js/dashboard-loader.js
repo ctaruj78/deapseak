@@ -193,7 +193,10 @@ class DashboardLoader {
     }
 
     setLoading() {
-        const elements = ['totalUsers', 'totalLifts', 'activeRequests', 'totalRevenue', 'activeLifts'];
+        const elements = [
+            'totalUsers', 'totalLifts', 'activeRequests', 'totalRevenue', 'activeLifts',
+            'usersCount', 'liftsCount', 'qrCount', 'qrCodes', 'alertsCount', 'systemUptime'
+        ];
         elements.forEach(id => {
             const el = document.getElementById(id);
             if (el) {
@@ -203,7 +206,10 @@ class DashboardLoader {
     }
 
     setError() {
-        const elements = ['totalUsers', 'totalLifts', 'activeRequests', 'totalRevenue', 'activeLifts'];
+        const elements = [
+            'totalUsers', 'totalLifts', 'activeRequests', 'totalRevenue', 'activeLifts',
+            'usersCount', 'liftsCount', 'qrCount', 'qrCodes', 'alertsCount', 'systemUptime'
+        ];
         elements.forEach(id => {
             const el = document.getElementById(id);
             if (el) {
@@ -219,6 +225,14 @@ class DashboardLoader {
         this.updateElement('activeRequests', stats.activeRequests);
         this.updateElement('activeLifts', stats.activeLifts);
         this.updateElement('totalRevenue', stats.totalRevenue === 0 ? 'N/A' : stats.totalRevenue);
+        
+        // Додаткові елементи для profile.html
+        this.updateElement('usersCount', stats.totalUsers);
+        this.updateElement('liftsCount', stats.totalLifts);
+        this.updateElement('qrCount', stats.totalLifts); // QR = кількість ліфтів
+        this.updateElement('qrCodes', stats.totalLifts); // QR в хедері профілю
+        this.updateElement('alertsCount', stats.activeRequests); // Сповіщення = активні заявки
+        this.updateElement('systemUptime', 'N/A'); // TODO: додати реальний uptime
     }
 
     updateElement(id, value) {

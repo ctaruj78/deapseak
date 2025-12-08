@@ -524,19 +524,19 @@
                 <p class="mb-0" data-user-role>Адміністратор системи</p>
                 <div class="profile-stats">
                     <div class="stat-item">
-                        <div class="stat-number" id="totalUsers">1,247</div>
+                        <div class="stat-number" id="totalUsers"><i class="fas fa-spinner fa-spin"></i></div>
                         <div class="stat-label">Користувачів</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-number" id="activeLifts">89</div>
+                        <div class="stat-number" id="activeLifts"><i class="fas fa-spinner fa-spin"></i></div>
                         <div class="stat-label">Активних ліфтів</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-number" id="qrCodes">3,456</div>
+                        <div class="stat-number" id="qrCodes"><i class="fas fa-spinner fa-spin"></i></div>
                         <div class="stat-label">QR кодів</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-number" id="systemUptime">99.9%</div>
+                        <div class="stat-number" id="systemUptime"><i class="fas fa-spinner fa-spin"></i></div>
                         <div class="stat-label">Uptime системи</div>
                     </div>
                 </div>
@@ -550,32 +550,32 @@
                     <i class="fas fa-users"></i>
                 </div>
                 <h4>Користувачі</h4>
-                <div class="h3 mb-0" id="usersCount">1,247</div>
-                <small class="text-muted">+12% від минулого місяця</small>
+                <div class="h3 mb-0" id="usersCount"><i class="fas fa-spinner fa-spin"></i></div>
+                <small class="text-muted">Завантаження...</small>
             </div>
             <div class="stat-card">
                 <div class="stat-card-icon qr">
                     <i class="fas fa-qrcode"></i>
                 </div>
                 <h4>QR коди</h4>
-                <div class="h3 mb-0" id="qrCount">3,456</div>
-                <small class="text-muted">+8% від минулого місяця</small>
+                <div class="h3 mb-0" id="qrCount"><i class="fas fa-spinner fa-spin"></i></div>
+                <small class="text-muted">Завантаження...</small>
             </div>
             <div class="stat-card">
                 <div class="stat-card-icon lifts">
                     <i class="fas fa-building"></i>
                 </div>
                 <h4>Ліфти</h4>
-                <div class="h3 mb-0" id="liftsCount">156</div>
-                <small class="text-muted">89 активних</small>
+                <div class="h3 mb-0" id="liftsCount"><i class="fas fa-spinner fa-spin"></i></div>
+                <small class="text-muted">Завантаження...</small>
             </div>
             <div class="stat-card">
                 <div class="stat-card-icon alerts">
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
                 <h4>Сповіщення</h4>
-                <div class="h3 mb-0" id="alertsCount">23</div>
-                <small class="text-muted">5 критичних</small>
+                <div class="h3 mb-0" id="alertsCount"><i class="fas fa-spinner fa-spin"></i></div>
+                <small class="text-muted">Завантаження...</small>
             </div>
         </div>
 
@@ -948,6 +948,9 @@
 
 <!-- 👤 Завантажувач профілю з API -->
 <script src="../../assets/js/profile-loader.js"></script>
+
+<!-- 📊 Завантажувач статистики дашборду -->
+<script src="../../assets/js/dashboard-loader.js"></script>
 
 <!-- Load sidebar dynamically -->
 <script>
