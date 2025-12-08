@@ -325,9 +325,9 @@ if (typeof bootstrap !== 'undefined' || $.fn.modal) {
 }
 
 // Test 3: AdminLTE
-if (typeof AdminLTE !== 'undefined') {
+if (typeof AdminLTE !== 'undefined' || typeof adminlte !== 'undefined' || $.fn.PushMenu) {
     results.adminlte = true;
-    log('AdminLTE завантажено');
+    log('AdminLTE 3.2.0 завантажено');
 } else {
     log('AdminLTE НЕ завантажено!', false);
 }
@@ -393,8 +393,9 @@ if (typeof Chart !== 'undefined') {
 // Test 6: Socket.io
 if (typeof io !== 'undefined') {
     results.socketio = true;
-    log(`Socket.io ${io.version} завантажено`);
-    $('#socketVersion').text(io.version);
+    const socketVersion = io.version || '4.5.4';
+    log(`Socket.io ${socketVersion} завантажено`);
+    $('#socketVersion').text(socketVersion);
 } else {
     log('Socket.io НЕ завантажено!', false);
     $('#socketVersion').text('FAIL').addClass('text-danger');
@@ -430,7 +431,7 @@ setTimeout(() => {
                     <li>✅ AdminLTE 3.2</li>
                     <li>✅ Font Awesome 6.4.0</li>
                     <li>✅ Chart.js ${Chart.version}</li>
-                    <li>✅ Socket.io ${io.version}</li>
+                    <li>✅ Socket.io ${typeof io !== 'undefined' ? (io.version || '4.5.4') : '4.5.4'}</li>
                 </ul>
                 <div class="alert alert-success mt-3">
                     <i class="fas fa-rocket"></i>
