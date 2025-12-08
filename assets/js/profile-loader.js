@@ -65,13 +65,23 @@
         // Ім'я користувача
         const nameElements = document.querySelectorAll('[data-user-name]');
         nameElements.forEach(el => {
-            el.textContent = user.name || 'Невідомо';
+            const fullName = user.name || user.username || 'Невідомо';
+            if (el.tagName === 'INPUT') {
+                el.value = fullName;
+            } else {
+                el.textContent = fullName;
+            }
         });
 
         // Email
         const emailElements = document.querySelectorAll('[data-user-email]');
         emailElements.forEach(el => {
-            el.textContent = user.email || '';
+            const email = user.email || '';
+            if (el.tagName === 'INPUT') {
+                el.value = email;
+            } else {
+                el.textContent = email;
+            }
         });
 
         // Роль
@@ -89,7 +99,12 @@
         // Телефон
         const phoneElements = document.querySelectorAll('[data-user-phone]');
         phoneElements.forEach(el => {
-            el.textContent = user.phone || 'Не вказано';
+            const phone = user.phone || '';
+            if (el.tagName === 'INPUT') {
+                el.value = phone;
+            } else {
+                el.textContent = phone || 'Не вказано';
+            }
         });
 
         // Адреса
