@@ -5595,6 +5595,104 @@
                 console.log(`✅ Знайдено ліфтів: ${filtered.length} з ${window.allLiftsData.length}`);
                 displayLiftsInTable(filtered);
             });
+        } else {
+            console.warn('⚠️ Поле searchInput не знайдено');
+        }
+        
+        // ✅ ДОДАНО: Обробники фільтрів по статусу та типу
+        const statusFilter = document.getElementById('statusFilter');
+        const typeFilter = document.getElementById('typeFilter');
+        
+        // Функція застосування всіх фільтрів
+        function applyAllFilters() {
+            if (!window.allLiftsData || window.allLiftsData.length === 0) {
+                console.warn('⚠️ Дані ліфтів ще не завантажені');
+                return;
+            }
+            
+            const searchQuery = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+            const statusValue = statusFilter?.value || 'all';
+            const typeValue = typeFilter?.value || 'all';
+            
+            console.log('🔍 Застосування фільтрів:', { searchQuery, statusValue, typeValue });
+            
+            let filtered = window.allLiftsData;
+            
+            // Фільтр по пошуковому запиту
+            if (searchQuery) {
+                filtered = filtered.filter(lift => {
+                    const municipalNumber = (lift.municipalNumber || '').toLowerCase();
+                    const manufacturer = (lift.manufacturer || '').toLowerCase();
+                    const model = (lift.model || '').toLowerCase();
+                    const type = (lift.type || '').toLowerCase();
+                    const id = ((lift._id || lift.id) || '').toString().toLowerCase();
+                    
+                    let addressStr = '';
+                    if (typeof lift.address === 'object' && lift.address) {
+                        addressStr = `${lift.address.street || ''} ${lift.address.city || ''}`.toLowerCase();
+                    } else if (typeof lift.address === 'string') {
+                        addressStr = lift.address.toLowerCase();
+                    }
+                    
+                    let clientStr = '';
+                    if (typeof lift.client === 'object' && lift.client) {
+                        clientStr = `${lift.client.firstName || ''} ${lift.client.lastName || ''} ${lift.client.email || ''}`.toLowerCase();
+                    } else if (lift.clientName) {
+                        clientStr = lift.clientName.toLowerCase();
+                    }
+                    
+                    return municipalNumber.includes(searchQuery) ||
+                           manufacturer.includes(searchQuery) ||
+                           model.includes(searchQuery) ||
+                           type.includes(searchQuery) ||
+                           id.includes(searchQuery) ||
+                           addressStr.includes(searchQuery) ||
+                           clientStr.includes(searchQuery);
+                });
+            }
+            
+            // Фільтр по статусу
+            if (statusValue !== 'all') {
+                filtered = filtered.filter(lift => {
+                    const liftStatus = lift.status || 'operational';
+                    return liftStatus === statusValue;
+                });
+            }
+            
+            // Фільтр по типу
+            if (typeValue !== 'all') {
+                filtered = filtered.filter(lift => {
+                    const liftType = lift.type || lift.liftType || '';
+                    return liftType === typeValue;
+                });
+            }
+            
+            console.log(`✅ Результат фільтрації: ${filtered.length} з ${window.allLiftsData.length}`);
+            displayLiftsInTable(filtered);
+        }
+        
+        if (statusFilter) {
+            statusFilter.addEventListener('change', applyAllFilters);
+            console.log('✅ Обробник фільтру статусу додано');
+        } else {
+            console.warn('⚠️ Фільтр statusFilter не знайдено');
+        }
+        
+        if (typeFilter) {
+            typeFilter.addEventListener('change', applyAllFilters);
+            console.log('✅ Обробник фільтру типу додано');
+        } else {
+            console.warn('⚠️ Фільтр typeFilter не знайдено');
+        }
+        
+        // Оновлюємо searchInput щоб використовувати applyAllFilters
+        if (searchInput) {
+            // Видаляємо старий обробник і додаємо новий
+            const newSearchInput = searchInput.cloneNode(true);
+            searchInput.parentNode.replaceChild(newSearchInput, searchInput);
+            
+            newSearchInput.addEventListener('input', applyAllFilters);
+            console.log('✅ Обробник пошуку оновлено для роботи з фільтрами');
         }
         
         // Обробник експорту CSV
