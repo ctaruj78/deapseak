@@ -1,15 +1,15 @@
 {
   "metadata": {
     "country": "Portugal",
-    "last_updated": "2025-12-08",
+    "last_updated": "2025-12-10",
     "language": "pt-PT",
     "scope": "Regulamentação de Elevadores e Inspeções",
-    "version": "3.0",
+    "version": "4.0",
     "generated_by": "DeapSeaK AI Knowledge Generator",
-    "laws_count": 4,
-    "total_articles": 48,
+    "laws_count": 13,
+    "total_articles": 24,
     "total_violation_codes": 49,
-    "latest_addition": "Decreto Regulamentar n.º 13/80 - Alterações fundamentais ao Decreto 513/70"
+    "latest_addition": "EN Standards + Decreto Regulamentar 13/80"
   },
   "regulations": [
     {
@@ -811,6 +811,308 @@
         "revogacaoEfectiva": "01/07/1999 (DL 131/87 e 110/91 não aplicáveis a novos)",
         "directivaEuropeia": "Directiva 95/16/CE de 29/06/1995"
       }
+    },
+    {
+      "id": "DEC_REG_13_1980",
+      "type": "decreto_regulamentar",
+      "number": "13/80",
+      "date": "1980-05-16",
+      "title": "Decreto Regulamentar n.º 13/80",
+      "title_ua": "Регуляторний декрет № 13/80",
+      "status": "vigente",
+      "summary": "Alterações ao Regulamento de Segurança de Elevadores Eléctricos (Decreto 513/70), introduzindo novas disposições sobre vedação da caixa, encravamento de portas, iluminação e aplicação a elevadores existentes.",
+      "summary_ua": "Зміни до Регламенту безпеки електричних ліфтів (Decreto 513/70), що вводять нові положення про огородження шахти, блокування дверей, освітлення та застосування до існуючих ліфтів.",
+      "scope": [
+        "Alterações aos artigos do Decreto 513/70",
+        "Requisitos de vedação de caixa para elevadores antigos",
+        "Aplicação gradual baseada na data de instalação"
+      ],
+      "source": {
+        "file": "decreto-regulamentar-13-80.json",
+        "sections_count": 1,
+        "critical_articles": 4
+      },
+      "inspection_points": [],
+      "articles": [],
+      "key_changes": [
+        "Revisão baseada em directivas CIRA atualizadas",
+        "Novas disposições para vedação da caixa em elevadores existentes",
+        "Harmonização com Regulamentos de Segurança de Instalações Elétricas",
+        "Prazos escalonados para conformidade (1-5 anos conforme idade do elevador)"
+      ],
+      "modifications_to": "Decreto n.º 513/70 (1970-10-30)",
+      "effective_date": "180 dias após publicação",
+      "authority": "Ministério da Indústria e Energia"
+    },
+    {
+      "id": "NP_EN_81_20_2020",
+      "type": "norma_europeia",
+      "number": "NP EN 81-20:2020",
+      "title": "NP EN 81-20:2020 - Regras de segurança para a construção e instalação de elevadores. Elevadores de passageiros e elevadores de carga",
+      "status": "vigente_obrigatória",
+      "summary": "Norma principal de segurança para elevadores novos. Define requisitos fundamentais de construção, instalação e segurança para elevadores de passageiros e carga.",
+      "scope": [
+        "Elevadores elétricos de tração",
+        "Elevadores hidráulicos",
+        "Requisitos de segurança estrutural",
+        "Sistemas de segurança (para-quedas, limitadores)",
+        "Portas e fechaduras",
+        "Proteção contra incêndio"
+      ],
+      "source": {
+        "file": "en-standards-lift-regulations.json",
+        "sections_count": 0,
+        "key_requirements": 3
+      },
+      "sections": [],
+      "key_requirements": [
+        {
+          "category": "Sistemas de Segurança",
+          "items": [
+            "Para-quedas progressivo ou instantâneo",
+            "Limitador de velocidade",
+            "Travão de segurança com verificação eletrónica",
+            "Sistema anti-colisão",
+            "Proteção contra excesso de velocidade na subida"
+          ]
+        },
+        {
+          "category": "Portas e Acessos",
+          "items": [
+            "Fechaduras eletromecânicas com verificação dupla",
+            "Deteção de pessoas nas portas",
+            "Fotocélulas ou cortinas de luz",
+            "Resistência ao fogo (conforme A1:2022)"
+          ]
+        },
+        {
+          "category": "Iluminação e Comunicação",
+          "items": [
+            "Iluminação de emergência automática na cabina",
+            "Sistema de comunicação bidirecional (intercomunicador)",
+            "Alarme visual e sonoro"
+          ]
+        }
+      ],
+      "applicability": {}
+    },
+    {
+      "id": "NP_EN_81_50_2020",
+      "type": "norma_europeia",
+      "number": "NP EN 81-50:2020",
+      "title": "NP EN 81-50:2020 - Regras de segurança para a construção e instalação de elevadores. Cálculos de resistência, projetos, regras e ensaios de elementos",
+      "status": "vigente_obrigatória",
+      "summary": "Norma técnica complementar à EN 81-20. Contém fórmulas de cálculo, especificações de componentes e procedimentos de ensaio.",
+      "scope": [
+        "Cálculos de resistência estrutural",
+        "Especificações de cabos de tração",
+        "Especificações de correntes",
+        "Amortecedores (buffers)",
+        "Sistemas de travagem",
+        "Ensaios de componentes"
+      ],
+      "source": {
+        "file": "en-standards-lift-regulations.json",
+        "sections_count": 0,
+        "key_requirements": 0
+      },
+      "sections": [],
+      "key_requirements": [],
+      "applicability": {}
+    },
+    {
+      "id": "NP_EN_81_70_2022",
+      "type": "norma_europeia",
+      "number": "NP EN 81-70:2022",
+      "title": "NP EN 81-70:2022 - Acessibilidade aos elevadores para pessoas, incluindo pessoas com deficiência",
+      "status": "vigente_obrigatória",
+      "summary": "Define requisitos para tornar elevadores acessíveis a todas as pessoas, incluindo utilizadores de cadeiras de rodas, pessoas com deficiência visual ou auditiva.",
+      "scope": [
+        "Dimensões mínimas de cabina",
+        "Largura de portas",
+        "Altura e posicionamento de botões",
+        "Indicações visuais e sonoras",
+        "Corrimãos",
+        "Espelhos (para manobra de cadeiras de rodas)"
+      ],
+      "source": {
+        "file": "en-standards-lift-regulations.json",
+        "sections_count": 0,
+        "key_requirements": 3
+      },
+      "sections": [],
+      "key_requirements": [
+        {
+          "category": "Dimensões de Cabina",
+          "requirements": [
+            "Largura mínima: 1100 mm (para cadeira de rodas)",
+            "Profundidade mínima: 1400 mm",
+            "Porta com largura livre ≥ 900 mm"
+          ]
+        },
+        {
+          "category": "Comandos e Indicações",
+          "requirements": [
+            "Botões com relevo tátil e Braille",
+            "Altura dos botões: 900-1100 mm do piso",
+            "Feedback visual e sonoro nas chamadas",
+            "Indicadores de andar com voz sintetizada"
+          ]
+        },
+        {
+          "category": "Segurança",
+          "requirements": [
+            "Corrimão em 3 lados da cabina",
+            "Espelho na parede oposta à porta (para visão traseira)",
+            "Tempo de abertura de porta prolongado",
+            "Deteção de obstáculos sensível"
+          ]
+        }
+      ],
+      "applicability": {}
+    },
+    {
+      "id": "NP_EN_81_71_2022",
+      "type": "norma_europeia",
+      "number": "NP EN 81-71:2022",
+      "title": "NP EN 81-71:2022 - Elevadores resistentes ao vandalismo",
+      "status": "vigente_opcional",
+      "summary": "Especifica requisitos adicionais para elevadores instalados em locais com risco de vandalismo (escolas, estações, edifícios públicos).",
+      "scope": [
+        "Painéis reforçados",
+        "Proteção de botões",
+        "Vidros antivandalismo",
+        "Sistemas de vigilância"
+      ],
+      "source": {
+        "file": "en-standards-lift-regulations.json",
+        "sections_count": 0,
+        "key_requirements": 0
+      },
+      "sections": [],
+      "key_requirements": [],
+      "applicability": {}
+    },
+    {
+      "id": "NP_EN_81_72_2020",
+      "type": "norma_europeia",
+      "number": "NP EN 81-72:2020",
+      "title": "NP EN 81-72:2020 - Elevadores de bombeiros",
+      "status": "vigente_obrigatória_condicional",
+      "summary": "Define requisitos para elevadores que podem ser usados por bombeiros em caso de incêndio.",
+      "scope": [
+        "Controlo prioritário para bombeiros",
+        "Resistência ao fogo da caixa",
+        "Alimentação elétrica de emergência",
+        "Sinalização específica",
+        "Proteção contra água"
+      ],
+      "source": {
+        "file": "en-standards-lift-regulations.json",
+        "sections_count": 0,
+        "key_requirements": 6
+      },
+      "sections": [],
+      "key_requirements": [
+        "Controlo prioritário ativado por chave bombeiros",
+        "Caixa com resistência ao fogo (REI 60 ou superior)",
+        "Casa de máquinas isolada do fogo",
+        "Alimentação elétrica redundante (gerador de emergência)",
+        "Proteção contra entrada de água (extinção de incêndios)",
+        "Sinalização: triângulo vermelho com símbolo bombeiro"
+      ],
+      "applicability": {}
+    },
+    {
+      "id": "NP_EN_81_73_2020",
+      "type": "norma_europeia",
+      "number": "NP EN 81-73:2020",
+      "title": "NP EN 81-73:2020 - Comportamento dos elevadores em caso de incêndio",
+      "status": "vigente_obrigatória",
+      "summary": "Define o comportamento que um elevador deve ter quando detetado um incêndio no edifício.",
+      "scope": [
+        "Deteção de alarme de incêndio",
+        "Procedimento de evacuação automática",
+        "Deslocação para piso de resgate",
+        "Bloqueio de chamadas normais",
+        "Portas abertas ou fechadas"
+      ],
+      "source": {
+        "file": "en-standards-lift-regulations.json",
+        "sections_count": 0,
+        "key_requirements": 0
+      },
+      "sections": [],
+      "key_requirements": [],
+      "applicability": {}
+    },
+    {
+      "id": "NP_EN_81_77_2020",
+      "type": "norma_europeia",
+      "number": "NP EN 81-77:2020",
+      "title": "NP EN 81-77:2020 - Elevadores com percurso inclinado",
+      "status": "vigente_opcional",
+      "summary": "Requisitos específicos para elevadores instalados em caixas não verticais (inclinadas), comuns em terrenos montanhosos.",
+      "scope": [
+        "Ângulo de inclinação permitido",
+        "Sistemas de segurança adaptados",
+        "Trilhos e guias inclinadas",
+        "Portas em planos inclinados"
+      ],
+      "source": {
+        "file": "en-standards-lift-regulations.json",
+        "sections_count": 0,
+        "key_requirements": 0
+      },
+      "sections": [],
+      "key_requirements": [],
+      "applicability": {}
+    },
+    {
+      "id": "NP_EN_81_80_2020",
+      "type": "norma_europeia",
+      "number": "NP EN 81-80:2020",
+      "title": "NP EN 81-80:2020 - Regras de segurança para a melhoria de elevadores de passageiros e de carga existentes",
+      "status": "vigente_obrigatória_modernização",
+      "summary": "Norma essencial para modernização de elevadores antigos. Define avaliação de riscos e medidas de segurança obrigatórias.",
+      "scope": [
+        "Avaliação de riscos de elevadores antigos",
+        "Lista de perigos a eliminar",
+        "Medidas de segurança prioritárias",
+        "Alternativas técnicas para edifícios históricos",
+        "Prazos de conformidade"
+      ],
+      "source": {
+        "file": "en-standards-lift-regulations.json",
+        "sections_count": 0,
+        "key_requirements": 0
+      },
+      "sections": [],
+      "key_requirements": [],
+      "applicability": {}
+    },
+    {
+      "id": "DL_103_2008",
+      "type": "norma_europeia",
+      "number": "103/2008",
+      "title": "Decreto-Lei n.º 103/2008 - Transposição da Diretiva Ascensores para Portugal",
+      "status": "vigente",
+      "summary": "Legislação nacional que transpõe a Diretiva Europeia 95/16/CE (agora 2014/33/UE) sobre elevadores. Estabelece requisitos legais, procedimentos de certificação e inspeções obrigatórias.",
+      "scope": [
+        "Requisitos legais para instalação de elevadores novos",
+        "Procedimentos de certificação CE",
+        "Inspeções periódicas obrigatórias",
+        "Entidades certificadoras",
+        "Elevadores existentes - obrigações de modernização"
+      ],
+      "source": {
+        "file": "en-standards-lift-regulations.json",
+        "sections_count": 0,
+        "key_requirements": 0
+      },
+      "sections": [],
+      "key_requirements": [],
+      "applicability": {}
     }
   ],
   "violation_codes": [

@@ -752,7 +752,7 @@ class EnhancedLiftModal {
             for (let i = 2; i <= count; i++) {
                 const liftRow = `
                     <div class="row mb-3">
-                        <div class="col-md-5">
+                        <div class="col-md-8">
                             <div class="form-group">
                                 <label for="additionalMunicipalNumber${i}">
                                     <i class="fas fa-elevator text-info"></i> 
@@ -764,25 +764,9 @@ class EnhancedLiftModal {
                                        class="form-control" 
                                        required
                                        placeholder="Муніципальний номер ліфта ${i}">
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label>&nbsp;</label>
-                                <div class="d-block">
-                                    <button type="button" class="btn btn-outline-primary btn-sm btn-block" 
-                                            onclick="window.enhancedLiftModal.generateQRCode('additionalMunicipalNumber${i}', ${i})">
-                                        <i class="fas fa-qrcode"></i> Генерувати QR-код
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label>&nbsp;</label>
-                                <div id="qrPreview${i}" class="qr-preview-mini d-none">
-                                    <!-- QR код буде тут -->
-                                </div>
+                                <small class="form-text text-muted">
+                                    <i class="fas fa-info-circle"></i> QR-код генерується автоматично
+                                </small>
                             </div>
                         </div>
                     </div>

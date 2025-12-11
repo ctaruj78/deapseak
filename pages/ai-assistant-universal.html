@@ -1292,6 +1292,10 @@
             })
             .then(data => {
                 console.log('📊 Analysis response:', data);
+                console.log('📋 Success:', data.success);
+                console.log('📋 Analysis:', data.analysis);
+                console.log('📋 Violations count:', data.analysis?.violations?.length);
+                
                 if (data.success && data.analysis) {
                     displayAnalysisResults(data.analysis);
                 } else {
@@ -1305,6 +1309,10 @@
         }
 
         function displayAnalysisResults(result) {
+            console.log('🎨 displayAnalysisResults called with:', result);
+            console.log('📋 Violations:', result.violations);
+            console.log('📊 Stats:', result.stats);
+            
             const resultsContent = document.getElementById('analysisResultsContent');
             
             const metadata = result.metadata || {};
@@ -1365,7 +1373,11 @@
                 ` : ''}
             `;
             
+            console.log('🔍 Checking violations:', result.violations?.length);
+            
             if (result.violations && result.violations.length > 0) {
+                console.log('✅ Displaying', result.violations.length, 'violations');
+                
                 html += `
                     <div class="d-flex justify-content-between align-items-center mt-3 mb-3">
                         <h5><i class="fas fa-list"></i> Виявлені порушення (${result.violations.length})</h5>
@@ -1375,7 +1387,9 @@
                     </div>
                 `;
                 
-                result.violations.forEach(v => {
+                result.violations.forEach((v, index) => {
+                    console.log(`  ${index + 1}. ${v.classification} - Art. ${v.article}`);
+                    
                     const severityClass = v.classification === 'C1' ? 'critical' : 
                                          v.classification === 'C2' ? 'medium' : 'low';
                     const badgeClass = v.classification === 'C1' ? 'danger' : 

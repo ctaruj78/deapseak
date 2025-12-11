@@ -192,6 +192,7 @@
                 <!-- Sidebar Menu -->
                 <nav class="mt-2">
                     <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                        <!-- Dashboard -->
                         <li class="nav-item">
                             <a href="/pages/admin/admin-dashboard.html" class="nav-link">
                                 <i class="nav-icon fas fa-tachometer-alt"></i>
@@ -199,7 +200,7 @@
                             </a>
                         </li>
 
-                        <!-- QR System Menu -->
+                        <!-- QR System -->
                         <li class="nav-item">
                             <a href="#" class="nav-link">
                                 <i class="nav-icon fas fa-qrcode"></i>
@@ -210,19 +211,19 @@
                             </a>
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
-                                    <a href="qr-management.html" class="nav-link">
+                                    <a href="/pages/admin/qr-management.html" class="nav-link">
                                         <i class="fas fa-cog nav-icon"></i>
                                         <p>Керування QR-кодами</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="qr-analytics.html" class="nav-link">
+                                    <a href="/pages/admin/qr-analytics.html" class="nav-link">
                                         <i class="fas fa-chart-line nav-icon"></i>
                                         <p>Аналітика QR-кодів</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="qr-history.html" class="nav-link">
+                                    <a href="/pages/admin/qr-history.html" class="nav-link">
                                         <i class="fas fa-history nav-icon"></i>
                                         <p>Історія сканувань</p>
                                     </a>
@@ -230,55 +231,104 @@
                             </ul>
                         </li>
 
-                        <!-- Lifts Menu -->
+                        <!-- Lifts -->
                         <li class="nav-item">
-                            <a href="lifts.html" class="nav-link">
+                            <a href="/pages/admin/lifts.html" class="nav-link">
                                 <i class="nav-icon fas fa-elevator"></i>
-                                <p>Управління ліфтами</p>
+                                <p>Ліфти</p>
                             </a>
                         </li>
 
-                        <!-- Users Menu -->
+                        <!-- Users -->
                         <li class="nav-item">
-                            <a href="users.html" class="nav-link">
+                            <a href="/pages/admin/users.html" class="nav-link">
                                 <i class="nav-icon fas fa-users"></i>
                                 <p>Користувачі</p>
                             </a>
                         </li>
 
-                        <!-- Requests Menu -->
+                        <!-- Requests -->
                         <li class="nav-item">
-                            <a href="requests.html" class="nav-link">
+                            <a href="/pages/admin/requests.html" class="nav-link">
                                 <i class="nav-icon fas fa-clipboard-list"></i>
                                 <p>Заявки</p>
                             </a>
                         </li>
 
-                        <!-- Analytics Menu -->
+                        <!-- Documents -->
                         <li class="nav-item">
-                            <a href="unified-analytics.html" class="nav-link">
-                                <i class="nav-icon fas fa-chart-line"></i>
-                                <p>Аналітика</p>
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-file-alt"></i>
+                                <p>
+                                    Documentos
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
                             </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="/pages/admin/invoice-template.html" class="nav-link">
+                                        <i class="fas fa-file-invoice nav-icon"></i>
+                                        <p>Orçamentos (Criar)</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/pages/admin/orcamentos-list.html" class="nav-link">
+                                        <i class="fas fa-list nav-icon"></i>
+                                        <p>Orçamentos (Список)</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/pages/admin/inspections.html" class="nav-link">
+                                        <i class="fas fa-clipboard-check nav-icon"></i>
+                                        <p>Інспекції</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/pages/admin/reports.html" class="nav-link">
+                                        <i class="fas fa-chart-bar nav-icon"></i>
+                                        <p>Звіти</p>
+                                    </a>
+                                </li>
+                            </ul>
                         </li>
 
-                        <!-- AI Assistant Menu -->
-                        <li class="nav-item menu-open">
-                            <a href="/pages/ai-assistant-universal.html" class="nav-link active">
+                        <!-- Analytics -->
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-chart-line"></i>
+                                <p>
+                                    Аналітика
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="/pages/admin/unified-analytics.html" class="nav-link">
+                                        <i class="fas fa-chart-area nav-icon"></i>
+                                        <p>Unified Analytics</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/pages/admin/predictive-maintenance.html" class="nav-link">
+                                        <i class="fas fa-brain nav-icon"></i>
+                                        <p>Predictive Maintenance</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- AI Assistant (Active) -->
+                        <li class="nav-item">
+                            <a href="/pages/admin/ai-assistant-full.html" class="nav-link active">
                                 <i class="nav-icon fas fa-robot"></i>
                                 <p>AI Асистент</p>
                             </a>
                         </li>
 
-                        <!-- Settings Menu -->
+                        <!-- Settings -->
                         <li class="nav-item">
-                            <a href="settings.html" class="nav-link">
+                            <a href="/pages/admin/settings.html" class="nav-link">
                                 <i class="nav-icon fas fa-cogs"></i>
-                                <p>Налаштування</p>
-                            </a>
-                        </li>
-                            <a href="settings.html" class="nav-link">
-                                <i class="nav-icon fas fa-cog"></i>
                                 <p>Налаштування</p>
                             </a>
                         </li>
@@ -561,11 +611,37 @@
                                                     <strong>АБО</strong>
                                                 </div>
                                                 
-                                                <textarea id="manualReport" class="form-control mt-3" rows="6" placeholder="Вставте текст звіту інспекції вручну...&#10;&#10;Приклад:&#10;C1 - ART. 78 - Existem peças salientes das máquinas...&#10;C2 - ART. 45 - A folga entre as soleiras...&#10;C3 - ART. 20 - Falta sinalização adequada..."></textarea>
+                                                <div class="mt-3">
+                                                    <label for="manualReport">Вставте текст звіту інспекції вручну:</label>
+                                                    <small class="form-text text-muted mb-2">
+                                                        <strong>Приклад:</strong><br>
+                                                        C1 - ART. 78 - Existem peças salientes das máquinas...<br>
+                                                        C2 - ART. 45 - A folga entre as soleiras...<br>
+                                                        C3 - ART. 20 - Falta sinalização adequada...
+                                                    </small>
+                                                    <textarea id="manualReport" class="form-control" rows="8" placeholder="Вставте або введіть текст звіту тут..."></textarea>
+                                                </div>
                                                 
                                                 <button class="btn btn-primary btn-lg btn-block mt-3" id="analyzeReportBtn" onclick="analyzeReport()">
                                                     <i class="fas fa-search"></i> Аналізувати звіт
                                                 </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Витягнутий текст зі звіту -->
+                                        <div class="card card-outline card-info" id="extractedTextCard" style="display: none;">
+                                            <div class="card-header">
+                                                <h3 class="card-title">
+                                                    <i class="fas fa-file-alt"></i> Витягнутий текст зі звіту
+                                                </h3>
+                                                <div class="card-tools">
+                                                    <button type="button" class="btn btn-tool" onclick="copyExtractedText()">
+                                                        <i class="fas fa-copy"></i> Копіювати
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="card-body">
+                                                <pre id="extractedTextContent" style="white-space: pre-wrap; word-wrap: break-word; max-height: 400px; overflow-y: auto; background: #f4f6f9; padding: 15px; border-radius: 5px; font-family: 'Courier New', monospace; font-size: 13px;"></pre>
                                             </div>
                                         </div>
                                         
@@ -1071,6 +1147,12 @@
             resultsContent.innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"></div><p class="mt-2">Аналізую звіт...</p></div>';
             resultsCard.style.display = 'block';
             
+            // Показати введений вручну текст
+            if (manualText && !currentAnalysisFile) {
+                document.getElementById('extractedTextContent').textContent = manualText;
+                document.getElementById('extractedTextCard').style.display = 'block';
+            }
+            
             const formData = new FormData();
             if (currentAnalysisFile) {
                 formData.append('pdfReport', currentAnalysisFile);
@@ -1099,6 +1181,13 @@
             .then(data => {
                 console.log('📊 Analysis response:', data);
                 if (data.success && data.analysis) {
+                    // Показати витягнутий текст якщо є
+                    if (data.extractedText || data.analysis.rawText) {
+                        const extractedText = data.extractedText || data.analysis.rawText;
+                        document.getElementById('extractedTextContent').textContent = extractedText;
+                        document.getElementById('extractedTextCard').style.display = 'block';
+                    }
+                    
                     displayAnalysisResults(data.analysis);
                 } else {
                     resultsContent.innerHTML = `<div class="alert alert-danger">❌ Помилка: ${data.error || data.message || 'Не вдалося проаналізувати звіт'}</div>`;
@@ -1274,6 +1363,27 @@
                 }
             });
         });
+        
+        // Функція копіювання витягнутого тексту
+        function copyExtractedText() {
+            const textContent = document.getElementById('extractedTextContent').textContent;
+            navigator.clipboard.writeText(textContent).then(() => {
+                // Показати підтвердження
+                const btn = event.target.closest('button');
+                const icon = btn.querySelector('i');
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i> Скопійовано!';
+                btn.classList.add('btn-success');
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.classList.remove('btn-success');
+                }, 2000);
+            }).catch(err => {
+                console.error('Помилка копіювання:', err);
+                alert('Не вдалося скопіювати текст');
+            });
+        }
     </script>
 </body>
 </html>

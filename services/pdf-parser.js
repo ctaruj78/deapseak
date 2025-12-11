@@ -499,6 +499,179 @@ function extractMetadata(text) {
 }
 
 /**
+ * 🔥 НОВА ФУНКЦІЯ: Аналіз звіту з фільтрацією службових текстів
+ * Використовує ту саму логіку що й unified-server.js analyzeInspectionReport()
+ */
+function analyzeInspectionReportFromText(reportText) {
+    console.log('🔍 Аналіз звіту з НОВОЮ логікою, довжина тексту:', reportText.length);
+    
+    const violations = [];
+    const lines = reportText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        
+        // Шукаємо явні мітки C1, C2, C3 на початку рядка
+        const clauseMatch = line.match(/^(C[123])\s+/i);
+        
+        if (clauseMatch) {
+            const severity = clauseMatch[1].toUpperCase();
+            
+            // Перевіряємо поточний рядок І наступний для пошуку номера статті
+            const nextLine = i + 1 < lines.length ? lines[i + 1] : '';
+            const combinedText = line + ' ' + nextLine;
+            
+            // Витягуємо номер статті
+            const articleMatch = combinedText.match(/Art[ºo]?\.\s*(\d+)\s*[ºo°\.]*\s*(\d*)/i);
+            
+            let article = null;
+            
+            if (articleMatch) {
+                article = articleMatch[2] 
+                    ? `${articleMatch[1]}.${articleMatch[2]}`
+                    : `${articleMatch[1]}`;
+            }
+            
+            // ФІЛЬТР: пропускаємо загальні пояснення та службові тексти
+            const skipPhrases = [
+                'foram detetadas cláusulas',
+                'foram detectadas cláusulas',
+                'correspondem a situações',
+                'regularizar no prazo',
+                'elevador reprovado',
+                'estas cláusulas',
+                'caso tenham sido'
+            ];
+            
+            const isGenericText = skipPhrases.some(phrase => combinedText.toLowerCase().includes(phrase));
+            
+            if (isGenericText) {
+                console.log(`⚠️ Пропущено (загальний текст): ${combinedText.substring(0, 80)}...`);
+                continue;
+            }
+            
+            // Витягуємо опис порушення
+            let violation = nextLine || line;
+            const violationMatch = (nextLine || line).match(/(?:Porушення:|–)\s*(.+)/i);
+            if (violationMatch) {
+                violation = violationMatch[1].trim();
+            }
+            
+            // Якщо немає явного номера статті - визначаємо за змістом
+            if (!article) {
+                article = detectArticleByContentLocal(violation);
+                if (article) {
+                    console.log(`🎯 Артикул визначено за змістом: ${article}`);
+                } else {
+                    console.log(`⚠️ Пропущено (немає номера статті): ${line.substring(0, 80)}...`);
+                    continue;
+                }
+            }
+            
+            // Перевіряємо дедуплікацію
+            const isDuplicate = violations.some(v => 
+                v.article === article && v.classification === severity
+            );
+            
+            if (isDuplicate) {
+                console.log(`⚠️ Пропущено (дублікат): ${article} - ${severity}`);
+                continue;
+            }
+            
+            violations.push({
+                classification: severity,
+                article: article,
+                description: violation,
+                category: determineCategoryFromTextLocal(violation)
+            });
+            
+            console.log(`✅ Додано порушення: ${severity} - Art. ${article}`);
+        }
+    }
+    
+    console.log(`📊 Знайдено порушень: ${violations.length}`);
+    return { violations };
+}
+
+/**
+ * Визначення категорії за змістом тексту
+ */
+function determineCategoryFromTextLocal(text) {
+    const textLower = text.toLowerCase();
+    
+    if (textLower.includes('escada') || textLower.includes('acesso') || textLower.includes('alçapão')) {
+        return 'Acesso e Circulação';
+    }
+    if (textLower.includes('fim de curso') || textLower.includes('dispositivo')) {
+        return 'Dispositivos de Segurança';
+    }
+    if (textLower.includes('peças salientes') || textLower.includes('resguard') || textLower.includes('proteção')) {
+        return 'Proteções e Resguardos';
+    }
+    if (textLower.includes('porta') || textLower.includes('bloqueio')) {
+        return 'Segurança de Portas';
+    }
+    if (textLower.includes('travagem') || textLower.includes('travão')) {
+        return 'Sistema de Travagem';
+    }
+    if (textLower.includes('iluminação') || textLower.includes('luz')) {
+        return 'Iluminação';
+    }
+    if (textLower.includes('alarme') || textLower.includes('comunicação')) {
+        return 'Sistema de Alarme';
+    }
+    if (textLower.includes('cabo') || textLower.includes('suspensão')) {
+        return 'Cabos e Suspensão';
+    }
+    
+    return 'Geral';
+}
+
+/**
+ * Визначення артикулу за змістом (локальна копія)
+ */
+function detectArticleByContentLocal(text) {
+    const textLower = text.toLowerCase();
+    
+    const articleDatabase = {
+        '22': ['escada de acesso', 'acesso à casa das máquinas', 'alçapão', 'contrabalançado', 'corrimão', 'pegas'],
+        '74': ['fim de curso', 'dispositivo de segurança', 'contrapeso', 'pára-choques'],
+        '85': ['peças salientes', 'máquinas', 'volantes', 'engrenagens', 'correias', 'resguardadas'],
+        '6': ['porta de patamar', 'bloqueio', 'fechadura', 'sensor de porta'],
+        '12': ['travão', 'travagem', 'freio', 'sistema de travagem'],
+        '35': ['iluminação', 'luz de emergência'],
+        '45': ['pára-quedas', 'paraquedas', 'limitador de velocidade'],
+        '50': ['cabos', 'cabo de tração', 'desgaste', 'fios partidos', 'suspensão'],
+        '18': ['alarme', 'comunicação', 'telefone de emergência'],
+        '25': ['documentação', 'manual', 'certificado', 'livro de registo'],
+        '8': ['ucm', 'unidade de comando', 'quadro elétrico'],
+        '15': ['sinalização', 'placa', 'identificação', 'carga máxima'],
+        '60': ['acessibilidade', 'braille', 'deficientes']
+    };
+    
+    const scores = {};
+    
+    for (const [article, keywords] of Object.entries(articleDatabase)) {
+        let score = 0;
+        for (const keyword of keywords) {
+            if (textLower.includes(keyword)) {
+                score += keyword.split(' ').length;
+            }
+        }
+        if (score > 0) {
+            scores[article] = score;
+        }
+    }
+    
+    if (Object.keys(scores).length > 0) {
+        const bestMatch = Object.entries(scores).sort((a, b) => b[1] - a[1])[0];
+        return bestMatch[0];
+    }
+    
+    return null;
+}
+
+/**
  * Витягує порушення з тексту (5 форматів!) + повна інформація
  */
 function extractViolations(text) {
@@ -1042,7 +1215,11 @@ async function parsePDF(filePath) {
         // Витягування даних
         const metadata = extractMetadata(text);
         console.log('🔍 Extracted metadata:', JSON.stringify(metadata, null, 2));
-        const violations = extractViolations(text);
+        
+        // 🔥 ВИКОРИСТОВУЄМО НОВУ ЛОГІКУ з фільтрацією службових текстів
+        const analysisResult = analyzeInspectionReportFromText(text);
+        const violations = analysisResult.violations;
+        
         const conclusion = extractConclusion(text);
         const stats = getViolationsStats(violations);
         

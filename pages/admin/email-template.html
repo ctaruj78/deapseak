@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Email шаблони - Адмін панель</title>
+    <title>Modelos de Email - Painel Admin</title>
     
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
@@ -45,17 +45,17 @@
                     <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="admin-dashboard.html" class="nav-link">Головна</a>
+                    <a href="admin-dashboard.html" class="nav-link">Início</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="email-template.html" class="nav-link">Email шаблони</a>
+                    <a href="email-template.html" class="nav-link active">Modelos de Email</a>
                 </li>
             </ul>
 
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
                     <a class="nav-link" href="../auth/login.html" role="button">
-                        <i class="fas fa-sign-out-alt"></i> Вийти
+                        <i class="fas fa-sign-out-alt"></i> Sair
                     </a>
                 </li>
             </ul>
@@ -71,61 +71,185 @@
 
             <!-- Sidebar -->
             <div class="sidebar">
-                <nav class="mt-2">
-                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-                        <li class="nav-item">
-                            <a href="admin-dashboard.html" class="nav-link">
-                                <i class="nav-icon fas fa-tachometer-alt"></i>
-                                <p>Дашборд</p>
-                            </a>
-                        </li>
+                <!-- CANONICAL ADMIN SIDEBAR - Copy this to all admin pages -->
+<nav class="mt-2">
+    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+        <!-- Dashboard -->
+        <li class="nav-item">
+            <a href="/pages/admin/admin-dashboard.html" class="nav-link">
+                <i class="nav-icon fas fa-tachometer-alt"></i>
+                <p>Дашборд</p>
+            </a>
+        </li>
 
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="nav-icon fas fa-envelope"></i>
-                                <p>
-                                    Повідомлення
-                                    <i class="right fas fa-angle-left"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <a href="email-template.html" class="nav-link active">
-                                        <i class="fas fa-file-alt nav-icon"></i>
-                                        <p>Email шаблони</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="notifications.html" class="nav-link">
-                                        <i class="fas fa-bell nav-icon"></i>
-                                        <p>Сповіщення</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
+        <!-- QR System -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-qrcode"></i>
+                <p>
+                    QR Система
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/admin/qr-management.html" class="nav-link">
+                        <i class="fas fa-cog nav-icon"></i>
+                        <p>Керування QR-кодами</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/qr-analytics.html" class="nav-link">
+                        <i class="fas fa-chart-line nav-icon"></i>
+                        <p>Аналітика QR-кодів</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/qr-history.html" class="nav-link">
+                        <i class="fas fa-history nav-icon"></i>
+                        <p>Історія сканувань</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
 
-                        <li class="nav-item">
-                            <a href="users.html" class="nav-link">
-                                <i class="nav-icon fas fa-users"></i>
-                                <p>Користувачі</p>
-                            </a>
-                        </li>
+        <!-- Lifts -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-elevator"></i>
+                <p>
+                    Ліфти
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/admin/lifts.html" class="nav-link">
+                        <i class="fas fa-list nav-icon"></i>
+                        <p>Управління ліфтами</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/requests.html" class="nav-link">
+                        <i class="fas fa-clipboard-list nav-icon"></i>
+                        <p>Заявки</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/maps.html" class="nav-link">
+                        <i class="fas fa-map-marked-alt nav-icon"></i>
+                        <p>Мапа ліфтів</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
 
-                        <li class="nav-item">
-                            <a href="lifts.html" class="nav-link">
-                                <i class="nav-icon fas fa-elevator"></i>
-                                <p>Ліфти</p>
-                            </a>
-                        </li>
+        <!-- Users -->
+        <li class="nav-item">
+            <a href="/pages/admin/users.html" class="nav-link">
+                <i class="nav-icon fas fa-users"></i>
+                <p>Користувачі</p>
+            </a>
+        </li>
 
-                        <li class="nav-item">
-                            <a href="settings.html" class="nav-link">
-                                <i class="nav-icon fas fa-cog"></i>
-                                <p>Налаштування</p>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
+        <!-- Documents -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-file-alt"></i>
+                <p>
+                    Документи
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/admin/invoice-template.html" class="nav-link">
+                        <i class="fas fa-file-invoice nav-icon"></i>
+                        <p>Orçamentos (Створити)</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/orcamentos-list.html" class="nav-link">
+                        <i class="fas fa-list nav-icon"></i>
+                        <p>Orçamentos (Список)</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/reports.html" class="nav-link">
+                        <i class="fas fa-chart-bar nav-icon"></i>
+                        <p>Звіти</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/email-template.html" class="nav-link active">
+                        <i class="fas fa-envelope nav-icon"></i>
+                        <p>Email шаблони</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Analytics -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-chart-line"></i>
+                <p>
+                    Аналітика
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/admin/unified-analytics.html" class="nav-link">
+                        <i class="fas fa-chart-area nav-icon"></i>
+                        <p>Unified Analytics</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/predictive-maintenance.html" class="nav-link">
+                        <i class="fas fa-brain nav-icon"></i>
+                        <p>Predictive Maintenance</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- AI Assistant -->
+        <li class="nav-item">
+            <a href="/pages/admin/ai-assistant-full.html" class="nav-link">
+                <i class="nav-icon fas fa-robot"></i>
+                <p>AI Асистент</p>
+            </a>
+        </li>
+
+        <!-- Support -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-headset"></i>
+                <p>
+                    Підтримка
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/admin/notifications.html" class="nav-link">
+                        <i class="fas fa-bell nav-icon"></i>
+                        <p>Сповіщення</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Settings -->
+        <li class="nav-item">
+            <a href="/pages/admin/settings.html" class="nav-link">
+                <i class="nav-icon fas fa-cogs"></i>
+                <p>Налаштування</p>
+            </a>
+        </li>
+    </ul>
+</nav>
             </div>
         </aside>
 
@@ -136,12 +260,12 @@
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1 class="m-0">Email шаблони</h1>
+                            <h1 class="m-0">Modelos de Email</h1>
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="admin-dashboard.html">Головна</a></li>
-                                <li class="breadcrumb-item active">Email шаблони</li>
+                                <li class="breadcrumb-item"><a href="admin-dashboard.html">Início</a></li>
+                                <li class="breadcrumb-item active">Modelos de Email</li>
                             </ol>
                         </div>
                     </div>
@@ -156,10 +280,10 @@
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h3 class="card-title">Створити новий шаблон</h3>
+                                    <h3 class="card-title">Criar novo modelo</h3>
                                     <div class="card-tools">
                                         <button class="btn btn-primary btn-sm" id="createTemplateBtn">
-                                            <i class="fas fa-plus"></i> Новий шаблон
+                                            <i class="fas fa-plus"></i> Novo modelo
                                         </button>
                                     </div>
                                 </div>
@@ -174,34 +298,34 @@
                             <div class="template-card card">
                                 <div class="card-header bg-primary text-white">
                                     <h4 class="card-title mb-0">
-                                        <i class="fas fa-clipboard-list mr-2"></i> Сповіщення про заявку
+                                        <i class="fas fa-clipboard-list mr-2"></i> Notificação de Pedido
                                     </h4>
                                 </div>
                                 <div class="card-body">
-                                    <p><strong>Призначення:</strong> Повідомлення про нову заявку техніку</p>
-                                    <p><strong>Змінні:</strong> 
+                                    <p><strong>Objetivo:</strong> Notificação de novo pedido ao técnico</p>
+                                    <p><strong>Variáveis:</strong> 
                                         <span class="variable-tag">{{technician_name}}</span>
                                         <span class="variable-tag">{{assignment_id}}</span>
                                         <span class="variable-tag">{{location}}</span>
                                         <span class="variable-tag">{{priority}}</span>
                                     </p>
                                     <div class="template-preview">
-                                        <strong>Шановний {{technician_name}}!</strong><br><br>
-                                        Вам призначено нову заявку #{{assignment_id}}.<br>
-                                        Локація: {{location}}<br>
-                                        Пріоритет: {{priority}}<br><br>
-                                        З повагою,<br>
-                                        Команда LiftMaster Pro
+                                        <strong>Estimado {{technician_name}}!</strong><br><br>
+                                        Foi-lhe atribuído um novo pedido #{{assignment_id}}.<br>
+                                        Local: {{location}}<br>
+                                        Prioridade: {{priority}}<br><br>
+                                        Cumprimentos,<br>
+                                        Equipa LiftMaster Pro
                                     </div>
                                     <div class="mt-3">
                                         <button class="btn btn-warning btn-sm" onclick="editTemplate('assignment')">
-                                            <i class="fas fa-edit"></i> Редагувати
+                                            <i class="fas fa-edit"></i> Editar
                                         </button>
                                         <button class="btn btn-info btn-sm" onclick="previewTemplate('assignment')">
-                                            <i class="fas fa-eye"></i> Попередній перегляд
+                                            <i class="fas fa-eye"></i> Pré-visualizar
                                         </button>
                                         <button class="btn btn-success btn-sm" onclick="testSendTemplate('assignment')">
-                                            <i class="fas fa-paper-plane"></i> Тестове відправлення
+                                            <i class="fas fa-paper-plane"></i> Envio de Teste
                                         </button>
                                     </div>
                                 </div>
@@ -213,34 +337,34 @@
                             <div class="template-card card">
                                 <div class="card-header bg-warning text-dark">
                                     <h4 class="card-title mb-0">
-                                        <i class="fas fa-tools mr-2"></i> Нагадування про ТО
+                                        <i class="fas fa-tools mr-2"></i> Lembrete de Manutenção
                                     </h4>
                                 </div>
                                 <div class="card-body">
-                                    <p><strong>Призначення:</strong> Нагадування про планове технічне обслуговування</p>
-                                    <p><strong>Змінні:</strong> 
+                                    <p><strong>Objetivo:</strong> Lembrete de manutenção programada</p>
+                                    <p><strong>Variáveis:</strong> 
                                         <span class="variable-tag">{{client_name}}</span>
                                         <span class="variable-tag">{{lift_location}}</span>
                                         <span class="variable-tag">{{maintenance_date}}</span>
                                     </p>
                                     <div class="template-preview">
-                                        <strong>Шановний {{client_name}}!</strong><br><br>
-                                        Нагадуємо про планове ТО ліфта:<br>
-                                        Адреса: {{lift_location}}<br>
-                                        Дата: {{maintenance_date}}<br><br>
-                                        Будь ласка, забезпечте доступ до ліфта.<br><br>
-                                        З повагою,<br>
-                                        Служба технічного обслуговування
+                                        <strong>Estimado {{client_name}}!</strong><br><br>
+                                        Lembramos a manutenção programada do elevador:<br>
+                                        Endereço: {{lift_location}}<br>
+                                        Data: {{maintenance_date}}<br><br>
+                                        Por favor, garanta o acesso ao elevador.<br><br>
+                                        Cumprimentos,<br>
+                                        Serviço de Manutenção
                                     </div>
                                     <div class="mt-3">
                                         <button class="btn btn-warning btn-sm" onclick="editTemplate('maintenance')">
-                                            <i class="fas fa-edit"></i> Редагувати
+                                            <i class="fas fa-edit"></i> Editar
                                         </button>
                                         <button class="btn btn-info btn-sm" onclick="previewTemplate('maintenance')">
-                                            <i class="fas fa-eye"></i> Попередній перегляд
+                                            <i class="fas fa-eye"></i> Pré-visualizar
                                         </button>
                                         <button class="btn btn-success btn-sm" onclick="testSendTemplate('maintenance')">
-                                            <i class="fas fa-paper-plane"></i> Тестове відправлення
+                                            <i class="fas fa-paper-plane"></i> Envio de Teste
                                         </button>
                                     </div>
                                 </div>
@@ -252,36 +376,36 @@
                             <div class="template-card card">
                                 <div class="card-header bg-success text-white">
                                     <h4 class="card-title mb-0">
-                                        <i class="fas fa-check-circle mr-2"></i> Завершення роботи
+                                        <i class="fas fa-check-circle mr-2"></i> Conclusão do Trabalho
                                     </h4>
                                 </div>
                                 <div class="card-body">
-                                    <p><strong>Призначення:</strong> Повідомлення про завершення технічних робіт</p>
-                                    <p><strong>Змінні:</strong> 
+                                    <p><strong>Objetivo:</strong> Notificação de conclusão de trabalhos técnicos</p>
+                                    <p><strong>Variáveis:</strong> 
                                         <span class="variable-tag">{{client_name}}</span>
                                         <span class="variable-tag">{{work_type}}</span>
                                         <span class="variable-tag">{{completion_date}}</span>
                                         <span class="variable-tag">{{technician_name}}</span>
                                     </p>
                                     <div class="template-preview">
-                                        <strong>Шановний {{client_name}}!</strong><br><br>
-                                        Повідомляємо про завершення робіт:<br>
-                                        Тип робіт: {{work_type}}<br>
-                                        Дата завершення: {{completion_date}}<br>
-                                        Виконавець: {{technician_name}}<br><br>
-                                        Дякуємо за довіру!<br><br>
-                                        З повагою,<br>
-                                        Команда LiftMaster Pro
+                                        <strong>Estimado {{client_name}}!</strong><br><br>
+                                        Informamos a conclusão dos trabalhos:<br>
+                                        Tipo de trabalho: {{work_type}}<br>
+                                        Data de conclusão: {{completion_date}}<br>
+                                        Executado por: {{technician_name}}<br><br>
+                                        Obrigado pela confiança!<br><br>
+                                        Cumprimentos,<br>
+                                        Equipa LiftMaster Pro
                                     </div>
                                     <div class="mt-3">
                                         <button class="btn btn-warning btn-sm" onclick="editTemplate('completion')">
-                                            <i class="fas fa-edit"></i> Редагувати
+                                            <i class="fas fa-edit"></i> Editar
                                         </button>
                                         <button class="btn btn-info btn-sm" onclick="previewTemplate('completion')">
-                                            <i class="fas fa-eye"></i> Попередній перегляд
+                                            <i class="fas fa-eye"></i> Pré-visualizar
                                         </button>
                                         <button class="btn btn-success btn-sm" onclick="testSendTemplate('completion')">
-                                            <i class="fas fa-paper-plane"></i> Тестове відправлення
+                                            <i class="fas fa-paper-plane"></i> Envio de Teste
                                         </button>
                                     </div>
                                 </div>
@@ -293,60 +417,55 @@
                             <div class="template-card card">
                                 <div class="card-header bg-danger text-white">
                                     <h4 class="card-title mb-0">
-                                        <i class="fas fa-exclamation-triangle mr-2"></i> Екстренне повідомлення
+                                        <i class="fas fa-exclamation-triangle mr-2"></i> Notificação de Emergência
                                     </h4>
                                 </div>
                                 <div class="card-body">
-                                    <p><strong>Призначення:</strong> Екстренні сповіщення про поломки</p>
-                                    <p><strong>Змінні:</strong> 
+                                    <p><strong>Objetivo:</strong> Notificações de emergência sobre avarias</p>
+                                    <p><strong>Variáveis:</strong> 
                                         <span class="variable-tag">{{recipient_name}}</span>
                                         <span class="variable-tag">{{emergency_type}}</span>
                                         <span class="variable-tag">{{location}}</span>
                                         <span class="variable-tag">{{contact_number}}</span>
                                     </p>
                                     <div class="template-preview">
-                                        <strong>ТЕРМІНОВЕ ПОВІДОМЛЕННЯ!</strong><br><br>
-                                        {{recipient_name}}, зафіксовано аварійну ситуацію:<br>
-                                        Тип: {{emergency_type}}<br>
-                                        Локація: {{location}}<br><br>
-                                        Для зв'язку: {{contact_number}}<br><br>
-                                        <strong>Необхідно термінове втручання!</strong>
+                                        <strong>NOTIFICAÇÃO URGENTE!</strong><br><br>
+                                        {{recipient_name}}, foi registada uma situação de emergência:<br>
+                                        Tipo: {{emergency_type}}<br>
+                                        Local: {{location}}<br><br>
+                                        Para contacto: {{contact_number}}<br><br>
+                                        <strong>É necessária intervenção urgente!</strong>
                                     </div>
                                     <div class="mt-3">
                                         <button class="btn btn-warning btn-sm" onclick="editTemplate('emergency')">
-                                            <i class="fas fa-edit"></i> Редагувати
+                                            <i class="fas fa-edit"></i> Editar
                                         </button>
                                         <button class="btn btn-info btn-sm" onclick="previewTemplate('emergency')">
-                                            <i class="fas fa-eye"></i> Попередній перегляд
+                                            <i class="fas fa-eye"></i> Pré-visualizar
                                         </button>
                                         <button class="btn btn-success btn-sm" onclick="testSendTemplate('emergency')">
-                                            <i class="fas fa-paper-plane"></i> Тестове відправлення
+                                            <i class="fas fa-paper-plane"></i> Envio de Teste
                                         </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Custom Templates -->
+                    <div class="row" id="customTemplatesContainer">
+                        <!-- Динамічно додані шаблони з'являться тут -->
+                    </div>
                 </div>
             </section>
         </div>
 
-        <!-- Footer -->
-        <footer class="main-footer">
-            <strong>&copy; 2024 <a href="#">LiftMaster Pro</a>.</strong>
-            Всі права захищені.
-            <div class="float-right d-none d-sm-inline-block">
-                <b>Версія</b> 3.2.0
-            </div>
-        </footer>
-    </div>
-
-    <!-- Edit Template Modal -->
+        <!-- Edit Template Modal -->
     <div class="modal fade" id="editTemplateModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title">Редагування шаблону</h4>
+                    <h4 class="modal-title">Editar Modelo</h4>
                     <button type="button" class="close" data-dismiss="modal">
                         <span>&times;</span>
                     </button>
@@ -354,19 +473,19 @@
                 <div class="modal-body">
                     <form id="templateEditForm">
                         <div class="form-group">
-                            <label for="templateName">Назва шаблону</label>
+                            <label for="templateName">Nome do modelo</label>
                             <input type="text" class="form-control" id="templateName" required>
                         </div>
                         <div class="form-group">
-                            <label for="templateSubject">Тема листа</label>
+                            <label for="templateSubject">Assunto do email</label>
                             <input type="text" class="form-control" id="templateSubject" required>
                         </div>
                         <div class="form-group">
-                            <label for="templateContent">Вміст шаблону</label>
+                            <label for="templateContent">Conteúdo do modelo</label>
                             <textarea class="form-control" id="templateContent" rows="10" required></textarea>
                         </div>
                         <div class="form-group">
-                            <label>Доступні змінні:</label>
+                            <label>Variáveis disponíveis:</label>
                             <div class="available-variables">
                                 <span class="variable-tag clickable" onclick="insertVariable('{{technician_name}}')">{{technician_name}}</span>
                                 <span class="variable-tag clickable" onclick="insertVariable('{{client_name}}')">{{client_name}}</span>
@@ -377,8 +496,8 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
-                    <button type="button" class="btn btn-primary" onclick="saveTemplate()">Зберегти</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="saveTemplate()">Guardar</button>
                 </div>
             </div>
         </div>
@@ -391,10 +510,15 @@
     <!-- AdminLTE -->
     <script src="../../plugins/adminlte/adminlte.min.js"></script>
 
-    <!-- Load sidebar dynamically -->
     <script>
+        // Initialize AdminLTE treeview
         $(document).ready(function() {
-            $(".main-sidebar").load("includes/sidebar.html");
+            // Activate treeview menu
+            $('[data-widget="treeview"]').Treeview('init');
+            
+            // Open parent menu if child is active
+            $('.nav-link.active').parents('.nav-item').addClass('menu-open');
+            $('.nav-link.active').parents('.nav-item').children('.nav-link').addClass('active');
         });
     </script>
 
@@ -403,35 +527,48 @@
         const emailTemplateManager = {
             templates: {
                 assignment: {
-                    name: "Сповіщення про заявку",
-                    subject: "Нова заявка #{assignment_id}",
-                    content: "Шановний {{technician_name}}!\n\nВам призначено нову заявку #{{assignment_id}}.\nЛокація: {{location}}\nПріоритет: {{priority}}\n\nЗ повагою,\nКоманда LiftMaster Pro"
+                    name: "Notificação de Pedido",
+                    subject: "Novo Pedido #{assignment_id}",
+                    content: "Estimado {{technician_name}}!\n\nFoi-lhe atribuído um novo pedido #{{assignment_id}}.\nLocal: {{location}}\nPrioridade: {{priority}}\n\nCumprimentos,\nEquipa LiftMaster Pro"
                 },
                 maintenance: {
-                    name: "Нагадування про ТО", 
-                    subject: "Планове ТО - {{maintenance_date}}",
-                    content: "Шановний {{client_name}}!\n\nНагадуємо про планове ТО ліфта:\nАдреса: {{lift_location}}\nДата: {{maintenance_date}}\n\nБудь ласка, забезпечте доступ до ліфта.\n\nЗ повагою,\nСлужба технічного обслуговування"
+                    name: "Lembrete de Manutenção", 
+                    subject: "Manutenção Programada - {{maintenance_date}}",
+                    content: "Estimado {{client_name}}!\n\nLembramos a manutenção programada do elevador:\nEndereço: {{lift_location}}\nData: {{maintenance_date}}\n\nPor favor, garanta o acesso ao elevador.\n\nCumprimentos,\nServiço de Manutenção"
                 },
                 completion: {
-                    name: "Завершення роботи",
-                    subject: "Роботи завершено - {{work_type}}",
-                    content: "Шановний {{client_name}}!\n\nПовідомляємо про завершення робіт:\nТип робіт: {{work_type}}\nДата завершення: {{completion_date}}\nВиконавець: {{technician_name}}\n\nДякуємо за довіру!\n\nЗ повагою,\nКоманда LiftMaster Pro"
+                    name: "Conclusão do Trabalho",
+                    subject: "Trabalho Concluído - {{work_type}}",
+                    content: "Estimado {{client_name}}!\n\nInformamos a conclusão dos trabalhos:\nTipo de trabalho: {{work_type}}\nData de conclusão: {{completion_date}}\nExecutado por: {{technician_name}}\n\nObrigado pela confiança!\n\nCumprimentos,\nEquipa LiftMaster Pro"
                 },
                 emergency: {
-                    name: "Екстренне повідомлення",
-                    subject: "ТЕРМІНОВЕ - {{emergency_type}}",
-                    content: "ТЕРМІНОВЕ ПОВІДОМЛЕННЯ!\n\n{{recipient_name}}, зафіксовано аварійну ситуацію:\nТип: {{emergency_type}}\nЛокація: {{location}}\n\nДля зв'язку: {{contact_number}}\n\nНЕОБХІДНО ТЕРМІНОВЕ ВТРУЧАННЯ!"
+                    name: "Notificação de Emergência",
+                    subject: "URGENTE - {{emergency_type}}",
+                    content: "NOTIFICAÇÃO URGENTE!\n\n{{recipient_name}}, foi registada uma situação de emergência:\nTipo: {{emergency_type}}\nLocal: {{location}}\n\nPara contacto: {{contact_number}}\n\nÉ NECESSÁRIA INTERVENÇÃO URGENTE!"
                 }
             },
 
             editTemplate(templateId) {
                 const template = this.templates[templateId];
-                if (template) {
+                
+                if (templateId === 'new') {
+                    // Новий шаблон - очистити форму
+                    $('#templateName').val('');
+                    $('#templateSubject').val('');
+                    $('#templateContent').val('');
+                    $('#editTemplateModal').data('template-id', 'new');
+                    $('#editTemplateModal .modal-title').text('Criar Novo Modelo');
+                    $('#editTemplateModal').modal('show');
+                } else if (template) {
+                    // Редагування існуючого шаблону
                     $('#templateName').val(template.name);
                     $('#templateSubject').val(template.subject);
                     $('#templateContent').val(template.content);
                     $('#editTemplateModal').data('template-id', templateId);
+                    $('#editTemplateModal .modal-title').text('Editar Modelo');
                     $('#editTemplateModal').modal('show');
+                } else {
+                    this.showNotification('Modelo não encontrado', 'error');
                 }
             },
 
@@ -441,22 +578,36 @@
                 const subject = $('#templateSubject').val();
                 const content = $('#templateContent').val();
 
-                if (templateId && name && subject && content) {
+                if (!name || !subject || !content) {
+                    this.showNotification('Por favor, preencha todos os campos', 'error');
+                    return;
+                }
+
+                if (templateId === 'new') {
+                    // Створити новий ID для шаблону
+                    const newId = 'custom_' + Date.now();
+                    this.templates[newId] = {
+                        name: name,
+                        subject: subject,
+                        content: content
+                    };
+                } else if (templateId) {
+                    // Оновити існуючий шаблон
                     this.templates[templateId] = {
                         name: name,
                         subject: subject,
                         content: content
                     };
-                    
-                    // Save to localStorage
-                    localStorage.setItem('emailTemplates', JSON.stringify(this.templates));
-                    
-                    $('#editTemplateModal').modal('hide');
-                    this.showNotification('Шаблон успішно збережено!', 'success');
-                    
-                    // Refresh the page to show updated template
-                    setTimeout(() => location.reload(), 1000);
                 }
+                
+                // Save to localStorage
+                localStorage.setItem('emailTemplates', JSON.stringify(this.templates));
+                
+                $('#editTemplateModal').modal('hide');
+                this.showNotification('Modelo guardado com sucesso!', 'success');
+                
+                // Refresh the page to show updated template
+                setTimeout(() => location.reload(), 1000);
             },
 
             previewTemplate(templateId) {
@@ -466,27 +617,33 @@
                     const previewWindow = window.open('', '_blank', 'width=600,height=400');
                     previewWindow.document.write(`
                         <html>
-                            <head><title>Попередній перегляд: ${template.name}</title></head>
-                            <body style="font-family: Arial, sans-serif; padding: 20px;">
-                                <h3>Тема: ${template.subject}</h3>
+                            <head>
+                                <title>Pré-visualizar: ${template.name}</title>
+                                <style>
+                                    body { font-family: Arial, sans-serif; padding: 20px; }
+                                    h3 { color: #333; }
+                                    hr { border: 1px solid #ddd; }
+                                </style>
+                            </head>
+                            <body>
+                                <h3>Assunto: ${template.subject}</h3>
                                 <hr>
                                 <div style="white-space: pre-line;">${template.content}</div>
-    <!-- AI Assistant Widget -->
-    <script src="/components/ai-widget.js"></script>
-</body>
+                            </body>
                         </html>
                     `);
+                    previewWindow.document.close();
                 }
             },
 
             async testSendTemplate(templateId) {
-                const email = prompt('Введіть email для тестового відправлення:');
+                const email = prompt('Introduza o email para envio de teste:');
                 if (!email) return;
                 
-                // Валідація email
+                // Validação de email
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (!emailRegex.test(email)) {
-                    this.showNotification('Невірний формат email', 'error');
+                    this.showNotification('Formato de email inválido', 'error');
                     return;
                 }
 
@@ -496,18 +653,18 @@
                                  localStorage.getItem('token');
                     
                     if (!token) {
-                        this.showNotification('Авторизація необхідна', 'error');
+                        this.showNotification('Autorização necessária', 'error');
                         window.location.href = '/pages/auth/login.html';
                         return;
                     }
 
-                    const template = this.templates.find(t => t.id === templateId);
+                    const template = this.templates[templateId];
                     if (!template) {
-                        this.showNotification('Template не знайдено', 'error');
+                        this.showNotification('Modelo não encontrado', 'error');
                         return;
                     }
 
-                    // Відправка через unified-server API
+                    // Envio através da API unified-server
                     const response = await fetch('/api/email/send-template', {
                         method: 'POST',
                         headers: {
@@ -525,15 +682,61 @@
                     const result = await response.json();
 
                     if (result.success) {
-                        this.showNotification(`✅ Тестовий email відправлено на ${email}`, 'success');
+                        this.showNotification(`✅ Email de teste enviado para ${email}`, 'success');
                     } else {
-                        this.showNotification(`❌ Помилка: ${result.error}`, 'error');
+                        this.showNotification(`❌ Erro: ${result.error}`, 'error');
                     }
 
                 } catch (error) {
-                    console.error('Помилка відправки email:', error);
-                    this.showNotification(`❌ Не вдалося відправити email: ${error.message}`, 'error');
+                    console.error('Erro ao enviar email:', error);
+                    this.showNotification(`❌ Não foi possível enviar o email: ${error.message}`, 'error');
                 }
+            },
+
+            renderCustomTemplates() {
+                const container = $('#customTemplatesContainer');
+                container.empty();
+                
+                // Рендеримо тільки кастомні шаблони (ті, що починаються з 'custom_')
+                const customTemplates = Object.keys(this.templates).filter(id => id.startsWith('custom_'));
+                
+                if (customTemplates.length === 0) return;
+                
+                customTemplates.forEach(templateId => {
+                    const template = this.templates[templateId];
+                    const card = $(`
+                        <div class="col-md-6">
+                            <div class="template-card card">
+                                <div class="card-header bg-info text-white">
+                                    <h4 class="card-title mb-0">
+                                        <i class="fas fa-envelope mr-2"></i> ${template.name}
+                                    </h4>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Assunto:</strong> ${template.subject}</p>
+                                    <div class="template-preview">
+                                        ${template.content.replace(/\n/g, '<br>')}
+                                    </div>
+                                    <div class="mt-3">
+                                        <button class="btn btn-warning btn-sm" onclick="editTemplate('${templateId}')">
+                                            <i class="fas fa-edit"></i> Editar
+                                        </button>
+                                        <button class="btn btn-info btn-sm" onclick="previewTemplate('${templateId}')">
+                                            <i class="fas fa-eye"></i> Pré-visualizar
+                                        </button>
+                                        <button class="btn btn-success btn-sm" onclick="testSendTemplate('${templateId}')">
+                                            <i class="fas fa-paper-plane"></i> Envio de Teste
+                                        </button>
+                                        <button class="btn btn-danger btn-sm" onclick="deleteTemplate('${templateId}')">
+                                            <i class="fas fa-trash"></i> Eliminar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `);
+                    container.append(card);
+                });
             },
 
             showNotification(message, type = 'info') {
@@ -575,6 +778,15 @@
             emailTemplateManager.saveTemplate();
         }
 
+        function deleteTemplate(templateId) {
+            if (confirm('Tem certeza que deseja eliminar este modelo?')) {
+                delete emailTemplateManager.templates[templateId];
+                localStorage.setItem('emailTemplates', JSON.stringify(emailTemplateManager.templates));
+                emailTemplateManager.showNotification('Modelo eliminado com sucesso!', 'success');
+                emailTemplateManager.renderCustomTemplates();
+            }
+        }
+
         function insertVariable(variable) {
             const textarea = $('#templateContent')[0];
             const start = textarea.selectionStart;
@@ -593,6 +805,7 @@
             const saved = localStorage.getItem('emailTemplates');
             if (saved) {
                 emailTemplateManager.templates = { ...emailTemplateManager.templates, ...JSON.parse(saved) };
+                emailTemplateManager.renderCustomTemplates();
             }
 
             $('#createTemplateBtn').click(function() {
@@ -603,39 +816,15 @@
             $('.clickable').css('cursor', 'pointer');
         });
     </script>
-</body>
-</html>
-                                </div>
-                                <div class="form-group">
-                                    <label for="emailSubject">Тема</label>
-                                    <input type="text" class="form-control" id="emailSubject" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="emailBody">Текст повідомлення</label>
-                                    <textarea class="form-control" id="emailBody" rows="6" required></textarea>
-                                </div>
-                                <button type="submit" class="btn btn-primary">Відправити</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </div>
-        <footer class="main-footer">
-            <strong>Copyright &copy; 2024 <a href="admin-dashboard.html">LiftMaster Pro</a>.</strong>
-        </footer>
-    </div>
-    <script src="../../plugins/jquery/jquery.min.js"></script>
-    <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
-    <script src="../../plugins/adminlte/adminlte.min.js"></script>
+</div>
 
-    <!-- Load sidebar dynamically -->
-    <script>
-        $(document).ready(function() {
-            $(".main-sidebar").load("includes/sidebar.html");
-        });
-    </script>
-    <script src="../../assets/js/modules/email-template.js"></script>
-    <script src="/components/ai-widget.js"></script>
+<!-- Footer -->
+<footer class="main-footer">
+    <strong>Copyright &copy; 2024 <a href="admin-dashboard.html">LiftMaster Pro</a>.</strong>
+    Todos os direitos reservados.
+    <div class="float-right d-none d-sm-inline-block">
+        <b>Versão</b> 2.0
+    </div>
+</footer>
 </body>
 </html>

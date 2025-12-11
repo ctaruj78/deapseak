@@ -251,6 +251,322 @@ app.post('/api/auth/login', async (req, res) => {
     }
 });
 
+// ═══════════════════════════════════════════════════════════
+// 🔐 AUTH - Logout & Refresh Token
+// ═══════════════════════════════════════════════════════════
+
+// Logout
+app.post('/api/auth/logout', authenticateToken, (req, res) => {
+    // JWT не потребує серверного видалення, клієнт просто видаляє токен
+    console.log('👋 Logout:', req.user?.username);
+    res.json({ success: true, message: 'Успішний вихід з системи' });
+});
+
+// Refresh Token
+app.post('/api/auth/refresh', authenticateToken, async (req, res) => {
+    try {
+        const newToken = jwt.sign(
+            { 
+                id: req.user.id,
+                username: req.user.username,
+                role: req.user.role
+            }, 
+            JWT_SECRET, 
+            { expiresIn: '24h' }
+        );
+        res.json({ success: true, token: newToken });
+    } catch (error) {
+        console.error('❌ Помилка refresh token:', error);
+        res.status(500).json({ success: false, message: 'Помилка оновлення токена' });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════
+// 🔔 NOTIFICATIONS
+// ═══════════════════════════════════════════════════════════
+
+// GET all notifications
+app.get('/api/notifications', authenticateToken, async (req, res) => {
+    try {
+        if (!db) {
+            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+        }
+        
+        const notifications = await db.collection('notifications')
+            .find({ userId: req.user.id })
+            .sort({ createdAt: -1 })
+            .limit(50)
+            .toArray();
+        
+        res.json({ success: true, notifications: notifications || [] });
+    } catch (error) {
+        console.error('❌ Помилка отримання сповіщень:', error);
+        res.status(500).json({ success: false, message: 'Помилка сервера' });
+    }
+});
+
+// Mark notification as read
+app.patch('/api/notifications/:id/read', authenticateToken, async (req, res) => {
+    try {
+        if (!db) {
+            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+        }
+        
+        const { ObjectId } = require('mongodb');
+        await db.collection('notifications').updateOne(
+            { _id: new ObjectId(req.params.id) },
+            { $set: { read: true, readAt: new Date() } }
+        );
+        
+        res.json({ success: true, message: 'Сповіщення позначено як прочитане' });
+    } catch (error) {
+        console.error('❌ Помилка оновлення сповіщення:', error);
+        res.status(500).json({ success: false, message: 'Помилка сервера' });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════
+// 📊 QR CODE HISTORY
+// ═══════════════════════════════════════════════════════════
+
+// GET QR scan history
+app.get('/api/qr/history', authenticateToken, async (req, res) => {
+    try {
+        if (!db) {
+            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+        }
+        
+        const history = await db.collection('qr_scans')
+            .find({})
+            .sort({ scannedAt: -1 })
+            .limit(100)
+            .toArray();
+        
+        res.json({ success: true, data: history || [] });
+    } catch (error) {
+        console.error('❌ Помилка отримання історії QR:', error);
+        res.status(500).json({ success: false, message: 'Помилка сервера' });
+    }
+});
+
+// POST QR scan
+app.post('/api/qr/scan', authenticateToken, async (req, res) => {
+    try {
+        if (!db) {
+            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+        }
+        
+        const { qrCode, liftId, action } = req.body;
+        
+        const scan = {
+            qrCode,
+            liftId,
+            action: action || 'scan',
+            userId: req.user.id,
+            username: req.user.username,
+            scannedAt: new Date()
+        };
+        
+        await db.collection('qr_scans').insertOne(scan);
+        
+        res.json({ success: true, message: 'QR код відскановано', data: scan });
+    } catch (error) {
+        console.error('❌ Помилка запису QR скану:', error);
+        res.status(500).json({ success: false, message: 'Помилка сервера' });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════
+// 📋 INSPECTIONS
+// ═══════════════════════════════════════════════════════════
+
+// GET all inspections
+app.get('/api/inspections', authenticateToken, async (req, res) => {
+    try {
+        if (!db) {
+            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+        }
+        
+        const inspections = await db.collection('inspections')
+            .find({})
+            .sort({ scheduledDate: -1 })
+            .toArray();
+        
+        res.json({ success: true, data: inspections || [] });
+    } catch (error) {
+        console.error('❌ Помилка отримання інспекцій:', error);
+        res.status(500).json({ success: false, message: 'Помилка сервера' });
+    }
+});
+
+// GET inspection by ID
+app.get('/api/inspections/:id', authenticateToken, async (req, res) => {
+    try {
+        if (!db) {
+            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+        }
+        
+        const { ObjectId } = require('mongodb');
+        const inspection = await db.collection('inspections')
+            .findOne({ _id: new ObjectId(req.params.id) });
+        
+        if (!inspection) {
+            return res.status(404).json({ success: false, message: 'Інспекцію не знайдено' });
+        }
+        
+        res.json({ success: true, data: inspection });
+    } catch (error) {
+        console.error('❌ Помилка отримання інспекції:', error);
+        res.status(500).json({ success: false, message: 'Помилка сервера' });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════
+// 📝 TASKS
+// ═══════════════════════════════════════════════════════════
+
+// GET all tasks
+app.get('/api/tasks', authenticateToken, async (req, res) => {
+    try {
+        if (!db) {
+            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+        }
+        
+        let query = {};
+        // Техніки бачать тільки свої завдання
+        if (req.user.role === 'tech') {
+            query.assignedTo = req.user.id;
+        }
+        
+        const tasks = await db.collection('tasks')
+            .find(query)
+            .sort({ dueDate: 1, priority: -1 })
+            .toArray();
+        
+        res.json({ success: true, data: tasks || [] });
+    } catch (error) {
+        console.error('❌ Помилка отримання завдань:', error);
+        res.status(500).json({ success: false, message: 'Помилка сервера' });
+    }
+});
+
+// GET task by ID
+app.get('/api/tasks/:id', authenticateToken, async (req, res) => {
+    try {
+        if (!db) {
+            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+        }
+        
+        const { ObjectId } = require('mongodb');
+        const task = await db.collection('tasks')
+            .findOne({ _id: new ObjectId(req.params.id) });
+        
+        if (!task) {
+            return res.status(404).json({ success: false, message: 'Завдання не знайдено' });
+        }
+        
+        res.json({ success: true, data: task });
+    } catch (error) {
+        console.error('❌ Помилка отримання завдання:', error);
+        res.status(500).json({ success: false, message: 'Помилка сервера' });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════
+// 📊 STATISTICS & DASHBOARD
+// ═══════════════════════════════════════════════════════════
+
+// GET statistics
+app.get('/api/statistics', authenticateToken, async (req, res) => {
+    try {
+        if (!db) {
+            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+        }
+        
+        const [liftsCount, usersCount, requestsCount, tasksCount] = await Promise.all([
+            db.collection('lifts').countDocuments(),
+            db.collection('users').countDocuments(),
+            db.collection('requests').countDocuments(),
+            db.collection('tasks').countDocuments()
+        ]);
+        
+        // Ліфти за статусом
+        const liftsByStatus = await db.collection('lifts').aggregate([
+            { $group: { _id: '$status', count: { $sum: 1 } } }
+        ]).toArray();
+        
+        // Заявки за статусом
+        const requestsByStatus = await db.collection('requests').aggregate([
+            { $group: { _id: '$status', count: { $sum: 1 } } }
+        ]).toArray();
+        
+        res.json({
+            success: true,
+            data: {
+                lifts: liftsCount,
+                users: usersCount,
+                requests: requestsCount,
+                tasks: tasksCount,
+                liftsByStatus: liftsByStatus.reduce((acc, item) => {
+                    acc[item._id || 'unknown'] = item.count;
+                    return acc;
+                }, {}),
+                requestsByStatus: requestsByStatus.reduce((acc, item) => {
+                    acc[item._id || 'unknown'] = item.count;
+                    return acc;
+                }, {})
+            }
+        });
+    } catch (error) {
+        console.error('❌ Помилка отримання статистики:', error);
+        res.status(500).json({ success: false, message: 'Помилка сервера' });
+    }
+});
+
+// GET dashboard data
+app.get('/api/dashboard', authenticateToken, async (req, res) => {
+    try {
+        if (!db) {
+            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+        }
+        
+        const role = req.user.role;
+        
+        // Базова статистика для всіх
+        const [liftsCount, requestsCount] = await Promise.all([
+            db.collection('lifts').countDocuments(),
+            db.collection('requests').countDocuments({ status: { $ne: 'completed' } })
+        ]);
+        
+        // Останні заявки
+        const recentRequests = await db.collection('requests')
+            .find({})
+            .sort({ createdAt: -1 })
+            .limit(5)
+            .toArray();
+        
+        // Ліфти що потребують уваги
+        const liftsNeedingAttention = await db.collection('lifts')
+            .find({ status: { $in: ['maintenance', 'out_of_service'] } })
+            .limit(10)
+            .toArray();
+        
+        res.json({
+            success: true,
+            data: {
+                totalLifts: liftsCount,
+                activeRequests: requestsCount,
+                recentRequests,
+                liftsNeedingAttention,
+                role
+            }
+        });
+    } catch (error) {
+        console.error('❌ Помилка отримання dashboard:', error);
+        res.status(500).json({ success: false, message: 'Помилка сервера' });
+    }
+});
+
 // Отримання профілю поточного користувача
 app.get('/api/users/me', authenticateToken, async (req, res) => {
     try {
@@ -468,6 +784,72 @@ app.get('/api/regulations', authenticateToken, async (req, res) => {
         });
     } catch (error) {
         console.error('❌ Regulations search error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// EN Standards (European Norms) API - Modern lift standards
+app.get('/api/en-standards', authenticateToken, async (req, res) => {
+    try {
+        const { search, type } = req.query;
+        
+        const fs = require('fs');
+        const standardsPath = path.join(__dirname, 'data', 'en-standards-lift-regulations.json');
+        const standardsData = JSON.parse(fs.readFileSync(standardsPath, 'utf8'));
+        
+        if (!search && !type) {
+            return res.json({
+                success: true,
+                data: standardsData.standards,
+                metadata: standardsData.metadata,
+                integration_notes: standardsData.integration_notes,
+                summary: standardsData.summary_table,
+                total: standardsData.standards.length
+            });
+        }
+        
+        let results = standardsData.standards;
+        
+        // Filter by type
+        if (type) {
+            const typeMap = {
+                'new': ['NP_EN_81_20_2020', 'NP_EN_81_50_2020'],
+                'modernization': ['NP_EN_81_80_2020'],
+                'accessibility': ['NP_EN_81_70_2022'],
+                'fire': ['NP_EN_81_72_2020', 'NP_EN_81_73_2020'],
+                'special': ['NP_EN_81_71_2022', 'NP_EN_81_77_2020']
+            };
+            
+            if (typeMap[type]) {
+                results = results.filter(std => typeMap[type].includes(std.id));
+            }
+        }
+        
+        // Search in standards
+        if (search) {
+            const searchLower = search.toLowerCase();
+            results = results.filter(std => {
+                return (
+                    (std.title && std.title.toLowerCase().includes(searchLower)) ||
+                    (std.summary && std.summary.toLowerCase().includes(searchLower)) ||
+                    (std.number && std.number.toLowerCase().includes(searchLower)) ||
+                    (std.scope && std.scope.some(s => s.toLowerCase().includes(searchLower)))
+                );
+            });
+        }
+        
+        res.json({
+            success: true,
+            data: results,
+            query: search,
+            type: type,
+            total: results.length
+        });
+    } catch (error) {
+        console.error('❌ EN Standards search error:', error);
         res.status(500).json({
             success: false,
             error: error.message
@@ -1676,9 +2058,98 @@ function analyzeInspectionReport(reportText) {
     };
     
     // Аналіз кожної лінії
-    lines.forEach((line, index) => {
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
         const lineLower = line.toLowerCase();
         
+        // СПОЧАТКУ шукаємо явні мітки C1, C2, C3 на початку рядка
+        const clauseMatch = line.match(/^(C[123])\s+/i);
+        
+        if (clauseMatch) {
+            // Знайдено явну мітку клаузи
+            const severity = clauseMatch[1].toUpperCase();
+            
+            // Перевіряємо поточний рядок І наступний для пошуку номера статті
+            const nextLine = i + 1 < lines.length ? lines[i + 1] : '';
+            const combinedText = line + ' ' + nextLine;
+            
+            // Витягуємо номер статті з об'єднаного тексту
+            // Формат: Artº.22.° 3 або Artº.74º 2
+            const articleMatch = combinedText.match(/Art[ºo]?\.\s*(\d+)\s*[ºo°\.]*\s*(\d*)/i);
+            
+            let article = null;
+            
+            // СПОЧАТКУ намагаємось витягнути явний номер статті
+            if (articleMatch) {
+                // Формуємо повний номер статті з підпунктом
+                article = articleMatch[2] 
+                    ? `Art. ${articleMatch[1]}.${articleMatch[2]}`
+                    : `Art. ${articleMatch[1]}`;
+            }
+            
+            // ФІЛЬТР: пропускаємо загальні пояснення та службові тексти
+            const skipPhrases = [
+                'foram detetadas cláusulas',
+                'foram detectadas cláusulas',
+                'correspondem a situações',
+                'regularizar no prazo',
+                'elevador reprovado',
+                'estas cláusulas',
+                'caso tenham sido'
+            ];
+            
+            const isGenericText = skipPhrases.some(phrase => combinedText.toLowerCase().includes(phrase));
+            
+            if (isGenericText) {
+                console.log(`⚠️ Пропущено (загальний текст): ${combinedText.substring(0, 80)}...`);
+                continue;
+            }
+            
+            // Витягуємо опис порушення (текст після "Porушення:" або "–")
+            let violation = nextLine || line;
+            const violationMatch = (nextLine || line).match(/(?:Porушення:|–)\s*(.+)/i);
+            if (violationMatch) {
+                violation = violationMatch[1].trim();
+            }
+            
+            // 🔍 ЯКЩО немає явного номера статті - визначаємо за змістом
+            if (!article) {
+                article = detectArticleByContent(violation);
+                if (article) {
+                    console.log(`🎯 Артикул визначено за змістом: ${article}`);
+                } else {
+                    console.log(`⚠️ Пропущено (немає номера статті і не визначено за змістом): ${line.substring(0, 80)}...`);
+                    continue;
+                }
+            }
+            
+            // Перевіряємо чи вже є таке порушення (дедуплікація)
+            const isDuplicate = violations.some(v => 
+                v.article === article && v.severity === severity
+            );
+            
+            if (isDuplicate) {
+                console.log(`⚠️ Пропущено (дублікат): ${article} - ${severity}`);
+                continue;
+            }
+            
+            violations.push({
+                id: violations.length + 1,
+                description: violation,
+                severity: severity,
+                category: determineCategoryFromText(violation),
+                points: severity === 'C1' ? 20 : (severity === 'C2' ? 10 : 5),
+                article: article,
+                recommendation: getRecommendation(determineCategoryFromText(violation)),
+                deadline: getDeadline(severity),
+                originalLine: line
+            });
+            
+            console.log(`✅ Додано порушення: ${severity} - ${article}`);
+            continue; // Переходимо до наступної лінії
+        }
+        
+        // Якщо немає явної мітки, шукаємо за ключовими словами (стара логіка)
         for (const [pattern, data] of Object.entries(knownViolations)) {
             const regex = new RegExp(pattern, 'i');
             if (regex.test(lineLower)) {
@@ -1695,24 +2166,9 @@ function analyzeInspectionReport(reportText) {
                 break;
             }
         }
-        
-        // Якщо не знайдено відповідності, але лінія виглядає як порушення
-        if (line.length > 10 && !violations.some(v => v.description === line)) {
-            if (lineLower.includes('defeituoso') || lineLower.includes('ausente') || 
-                lineLower.includes('não') || lineLower.includes('falta')) {
-                violations.push({
-                    id: violations.length + 1,
-                    description: line,
-                    severity: 'C2',
-                    category: 'Geral',
-                    points: 5,
-                    article: 'Art. Geral',
-                    recommendation: 'Corrigir conforme regulamentação',
-                    deadline: '30 dias'
-                });
-            }
-        }
-    });
+    }
+    
+    console.log(`📊 Знайдено порушень: ${violations.length}`);
     
     // Підрахунок статистики
     const totalPoints = violations.reduce((sum, v) => sum + v.points, 0);
@@ -1804,6 +2260,137 @@ function analyzeInspectionReport(reportText) {
         status,
         statusColor
     };
+}
+
+function determineCategoryFromText(text) {
+    const textLower = text.toLowerCase();
+    
+    // Визначаємо категорію на основі ключових слів
+    if (textLower.includes('porta') || textLower.includes('bloqueio') || textLower.includes('fechadura')) {
+        return 'Segurança de Portas';
+    }
+    if (textLower.includes('travagem') || textLower.includes('travão') || textLower.includes('freio')) {
+        return 'Sistema de Travagem';
+    }
+    if (textLower.includes('pára-quedas') || textLower.includes('paraquedas') || textLower.includes('segurança')) {
+        return 'Sistema de Segurança';
+    }
+    if (textLower.includes('cabo') || textLower.includes('suspensão')) {
+        return 'Cabos e Suspensão';
+    }
+    if (textLower.includes('máquina') || textLower.includes('motor')) {
+        return 'Casa das Máquinas';
+    }
+    if (textLower.includes('escada') || textLower.includes('acesso') || textLower.includes('alçapão')) {
+        return 'Acesso e Circulação';
+    }
+    if (textLower.includes('iluminação') || textLower.includes('luz')) {
+        return 'Iluminação';
+    }
+    if (textLower.includes('alarme') || textLower.includes('comunicação')) {
+        return 'Sistema de Alarme';
+    }
+    if (textLower.includes('fim de curso') || textLower.includes('dispositivo')) {
+        return 'Dispositivos de Segurança';
+    }
+    if (textLower.includes('resguard') || textLower.includes('proteção') || textLower.includes('peças salientes')) {
+        return 'Proteções e Resguardos';
+    }
+    if (textLower.includes('manutenção') || textLower.includes('inspeção')) {
+        return 'Manutenção';
+    }
+    if (textLower.includes('documentação') || textLower.includes('certificado')) {
+        return 'Documentação';
+    }
+    
+    return 'Geral';
+}
+
+// 🔍 НОВА ФУНКЦІЯ: Визначення артикулу за змістом тексту
+function detectArticleByContent(text) {
+    const textLower = text.toLowerCase();
+    
+    // База знань: ключові слова → номер артикулу
+    const articleDatabase = {
+        'Art. 22': [
+            'escada de acesso', 'acesso à casa das máquinas', 'acesso ao topo',
+            'alçapão', 'contrabalançado', 'degrau', 'corrimão', 'pegas',
+            'guarda-corpos', 'largura', 'inclinação', 'fixação'
+        ],
+        'Art. 74': [
+            'fim de curso', 'dispositivo de segurança', 'contrapeso',
+            'pára-choques', 'paragem', 'limite de curso', 'actuação'
+        ],
+        'Art. 85': [
+            'peças salientes', 'máquinas', 'volantes', 'engrenagens',
+            'correias', 'resguardadas', 'proteção de máquinas', 'polias'
+        ],
+        'Art. 6': [
+            'porta de patamar', 'bloqueio', 'fechadura', 'sensor de porta',
+            'contacto de porta', 'trinco'
+        ],
+        'Art. 12': [
+            'travão', 'travagem', 'freio', 'sistema de travagem',
+            'paragem de emergência'
+        ],
+        'Art. 35': [
+            'iluminação', 'luz de emergência', 'iluminação da cabina',
+            'fonte de luz', 'bateria de emergência'
+        ],
+        'Art. 45': [
+            'pára-quedas', 'paraquedas', 'limitador de velocidade',
+            'dispositivo de segurança', 'queda livre'
+        ],
+        'Art. 50': [
+            'cabos', 'cabo de tração', 'desgaste', 'fios partidos',
+            'suspensão', 'polias', 'tambor'
+        ],
+        'Art. 18': [
+            'alarme', 'comunicação', 'telefone de emergência',
+            'intercomunicador', 'botão de alarme'
+        ],
+        'Art. 25': [
+            'documentação', 'manual', 'certificado', 'livro de registo',
+            'relatório', 'ficha técnica'
+        ],
+        'Art. 8': [
+            'ucm', 'unidade de comando', 'quadro elétrico',
+            'armário de controlo', 'contactores'
+        ],
+        'Art. 15': [
+            'sinalização', 'placa', 'identificação', 'marcação',
+            'carga máxima', 'capacidade'
+        ],
+        'Art. 60': [
+            'acessibilidade', 'braille', 'botões', 'altura de comando',
+            'deficientes', 'largura de porta'
+        ]
+    };
+    
+    // Підрахунок збігів для кожного артикулу
+    const scores = {};
+    
+    for (const [article, keywords] of Object.entries(articleDatabase)) {
+        let score = 0;
+        for (const keyword of keywords) {
+            if (textLower.includes(keyword)) {
+                // Більший бонус за точний збіг ключової фрази
+                score += keyword.split(' ').length; // Довші фрази = більша вага
+            }
+        }
+        if (score > 0) {
+            scores[article] = score;
+        }
+    }
+    
+    // Знаходимо артикул з найбільшою оцінкою
+    if (Object.keys(scores).length > 0) {
+        const bestMatch = Object.entries(scores).sort((a, b) => b[1] - a[1])[0];
+        console.log(`🎯 Визначено артикул за змістом: ${bestMatch[0]} (збігів: ${bestMatch[1]})`);
+        return bestMatch[0];
+    }
+    
+    return null; // Не знайдено відповідності
 }
 
 function getRelatedArticle(category) {
@@ -3333,8 +3920,13 @@ app.post('/api/email/send-orcamento', authenticateToken, async (req, res) => {
                             </div>
                         ` : ''}
 
-                        <div style="margin-top: 30px; padding: 20px; background: #e7f3ff; border-radius: 8px; text-align: center;">
-                            <p style="margin: 0; color: #0066cc;">
+                        <div style="margin-top: 30px; padding: 20px; background: #e7f3ff; border-radius: 8px;">
+                            <h4 style="margin: 0 0 10px 0; color: #0066cc;">💳 Dados Bancários para Pagamento</h4>
+                            <p style="margin: 5px 0; font-family: 'Courier New', monospace; font-size: 14px;">
+                                <strong>Banco BPI</strong><br>
+                                IBAN: <strong>PT50 0010 0000 5854 8320 0015 4</strong>
+                            </p>
+                            <p style="margin: 15px 0 5px 0; color: #666; font-size: 12px;">
                                 <strong>Este orçamento é válido até ${validadeFormatted}</strong>
                             </p>
                         </div>
@@ -3342,7 +3934,7 @@ app.post('/api/email/send-orcamento', authenticateToken, async (req, res) => {
 
                     <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #ddd;">
                         <p style="margin: 5px 0; font-size: 14px; color: #666;">
-                            <strong>FestLift - Manutenção de Elevadores</strong><br>
+                            <strong>FESTLIFT, LDA - Manutenção de Elevadores</strong><br>
                             Email: info@festlift.pt | Tel: +351 XXX XXX XXX<br>
                             <small>Este orçamento foi gerado automaticamente.</small>
                         </p>
@@ -3376,6 +3968,147 @@ app.post('/api/email/send-orcamento', authenticateToken, async (req, res) => {
         console.error('❌ Error sending orçamento:', error);
         res.status(500).json({
             success: false,
+            error: error.message
+        });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════
+// 🔧 INSPECTIONS API - Relatórios de Manutenção
+// ═══════════════════════════════════════════════════════════
+
+// POST /api/inspections/send-report - Enviar relatório por email
+app.post('/api/inspections/send-report', authenticateToken, async (req, res) => {
+    try {
+        const {
+            inspectionNumber,
+            inspectionDate,
+            inspector,
+            liftLocation,
+            liftModel,
+            liftSerial,
+            checklist,
+            generalComments,
+            recommendations,
+            recipientEmail
+        } = req.body;
+
+        if (!recipientEmail || !inspectionNumber) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email e número da manutenção são obrigatórios'
+            });
+        }
+
+        const nodemailer = require('nodemailer');
+        const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: parseInt(process.env.SMTP_PORT),
+            secure: process.env.SMTP_SECURE === 'true',
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS
+            }
+        });
+
+        // Gerar HTML do checklist
+        let checklistHTML = '';
+        if (checklist && typeof checklist === 'object') {
+            checklistHTML = '<table style="width: 100%; border-collapse: collapse; margin-top: 15px;">';
+            checklistHTML += '<tr><th style="padding: 8px; border: 1px solid #ddd; background: #f8f9fa; text-align: left;">Item</th><th style="padding: 8px; border: 1px solid #ddd; background: #f8f9fa; text-align: left;">Observações</th></tr>';
+            
+            Object.entries(checklist).forEach(([key, value]) => {
+                if (value.status && value.status !== '') {
+                    let itemName = key.replace(/-/g, ' ').replace(/_/g, ' ');
+                    itemName = itemName.charAt(0).toUpperCase() + itemName.slice(1);
+                    
+                    let statusIcon = '';
+                    let statusColor = '';
+                    
+                    switch(value.status) {
+                        case 'ok': statusIcon = '✓'; statusColor = '#28a745'; break;
+                        case 'warning': statusIcon = '⚠'; statusColor = '#ffc107'; break;
+                        case 'error': statusIcon = '✗'; statusColor = '#dc3545'; break;
+                        case 'na': statusIcon = 'N/A'; statusColor = '#6c757d'; break;
+                    }
+                    
+                    checklistHTML += `
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd;">
+                                <span style="color: ${statusColor}; font-weight: bold;">${statusIcon}</span> ${itemName}
+                            </td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">${value.comment || '-'}</td>
+                        </tr>
+                    `;
+                }
+            });
+            checklistHTML += '</table>';
+        } else {
+            checklistHTML = '<p style="color: #666;"><em>Nenhum item verificado</em></p>';
+        }
+
+        const dataFormatted = inspectionDate ? new Date(inspectionDate).toLocaleDateString('pt-PT', {
+            day: '2-digit', month: '2-digit', year: 'numeric'
+        }) : 'Não especificada';
+
+        const mailOptions = {
+            from: process.env.EMAIL_FROM || 'DeapSeaK System <noreply@deapseak.com>',
+            to: recipientEmail,
+            subject: `Relatório de Manutenção ${inspectionNumber} - FESTLIFT`,
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 700px; margin: 0 auto; border: 1px solid #ddd;">
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center;">
+                        <h1 style="margin: 0; font-size: 28px;">FESTLIFT, LDA</h1>
+                        <p style="margin: 5px 0 0 0; font-size: 14px;">Manutenção de Elevadores</p>
+                    </div>
+                    
+                    <div style="padding: 30px;">
+                        <h2 style="color: #333; border-bottom: 2px solid #667eea; padding-bottom: 10px;">
+                            📋 Relatório de Manutenção Mensal
+                        </h2>
+                        
+                        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <tr><td style="padding: 8px 0; font-weight: bold; width: 40%;">Nº da Manutenção:</td><td style="padding: 8px 0;">${inspectionNumber}</td></tr>
+                                <tr><td style="padding: 8px 0; font-weight: bold;">Data:</td><td style="padding: 8px 0;">${dataFormatted}</td></tr>
+                                <tr><td style="padding: 8px 0; font-weight: bold;">Técnico Responsável:</td><td style="padding: 8px 0;">${inspector || 'Não especificado'}</td></tr>
+                                <tr><td style="padding: 8px 0; font-weight: bold;">Localização:</td><td style="padding: 8px 0;">${liftLocation || 'Não especificada'}</td></tr>
+                                <tr><td style="padding: 8px 0; font-weight: bold;">Modelo:</td><td style="padding: 8px 0;">${liftModel || 'Não especificado'}</td></tr>
+                                <tr><td style="padding: 8px 0; font-weight: bold;">Número de Série:</td><td style="padding: 8px 0;">${liftSerial || 'Não especificado'}</td></tr>
+                            </table>
+                        </div>
+
+                        <h3 style="color: #333; margin-top: 30px; border-bottom: 1px solid #ddd; padding-bottom: 8px;">Resultados da Verificação</h3>
+                        ${checklistHTML}
+
+                        ${generalComments ? `<h3 style="color: #333; margin-top: 30px; border-bottom: 1px solid #ddd; padding-bottom: 8px;">Observações Gerais</h3>
+                        <p style="background: #f8f9fa; padding: 15px; border-left: 4px solid #667eea; margin: 10px 0;">${generalComments}</p>` : ''}
+
+                        ${recommendations ? `<h3 style="color: #333; margin-top: 30px; border-bottom: 1px solid #ddd; padding-bottom: 8px;">Recomendações</h3>
+                        <p style="background: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin: 10px 0;">${recommendations}</p>` : ''}
+                    </div>
+
+                    <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #ddd;">
+                        <p style="margin: 0; font-size: 12px; color: #666;">Este é um email automático gerado pelo sistema FESTLIFT.<br>Para mais informações, contacte-nos através do nosso sistema.</p>
+                        <p style="margin: 10px 0 0 0; font-size: 11px; color: #999;">© ${new Date().getFullYear()} FESTLIFT, LDA - Todos os direitos reservados</p>
+                    </div>
+                </div>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log(`✅ Relatório ${inspectionNumber} enviado para ${recipientEmail}`);
+
+        res.json({
+            success: true,
+            message: `Relatório enviado com sucesso para ${recipientEmail}`
+        });
+
+    } catch (error) {
+        console.error('❌ Erro ao enviar relatório:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erro ao enviar relatório por email',
             error: error.message
         });
     }

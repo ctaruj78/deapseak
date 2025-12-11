@@ -202,8 +202,10 @@ class SimpleLiftModal {
                 }
             } else {
                 console.log('❌ window.liftManager not found');
-                // Спробуємо знайти таблицю і оновити її вручну
-                this.manualRefreshTable();
+                // Спробуємо оновити через API
+                if (typeof window.loadLiftsFromAPI === 'function') {
+                    window.loadLiftsFromAPI();
+                }
             }
             
         } catch (error) {
@@ -482,7 +484,10 @@ class SimpleLiftModal {
                 // Зберігаємо в localStorage
                 localStorage.setItem('lifts', JSON.stringify(window.allLifts));
                 
-                this.manualRefreshTable();
+                // Оновлюємо таблицю через API
+                if (typeof window.loadLiftsFromAPI === 'function') {
+                    window.loadLiftsFromAPI();
+                }
                 this.showMessage('Ліфт успішно видалено', 'success');
             }
         } catch (error) {
@@ -593,45 +598,6 @@ class SimpleLiftModal {
 $(document).ready(function() {
     console.log('📱 Initializing Simple Lift Modal...');
     window.simpleLiftModal = new SimpleLiftModal();
-    
-    // Тестові кнопки
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        setTimeout(() => {
-            if ($('#test-simple-save').length === 0) {
-                $('body').append(`
-                    <button id="test-simple-save" style="
-                        position: fixed; 
-                        bottom: 10px; 
-                        right: 10px; 
-                        z-index: 9999; 
-                        background: #17a2b8; 
-                        color: white; 
-                        border: none; 
-                        padding: 10px 15px; 
-                        border-radius: 5px;
-                        font-size: 12px;
-                    " onclick="window.simpleLiftModal.testSave()">🧪 Простий тест</button>
-                `);
-            }
-            
-            if ($('#refresh-table').length === 0) {
-                $('body').append(`
-                    <button id="refresh-table" style="
-                        position: fixed; 
-                        bottom: 60px; 
-                        right: 10px; 
-                        z-index: 9999; 
-                        background: #28a745; 
-                        color: white; 
-                        border: none; 
-                        padding: 10px 15px; 
-                        border-radius: 5px;
-                        font-size: 12px;
-                    " onclick="window.simpleLiftModal.manualRefreshTable()">🔄 Оновити таблицю</button>
-                `);
-            }
-        }, 1000);
-    }
     
     console.log('✅ Simple Lift Modal ready');
 });

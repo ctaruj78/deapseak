@@ -569,11 +569,37 @@
                                                     <strong>АБО</strong>
                                                 </div>
                                                 
-                                                <textarea id="manualReport" class="form-control mt-3" rows="6" placeholder="Вставте текст звіту інспекції вручну...&#10;&#10;Приклад:&#10;C1 - ART. 78 - Existem peças salientes das máquinas...&#10;C2 - ART. 45 - A folga entre as soleiras...&#10;C3 - ART. 20 - Falta sinalização adequada..."></textarea>
+                                                <div class="mt-3">
+                                                    <label for="manualReport">Вставте текст звіту інспекції вручну:</label>
+                                                    <small class="form-text text-muted mb-2">
+                                                        <strong>Приклад:</strong><br>
+                                                        C1 - ART. 78 - Existem peças salientes das máquinas...<br>
+                                                        C2 - ART. 45 - A folga entre as soleiras...<br>
+                                                        C3 - ART. 20 - Falta sinalização adequada...
+                                                    </small>
+                                                    <textarea id="manualReport" class="form-control" rows="8" placeholder="Вставте або введіть текст звіту тут..."></textarea>
+                                                </div>
                                                 
                                                 <button class="btn btn-primary btn-lg btn-block mt-3" id="analyzeReportBtn" onclick="analyzeReport()">
                                                     <i class="fas fa-search"></i> Аналізувати звіт
                                                 </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Витягнутий текст зі звіту -->
+                                        <div class="card card-outline card-info" id="extractedTextCard" style="display: none;">
+                                            <div class="card-header">
+                                                <h3 class="card-title">
+                                                    <i class="fas fa-file-alt"></i> Витягнутий текст зі звіту
+                                                </h3>
+                                                <div class="card-tools">
+                                                    <button type="button" class="btn btn-tool" onclick="copyExtractedText()">
+                                                        <i class="fas fa-copy"></i> Копіювати
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="card-body">
+                                                <pre id="extractedTextContent" style="white-space: pre-wrap; word-wrap: break-word; max-height: 400px; overflow-y: auto; background: #f4f6f9; padding: 15px; border-radius: 5px; font-family: 'Courier New', monospace; font-size: 13px;"></pre>
                                             </div>
                                         </div>
                                         
@@ -1192,6 +1218,12 @@
             resultsContent.innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"></div><p class="mt-2">Аналізую звіт...</p></div>';
             resultsCard.style.display = 'block';
             
+            // Показати введений вручну текст
+            if (manualText && !currentAnalysisFile) {
+                document.getElementById('extractedTextContent').textContent = manualText;
+                document.getElementById('extractedTextCard').style.display = 'block';
+            }
+            
             const formData = new FormData();
             if (currentAnalysisFile) {
                 formData.append('pdfReport', currentAnalysisFile);
@@ -1220,6 +1252,13 @@
             .then(data => {
                 console.log('📊 Analysis response:', data);
                 if (data.success && data.analysis) {
+                    // Показати витягнутий текст якщо є
+                    if (data.extractedText || data.analysis.rawText) {
+                        const extractedText = data.extractedText || data.analysis.rawText;
+                        document.getElementById('extractedTextContent').textContent = extractedText;
+                        document.getElementById('extractedTextCard').style.display = 'block';
+                    }
+                    
                     displayAnalysisResults(data.analysis);
                 } else {
                     resultsContent.innerHTML = `<div class="alert alert-danger">❌ Помилка: ${data.error || data.message || 'Не вдалося проаналізувати звіт'}</div>`;
@@ -1386,6 +1425,25 @@
                     ? '<i class="fas fa-compress"></i> Приховати всі деталі'
                     : '<i class="fas fa-expand"></i> Показати всі деталі';
             }
+        }
+        
+        // Функція копіювання витягнутого тексту
+        function copyExtractedText() {
+            const textContent = document.getElementById('extractedTextContent').textContent;
+            navigator.clipboard.writeText(textContent).then(() => {
+                const btn = event.target.closest('button');
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i> Скопійовано!';
+                btn.classList.add('btn-success');
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.classList.remove('btn-success');
+                }, 2000);
+            }).catch(err => {
+                console.error('Помилка копіювання:', err);
+                alert('Не вдалося скопіювати текст');
+            });
         }
         
         // Auto-load regulations when page loads
