@@ -1,13 +1,38 @@
 const { User } = require('../models');
 const { generateToken, generateRefreshToken } = require('../middleware/auth');
 const { AppError } = require('../middleware/errorHandler');
+const crypto = require('crypto');
+
+/**
+ * Генерація випадкового тимчасового пароля
+ * @param {number} length - Довжина пароля (за замовчуванням 10)
+ * @returns {string} - Випадковий пароль
+ */
+const generateTemporaryPassword = (length = 10) => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
+    let password = '';
+    const randomBytes = crypto.randomBytes(length);
+    
+    for (let i = 0; i < length; i++) {
+        password += chars[randomBytes[i] % chars.length];
+    }
+    
+    return password;
+};
 
 /**
  * Реєстрація нового користувача
  */
 exports.register = async (req, res, next) => {
     try {
-        const { username, email, password, firstName, lastName, phone, role } = req.body;
+        let { username, email, password, firstName, lastName, phone, role } = req.body;
+
+        // Генерація тимчасового пароля, якщо не переданий
+        let temporaryPassword = null;
+        if (!password) {
+            temporaryPassword = generateTemporaryPassword();
+            password = temporaryPassword;
+        }
 
         // Перевірка чи існує користувач
         const existingUser = await User.findOne({
@@ -42,15 +67,24 @@ exports.register = async (req, res, next) => {
         const userResponse = user.toObject();
         delete userResponse.password;
 
-        res.status(201).json({
+        const response = {
             success: true,
-            message: 'Користувача успішно зареєстровано',
+            message: temporaryPassword 
+                ? 'Користувача створено. Тимчасовий пароль надіслано в відповіді.' 
+                : 'Користувача успішно зареєстровано',
             data: {
                 user: userResponse,
                 token,
                 refreshToken
             }
-        });
+        };
+
+        // Додаємо тимчасовий пароль до відповіді, якщо він був згенерований
+        if (temporaryPassword) {
+            response.data.temporaryPassword = temporaryPassword;
+        }
+
+        res.status(201).json(response);
     } catch (error) {
         next(error);
     }
