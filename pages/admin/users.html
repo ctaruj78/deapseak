@@ -240,12 +240,6 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="/pages/admin/reports.html" class="nav-link">
-                        <i class="fas fa-chart-bar nav-icon"></i>
-                        <p>Звіти</p>
-                    </a>
-                </li>
-                <li class="nav-item">
                     <a href="/pages/admin/email-template.html" class="nav-link">
                         <i class="fas fa-envelope nav-icon"></i>
                         <p>Email шаблони</p>
@@ -274,6 +268,12 @@
                     <a href="/pages/admin/predictive-maintenance.html" class="nav-link">
                         <i class="fas fa-brain nav-icon"></i>
                         <p>Predictive Maintenance</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/reports.html" class="nav-link">
+                        <i class="fas fa-chart-bar nav-icon"></i>
+                        <p>Звіти</p>
                     </a>
                 </li>
             </ul>
@@ -1039,11 +1039,15 @@
             resetForm() {
                 $('#userForm')[0].reset();
                 $('#userId').val('');
-                $('#userPassword').val('')
-                    .attr('type', 'text')
-                    .attr('placeholder', 'Буде згенеровано автоматично...');
-                $('#copyPasswordBtn').prop('disabled', true);
-                $('#generatedPasswordAlert').hide();
+                
+                // Автоматично генерувати пароль для нового користувача
+                const newPassword = this.generateSecurePassword();
+                $('#userPassword').val(newPassword)
+                    .attr('type', 'text');
+                $('#copyPasswordBtn').prop('disabled', false);
+                $('#generatedPasswordAlert').show().html(
+                    '<i class="fas fa-check-circle"></i> Пароль згенеровано автоматично! Обов\'язково скопіюйте його перед збереженням.'
+                );
             }
 
             async saveUser() {
@@ -1058,8 +1062,14 @@
                     };
 
                     const password = $('#userPassword').val();
+                    let passwordToSend = null; // Пароль для показу в модальному вікні
+                    
                     if (password) {
                         userData.password = password;
+                        // Зберегти пароль для показу (тільки якщо він був згенерований)
+                        if (!userId) {
+                            passwordToSend = password;
+                        }
                     }
 
                     let response;
@@ -1071,6 +1081,8 @@
                         // Якщо пароль не введено - сервер згенерує автоматично
                         if (!password) {
                             console.log('🔐 Пароль не вказано - сервер згенерує автоматично');
+                        } else {
+                            console.log('🔑 Використовується клієнтський пароль:', password);
                         }
                         
                         response = await AuthManager.fetchWithAuth('/api/users', {
@@ -1086,13 +1098,16 @@
                         
                         result = await response.json();
                         
-                        // Якщо сервер повернув згенерований пароль - показати його
+                        // Показати модальне вікно з паролем
                         if (result.data && result.data.temporaryPassword) {
+                            // Сервер згенерував пароль
                             const generatedPassword = result.data.temporaryPassword;
                             console.log('🔑 Сервер згенерував пароль:', generatedPassword);
-                            
-                            // Показати пароль користувачу
                             this.showGeneratedPasswordModal(userData.email, generatedPassword);
+                        } else if (passwordToSend) {
+                            // Клієнт згенерував пароль - також показати модальне вікно
+                            console.log('🔑 Показ клієнтського пароля:', passwordToSend);
+                            this.showGeneratedPasswordModal(userData.email, passwordToSend);
                         }
                     } else {
                         console.log('✏️ Оновлення користувача:', userId);
@@ -1415,22 +1430,39 @@
                     };
                     
                     // Надіслати через API
+                    console.log('📧 Відправка email на:', email);
+                    console.log('📦 Дані:', { to: emailData.to, subject: emailData.subject });
+                    
                     const response = await AuthManager.fetchWithAuth('/api/send-email', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(emailData)
                     });
                     
+                    console.log('📡 Статус відповіді:', response.status);
+                    
+                    // Спробувати прочитати як текст спочатку
+                    const responseText = await response.text();
+                    console.log('📄 Відповідь:', responseText.substring(0, 300));
+                    
                     if (!response.ok) {
-                        const error = await response.json();
-                        throw new Error(error.message || 'Не вдалося надіслати email');
+                        let errorMessage = 'Помилка надсилання email';
+                        try {
+                            const error = JSON.parse(responseText);
+                            errorMessage = error.error || error.message || errorMessage;
+                        } catch (e) {
+                            console.error('Не вдалося розпарсити JSON:', e);
+                            errorMessage = 'Помилка сервера: ' + responseText.substring(0, 100);
+                        }
+                        throw new Error(errorMessage);
                     }
                     
-                    console.log('✅ Email успішно надіслано на:', email);
+                    const result = JSON.parse(responseText);
+                    console.log('✅ Email успішно надіслано:', result);
                     return true;
                     
                 } catch (error) {
-                    console.error('❌ Помилка надсилання email:', error);
+                    console.error('❌ Помилка:', error);
                     throw error;
                 }
             }

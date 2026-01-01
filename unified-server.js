@@ -3628,6 +3628,79 @@ app.delete('/api/orcamentos/:id', authenticateToken, async (req, res) => {
 // 📧 EMAIL ENDPOINTS - Brevo SMTP Integration
 // ═══════════════════════════════════════════════════════════
 
+// POST /api/send-email - Загальний endpoint для відправки email (Admin only)
+app.post('/api/send-email', authenticateToken, async (req, res) => {
+    try {
+        // Перевірка ролі адміністратора
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                error: 'Доступ заборонено. Тільки адміністратори можуть надсилати email.'
+            });
+        }
+
+        const { to, subject, html } = req.body;
+
+        // Валідація
+        if (!to || !subject || !html) {
+            return res.status(400).json({
+                success: false,
+                error: 'Не вказано обов\'язкові поля: to, subject, html'
+            });
+        }
+
+        // Валідація email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(to)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Невірний формат email'
+            });
+        }
+
+        console.log('📧 =============== EMAIL SENDING REQUEST ===============');
+        console.log('📬 To:', to);
+        console.log('📋 Subject:', subject);
+        console.log('👤 Requested by:', req.user.email);
+
+        // Створюємо transporter для Brevo SMTP
+        const nodemailer = require('nodemailer');
+        const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
+            port: parseInt(process.env.SMTP_PORT) || 587,
+            secure: false, // TLS
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS
+            }
+        });
+
+        const mailOptions = {
+            from: process.env.SMTP_FROM || '"LiftMaster Pro" <info@festlift.pt>',
+            to,
+            subject,
+            html
+        };
+
+        const result = await transporter.sendMail(mailOptions);
+        
+        console.log('✅ Email successfully sent:', result.messageId);
+
+        return res.json({
+            success: true,
+            message: 'Email успішно надіслано',
+            messageId: result.messageId
+        });
+
+    } catch (error) {
+        console.error('❌ Email sending error:', error);
+        return res.status(500).json({
+            success: false,
+            error: 'Помилка надсилання email: ' + error.message
+        });
+    }
+});
+
 // POST /api/email/send-inspection-report - Відправити inspection report
 app.post('/api/email/send-inspection-report', authenticateToken, async (req, res) => {
     try {
@@ -3926,76 +3999,116 @@ app.post('/api/email/send-orcamento', authenticateToken, async (req, res) => {
             to: clientEmail,
             subject: `Orçamento ${orcamento.numero} - FestLift`,
             html: `
-                <div style="font-family: Arial, sans-serif; max-width: 700px; margin: 0 auto; border: 1px solid #ddd;">
-                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center;">
-                        <h1 style="margin: 0; font-size: 28px;">FestLift</h1>
-                        <p style="margin: 5px 0 0 0; font-size: 14px;">Manutenção de Elevadores</p>
-                    </div>
-                    
-                    <div style="padding: 30px;">
-                        <h2 style="color: #333; border-bottom: 2px solid #667eea; padding-bottom: 10px;">
-                            Orçamento ${orcamento.numero}
-                        </h2>
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <style>
+                        @media only screen and (max-width: 600px) {
+                            .container { width: 100% !important; padding: 10px !important; }
+                            .header { padding: 20px 10px !important; }
+                            .content { padding: 15px !important; }
+                            .footer { padding: 15px 10px !important; }
+                            table { font-size: 14px !important; }
+                            h1 { font-size: 22px !important; }
+                            h2 { font-size: 18px !important; }
+                            h3 { font-size: 16px !important; }
+                            .bank-info { font-size: 12px !important; word-break: break-all; }
+                            .price-cell { white-space: nowrap; }
+                        }
+                    </style>
+                </head>
+                <body style="margin: 0; padding: 0; background: #f5f5f5;">
+                    <div class="container" style="font-family: Arial, sans-serif; max-width: 700px; margin: 20px auto; border: 1px solid #ddd; background: white;">
+                        <div class="header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center;">
+                            <h1 style="margin: 0; font-size: 28px;">FestLift</h1>
+                            <p style="margin: 5px 0 0 0; font-size: 14px;">Manutenção de Elevadores</p>
+                        </div>
                         
-                        <div style="margin: 20px 0;">
-                            <p><strong>Cliente:</strong> ${orcamento.cliente.nome}</p>
-                            <p><strong>Email:</strong> ${orcamento.cliente.email}</p>
-                            ${orcamento.cliente.telefone ? `<p><strong>Telefone:</strong> ${orcamento.cliente.telefone}</p>` : ''}
-                            ${orcamento.cliente.morada ? `<p><strong>Morada:</strong> ${orcamento.cliente.morada}</p>` : ''}
-                        </div>
-
-                        <div style="margin: 20px 0;">
-                            <p><strong>Data:</strong> ${new Date(orcamento.data).toLocaleDateString('pt-PT')}</p>
-                            <p><strong>Validade:</strong> ${validadeFormatted}</p>
-                        </div>
-
-                        <h3 style="color: #667eea; margin-top: 30px;">Serviços</h3>
-                        ${servicosHTML}
-
-                        <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
-                            <table style="width: 100%; font-size: 16px;">
-                                <tr>
-                                    <td style="text-align: right; padding: 5px;"><strong>Subtotal:</strong></td>
-                                    <td style="text-align: right; padding: 5px; width: 120px;">€${orcamento.subtotal.toFixed(2)}</td>
-                                </tr>
-                                <tr>
-                                    <td style="text-align: right; padding: 5px;"><strong>IVA (23%):</strong></td>
-                                    <td style="text-align: right; padding: 5px;">€${orcamento.iva.toFixed(2)}</td>
-                                </tr>
-                                <tr style="border-top: 2px solid #667eea;">
-                                    <td style="text-align: right; padding: 10px 5px 5px 5px;"><strong style="font-size: 18px; color: #667eea;">TOTAL:</strong></td>
-                                    <td style="text-align: right; padding: 10px 5px 5px 5px;"><strong style="font-size: 18px; color: #667eea;">€${orcamento.total.toFixed(2)}</strong></td>
-                                </tr>
-                            </table>
-                        </div>
-
-                        ${orcamento.notas ? `
-                            <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
-                                <strong>Notas:</strong><br>
-                                ${orcamento.notas}
+                        <div class="content" style="padding: 30px;">
+                            <h2 style="color: #333; border-bottom: 2px solid #667eea; padding-bottom: 10px; margin: 0 0 20px 0;">
+                                Orçamento ${orcamento.numero}
+                            </h2>
+                            
+                            <div style="margin: 20px 0; line-height: 1.6;">
+                                <p style="margin: 5px 0;"><strong>Cliente:</strong> ${orcamento.cliente.nome}</p>
+                                <p style="margin: 5px 0; word-break: break-word;"><strong>Email:</strong> ${orcamento.cliente.email}</p>
+                                ${orcamento.cliente.telefone ? `<p style="margin: 5px 0;"><strong>Telefone:</strong> ${orcamento.cliente.telefone}</p>` : ''}
+                                ${orcamento.cliente.morada ? `<p style="margin: 5px 0;"><strong>Morada:</strong> ${orcamento.cliente.morada}</p>` : ''}
                             </div>
-                        ` : ''}
 
-                        <div style="margin-top: 30px; padding: 20px; background: #e7f3ff; border-radius: 8px;">
-                            <h4 style="margin: 0 0 10px 0; color: #0066cc;">💳 Dados Bancários para Pagamento</h4>
-                            <p style="margin: 5px 0; font-family: 'Courier New', monospace; font-size: 14px;">
-                                <strong>Banco BPI</strong><br>
-                                IBAN: <strong>PT50 0010 0000 5854 8320 0015 4</strong>
+                            <div style="margin: 20px 0; line-height: 1.6;">
+                                <p style="margin: 5px 0;"><strong>Data:</strong> ${new Date(orcamento.data).toLocaleDateString('pt-PT')}</p>
+                                <p style="margin: 5px 0;"><strong>Validade:</strong> ${validadeFormatted}</p>
+                            </div>
+
+                            <h3 style="color: #667eea; margin: 30px 0 15px 0;">Serviços</h3>
+                            <div style="overflow-x: auto;">
+                                ${servicosHTML}
+                            </div>
+
+                            <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+                                <table style="width: 100%; font-size: 16px; border-collapse: collapse;">
+                                    <tr>
+                                        <td style="text-align: right; padding: 8px 5px;"><strong>Subtotal:</strong></td>
+                                        <td class="price-cell" style="text-align: right; padding: 8px 5px; width: 100px; white-space: nowrap;">€${orcamento.subtotal.toFixed(2)}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align: right; padding: 8px 5px;"><strong>IVA (23%):</strong></td>
+                                        <td class="price-cell" style="text-align: right; padding: 8px 5px; white-space: nowrap;">€${orcamento.iva.toFixed(2)}</td>
+                                    </tr>
+                                    <tr style="border-top: 2px solid #667eea;">
+                                        <td style="text-align: right; padding: 12px 5px 8px 5px;"><strong style="font-size: 18px; color: #667eea;">TOTAL:</strong></td>
+                                        <td class="price-cell" style="text-align: right; padding: 12px 5px 8px 5px; white-space: nowrap;"><strong style="font-size: 18px; color: #667eea;">€${orcamento.total.toFixed(2)}</strong></td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            ${orcamento.notas ? `
+                                <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+                                    <strong>Notas:</strong><br>
+                                    ${orcamento.notas}
+                                </div>
+                            ` : ''}
+
+                            <div style="margin-top: 30px; padding: 20px; background: #e7f3ff; border-radius: 8px;">
+                                <h4 style="margin: 0 0 15px 0; color: #0066cc;">💳 Dados Bancários</h4>
+                                <p style="margin: 8px 0; font-size: 14px; line-height: 1.6;">
+                                    <strong>Banco BPI</strong><br>
+                                    <span class="bank-info" style="font-family: 'Courier New', monospace; font-size: 13px; display: inline-block; word-break: break-all;">
+                                        IBAN: <strong>PT50 0010 0000 5854 8320 0015 4</strong>
+                                    </span>
+                                </p>
+                                <p style="margin: 15px 0 5px 0; color: #666; font-size: 12px;">
+                                    ⏰ <strong>Válido até ${validadeFormatted}</strong>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="footer" style="background: #f8f9fa; padding: 25px 20px; text-align: center; border-top: 1px solid #ddd;">
+                            <p style="margin: 0 0 10px 0; font-size: 15px; color: #333; font-weight: bold;">
+                                FESTLIFT, LDA
                             </p>
-                            <p style="margin: 15px 0 5px 0; color: #666; font-size: 12px;">
-                                <strong>Este orçamento é válido até ${validadeFormatted}</strong>
+                            <p style="margin: 8px 0; font-size: 13px; color: #666; line-height: 1.8;">
+                                <strong>Av. do Parque 84B</strong><br>
+                                Rio de Mouro, Lisboa 2635-609<br>
+                                <strong>NIF:</strong> 515924741
+                            </p>
+                            <p style="margin: 8px 0; font-size: 13px; color: #666; line-height: 1.6;">
+                                📞 <a href="tel:+351214190863" style="color: #667eea; text-decoration: none;">+351 214 190 863</a><br>
+                                📱 <a href="tel:+351926380243" style="color: #667eea; text-decoration: none;">+351 926 380 243</a> / 
+                                <a href="tel:+351926380244" style="color: #667eea; text-decoration: none;">244</a><br>
+                                📧 <a href="mailto:info@festlift.pt" style="color: #667eea; text-decoration: none;">info@festlift.pt</a><br>
+                                🌐 <a href="https://festlift.pt" style="color: #667eea; text-decoration: none;">festlift.pt</a>
+                            </p>
+                            <p style="margin: 12px 0 0 0; font-size: 11px; color: #999;">
+                                Este orçamento foi gerado automaticamente
                             </p>
                         </div>
                     </div>
-
-                    <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #ddd;">
-                        <p style="margin: 5px 0; font-size: 14px; color: #666;">
-                            <strong>FESTLIFT, LDA - Manutenção de Elevadores</strong><br>
-                            Email: info@festlift.pt | Tel: +351 XXX XXX XXX<br>
-                            <small>Este orçamento foi gerado automaticamente.</small>
-                        </p>
-                    </div>
-                </div>
+                </body>
+                </html>
             `
         };
 
