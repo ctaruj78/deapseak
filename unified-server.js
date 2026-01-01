@@ -713,10 +713,21 @@ app.post('/api/pdf/upload', authenticateToken, upload.single('pdfReport'), async
 
         if (result.success) {
             console.log('✅ PDF analysis completed:', result.analysis.violations.length, 'violations found');
-            res.json({
+            
+            // Додаємо rawText для копіювання
+            const response = {
                 success: true,
                 analysis: result.analysis
-            });
+            };
+            
+            // Якщо є витягнутий текст - додаємо його
+            if (result.rawText) {
+                response.extractedText = result.rawText;
+                response.pageCount = result.pageCount || 0;
+                console.log(`📝 Extracted text included: ${result.rawText.length} chars, ${result.pageCount} pages`);
+            }
+            
+            res.json(response);
         } else {
             console.error('❌ PDF analysis failed:', result.error);
             res.status(500).json({

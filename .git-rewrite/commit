@@ -1,0 +1,12 @@
+tree 50688e68e1ef4f260795d4146a33dac3396c41f4
+parent e058ff0c662a9afc5c39b2b77fc742bf9d33e981
+author ctaruj78 <ctaruj78@gmail.com> 1761505527 +0000
+committer ctaruj78 <ctaruj78@gmail.com> 1761505527 +0000
+
+Refactor: Modernize dispatcher panel
+
+- Extract CSS from all 7 dispatcher HTML files
+- Create dispatcher-manager.js module
+- Create assignments-manager.js module
+- Add API client and notification utilities
+- Improve error handling and user feedback

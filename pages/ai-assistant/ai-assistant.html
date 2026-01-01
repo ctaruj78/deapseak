@@ -1399,10 +1399,17 @@
                     // Відображення результату парсингу
                     console.log('✅ PDF успішно оброблено:', result);
                     
+                    // Зберігаємо витягнутий текст для подальшого використання
+                    if (result.extractedText) {
+                        window.currentPdfText = result.extractedText;
+                        window.currentPdfPages = result.pageCount || 0;
+                        console.log(`📝 PDF text stored: ${result.extractedText.length} chars, ${result.pageCount} pages`);
+                    }
+                    
                     // Якщо є порушення - відобразити результати та вставити текст
                     if (result.analysis.violations && result.analysis.violations.length > 0) {
                         // Автоматично показати результати
-                        displayPDFAnalysisResult(result.analysis);
+                        displayPDFAnalysisResult(result.analysis, result.extractedText);
                         
                         // Також заповнити текстове поле для можливості редагування
                         const violationsText = result.analysis.violations.map(v => 
@@ -1411,13 +1418,8 @@
                         document.getElementById('inspectionReport').value = violationsText;
                     } else {
                         // Якщо порушень немає - показати повідомлення
-                        const resultDiv = document.getElementById('analysisResult');
-                        resultDiv.style.display = 'block';
-                        resultDiv.innerHTML = `
-                            <div style="background: linear-gradient(135deg, #48bb78, #38a169); color: white; padding: 30px; border-radius: 15px; text-align: center; margin: 20px 0;">
-                                <i class="fas fa-check-circle" style="font-size: 64px; margin-bottom: 15px;"></i>
-                                <h2 style="margin: 0 0 10px 0;">✅ CERTIFICADO APROVADO</h2>
-                                <p style="margin: 0; font-size: 18px;">Nenhuma não conformidade detectada</p>
+                        displayPDFAnalysisResult(result.analysis, result.extractedText);
+                    }
                                 <p style="margin: 10px 0 0 0; opacity: 0.9;">O elevador encontra-se em conformidade com o regulamento</p>
                             </div>
                         `;
@@ -1433,7 +1435,7 @@
             }
         }
         
-        function displayPDFAnalysisResult(analysis) {
+        function displayPDFAnalysisResult(analysis, extractedText) {
             const resultDiv = document.getElementById('analysisResult');
             resultDiv.style.display = 'block';
             
@@ -1444,6 +1446,13 @@
             
             // Кнопки експорту вгорі
             html += '<div style="display: flex; gap: 10px; margin-bottom: 20px; justify-content: flex-end; flex-wrap: wrap;">';
+            
+            // Додаємо кнопку копіювання тексту якщо є extractedText
+            if (extractedText) {
+                html += '<button onclick="copyPdfText()" class="btn" style="background: linear-gradient(135deg, #805ad5, #6b46c1); color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">';
+                html += '<i class="fas fa-copy"></i> Copiar Texto do PDF</button>';
+            }
+            
             html += '<button onclick="generateActionPlan()" class="btn" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">';
             html += '<i class="fas fa-tasks"></i> Gerar Plano de Ação</button>';
             html += '<button onclick="exportToPDF()" class="btn" style="background: linear-gradient(135deg, #e53e3e, #dc3545); color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">';
@@ -1539,8 +1548,75 @@
                 html += '</div>';
             }
             
+            // 📝 Секція з витягнутим текстом PDF (згорнута за замовчуванням)
+            if (extractedText) {
+                html += '<div style="margin-top: 20px; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden;">';
+                html += '<div onclick="togglePdfText()" style="background: #f7fafc; padding: 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">';
+                html += '<h3 style="margin: 0; color: #2d3748;"><i class="fas fa-file-alt"></i> 📝 Texto Extraído do PDF</h3>';
+                html += '<i id="pdfTextToggle" class="fas fa-chevron-down" style="color: #718096;"></i>';
+                html += '</div>';
+                html += '<div id="pdfTextContent" style="display: none; padding: 20px; background: white; max-height: 400px; overflow-y: auto;">';
+                html += '<pre style="white-space: pre-wrap; font-family: monospace; font-size: 12px; color: #2d3748; margin: 0;">';
+                html += escapeHtml(extractedText);
+                html += '</pre>';
+                html += '<div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0;">';
+                html += '<button onclick="copyPdfTextToClipboard()" class="btn" style="background: linear-gradient(135deg, #805ad5, #6b46c1); color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">';
+                html += '<i class="fas fa-copy"></i> Copiar Todo o Texto</button>';
+                html += `<span style="margin-left: 15px; color: #718096; font-size: 14px;">📄 ${window.currentPdfPages || 0} páginas • ${extractedText.length} caracteres</span>`;
+                html += '</div>';
+                html += '</div>';
+                html += '</div>';
+            }
+            
             html += '</div>';
             resultDiv.innerHTML = html;
+        }
+        
+        // Функція для toggle тексту PDF
+        function togglePdfText() {
+            const content = document.getElementById('pdfTextContent');
+            const icon = document.getElementById('pdfTextToggle');
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            } else {
+                content.style.display = 'none';
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            }
+        }
+        
+        // Функція для копіювання тексту PDF
+        function copyPdfTextToClipboard() {
+            if (window.currentPdfText) {
+                navigator.clipboard.writeText(window.currentPdfText).then(() => {
+                    // Показати повідомлення про успіх
+                    const btn = event.target.closest('button');
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+                    btn.style.background = 'linear-gradient(135deg, #48bb78, #38a169)';
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.style.background = 'linear-gradient(135deg, #805ad5, #6b46c1)';
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Erro ao copiar:', err);
+                    alert('Erro ao copiar texto: ' + err.message);
+                });
+            }
+        }
+        
+        // Функція для швидкого копіювання (з header кнопки)
+        function copyPdfText() {
+            copyPdfTextToClipboard();
+        }
+        
+        // Helper function для escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         document.getElementById('analyzeBtn').addEventListener('click', analyzeInspection);
