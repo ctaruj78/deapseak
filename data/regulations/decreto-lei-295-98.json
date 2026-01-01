@@ -1,0 +1,304 @@
+{
+  "metadata": {
+    "lawId": "DL295/98",
+    "title": "Decreto-Lei n.º 295/98",
+    "date": "22 de Setembro de 1998",
+    "scope": "Segurança de ascensores - Marcação CE, conformidade, organismos notificados",
+    "transposes": "Directiva n.º 95/16/CE (29 Junho 1995)",
+    "authority": "Direcção-Geral da Energia (DGE), Instituto Português da Qualidade (IPQ)",
+    "relatedLaws": ["Decreto 513/70", "DL 320/2002", "DL 131/87 (revogado)", "DL 110/91 (revogado)"]
+  },
+  "chapters": [
+    "Objecto e âmbito",
+    "Definições",
+    "Colocação no mercado",
+    "Condições de segurança",
+    "Marcação CE e conformidade",
+    "Organismos notificados",
+    "Fiscalização e contra-ordenações",
+    "Normas transitórias"
+  ],
+  "articles": [
+    {
+      "number": "1",
+      "title": "Objecto",
+      "text": "Estabelece princípios gerais de segurança dos ascensores e componentes, requisitos para colocação no mercado, avaliação de conformidade e marcação CE. Transpõe Directiva 95/16/CE.",
+      "keyPoints": [
+        "Marcação CE obrigatória",
+        "Avaliação de conformidade por organismos notificados",
+        "Transposição de directiva comunitária"
+      ]
+    },
+    {
+      "number": "2",
+      "title": "Âmbito - Aplicação e exclusões",
+      "text": "Aplica-se a ascensores e componentes de segurança em edifícios. EXCLUI: instalações de cabos públicas/privadas, ascensores militares/policiais, poços de minas, maquinaria de teatro, meios de transporte, acesso exclusivo a locais de trabalho, comboios cremalheira, ascensores de estaleiro.",
+      "keyPoints": [
+        "Ascensores permanentes em edifícios",
+        "8 exclusões específicas (militares, minas, teatros, transporte, etc.)",
+        "Componentes de segurança incluídos"
+      ]
+    },
+    {
+      "number": "3",
+      "title": "Definições técnicas",
+      "text": "Define: Ascensor (trajecto >15º ou fixo), Ascensor modelo (representativo), Componente de segurança (essencial ao funcionamento), Declaração CE, Fabricante, Instalador, Marcação CE, Norma harmonizada.",
+      "keyPoints": [
+        "Ascensor: inclinação >15º ou trajecto definido",
+        "Instalador vs Fabricante (responsabilidades distintas)",
+        "Marcação CE com grafismo específico (Anexo III)"
+      ]
+    },
+    {
+      "number": "4",
+      "title": "Colocação no mercado ou em serviço",
+      "text": "Só podem ser colocados no mercado ascensores/componentes com condições de segurança. Permitida exibição em feiras COM PAINEL visível indicando não-conformidade e impossibilidade de compra.",
+      "keyPoints": [
+        "Conformidade obrigatória antes de venda",
+        "Feiras: painel visível com aviso de não-conformidade",
+        "Medidas de segurança em demonstrações"
+      ]
+    },
+    {
+      "number": "5",
+      "title": "Condições de segurança - Requisitos essenciais",
+      "text": "Ascensores devem satisfazer requisitos de segurança. Projectista e instalador devem considerar requisitos para instalação e funcionamento. PROIBIDO: canalizações na caixa além das necessárias. Requisitos nos Anexos I-XV.",
+      "keyPoints": [
+        "Requisitos essenciais obrigatórios (Anexo I)",
+        "Caixa SEM canalizações estranhas",
+        "Projectista + Instalador responsáveis"
+      ]
+    },
+    {
+      "number": "6",
+      "title": "Presunção de conformidade - Normas harmonizadas",
+      "text": "Marcação CE + Declaração CE = conformidade. Normas harmonizadas criam presunção. DGE publica referências de normas. Na falta, DGE adopta normas nacionais adequadas.",
+      "keyPoints": [
+        "Marcação CE presume conformidade",
+        "Normas harmonizadas publicadas por DGE",
+        "Subsídio: normas nacionais adequadas"
+      ]
+    },
+    {
+      "number": "7",
+      "title": "Medidas de salvaguarda - Fiscalização",
+      "text": "Fiscalização pode verificar segurança MESMO com marcação CE. Marcação CE indevida: fabricante corrige em prazo fixado. Não cumprimento: PROIBIÇÃO de mercado/serviço pelo Ministro da Economia. Recurso em 30 dias.",
+      "keyPoints": [
+        "Marcação CE indevida: correcção obrigatória",
+        "Proibição de mercado pelo Ministro",
+        "Recurso em 30 dias",
+        "Comunicação à Comissão Europeia"
+      ]
+    },
+    {
+      "number": "8",
+      "title": "Organismos notificados - Reconhecimento",
+      "text": "IPQ reconhece organismos notificados (consultada DGE) com base em normas NP EN 45000 e critérios do Anexo VII. Sistema Português da Qualidade.",
+      "keyPoints": [
+        "IPQ + DGE reconhecem organismos",
+        "Normas NP EN 45000",
+        "Critérios mínimos (Anexo VII): independência, competência, seguro RC"
+      ]
+    },
+    {
+      "number": "9",
+      "title": "Marcação CE - Aposição e proibições",
+      "text": "Marcação CE segundo Anexo III. PROIBIDO: marcações que induzam erro sobre significado/grafismo da CE.",
+      "keyPoints": [
+        "Grafismo específico (Anexo III)",
+        "Proibição de marcações confusas",
+        "Aposta pelo instalador (ascensor) ou fabricante (componente)"
+      ]
+    },
+    {
+      "number": "10",
+      "title": "Fiscalização - Competência",
+      "text": "Delegações Regionais Ministério da Economia (DRE) fiscalizam. Sem prejuízo de outras entidades.",
+      "keyPoints": [
+        "DRE = entidade fiscalizadora",
+        "Outras entidades podem ter competências"
+      ]
+    },
+    {
+      "number": "11",
+      "title": "Contra-ordenações - Coimas",
+      "text": "Coimas: a) Sem marcação CE: 500.000$00 a 9.000.000$00; b) Canalizações na caixa: 300.000$00 a 5.000.000$00; c) Sem painel em feira: 150.000$00 a 3.000.000$00. Pessoa singular: máximo 750.000$00. Sanções acessórias possíveis. Responsável: instalador.",
+      "keyPoints": [
+        "Sem CE: €2.494 a €44.892 (conversão escudos)",
+        "Canalizações indevidas: €1.496 a €24.940",
+        "Sem painel feira: €748 a €14.964",
+        "Sanções acessórias (DL 433/82)"
+      ]
+    },
+    {
+      "number": "12",
+      "title": "Instrução de processos",
+      "text": "DRE instrui processos. Director DRE aplica coimas. Processos de outras entidades remetidos à DRE.",
+      "keyPoints": [
+        "DRE instrui e aplica coimas",
+        "Centralização em DRE"
+      ]
+    },
+    {
+      "number": "13",
+      "title": "Distribuição do produto das coimas",
+      "text": "60% Estado, 20% entidade que instaurou, 20% DRE que aplicou.",
+      "keyPoints": [
+        "Estado: 60%",
+        "Instauradora: 20%",
+        "DRE: 20%"
+      ]
+    },
+    {
+      "number": "14",
+      "title": "Coordenação - DGE",
+      "text": "DGE coordena aplicação global. DRE enviam listagem anual de infracções à DGE.",
+      "keyPoints": [
+        "DGE = coordenador nacional",
+        "Listagens anuais de infracções"
+      ]
+    },
+    {
+      "number": "15",
+      "title": "Norma transitória",
+      "text": "ATÉ 30 Junho 1999: colocação no mercado segundo DL 131/87 e DL 110/91. Declaração CE substitui certificado de exploração (ligação à rede eléctrica).",
+      "keyPoints": [
+        "Transição até 30/06/1999",
+        "Declaração CE = certificado exploração",
+        "Permite ligação à rede"
+      ]
+    },
+    {
+      "number": "16",
+      "title": "Norma revogatória",
+      "text": "A PARTIR de 1 Julho 1999: DL 131/87 e DL 110/91 NÃO aplicáveis a ascensores instalados após essa data.",
+      "keyPoints": [
+        "DL 131/87 revogado (instalações novas)",
+        "DL 110/91 revogado (instalações novas)",
+        "Corte: 01/07/1999"
+      ]
+    }
+  ],
+  "criticalRequirements": [
+    {
+      "code": "DL295-4",
+      "title": "Sem Marcação CE",
+      "classification": "C1",
+      "description": "Ascensor ou componente colocado no mercado SEM marcação CE de conformidade",
+      "danger": "Equipamento não verificado por organismo notificado pode ter falhas graves de segurança causando acidentes fatais",
+      "penalty": "€2.494 a €44.892 (500.000$00 a 9.000.000$00)",
+      "legalBasis": "Art. 11º, n.º 1, a)"
+    },
+    {
+      "code": "DL295-5",
+      "title": "Canalizações na caixa do ascensor",
+      "classification": "C2",
+      "description": "Caixa contém canalizações/instalações além das necessárias ao funcionamento",
+      "danger": "Canalizações estranhas (gás, água, esgoto) aumentam risco de incêndio, inundação, electrocussão",
+      "penalty": "€1.496 a €24.940 (300.000$00 a 5.000.000$00)",
+      "legalBasis": "Art. 5º, n.º 3 + Art. 11º, n.º 1, b)"
+    },
+    {
+      "code": "DL295-7",
+      "title": "Marcação CE indevida - Não conformidade",
+      "classification": "C1",
+      "description": "Marcação CE aposta sem cumprir requisitos ou procedimentos",
+      "danger": "Falsa conformidade esconde perigos reais - público confia em certificação fraudulenta",
+      "penalty": "Proibição de mercado + €2.494 a €44.892",
+      "legalBasis": "Art. 7º + Art. 11º"
+    },
+    {
+      "code": "DL295-ANEXO-I-2.2",
+      "title": "Cabina sem espaço/resistência para acessibilidade",
+      "classification": "C2",
+      "description": "Cabina não concebida para acesso de pessoas deficientes quando dimensões permitirem",
+      "danger": "Discriminação + risco de entalamento de cadeiras de rodas ou dispositivos de apoio",
+      "penalty": "Incluído em não-conformidade geral",
+      "legalBasis": "Anexo I, n.º 2.2"
+    },
+    {
+      "code": "DL295-ANEXO-I-4.4",
+      "title": "Movimento com dispositivo anti-queda desactivado",
+      "classification": "C1",
+      "description": "Ascensor pode mover-se sem dispositivo Art. 4.2 (pára-quedas) operacional",
+      "danger": "Se dispositivo anti-queda falhar, cabina pode cair em queda livre - MORTE CERTA",
+      "penalty": "Proibição de entrada em serviço",
+      "legalBasis": "Anexo I, n.º 4.4"
+    }
+  ],
+  "technicalAnnexes": {
+    "annexI": "Requisitos essenciais de segurança (generalidades, cabina, suspensão, controlo velocidade, máquina, comando, riscos exteriores/interiores, marcação, instruções)",
+    "annexII": "Conteúdo Declaração CE (componentes: fabricante, descrição, ano, normas, organismo; ascensores: instalador, local, ano, normas, organismo)",
+    "annexIII": "Grafismo marcação CE (altura mínima 5mm, proporções fixas, seguida de nº organismo)",
+    "annexIV": "Lista componentes segurança (encravamentos portas, dispositivos anti-queda, limitadores velocidade, amortecedores, dispositivos hidráulicos, interruptores electrónicos)",
+    "annexV": "Exame CE de tipo - Módulo B (componentes + ascensores modelo)",
+    "annexVI": "Controlo final (ensaios carga, funcionamento, dispositivos segurança)",
+    "annexVII": "Critérios organismos notificados (independência, competência, seguro RC)",
+    "annexVIII_IX": "Garantia qualidade componentes (Módulos E e H)",
+    "annexX": "Verificação por unidade - Módulo G (ascensores únicos)",
+    "annexXI": "Conformidade tipo com amostragem - Módulo C",
+    "annexXII_XIII_XIV": "Garantia qualidade ascensores (Módulos E, H, D)",
+    "annexXV": "Procedimentos avaliação conformidade (resumo rotas certificação)"
+  },
+  "certificationRoutes": {
+    "componentes": [
+      "Exame CE tipo (Anexo V) + Controlo produção amostragem (Anexo XI)",
+      "Exame CE tipo (Anexo V) + Garantia qualidade produção (Anexo VIII)",
+      "Garantia qualidade total (Anexo IX)"
+    ],
+    "ascensores": [
+      "Exame CE tipo modelo (Anexo V) + Controlo final (Anexo VI)",
+      "Exame CE tipo modelo (Anexo V) + Garantia qualidade produtos (Anexo XII)",
+      "Exame CE tipo modelo (Anexo V) + Garantia qualidade produção (Anexo XIV)",
+      "Garantia qualidade total (Anexo XIII) + Controlo concepção",
+      "Verificação por unidade (Anexo X) - ascensores únicos"
+    ]
+  },
+  "penalties": {
+    "sem_marcacao_CE": {
+      "escudos": "500.000$00 a 9.000.000$00",
+      "euros": "€2.494 a €44.892",
+      "pessoaSingular": "Máximo €3.740 (750.000$00)",
+      "sancoesAcessorias": "Publicação decisão, encerramento, interdição actividade"
+    },
+    "canalizacoes_caixa": {
+      "escudos": "300.000$00 a 5.000.000$00",
+      "euros": "€1.496 a €24.940",
+      "pessoaSingular": "Máximo €3.740"
+    },
+    "sem_painel_feira": {
+      "escudos": "150.000$00 a 3.000.000$00",
+      "euros": "€748 a €14.964",
+      "pessoaSingular": "Máximo €3.740"
+    },
+    "marcacao_CE_indevida": {
+      "administrativa": "Proibição mercado/serviço pelo Ministro Economia",
+      "coima": "€2.494 a €44.892 (como sem marcação)",
+      "recurso": "30 dias para Ministro da Economia"
+    }
+  },
+  "transitionDates": {
+    "entradaVigor": "30 dias após 22/09/1998 = ~22/10/1998",
+    "periodoTransitorio": "Até 30/06/1999 (legislação antiga)",
+    "revogacaoEfectiva": "01/07/1999 (DL 131/87 e 110/91 não aplicáveis a novos)",
+    "directivaEuropeia": "Directiva 95/16/CE de 29/06/1995"
+  },
+  "authorities": {
+    "DGE": "Direcção-Geral da Energia - Coordenação global, publicação normas",
+    "IPQ": "Instituto Português da Qualidade - Reconhecimento organismos notificados",
+    "DRE": "Delegações Regionais Economia - Fiscalização, instrução processos, aplicação coimas",
+    "MinisterioEconomia": "Decisões de proibição mercado/circulação",
+    "ComissaoEuropeia": "Notificação medidas salvaguarda"
+  },
+  "notes": [
+    "Lei fundamental sobre MARCAÇÃO CE - complementa 513/70 (técnico) e 320/2002 (manutenção)",
+    "Transpõe directiva europeia 95/16/CE - harmonização EU",
+    "Define 3 rotas certificação componentes, 5 rotas ascensores",
+    "Organismos notificados: independentes, competentes, seguro RC",
+    "Declaração CE substitui certificado exploração para ligação rede",
+    "Conversão escudos: 1€ = 200,482$00",
+    "Revoga DL 131/87 e 110/91 para instalações pós-01/07/1999",
+    "Canalizações na caixa: proibição ABSOLUTA (gás, água, etc.)",
+    "Marcação CE indevida: procedimento correctivo OU proibição"
+  ]
+}

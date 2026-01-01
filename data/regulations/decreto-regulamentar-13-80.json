@@ -1,0 +1,699 @@
+{
+  "id": "DEC_REG_13_1980",
+  "type": "decreto_regulamentar",
+  "number": "13/80",
+  "date": "1980-05-16",
+  "promulgation_date": "1980-04-30",
+  "effective_date": "180 dias após publicação",
+  "title_pt": "Decreto Regulamentar n.º 13/80",
+  "title_ua": "Регуляторний декрет № 13/80",
+  "status": "vigente",
+  "summary_pt": "Alterações ao Regulamento de Segurança de Elevadores Eléctricos (Decreto 513/70), introduzindo novas disposições sobre vedação da caixa, encravamento de portas, iluminação e aplicação a elevadores existentes.",
+  "summary_ua": "Зміни до Регламенту безпеки електричних ліфтів (Decreto 513/70), що вводять нові положення про огородження шахти, блокування дверей, освітлення та застосування до існуючих ліфтів.",
+  "modifications_to": "Decreto n.º 513/70 (1970-10-30)",
+  "source_official": "Diário da República I Série, 16 de Maio de 1980",
+  "authority": "Ministério da Indústria e Energia",
+  "minister": "Álvaro Roque de Pinho Bissaia Barreto",
+  "president": "António Ramalho Eanes",
+  "key_changes": [
+    "Revisão baseada em directivas CIRA atualizadas",
+    "Novas disposições para vedação da caixa em elevadores existentes",
+    "Harmonização com Regulamentos de Segurança de Instalações Elétricas",
+    "Prazos escalonados para conformidade (1-5 anos conforme idade do elevador)"
+  ],
+  "scope": [
+    "Alterações aos artigos do Decreto 513/70",
+    "Requisitos de vedação de caixa para elevadores antigos",
+    "Aplicação gradual baseada na data de instalação"
+  ],
+  "articles_modified": [
+    "2.º", "3.º", "24.º", "32.º", "39.º", "40.º", "42.º", "63.º", 
+    "86.º", "87.º", "88.º", "89.º", "90.º", "93.º", "94.º", "95.º", 
+    "102.º", "103.º", "111.º"
+  ],
+  "articles_added": [
+    "113.º"
+  ],
+  "critical_changes": [
+    {
+      "article": "2.º",
+      "title_pt": "Campo de aplicação",
+      "title_ua": "Сфера застосування",
+      "change_summary_pt": "Esclarece aplicabilidade, exclusões (elevadores hidráulicos, nora, cremalheira, teatrais, obras, minas, navios, monta-cargas ≤10kg) e autorização de variantes pela fiscalização.",
+      "change_summary_ua": "Уточнює застосування, виключення (гідравлічні, безперервної дії, зубчасті, театральні, будівельні, шахтні, корабельні, вантажопідйомники ≤10кг) та дозволи на варіації від інспекції.",
+      "safety_impact": "Definição clara de escopo previne aplicação incorreta do regulamento",
+      "technical_terms": ["elevadores hidráulicos", "elevadores tipo nora", "cremalheira", "monta-cargas"]
+    },
+    {
+      "article": "3.º",
+      "title_pt": "Definições",
+      "title_ua": "Визначення",
+      "change_summary_pt": "Adiciona/atualiza 30 definições técnicas essenciais: cabina, caixa, carga nominal, encravamento, pára-quedas, zona de desencravamento, etc.",
+      "change_summary_ua": "Додає/оновлює 30 основних технічних визначень: кабіна, шахта, номінальне навантаження, блокування, парашут, зона розблокування та ін.",
+      "key_definitions": {
+        "encravamento": "Sistema electro-mecânico que aferrolha porta fechada e mantém aferrolhada, impossibilitando abertura sem meios especiais",
+        "zona_desencravamento": "Espaço abaixo e acima da soleira da porta de patamar (máx 2x30cm ou 2x17cm) onde porta pode desencravarр",
+        "carga_nominal": "Carga máxima indicada na cabina para funcionamento seguro",
+        "para_quedas": "Dispositivo que fixa cabina/contrapeso às guias em caso de excesso de velocidade ou rotura de cabos"
+      }
+    },
+    {
+      "article": "24.º",
+      "title_pt": "Dimensões mínimas da casa das máquinas",
+      "title_ua": "Мінімальні розміри машинного приміщення",
+      "change_summary_pt": "Define altura livre mínima 1,80m circulação, 0,75m frente aparelhos, 0,30m para manobra manual. Monta-cargas sem entrada: 0,75m acesso exterior, 0,60m frente porta.",
+      "change_summary_ua": "Визначає мінімальну висоту 1,80м для проходу, 0,75м перед апаратурою, 0,30м для ручного управління. Вантажопідйомники без входу: 0,75м зовнішній доступ, 0,60м перед дверима.",
+      "safety_impact": "Espaço adequado previne acidentes durante manutenção e garante acesso seguro",
+      "measurements": {
+        "altura_livre_circulacao": "≥1,80m",
+        "espaco_frente_aparelhos": "≥0,75m",
+        "espaco_manobra_manual": "≥0,30m (motores ≥5,5kW frontal, <5,5kW lateral)",
+        "monta_cargas_sem_entrada_porta": "≥0,60m",
+        "monta_cargas_sem_entrada_acesso": "≥0,75m"
+      }
+    },
+    {
+      "article": "32.º",
+      "title_pt": "Disposições gerais (Portas de patamar)",
+      "title_ua": "Загальні положення (Двері поверхів)",
+      "change_summary_pt": "Portas cheias não abrem para interior. Porta fechada não permite introdução de dedo de prova Ø10mm. Face interior conforme Art.13º. Minimizar risco entalamento vestuário.",
+      "change_summary_ua": "Суцільні двері не відкриваються всередину. Закриті двері не дозволяють вставити пробний палець Ø10мм. Внутрішня поверхня згідно Арт.13. Мінімізація ризику защемлення одягу.",
+      "safety_impact": "Previne quedas na caixa e entalamento de roupas/membros",
+      "test_probe": "Ø10mm",
+      "violations": [
+        {
+          "code": "C1",
+          "description_pt": "Porta abre para interior da caixa (risco queda)",
+          "description_ua": "Двері відкриваються всередину шахти (ризик падіння)",
+          "action": "Substituição ou reversão de dobradiças IMEDIATO"
+        },
+        {
+          "code": "C2",
+          "description_pt": "Folga >10mm permite inserção dedo (risco entalamento)",
+          "description_ua": "Зазор >10мм дозволяє вставити палець (ризик защемлення)",
+          "action": "Ajuste ou substituição de porta em 30 dias"
+        }
+      ]
+    },
+    {
+      "article": "39.º",
+      "title_pt": "Encravamento das portas de patamar",
+      "title_ua": "Блокування дверей поверхів",
+      "change_summary_pt": "Dispositivos silenciosos, protegidos de manipulação. Todas portas encravadas exceto patamar onde cabina está. Cabina só arranca com todas encravadas. Desencravamento do destino na zona (2x30cm auto/2x17cm manual). Ferrolhos anti-gravidade. Chave emergência na casa máquinas visível.",
+      "change_summary_ua": "Безшумні пристрої, захищені від втручання. Всі двері заблоковані крім поверху де кабіна. Кабіна стартує лише коли всі заблоковані. Розблокування призначення в зоні (2x30см авто/2x17см ручне). Засуви анти-гравітаційні. Аварійний ключ в машинній кімнаті видимо.",
+      "safety_impact": "Sistema crítico que previne quedas fatais na caixa de elevador",
+      "zone_dimensions": {
+        "automatic_doors": "2 x 30cm",
+        "manual_doors": "2 x 17cm"
+      },
+      "requirements": [
+        "Silencioso e seguro",
+        "Protegido contra manipulação abusiva",
+        "Todas portas encravadas exceto onde cabina está",
+        "Cabina não arranca sem todas portas encravadas",
+        "Desencravamento destino dentro da zona permitida",
+        "Ferrolhos instalados contra ação da gravidade",
+        "Chave especial emergência na casa máquinas identificada e visível"
+      ],
+      "violations": [
+        {
+          "code": "C1",
+          "description_pt": "Encravamento não funciona (porta abre com cabina fora)",
+          "description_ua": "Блокування не працює (двері відкриваються без кабіни)",
+          "action": "DESATIVAR ELEVADOR IMEDIATAMENTE - Reparação urgente",
+          "deadline": "0-7 dias"
+        },
+        {
+          "code": "C1",
+          "description_pt": "Cabina movimenta com portas abertas",
+          "description_ua": "Кабіна рухається з відкритими дверима",
+          "action": "DESATIVAR ELEVADOR - Perigo de morte",
+          "deadline": "0-7 dias"
+        },
+        {
+          "code": "C2",
+          "description_pt": "Zona desencravamento excede limites (>2x30cm auto / >2x17cm manual)",
+          "description_ua": "Зона розблокування перевищує ліміти (>2x30см авто / >2x17см ручне)",
+          "action": "Ajuste em 30 dias",
+          "deadline": "30 dias"
+        }
+      ]
+    },
+    {
+      "article": "40.º",
+      "title_pt": "Dispositivo de 'contrôle' do encravamento e do fecho das portas de patamar",
+      "title_ua": "Пристрій контролю блокування та закриття дверей поверхів",
+      "change_summary_pt": "Dispositivos elétricos controlam: 1) Encravamento (cabina só move se todas encravadas), 2) Fecho (cabina não move/imobiliza se porta aberta). Isolamento condutores mantido. Contactos separam mesmo se colados. Exceção: monta-cargas soleira ≥0,60m. Uma manobra anormal não suficiente para funcionamento com portas abertas.",
+      "change_summary_ua": "Електричні пристрої контролюють: 1) Блокування (кабіна рухається лише коли всі заблоковані), 2) Закриття (кабіна не рухається/зупиняється якщо двері відкриті). Ізоляція провідників збережена. Контакти роз'єднуються навіть якщо злиплися. Виняток: вантажопідйомники поріг ≥0,60м. Одна аномальна операція недостатня для роботи з відкритими дверима.",
+      "safety_impact": "Dupla proteção elétrica previne movimento com portas abertas - previne mortes",
+      "dual_protection": {
+        "encravamento_control": "Verifica que todas portas estão encravadas antes de permitir movimento",
+        "fecho_control": "Verifica que portas estão fechadas e imobiliza se aberta durante movimento"
+      },
+      "safety_principle": "Mínimo DUAS manobras anormais necessárias para funcionar com portas abertas",
+      "violations": [
+        {
+          "code": "C1",
+          "description_pt": "Contrôle encravamento defeituoso (cabina move sem verificação)",
+          "description_ua": "Контроль блокування несправний (кабіна рухається без перевірки)",
+          "action": "DESATIVAR ELEVADOR - Reparação imediata",
+          "deadline": "0-7 dias"
+        },
+        {
+          "code": "C1",
+          "description_pt": "Contrôle fecho inoperante (não detecta porta aberta)",
+          "description_ua": "Контроль закриття не працює (не виявляє відкриті двері)",
+          "action": "DESATIVAR ELEVADOR - Sistema crítico",
+          "deadline": "0-7 dias"
+        },
+        {
+          "code": "C2",
+          "description_pt": "Contactos elétricos não separam adequadamente",
+          "description_ua": "Електричні контакти не роз'єднуються належним чином",
+          "action": "Substituição contactos em 30 dias",
+          "deadline": "30 dias"
+        }
+      ]
+    },
+    {
+      "article": "42.º",
+      "title_pt": "Dimensões e lotação da cabina dos ascensores",
+      "title_ua": "Розміри та місткість кабіни ліфтів",
+      "change_summary_pt": "Altura interior ≥2m. Lotação vs área vs carga: tabela até 20 pessoas (75kg/pessoa, área variável 0,28-2,40m²). >20: n×75kg, área=2,40+(n-20)×0,12m². Monta-camas 750-1650kg: max 3,64m² se tem anti-sobrecarga+sinal. Ascensores carga: área >tabela se anti-sobrecarga+responsável. Doentes: até 1,30m².",
+      "change_summary_ua": "Внутрішня висота ≥2м. Місткість проти площі проти вантажу: таблиця до 20 осіб (75кг/особа, площа змінна 0,28-2,40м²). >20: n×75кг, площа=2,40+(n-20)×0,12м². Ліжкові 750-1650кг: макс 3,64м² якщо має анти-перевантаження+сигнал. Вантажні ліфти: площа >таблиці якщо анти-перевантаження+відповідальний. Хворі: до 1,30м².",
+      "safety_impact": "Previne sobrelotação e colapso de cabos/estrutura",
+      "capacity_formula": {
+        "up_to_20_persons": "Tabela fixa: 1 pessoa=75kg, área varia 0,28-2,40m²",
+        "above_20_persons": "Carga = n × 75kg, Área = 2,40 + (n-20) × 0,12m²"
+      },
+      "special_cases": {
+        "monta_camas_750_1650kg": {
+          "max_area": "3,64m²",
+          "conditions": ["Dispositivo anti-sobrecarga", "Sinalização visual e acústica"]
+        },
+        "cargo_lifts": {
+          "condition": "Área > tabela permitida",
+          "requirements": ["Anti-sobrecarga", "Responsável por carregamento", "Sinalização visual+acústica"]
+        },
+        "patient_transport": {
+          "max_area": "1,30m²",
+          "requirements": ["Anti-sobrecarga", "Sinalização"]
+        }
+      },
+      "violations": [
+        {
+          "code": "C2",
+          "description_pt": "Cabina sem dispositivo anti-sobrecarga (área >tabela)",
+          "description_ua": "Кабіна без анти-перевантаження (площа >таблиці)",
+          "action": "Instalação sistema em 30 dias ou redução lotação indicada",
+          "deadline": "30 dias"
+        },
+        {
+          "code": "C3",
+          "description_pt": "Sinalização sobrecarga ausente/inoperante",
+          "description_ua": "Сигналізація перевантаження відсутня/несправна",
+          "action": "Instalação/reparação em 60 dias",
+          "deadline": "60 dias"
+        }
+      ]
+    },
+    {
+      "article": "63.º",
+      "title_pt": "Repartição de carga pelos cabos ou cadeias de suspensão",
+      "title_ua": "Розподіл навантаження по тросах або ланцюгах підвіски",
+      "change_summary_pt": "Dispositivos igualização tensão entre cabos/cadeias. Se 2 cabos/cadeias: dispositivo elétrico imobiliza elevador em caso alongamento desigual ou afrouxamento. Exceção: monta-cargas soleira ≥0,60m e cabina+carga ≤100kg.",
+      "change_summary_ua": "Пристрої вирівнювання натягу між тросами/ланцюгами. Якщо 2 троси/ланцюги: електричний пристрій зупиняє ліфт при нерівномірному подовженні або ослабленні. Виняток: вантажопідйомники поріг ≥0,60м і кабіна+вантаж ≤100кг.",
+      "safety_impact": "Previne sobrecarga de um cabo e rotura prematura - previne quedas",
+      "requirements": [
+        "Dispositivos de igualização de tensão obrigatórios",
+        "Se 2 cabos/cadeias: sensor elétrico detecta alongamento desigual",
+        "Sensor imobiliza elevador antes de rotura"
+      ],
+      "violations": [
+        {
+          "code": "C1",
+          "description_pt": "Sistema igualização tensão ausente/defeituoso (>2 cabos)",
+          "description_ua": "Система вирівнювання натягу відсутня/несправна (>2 тросів)",
+          "action": "DESATIVAR ELEVADOR - Risco rotura cabo",
+          "deadline": "0-7 dias"
+        },
+        {
+          "code": "C2",
+          "description_pt": "Dispositivo elétrico alongamento não funciona (2 cabos)",
+          "description_ua": "Електричний пристрій подовження не працює (2 троси)",
+          "action": "Reparação em 30 dias",
+          "deadline": "30 dias"
+        }
+      ]
+    },
+    {
+      "article": "86.º - 90.º",
+      "title_pt": "Instalação elétrica (artigos múltiplos)",
+      "title_ua": "Електрична установка (кілька статей)",
+      "change_summary_pt": "Art.86: Baixa tensão, comando ≤250V, motores+contactores adequados, defeitos terra não provocam marcha/inoperância segurança, cabo comando flexível especial. Art.87: Proteção motores sobrecarga+fase, curto-circuito. Art.88: Quadro casa máquinas com corte omnipolar. Art.89: Circuito iluminação+tomadas cabina. Art.90: Iluminação casa máquinas/rodas desvio de circuitos técnicos/comuns, tomadas do quadro Art.88.",
+      "change_summary_ua": "Арт.86: Низька напруга, управління ≤250В, двигуни+контактори відповідні, несправності заземлення не викликають рух/виход з ладу безпеки, гнучкий спеціальний кабель управління. Арт.87: Захист двигунів від перевантаження+фази, короткого замикання. Арт.88: Щит машинної кімнати з омніполярним вимикачем. Арт.89: Коло освітлення+розетки кабіни. Арт.90: Освітлення машинної кімнати/відхиляючих шківів з технічних/загальних кіл, розетки від щита Арт.88.",
+      "safety_impact": "Sistema elétrico seguro previne choques, incêndios e falhas de segurança",
+      "key_requirements": {
+        "voltage_limits": "Baixa tensão geral, comando ≤250V",
+        "fault_protection": "Defeitos à terra não podem causar movimento ou falha de segurança",
+        "motor_protection": "Proteção sobrecarga, falta fase, curto-circuito",
+        "lighting_independence": "Iluminação cabina/casa máquinas de circuitos independentes"
+      },
+      "violations": [
+        {
+          "code": "C1",
+          "description_pt": "Defeito terra permite movimento (falha isolamento crítica)",
+          "description_ua": "Несправність заземлення дозволяє рух (критична поломка ізоляції)",
+          "action": "DESATIVAR - Risco choque elétrico fatal",
+          "deadline": "0-7 dias"
+        },
+        {
+          "code": "C2",
+          "description_pt": "Proteção motor ausente/defeituosa",
+          "description_ua": "Захист двигуна відсутній/несправний",
+          "action": "Instalação/reparação em 30 dias",
+          "deadline": "30 dias"
+        },
+        {
+          "code": "C3",
+          "description_pt": "Iluminação cabina sem circuito próprio",
+          "description_ua": "Освітлення кабіни без власного кола",
+          "action": "Correção em 60 dias",
+          "deadline": "60 dias"
+        }
+      ]
+    },
+    {
+      "article": "93.º",
+      "title_pt": "Dispositivo de paragem na cabina dos ascensores",
+      "title_ua": "Пристрій зупинки в кабіні ліфтів",
+      "change_summary_pt": "Ascensores cabina sem portas: botão/interruptor VERMELHO acima dos outros, designação 'Stop'/'Parar'/'Paragem' visível, permite paragem emergência. Restabelecimento marcha só por intervenção pessoa dentro cabina. Recomendação: indicações no espelho botoneira, não no botão.",
+      "change_summary_ua": "Ліфти кабіна без дверей: кнопка/вимикач ЧЕРВОНИЙ вище інших, позначення 'Stop'/'Parar'/'Paragem' видиме, дозволяє аварійну зупинку. Відновлення руху лише втручанням особи всередині кабіни. Рекомендація: позначення на панелі кнопок, не на кнопці.",
+      "safety_impact": "Permite passageiros pararem elevador em emergência",
+      "requirements": [
+        "Cor vermelha obrigatória",
+        "Posicionado acima outros botões",
+        "Designação 'Stop'/'Parar'/'Paragem' visível",
+        "Só pessoa dentro cabina pode reativar movimento"
+      ],
+      "violations": [
+        {
+          "code": "C2",
+          "description_pt": "Botão Stop ausente (cabina sem portas)",
+          "description_ua": "Кнопка Stop відсутня (кабіна без дверей)",
+          "action": "Instalação em 30 dias",
+          "deadline": "30 dias"
+        },
+        {
+          "code": "C3",
+          "description_pt": "Botão Stop sem cor vermelha ou designação",
+          "description_ua": "Кнопка Stop без червоного кольору або позначення",
+          "action": "Correção em 60 dias",
+          "deadline": "60 dias"
+        }
+      ]
+    },
+    {
+      "article": "94.º",
+      "title_pt": "Dispositivos de alarme dos ascensores",
+      "title_ua": "Пристрої тривоги ліфтів",
+      "change_summary_pt": "Comando na cabina, 'Alarme' ou sino figurativo visível. Sinal sonoro audível local encarregado/átrio entrada/habitação porteiro. Se elétrico: acumulador permanente recarregável, capacidade várias horas sem rede. Botão alarme pode estar ao nível do Stop Art.93.",
+      "change_summary_ua": "Управління в кабіні, 'Alarme' або фігурний дзвін видимий. Звуковий сигнал чутний місце відповідального/вхідний холл/житло швейцара. Якщо електричний: постійний акумулятор що перезаряджається, ємність кілька годин без мережі. Кнопка тривоги може бути на рівні Stop Арт.93.",
+      "safety_impact": "Passageiros presos podem solicitar ajuda mesmo sem energia elétrica",
+      "requirements": [
+        "Comando dentro da cabina",
+        "Designação 'Alarme' ou símbolo sino visível",
+        "Audível em local encarregado, átrio, porteiro",
+        "Se elétrico: bateria recarregável capacidade várias horas",
+        "Funciona mesmo sem energia da rede"
+      ],
+      "violations": [
+        {
+          "code": "C2",
+          "description_pt": "Alarme ausente ou inoperante",
+          "description_ua": "Тривога відсутня або несправна",
+          "action": "Instalação/reparação em 30 dias",
+          "deadline": "30 dias"
+        },
+        {
+          "code": "C3",
+          "description_pt": "Bateria alarme sem carga ou não recarrega",
+          "description_ua": "Батарея тривоги без заряду або не перезаряджається",
+          "action": "Substituição bateria em 60 dias",
+          "deadline": "60 dias"
+        }
+      ]
+    },
+    {
+      "article": "95.º",
+      "title_pt": "Disposições gerais (Avisos e instruções)",
+      "title_ua": "Загальні положення (Попередження та інструкції)",
+      "change_summary_pt": "Avisos indeléveis, material durável, bem visíveis, caracteres legíveis, cor contrastante. Recomendação: maiúsculas/números 10mm, minúsculas 7mm.",
+      "change_summary_ua": "Попередження незмивні, міцний матеріал, добре видимі, розбірливі символи, контрастний колір. Рекомендація: великі літери/цифри 10мм, малі літери 7мм.",
+      "safety_impact": "Avisos claros previnem uso incorreto e acidentes",
+      "requirements": [
+        "Indeléveis (não apagam)",
+        "Material durável",
+        "Bem visíveis",
+        "Caracteres legíveis",
+        "Cor contrastante"
+      ],
+      "recommended_sizes": {
+        "uppercase_numbers": "10mm",
+        "lowercase": "7mm"
+      },
+      "violations": [
+        {
+          "code": "C3",
+          "description_pt": "Avisos ilegíveis, apagados ou ausentes",
+          "description_ua": "Попередження нерозбірливі, стерті або відсутні",
+          "action": "Substituição em 60 dias",
+          "deadline": "60 dias"
+        }
+      ]
+    },
+    {
+      "article": "102.º",
+      "title_pt": "Inscrição no limitador de velocidade",
+      "title_ua": "Напис на обмежувачі швидкості",
+      "change_summary_pt": "Placa no limitador com: diâmetro cabo, tipo cabo, material cabo, velocidade actuação. Tipo pode ser indicado via constituição+carga rotura.",
+      "change_summary_ua": "Табличка на обмежувачі з: діаметр троса, тип троса, матеріал троса, швидкість спрацювання. Тип може бути вказаний через склад+навантаження на розрив.",
+      "safety_impact": "Identificação correta permite manutenção adequada do sistema crítico pára-quedas",
+      "required_info": [
+        "Diâmetro cabo limitador",
+        "Tipo cabo (ou constituição + carga rotura)",
+        "Material cabo",
+        "Velocidade actuação"
+      ],
+      "violations": [
+        {
+          "code": "C3",
+          "description_pt": "Placa ausente ou informação incompleta",
+          "description_ua": "Табличка відсутня або інформація неповна",
+          "action": "Instalação placa em 60 dias",
+          "deadline": "60 dias"
+        }
+      ]
+    },
+    {
+      "article": "103.º",
+      "title_pt": "Identificação dos circuitos",
+      "title_ua": "Ідентифікація кіл",
+      "change_summary_pt": "Circuitos saída quadro casa máquinas (Art.88 n.º1) devidamente identificados.",
+      "change_summary_ua": "Кола виходу щита машинної кімнати (Арт.88 п.1) належним чином ідентифіковані.",
+      "safety_impact": "Identificação previne erros em intervenções elétricas - previne choques",
+      "violations": [
+        {
+          "code": "C3",
+          "description_pt": "Circuitos sem identificação ou mal identificados",
+          "description_ua": "Кола без ідентифікації або погано ідентифіковані",
+          "action": "Etiquetagem em 60 dias",
+          "deadline": "60 dias"
+        }
+      ]
+    },
+    {
+      "article": "111.º",
+      "title_pt": "Disposições aplicáveis aos elevadores existentes",
+      "title_ua": "Положення застосовні до існуючих ліфтів",
+      "change_summary_pt": "Elevadores sob Decreto 26591/1936 devem aplicar: a) Encravamento portas+contrôle, b) Avisos+instruções, c) Conservação. Caixa aberta: vedar altura total via paredes Art.9/13, rede metálica Ø≥3mm malha ≤75x75mm, ou material similar anterior. Fiscalização pode dispensar vedação se segurança mantida.",
+      "change_summary_ua": "Ліфти під Decreto 26591/1936 мають застосувати: а) Блокування дверей+контроль, б) Попередження+інструкції, в) Обслуговування. Відкрита шахта: огородити на всю висоту стінами Арт.9/13, металева сітка Ø≥3мм осередок ≤75x75мм, або подібний матеріал попередній. Інспекція може звільнити від огородження якщо безпека збережена.",
+      "safety_impact": "Atualização retrofitting de elevadores antigos para padrões modernos de segurança",
+      "requirements_old_lifts": [
+        "Encravamento portas e contrôle elétrico (Art.39, 40)",
+        "Avisos e instruções visíveis (Art.95)",
+        "Conservação adequada"
+      ],
+      "shaft_enclosure_options": {
+        "option_a": "Paredes conforme Art.9º e 13º",
+        "option_b": "Rede metálica: fio Ø≥3mm, malha ≤75x75mm",
+        "option_c": "Material similar ao instalado anteriormente"
+      },
+      "fiscalization_discretion": "Pode dispensar vedação se segurança mantida (grandes caixas, edifícios vigiados)",
+      "violations": [
+        {
+          "code": "C1",
+          "description_pt": "Elevador antigo sem encravamento portas (Decreto 26591/1936)",
+          "description_ua": "Старий ліфт без блокування дверей (Decreto 26591/1936)",
+          "action": "DESATIVAR até instalação encravamento",
+          "deadline": "Conforme Art.3º DReg 13/80 (1-5 anos)"
+        },
+        {
+          "code": "C2",
+          "description_pt": "Caixa aberta sem vedação adequada",
+          "description_ua": "Відкрита шахта без належного огородження",
+          "action": "Vedação em prazo fiscalização ou conforme Art.3º",
+          "deadline": "Conforme Art.3º DReg 13/80 (1-5 anos)"
+        }
+      ]
+    },
+    {
+      "article": "113.º",
+      "title_pt": "Estabelecimento de elevadores em prédios antigos (NOVO)",
+      "title_ua": "Встановлення ліфтів в старих будівлях (НОВИЙ)",
+      "change_summary_pt": "Em prédios antigos (com ou sem elevadores), fiscalização pode dispensar cumprimento de disposições que não coloquem em causa segurança pessoas ou instalação.",
+      "change_summary_ua": "В старих будівлях (з ліфтами чи без), інспекція може звільнити від виконання положень що не загрожують безпеці людей або установки.",
+      "safety_impact": "Flexibilidade para instalar elevadores em edifícios históricos mantendo segurança",
+      "flexibility": "Fiscalização pode autorizar adaptações se segurança não comprometida",
+      "examples": "Edifícios históricos, limitações estruturais, soluções alternativas equivalentes"
+    }
+  ],
+  "compliance_deadlines_art3": {
+    "description_pt": "Prazos aplicação Art.111º (vedação caixa elevadores existentes)",
+    "description_ua": "Терміни застосування Арт.111 (огородження шахти існуючих ліфтів)",
+    "table": [
+      {
+        "installation_period": "Até 31 Dez 1955",
+        "deadline_years": 1,
+        "deadline_description": "1 ano após entrada vigor DReg 13/80"
+      },
+      {
+        "installation_period": "Até 31 Dez 1961",
+        "deadline_years": 2,
+        "deadline_description": "2 anos após entrada vigor DReg 13/80"
+      },
+      {
+        "installation_period": "Até 31 Dez 1966",
+        "deadline_years": 3,
+        "deadline_description": "3 anos após entrada vigor DReg 13/80"
+      },
+      {
+        "installation_period": "Até 31 Dez 1970",
+        "deadline_years": 4,
+        "deadline_description": "4 anos após entrada vigor DReg 13/80"
+      },
+      {
+        "installation_period": "Após 31 Dez 1970",
+        "deadline_years": 5,
+        "deadline_description": "5 anos após entrada vigor DReg 13/80"
+      }
+    ],
+    "entry_into_force": "180 dias após publicação (16 Mai 1980)",
+    "practical_deadline_start": "Aproximadamente Nov 1980"
+  },
+  "references": {
+    "modifies": "Decreto n.º 513/70 de 30 Outubro 1970",
+    "supersedes_previous": "Decreto n.º 26591 de 14 Maio 1936",
+    "harmonizes_with": [
+      "Regulamento Segurança Instalações Utilização Energia Eléctrica",
+      "Regulamento Instalações Colectivas Edifícios e Entradas"
+    ],
+    "based_on": "Directivas CIRA (Comissão Internacional Regulamentação Ascensores e Monta-Cargas) - revisão"
+  },
+  "technical_glossary": [
+    {
+      "term_pt": "Encravamento",
+      "term_ua": "Блокування",
+      "definition_pt": "Sistema electro-mecânico que aferrolha porta fechada mantendo-a bloqueada",
+      "definition_ua": "Електро-механічна система що замикає закриті двері утримуючи їх заблокованими"
+    },
+    {
+      "term_pt": "Zona de desencravamento",
+      "term_ua": "Зона розблокування",
+      "definition_pt": "Espaço 2x30cm (auto) ou 2x17cm (manual) centrado na soleira onde porta desencrava",
+      "definition_ua": "Простір 2x30см (авто) або 2x17см (ручне) центрований на порозі де двері розблоковуються"
+    },
+    {
+      "term_pt": "Ferrolho",
+      "term_ua": "Засув",
+      "definition_pt": "Peça mecânica que provoca encravamento efectivo da porta",
+      "definition_ua": "Механічна деталь що провокує ефективне блокування дверей"
+    },
+    {
+      "term_pt": "Contrôle",
+      "term_ua": "Контроль",
+      "definition_pt": "Verificação elétrica de encravamento e fecho de portas",
+      "definition_ua": "Електрична перевірка блокування та закриття дверей"
+    },
+    {
+      "term_pt": "Casa das máquinas",
+      "term_ua": "Машинна кімната",
+      "definition_pt": "Local máquina tracção e aparelhos comando",
+      "definition_ua": "Місце тягової машини та апаратів управління"
+    },
+    {
+      "term_pt": "Monta-cargas",
+      "term_ua": "Вантажопідйомник",
+      "definition_pt": "Elevador exclusivo carga, dimensões impedem acesso pessoas",
+      "definition_ua": "Ліфт виключно для вантажу, розміри перешкоджають доступу людей"
+    },
+    {
+      "term_pt": "Carga nominal",
+      "term_ua": "Номінальне навантаження",
+      "definition_pt": "Carga máxima indicada para funcionamento seguro",
+      "definition_ua": "Максимальне навантаження вказане для безпечної роботи"
+    },
+    {
+      "term_pt": "Pára-quedas",
+      "term_ua": "Парашут",
+      "definition_pt": "Dispositivo fixa cabina às guias em caso excesso velocidade/rotura cabos",
+      "definition_ua": "Пристрій фіксує кабіну до направляючих при перевищенні швидкості/розриві тросів"
+    },
+    {
+      "term_pt": "Limitador de velocidade",
+      "term_ua": "Обмежувач швидкості",
+      "definition_pt": "Dispositivo automático actua pára-quedas se excesso velocidade",
+      "definition_ua": "Автоматичний пристрій активує парашут при перевищенні швидкості"
+    },
+    {
+      "term_pt": "Roda de aderência",
+      "term_ua": "Шків зчеплення",
+      "definition_pt": "Roda movimenta cabos por atrito",
+      "definition_ua": "Шків рухає троси через тертя"
+    }
+  ],
+  "inspection_checklist": [
+    {
+      "checkpoint": "Encravamento portas patamar",
+      "article": "39.º",
+      "test": "Tentar abrir porta com cabina fora - não deve abrir. Cabina não arranca se porta aberta.",
+      "critical": true,
+      "violation_if_fail": "C1"
+    },
+    {
+      "checkpoint": "Contrôle elétrico encravamento",
+      "article": "40.º",
+      "test": "Verificar circuitos elétricos controlam encravamento e fecho todas portas",
+      "critical": true,
+      "violation_if_fail": "C1"
+    },
+    {
+      "checkpoint": "Zona desencravamento",
+      "article": "39.º n.º2",
+      "test": "Medir: ≤2x30cm (auto) ou ≤2x17cm (manual)",
+      "critical": false,
+      "violation_if_fail": "C2"
+    },
+    {
+      "checkpoint": "Portas não abrem para caixa",
+      "article": "32.º n.º1",
+      "test": "Verificar dobradiças - porta abre para fora ou lateralmente",
+      "critical": true,
+      "violation_if_fail": "C1"
+    },
+    {
+      "checkpoint": "Folga porta ≤Ø10mm",
+      "article": "32.º n.º1",
+      "test": "Dedo prova Ø10mm não penetra porta fechada",
+      "critical": false,
+      "violation_if_fail": "C2"
+    },
+    {
+      "checkpoint": "Lotação vs área cabina",
+      "article": "42.º",
+      "test": "Tabela: verificar área ≥ mínima para lotação indicada",
+      "critical": false,
+      "violation_if_fail": "C2"
+    },
+    {
+      "checkpoint": "Sistema igualização tensão cabos",
+      "article": "63.º",
+      "test": "Verificar dispositivo equalização + sensor alongamento (se 2 cabos)",
+      "critical": true,
+      "violation_if_fail": "C1"
+    },
+    {
+      "checkpoint": "Proteção motor",
+      "article": "87.º",
+      "test": "Verificar proteção sobrecarga + falta fase + curto-circuito",
+      "critical": false,
+      "violation_if_fail": "C2"
+    },
+    {
+      "checkpoint": "Botão Stop (cabina sem portas)",
+      "article": "93.º",
+      "test": "Botão VERMELHO acima outros, designação 'Stop' visível",
+      "critical": false,
+      "violation_if_fail": "C2"
+    },
+    {
+      "checkpoint": "Alarme funcional",
+      "article": "94.º",
+      "test": "Testar alarme - audível encarregado/átrio/porteiro. Bateria carregada.",
+      "critical": false,
+      "violation_if_fail": "C2"
+    },
+    {
+      "checkpoint": "Avisos legíveis",
+      "article": "95.º",
+      "test": "Verificar lotação, carga, instruções: indeléveis, legíveis, contrastantes",
+      "critical": false,
+      "violation_if_fail": "C3"
+    },
+    {
+      "checkpoint": "Placa limitador velocidade",
+      "article": "102.º",
+      "test": "Verificar placa com: Ø cabo, tipo, material, velocidade actuação",
+      "critical": false,
+      "violation_if_fail": "C3"
+    },
+    {
+      "checkpoint": "Identificação circuitos",
+      "article": "103.º",
+      "test": "Circuitos quadro casa máquinas etiquetados",
+      "critical": false,
+      "violation_if_fail": "C3"
+    },
+    {
+      "checkpoint": "Vedação caixa (elevadores antigos)",
+      "article": "111.º n.º2",
+      "test": "Caixa vedada paredes ou rede Ø≥3mm malha ≤75x75mm",
+      "critical": false,
+      "violation_if_fail": "C2"
+    },
+    {
+      "checkpoint": "Altura casa máquinas",
+      "article": "24.º",
+      "test": "Altura livre circulação ≥1,80m, frente aparelhos ≥0,75m",
+      "critical": false,
+      "violation_if_fail": "C3"
+    }
+  ],
+  "ai_assistant_usage": {
+    "keywords_pt": [
+      "decreto 13/80",
+      "alterações 513",
+      "encravamento portas",
+      "zona desencravamento",
+      "vedação caixa",
+      "elevadores antigos",
+      "retroativa"
+    ],
+    "keywords_ua": [
+      "декрет 13/80",
+      "зміни 513",
+      "блокування дверей",
+      "зона розблокування",
+      "огородження шахти",
+      "старі ліфти",
+      "ретроактивна"
+    ],
+    "example_queries": [
+      "O que mudou com decreto 13/80?",
+      "Zona desencravamento máxima permitida?",
+      "Elevador 1960 precisa vedar caixa? Prazo?",
+      "Encravamento obrigatório elevadores antigos?",
+      "Diferença zona desencravamento automático vs manual?"
+    ]
+  }
+}
