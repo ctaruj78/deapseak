@@ -312,6 +312,167 @@
                         </div>
                     </section>
 
+                    <!-- About Us Section -->
+                    <section id="about" class="mt-5">
+                        <div class="card">
+                            <div class="card-header bg-gradient-info">
+                                <h3 class="card-title text-white">Про нас</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <h4>LiftMaster Pro - Інноваційне рішення для управління ліфтами</h4>
+                                        <p class="lead">
+                                            Ми створили комплексну систему, яка об'єднує сучасні технології для ефективного управління, моніторингу та обслуговування ліфтового обладнання.
+                                        </p>
+                                        <p>
+                                            Наша платформа розроблена з урахуванням потреб усіх учасників процесу: від адміністраторів та диспетчерів до технічних спеціалістів та кінцевих користувачів. 
+                                            Завдяки інтеграції штучного інтелекту, доповненої реальності та QR-технологій, ми зробили обслуговування ліфтів простішим, швидшим та надійнішим.
+                                        </p>
+                                        
+                                        <h5 class="mt-4">Наші переваги:</h5>
+                                        <ul class="list-unstyled">
+                                            <li><i class="fas fa-check text-success mr-2"></i> <strong>Швидкість:</strong> Миттєвий доступ до інформації через QR-коди</li>
+                                            <li><i class="fas fa-check text-success mr-2"></i> <strong>Безпека:</strong> Багаторівнева система контролю доступу</li>
+                                            <li><i class="fas fa-check text-success mr-2"></i> <strong>Інновації:</strong> AI-асистент та AR-підтримка для техніків</li>
+                                            <li><i class="fas fa-check text-success mr-2"></i> <strong>Аналітика:</strong> Повні звіти та прогнозування несправностей</li>
+                                            <li><i class="fas fa-check text-success mr-2"></i> <strong>Мобільність:</strong> Робота з будь-якого пристрою 24/7</li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="info-box bg-gradient-primary">
+                                            <div class="info-box-content text-center text-white">
+                                                <i class="fas fa-award fa-5x mb-3"></i>
+                                                <h5>5+ років досвіду</h5>
+                                                <p>У сфері автоматизації обслуговування ліфтів</p>
+                                            </div>
+                                        </div>
+                                        <div class="info-box bg-gradient-success mt-3">
+                                            <div class="info-box-content text-center text-white">
+                                                <i class="fas fa-users fa-5x mb-3"></i>
+                                                <h5>500+ клієнтів</h5>
+                                                <p>Довіряють нашій системі щодня</p>
+                                            </div>
+                                        </div>
+                                        <div class="info-box bg-gradient-warning mt-3">
+                                            <div class="info-box-content text-center text-white">
+                                                <i class="fas fa-clock fa-5x mb-3"></i>
+                                                <h5>99.9% Uptime</h5>
+                                                <p>Гарантована доступність системи</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Contact Section -->
+                    <section id="contact" class="mt-5">
+                        <div class="card">
+                            <div class="card-header bg-gradient-success">
+                                <h3 class="card-title text-white">Контакти</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h4>Зв'яжіться з нами</h4>
+                                        <p class="text-muted">Маєте питання? Хочете отримати доступ до системи? Напишіть нам!</p>
+                                        
+                                        <form id="contact-form" class="mt-4">
+                                            <div class="form-group">
+                                                <label for="contact-name"><i class="fas fa-user"></i> Ім'я</label>
+                                                <input type="text" class="form-control" id="contact-name" placeholder="Ваше ім'я" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="contact-email"><i class="fas fa-envelope"></i> Email</label>
+                                                <input type="email" class="form-control" id="contact-email" placeholder="ваш@email.com" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="contact-phone"><i class="fas fa-phone"></i> Телефон</label>
+                                                <input type="tel" class="form-control" id="contact-phone" placeholder="+380 XX XXX XX XX">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="contact-message"><i class="fas fa-comment"></i> Повідомлення</label>
+                                                <textarea class="form-control" id="contact-message" rows="4" placeholder="Ваше повідомлення..." required></textarea>
+                                            </div>
+                                            <button type="submit" class="btn btn-success btn-block">
+                                                <i class="fas fa-paper-plane"></i> Надіслати повідомлення
+                                            </button>
+                                        </form>
+                                        
+                                        <div class="alert alert-success mt-3" id="contact-success" style="display: none;">
+                                            <i class="fas fa-check-circle"></i> Дякуємо! Ваше повідомлення надіслано. Ми зв'яжемося з вами найближчим часом.
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <h4>Наші контакти</h4>
+                                        <div class="info-box mb-3">
+                                            <span class="info-box-icon bg-primary"><i class="fas fa-map-marker-alt"></i></span>
+                                            <div class="info-box-content">
+                                                <span class="info-box-text">Адреса</span>
+                                                <span class="info-box-number">м. Київ, вул. Технічна, 1</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="info-box mb-3">
+                                            <span class="info-box-icon bg-success"><i class="fas fa-envelope"></i></span>
+                                            <div class="info-box-content">
+                                                <span class="info-box-text">Email</span>
+                                                <span class="info-box-number">
+                                                    <a href="mailto:info@liftmaster.com">info@liftmaster.com</a><br>
+                                                    <a href="mailto:support@liftmaster.com">support@liftmaster.com</a>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="info-box mb-3">
+                                            <span class="info-box-icon bg-warning"><i class="fas fa-phone"></i></span>
+                                            <div class="info-box-content">
+                                                <span class="info-box-text">Телефон</span>
+                                                <span class="info-box-number">
+                                                    +380 44 123 45 67<br>
+                                                    +380 67 890 12 34 (24/7)
+                                                </span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="info-box mb-3">
+                                            <span class="info-box-icon bg-info"><i class="fas fa-clock"></i></span>
+                                            <div class="info-box-content">
+                                                <span class="info-box-text">Графік роботи</span>
+                                                <span class="info-box-number">
+                                                    Пн-Пт: 09:00 - 18:00<br>
+                                                    Технічна підтримка: 24/7
+                                                </span>
+                                            </div>
+                                        </div>
+                                        
+                                        <h5 class="mt-4">Соціальні мережі</h5>
+                                        <div class="btn-group btn-group-lg" role="group">
+                                            <a href="#" class="btn btn-outline-primary" title="Facebook">
+                                                <i class="fab fa-facebook-f"></i>
+                                            </a>
+                                            <a href="#" class="btn btn-outline-info" title="Twitter">
+                                                <i class="fab fa-twitter"></i>
+                                            </a>
+                                            <a href="#" class="btn btn-outline-danger" title="YouTube">
+                                                <i class="fab fa-youtube"></i>
+                                            </a>
+                                            <a href="#" class="btn btn-outline-primary" title="LinkedIn">
+                                                <i class="fab fa-linkedin-in"></i>
+                                            </a>
+                                            <a href="#" class="btn btn-outline-success" title="Telegram">
+                                                <i class="fab fa-telegram-plane"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
                     <!-- Call to Action -->
                     <section class="mt-5">
                         <div class="card card-primary">
@@ -391,6 +552,48 @@
             // Демо QR-код
             $('.qr-demo-container').click(function() {
                 alert('Демо: QR-код успішно відскановано! Система відкриває інформацію про ліфт LFT-DEMO-123');
+            });
+
+            // Обробка форми контактів
+            $('#contact-form').on('submit', function(e) {
+                e.preventDefault();
+                
+                const name = $('#contact-name').val();
+                const email = $('#contact-email').val();
+                const phone = $('#contact-phone').val();
+                const message = $('#contact-message').val();
+                
+                // Валідація
+                if (!name || !email || !message) {
+                    alert('Будь ласка, заповніть всі обов\'язкові поля');
+                    return;
+                }
+                
+                // Симуляція відправки (в реальному додатку це буде AJAX запит)
+                console.log('Відправка повідомлення:', {
+                    name: name,
+                    email: email,
+                    phone: phone,
+                    message: message
+                });
+                
+                // Показ успішного повідомлення
+                $('#contact-success').fadeIn();
+                
+                // Очистка форми
+                this.reset();
+                
+                // Приховати повідомлення через 5 секунд
+                setTimeout(function() {
+                    $('#contact-success').fadeOut();
+                }, 5000);
+                
+                // TODO: Додати реальну відправку на сервер
+                // fetch('/api/contact', {
+                //     method: 'POST',
+                //     headers: { 'Content-Type': 'application/json' },
+                //     body: JSON.stringify({ name, email, phone, message })
+                // });
             });
         });
     </script>
