@@ -790,6 +790,18 @@
     <script src="../../plugins/adminlte/adminlte.min.js"></script>
 
     <script>
+        // ✅ Initialize AdminLTE Treeview immediately
+        $(document).ready(function() {
+            console.log('🔧 Initializing sidebar treeview...');
+            
+            // Initialize AdminLTE treeview widget
+            $('[data-widget="treeview"]').Treeview('init');
+            
+            console.log('✅ Treeview initialized');
+        });
+    </script>
+
+    <script>
         // Voice features
         let lastResponse = '';
         let speechRecognition = null;
@@ -1860,39 +1872,6 @@
             div.textContent = text;
             return div.innerHTML;
         }
-        
-        // ✨ Treeview menu functionality
-        $(document).ready(function() {
-            // Initialize Treeview for sidebar
-            setTimeout(function() {
-                // Manual click handlers for submenus
-                $('.nav-sidebar .nav-item > .nav-link').on('click', function(e) {
-                    const $parent = $(this).parent();
-                    const $submenu = $parent.find('> .nav-treeview');
-                    
-                    if ($submenu.length > 0) {
-                        e.preventDefault();
-                        
-                        // Close other open submenus
-                        $('.nav-sidebar .nav-item.menu-open').not($parent).each(function() {
-                            $(this).removeClass('menu-open');
-                            $(this).find('> .nav-treeview').slideUp(200);
-                        });
-                        
-                        // Toggle current submenu
-                        if ($parent.hasClass('menu-open')) {
-                            $parent.removeClass('menu-open');
-                            $submenu.slideUp(200);
-                        } else {
-                            $parent.addClass('menu-open');
-                            $submenu.slideDown(200);
-                        }
-                    }
-                });
-                
-                console.log('✅ Treeview sidebar initialized');
-            }, 100);
-        });
     </script>
 </body>
 </html>
