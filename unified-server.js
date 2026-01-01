@@ -3197,7 +3197,7 @@ app.post('/api/ai/consult', authenticateToken, async (req, res) => {
                     `• Possível processo criminal\n\n` +
                     `Não conformidades C2 (Moderadas):\n` +
                     `• Coima: €500 - €5.000\n` +
-                    `• Prazo para correção: 30 dias\n\n` +
+                    `• Prazo para correção: 2 ANOS (Despacho 17/2022/DG)\n\n` +
                     `Não conformidades C3 (Leves):\n` +
                     `• Advertência ou coima: €100 - €500\n` +
                     `• Prazo para correção: 90 dias\n\n` +
@@ -3213,7 +3213,7 @@ app.post('/api/ai/consult', authenticateToken, async (req, res) => {
                     `• Elevadores >15 anos: Semestralmente\n\n` +
                     `Correções após inspeção:\n` +
                     `• C1 (Crítico): Imediato (0-7 dias)\n` +
-                    `• C2 (Moderado): 30 dias\n` +
+                    `• C2 (Moderado): 2 ANOS (Despacho 17/2022/DG - anteriormente 30 dias)\n` +
                     `• C3 (Leve): 90 dias\n\n` +
                     `Manutenção:\n` +
                     `• Preventiva: Mensal obrigatório\n` +
@@ -3244,6 +3244,49 @@ app.post('/api/ai/consult', authenticateToken, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Erro ao processar consulta'
+        });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════
+// 🤖 AI KNOWLEDGE BASE - Portuguese Laws Q&A
+// ═══════════════════════════════════════════════════════════
+// NEW: Advanced legal consultation with 12 Portuguese laws
+const AIKnowledgeBase = require('./services/ai-knowledge-base');
+
+app.post('/api/ai/law-question', authenticateToken, async (req, res) => {
+    try {
+        const { question } = req.body;
+        
+        if (!question) {
+            return res.status(400).json({
+                success: false,
+                message: 'Pergunta é obrigatória'
+            });
+        }
+
+        console.log('⚖️ Law question:', question, 'from', req.user.username);
+
+        // Load and query AI knowledge base
+        const kb = await AIKnowledgeBase.load();
+        const result = await kb.answerQuestion(question);
+
+        res.json({
+            success: true,
+            data: {
+                question,
+                answer: result.answer,
+                confidence: result.confidence,
+                sources: result.sources,
+                timestamp: new Date().toISOString()
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ AI law question error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erro ao processar pergunta legal: ' + error.message
         });
     }
 });

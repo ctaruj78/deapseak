@@ -355,17 +355,21 @@ const classificationInfo = {
         icon: '🔴',
         meaning: 'Risco imediato de acidente grave ou morte',
         action: 'DESATIVAR ELEVADOR IMEDIATAMENTE',
-        deadline: '0-7 dias',
-        legalConsequence: 'Responsabilidade criminal em caso de acidente'
+        deadline: '0 dias (imobilização imediata)',
+        legalConsequence: 'Responsabilidade criminal em caso de acidente',
+        reference: 'Portaria 344/93 Art. 6º + DL 320/2002'
     },
     'C2': {
         level: 'MODERADO',
         color: 'orange',
         icon: '🟠',
         meaning: 'Não conformidade que pode evoluir para risco crítico',
-        action: 'Correção urgente necessária',
-        deadline: '30 dias',
-        legalConsequence: 'Coima administrativa possível'
+        action: 'Correção necessária no prazo alargado',
+        deadline: '2 anos (Despacho 17/2022/DG - anteriormente 30 dias)',
+        additionalInfo: 'Inspeção de acompanhamento obrigatória ao 1 ano',
+        exception: 'NÃO se aplica se houver C1 no mesmo elevador',
+        legalConsequence: 'Coima €2.000-€15.000 após 2 anos',
+        reference: 'Portaria 344/93 + Despacho 17/2022/DG Art. 1º'
     },
     'C3': {
         level: 'LEVE',
@@ -373,8 +377,9 @@ const classificationInfo = {
         icon: '🟡',
         meaning: 'Não conformidade menor sem risco imediato',
         action: 'Incluir em próxima manutenção',
-        deadline: '90 dias',
-        legalConsequence: 'Advertência possível'
+        deadline: 'Até próxima inspeção periódica',
+        legalConsequence: 'Advertência possível',
+        reference: 'Portaria 344/93 Art. 6º'
     }
 };
 
