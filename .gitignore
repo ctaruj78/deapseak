@@ -69,3 +69,4 @@ Thumbs.db
 *.temp
 public/
 .env
+.env
