@@ -3,1576 +3,1642 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Асистент - DeapSeaK Pro</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
-    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    <title>AI Асистент | LiftMaster Pro</title>
+    
+    <!-- Global Settings -->
+    <script src="../assets/js/global-settings.js"></script>
+    
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="../plugins/adminlte/adminlte.min.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="../plugins/fontawesome/css/all.min.css">
+    
+    <!-- Dark Theme CSS -->
+    <link rel="stylesheet" href="../assets/css/theme-dark.css">
+    
+    <!-- Auth Manager -->
+    <script src="../assets/js/auth.js"></script>
+    
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        /* Tabs styling */
+        .nav-tabs-custom {
+            background: #fff;
         }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
+        
+        /* Chat styling */
+        .direct-chat-messages {
+            height: 500px;
+            overflow-y: auto;
         }
-
-        .ai-container {
-            max-width: 1600px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        
+        .direct-chat-msg {
+            margin-bottom: 15px;
         }
-
-        .ai-header {
-            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
-            color: white;
-            padding: 30px;
+        
+        .direct-chat-text {
+            background: #f4f6f9;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
             position: relative;
         }
-
-        .ai-header .back-button {
-            position: absolute;
-            top: 30px;
-            left: 30px;
-            background: rgba(255,255,255,0.1);
+        
+        .right .direct-chat-text {
+            background: #007bff;
             color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            transition: all 0.3s;
-            border: 1px solid rgba(255,255,255,0.2);
+            border-color: #007bff;
         }
-
-        .ai-header .back-button:hover {
-            background: rgba(255,255,255,0.2);
-            transform: translateX(-5px);
-        }
-
-        .ai-header .header-content {
-            text-align: center;
-        }
-
-        .ai-header h1 {
-            font-size: 36px;
-            margin-bottom: 10px;
-        }
-
-        .ai-header p {
-            opacity: 0.9;
-            font-size: 16px;
-        }
-
-        .ai-tabs {
-            display: flex;
-            background: #f7fafc;
-            border-bottom: 2px solid #e2e8f0;
-        }
-
-        .ai-tab {
-            flex: 1;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            font-weight: 600;
-            color: #4a5568;
-            transition: all 0.3s;
-            border-bottom: 3px solid transparent;
-        }
-
-        .ai-tab:hover {
-            background: #edf2f7;
-        }
-
-        .ai-tab.active {
-            color: #667eea;
-            border-bottom-color: #667eea;
-            background: white;
-        }
-
-        .ai-tab-content {
-            display: none;
-            padding: 30px;
-        }
-
-        .ai-tab-content.active {
-            display: block;
-        }
-
-        /* Chat Tab */
-        .chat-layout {
-            display: grid;
-            grid-template-columns: 300px 1fr;
-            gap: 30px;
-            height: 600px;
-        }
-
-        .quick-actions {
-            background: #f7fafc;
-            padding: 20px;
-            border-radius: 15px;
-            overflow-y: auto;
-        }
-
-        .quick-actions h3 {
-            margin-bottom: 15px;
-            color: #2d3748;
-        }
-
-        .quick-action-btn {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            width: 100%;
-            padding: 12px 15px;
-            margin-bottom: 10px;
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: left;
-        }
-
-        .quick-action-btn:hover {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-            transform: translateX(5px);
-        }
-
-        .chat-area {
-            display: flex;
-            flex-direction: column;
-            background: white;
-            border: 2px solid #e2e8f0;
-            border-radius: 15px;
-            height: 600px;
-            max-height: 70vh;
-        }
-
-        .chat-messages {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            max-height: calc(600px - 80px);
-        }
-
-        .chat-message {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .chat-message.user {
-            flex-direction: row-reverse;
-        }
-
-        .message-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-        }
-
-        .message-avatar.ai {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .message-avatar.user {
-            background: #e2e8f0;
-            color: #4a5568;
-        }
-
-        .message-content {
-            max-width: 70%;
+        
+        .violation-card {
+            border-left: 4px solid;
             padding: 15px;
-            border-radius: 15px;
-            line-height: 1.6;
+            margin: 10px 0;
+            border-radius: 5px;
         }
-
-        .chat-message.ai .message-content {
-            background: #f7fafc;
-            border-bottom-left-radius: 5px;
+        
+        .violation-card.critical {
+            background: #f8d7da;
+            border-left-color: #dc3545;
         }
-
-        .chat-message.user .message-content {
-            background: #667eea;
-            color: white;
-            border-bottom-right-radius: 5px;
+        
+        .violation-card.medium {
+            background: #fff3cd;
+            border-left-color: #ffc107;
         }
-
-        .chat-input-area {
-            padding: 20px;
-            border-top: 1px solid #e2e8f0;
-            display: flex;
-            gap: 10px;
+        
+        .violation-card.low {
+            background: #d1ecf1;
+            border-left-color: #17a2b8;
         }
-
-        .chat-input {
-            flex: 1;
-            padding: 12px 15px;
-            border: 2px solid #e2e8f0;
+        
+        .border-left-danger {
+            border-left: 3px solid #dc3545 !important;
+        }
+        
+        .border-left-warning {
+            border-left: 3px solid #ffc107 !important;
+        }
+        
+        .border-left-info {
+            border-left: 3px solid #17a2b8 !important;
+        }
+        
+        .upload-area {
+            border: 2px dashed #dee2e6;
             border-radius: 10px;
-            font-size: 15px;
-        }
-
-        .chat-input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .send-btn {
-            padding: 12px 25px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .send-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .voice-btn {
-            padding: 12px 20px;
-            background: white;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .voice-btn:hover {
-            border-color: #667eea;
-            color: #667eea;
-        }
-
-        .voice-btn.recording {
-            background: #fc8181;
-            color: white;
-            border-color: #fc8181;
-            animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        /* Legal Tab */
-        .legal-consult {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-        }
-
-        .question-panel {
-            background: #f7fafc;
             padding: 30px;
-            border-radius: 15px;
-        }
-
-        .question-panel h3 {
-            margin-bottom: 20px;
-            color: #2d3748;
-        }
-
-        .question-panel textarea {
-            width: 100%;
-            min-height: 200px;
-            padding: 15px;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            font-size: 16px;
-            font-family: inherit;
-            resize: vertical;
-        }
-
-        .question-panel textarea:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .quick-questions {
-            margin-top: 20px;
-        }
-
-        .quick-questions h4 {
-            margin-bottom: 10px;
-            color: #4a5568;
-            font-size: 14px;
-        }
-
-        .quick-q-btn {
-            display: block;
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 8px;
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            cursor: pointer;
-            text-align: left;
-            transition: all 0.2s;
-        }
-
-        .quick-q-btn:hover {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-        }
-
-        .answer-panel {
-            background: white;
-            border: 2px solid #e2e8f0;
-            border-radius: 15px;
-            padding: 30px;
-            min-height: 400px;
-        }
-
-        .answer-panel h3 {
-            margin-bottom: 20px;
-            color: #2d3748;
-        }
-
-        .urgency-badge {
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            margin-bottom: 15px;
-        }
-
-        .urgency-critical {
-            background: #fed7d7;
-            color: #c53030;
-        }
-
-        .urgency-high {
-            background: #feebc8;
-            color: #c05621;
-        }
-
-        .urgency-medium {
-            background: #bee3f8;
-            color: #2c5282;
-        }
-
-        /* Regulations Tab */
-        .regulations-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 20px;
-        }
-
-        .regulation-card {
-            background: #f7fafc;
-            padding: 20px;
-            border-radius: 12px;
-            border-left: 4px solid #667eea;
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-        .regulation-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-
-        .regulation-card h3 {
-            color: #2d3748;
-            margin-bottom: 10px;
-            font-size: 18px;
-        }
-
-        .regulation-card .reg-number {
-            color: #667eea;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-
-        .regulation-card .reg-summary {
-            color: #4a5568;
-            font-size: 14px;
-            line-height: 1.6;
-        }
-
-        .regulation-card .reg-status {
-            display: inline-block;
-            padding: 3px 10px;
-            background: #c6f6d5;
-            color: #22543d;
-            border-radius: 12px;
-            font-size: 12px;
-            margin-top: 10px;
-        }
-
-        /* Analysis Tab */
-        .analysis-section {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        .inspection-input {
-            background: #f7fafc;
-            padding: 30px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-        }
-
-        .inspection-input h3 {
-            margin-bottom: 15px;
-            color: #2d3748;
-        }
-
-        .inspection-input textarea {
-            width: 100%;
-            min-height: 250px;
-            padding: 15px;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            font-size: 14px;
-            font-family: 'Courier New', monospace;
-        }
-
-        .analysis-result {
-            background: white;
-            border: 2px solid #e2e8f0;
-            border-radius: 15px;
-            padding: 30px;
-        }
-
-        .analysis-summary {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        .summary-card {
             text-align: center;
-            padding: 20px;
-            background: #f7fafc;
-            border-radius: 10px;
-        }
-
-        .summary-card .number {
-            font-size: 32px;
-            font-weight: 700;
-            color: #667eea;
-        }
-
-        .summary-card .label {
-            color: #4a5568;
-            font-size: 14px;
-            margin-top: 5px;
-        }
-
-        .issue-item {
-            background: #f7fafc;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            border-left: 4px solid #cbd5e0;
-        }
-
-        .issue-item.critical {
-            border-left-color: #fc8181;
-        }
-
-        .issue-item.high {
-            border-left-color: #f6ad55;
-        }
-
-        .issue-item h4 {
-            color: #2d3748;
-            margin-bottom: 10px;
-        }
-
-        .issue-item p {
-            color: #4a5568;
-            line-height: 1.6;
-            margin-bottom: 8px;
-        }
-
-        .btn {
-            padding: 12px 30px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
         }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-        }
-
-        .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .loading-center {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 200px;
-        }
-
-        .btn-link {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-            padding: 5px 10px;
-            transition: opacity 0.3s;
-        }
-
-        .btn-link:hover {
-            opacity: 0.7;
-            text-decoration: underline;
-        }
-
+        
         .upload-area:hover {
-            border-color: #667eea !important;
-            background-color: #f7fafc !important;
+            border-color: #007bff;
+            background: #f8f9fa;
+        }
+        
+        .upload-area.dragover {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+        
+        .legal-section, .regulations-section, .analysis-section {
+            padding: 20px;
+        }
+        
+        .quick-action-card {
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .quick-action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .typing-indicator {
+            display: none;
+            padding: 10px;
+        }
+        
+        .typing-indicator.active {
+            display: block;
+        }
+        
+        .typing-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #999;
+            margin: 0 2px;
+            animation: typing 1.4s infinite;
+        }
+        
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+        
+        /* Voice buttons */
+        .voice-btn, .speak-btn {
+            padding: 8px 12px;
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-left: 5px;
+        }
+        
+        .speak-btn {
+            background: #10b981;
+        }
+        
+        .voice-btn:hover {
+            background: #7c3aed;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4);
+        }
+        
+        .speak-btn:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+        }
+        
+        .voice-btn.recording {
+            background: #ef4444;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        .speak-btn.speaking {
+            background: #ef4444;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+            }
         }
     </style>
 </head>
-<body>
-    <div class="ai-container">
-        <div class="ai-header">
-            <a href="/pages/admin/admin-dashboard.html" class="back-button">
-                <i class="fas fa-arrow-left"></i> Назад до панелі
+<body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper">
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button">
+                        <i class="fas fa-bars"></i>
+                    </a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="/pages/admin/admin-dashboard.html" class="nav-link">Головна</a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link">AI Асистент</a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="auth.logout(); return false;">
+                        <i class="fas fa-sign-out-alt"></i> Вихід
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Sidebar Container -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <!-- Brand Logo -->
+            <a href="/pages/admin/admin-dashboard.html" class="brand-link">
+                <i class="brand-image fas fa-elevator"></i>
+                <span class="brand-text font-weight-light">LiftMaster Pro</span>
             </a>
-            <div class="header-content">
-                <h1>🤖 AI Асистент DeapSeaK Pro</h1>
-                <p>Розумний помічник • Юридичний консультант • Аналітика</p>
-            </div>
-        </div>
 
-        <div class="ai-tabs">
-            <div class="ai-tab active" data-tab="chat">
-                <i class="fas fa-comments"></i> AI Чат
-            </div>
-            <div class="ai-tab" data-tab="legal">
-                <i class="fas fa-gavel"></i> Юридичний консультант
-            </div>
-            <div class="ai-tab" data-tab="regulations">
-                <i class="fas fa-book"></i> Законодавство PT
-            </div>
-            <div class="ai-tab" data-tab="analysis">
-                <i class="fas fa-clipboard-check"></i> Аналіз звіту
-            </div>
-        </div>
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Sidebar Menu -->
+                <nav class="mt-2">
+                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                        <li class="nav-item">
+                            <a href="/pages/admin/admin-dashboard.html" class="nav-link">
+                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                                <p>Дашборд</p>
+                            </a>
+                        </li>
 
-        <!-- AI Chat Tab -->
-        <div class="ai-tab-content active" id="chat">
-            <div class="chat-layout">
-                <div class="quick-actions">
-                    <h3>⚡ Швидкі дії</h3>
-                    <div id="quickActionsContainer">
-                        <!-- Заповнюється JS -->
+                        <li class="nav-item">
+                            <a href="/pages/admin/lifts.html" class="nav-link">
+                                <i class="nav-icon fas fa-elevator"></i>
+                                <p>Ліфти</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="/pages/admin/users.html" class="nav-link">
+                                <i class="nav-icon fas fa-users"></i>
+                                <p>Користувачі</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="/pages/admin/unified-analytics.html" class="nav-link">
+                                <i class="nav-icon fas fa-chart-line"></i>
+                                <p>Аналітика</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link active">
+                                <i class="nav-icon fas fa-robot"></i>
+                                <p>AI Асистент</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="/pages/admin/settings.html" class="nav-link">
+                                <i class="nav-icon fas fa-cog"></i>
+                                <p>Налаштування</p>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <!-- Content Header -->
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">
+                                <i class="fas fa-robot text-primary"></i>
+                                AI Асистент DeapSeaK
+                            </h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="/pages/admin/admin-dashboard.html">Головна</a></li>
+                                <li class="breadcrumb-item active">AI Асистент</li>
+                            </ol>
+                        </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="chat-area">
-                    <div class="chat-messages" id="chatMessages">
-                        <div class="chat-message ai">
-                            <div class="message-avatar ai">🤖</div>
-                            <div class="message-content">
-                                Привіт! Я AI асистент DeapSeaK. Можу допомогти з:
-                                <ul style="margin-top: 10px;">
-                                    <li>Керуванням ліфтами та заявками</li>
-                                    <li>Консультаціями по португальському законодавству</li>
-                                    <li>Аналізом звітів інспекцій</li>
-                                    <li>Аналітикою та звітами</li>
-                                </ul>
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+                    <div class="card card-primary card-outline card-tabs">
+                        <div class="card-header p-0 pt-1 border-bottom-0">
+                            <ul class="nav nav-tabs" id="custom-tabs" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" id="chat-tab" data-toggle="pill" href="#chat" role="tab">
+                                        <i class="fas fa-comments"></i> Чат з AI
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="legal-tab" data-toggle="pill" href="#legal" role="tab">
+                                        <i class="fas fa-balance-scale"></i> Юридична консультація
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="regulations-tab" data-toggle="pill" href="#regulations" role="tab">
+                                        <i class="fas fa-book"></i> Норми PT
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="analysis-tab" data-toggle="pill" href="#analysis" role="tab">
+                                        <i class="fas fa-clipboard-check"></i> Аналіз звіту
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="card-body">
+                            <div class="tab-content" id="custom-tabs-content">
+                                <!-- TAB 1: CHAT -->
+                                <div class="tab-pane fade show active" id="chat" role="tabpanel">
+                                    <div class="row">
+                                        <div class="col-md-9">
+                                            <div class="card direct-chat direct-chat-primary">
+                                                <div class="card-header">
+                                                    <h3 class="card-title">
+                                                        <i class="fas fa-robot"></i> Розмова з AI
+                                                    </h3>
+                                                    <div class="card-tools">
+                                                        <button type="button" class="btn btn-tool" onclick="clearChat()">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="direct-chat-messages" id="chatMessages">
+                                                        <!-- Welcome message -->
+                                                        <div class="direct-chat-msg">
+                                                            <div class="direct-chat-infos clearfix">
+                                                                <span class="direct-chat-name float-left">AI Асистент</span>
+                                                                <span class="direct-chat-timestamp float-right">Зараз</span>
+                                                            </div>
+                                                            <img class="direct-chat-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23007bff'/%3E%3Ctext x='20' y='28' font-size='24' text-anchor='middle' fill='white'%3E💬%3C/text%3E%3C/svg%3E" alt="AI">
+                                                            <div class="direct-chat-text">
+                                                                <strong>Вітаю! Я AI Асистент DeapSeaK</strong>
+                                                                <p>Можу допомогти з:</p>
+                                                                <ul>
+                                                                    <li>📄 Аналізом звітів інспекції (PDF)</li>
+                                                                    <li>⚖️ Юридичними питаннями</li>
+                                                                    <li>📋 Нормами та регламентами PT</li>
+                                                                    <li>🔧 Технічними рекомендаціями</li>
+                                                                </ul>
+                                                                <p>Оберіть потрібну функцію в табах вгорі або задайте питання!</p>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <!-- Typing indicator -->
+                                                        <div class="direct-chat-msg">
+                                                            <div class="typing-indicator" id="typingIndicator">
+                                                                <span class="typing-dot"></span>
+                                                                <span class="typing-dot"></span>
+                                                                <span class="typing-dot"></span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="card-footer">
+                                                    <div class="input-group">
+                                                        <input type="text" id="chatInput" placeholder="Напишіть повідомлення..." class="form-control" onkeypress="if(event.key==='Enter') sendChatMessage()">
+                                                        <span class="input-group-append">
+                                                            <button type="button" class="voice-btn" id="voiceBtn" onclick="toggleVoiceInput()" title="Falar / Говорити">
+                                                                <i class="fas fa-microphone"></i>
+                                                            </button>
+                                                            <button type="button" class="speak-btn" id="speakBtn" onclick="toggleSpeech()" title="Ouvir / Прослухати" style="display: none;">
+                                                                <i class="fas fa-volume-up"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-primary" onclick="sendChatMessage()">
+                                                                <i class="fas fa-paper-plane"></i>
+                                                            </button>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-3">
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <h3 class="card-title">
+                                                        <i class="fas fa-bolt text-warning"></i> Швидкі дії
+                                                    </h3>
+                                                </div>
+                                                <div class="card-body p-2">
+                                                    <div class="list-group">
+                                                        <a href="#" class="list-group-item list-group-item-action" onclick="askQuestion('Які основні вимоги до технічного обслуговування ліфтів?'); return false;">
+                                                            <i class="fas fa-wrench text-info"></i> Вимоги до ТО
+                                                        </a>
+                                                        <a href="#" class="list-group-item list-group-item-action" onclick="askQuestion('Які терміни усунення порушень C1, C2, C3?'); return false;">
+                                                            <i class="fas fa-clock text-warning"></i> Терміни усунення
+                                                        </a>
+                                                        <a href="#" class="list-group-item list-group-item-action" onclick="askQuestion('Що робити якщо ліфт зупинився між поверхами?'); return false;">
+                                                            <i class="fas fa-exclamation-triangle text-danger"></i> Аварійна ситуація
+                                                        </a>
+                                                        <a href="#" class="list-group-item list-group-item-action" onclick="askQuestion('Які документи потрібні для інспекції ліфта?'); return false;">
+                                                            <i class="fas fa-file-alt text-primary"></i> Документи для інспекції
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- TAB 2: LEGAL -->
+                                <div class="tab-pane fade" id="legal" role="tabpanel">
+                                    <div class="legal-section">
+                                        <div class="alert alert-info">
+                                            <h5><i class="icon fas fa-info-circle"></i> Юридична консультація</h5>
+                                            Отримайте професійну юридичну консультацію щодо експлуатації та обслуговування ліфтів в Португалії
+                                        </div>
+                                        
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="card card-widget widget-user-2">
+                                                    <div class="widget-user-header bg-warning">
+                                                        <h3 class="widget-user-username">Відповідальність власника</h3>
+                                                        <h5 class="widget-user-desc">Права та обов'язки</h5>
+                                                    </div>
+                                                    <div class="card-footer p-3">
+                                                        <p>Дізнайтесь про юридичну відповідальність власника ліфта, обов'язкове обслуговування та наслідки порушень</p>
+                                                        <button class="btn btn-warning btn-sm" onclick="askLegal('Яка юридична відповідальність власника ліфта?')">
+                                                            <i class="fas fa-question-circle"></i> Детальніше
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-6">
+                                                <div class="card card-widget widget-user-2">
+                                                    <div class="widget-user-header bg-danger">
+                                                        <h3 class="widget-user-username">Санкції та штрафи</h3>
+                                                        <h5 class="widget-user-desc">Порушення норм безпеки</h5>
+                                                    </div>
+                                                    <div class="card-footer p-3">
+                                                        <p>Інформація про штрафи, адміністративні та кримінальні покарання за порушення вимог безпеки</p>
+                                                        <button class="btn btn-danger btn-sm" onclick="askLegal('Які штрафи за порушення норм безпеки ліфтів?')">
+                                                            <i class="fas fa-gavel"></i> Детальніше
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h3 class="card-title">
+                                                    <i class="fas fa-question"></i> Задати юридичне питання
+                                                </h3>
+                                            </div>
+                                            <div class="card-body">
+                                                <textarea id="legalQuestion" class="form-control" rows="4" placeholder="Опишіть вашу ситуацію..."></textarea>
+                                                <button class="btn btn-primary mt-3" onclick="askLegalCustom()">
+                                                    <i class="fas fa-paper-plane"></i> Отримати консультацію
+                                                </button>
+                                            </div>
+                                            <div class="card-footer" id="legalResponse" style="display: none;">
+                                                <!-- Відповідь -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- TAB 3: REGULATIONS -->
+                                <div class="tab-pane fade" id="regulations" role="tabpanel">
+                                    <div class="regulations-section">
+                                        <div class="alert alert-success">
+                                            <h5><i class="icon fas fa-book"></i> Норми та Регламенти Португалії</h5>
+                                            База знань португальських норм безпеки для ліфтів
+                                        </div>
+                                        
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="card">
+                                                    <div class="card-header">
+                                                        <h3 class="card-title">
+                                                            <i class="fas fa-search"></i> Пошук по регламентам
+                                                        </h3>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <div class="input-group mb-3">
+                                                            <input type="text" id="regulationSearch" class="form-control" placeholder="Пошук за ключовими словами (напр. 'ventilação', 'portas', 'iluminação')..." onkeypress="if(event.key==='Enter') searchRegulations()">
+                                                            <div class="input-group-append">
+                                                                <button class="btn btn-success" onclick="searchRegulations()">
+                                                                    <i class="fas fa-search"></i> Шукати
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div id="regulationsResults">
+                                                            <div class="text-center text-muted py-4">
+                                                                <div class="spinner-border" role="status"></div>
+                                                                <p class="mt-2">Завантаження законів...</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- TAB 4: ANALYSIS -->
+                                <div class="tab-pane fade" id="analysis" role="tabpanel">
+                                    <div class="analysis-section">
+                                        <div class="callout callout-warning">
+                                            <h5><i class="fas fa-clipboard-check"></i> Аналіз звіту інспекції</h5>
+                                            <p>Завантажте PDF звіт інспекції і отримайте детальний аналіз кожного порушення з поясненнями, законодавчими посиланнями та рекомендаціями щодо усунення</p>
+                                        </div>
+                                        
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h3 class="card-title">
+                                                    <i class="fas fa-file-upload"></i> Завантаження звіту
+                                                </h3>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="upload-area" id="analysisUploadArea" onclick="document.getElementById('analysisFileInput').click()">
+                                                    <input type="file" id="analysisFileInput" accept="application/pdf" style="display: none" onchange="handleAnalysisFile(event)">
+                                                    <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                                                    <h5>Перетягніть PDF звіт або клікніть для вибору</h5>
+                                                    <p class="text-muted">Підтримуються тільки PDF файли (максимум 10 MB)</p>
+                                                </div>
+                                                
+                                                <div id="analysisFileInfo" style="display: none;" class="mt-3">
+                                                    <div class="alert alert-success">
+                                                        <i class="fas fa-file-pdf"></i>
+                                                        <strong>Файл завантажено:</strong> <span id="analysisFileName"></span>
+                                                        <button class="btn btn-sm btn-danger float-right" onclick="removeAnalysisFile()">
+                                                            <i class="fas fa-times"></i> Видалити
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="text-center mt-3">
+                                                    <strong>АБО</strong>
+                                                </div>
+                                                
+                                                <textarea id="manualReport" class="form-control mt-3" rows="6" placeholder="Вставте текст звіту інспекції вручну...&#10;&#10;Приклад:&#10;C1 - ART. 78 - Existem peças salientes das máquinas...&#10;C2 - ART. 45 - A folga entre as soleiras...&#10;C3 - ART. 20 - Falta sinalização adequada..."></textarea>
+                                                
+                                                <button class="btn btn-primary btn-lg btn-block mt-3" id="analyzeReportBtn" onclick="analyzeReport()">
+                                                    <i class="fas fa-search"></i> Аналізувати звіт
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="card" id="analysisResults" style="display: none;">
+                                            <div class="card-header">
+                                                <h3 class="card-title">
+                                                    <i class="fas fa-chart-bar"></i> Результати аналізу
+                                                </h3>
+                                            </div>
+                                            <div class="card-body" id="analysisResultsContent">
+                                                <!-- Results will be inserted here -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-
-                    <div class="chat-input-area">
-                        <button class="voice-btn" id="voiceBtn" title="Голосовий ввід">
-                            <i class="fas fa-microphone"></i>
-                        </button>
-                        <input type="text" class="chat-input" id="chatInput" placeholder="Напишіть повідомлення або задайте питання...">
-                        <button class="send-btn" id="sendBtn">
-                            <i class="fas fa-paper-plane"></i> Надіслати
-                        </button>
-                    </div>
                 </div>
-            </div>
+            </section>
         </div>
 
-        <!-- Legal Consultation Tab -->
-        <div class="ai-tab-content" id="legal">
-            <div class="legal-consult">
-                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-                    <h3 style="margin: 0 0 10px 0; display: flex; align-items: center; gap: 10px;">
-                        <i class="fas fa-shield-alt"></i>
-                        Чесність і прозорість - наш пріоритет
-                    </h3>
-                    <p style="margin: 0; opacity: 0.95; line-height: 1.6;">
-                        Ми надаємо вам доступ до офіційних норм та законів Португалії про ліфти. 
-                        Перевіряйте звіти інспекторів, знайте свої права та обов'язки. 
-                        Наша компанія працює відкрито та чесно! 🤝
-                    </p>
-                </div>
-                <div class="question-panel">
-                    <h3>📝 Ваше питання про звіт інспекції</h3>
-                    <textarea id="legalQuestion" placeholder="Наприклад: O inspetor marcou bloqueio de porta defeituoso. O que devo fazer?"></textarea>
-                    
-                    <div class="quick-questions">
-                        <h4>Часті питання:</h4>
-                        <button class="quick-q-btn" data-question="O que é UCM e por que é obrigatório?">
-                            Що таке UCM і чому це обов'язково?
-                        </button>
-                        <button class="quick-q-btn" data-question="De quanto em quanto tempo preciso fazer inspeção?">
-                            Як часто потрібна інспекція?
-                        </button>
-                        <button class="quick-q-btn" data-question="Falta Braille nos botões. É grave?">
-                            Відсутній Брайль на кнопках - це серйозно?
-                        </button>
-                        <button class="quick-q-btn" data-question="O alarme não funciona. Posso usar o elevador?">
-                            Сигналізація не працює - чи можна користуватись?
-                        </button>
-                        <button class="quick-q-btn" data-question="Falta iluminação de emergência">
-                            Відсутнє аварійне освітлення
-                        </button>
-                    </div>
-                    
-                    <button class="btn btn-primary" id="askLegalBtn" style="margin-top: 20px; width: 100%;">
-                        <i class="fas fa-gavel"></i> Отримати консультацію
-                    </button>
-                </div>
-
-                <div class="answer-panel" id="legalAnswer">
-                    <h3>💡 Відповідь з'явиться тут</h3>
-                    <p style="color: #a0aec0;">Поставте питання про ваш звіт інспекції або виберіть одне з швидких питань зліва.</p>
-                </div>
+        <!-- Footer -->
+        <footer class="main-footer">
+            <strong>Copyright &copy; 2024 <a href="#">LiftMaster Pro</a>.</strong>
+            Всі права захищені.
+            <div class="float-right d-none d-sm-inline-block">
+                <b>Версія</b> 2.0.0
             </div>
-        </div>
-
-        <!-- Regulations Tab -->
-        <div class="ai-tab-content" id="regulations">
-            <div style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-                <h3 style="margin: 0 0 10px 0; display: flex; align-items: center; gap: 10px;">
-                    <i class="fas fa-balance-scale"></i>
-                    Офіційні закони - доступні для всіх
-                </h3>
-                <p style="margin: 0; opacity: 0.95; line-height: 1.6;">
-                    Ознайомтесь з повною базою актуальних норм та регламентів Португалії щодо ліфтів.
-                    Ви маєте право знати, які вимоги ставляться до вашого обладнання. Ми нічого не приховуємо! 📖
-                </p>
-            </div>
-            <h2 style="margin-bottom: 30px; color: #2d3748;">📚 Актуальне законодавство Португалії</h2>
-            <div class="regulations-grid" id="regulationsGrid">
-                <!-- Завантажується через API -->
-            </div>
-        </div>
-
-        <!-- Analysis Tab -->
-        <div class="ai-tab-content" id="analysis">
-            <div class="analysis-section">
-                <div style="background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-                    <h3 style="margin: 0 0 10px 0; display: flex; align-items: center; gap: 10px;">
-                        <i class="fas fa-clipboard-check"></i>
-                        Перевірте звіт інспектора самостійно
-                    </h3>
-                    <p style="margin: 0; opacity: 0.95; line-height: 1.6;">
-                        Завантажте PDF звіт інспекції і отримайте детальний аналіз кожного пункту з поясненнями,
-                        посиланнями на закони та орієнтовною вартістю. Прозорість - наша політика! 🔍
-                    </p>
-                </div>
-                <div class="inspection-input">
-                    <h3>📋 Аналіз звіту інспекції</h3>
-                    <p style="color: #4a5568; margin-bottom: 15px;">
-                        Завантажте PDF звіт або вставте текст вручну
-                    </p>
-                    
-                    <!-- PDF Upload -->
-                    <div class="upload-area" id="pdfUploadArea" style="margin-bottom: 20px; padding: 30px; border: 2px dashed #cbd5e0; border-radius: 10px; text-align: center; cursor: pointer; transition: all 0.3s;">
-                        <input type="file" id="pdfInput" accept=".pdf" style="display: none;">
-                        <div id="uploadPrompt">
-                            <i class="fas fa-file-pdf" style="font-size: 48px; color: #667eea; margin-bottom: 10px;"></i>
-                            <p style="margin: 0; font-weight: 600; color: #2d3748;">Натисніть або перетягніть PDF звіт</p>
-                            <p style="margin: 5px 0 0 0; font-size: 14px; color: #718096;">Максимум 10 MB</p>
-                        </div>
-                        <div id="uploadedFileName" style="display: none;">
-                            <i class="fas fa-check-circle" style="color: #48bb78; font-size: 24px;"></i>
-                            <p id="fileName" style="margin: 10px 0 0 0; font-weight: 600;"></p>
-                            <button id="removeFileBtn" class="btn-link" style="margin-top: 10px; color: #e53e3e;">
-                                <i class="fas fa-times"></i> Видалити файл
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div style="text-align: center; margin: 20px 0; color: #a0aec0; font-weight: 600;">АБО</div>
-                    
-                    <!-- Manual Text Input -->
-                    <textarea id="inspectionReport" placeholder="Приклад:
-• Bloqueio de porta defeituoso
-• Falta iluminação de emergência
-• UCM não instalado
-• Sistema de alarme não funcional
-• Botões sem Braille"></textarea>
-                    
-                    <button class="btn btn-primary" id="analyzeBtn" style="margin-top: 20px; width: 100%;">
-                        <i class="fas fa-search"></i> Аналізувати звіт
-                    </button>
-                </div>
-
-                <div class="analysis-result" id="analysisResult" style="display: none;">
-                    <!-- Результати аналізу -->
-                </div>
-            </div>
-        </div>
+        </footer>
     </div>
 
-    <script>
-        // Global variables
-        let currentUser = null;
-        let recognition = null;
-        let regulationsLoaded = false;
+    <!-- jQuery -->
+    <script src="../plugins/jquery/jquery.min.js"></script>
+    <!-- Bootstrap 4 -->
+    <script src="../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+    <!-- AdminLTE App -->
+    <script src="../plugins/adminlte/adminlte.min.js"></script>
 
-        // Helper function to get token from any storage location
+    <script>
+        // Voice features
+        let lastResponse = '';
+        let speechRecognition = null;
+        let isSpeaking = false;
+        
+        // Ініціалізація Web Speech API
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            speechRecognition = new SpeechRecognition();
+            speechRecognition.continuous = false;
+            speechRecognition.interimResults = false;
+            speechRecognition.lang = 'pt-PT';
+            
+            speechRecognition.onstart = () => {
+                const voiceBtn = document.getElementById('voiceBtn');
+                voiceBtn.classList.add('recording');
+                voiceBtn.innerHTML = '<i class="fas fa-stop-circle"></i>';
+            };
+            
+            speechRecognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('chatInput').value = transcript;
+                sendChatMessage();
+            };
+            
+            speechRecognition.onend = () => {
+                const voiceBtn = document.getElementById('voiceBtn');
+                voiceBtn.classList.remove('recording');
+                voiceBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+            };
+            
+            speechRecognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                const voiceBtn = document.getElementById('voiceBtn');
+                voiceBtn.classList.remove('recording');
+                voiceBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+            };
+        } else {
+            window.addEventListener('load', () => {
+                const voiceBtn = document.getElementById('voiceBtn');
+                if (voiceBtn) {
+                    voiceBtn.disabled = true;
+                    voiceBtn.title = 'Voice input not supported';
+                    voiceBtn.style.opacity = '0.5';
+                }
+            });
+        }
+        
+        // Голосове введення
+        function toggleVoiceInput() {
+            if (speechRecognition) {
+                try {
+                    speechRecognition.start();
+                } catch (error) {
+                    console.error('Speech recognition start error:', error);
+                }
+            }
+        }
+        
+        // Text-to-Speech озвучування
+        function toggleSpeech() {
+            if ('speechSynthesis' in window) {
+                if (isSpeaking) {
+                    window.speechSynthesis.cancel();
+                    isSpeaking = false;
+                    const speakBtn = document.getElementById('speakBtn');
+                    speakBtn.classList.remove('speaking');
+                    speakBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                    return;
+                }
+                
+                if (!lastResponse) return;
+                
+                const cleanText = lastResponse
+                    .replace(/\*\*/g, '')
+                    .replace(/\*/g, '')
+                    .replace(/#{1,6}\s/g, '')
+                    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+                    .replace(/```[\s\S]*?```/g, '')
+                    .replace(/`([^`]+)`/g, '$1');
+                
+                const utterance = new SpeechSynthesisUtterance(cleanText);
+                utterance.lang = 'pt-PT'; // Європейська португальська
+                utterance.rate = 0.9;
+                utterance.pitch = 1;
+                
+                // ЖОРСТКА ЗАБОРОНА бразильського португальського
+                const voices = window.speechSynthesis.getVoices();
+                
+                // Спочатку фільтруємо ВСІ бразильські голоси
+                const nonBrazilianVoices = voices.filter(voice => 
+                    !voice.lang.includes('BR') && 
+                    !voice.lang.includes('Brazil') &&
+                    !voice.name.toLowerCase().includes('brazil') &&
+                    !voice.name.toLowerCase().includes('brasil')
+                );
+                
+                // Тепер шукаємо pt-PT серед НЕ-бразильських
+                const portugueseVoice = nonBrazilianVoices.find(voice => 
+                    voice.lang === 'pt-PT' || 
+                    (voice.lang.startsWith('pt') && voice.name.toLowerCase().includes('portugal'))
+                );
+                
+                if (portugueseVoice) {
+                    utterance.voice = portugueseVoice;
+                    console.log('✅ Використовується ПОРТУГАЛЬСЬКИЙ голос:', portugueseVoice.name, portugueseVoice.lang);
+                } else {
+                    // Пошук будь-якого португальського (крім бразильського)
+                    const anyPortuguese = nonBrazilianVoices.find(voice => voice.lang.startsWith('pt'));
+                    
+                    if (anyPortuguese) {
+                        utterance.voice = anyPortuguese;
+                        console.log('⚠️ Використовується альтернативний НЕ-бразильський голос:', anyPortuguese.name, anyPortuguese.lang);
+                    } else {
+                        // ОСТАННІЙ ВАРІАНТ: якщо тільки бразильські голоси, НЕ використовуємо TTS
+                        const hasBrazilianOnly = voices.some(v => v.lang.includes('BR') || v.lang.includes('Brazil'));
+                        
+                        if (hasBrazilianOnly) {
+                            console.error('❌ ПОМИЛКА: Доступні тільки бразильські голоси (pt-BR). TTS ВИМКНЕНО!');
+                            console.warn('💡 Встановіть португальську мову (pt-PT) в налаштуваннях системи');
+                            alert('⚠️ Голосовий супровід недоступний!\n\nВ системі знайдено тільки бразильську португальську (pt-BR).\n\nДля роботи потрібна європейська португальська (pt-PT).\n\n📌 Інструкція:\nWindows: Settings → Language → Add Portuguese (Portugal)\nmacOS: System Preferences → Accessibility → Spoken Content');
+                            return; // НЕ ОЗВУЧУВАТИ
+                        } else {
+                            console.warn('⚠️ Португальський голос не знайдено, використовується системний за замовчуванням');
+                        }
+                    }
+                }
+                
+                const speakBtn = document.getElementById('speakBtn');
+                
+                utterance.onstart = () => {
+                    isSpeaking = true;
+                    speakBtn.classList.add('speaking');
+                    speakBtn.innerHTML = '<i class="fas fa-stop"></i>';
+                };
+                
+                utterance.onend = () => {
+                    isSpeaking = false;
+                    speakBtn.classList.remove('speaking');
+                    speakBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                };
+                
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+        
+        // API URL detection для Codespaces та localhost
+        let API_URL;
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            API_URL = 'http://localhost:5000';
+        } else if (window.location.hostname.includes('github.dev') || window.location.hostname.includes('app.github.dev')) {
+            // GitHub Codespaces - замінюємо порт в URL
+            const currentUrl = window.location.origin;
+            API_URL = currentUrl.replace(/-\d+\.app\.github\.dev/, '-5000.app.github.dev');
+        } else {
+            // Fallback - просто змінюємо порт
+            API_URL = window.location.origin.replace(':3000', ':5000');
+        }
+        
+        console.log('🌐 API URL:', API_URL);
+
+        let currentAnalysisFile = null;
+        
+        // Helper функція для отримання токена
         function getAuthToken() {
             return localStorage.getItem('token') || 
                    localStorage.getItem('lm_token') || 
-                   localStorage.getItem('deapseak_token');
+                   localStorage.getItem('deapseak_token') ||
+                   sessionStorage.getItem('token');
         }
-
-        // Check authentication on load
-        function checkAuthentication() {
+        
+        // Helper функція для headers з токеном
+        function getAuthHeaders(contentType = 'application/json') {
+            const headers = {};
             const token = getAuthToken();
-            
-            console.log('🔐 Перевірка автентифікації...');
-            console.log('Token exists:', !!token);
-            
-            if (!token) {
-                console.warn('❌ Токен не знайдено, перенаправлення на логін');
-                // Зберігаємо поточну сторінку для повернення після логіну
-                sessionStorage.setItem('redirect_after_login', window.location.href);
-                window.location.replace('/pages/auth/login.html');
-                return false;
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
             }
-            
-            // Normalize token - зберігаємо в головному ключі якщо його там немає
-            if (!localStorage.getItem('token') && token) {
-                localStorage.setItem('token', token);
-                console.log('✅ Токен нормалізовано');
+            if (contentType) {
+                headers['Content-Type'] = contentType;
             }
-            
-            console.log('✅ Токен знайдено, доступ дозволено');
-            return true;
+            return headers;
         }
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', init);
-
-        function init() {
-            console.log('AI Assistant Init Started');
-            
-            // Check authentication first
-            if (!checkAuthentication()) {
-                return; // Stop initialization if not authenticated
-            }
-            
-            loadUserData();
-            console.log('User data loaded:', currentUser);
-            setupTabs();
-            console.log('Tabs setup complete');
-            setupChat();
-            console.log('Chat setup complete');
-            setupLegal();
-            console.log('Legal setup complete');
-            setupVoiceRecognition();
-            console.log('Voice recognition setup complete');
-            loadQuickActions();
-            console.log('Quick actions loaded');
-            
-            // Handle hash navigation
-            handleHashNavigation();
-            window.addEventListener('hashchange', handleHashNavigation);
-            console.log('AI Assistant Init Complete');
-        }
-
-        function handleHashNavigation() {
-            const hash = window.location.hash.substring(1); // Remove #
-            if (hash && ['chat', 'legal', 'regulations', 'analysis'].includes(hash)) {
-                const tab = document.querySelector(`[data-tab="${hash}"]`);
-                if (tab) {
-                    tab.click();
-                }
-            }
-        }
-
-        function loadUserData() {
-            const userData = localStorage.getItem('user');
-            if (userData) {
-                currentUser = JSON.parse(userData);
-            } else {
-                currentUser = { role: 'admin', name: 'Admin' };
-            }
-        }
-
-        // Tabs
-        function setupTabs() {
-            const tabs = document.querySelectorAll('.ai-tab');
-            console.log('Found tabs:', tabs.length);
-            
-            tabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    const tabName = tab.dataset.tab;
-                    console.log('Tab clicked:', tabName);
-                    
-                    document.querySelectorAll('.ai-tab').forEach(t => t.classList.remove('active'));
-                    document.querySelectorAll('.ai-tab-content').forEach(c => c.classList.remove('active'));
-                    
-                    tab.classList.add('active');
-                    const contentElement = document.getElementById(tabName);
-                    if (contentElement) {
-                        contentElement.classList.add('active');
-                        console.log('Content shown:', tabName);
-                    } else {
-                        console.error('Content element not found:', tabName);
-                    }
-                    
-                    // Load content if needed
-                    if (tabName === 'regulations' && !regulationsLoaded) {
-                        loadRegulations();
-                    }
-                });
-            });
-        }
-
-        // Chat
-        function setupChat() {
-            const sendBtn = document.getElementById('sendBtn');
-            const chatInput = document.getElementById('chatInput');
-
-            sendBtn.addEventListener('click', sendMessage);
-            chatInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') sendMessage();
-            });
-        }
-
-        async function sendMessage() {
+        // Chat functions
+        function sendChatMessage() {
             const input = document.getElementById('chatInput');
             const message = input.value.trim();
             if (!message) return;
-
-            addMessage('user', message);
+            
+            addChatMessage(message, true);
             input.value = '';
-
-            try {
-                const token = getAuthToken();
-                const response = await fetch('/api/ai/chat', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ message })
-                });
-
-                const result = await response.json();
-                if (result.success) {
-                    addMessage('ai', result.data.response);
-                } else {
-                    addMessage('ai', 'Вибачте, виникла помилка. Спробуйте ще раз.');
+            
+            // Show typing indicator
+            document.getElementById('typingIndicator').classList.add('active');
+            
+            // Send to API
+            fetch(`${API_URL}/api/ai/chat`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ message })
+            })
+            .then(res => {
+                // Перевірка на помилку авторизації
+                if (res.status === 401) {
+                    console.error('❌ JWT Token expired or invalid');
+                    document.getElementById('typingIndicator').classList.remove('active');
+                    
+                    // Показати повідомлення з можливістю перелогінитися
+                    const errorMsg = '⚠️ Сесія прострочена. Будь ласка, увійдіть знову.';
+                    addChatMessage(errorMsg, false);
+                    
+                    // Очистити токени
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('lm_token');
+                    localStorage.removeItem('deapseak_token');
+                    sessionStorage.removeItem('token');
+                    
+                    // Перенаправити на логін через 2 секунди
+                    setTimeout(() => {
+                        if (confirm('Сесія прострочена. Перейти на сторінку входу?')) {
+                            window.location.replace('/pages/auth/login.html');
+                        }
+                    }, 2000);
+                    
+                    throw new Error('Unauthorized - JWT expired');
                 }
-            } catch (error) {
-                addMessage("ai", "Помилка з'єднання з сервером.");
-            }
-        }
-
-        function addMessage(sender, text) {
-            const messagesDiv = document.getElementById('chatMessages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `chat-message ${sender}`;
-            
-            const avatar = document.createElement('div');
-            avatar.className = `message-avatar ${sender}`;
-            avatar.innerHTML = sender === 'ai' ? '🤖' : '<i class="fas fa-user"></i>';
-            
-            const content = document.createElement('div');
-            content.className = 'message-content';
-            content.innerHTML = text.replace(/\n/g, '<br>');
-            
-            messageDiv.appendChild(avatar);
-            messageDiv.appendChild(content);
-            messagesDiv.appendChild(messageDiv);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        }
-
-        // Voice Recognition
-        function setupVoiceRecognition() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                console.warn('Speech Recognition not supported');
-                const voiceBtn = document.getElementById('voiceBtn');
-                if (voiceBtn) voiceBtn.style.display = 'none';
-                return;
-            }
-
-            console.log('Setting up voice recognition...');
-            recognition = new SpeechRecognition();
-            recognition.lang = 'uk-UA';
-            recognition.continuous = false;
-            recognition.interimResults = false;
-
-            const voiceBtn = document.getElementById('voiceBtn');
-            if (!voiceBtn) {
-                console.error('Voice button not found!');
-                return;
-            }
-            
-            voiceBtn.addEventListener('click', toggleVoice);
-            console.log('Voice button listener attached');
-
-            recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript;
-                console.log('Voice input:', transcript);
-                document.getElementById('chatInput').value = transcript;
-                voiceBtn.classList.remove('recording');
-            };
-
-            recognition.onerror = (error) => {
-                console.error('Recognition error:', error);
-                voiceBtn.classList.remove('recording');
-            };
-
-            recognition.onend = () => {
-                console.log('Recognition ended');
-                voiceBtn.classList.remove('recording');
-            };
-        }
-
-        function toggleVoice() {
-            const voiceBtn = document.getElementById('voiceBtn');
-            console.log('Toggle voice clicked, currently recording:', voiceBtn.classList.contains('recording'));
-            
-            if (voiceBtn.classList.contains('recording')) {
-                recognition.stop();
-                voiceBtn.classList.remove('recording');
-            } else {
-                recognition.start();
-                voiceBtn.classList.add('recording');
-            }
-        }
-
-        // Quick Actions
-        function loadQuickActions() {
-            const container = document.getElementById('quickActionsContainer');
-            let actions = [];
-
-            if (currentUser.role === 'admin') {
-                actions = [
-                    { icon: '📊', text: 'Аналітика системи', action: () => { document.getElementById('chatInput').value = 'Покажи повну аналітику системи'; sendMessage(); }},
-                    { icon: '🔍', text: 'Пошук ліфта', action: () => { document.getElementById('chatInput').value = 'Знайти ліфт'; sendMessage(); }},
-                    { icon: '📈', text: 'Місячний звіт', action: () => { document.getElementById('chatInput').value = 'Згенеруй звіт за місяць'; sendMessage(); }},
-                    { icon: '👥', text: 'Користувачі', action: () => { document.getElementById('chatInput').value = 'Список користувачів'; sendMessage(); }},
-                    { icon: '⚖️', text: 'Юридична консультація', action: () => { document.querySelector('[data-tab="legal"]').click(); }},
-                    { icon: '⚠️', text: 'Критичні проблеми', action: () => { document.getElementById('chatInput').value = 'Критичні проблеми'; sendMessage(); }},
-                    { icon: '🔔', text: 'Сповіщення', action: () => { document.getElementById('chatInput').value = 'Непрочитані сповіщення'; sendMessage(); }},
-                    { icon: '📋', text: 'Аналіз звіту інспекції', action: () => { document.querySelector('[data-tab="analysis"]').click(); }}
-                ];
-            } else if (currentUser.role === 'client') {
-                actions = [
-                    { icon: '⚖️', text: 'Юридична консультація', action: () => { document.querySelector('[data-tab="legal"]').click(); }},
-                    { icon: '📚', text: 'Норми і Регламенти PT', action: () => { document.querySelector('[data-tab="regulations"]').click(); }},
-                    { icon: '📋', text: 'Аналіз звіту інспекції', action: () => { document.querySelector('[data-tab="analysis"]').click(); }},
-                    { icon: '🏢', text: 'Мої ліфти', action: () => { document.getElementById('chatInput').value = 'Мої ліфти'; sendMessage(); }},
-                    { icon: '📝', text: 'Створити заявку', action: () => { document.getElementById('chatInput').value = 'Створити заявку'; sendMessage(); }},
-                    { icon: '📊', text: 'Моя статистика', action: () => { document.getElementById('chatInput').value = 'Моя статистика'; sendMessage(); }}
-                ];
-            } else if (currentUser.role === 'tech') {
-                actions = [
-                    { icon: '🔧', text: 'Мої завдання', action: () => { document.getElementById('chatInput').value = 'Мої завдання'; sendMessage(); }},
-                    { icon: '📋', text: 'Чеклісти', action: () => { document.getElementById('chatInput').value = 'Відкрити чеклісти'; sendMessage(); }},
-                    { icon: '⚖️', text: 'Норми PT', action: () => { document.querySelector('[data-tab="regulations"]').click(); }},
-                    { icon: '🛠️', text: 'Інструкції', action: () => { document.getElementById('chatInput').value = 'Інструкції з ремонту'; sendMessage(); }}
-                ];
-            }
-
-            container.innerHTML = actions.map(action => 
-                '<button class="quick-action-btn">' +
-                    '<span style="font-size: 20px;">' + action.icon + '</span>' +
-                    '<span>' + action.text + '</span>' +
-                '</button>'
-            ).join('');
-
-            container.querySelectorAll('.quick-action-btn').forEach((btn, idx) => {
-                btn.addEventListener('click', actions[idx].action);
+                return res.json();
+            })
+            .then(data => {
+                document.getElementById('typingIndicator').classList.remove('active');
+                console.log('Chat response:', data);
+                if (data.success) {
+                    // API returns data.data.response, not data.response
+                    const response = data.data?.response || data.response || data.message;
+                    addChatMessage(response, false);
+                } else {
+                    const errorMsg = data.error || data.message || 'Щось пішло не так';
+                    addChatMessage('❌ Помилка: ' + errorMsg, false);
+                }
+            })
+            .catch(err => {
+                console.error('Chat error:', err);
+                document.getElementById('typingIndicator').classList.remove('active');
+                
+                // Не показувати повторне повідомлення якщо вже показали про expired token
+                if (!err.message.includes('Unauthorized')) {
+                    addChatMessage('❌ Помилка з\'єднання з сервером', false);
+                }
             });
         }
 
-        // Legal Consultation
-        function setupLegal() {
-            document.getElementById('askLegalBtn').addEventListener('click', askLegalQuestion);
+        function addChatMessage(text, isUser) {
+            const container = document.getElementById('chatMessages');
+            const typingIndicator = container.querySelector('.typing-indicator').parentElement;
             
-            document.querySelectorAll('.quick-q-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.getElementById('legalQuestion').value = btn.dataset.question;
-                    askLegalQuestion();
-                });
-            });
-        }
-
-        async function askLegalQuestion() {
-            const question = document.getElementById('legalQuestion').value.trim();
-            if (!question) {
-                alert('Будь ласка, введіть питання');
-                return;
-            }
-
-            const answerDiv = document.getElementById('legalAnswer');
-            answerDiv.innerHTML = '<div class="loading-center"><div class="spinner"></div></div>';
-
-            try {
-                const token = getAuthToken();
-                const response = await fetch('/api/ai/consult', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ question })
-                });
-
-                const result = await response.json();
-                
-                if (result.success) {
-                    displayLegalAnswer(result.data);
-                } else {
-                    answerDiv.innerHTML = '<p style="color: red;">Помилка: ' + result.error + '</p>';
-                }
-            } catch (error) {
-                answerDiv.innerHTML = '<p style="color: red;">Помилка з\'єднання з сервером</p>';
-            }
-        }
-
-        function displayLegalAnswer(data) {
-            const answerDiv = document.getElementById('legalAnswer');
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
             
-            let urgencyClass = 'urgency-medium';
-            let urgencyText = 'Інформація';
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `direct-chat-msg ${isUser ? 'right' : ''}`;
             
-            // Check urgency from answer content
-            if (data.answer && data.answer.includes('🔴')) {
-                urgencyClass = 'urgency-critical';
-                urgencyText = '🚨 Crítico';
-            } else if (data.answer && data.answer.includes('🟠')) {
-                urgencyClass = 'urgency-high';
-                urgencyText = '⚠️ Importante';
-            } else if (data.urgency === 'critical') {
-                urgencyClass = 'urgency-critical';
-                urgencyText = '🚨 Crítico';
-            } else if (data.urgency === 'high') {
-                urgencyClass = 'urgency-high';
-                urgencyText = '⚠️ Alta Prioridade';
-            }
-            
-            let html = '<h3>💡 Resposta Legal</h3>';
-            html += `<span class="urgency-badge ${urgencyClass}">${urgencyText}</span>`;
-            html += `<div style="margin-top: 20px; line-height: 1.8; white-space: pre-line;">${data.answer || data.response || 'Sem resposta'}</div>`;
-            
-            // Show sources if available
-            if (data.sources && data.sources.length > 0) {
-                html += '<div style="margin-top: 20px; padding: 15px; background: #f7fafc; border-left: 4px solid #667eea; border-radius: 8px;">';
-                html += '<strong>📚 Fontes Legais:</strong><br>';
-                data.sources.forEach(source => {
-                    html += `<span style="color: #667eea;">• ${source}</span><br>`;
-                });
-                html += '</div>';
-            }
-            
-            if (data.regulation) {
-                html += `<p style="margin-top: 20px; color: #667eea; font-weight: 600;">📜 ${data.regulation}</p>`;
-            }
-            
-            answerDiv.innerHTML = html;
-        }
-
-        // Regulations
-        async function loadRegulations() {
-            const grid = document.getElementById('regulationsGrid');
-            grid.innerHTML = '<div class="loading-center"><div class="spinner"></div></div>';
-
-            try {
-                const token = getAuthToken();
-                
-                const response = await fetch('/api/ai/regulations', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                const result = await response.json();
-                
-                if (result.success) {
-                    let html = '';
-                    
-                    // Інформаційний банер про офіційні джерела
-                    html += `
-                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 25px;">
-                            <h3 style="margin: 0 0 10px 0; color: white;">📚 Законодавство Португалії про Ліфти</h3>
-                            <p style="margin: 0; opacity: 0.95; font-size: 14px;">
-                                Оновлено: ${result.data.last_updated || '2025-12-01'}<br>
-                                <strong>Офіційні джерела:</strong> 
-                                <a href="https://diariodarepublica.pt" target="_blank" style="color: #fbbf24; text-decoration: underline;">Diário da República</a> | 
-                                <a href="https://www.dgeg.gov.pt" target="_blank" style="color: #fbbf24; text-decoration: underline;">DGEG</a>
-                            </p>
-                        </div>
-                    `;
-                    
-                    // Показуємо всі закони
-                    html += `<h4 style="color: #2d3748; margin: 25px 0 15px 0;">📋 Чинне законодавство (${result.data.total_regulations || result.data.regulations.length} законів):</h4>`;
-                    html += `<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px;">`;
-                    
-                    html += result.data.regulations.map((reg, index) => `
-                        <div class="regulation-card">
-                            <div class="reg-number">${reg.number}</div>
-                            <h3 style="font-size: 16px; margin: 10px 0;">${reg.title}</h3>
-                            <p class="reg-summary">${reg.summary}</p>
-                            <span class="reg-status">${
-                                reg.status === 'vigente' ? '✅ Діє' : 
-                                reg.status === 'vigente_parcial' ? '⚠️ Діє частково' : 
-                                reg.status === 'vigente_obrigatoria' ? '🔴 Обов\'язково' : 
-                                reg.status
-                            }</span>
-                            <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
-                                <button class="btn-link" onclick="showRegulationDetails(${index})" style="color: #667eea; font-weight: 600; font-size: 13px;">
-                                    <i class="fas fa-book-open"></i> Детальніше
-                                </button>
-                                ${reg.url ? `<a href="${reg.url}" target="_blank" class="btn-link" style="color: #48bb78; font-weight: 600; font-size: 13px;">
-                                    <i class="fas fa-external-link-alt"></i> Офіційний текст
-                                </a>` : ''}
-                            </div>
-                        </div>
-                    `).join('');
-                    
-                    html += `</div>`;
-                    
-                    // Додаємо примітку про джерела
-                    html += `
-                        <div style="margin-top: 30px; padding: 15px; background: #f7fafc; border-left: 4px solid #4299e1; border-radius: 5px;">
-                            <p style="margin: 0; font-size: 13px; color: #2d3748;">
-                                <strong>ℹ️ Важлива інформація:</strong> Всі законодавчі акти перевіряються через офіційні джерела португальського регулятора (DGEG). 
-                                Для отримання найактуальнішої інформації завжди консультуйтеся з 
-                                <a href="https://diariodarepublica.pt" target="_blank" style="color: #3182ce;">Diário da República</a> та 
-                                <a href="https://www.dgeg.gov.pt" target="_blank" style="color: #3182ce;">DGEG</a>.
-                            </p>
-                        </div>
-                    `;
-                    
-                    grid.innerHTML = html;
-                    
-                    // Зберігаємо дані для показу деталей
-                    window.regulationsData = result.data.regulations;
-                    regulationsLoaded = true;
-                }
-            } catch (error) {
-                console.error('Load regulations error:', error);
-                grid.innerHTML = '<p>Помилка завантаження законодавства</p>';
-            }
-        }
-
-        function showRegulationDetails(index) {
-            const reg = window.regulationsData[index];
-            if (!reg) return;
-            
-            // Створюємо модальне вікно
-            const modal = document.createElement('div');
-            modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px;';
-            
-            modal.innerHTML = `
-                <div style="background: white; border-radius: 15px; max-width: 900px; max-height: 90vh; overflow-y: auto; padding: 30px; position: relative;">
-                    <button onclick="this.closest('div[style*=fixed]').remove()" style="position: absolute; top: 15px; right: 15px; background: #e53e3e; color: white; border: none; border-radius: 50%; width: 35px; height: 35px; cursor: pointer; font-size: 18px;">
-                        ✕
-                    </button>
-                    
-                    <div style="margin-bottom: 20px;">
-                        <span style="background: #667eea; color: white; padding: 5px 15px; border-radius: 20px; font-weight: 600; font-size: 14px;">
-                            ${reg.number}
-                        </span>
-                        <span style="background: ${reg.status === 'vigente' ? '#48bb78' : '#cbd5e0'}; color: white; padding: 5px 15px; border-radius: 20px; margin-left: 10px; font-size: 14px;">
-                            ${reg.status === 'vigente' ? 'Діє' : reg.status}
-                        </span>
-                    </div>
-                    
-                    <h2 style="color: #2d3748; margin-bottom: 20px;">${reg.title}</h2>
-                    
-                    <div style="background: #f7fafc; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-                        <h4 style="margin: 0 0 10px 0; color: #4a5568;">📋 Опис:</h4>
-                        <p style="margin: 0; line-height: 1.6;">${reg.summary}</p>
-                    </div>
-                    
-                    ${reg.scope && reg.scope.length > 0 ? `
-                        <div style="margin-bottom: 20px;">
-                            <h4 style="color: #2d3748; margin-bottom: 10px;">🎯 Сфера застосування:</h4>
-                            <ul style="margin: 0; padding-left: 20px;">
-                                ${reg.scope.map(item => `<li style="margin-bottom: 5px;">${item}</li>`).join('')}
-                            </ul>
-                        </div>
-                    ` : ''}
-                    
-                    ${reg.inspection_points && reg.inspection_points.length > 0 ? `
-                        <div style="margin-bottom: 20px;">
-                            <h4 style="color: #2d3748; margin-bottom: 15px;">🔍 Пункти інспекції (${reg.inspection_points.length}):</h4>
-                            ${reg.inspection_points.slice(0, 5).map(point => `
-                                <div style="background: white; border-left: 4px solid #667eea; padding: 15px; margin-bottom: 10px; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                                    <div style="font-weight: 600; color: #667eea; margin-bottom: 5px;">${point.article || point.point}</div>
-                                    <div style="color: #4a5568; margin-bottom: 8px;">${point.requirement}</div>
-                                    <div style="color: #718096; font-size: 14px; font-style: italic;">💡 ${point.client_explanation || point.description}</div>
-                                </div>
-                            `).join('')}
-                            ${reg.inspection_points.length > 5 ? `<p style="color: #718096; text-align: center;">... та ще ${reg.inspection_points.length - 5} пунктів</p>` : ''}
-                        </div>
-                    ` : ''}
-                    
-                    ${reg.url ? `
-                        <div style="text-align: center; margin-top: 30px;">
-                            <a href="${reg.url}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; border-radius: 25px; text-decoration: none; font-weight: 600;">
-                                <i class="fas fa-external-link-alt"></i> Відкрити повний офіційний текст
-                            </a>
-                        </div>
-                    ` : ''}
+            msgDiv.innerHTML = `
+                <div class="direct-chat-infos clearfix">
+                    <span class="direct-chat-name float-${isUser ? 'right' : 'left'}">${isUser ? 'Ви' : 'AI Асистент'}</span>
+                    <span class="direct-chat-timestamp float-${isUser ? 'left' : 'right'}">${timeStr}</span>
+                </div>
+                <img class="direct-chat-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23${isUser ? '007bff' : '28a745'}'/%3E%3Ctext x='20' y='28' font-size='24' text-anchor='middle' fill='white'%3E${isUser ? '👤' : '🤖'}%3C/text%3E%3C/svg%3E" alt="${isUser ? 'User' : 'AI'}">
+                <div class="direct-chat-text">
+                    ${text.replace(/\n/g, '<br>')}
                 </div>
             `;
             
-            document.body.appendChild(modal);
+            container.insertBefore(msgDiv, typingIndicator);
+            container.scrollTop = container.scrollHeight;
             
-            // Закриття по кліку на фон
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    modal.remove();
+            // Зберегти останню відповідь AI та показати кнопку озвучування
+            if (!isUser) {
+                lastResponse = text;
+                const speakBtn = document.getElementById('speakBtn');
+                if (speakBtn) {
+                    speakBtn.style.display = 'inline-block';
                 }
+            }
+        }
+
+        function clearChat() {
+            if (confirm('Очистити всю історію чату?')) {
+                const container = document.getElementById('chatMessages');
+                const children = Array.from(container.children);
+                children.forEach((child, index) => {
+                    if (index > 1) child.remove(); // Keep welcome + typing
+                });
+            }
+        }
+
+        function askQuestion(question) {
+            document.getElementById('chatInput').value = question;
+            sendChatMessage();
+        }
+
+        // Legal functions
+        function askLegal(question) {
+            document.getElementById('legal-tab').click();
+            setTimeout(() => {
+                document.getElementById('legalQuestion').value = question;
+                askLegalCustom();
+            }, 300);
+        }
+
+        function askLegalCustom() {
+            const question = document.getElementById('legalQuestion').value.trim();
+            if (!question) {
+                alert('Будь ласка, опишіть вашу ситуацію');
+                return;
+            }
+            
+            const responseDiv = document.getElementById('legalResponse');
+            responseDiv.innerHTML = '<div class="spinner-border text-primary" role="status"></div> <span>Аналізую...</span>';
+            responseDiv.style.display = 'block';
+            
+            fetch(`${API_URL}/api/ai/chat`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ 
+                    message: `Юридична консультація: ${question}`,
+                    context: 'legal'
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log('Legal response:', data);
+                if (data.success) {
+                    // API returns data.data.response, not data.response
+                    const response = data.data?.response || data.response || data.message;
+                    responseDiv.innerHTML = `
+                        <div class="alert alert-success">
+                            <h5><i class="fas fa-check-circle"></i> Юридична консультація</h5>
+                            <div>${response.replace(/\n/g, '<br>')}</div>
+                        </div>
+                    `;
+                } else {
+                    responseDiv.innerHTML = `<div class="alert alert-danger">❌ Помилка: ${data.error || data.message || 'Щось пішло не так'}</div>`;
+                }
+            })
+            .catch(err => {
+                console.error('Legal error:', err);
+                responseDiv.innerHTML = '<div class="alert alert-danger">❌ Помилка з\'єднання з сервером</div>';
             });
         }
 
-        // Analysis - PDF Upload
-        let uploadedPdfFile = null;
-
-        const pdfUploadArea = document.getElementById('pdfUploadArea');
-        const pdfInput = document.getElementById('pdfInput');
-        const uploadPrompt = document.getElementById('uploadPrompt');
-        const uploadedFileName = document.getElementById('uploadedFileName');
-        const fileNameDisplay = document.getElementById('fileName');
-        const removeFileBtn = document.getElementById('removeFileBtn');
-
-        // Click to upload
-        pdfUploadArea.addEventListener('click', () => {
-            if (!uploadedPdfFile) {
-                pdfInput.click();
-            }
-        });
-
-        // Drag and drop
-        pdfUploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            pdfUploadArea.style.borderColor = '#667eea';
-            pdfUploadArea.style.backgroundColor = '#f7fafc';
-        });
-
-        pdfUploadArea.addEventListener('dragleave', () => {
-            pdfUploadArea.style.borderColor = '#cbd5e0';
-            pdfUploadArea.style.backgroundColor = 'transparent';
-        });
-
-        pdfUploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            pdfUploadArea.style.borderColor = '#cbd5e0';
-            pdfUploadArea.style.backgroundColor = 'transparent';
+        // Regulations functions
+        function loadAllRegulations() {
+            const resultsDiv = document.getElementById('regulationsResults');
+            resultsDiv.innerHTML = '<div class="text-center"><div class="spinner-border text-success" role="status"></div><p class="mt-2">Завантаження законів...</p></div>';
             
+            fetch(`${API_URL}/api/regulations`, {
+                method: 'GET',
+                headers: getAuthHeaders()
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log('All regulations loaded:', data);
+                if (data.success && data.data) {
+                    displayRegulationsList(data.data);
+                } else {
+                    resultsDiv.innerHTML = `<div class="alert alert-danger">❌ Помилка завантаження законів</div>`;
+                }
+            })
+            .catch(err => {
+                console.error('Regulations error:', err);
+                resultsDiv.innerHTML = '<div class="alert alert-danger">❌ Помилка з\'єднання з сервером</div>';
+            });
+        }
+        
+        function displayRegulationsList(regulations) {
+            const resultsDiv = document.getElementById('regulationsResults');
+            
+            let html = `
+                <div class="alert alert-info mb-3">
+                    <strong><i class="fas fa-book"></i> Всього законів: ${regulations.length}</strong>
+                    <button class="btn btn-sm btn-primary float-right" onclick="document.getElementById('regulationSearch').focus()">
+                        <i class="fas fa-search"></i> Пошук
+                    </button>
+                </div>
+            `;
+            
+            regulations.forEach(reg => {
+                const statusColor = reg.status === 'vigente' ? 'success' : 
+                                  reg.status === 'vigente_obrigatoria' ? 'danger' : 
+                                  reg.status === 'vigente_parcial' ? 'warning' : 'secondary';
+                const statusText = reg.status === 'vigente' ? 'Діючий' : 
+                                 reg.status === 'vigente_obrigatoria' ? "Обов'язковий" : 
+                                 reg.status === 'vigente_parcial' ? 'Частково діючий' : reg.status;
+                
+                html += `
+                    <div class="card mb-3 shadow-sm">
+                        <div class="card-header bg-gradient-primary">
+                            <h5 class="mb-0">
+                                <i class="fas fa-gavel"></i> ${reg.title}
+                            </h5>
+                            <small style="color: #ffeb3b; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">
+                                <strong>${reg.number}</strong> від ${reg.date}
+                                <span class="badge badge-${statusColor} float-right">${statusText}</span>
+                            </small>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted mb-2"><small><strong>Тип:</strong> ${reg.type.toUpperCase()}</small></p>
+                            ${reg.summary ? `<p class="mb-3">${reg.summary}</p>` : ''}
+                            
+                            ${reg.scope && reg.scope.length > 0 ? `
+                                <div class="mb-3">
+                                    <h6 class="text-primary"><i class="fas fa-list-ul"></i> Основні пункти:</h6>
+                                    <ul class="mb-0">
+                                        ${reg.scope.slice(0, 3).map(s => `<li>${s}</li>`).join('')}
+                                        ${reg.scope.length > 3 ? `<li class="text-muted"><em>... та ще ${reg.scope.length - 3} пунктів</em></li>` : ''}
+                                    </ul>
+                                </div>
+                            ` : ''}
+                            
+                            <div class="text-right mt-3">
+                                <button class="btn btn-outline-primary btn-sm" onclick='showRegulationDetails(${JSON.stringify(reg).replace(/'/g, "&apos;")})'>
+                                    <i class="fas fa-info-circle"></i> Детальніше
+                                </button>
+                                ${(reg.official_source || reg.url) ? `<a href="${reg.official_source || reg.url}" target="_blank" class="btn btn-outline-success btn-sm ml-2">
+                                    <i class="fas fa-scroll"></i> Офіційний текст
+                                </a>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            resultsDiv.innerHTML = html;
+        }
+        
+        function showRegulationDetails(regulation) {
+            const resultsDiv = document.getElementById('regulationsResults');
+            
+            const statusColor = regulation.status === 'vigente' ? 'success' : 
+                              regulation.status === 'vigente_obrigatoria' ? 'danger' : 
+                              regulation.status === 'vigente_parcial' ? 'warning' : 'secondary';
+            const statusText = regulation.status === 'vigente' ? 'Діючий' : 
+                             regulation.status === 'vigente_obrigatoria' ? "Обов'язковий" : 
+                             regulation.status === 'vigente_parcial' ? 'Частково діючий' : regulation.status;
+            
+            let html = `
+                <button class="btn btn-link mb-3" onclick="loadAllRegulations()">
+                    <i class="fas fa-arrow-left"></i> Повернутись до списку
+                </button>
+                
+                <div class="card shadow">
+                    <div class="card-header bg-gradient-primary">
+                        <h4 class="mb-1"><i class="fas fa-gavel"></i> ${regulation.title}</h4>
+                        <p class="mb-0" style="color: #ffeb3b; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">
+                            <strong>${regulation.number}</strong> від ${regulation.date}
+                            <span class="badge badge-${statusColor} ml-2">${statusText}</span>
+                        </p>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Тип документу:</strong> ${regulation.type.toUpperCase()}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Статус:</strong> <span class="badge badge-${statusColor}">${statusText}</span></p>
+                            </div>
+                        </div>
+                        
+                        ${regulation.summary ? `
+                            <div class="alert alert-info">
+                                <h6><i class="fas fa-info-circle"></i> Опис</h6>
+                                <p class="mb-0">${regulation.summary}</p>
+                            </div>
+                        ` : ''}
+                        
+                        ${regulation.scope && regulation.scope.length > 0 ? `
+                            <div class="mt-4">
+                                <h5 class="text-primary"><i class="fas fa-list"></i> Сфера застосування</h5>
+                                <ul>
+                                    ${regulation.scope.map(s => `<li>${s}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                        
+                        ${regulation.inspection_points && regulation.inspection_points.length > 0 ? `
+                            <div class="mt-4">
+                                <h5 class="text-primary"><i class="fas fa-clipboard-check"></i> Пункти інспекції (${regulation.inspection_points.length})</h5>
+                                ${regulation.inspection_points.map(point => `
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-light">
+                                            <strong>${point.article}</strong> - ${point.requirement}
+                                        </div>
+                                        <div class="card-body">
+                                            ${point.client_explanation ? `
+                                                <p><strong>Пояснення для клієнта:</strong><br>
+                                                ${point.client_explanation}</p>
+                                            ` : ''}
+                                            ${point.description ? `
+                                                <p><strong>Опис:</strong><br>
+                                                ${point.description}</p>
+                                            ` : ''}
+                                            ${point.common_violations && point.common_violations.length > 0 ? `
+                                                <p><strong>Типові порушення:</strong></p>
+                                                <ul>
+                                                    ${point.common_violations.map(v => `<li>${v}</li>`).join('')}
+                                                </ul>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                        
+                        ${regulation.penalties ? `
+                            <div class="alert alert-warning mt-4">
+                                <h6><i class="fas fa-exclamation-triangle"></i> Санкції</h6>
+                                <p class="mb-0">${regulation.penalties}</p>
+                            </div>
+                        ` : ''}
+                        
+                        ${regulation.notes ? `
+                            <div class="alert alert-secondary mt-4">
+                                <h6><i class="fas fa-sticky-note"></i> Примітки</h6>
+                                <p class="mb-0">${regulation.notes}</p>
+                            </div>
+                        ` : ''}
+                        
+                        ${regulation.url ? `
+                            <div class="text-center mt-4">
+                                <a href="${regulation.url}" target="_blank" class="btn btn-primary">
+                                    <i class="fas fa-external-link-alt"></i> Переглянути офіційний текст
+                                </a>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            
+            resultsDiv.innerHTML = html;
+            resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
+        function searchRegulations(query) {
+            if (!query) {
+                query = document.getElementById('regulationSearch').value.trim();
+            }
+            if (!query) {
+                alert('Введіть ключове слово для пошуку');
+                return;
+            }
+            
+            const resultsDiv = document.getElementById('regulationsResults');
+            resultsDiv.innerHTML = '<div class="text-center"><div class="spinner-border text-success" role="status"></div><p class="mt-2">Шукаю...</p></div>';
+            
+            fetch(`${API_URL}/api/regulations?search=${encodeURIComponent(query)}`, {
+                method: 'GET',
+                headers: getAuthHeaders()
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log('Regulations search response:', data);
+                if (data.success && data.data) {
+                    if (data.data.length === 0) {
+                        resultsDiv.innerHTML = `
+                            <div class="alert alert-warning">
+                                <i class="fas fa-info-circle"></i> Не знайдено результатів для "${query}"
+                                <button class="btn btn-sm btn-primary float-right" onclick="loadAllRegulations()">
+                                    Показати всі закони
+                                </button>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    let html = `
+                        <div class="alert alert-success">
+                            <strong>Знайдено: ${data.total}</strong> результатів для "${query}"
+                            <button class="btn btn-sm btn-primary float-right" onclick="loadAllRegulations()">
+                                <i class="fas fa-list"></i> Показати всі
+                            </button>
+                        </div>
+                    `;
+                    
+                    displayRegulationsList(data.data);
+                } else {
+                    resultsDiv.innerHTML = `<div class="alert alert-danger">❌ Помилка: ${data.error || data.message}</div>`;
+                }
+            })
+            .catch(err => {
+                console.error('Regulations error:', err);
+                resultsDiv.innerHTML = '<div class="alert alert-danger">❌ Помилка з\'єднання з сервером</div>';
+            });
+        }
+
+        // Analysis functions
+        const analysisUploadArea = document.getElementById('analysisUploadArea');
+        
+        analysisUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            analysisUploadArea.classList.add('dragover');
+        });
+        
+        analysisUploadArea.addEventListener('dragleave', () => {
+            analysisUploadArea.classList.remove('dragover');
+        });
+        
+        analysisUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            analysisUploadArea.classList.remove('dragover');
             const files = e.dataTransfer.files;
             if (files.length > 0 && files[0].type === 'application/pdf') {
-                handlePdfFile(files[0]);
+                handleAnalysisFile({ target: { files: [files[0]] } });
             } else {
                 alert('Будь ласка, завантажте PDF файл');
             }
         });
 
-        pdfInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                handlePdfFile(e.target.files[0]);
-            }
-        });
-
-        removeFileBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            uploadedPdfFile = null;
-            pdfInput.value = '';
-            uploadPrompt.style.display = 'block';
-            uploadedFileName.style.display = 'none';
-            document.getElementById('inspectionReport').value = '';
-        });
-
-        async function handlePdfFile(file) {
-            if (file.size > 10 * 1024 * 1024) {
-                alert('Файл занадто великий. Максимум 10 MB');
-                return;
-            }
-
-            uploadedPdfFile = file;
-            fileNameDisplay.textContent = file.name;
-            uploadPrompt.style.display = 'none';
-            uploadedFileName.style.display = 'block';
-
-            // Extract text from PDF
-            await extractTextFromPdf(file);
-        }
-
-        async function extractTextFromPdf(file) {
-            const formData = new FormData();
-            formData.append('pdfReport', file);
-
-            try {
-                // Шукаємо токен в усіх можливих місцях
-                const token = getAuthToken();
-                
-                console.log('🔐 Токен для PDF upload:', token ? (token.substring(0, 20) + '...') : 'NOT FOUND');
-                
-                if (!token) {
-                    console.error('❌ Токен не знайдено');
-                    alert('Ви не авторизовані. Будь ласка, увійдіть в систему.');
-                    sessionStorage.setItem('redirect_after_login', window.location.href);
-                    window.location.replace('/pages/auth/login.html');
+        function handleAnalysisFile(event) {
+            const file = event.target.files[0];
+            if (file) {
+                if (file.size > 10 * 1024 * 1024) {
+                    alert('Файл занадто великий! Максимум 10 MB');
                     return;
                 }
-
-                console.log('📤 Відправка PDF на сервер...');
-                
-                const response = await fetch('/api/pdf/upload', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: formData
-                });
-
-                console.log('📥 Відповідь сервера:', response.status, response.statusText);
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('❌ HTTP error:', response.status, errorText);
-                    throw new Error(`Server error: ${response.status} - ${errorText}`);
-                }
-
-                const result = await response.json();
-                console.log('📊 Результат парсингу:', result);
-                
-                if (result.success && result.analysis) {
-                    // Відображення результату парсингу
-                    console.log('✅ PDF успішно оброблено:', result);
-                    
-                    // Зберігаємо витягнутий текст для подальшого використання
-                    if (result.extractedText) {
-                        window.currentPdfText = result.extractedText;
-                        window.currentPdfPages = result.pageCount || 0;
-                        console.log(`📝 PDF text stored: ${result.extractedText.length} chars, ${result.pageCount} pages`);
-                    }
-                    
-                    // Якщо є порушення - відобразити результати та вставити текст
-                    if (result.analysis.violations && result.analysis.violations.length > 0) {
-                        // Автоматично показати результати
-                        displayPDFAnalysisResult(result.analysis, result.extractedText);
-                        
-                        // Також заповнити текстове поле для можливості редагування
-                        const violationsText = result.analysis.violations.map(v => 
-                            `${v.classification} Art.º ${v.article} - ${v.description}`
-                        ).join('\n');
-                        document.getElementById('inspectionReport').value = violationsText;
-                    } else {
-                        // Якщо порушень немає - показати повідомлення
-                        displayPDFAnalysisResult(result.analysis, result.extractedText);
-                    }
-                                <p style="margin: 10px 0 0 0; opacity: 0.9;">O elevador encontra-se em conformidade com o regulamento</p>
-                            </div>
-                        `;
-                    }
-                } else {
-                    const errorMsg = result.error || 'Unknown error';
-                    console.error('❌ Помилка обробки:', errorMsg);
-                    alert('Помилка обробки PDF: ' + errorMsg);
-                }
-            } catch (error) {
-                console.error('❌ PDF upload error:', error);
-                alert('Не вдалося завантажити PDF файл: ' + error.message);
+                currentAnalysisFile = file;
+                document.getElementById('analysisFileName').textContent = file.name;
+                document.getElementById('analysisFileInfo').style.display = 'block';
             }
         }
-        
-        function displayPDFAnalysisResult(analysis, extractedText) {
-            const resultDiv = document.getElementById('analysisResult');
-            resultDiv.style.display = 'block';
+
+        function removeAnalysisFile() {
+            currentAnalysisFile = null;
+            document.getElementById('analysisFileInput').value = '';
+            document.getElementById('analysisFileInfo').style.display = 'none';
+        }
+
+        function analyzeReport() {
+            const manualText = document.getElementById('manualReport').value.trim();
             
-            // Зберігаємо аналіз для експорту
-            window.currentAnalysis = analysis;
-            
-            let html = '<div style="background: white; border-radius: 15px; padding: 30px;">';
-            
-            // Кнопки експорту вгорі
-            html += '<div style="display: flex; gap: 10px; margin-bottom: 20px; justify-content: flex-end; flex-wrap: wrap;">';
-            
-            // Додаємо кнопку копіювання тексту якщо є extractedText
-            if (extractedText) {
-                html += '<button onclick="copyPdfText()" class="btn" style="background: linear-gradient(135deg, #805ad5, #6b46c1); color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">';
-                html += '<i class="fas fa-copy"></i> Copiar Texto do PDF</button>';
+            if (!currentAnalysisFile && !manualText) {
+                alert('Завантажте PDF файл або введіть текст звіту');
+                return;
             }
             
-            html += '<button onclick="generateActionPlan()" class="btn" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">';
-            html += '<i class="fas fa-tasks"></i> Gerar Plano de Ação</button>';
-            html += '<button onclick="exportToPDF()" class="btn" style="background: linear-gradient(135deg, #e53e3e, #dc3545); color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">';
-            html += '<i class="fas fa-file-pdf"></i> Exportar PDF</button>';
-            html += '<button onclick="exportToExcel()" class="btn" style="background: linear-gradient(135deg, #38a169, #48bb78); color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">';
-            html += '<i class="fas fa-file-excel"></i> Exportar Excel</button>';
-            html += '<button onclick="sendReportByEmail()" class="btn" style="background: linear-gradient(135deg, #3182ce, #2b6cb0); color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">';
-            html += '<i class="fas fa-envelope"></i> Enviar por Email</button>';
-            html += '</div>';
+            const resultsCard = document.getElementById('analysisResults');
+            const resultsContent = document.getElementById('analysisResultsContent');
             
-            // Метадані звіту
-            if (analysis.metadata) {
-                html += '<div style="background: #f7fafc; padding: 20px; border-radius: 10px; margin-bottom: 20px;">';
-                html += '<h3 style="margin: 0 0 15px 0; color: #2d3748;">📋 Інформація про звіт</h3>';
-                if (analysis.metadata.reportNumber) html += `<p><strong>Номер:</strong> ${analysis.metadata.reportNumber}</p>`;
-                if (analysis.metadata.date) html += `<p><strong>Дата:</strong> ${analysis.metadata.date}</p>`;
-                if (analysis.metadata.liftId) html += `<p><strong>ID ліфта:</strong> ${analysis.metadata.liftId}</p>`;
-                if (analysis.metadata.location) html += `<p><strong>Локація:</strong> ${analysis.metadata.location}</p>`;
-                if (analysis.metadata.inspector) html += `<p><strong>Інспектор:</strong> ${analysis.metadata.inspector}</p>`;
-                html += '</div>';
+            resultsContent.innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"></div><p class="mt-2">Аналізую звіт...</p></div>';
+            resultsCard.style.display = 'block';
+            
+            const formData = new FormData();
+            if (currentAnalysisFile) {
+                formData.append('pdfReport', currentAnalysisFile);
+                console.log('📄 PDF file attached:', currentAnalysisFile.name);
             }
             
-            // Статистика
-            if (analysis.stats) {
-                html += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">';
-                html += `<div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; border-radius: 10px; text-align: center;">
-                    <div style="font-size: 32px; font-weight: bold;">${analysis.stats.total || 0}</div>
-                    <div>Всього порушень</div>
-                </div>`;
-                html += `<div style="background: linear-gradient(135deg, #f56565, #e53e3e); color: white; padding: 20px; border-radius: 10px; text-align: center;">
-                    <div style="font-size: 32px; font-weight: bold;">${analysis.stats.critical || 0}</div>
-                    <div>Критичні (C1)</div>
-                </div>`;
-                html += `<div style="background: linear-gradient(135deg, #ed8936, #dd6b20); color: white; padding: 20px; border-radius: 10px; text-align: center;">
-                    <div style="font-size: 32px; font-weight: bold;">${analysis.stats.medium || 0}</div>
-                    <div>Середні (C2)</div>
-                </div>`;
-                html += `<div style="background: linear-gradient(135deg, #48bb78, #38a169); color: white; padding: 20px; border-radius: 10px; text-align: center;">
-                    <div style="font-size: 32px; font-weight: bold;">${analysis.stats.low || 0}</div>
-                    <div>Низькі (C3)</div>
-                </div>`;
-                html += '</div>';
+            const token = getAuthToken();
+            console.log('🔑 Token present:', !!token);
+            const headers = {};
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
             }
             
-            // Порушення
-            if (analysis.violations && analysis.violations.length > 0) {
-                html += '<h3 style="margin: 20px 0; color: #2d3748;">🔍 Виявлені порушення</h3>';
-                analysis.violations.forEach((v, idx) => {
-                    const bgColor = v.classification === 'C1' ? '#fed7d7' : 
-                                   v.classification === 'C2' ? '#feebc8' : '#c6f6d5';
-                    const borderColor = v.classification === 'C1' ? '#e53e3e' : 
-                                       v.classification === 'C2' ? '#dd6b20' : '#38a169';
-                    
-                    html += `<div style="background: ${bgColor}; border-left: 4px solid ${borderColor}; padding: 15px; margin-bottom: 15px; border-radius: 8px;">
-                        <div style="display: flex; justify-content: space-between; align-items: start;">
-                            <div style="flex: 1;">
-                                <div style="font-weight: bold; color: #2d3748; margin-bottom: 5px;">
-                                    ${v.classification} - Artigo ${v.article}
-                                </div>
-                                <div style="color: #4a5568;">${v.description}</div>
-                            </div>
-                            <div style="background: ${borderColor}; color: white; padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold;">
-                                ${v.classification}
+            console.log('📤 Sending analysis request to /api/pdf/upload...');
+            fetch(`${API_URL}/api/pdf/upload`, {
+                method: 'POST',
+                headers: headers,
+                body: formData
+            })
+            .then(res => {
+                if (!res.ok) {
+                    console.error('❌ Server response:', res.status, res.statusText);
+                }
+                return res.json();
+            })
+            .then(data => {
+                console.log('📊 Analysis response:', data);
+                console.log('📋 Success:', data.success);
+                console.log('📋 Analysis:', data.analysis);
+                console.log('📋 Violations count:', data.analysis?.violations?.length);
+                
+                // ✨ Зберігаємо витягнутий текст з PDF
+                if (data.extractedText) {
+                    window.currentPdfText = data.extractedText;
+                    window.currentPdfPages = data.pageCount || 0;
+                    console.log(`📝 PDF text stored: ${data.extractedText.length} chars, ${data.pageCount} pages`);
+                }
+                
+                if (data.success && data.analysis) {
+                    displayAnalysisResults(data.analysis, data.extractedText);
+                } else {
+                    resultsContent.innerHTML = `<div class="alert alert-danger">❌ Помилка: ${data.error || data.message || 'Не вдалося проаналізувати звіт'}</div>`;
+                }
+            })
+            .catch(err => {
+                console.error('❌ Fetch error:', err);
+                resultsContent.innerHTML = '<div class="alert alert-danger">❌ Помилка з\'єднання з сервером</div>';
+            });
+        }
+
+        function displayAnalysisResults(result, extractedText) {
+            console.log('🎨 displayAnalysisResults called with:', result);
+            console.log('📋 Violations:', result.violations);
+            console.log('📊 Stats:', result.stats);
+            console.log('📝 Extracted text:', extractedText ? extractedText.length + ' chars' : 'none');
+            
+            const resultsContent = document.getElementById('analysisResultsContent');
+            
+            const metadata = result.metadata || {};
+            const stats = result.stats || { total: 0, critical: 0, medium: 0, low: 0 };
+            
+            let html = `
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="callout ${result.passed ? 'callout-success' : 'callout-danger'}">
+                            <h5><i class="fas fa-${result.passed ? 'check-circle' : 'times-circle'}"></i> Висновок: ${result.passed ? '✅ СХВАЛЕНО (APROVADO)' : '❌ НЕ СХВАЛЕНО (REPROVADO)'}</h5>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="info-box bg-danger">
+                            <span class="info-box-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">C1 - Критичні</span>
+                                <span class="info-box-number">${stats.critical}</span>
                             </div>
                         </div>
-                    </div>`;
+                    </div>
+                    <div class="col-md-4">
+                        <div class="info-box bg-warning">
+                            <span class="info-box-icon"><i class="fas fa-exclamation-circle"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">C2 - Середні</span>
+                                <span class="info-box-number">${stats.medium}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="info-box bg-info">
+                            <span class="info-box-icon"><i class="fas fa-info-circle"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">C3 - Легкі</span>
+                                <span class="info-box-number">${stats.low}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                ${metadata.date || metadata.liftId || metadata.location ? `
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-info-circle"></i> Інформація про звіт</h3>
+                    </div>
+                    <div class="card-body">
+                        ${metadata.reportNumber ? `<p><strong>Номер звіту:</strong> ${metadata.reportNumber}</p>` : ''}
+                        ${metadata.date ? `<p><strong>Дата інспекції:</strong> ${metadata.date}</p>` : ''}
+                        ${metadata.liftId ? `<p><strong>Ліфт №:</strong> ${metadata.liftId}</p>` : ''}
+                        ${metadata.location ? `<p><strong>Локація:</strong> ${metadata.location}</p>` : ''}
+                        ${metadata.inspector ? `<p><strong>Інспектор:</strong> ${metadata.inspector}</p>` : ''}
+                    </div>
+                </div>
+                ` : ''}
+            `;
+            
+            console.log('🔍 Checking violations:', result.violations?.length);
+            
+            if (result.violations && result.violations.length > 0) {
+                console.log('✅ Displaying', result.violations.length, 'violations');
+                
+                html += `
+                    <div class="d-flex justify-content-between align-items-center mt-3 mb-3">
+                        <h5><i class="fas fa-list"></i> Виявлені порушення (${result.violations.length})</h5>
+                        <button class="btn btn-sm btn-outline-primary" onclick="toggleAllDetails()">
+                            <i class="fas fa-expand"></i> Показати всі деталі
+                        </button>
+                    </div>
+                `;
+                
+                result.violations.forEach((v, index) => {
+                    console.log(`  ${index + 1}. ${v.classification} - Art. ${v.article}`);
+                    
+                    const severityClass = v.classification === 'C1' ? 'critical' : 
+                                         v.classification === 'C2' ? 'medium' : 'low';
+                    const badgeClass = v.classification === 'C1' ? 'danger' : 
+                                      v.classification === 'C2' ? 'warning' : 'info';
+                    const violationTitle = v.articleInfo?.title || v.title || `Artigo ${v.article}`;
+                    const violationId = `${v.classification}-${v.article}-${Date.now()}`;
+                    
+                    html += `
+                        <div class="violation-card ${severityClass}">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <h6>
+                                        <span class="badge badge-${badgeClass}">${v.classification}</span>
+                                        <strong>Artigo ${v.article}</strong> - ${violationTitle}
+                                    </h6>
+                                    
+                                    ${v.articleInfo?.description ? `
+                                        <div class="alert alert-light border-left-${badgeClass} mb-2">
+                                            <strong><i class="fas fa-book"></i> Текст клаузи:</strong>
+                                            <p class="mb-0 mt-1">${v.articleInfo.description}</p>
+                                        </div>
+                                    ` : ''}
+                                    
+                                    <p class="mb-2"><strong>Порушення:</strong> ${v.description}</p>
+                                    
+                                    ${v.detailedExplanation ? `
+                                        <div class="alert alert-${badgeClass} mt-3">
+                                            <button class="btn btn-sm btn-outline-${badgeClass === 'danger' ? 'light' : 'dark'} float-right" type="button" data-toggle="collapse" data-target="#collapse${violationId}">
+                                                <i class="fas fa-chevron-down"></i> Детальна інформація
+                                            </button>
+                                            <h6><i class="fas fa-exclamation-triangle"></i> Чому це небезпечно?</h6>
+                                            <div id="collapse${violationId}" class="collapse mt-3" style="white-space: pre-line;">
+                                                ${v.detailedExplanation}
+                                            </div>
+                                        </div>
+                                    ` : ''}
+                                    
+                                    ${v.classificationInfo ? `
+                                        <div class="mt-2">
+                                            <small class="text-muted">
+                                                <i class="fas fa-clock"></i> <strong>Термін усунення:</strong> ${v.classificationInfo.deadline || 'Не вказано'}
+                                                <br>
+                                                <i class="fas fa-balance-scale"></i> <strong>Правові наслідки:</strong> ${v.classificationInfo.legalConsequence || 'Див. законодавство'}
+                                            </small>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
                 });
+            } else {
+                html += `
+                    <div class="alert alert-success">
+                        <h5><i class="fas fa-check-circle"></i> Вітаємо!</h5>
+                        <p>Порушень не виявлено. Ліфт відповідає всім вимогам безпеки.</p>
+                    </div>
+                `;
             }
             
-            // Висновок (ЗАВЖДИ показуємо, навіть якщо 0 порушень)
-            if (analysis.conclusion) {
-                html += '<div style="background: #edf2f7; padding: 20px; border-radius: 10px; margin-top: 20px;">';
-                html += '<h3 style="margin: 0 0 15px 0; color: #2d3748;">📝 Висновок</h3>';
-                
-                // Show status with appropriate color
-                const statusColor = analysis.conclusion.approved ? '#48bb78' : '#e53e3e';
-                const statusIcon = analysis.conclusion.approved ? '✅' : '❌';
-                html += `<div style="background: ${analysis.conclusion.approved ? '#c6f6d5' : '#fed7d7'}; padding: 15px; border-radius: 8px; margin-bottom: 15px;">`;
-                html += `<p style="margin: 0; font-size: 18px; font-weight: bold; color: ${statusColor};">${statusIcon} ${analysis.conclusion.approved ? 'CERTIFICADO APROVADO' : 'NÃO APROVADO'}</p>`;
-                html += `</div>`;
-                
-                if (analysis.conclusion.actionRequired) {
-                    html += `<div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; white-space: pre-line;">`;
-                    html += `<strong>📋 Informação:</strong><br>${analysis.conclusion.actionRequired}`;
-                    html += `</div>`;
-                }
-                if (analysis.conclusion.nextInspectionDate) {
-                    html += `<p><strong>📅 Próxima inspeção:</strong> ${analysis.conclusion.nextInspectionDate}</p>`;
-                }
-                if (analysis.conclusion.estimatedCost) {
-                    html += `<p><strong>💰 Custo estimado:</strong> ${analysis.conclusion.estimatedCost}</p>`;
-                }
-                html += '</div>';
-            }
-            
-            // 📝 Секція з витягнутим текстом PDF (згорнута за замовчуванням)
+            // ✨ Додаємо секцію з витягнутим текстом PDF
             if (extractedText) {
-                html += '<div style="margin-top: 20px; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden;">';
-                html += '<div onclick="togglePdfText()" style="background: #f7fafc; padding: 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">';
-                html += '<h3 style="margin: 0; color: #2d3748;"><i class="fas fa-file-alt"></i> 📝 Texto Extraído do PDF</h3>';
-                html += '<i id="pdfTextToggle" class="fas fa-chevron-down" style="color: #718096;"></i>';
-                html += '</div>';
-                html += '<div id="pdfTextContent" style="display: none; padding: 20px; background: white; max-height: 400px; overflow-y: auto;">';
-                html += '<pre style="white-space: pre-wrap; font-family: monospace; font-size: 12px; color: #2d3748; margin: 0;">';
-                html += escapeHtml(extractedText);
-                html += '</pre>';
-                html += '<div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0;">';
-                html += '<button onclick="copyPdfTextToClipboard()" class="btn" style="background: linear-gradient(135deg, #805ad5, #6b46c1); color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">';
-                html += '<i class="fas fa-copy"></i> Copiar Todo o Texto</button>';
-                html += `<span style="margin-left: 15px; color: #718096; font-size: 14px;">📄 ${window.currentPdfPages || 0} páginas • ${extractedText.length} caracteres</span>`;
-                html += '</div>';
-                html += '</div>';
-                html += '</div>';
+                html += `
+                    <div class="card card-outline card-purple mt-3">
+                        <div class="card-header" onclick="togglePdfText()" style="cursor: pointer;">
+                            <h3 class="card-title">
+                                <i class="fas fa-file-alt"></i> 📝 Texto Extraído do PDF
+                            </h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool">
+                                    <i id="pdfTextToggle" class="fas fa-chevron-down"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="pdfTextContent" class="card-body" style="display: none; max-height: 400px; overflow-y: auto;">
+                            <pre style="white-space: pre-wrap; font-family: monospace; font-size: 12px; background: #f4f6f9; padding: 15px; border-radius: 5px;">${escapeHtml(extractedText)}</pre>
+                            <div class="text-right mt-3">
+                                <button onclick="copyPdfTextToClipboard()" class="btn btn-primary">
+                                    <i class="fas fa-copy"></i> Copiar Todo o Texto
+                                </button>
+                                <span class="ml-2 text-muted">
+                                    <i class="fas fa-file-pdf"></i> ${window.currentPdfPages || 0} páginas • 
+                                    <i class="fas fa-font"></i> ${extractedText.length} caracteres
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                `;
             }
             
-            html += '</div>';
-            resultDiv.innerHTML = html;
+            resultsContent.innerHTML = html;
         }
         
-        // Функція для toggle тексту PDF
+        // Toggle all detailed explanations
+        let allDetailsExpanded = false;
+        function toggleAllDetails() {
+            allDetailsExpanded = !allDetailsExpanded;
+            const collapses = document.querySelectorAll('#analysisResultsContent .collapse');
+            const btn = event.target.closest('button');
+            
+            collapses.forEach(collapse => {
+                if (allDetailsExpanded) {
+                    $(collapse).collapse('show');
+                } else {
+                    $(collapse).collapse('hide');
+                }
+            });
+            
+            if (btn) {
+                btn.innerHTML = allDetailsExpanded 
+                    ? '<i class="fas fa-compress"></i> Приховати всі деталі'
+                    : '<i class="fas fa-expand"></i> Показати всі деталі';
+            }
+        }
+        
+        // Auto-load regulations when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Переконуємося, що auth доступний
+            const auth = window.auth || window.AuthManager || AuthManager;
+            
+            // Додаємо запис в історію браузера для правильної роботи кнопки "Назад"
+            // Це гарантує, що при натисканні "Назад" користувач повертається на dashboard
+            const user = auth.getCurrentUser();
+            if (user) {
+                // Визначаємо dashboard відповідно до ролі користувача
+                let dashboardUrl = '/pages/admin/admin-dashboard.html'; // За замовчуванням
+                switch(user.role) {
+                    case 'technician':
+                        dashboardUrl = '/pages/tech/dashboard.html';
+                        break;
+                    case 'dispatcher':
+                        dashboardUrl = '/pages/dispatcher/dashboard.html';
+                        break;
+                    case 'client':
+                        dashboardUrl = '/pages/client/dashboard.html';
+                        break;
+                }
+                
+                // Якщо в історії немає попередньої сторінки, або це була сторінка логіну
+                // додаємо запис про dashboard в історію
+                if (document.referrer === '' || document.referrer.includes('/pages/auth/login.html')) {
+                    window.history.replaceState({from: 'dashboard', url: dashboardUrl}, '', window.location.href);
+                    console.log('📌 Dashboard URL для повернення:', dashboardUrl);
+                }
+            }
+            
+            // Обробник для кнопки "Назад"
+            window.addEventListener('popstate', function(event) {
+                if (event.state && event.state.from === 'dashboard') {
+                    // Якщо користувач натискає "Назад", перенаправляємо на dashboard
+                    const user = auth.getCurrentUser();
+                    if (user) {
+                        let dashboardUrl = '/pages/admin/admin-dashboard.html';
+                        switch(user.role) {
+                            case 'technician':
+                                dashboardUrl = '/pages/tech/dashboard.html';
+                                break;
+                            case 'dispatcher':
+                                dashboardUrl = '/pages/dispatcher/dashboard.html';
+                                break;
+                            case 'client':
+                                dashboardUrl = '/pages/client/dashboard.html';
+                                break;
+                        }
+                        window.location.href = dashboardUrl;
+                    }
+                }
+            });
+            
+            // Перевірка JWT токена при завантаженні
+            const token = getAuthToken();
+            if (!token) {
+                console.warn('⚠️ JWT токен не знайдено');
+                // Не блокуємо сторінку, але попереджаємо
+                setTimeout(() => {
+                    if (!getAuthToken()) {
+                        const alert = document.createElement('div');
+                        alert.className = 'alert alert-warning alert-dismissible fade show';
+                        alert.style.position = 'fixed';
+                        alert.style.top = '70px';
+                        alert.style.right = '20px';
+                        alert.style.zIndex = '9999';
+                        alert.innerHTML = `
+                            <button type="button" class="close" data-dismiss="alert">&times;</button>
+                            <strong>⚠️ Увага!</strong> Ви не авторизовані. 
+                            <a href="/pages/auth/login.html" class="alert-link">Увійдіть в систему</a> 
+                            для повного функціоналу.
+                        `;
+                        document.body.appendChild(alert);
+                    }
+                }, 2000);
+            } else {
+                console.log('✅ JWT токен знайдено');
+            }
+            
+            // Load all regulations initially
+            loadAllRegulations();
+            
+            // Завантаження голосів для TTS (європейська португальська)
+            if ('speechSynthesis' in window) {
+                // Chrome потребує час для завантаження голосів
+                let voicesLoaded = false;
+                
+                function loadVoices() {
+                    if (voicesLoaded) return;
+                    const voices = window.speechSynthesis.getVoices();
+                    if (voices.length > 0) {
+                        voicesLoaded = true;
+                        // Знайти португальські голоси
+                        const ptVoices = voices.filter(v => v.lang.startsWith('pt'));
+                        console.log('🔊 Доступні португальські голоси:', ptVoices.map(v => `${v.name} (${v.lang})`));
+                        
+                        const ptPT = voices.find(v => v.lang === 'pt-PT');
+                        if (ptPT) {
+                            console.log('✅ Знайдено європейський португальський голос:', ptPT.name);
+                        } else {
+                            console.warn('⚠️ pt-PT голос не знайдено. Доступні:', ptVoices.map(v => v.lang).join(', '));
+                        }
+                    }
+                }
+                
+                // Спроба завантажити голоси
+                loadVoices();
+                
+                // Event listener для Chrome
+                if (window.speechSynthesis.onvoiceschanged !== undefined) {
+                    window.speechSynthesis.onvoiceschanged = loadVoices;
+                }
+            }
+            
+            // Also reload when user clicks on regulations tab
+            document.querySelector('a[href="#regulations"]').addEventListener('click', function() {
+                // Only reload if results div is empty or shows error
+                const resultsDiv = document.getElementById('regulationsResults');
+                if (!resultsDiv.innerHTML || resultsDiv.innerHTML.includes('Помилка')) {
+                    loadAllRegulations();
+                }
+            });
+        });
+        
+        // ✨ Функції для роботи з витягнутим текстом PDF
         function togglePdfText() {
             const content = document.getElementById('pdfTextContent');
             const icon = document.getElementById('pdfTextToggle');
@@ -1587,599 +1653,37 @@
             }
         }
         
-        // Функція для копіювання тексту PDF
         function copyPdfTextToClipboard() {
-            if (window.currentPdfText) {
-                navigator.clipboard.writeText(window.currentPdfText).then(() => {
-                    // Показати повідомлення про успіх
-                    const btn = event.target.closest('button');
-                    const originalText = btn.innerHTML;
-                    btn.innerHTML = '<i class="fas fa-check"></i> Copiado!';
-                    btn.style.background = 'linear-gradient(135deg, #48bb78, #38a169)';
-                    setTimeout(() => {
-                        btn.innerHTML = originalText;
-                        btn.style.background = 'linear-gradient(135deg, #805ad5, #6b46c1)';
-                    }, 2000);
-                }).catch(err => {
-                    console.error('Erro ao copiar:', err);
-                    alert('Erro ao copiar texto: ' + err.message);
-                });
+            if (!window.currentPdfText) {
+                alert('Немає тексту для копіювання');
+                return;
             }
+            
+            navigator.clipboard.writeText(window.currentPdfText).then(() => {
+                const btn = event.target.closest('button');
+                if (btn) {
+                    const originalHTML = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-success');
+                    
+                    setTimeout(() => {
+                        btn.innerHTML = originalHTML;
+                        btn.classList.remove('btn-success');
+                        btn.classList.add('btn-primary');
+                    }, 2000);
+                }
+            }).catch(err => {
+                console.error('Помилка копіювання:', err);
+                alert('Не вдалося скопіювати текст');
+            });
         }
         
-        // Функція для швидкого копіювання (з header кнопки)
-        function copyPdfText() {
-            copyPdfTextToClipboard();
-        }
-        
-        // Helper function для escape HTML
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
-
-        document.getElementById('analyzeBtn').addEventListener('click', analyzeInspection);
-
-        async function analyzeInspection() {
-            const input = document.getElementById('inspectionReport').value.trim();
-            if (!input) {
-                alert('Будь ласка, вставте звіт інспекції');
-                return;
-            }
-
-            const resultDiv = document.getElementById('analysisResult');
-            resultDiv.style.display = 'block';
-            resultDiv.innerHTML = '<div class="loading-center"><div class="spinner"></div></div>';
-
-            try {
-                const token = getAuthToken();
-                const response = await fetch('/api/ai/chat', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ 
-                        message: input,
-                        context: { reportText: input }
-                    })
-                });
-
-                const result = await response.json();
-                console.log('API Response:', result);
-                
-                // Server returns { success: true, data: { response, action, data } }
-                if (result.success && result.data) {
-                    const aiResponse = result.data;
-                    
-                    if (aiResponse.action === 'inspection_analysis' && aiResponse.data?.analysis) {
-                        displayNewAnalysis(aiResponse.data.analysis, aiResponse.response);
-                    } else if (aiResponse.response) {
-                        // Fallback to text response
-                        resultDiv.innerHTML = `<pre style="white-space: pre-wrap; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">${aiResponse.response}</pre>`;
-                    } else {
-                        resultDiv.innerHTML = '<p style="color: red;">Помилка аналізу: Немає відповіді</p>';
-                    }
-                } else {
-                    console.error('API Error:', result);
-                    resultDiv.innerHTML = '<p style="color: red;">Помилка аналізу: ' + (result.error || 'Unknown error') + '</p>';
-                }
-            } catch (error) {
-                console.error('Analysis error:', error);
-                resultDiv.innerHTML = '<p style="color: red;">Помилка з\'єднання</p>';
-            }
-        }
-
-        function displayNewAnalysis(analysis, formattedText) {
-            const resultDiv = document.getElementById('analysisResult');
-            
-            let html = '<h3>📊 Результати аналізу</h3>';
-            
-            // Summary cards
-            html += '<div class="analysis-summary">';
-            html += `<div class="summary-card"><div class="number">${analysis.summary.total}</div><div class="label">Всього проблем</div></div>`;
-            html += `<div class="summary-card"><div class="number">${analysis.summary.critical}</div><div class="label">Критичних (C1)</div></div>`;
-            html += `<div class="summary-card"><div class="number">${analysis.summary.medium}</div><div class="label">Середніх (C2)</div></div>`;
-            html += `<div class="summary-card"><div class="number">${analysis.summary.low}</div><div class="label">Низьких (C3)</div></div>`;
-            html += '</div>';
-            
-            // Report type badge
-            if (analysis.reportType === 'certificate' || analysis.passed) {
-                html += '<div style="background: #c6f6d5; color: #22543d; padding: 15px; border-radius: 8px; margin: 20px 0; font-weight: 600; text-align: center;">✅ ELEVADOR APROVADO</div>';
-            } else if (analysis.reportType === 'approved_with_c3') {
-                html += '<div style="background: #fef5e7; color: #7d6608; padding: 15px; border-radius: 8px; margin: 20px 0; font-weight: 600; text-align: center;">⚠️ APROVADO COM CLÁUSULAS C3</div>';
-            } else {
-                html += '<div style="background: #fed7d7; color: #742a2a; padding: 15px; border-radius: 8px; margin: 20px 0; font-weight: 600; text-align: center;">❌ REPROVADO</div>';
-            }
-            
-            // Metadata
-            if (analysis.metadata) {
-                html += '<div style="background: #f7fafc; padding: 15px; border-radius: 8px; margin: 20px 0; font-size: 13px;">';
-                html += '<strong>📍 Informações:</strong><br>';
-                if (analysis.metadata.location) html += `📍 Local: ${analysis.metadata.location}<br>`;
-                if (analysis.metadata.elevatorNumber) html += `🔢 Elevador Nº: ${analysis.metadata.elevatorNumber}<br>`;
-                if (analysis.metadata.capacity) html += `⚖️ Capacidade: ${analysis.metadata.capacity}<br>`;
-                if (analysis.metadata.maintenanceBy) html += `🔧 Manutenção: ${analysis.metadata.maintenanceBy}<br>`;
-                if (analysis.metadata.validUntil) html += `📅 Válido até: ${analysis.metadata.validUntil}<br>`;
-                html += '</div>';
-            }
-            
-            // Violations
-            if (analysis.violations && analysis.violations.length > 0) {
-                html += '<h4 style="margin-top: 30px; margin-bottom: 15px;">📜 Violações Detectadas:</h4>';
-                
-                analysis.violations.forEach((violation, index) => {
-                    const severityClass = violation.riskCategory === 'C1' ? 'critical' : violation.riskCategory === 'C2' ? 'high' : '';
-                    const riskColor = violation.riskCategory === 'C1' ? '#742a2a' : violation.riskCategory === 'C2' ? '#7d6608' : '#2d3748';
-                    
-                    html += `
-                        <div class="issue-item ${severityClass}" style="border-left: 4px solid ${riskColor}; margin-bottom: 20px;">
-                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
-                                <h4 style="margin: 0;">${index + 1}. Artigo ${violation.article}${violation.regulation?.articleTitle ? ': ' + violation.regulation.articleTitle : ''}</h4>
-                                <span style="background: ${riskColor}; color: white; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 600;">${violation.riskCategory}</span>
-                            </div>
-                            
-                            <p style="margin: 8px 0; color: #4a5568; font-style: italic; border-left: 3px solid #e2e8f0; padding-left: 10px; background: #f7fafc; padding: 8px 10px; border-radius: 4px;">
-                                "${violation.description}"
-                            </p>
-                            
-                            ${violation.regulation?.articleExplanation ? `
-                                <div style="background: #fff5f5; border-left: 3px solid ${riskColor}; padding: 12px; margin: 12px 0; border-radius: 4px;">
-                                    <strong style="color: ${riskColor}; display: block; margin-bottom: 6px;">⚠️ Porquê é importante:</strong>
-                                    <p style="margin: 0; color: #2d3748; line-height: 1.6; white-space: pre-line;">${violation.regulation.articleExplanation}</p>
-                                </div>
-                            ` : ''}
-                            
-                            ${violation.regulation ? `
-                                <p style="color: #667eea; font-weight: 600; font-size: 12px; margin: 8px 0;">
-                                    📜 ${violation.regulation.code} - ${violation.regulation.name}
-                                </p>
-                            ` : ''}
-                            
-                            ${violation.riskInfo ? `
-                                <p style="color: #718096; font-size: 11px; margin: 8px 0;">
-                                    <strong>Nível de risco:</strong> ${violation.riskInfo.description}
-                                </p>
-                            ` : ''}
-                        </div>
-                    `;
-                });
-            }
-            
-            // Recommendations
-            if (analysis.recommendations && analysis.recommendations.length > 0) {
-                html += '<h4 style="margin-top: 30px; margin-bottom: 15px;">💡 Recomendações:</h4>';
-                html += '<div style="background: #ebf8ff; padding: 15px; border-radius: 8px;">';
-                analysis.recommendations.forEach(rec => {
-                    html += `<p style="margin: 8px 0;">${rec.icon} ${rec.text}</p>`;
-                });
-                html += '</div>';
-            }
-            
-            resultDiv.innerHTML = html;
-        }
-        
-        // Legacy function for backward compatibility
-        function displayAnalysis(data) {
-            const resultDiv = document.getElementById('analysisResult');
-            
-            let html = '<h3>📊 Результати аналізу</h3>';
-            
-            html += '<div class="analysis-summary">';
-            html += `<div class="summary-card"><div class="number">${data.total_items}</div><div class="label">Всього проблем</div></div>`;
-            html += `<div class="summary-card"><div class="number">${data.critical_issues.length}</div><div class="label">Критичних</div></div>`;
-            html += `<div class="summary-card"><div class="number">${data.high_priority.length}</div><div class="label">Високий пріоритет</div></div>`;
-            html += `<div class="summary-card"><div class="number">€${data.estimated_total_cost.min}-${data.estimated_total_cost.max}</div><div class="label">Вартість</div></div>`;
-            html += '</div>';
-            
-            html += '<h4 style="margin-top: 30px; margin-bottom: 15px;">Детальний розбір:</h4>';
-            
-            data.items_detail.forEach(item => {
-                const severityClass = item.severity === 'critical' ? 'critical' : item.severity === 'high' ? 'high' : '';
-                html += `
-                    <div class="issue-item ${severityClass}">
-                        <h4>${item.issue}</h4>
-                        <p>${item.explanation}</p>
-                        <p style="color: #667eea; font-weight: 600; font-size: 12px;">📜 ${item.legal_basis}</p>
-                        ${item.estimated_cost ? `<p style="color: #22543d; background: #c6f6d5; padding: 5px 10px; border-radius: 5px; display: inline-block; margin-top: 10px;">€${item.estimated_cost.min} - €${item.estimated_cost.max}</p>` : ''}
-                    </div>
-                `;
-            });
-            
-            resultDiv.innerHTML = html;
-        }
-        
-        // ==========================================
-        // EXPORT FUNCTIONS
-        // ==========================================
-        
-        async function exportToPDF() {
-            if (!window.currentAnalysis) {
-                alert('Немає даних для експорту');
-                return;
-            }
-            
-            try {
-                const token = getAuthToken();
-                const response = await fetch('/api/export/pdf', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        analysisData: window.currentAnalysis
-                    })
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Помилка генерації PDF');
-                }
-                
-                // Завантаження файлу
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `relatorio_inspecao_${Date.now()}.pdf`;
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-                document.body.removeChild(a);
-                
-                console.log('✅ PDF експортовано успішно');
-                
-            } catch (error) {
-                console.error('Помилка експорту PDF:', error);
-                alert('Не вдалося експортувати PDF: ' + error.message);
-            }
-        }
-        
-        async function exportToExcel() {
-            if (!window.currentAnalysis) {
-                alert('Немає даних для експорту');
-                return;
-            }
-            
-            try {
-                const token = getAuthToken();
-                const response = await fetch('/api/export/excel', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        analysisData: window.currentAnalysis
-                    })
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Помилка генерації Excel');
-                }
-                
-                // Завантаження файлу
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `relatorio_inspecao_${Date.now()}.xlsx`;
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-                document.body.removeChild(a);
-                
-                console.log('✅ Excel експортовано успішно');
-                
-            } catch (error) {
-                console.error('Помилка експорту Excel:', error);
-                alert('Не вдалося експортувати Excel: ' + error.message);
-            }
-        }
-        
-        // ==========================================
-        // ACTION PLAN GENERATION
-        // ==========================================
-        
-        async function generateActionPlan() {
-            if (!window.currentAnalysis || !window.currentAnalysis.violations) {
-                alert('Немає даних для генерації плану дій');
-                return;
-            }
-            
-            try {
-                const token = getAuthToken();
-                const response = await fetch('/api/action-plan/generate', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        violations: window.currentAnalysis.violations
-                    })
-                });
-                
-                const result = await response.json();
-                
-                if (!result.success) {
-                    throw new Error(result.error || 'Помилка генерації плану');
-                }
-                
-                // Зберігаємо action plan
-                window.currentActionPlan = result.actionPlan;
-                
-                // Відображаємо action plan
-                displayActionPlan(result.actionPlan);
-                
-                console.log('✅ Action Plan згенеровано успішно');
-                
-            } catch (error) {
-                console.error('Помилка генерації Action Plan:', error);
-                alert('Не вдалося згенерувати план дій: ' + error.message);
-            }
-        }
-        
-        function displayActionPlan(actionPlan) {
-            const resultDiv = document.getElementById('analysisResult');
-            
-            let html = '<div style="background: white; border-radius: 15px; padding: 30px;">';
-            
-            // Заголовок
-            html += '<h2 style="color: #2d3748; margin-bottom: 20px;">📋 PLANO DE AÇÃO</h2>';
-            
-            // Кнопки експорту PDF та Email
-            html += '<div style="display: flex; gap: 10px; justify-content: flex-end; margin-bottom: 20px; flex-wrap: wrap;">';
-            html += '<button onclick="exportActionPlanPDF()" class="btn" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">';
-            html += '<i class="fas fa-download"></i> Baixar Plano PDF</button>';
-            html += '<button onclick="sendActionPlanByEmail()" class="btn" style="background: linear-gradient(135deg, #3182ce, #2b6cb0); color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">';
-            html += '<i class="fas fa-envelope"></i> Enviar por Email</button>';
-            html += '</div>';
-            
-            // Summary
-            if (actionPlan.summary) {
-                html += '<div style="background: #f7fafc; padding: 20px; border-radius: 10px; margin-bottom: 20px; white-space: pre-line; font-family: monospace;">';
-                html += actionPlan.summary;
-                html += '</div>';
-            }
-            
-            // Timeline
-            if (actionPlan.timeline && actionPlan.timeline.length > 0) {
-                html += '<h3 style="color: #2d3748; margin: 30px 0 15px 0;">📅 Cronograma</h3>';
-                
-                actionPlan.timeline.forEach(phase => {
-                    const phaseColor = phase.phase === 1 ? '#e53e3e' : phase.phase === 2 ? '#dd6b20' : '#38a169';
-                    
-                    html += `<div style="background: white; border-left: 4px solid ${phaseColor}; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">`;
-                    html += `<div style="font-weight: bold; color: ${phaseColor}; margin-bottom: 10px;">${phase.title}</div>`;
-                    html += `<div style="color: #4a5568; margin-bottom: 5px;">Período: ${phase.period}</div>`;
-                    html += `<div style="color: #4a5568; margin-bottom: 5px;">Ações: ${phase.actions.length}</div>`;
-                    html += `<div style="color: #4a5568; margin-bottom: 5px;">Custo: €${phase.cost.min} - €${phase.cost.max}</div>`;
-                    html += `<div style="color: #718096; font-style: italic;">${phase.description}</div>`;
-                    html += '</div>';
-                });
-            }
-            
-            // Ações детально
-            if (actionPlan.allActions && actionPlan.allActions.length > 0) {
-                html += '<h3 style="color: #2d3748; margin: 30px 0 15px 0;">🔧 Ações Detalhadas</h3>';
-                
-                actionPlan.allActions.forEach(action => {
-                    html += `<div style="background: white; border-left: 4px solid ${action.priority.color}; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">`;
-                    html += `<div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">`;
-                    html += `<div style="font-weight: bold; color: #2d3748;">${action.id}. ${action.violation.article} - ${action.violation.description}</div>`;
-                    html += `<div style="background: ${action.priority.color}; color: white; padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold;">${action.priority.levelPT}</div>`;
-                    html += '</div>';
-                    html += `<div style="color: #2c5282; margin-bottom: 5px;"><strong>Ação:</strong> ${action.action.required}</div>`;
-                    html += `<div style="color: #4a5568; margin-bottom: 5px;"><strong>Prazo:</strong> ${action.deadline.text} (${action.deadline.date})</div>`;
-                    html += `<div style="color: #4a5568;"><strong>Custo:</strong> €${action.cost.min} - €${action.cost.max}</div>`;
-                    if (action.deadline.mustImmobilize) {
-                        html += `<div style="color: #e53e3e; font-weight: bold; margin-top: 10px;">⚠️ IMOBILIZAR ASCENSOR</div>`;
-                    }
-                    html += '</div>';
-                });
-            }
-            
-            html += '</div>';
-            resultDiv.innerHTML = html;
-        }
-        
-        async function exportActionPlanPDF() {
-            if (!window.currentActionPlan) {
-                alert('Немає плану дій для експорту');
-                return;
-            }
-            
-            try {
-                const token = getAuthToken();
-                const response = await fetch('/api/action-plan/export-pdf', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        actionPlan: window.currentActionPlan
-                    })
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Помилка експорту PDF');
-                }
-                
-                // Завантаження файлу
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `plano_acao_${Date.now()}.pdf`;
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-                document.body.removeChild(a);
-                
-                
-                console.log('✅ Action Plan PDF експортовано');
-                
-            } catch (error) {
-                console.error('Помилка експорту Action Plan PDF:', error);
-                alert('Не вдалося експортувати PDF: ' + error.message);
-            }
-        }
-
-        /**
-         * Відправка inspection report по email
-         */
-        async function sendReportByEmail() {
-            if (!window.currentAnalysis) {
-                alert('Nenhuma análise disponível');
-                return;
-            }
-
-            const email = prompt('Informe o email do destinatário:');
-            if (!email) return;
-
-            // Валідація email
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                alert('Email inválido');
-                return;
-            }
-
-            try {
-                const token = getAuthToken();
-                if (!token) {
-                    alert('Autenticação necessária');
-                    window.location.replace('/pages/auth/login.html');
-                    return;
-                }
-
-                // Перевіряємо чи є критичні порушення для автоматичного алерту
-                const hasCritical = window.currentAnalysis.violations?.some(v => v.classification === 'C1');
-
-                const response = await fetch('/api/email/send-inspection-report', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        clientEmail: email,
-                        reportData: window.currentAnalysis
-                    })
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    alert('✅ Relatório enviado com sucesso!');
-                    
-                    // Якщо є критичні порушення - автоматично відправляємо алерт
-                    if (hasCritical) {
-                        const sendAlert = confirm('Detectadas deficiências críticas! Deseja enviar um alerta separado?');
-                        if (sendAlert) {
-                            await sendCriticalAlertByEmail(email);
-                        }
-                    }
-                } else {
-                    alert('❌ Erro ao enviar email: ' + result.error);
-                }
-
-            } catch (error) {
-                console.error('Erro ao enviar email:', error);
-                alert('Não foi possível enviar o email: ' + error.message);
-            }
-        }
-
-        /**
-         * Відправка критичного алерту
-         */
-        async function sendCriticalAlertByEmail(email) {
-            if (!window.currentAnalysis?.violations) return;
-
-            try {
-                const token = getAuthToken();
-                const response = await fetch('/api/email/send-critical-alert', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        clientEmail: email,
-                        violations: window.currentAnalysis.violations,
-                        liftId: window.currentAnalysis.metadata?.liftId
-                    })
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    alert('🚨 Alerta crítico enviado!');
-                } else {
-                    alert('❌ Erro ao enviar alerta: ' + result.error);
-                }
-
-            } catch (error) {
-                console.error('Erro ao enviar alerta:', error);
-            }
-        }
-
-        /**
-         * Відправка action plan по email
-         */
-        async function sendActionPlanByEmail() {
-            if (!window.currentActionPlan) {
-                alert('Nenhum Plano de Ação disponível. Gere o plano primeiro.');
-                return;
-            }
-
-            const email = prompt('Informe o email do destinatário:');
-            if (!email) return;
-
-            // Валідація email
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                alert('Email inválido');
-                return;
-            }
-
-            try {
-                const token = getAuthToken();
-                if (!token) {
-                    alert('Autenticação necessária');
-                    window.location.replace('/pages/auth/login.html');
-                    return;
-                }
-
-                const response = await fetch('/api/email/send-action-plan', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        clientEmail: email,
-                        actionPlan: window.currentActionPlan,
-                        liftId: window.currentAnalysis?.metadata?.liftId
-                    })
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    alert('✅ Plano de Ação enviado com sucesso!');
-                } else {
-                    alert('❌ Erro ao enviar email: ' + result.error);
-                }
-
-            } catch (error) {
-                console.error('Erro ao enviar email:', error);
-                alert('Não foi possível enviar o email: ' + error.message);
-            }
-        }
     </script>
 </body>
 </html>
-
