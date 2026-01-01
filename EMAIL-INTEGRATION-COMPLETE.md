@@ -281,11 +281,11 @@ SMTP_HOST=smtp-relay.brevo.com
 SMTP_PORT=587
 SMTP_SECURE=false
 SMTP_USER=8b688f001@smtp-brevo.com
-SMTP_PASS=xsmtpsib-eff1ed4c64a9493015a7277231ff34f428d3b843a2ae0f87ef2b9cb4225d3286-sgRRGhGBRoGQUwKj
+SMTP_PASS=xsmtpsib-YOUR-SMTP-KEY-HERE
 EMAIL_FROM=FestLift <info@festlift.pt>
 
 # Brevo API Key (opcional, para REST API)
-BREVO_API_KEY=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
+BREVO_API_KEY=xkeysib-YOUR-API-KEY-HERE
 ```
 
 ### Brevo Dashboard:
