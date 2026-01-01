@@ -1,7 +1,49 @@
 const { AppError } = require('../middleware/errorHandler');
 
+// Ініціалізація nodemailer транспорту (лінива ініціалізація)
+let transporter = null;
+
 /**
- * Надіслати email (поки що лог, потім додамо nodemailer)
+ * Отримати або створити SMTP транспорт
+ */
+function getTransporter() {
+    if (transporter) {
+        return transporter;
+    }
+
+    // Перевіряємо чи налаштовано SMTP
+    if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+        console.warn('⚠️ SMTP не налаштовано. Email буде тільки логуватися.');
+        return null;
+    }
+
+    const nodemailer = require('nodemailer');
+    
+    // Brevo (Sendinblue) SMTP конфігурація
+    transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
+        port: parseInt(process.env.SMTP_PORT) || 587,
+        secure: false, // true для 465, false для інших портів
+        auth: {
+            user: process.env.SMTP_USER, // Ваш Brevo login (email)
+            pass: process.env.SMTP_PASS  // Ваш Brevo SMTP ключ
+        },
+        tls: {
+            ciphers: 'SSLv3'
+        }
+    });
+
+    console.log('✅ SMTP транспорт ініціалізовано:', {
+        host: process.env.SMTP_HOST,
+        port: process.env.SMTP_PORT,
+        user: process.env.SMTP_USER
+    });
+
+    return transporter;
+}
+
+/**
+ * Надіслати email через Brevo SMTP
  */
 exports.sendEmail = async (req, res, next) => {
     try {
@@ -24,41 +66,64 @@ exports.sendEmail = async (req, res, next) => {
         console.log('📄 HTML length:', html.length, 'chars');
         console.log('🕐 Timestamp:', new Date().toISOString());
         console.log('👤 Requested by:', req.user?.email || 'unknown');
-        console.log('======================================================');
 
-        // TODO: Інтеграція з nodemailer
-        // Поки що логуємо email (для тестування без налаштованого SMTP)
-        // 
-        // const nodemailer = require('nodemailer');
-        // const transporter = nodemailer.createTransport({
-        //     host: process.env.SMTP_HOST,
-        //     port: process.env.SMTP_PORT,
-        //     secure: true,
-        //     auth: {
-        //         user: process.env.SMTP_USER,
-        //         pass: process.env.SMTP_PASS
-        //     }
-        // });
-        // 
-        // await transporter.sendMail({
-        //     from: process.env.SMTP_FROM || 'noreply@festlift.pt',
-        //     to: to,
-        //     subject: subject,
-        //     html: html
-        // });
+        const smtpTransporter = getTransporter();
 
-        // Симулюємо успішну відправку
-        res.json({
-            success: true,
-            message: 'Email успішно надіслано',
-            data: {
-                to,
-                subject,
-                sentAt: new Date().toISOString()
-            }
-        });
+        if (smtpTransporter) {
+            // PRODUCTION: Реальна відправка через Brevo
+            console.log('📤 Надсилання через Brevo SMTP...');
+            
+            const mailOptions = {
+                from: process.env.SMTP_FROM || `"LiftMaster Pro" <noreply@festlift.pt>`,
+                to: to,
+                subject: subject,
+                html: html
+            };
+
+            const info = await smtpTransporter.sendMail(mailOptions);
+            
+            console.log('✅ Email успішно надіслано через Brevo!');
+            console.log('📨 Message ID:', info.messageId);
+            console.log('======================================================');
+
+            res.json({
+                success: true,
+                message: 'Email успішно надіслано через Brevo',
+                data: {
+                    to,
+                    subject,
+                    sentAt: new Date().toISOString(),
+                    messageId: info.messageId,
+                    provider: 'Brevo SMTP'
+                }
+            });
+        } else {
+            // DEVELOPMENT: Тільки логування
+            console.log('⚠️ SMTP не налаштовано - email НЕ надіслано (тільки лог)');
+            console.log('💡 Налаштуйте .env для production:');
+            console.log('   SMTP_HOST=smtp-relay.brevo.com');
+            console.log('   SMTP_PORT=587');
+            console.log('   SMTP_USER=your-brevo-email@example.com');
+            console.log('   SMTP_PASS=your-brevo-smtp-key');
+            console.log('   SMTP_FROM="LiftMaster Pro" <noreply@festlift.pt>');
+            console.log('======================================================');
+
+            res.json({
+                success: true,
+                message: 'Email залоговано (SMTP не налаштовано)',
+                data: {
+                    to,
+                    subject,
+                    sentAt: new Date().toISOString(),
+                    mode: 'development',
+                    note: 'Налаштуйте SMTP для реальної відправки'
+                }
+            });
+        }
 
     } catch (error) {
+        console.error('❌ Помилка надсилання email:', error);
+        console.log('======================================================');
         next(error);
     }
 };
