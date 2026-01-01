@@ -364,12 +364,11 @@ const classificationInfo = {
         color: 'orange',
         icon: '🟠',
         meaning: 'Não conformidade que pode evoluir para risco crítico',
-        action: 'Correção necessária no prazo alargado',
-        deadline: '2 anos (Despacho 17/2022/DG - anteriormente 30 dias)',
-        additionalInfo: 'Inspeção de acompanhamento obrigatória ao 1 ano',
-        exception: 'NÃO se aplica se houver C1 no mesmo elevador',
-        legalConsequence: 'Coima €2.000-€15.000 após 2 anos',
-        reference: 'Portaria 344/93 + Despacho 17/2022/DG Art. 1º'
+        action: 'Correção necessária no prazo estabelecido',
+        deadline: 'Prazo estabelecido pelo inspetor (geralmente 30-90 dias)',
+        additionalInfo: '⚠️ ATENÇÃO: Despacho 17/2022 (2 anos) foi REVOGADO pelo Despacho 27/2024 em 24/09/2024',
+        legalConsequence: 'Coima €2.000-€15.000 se não corrigido no prazo',
+        reference: 'Portaria 344/93, Art. 6º e 7º | Decreto-Lei 320/2002'
     },
     'C3': {
         level: 'LEVE',

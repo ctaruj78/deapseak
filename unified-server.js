@@ -3197,7 +3197,8 @@ app.post('/api/ai/consult', authenticateToken, async (req, res) => {
                     `• Possível processo criminal\n\n` +
                     `Não conformidades C2 (Moderadas):\n` +
                     `• Coima: €500 - €5.000\n` +
-                    `• Prazo para correção: 2 ANOS (Despacho 17/2022/DG)\n\n` +
+                    `• Prazo: Definido pelo inspetor (30-90 dias típico)\n` +
+                    `• ⚠️ Despacho 17/2022 (2 anos) REVOGADO em 24/09/2024\n\n` +
                     `Não conformidades C3 (Leves):\n` +
                     `• Advertência ou coima: €100 - €500\n` +
                     `• Prazo para correção: 90 dias\n\n` +
@@ -3213,8 +3214,9 @@ app.post('/api/ai/consult', authenticateToken, async (req, res) => {
                     `• Elevadores >15 anos: Semestralmente\n\n` +
                     `Correções após inspeção:\n` +
                     `• C1 (Crítico): Imediato (0-7 dias)\n` +
-                    `• C2 (Moderado): 2 ANOS (Despacho 17/2022/DG - anteriormente 30 dias)\n` +
-                    `• C3 (Leve): 90 dias\n\n` +
+                    `• C2 (Moderado): Prazo definido pelo inspetor (30-90 dias)\n` +
+                    `• C3 (Leve): Até próxima inspeção periódica\n` +
+                    `• ⚠️ Despacho 17/2022 REVOGADO pelo 27/2024\n\n` +
                     `Manutenção:\n` +
                     `• Preventiva: Mensal obrigatório\n` +
                     `• Registo: Manter por 5 anos`;

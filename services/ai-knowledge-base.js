@@ -114,33 +114,40 @@ class AIKnowledgeBase {
         
         return {
             answer: `
-🔴 **ALTERAÇÃO REVOLUCIONÁRIA - Despacho 17/2022/DG**
+🔴 **IMPORTANTE: Despacho 17/2022 FOI REVOGADO!**
 
-**Prazos C2 foram ALTERADOS:**
+**Despacho n.º 27/2024 (24 setembro 2024):**
+❌ REVOGOU os Despachos 17/2022 e 18/2022
+🔙 Sistema VOLTOU às regras anteriores
 
-❌ **ANTIGO (antes 28/04/2022):** 30 dias
-✅ **NOVO (desde 28/04/2022):** 2 ANOS!
+**Prazos C2 ATUAIS (após 24/09/2024):**
 
-**Condições:**
-- ✅ Aplica-se APENAS a cláusulas C2
-- ✅ Inspeção de acompanhamento obrigatória ao 1 ano
-- ✅ Conta-se desde a data da inspeção
-- ❌ NÃO se aplica se houver C1 no mesmo elevador
-- ❌ Inspetor pode estabelecer prazo menor se justificado
+✅ **Prazo estabelecido pelo inspetor** (geralmente 30-90 dias)
+❌ **NÃO são mais 2 anos!** (Despacho 17/2022 revogado)
+
+**Legislação aplicável:**
+- Portaria 344/93, Art. 6º e 7º
+- Decreto-Lei 320/2002
+- Decreto 513/70 (elevadores pré-1991)
+
+**Razão da revogação:**
+- Consulta pública no Portal Participa (21/05/2024)
+- Múltiplas reservas do setor
+- Competências pertencem às Câmaras Municipais
+- Inadequação ao enquadramento regulamentar atual
 
 **Responsabilidade:**
 - Proprietário continua responsável pela segurança
-- Correção deve ser feita o mais cedo possível
-- Após 2 anos: Coimas €2.000 - €15.000 (empresas)
+- Correção no prazo definido pelo inspetor
+- Coimas: €2.000 - €15.000 se não corrigido
 
 **Referência Legal:**
-- Portaria 344/93, Art. 7º
-- Despacho 17/2022/DG, Art. 1º (28/04/2022)
-
-**⚠️ Esta é a mudança MAIS IMPORTANTE dos últimos 20 anos!**
-            `.trim(),
+- Despacho 27/2024, publicado 24/09/2024
+- Portaria 344/93
+- Decreto-Lei 320/2002, Art. 20º
+            `,
             confidence: 1.0,
-            sources: ['despacho-17-2022', 'portaria-344-93']
+            sources: ['despacho-27-2024', 'portaria-344-93', 'decreto-lei-320-2002']
         };
     }
 

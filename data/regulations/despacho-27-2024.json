@@ -1,0 +1,108 @@
+{
+  "id": "despacho-27-2024",
+  "title": "Despacho n.º 27/2024",
+  "description": "CRÍTICO: Revoga os Despachos 17/2022 e 18/2022 - VOLTA às regras anteriores para C2",
+  "date": "2024-09-24",
+  "source": "DGEG - Direção-Geral de Energia e Geologia",
+  "url": "https://www.dgeg.gov.pt",
+  "priority": "CRITICAL",
+  "scope": "REVOGAÇÃO - Sistema volta às regras pré-2022",
+  "articles": [
+    {
+      "number": "Preâmbulo",
+      "title": "Contexto da revogação",
+      "text": "No âmbito dos Despachos n.ºs 17/2022 e 18/2022, ambos de 8 de julho de 2022, do Diretor-Geral de Energia e Geologia, e considerando as reservas e questões colocadas pelas entidades do setor das instalações de elevação sobre o respetivo objeto, procedeu-se à submissão, no passado dia 21 de maio de 2024, do referido enquadramento regulamentar a um processo de consulta pública no Portal Participa, tendo sido determinada a suspensão da produção dos respetivos efeitos.",
+      "keywords": ["revogação", "consulta pública", "suspensão", "Portal Participa"],
+      "highlight": "Múltiplas reservas do setor levaram à consulta pública e suspensão"
+    },
+    {
+      "number": "Art. 1.º",
+      "title": "Revogação",
+      "text": "A revogação dos Despachos n.ºs 17/2022 e 18/2022, ambos de 8 de julho de 2022.",
+      "keywords": ["revogação", "despacho 17/2022", "despacho 18/2022"],
+      "highlight": "🔴 CRÍTICO: Despacho 17/2022 (prazo 2 anos C2) está REVOGADO!"
+    },
+    {
+      "number": "Art. 2.º, alínea a)",
+      "title": "Aplicação do Decreto 513/70",
+      "text": "A aplicação do Decreto n.º 513/70, de 30 de outubro, na sua redação atual, no âmbito da inspeção periódica de todos os equipamentos instalados até à entrada em vigor do Decreto-Lei n.º 110/91, de 18 de março.",
+      "keywords": ["decreto 513/70", "inspeção periódica", "equipamentos antigos"],
+      "highlight": "Elevadores pré-1991: aplica-se Decreto 513/70"
+    },
+    {
+      "number": "Art. 2.º, alínea b)",
+      "title": "Aplicação do DL 320/2002, Art. 20º",
+      "text": "A aplicação do artigo 20.º do referido Decreto-Lei n.º 320/2002 no âmbito da substituição, completa ou parcial, deste tipo de instalações, cujo disposto deve ser atualizado ao abrigo do Decreto-Lei n.º 58/2017, de 9 de junho.",
+      "keywords": ["decreto-lei 320/2002", "substituição", "decreto-lei 58/2017"],
+      "highlight": "Substituições: DL 320/2002, Art. 20º + DL 58/2017"
+    },
+    {
+      "number": "Art. 2.º, alínea c)",
+      "title": "Diretiva 2014/33/UE",
+      "text": "A operacionalização do enquadramento referido nas alíneas anteriores constante do guia de aplicação, publicado pela Comissão Europeia, da Diretiva n.º 2014/33/UE, do Parlamento Europeu e do Conselho, de 26 de fevereiro de 2014.",
+      "keywords": ["diretiva 2014/33/ue", "comissão europeia", "guia de aplicação"],
+      "highlight": "Seguir guia da Comissão Europeia para Diretiva 2014/33/UE"
+    },
+    {
+      "number": "Competências",
+      "title": "Câmaras Municipais",
+      "text": "Importa de igual modo considerar o quadro legal, nacional e europeu, aplicável a este tipo de instalações. As competências relativas às inspeções e fiscalização das instalações de elevação se encontram atribuídas às Câmaras Municipais, nos termos do Decreto-Lei n.º 320/2002.",
+      "keywords": ["câmaras municipais", "competências", "inspeções", "fiscalização"],
+      "highlight": "Competências de inspeção: Câmaras Municipais (não DGEG)"
+    },
+    {
+      "number": "Conclusão",
+      "title": "Inadequação dos Despachos 17/2022 e 18/2022",
+      "text": "Face ao exposto e após a análise dos comentários e propostas veiculadas no Portal Participa, verifica-se, de facto, a inadequação dos referidos Despachos n.ºs 17/2022 e 18/2022, no âmbito do atual enquadramento, normativo e regulamentar, aplicável a este tipo de instalações.",
+      "keywords": ["inadequação", "portal participa", "enquadramento normativo"],
+      "highlight": "DGEG reconhece inadequação dos Despachos 17/2022 e 18/2022"
+    },
+    {
+      "number": "Art. 3.º",
+      "title": "Entrada em vigor",
+      "text": "O presente despacho entra em vigor no dia seguinte ao da sua publicação no sítio da internet da DGEG.",
+      "keywords": ["entrada em vigor", "publicação", "dgeg"],
+      "highlight": "Vigor: dia seguinte à publicação (25/09/2024)"
+    }
+  ],
+  "violations_examples": [
+    {
+      "violation": "Continuar a aplicar prazo de 2 anos para C2",
+      "classification": "ERRO LEGAL",
+      "penalty": "Relatório inválido - Despacho 17/2022 revogado",
+      "correct_action": "Aplicar prazo definido pelo inspetor (30-90 dias típico)"
+    },
+    {
+      "violation": "Não informar clientes sobre revogação",
+      "classification": "FALTA DE INFORMAÇÃO",
+      "penalty": "Perda de credibilidade, possíveis litígios",
+      "correct_action": "Comunicar imediatamente sobre mudança legislativa"
+    }
+  ],
+  "important_notes": [
+    "🔴 ATENÇÃO: Esta revogação CANCELA o prazo de 2 anos para C2!",
+    "📅 Despacho 17/2022 (8 julho 2022) → REVOGADO em 24 setembro 2024",
+    "🔙 Sistema volta às regras ANTERIORES (Portaria 344/93 + DL 320/2002)",
+    "⚖️ Competências: Câmaras Municipais (não DGEG)",
+    "📝 Consulta pública: Portal Participa (21 maio 2024)",
+    "✅ Legislação aplicável: Decreto 513/70, DL 320/2002, DL 58/2017, Diretiva 2014/33/UE"
+  ],
+  "impact_analysis": {
+    "prazo_c2": {
+      "antes_17_2022": "30-90 dias (definido pelo inspetor)",
+      "durante_17_2022": "2 anos (8 julho 2022 - 24 setembro 2024)",
+      "apos_27_2024": "30-90 dias (volta ao anterior)"
+    },
+    "responsabilidades": {
+      "inspecoes": "Câmaras Municipais",
+      "orientacoes": "DGEG (não vinculativas)",
+      "fiscalizacao": "Câmaras Municipais"
+    },
+    "legislacao_vigente": [
+      "Decreto 513/70 (elevadores pré-1991)",
+      "Decreto-Lei 320/2002, Art. 20º (substituições)",
+      "Decreto-Lei 58/2017 (transpõe Diretiva 2014/33/UE)",
+      "Portaria 344/93 (classificação C1/C2/C3)"
+    ]
+  }
+}

@@ -47,7 +47,8 @@ class RegulationsLoader {
             'decreto-regulamentar-13-80.json',
             'directiva-95-16-ce.json',
             'portaria-344-93.json',
-            'despacho-17-2022.json',         // 🆕 КРИТИЧНИЙ!
+            'despacho-17-2022.json',         // ⚠️ REVOGADO por 27/2024!
+            'despacho-27-2024.json',         // 🆕 CRÍTICO: Revoga 17/2022!
             'decreto-lei-163-2006.json',     // 🆕
             'lei-58-2013.json',              // 🆕
             'en-81-20-2020.json',            // 🆕
