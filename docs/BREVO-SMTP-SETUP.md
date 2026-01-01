@@ -1,5 +1,41 @@
 # 📧 Налаштування Brevo SMTP для Production
 
+## ✅ ВЖЕ НАЛАШТОВАНО!
+
+**Brevo SMTP вже повністю налаштовано і готовий до використання!**
+
+### 🔑 Поточні налаштування (.env):
+
+```env
+SMTP_HOST=smtp-relay.brevo.com
+SMTP_PORT=587
+SMTP_USER=8b688f001@smtp-brevo.com
+SMTP_PASS=xsmtpsib-eff1ed4c64a9493015a7277231ff34f428d3b843a2ae0f87ef2b9cb4225d3286-***
+SMTP_FROM="LiftMaster Pro" <info@festlift.pt>
+```
+
+### 📦 Залежності:
+- ✅ **nodemailer** v7.0.10 встановлено
+- ✅ **Brevo SMTP** налаштовано
+- ✅ **Email відправник** верифіковано: info@festlift.pt
+
+### 🚀 Як використовувати:
+
+1. **Створіть користувача** в адмін панелі (`/pages/admin/users.html`)
+2. **Натисніть "Надіслати на Email"** після генерації пароля
+3. **Email автоматично надішлеться** через Brevo SMTP
+
+### 📊 Моніторинг:
+
+Перевірити статистику відправок:
+- **Dashboard:** https://app.brevo.com/
+- **Statistics:** https://app.brevo.com/statistics/email
+- **API Key:** xkeysib-eff1ed4c64a9493015a7277231ff34f428d3b843a2ae0f87ef2b9cb4225d3286-***
+
+---
+
+## 📖 Додаткова інформація (якщо потрібно змінити налаштування)
+
 ## Що таке Brevo?
 
 **Brevo** (колишній Sendinblue) - це професійний сервіс для надсилання email з:
