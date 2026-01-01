@@ -1264,11 +1264,15 @@
                                     
                                     <div class="alert alert-info">
                                         <i class="fas fa-info-circle"></i>
-                                        Надішліть цей пароль користувачу через безпечний канал (email, месенджер).
-                                        Користувач зможе змінити пароль після першого входу.
+                                        Ви можете надіслати ці дані користувачу автоматично через email, або скопіювати і надіслати вручну.
                                     </div>
+                                    
+                                    <div id="emailStatusAlert" style="display: none;"></div>
                                 </div>
                                 <div class="modal-footer">
+                                    <button type="button" class="btn btn-info" id="sendPasswordEmail">
+                                        <i class="fas fa-envelope"></i> Надіслати на Email
+                                    </button>
                                     <button type="button" class="btn btn-primary" data-dismiss="modal">
                                         <i class="fas fa-check"></i> Зрозуміло
                                     </button>
@@ -1299,10 +1303,136 @@
                     });
                 });
                 
+                // Обробник надсилання email
+                $('#sendPasswordEmail').on('click', async function() {
+                    const btn = $(this);
+                    const originalHTML = btn.html();
+                    
+                    btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Надсилання...');
+                    
+                    try {
+                        await userManager.sendPasswordEmail(email, password);
+                        
+                        $('#emailStatusAlert')
+                            .removeClass('alert-danger')
+                            .addClass('alert alert-success')
+                            .html('<i class="fas fa-check-circle"></i> <strong>Успішно!</strong> Email з інструкціями надіслано на ' + email)
+                            .fadeIn();
+                        
+                        btn.html('<i class="fas fa-check"></i> Надіслано!');
+                        
+                        setTimeout(() => {
+                            btn.prop('disabled', false).html(originalHTML);
+                        }, 3000);
+                    } catch (error) {
+                        $('#emailStatusAlert')
+                            .removeClass('alert-success')
+                            .addClass('alert alert-danger')
+                            .html('<i class="fas fa-exclamation-triangle"></i> <strong>Помилка!</strong> ' + error.message)
+                            .fadeIn();
+                        
+                        btn.prop('disabled', false).html(originalHTML);
+                    }
+                });
+                
                 // Видалити модальне вікно після закриття
                 $('#generatedPasswordModal').on('hidden.bs.modal', function() {
                     $(this).remove();
                 });
+            }
+
+            async sendPasswordEmail(email, password) {
+                try {
+                    // Отримати посилання на додаток (поточний домен)
+                    const appUrl = window.location.origin + '/pages/auth/login.html';
+                    
+                    // Дані для email
+                    const emailData = {
+                        to: email,
+                        subject: 'Ваш доступ до LiftMaster Pro',
+                        html: `
+                            <!DOCTYPE html>
+                            <html>
+                            <head>
+                                <meta charset="UTF-8">
+                                <style>
+                                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                                    .header { background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+                                    .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px; }
+                                    .credentials { background: white; padding: 20px; border-left: 4px solid #007bff; margin: 20px 0; }
+                                    .password { font-size: 24px; font-weight: bold; color: #007bff; letter-spacing: 2px; }
+                                    .button { display: inline-block; padding: 15px 30px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+                                    .footer { text-align: center; color: #6c757d; font-size: 12px; margin-top: 30px; }
+                                    .warning { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; }
+                                </style>
+                            </head>
+                            <body>
+                                <div class="container">
+                                    <div class="header">
+                                        <h1>🔑 Ласкаво просимо до LiftMaster Pro!</h1>
+                                        <p>Система управління ліфтами від FestLift</p>
+                                    </div>
+                                    <div class="content">
+                                        <h2>Вітаємо!</h2>
+                                        <p>Для вас створено обліковий запис в системі <strong>LiftMaster Pro</strong>.</p>
+                                        
+                                        <div class="credentials">
+                                            <h3>📧 Ваші дані для входу:</h3>
+                                            <p><strong>Email:</strong> ${email}</p>
+                                            <p><strong>Тимчасовий пароль:</strong></p>
+                                            <p class="password">${password}</p>
+                                        </div>
+                                        
+                                        <div class="warning">
+                                            <strong>⚠️ ВАЖЛИВО:</strong> Після першого входу обов'язково змініть пароль на власний!
+                                        </div>
+                                        
+                                        <h3>📝 Інструкція для входу:</h3>
+                                        <ol>
+                                            <li>Перейдіть за посиланням нижче</li>
+                                            <li>Введіть ваш email: <strong>${email}</strong></li>
+                                            <li>Введіть тимчасовий пароль (скопіюйте вище)</li>
+                                            <li>Після входу перейдіть в налаштування та змініть пароль</li>
+                                        </ol>
+                                        
+                                        <div style="text-align: center;">
+                                            <a href="${appUrl}" class="button">🚀 Увійти до системи</a>
+                                        </div>
+                                        
+                                        <p><small>Або скопіюйте посилання: <a href="${appUrl}">${appUrl}</a></small></p>
+                                        
+                                        <div class="footer">
+                                            <p>📞 Технічна підтримка: <strong>+351 961 777 666</strong></p>
+                                            <p>📧 Email: <a href="mailto:suporte@festlift.pt">suporte@festlift.pt</a></p>
+                                            <p>&copy; 2024-2026 FestLift Portugal. Внутрішня розробка для клієнтів.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </body>
+                            </html>
+                        `
+                    };
+                    
+                    // Надіслати через API
+                    const response = await AuthManager.fetchWithAuth('/api/send-email', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(emailData)
+                    });
+                    
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.message || 'Не вдалося надіслати email');
+                    }
+                    
+                    console.log('✅ Email успішно надіслано на:', email);
+                    return true;
+                    
+                } catch (error) {
+                    console.error('❌ Помилка надсилання email:', error);
+                    throw error;
+                }
             }
         }
 

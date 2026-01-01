@@ -8,6 +8,7 @@ const authRoutes = require('./routes/authRoutes');
 const liftRoutes = require('./routes/liftRoutes');
 const requestRoutes = require('./routes/requestRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
+const emailRoutes = require('./routes/emailRoutes');
 const websocketService = require('./services/websocketService');
 
 const app = express();
@@ -79,6 +80,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/lifts', liftRoutes);
 app.use('/api/requests', requestRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api', emailRoutes);
 
 app.get('/', (req, res) => {
     res.json({
@@ -89,7 +91,8 @@ app.get('/', (req, res) => {
             auth: '/api/auth',
             lifts: '/api/lifts',
             requests: '/api/requests',
-            settings: '/api/settings'
+            settings: '/api/settings',
+            email: '/api/send-email'
         }
     });
 });
