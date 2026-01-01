@@ -536,9 +536,30 @@
                         <div class="form-section">
                             <h6 class="form-section-title">Безпека</h6>
                             <div class="form-group">
-                                <label for="userPassword">Пароль *</label>
-                                <input type="password" id="userPassword" class="form-control" required>
-                                <small class="form-text text-muted">Мінімум 8 символів</small>
+                                <label for="userPassword">
+                                    Пароль 
+                                    <small class="text-muted">(залиште порожнім для автоматичної генерації)</small>
+                                </label>
+                                <div class="input-group">
+                                    <input type="text" id="userPassword" class="form-control" placeholder="Буде згенеровано автоматично...">
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-outline-secondary" id="generatePasswordBtn" title="Згенерувати новий пароль">
+                                            <i class="fas fa-sync-alt"></i> Генерувати
+                                        </button>
+                                        <button type="button" class="btn btn-outline-info" id="togglePasswordBtn" title="Показати/Сховати пароль">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-success" id="copyPasswordBtn" title="Копіювати пароль" disabled>
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <small class="form-text text-muted">
+                                    <i class="fas fa-info-circle"></i> Згенерований пароль буде сильним (10+ символів, A-Z, a-z, 0-9, спецсимволи)
+                                </small>
+                                <div id="generatedPasswordAlert" class="alert alert-success mt-2" style="display: none;">
+                                    <i class="fas fa-check-circle"></i> <strong>Пароль згенеровано!</strong> Обов'язково скопіюйте його для передачі користувачу.
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -593,6 +614,103 @@
                 this.setupEventListeners();
                 this.setupSearch();
                 this.setupFilters();
+                this.setupPasswordGenerator();
+            }
+
+            setupPasswordGenerator() {
+                // Генерація пароля
+                $('#generatePasswordBtn').on('click', () => {
+                    const password = this.generateSecurePassword();
+                    $('#userPassword').val(password);
+                    $('#copyPasswordBtn').prop('disabled', false);
+                    $('#generatedPasswordAlert').fadeIn();
+                    
+                    // Автоматично показати пароль
+                    $('#userPassword').attr('type', 'text');
+                    $('#togglePasswordBtn i').removeClass('fa-eye').addClass('fa-eye-slash');
+                });
+
+                // Показати/сховати пароль
+                $('#togglePasswordBtn').on('click', () => {
+                    const input = $('#userPassword');
+                    const icon = $('#togglePasswordBtn i');
+                    
+                    if (input.attr('type') === 'password') {
+                        input.attr('type', 'text');
+                        icon.removeClass('fa-eye').addClass('fa-eye-slash');
+                    } else {
+                        input.attr('type', 'password');
+                        icon.removeClass('fa-eye-slash').addClass('fa-eye');
+                    }
+                });
+
+                // Копіювати пароль
+                $('#copyPasswordBtn').on('click', () => {
+                    const password = $('#userPassword').val();
+                    if (password) {
+                        navigator.clipboard.writeText(password).then(() => {
+                            this.showNotification('Пароль скопійовано в буфер обміну!', 'info');
+                            
+                            // Змінити іконку на галочку
+                            const btn = $('#copyPasswordBtn');
+                            const originalHTML = btn.html();
+                            btn.html('<i class="fas fa-check"></i>');
+                            
+                            setTimeout(() => {
+                                btn.html(originalHTML);
+                            }, 2000);
+                        }).catch(() => {
+                            this.showNotification('Помилка копіювання. Скопіюйте вручну.', 'warning');
+                        });
+                    }
+                });
+
+                // Увімкнути кнопку копіювання при введенні пароля
+                $('#userPassword').on('input', function() {
+                    $('#copyPasswordBtn').prop('disabled', $(this).val().length === 0);
+                });
+
+                // При відкритті модального вікна для нового користувача - згенерувати пароль автоматично
+                $('#userModal').on('show.bs.modal', function(e) {
+                    const userId = $('#userId').val();
+                    if (!userId) {
+                        // Новий користувач - автоматично генерувати пароль
+                        setTimeout(() => {
+                            $('#generatePasswordBtn').click();
+                        }, 300);
+                    }
+                });
+
+                // Приховати alert при закритті модального вікна
+                $('#userModal').on('hidden.bs.modal', function() {
+                    $('#generatedPasswordAlert').hide();
+                });
+            }
+
+            generateSecurePassword(length = 12) {
+                // Символи для генерації (виключені неоднозначні: 0, O, I, l, 1)
+                const uppercase = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+                const lowercase = 'abcdefghjkmnpqrstuvwxyz';
+                const numbers = '23456789';
+                const special = '!@#$%&*';
+                
+                const allChars = uppercase + lowercase + numbers + special;
+                
+                let password = '';
+                
+                // Забезпечуємо мінімум по одному символу кожного типу
+                password += uppercase[Math.floor(Math.random() * uppercase.length)];
+                password += lowercase[Math.floor(Math.random() * lowercase.length)];
+                password += numbers[Math.floor(Math.random() * numbers.length)];
+                password += special[Math.floor(Math.random() * special.length)];
+                
+                // Заповнюємо решту довжини
+                for (let i = password.length; i < length; i++) {
+                    password += allChars[Math.floor(Math.random() * allChars.length)];
+                }
+                
+                // Перемішуємо символи
+                return password.split('').sort(() => Math.random() - 0.5).join('');
             }
 
             async loadUsers() {
@@ -909,14 +1027,23 @@
                     $('#userEmail').val(user.email);
                     $('#userRole').val(user.role);
                     $('#userStatus').val(user.status);
-                    $('#userPassword').val('').attr('placeholder', 'Залиште порожнім для збереження поточного пароля').prop('required', false);
+                    $('#userPassword').val('')
+                        .attr('type', 'password')
+                        .attr('placeholder', 'Залиште порожнім для збереження поточного пароля');
+                    $('#copyPasswordBtn').prop('disabled', true);
+                    $('#generatedPasswordAlert').hide();
+                    $('#togglePasswordBtn i').removeClass('fa-eye-slash').addClass('fa-eye');
                 }
             }
 
             resetForm() {
                 $('#userForm')[0].reset();
                 $('#userId').val('');
-                $('#userPassword').val('').removeAttr('placeholder').prop('required', true);
+                $('#userPassword').val('')
+                    .attr('type', 'text')
+                    .attr('placeholder', 'Буде згенеровано автоматично...');
+                $('#copyPasswordBtn').prop('disabled', true);
+                $('#generatedPasswordAlert').hide();
             }
 
             async saveUser() {
@@ -936,13 +1063,37 @@
                     }
 
                     let response;
+                    let result;
+                    
                     if (!userId) {
                         console.log('➕ Створення нового користувача:', userData.email);
+                        
+                        // Якщо пароль не введено - сервер згенерує автоматично
+                        if (!password) {
+                            console.log('🔐 Пароль не вказано - сервер згенерує автоматично');
+                        }
+                        
                         response = await AuthManager.fetchWithAuth('/api/users', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(userData)
                         });
+                        
+                        if (!response.ok) {
+                            const error = await response.json();
+                            throw new Error(error.error || 'Помилка створення користувача');
+                        }
+                        
+                        result = await response.json();
+                        
+                        // Якщо сервер повернув згенерований пароль - показати його
+                        if (result.data && result.data.temporaryPassword) {
+                            const generatedPassword = result.data.temporaryPassword;
+                            console.log('🔑 Сервер згенерував пароль:', generatedPassword);
+                            
+                            // Показати пароль користувачу
+                            this.showGeneratedPasswordModal(userData.email, generatedPassword);
+                        }
                     } else {
                         console.log('✏️ Оновлення користувача:', userId);
                         response = await AuthManager.fetchWithAuth(`/api/users/${userId}`, {
@@ -950,11 +1101,11 @@
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(userData)
                         });
-                    }
-
-                    if (!response.ok) {
-                        const error = await response.json();
-                        throw new Error(error.error || 'Помилка збереження користувача');
+                        
+                        if (!response.ok) {
+                            const error = await response.json();
+                            throw new Error(error.error || 'Помилка оновлення користувача');
+                        }
                     }
 
                     $('#userModal').modal('hide');
@@ -1074,6 +1225,83 @@
                         enter: 'animated fadeInRight',
                         exit: 'animated fadeOutRight'
                     }
+                });
+            }
+
+            showGeneratedPasswordModal(email, password) {
+                // Створити модальне вікно для показу згенерованого пароля
+                const modalHTML = `
+                    <div class="modal fade" id="generatedPasswordModal" tabindex="-1" role="dialog">
+                        <div class="modal-dialog modal-dialog-centered" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header bg-success">
+                                    <h5 class="modal-title text-white">
+                                        <i class="fas fa-key"></i> Користувача створено!
+                                    </h5>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        <strong>ВАЖЛИВО!</strong> Збережіть цей пароль зараз. Ви більше не зможете його побачити.
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label><i class="fas fa-user"></i> Email користувача:</label>
+                                        <input type="text" class="form-control" value="${email}" readonly>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label><i class="fas fa-lock"></i> Згенерований пароль:</label>
+                                        <div class="input-group">
+                                            <input type="text" id="displayPassword" class="form-control font-weight-bold" value="${password}" readonly>
+                                            <div class="input-group-append">
+                                                <button type="button" class="btn btn-success" id="copyDisplayPassword">
+                                                    <i class="fas fa-copy"></i> Копіювати
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle"></i>
+                                        Надішліть цей пароль користувачу через безпечний канал (email, месенджер).
+                                        Користувач зможе змінити пароль після першого входу.
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-primary" data-dismiss="modal">
+                                        <i class="fas fa-check"></i> Зрозуміло
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Видалити старе модальне вікно якщо є
+                $('#generatedPasswordModal').remove();
+                
+                // Додати нове
+                $('body').append(modalHTML);
+                
+                // Показати
+                $('#generatedPasswordModal').modal('show');
+                
+                // Обробник копіювання
+                $('#copyDisplayPassword').on('click', function() {
+                    const btn = $(this);
+                    navigator.clipboard.writeText(password).then(() => {
+                        const originalHTML = btn.html();
+                        btn.html('<i class="fas fa-check"></i> Скопійовано!');
+                        setTimeout(() => {
+                            btn.html(originalHTML);
+                        }, 2000);
+                    });
+                });
+                
+                // Видалити модальне вікно після закриття
+                $('#generatedPasswordModal').on('hidden.bs.modal', function() {
+                    $(this).remove();
                 });
             }
         }
