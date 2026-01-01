@@ -201,6 +201,32 @@
                 box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
             }
         }
+        
+        /* ✨ Sidebar treeview styles */
+        .nav-sidebar .nav-treeview {
+            display: none;
+            padding-left: 1rem;
+        }
+        
+        .nav-sidebar .nav-item.menu-open > .nav-treeview {
+            display: block;
+        }
+        
+        .nav-sidebar .nav-treeview > .nav-item > .nav-link {
+            padding-left: 2rem;
+        }
+        
+        .nav-sidebar .nav-link .right {
+            transition: transform 0.3s ease;
+        }
+        
+        .nav-sidebar .nav-item.menu-open > .nav-link .right {
+            transform: rotate(-90deg);
+        }
+        
+        .user-panel {
+            border-bottom: 1px solid #4b5563;
+        }
     </style>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -240,23 +266,90 @@
 
             <!-- Sidebar -->
             <div class="sidebar">
+                <!-- Sidebar user panel -->
+                <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                    <div class="image">
+                        <i class="fas fa-user-circle fa-2x text-white"></i>
+                    </div>
+                    <div class="info">
+                        <a href="/pages/admin/profile.html" class="d-block">Адміністратор</a>
+                    </div>
+                </div>
+
                 <!-- Sidebar Menu -->
                 <nav class="mt-2">
                     <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                        <!-- Dashboard -->
                         <li class="nav-item">
                             <a href="/pages/admin/admin-dashboard.html" class="nav-link">
                                 <i class="nav-icon fas fa-tachometer-alt"></i>
                                 <p>Дашборд</p>
                             </a>
                         </li>
-
+                        
+                        <!-- QR System Menu -->
                         <li class="nav-item">
-                            <a href="/pages/admin/lifts.html" class="nav-link">
-                                <i class="nav-icon fas fa-elevator"></i>
-                                <p>Ліфти</p>
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-qrcode"></i>
+                                <p>
+                                    QR Система
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
                             </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="/pages/admin/qr-management.html" class="nav-link">
+                                        <i class="fas fa-cog nav-icon"></i>
+                                        <p>Керування QR-кодами</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/pages/admin/qr-analytics.html" class="nav-link">
+                                        <i class="fas fa-chart-line nav-icon"></i>
+                                        <p>Аналітика QR-кодів</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/pages/admin/qr-history.html" class="nav-link">
+                                        <i class="fas fa-history nav-icon"></i>
+                                        <p>Історія сканувань</p>
+                                    </a>
+                                </li>
+                            </ul>
                         </li>
 
+                        <!-- Lifts Menu -->
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-elevator"></i>
+                                <p>
+                                    Ліфти
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="/pages/admin/lifts.html" class="nav-link">
+                                        <i class="fas fa-list nav-icon"></i>
+                                        <p>Управління ліфтами</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/pages/admin/requests.html" class="nav-link">
+                                        <i class="fas fa-clipboard-list nav-icon"></i>
+                                        <p>Заявки на обслуговування</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/pages/admin/maps.html" class="nav-link">
+                                        <i class="fas fa-map-marked-alt nav-icon"></i>
+                                        <p>Мапа ліфтів</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- Users -->
                         <li class="nav-item">
                             <a href="/pages/admin/users.html" class="nav-link">
                                 <i class="nav-icon fas fa-users"></i>
@@ -264,13 +357,69 @@
                             </a>
                         </li>
 
+                        <!-- Documents Menu -->
                         <li class="nav-item">
-                            <a href="/pages/admin/unified-analytics.html" class="nav-link">
-                                <i class="nav-icon fas fa-chart-line"></i>
-                                <p>Аналітика</p>
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-file-alt"></i>
+                                <p>
+                                    Документи
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
                             </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="/pages/admin/invoice-template.html" class="nav-link">
+                                        <i class="fas fa-file-invoice nav-icon"></i>
+                                        <p>Orçamentos (Створити)</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/pages/admin/orcamentos-list.html" class="nav-link">
+                                        <i class="fas fa-list nav-icon"></i>
+                                        <p>Orçamentos (Список)</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/pages/admin/reports.html" class="nav-link">
+                                        <i class="fas fa-chart-bar nav-icon"></i>
+                                        <p>Звіти</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/pages/admin/email-template.html" class="nav-link">
+                                        <i class="fas fa-envelope nav-icon"></i>
+                                        <p>Email шаблони</p>
+                                    </a>
+                                </li>
+                            </ul>
                         </li>
 
+                        <!-- Analytics Menu -->
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-chart-line"></i>
+                                <p>
+                                    Аналітика
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="/pages/admin/unified-analytics.html" class="nav-link">
+                                        <i class="fas fa-chart-area nav-icon"></i>
+                                        <p>Unified Analytics</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/pages/admin/predictive-maintenance.html" class="nav-link">
+                                        <i class="fas fa-brain nav-icon"></i>
+                                        <p>Predictive Maintenance</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- AI Assistant -->
                         <li class="nav-item">
                             <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link active">
                                 <i class="nav-icon fas fa-robot"></i>
@@ -278,10 +427,37 @@
                             </a>
                         </li>
 
+                        <!-- Support Menu -->
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-headset"></i>
+                                <p>
+                                    Підтримка
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="/pages/admin/notifications.html" class="nav-link">
+                                        <i class="fas fa-bell nav-icon"></i>
+                                        <p>Сповіщення</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- Settings -->
                         <li class="nav-item">
                             <a href="/pages/admin/settings.html" class="nav-link">
                                 <i class="nav-icon fas fa-cog"></i>
                                 <p>Налаштування</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" onclick="logout()">
+                                <i class="nav-icon fas fa-sign-out-alt"></i>
+                                <p>Вийти</p>
                             </a>
                         </li>
                     </ul>
@@ -1684,6 +1860,39 @@
             div.textContent = text;
             return div.innerHTML;
         }
+        
+        // ✨ Treeview menu functionality
+        $(document).ready(function() {
+            // Initialize Treeview for sidebar
+            setTimeout(function() {
+                // Manual click handlers for submenus
+                $('.nav-sidebar .nav-item > .nav-link').on('click', function(e) {
+                    const $parent = $(this).parent();
+                    const $submenu = $parent.find('> .nav-treeview');
+                    
+                    if ($submenu.length > 0) {
+                        e.preventDefault();
+                        
+                        // Close other open submenus
+                        $('.nav-sidebar .nav-item.menu-open').not($parent).each(function() {
+                            $(this).removeClass('menu-open');
+                            $(this).find('> .nav-treeview').slideUp(200);
+                        });
+                        
+                        // Toggle current submenu
+                        if ($parent.hasClass('menu-open')) {
+                            $parent.removeClass('menu-open');
+                            $submenu.slideUp(200);
+                        } else {
+                            $parent.addClass('menu-open');
+                            $submenu.slideDown(200);
+                        }
+                    }
+                });
+                
+                console.log('✅ Treeview sidebar initialized');
+            }, 100);
+        });
     </script>
 </body>
 </html>
