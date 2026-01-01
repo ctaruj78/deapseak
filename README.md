@@ -398,10 +398,10 @@ GitHub Copilot & Development Team
 **Новинка!** AI Асистент тепер доступний для всіх ролей:
 
 ### 📍 Де знайти:
-- 👨‍💼 **Admin**: Меню → AI Асистент → [Відкрити](pages/admin/ai-assistant-full.html)
-- 🔧 **Technician**: Меню → AI Асистент → [Відкрити](pages/tech/ai-assistant.html)
-- 👤 **Client**: Меню → AI Асістент → [Відкрити](pages/client/ai-assistant.html)
-- 📞 **Dispatcher**: Меню → AI Асистент → [Відкрити](pages/dispatcher/ai-assistant.html)
+- 👨‍💼 **Admin**: Меню → AI Асистент → [Відкрити](pages/ai-assistant/ai-assistant.html)
+- 🔧 **Technician**: Меню → AI Асистент → [Відкрити](pages/ai-assistant/ai-assistant.html)
+- 👤 **Client**: Меню → AI Асістент → [Відкрити](pages/ai-assistant/ai-assistant.html)
+- 📞 **Dispatcher**: Меню → AI Асистент → [Відкрити](pages/ai-assistant/ai-assistant.html)
 
 ### 🎯 Можливості:
 1. **💬 Chat** - консультації в реальному часі з AI
@@ -503,10 +503,10 @@ GitHub Copilot & Development Team
 
 ### Доступ для всіх ролей:
 
-- 👨‍💼 **Адміністратор:** http://localhost:5000/pages/admin/ai-assistant-full.html
-- 🔧 **Технік:** http://localhost:5000/pages/tech/ai-assistant.html
-- 👤 **Клієнт:** http://localhost:5000/pages/client/ai-assistant.html
-- 📞 **Диспетчер:** http://localhost:5000/pages/dispatcher/ai-assistant.html
+- 👨‍💼 **Адміністратор:** http://localhost:5000/pages/ai-assistant/ai-assistant.html
+- 🔧 **Технік:** http://localhost:5000/pages/ai-assistant/ai-assistant.html
+- 👤 **Клієнт:** http://localhost:5000/pages/ai-assistant/ai-assistant.html
+- 📞 **Диспетчер:** http://localhost:5000/pages/ai-assistant/ai-assistant.html
 
 ### Приклади запитів:
 
