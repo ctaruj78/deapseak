@@ -572,31 +572,49 @@
                     return;
                 }
                 
-                // Simulação de envio (na aplicação real será requisição AJAX)
-                console.log('Envio de mensagem:', {
-                    name: name,
-                    email: email,
-                    phone: phone,
-                    message: message
+                // Desabilitar botão durante envio
+                const $submitBtn = $(this).find('button[type="submit"]');
+                const originalText = $submitBtn.html();
+                $submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> A enviar...');
+                
+                // Enviar mensagem para o servidor (Brevo SMTP)
+                fetch('/api/contact', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        name: name, 
+                        email: email, 
+                        phone: phone || 'Não fornecido', 
+                        message: message 
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Mostrar mensagem de sucesso
+                        $('#contact-success').fadeIn();
+                        
+                        // Limpar formulário
+                        $('#contact-form')[0].reset();
+                        
+                        // Ocultar mensagem após 5 segundos
+                        setTimeout(function() {
+                            $('#contact-success').fadeOut();
+                        }, 5000);
+                    } else {
+                        alert('Erro ao enviar mensagem: ' + (data.message || 'Erro desconhecido'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao enviar mensagem:', error);
+                    alert('Erro ao enviar mensagem. Por favor, tente novamente ou contacte-nos diretamente.');
+                })
+                .finally(() => {
+                    // Reativar botão
+                    $submitBtn.prop('disabled', false).html(originalText);
                 });
-                
-                // Показ успішного повідомлення
-                $('#contact-success').fadeIn();
-                
-                // Очистка форми
-                this.reset();
-                
-                // Приховати повідомлення через 5 секунд
-                setTimeout(function() {
-                    $('#contact-success').fadeOut();
-                }, 5000);
-                
-                // TODO: Додати реальну відправку на сервер
-                // fetch('/api/contact', {
-                //     method: 'POST',
-                //     headers: { 'Content-Type': 'application/json' },
-                //     body: JSON.stringify({ name, email, phone, message })
-                // });
             });
         });
     </script>

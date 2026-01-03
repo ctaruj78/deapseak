@@ -3628,6 +3628,122 @@ app.delete('/api/orcamentos/:id', authenticateToken, async (req, res) => {
 // 📧 EMAIL ENDPOINTS - Brevo SMTP Integration
 // ═══════════════════════════════════════════════════════════
 
+// POST /api/contact - Публічна форма зворотного зв'язку (без авторизації)
+app.post('/api/contact', async (req, res) => {
+    try {
+        const { name, email, phone, message } = req.body;
+
+        // Валідація обов'язкових полів
+        if (!name || !email || !message) {
+            return res.status(400).json({
+                success: false,
+                message: 'Por favor, preencha todos os campos obrigatórios (nome, email, mensagem)'
+            });
+        }
+
+        // Валідація email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Formato de email inválido'
+            });
+        }
+
+        console.log('📧 =============== CONTACT FORM SUBMISSION ===============');
+        console.log('👤 Name:', name);
+        console.log('📬 Email:', email);
+        console.log('📞 Phone:', phone || 'Não fornecido');
+        console.log('💬 Message:', message.substring(0, 100) + '...');
+
+        // Створюємо transporter для Brevo SMTP
+        const nodemailer = require('nodemailer');
+        const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
+            port: parseInt(process.env.SMTP_PORT) || 587,
+            secure: false, // TLS
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS
+            }
+        });
+
+        // Email para адміністраторів FestLift
+        const adminEmail = process.env.ADMIN_EMAIL || 'info@festlift.pt';
+        
+        const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
+        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 5px 5px; }
+        .info-box { background: white; padding: 15px; margin: 10px 0; border-left: 4px solid #667eea; border-radius: 3px; }
+        .label { font-weight: bold; color: #667eea; }
+        .message-box { background: white; padding: 20px; margin-top: 20px; border-radius: 5px; border: 1px solid #ddd; }
+        .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>📨 Nova Mensagem de Contacto</h2>
+            <p>Recebida através do website LiftMaster Pro</p>
+        </div>
+        <div class="content">
+            <div class="info-box">
+                <p><span class="label">👤 Nome:</span> ${name}</p>
+            </div>
+            <div class="info-box">
+                <p><span class="label">📧 Email:</span> <a href="mailto:${email}">${email}</a></p>
+            </div>
+            <div class="info-box">
+                <p><span class="label">📞 Telefone:</span> ${phone || 'Não fornecido'}</p>
+            </div>
+            <div class="message-box">
+                <p class="label">💬 Mensagem:</p>
+                <p>${message.replace(/\n/g, '<br>')}</p>
+            </div>
+            <div class="footer">
+                <p>Este email foi enviado automaticamente através do formulário de contacto do website.</p>
+                <p><strong>FestLift Portugal</strong> | info@festlift.pt | +351 961 777 666</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+        `;
+
+        const mailOptions = {
+            from: process.env.SMTP_FROM || '"LiftMaster Pro" <info@festlift.pt>',
+            to: adminEmail,
+            replyTo: email, // Дозволяє відповісти безпосередньо клієнту
+            subject: `📨 Novo Contacto: ${name}`,
+            html: htmlContent
+        };
+
+        const result = await transporter.sendMail(mailOptions);
+        
+        console.log('✅ Contact form email sent successfully:', result.messageId);
+
+        return res.json({
+            success: true,
+            message: 'Mensagem enviada com sucesso! Entraremos em contacto em breve.'
+        });
+
+    } catch (error) {
+        console.error('❌ Contact form email error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Erro ao enviar mensagem. Por favor, tente novamente ou contacte-nos diretamente.',
+            error: error.message
+        });
+    }
+});
+
 // POST /api/send-email - Загальний endpoint для відправки email (Admin only)
 app.post('/api/send-email', authenticateToken, async (req, res) => {
     try {
