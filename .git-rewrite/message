@@ -1,7 +1,0 @@
-Refactor: Modernize dispatcher panel
-
-- Extract CSS from all 7 dispatcher HTML files
-- Create dispatcher-manager.js module
-- Create assignments-manager.js module
-- Add API client and notification utilities
-- Improve error handling and user feedback
