@@ -727,6 +727,15 @@
     // ============================================
     
     function init() {
+        // ⚠️ НЕ показувати на сторінках авторизації
+        const currentPath = window.location.pathname.toLowerCase();
+        const authPages = ['/login', '/register', '/reset-password', '/forgot-password', 'auth/login', 'auth/register'];
+        
+        if (authPages.some(page => currentPath.includes(page))) {
+            console.log('🚫 AI Widget: пропускаємо на сторінці авторизації');
+            return; // ⚠️ ВИХОДИМО - не створюємо віджет на логін сторінці
+        }
+        
         // Перевірка Font Awesome
         if (!document.querySelector('link[href*="font-awesome"]') && !document.querySelector('link[href*="fontawesome"]')) {
             const faLink = document.createElement('link');
@@ -754,6 +763,7 @@
         const modal = document.getElementById('ai-chat-modal');
         const closeBtn = document.getElementById('ai-chat-close');
 
+        // ✅ Відкривати ТІЛЬКИ по кліку на кнопку
         fabBtn.addEventListener('click', () => {
             modal.classList.toggle('visible');
             if (modal.classList.contains('visible')) {
@@ -768,6 +778,13 @@
         // Закрити при кліку поза модалкою
         document.addEventListener('click', (e) => {
             if (!modal.contains(e.target) && !fabBtn.contains(e.target)) {
+                modal.classList.remove('visible');
+            }
+        });
+
+        // Закрити на Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.classList.contains('visible')) {
                 modal.classList.remove('visible');
             }
         });
