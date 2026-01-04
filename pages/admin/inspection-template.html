@@ -230,7 +230,6 @@
             </ul>
         </li>
 
-        <!-- AI Assistant -->
         <li class="nav-item">
             <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link">
                 <i class="nav-icon fas fa-robot"></i>
@@ -1200,6 +1199,8 @@
                     printWindow.document.write('<style>body { padding: 20px; } @media print { .no-print { display: none; } }</style>');
                     printWindow.document.write('</head><body>');
                     printWindow.document.write(reportContent.innerHTML);
+    <!-- AI Universal Widget -->
+    <script src="/components/ai-widget-universal.js"></script>
                     printWindow.document.write('</body></html>');
                     printWindow.document.close();
                     
@@ -1290,5 +1291,7 @@
             inspectionManager.init();
         });
     </script>
+    <!-- AI Universal Widget -->
+    <script src="/components/ai-widget-universal.js"></script>
 </body>
 </html>

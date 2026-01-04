@@ -399,7 +399,6 @@
             </ul>
         </li>
 
-        <!-- AI Assistant -->
         <li class="nav-item">
             <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link">
                 <i class="nav-icon fas fa-robot"></i>
@@ -1219,7 +1218,6 @@
     });
     </script>
 
-    <!-- AI Assistant Include -->
     <link rel="stylesheet" href="/assets/css/ai-assistant.css">
     <div id="ai-assistant-fab" style="position:fixed;bottom:32px;right:32px;z-index:9999;">
       <button class="ai-fab-btn" title="AI Асистент" style="background:#3a86ff;color:#fff;border:none;border-radius:50%;width:56px;height:56px;box-shadow:0 2px 8px rgba(0,0,0,0.2);font-size:28px;cursor:pointer;">
@@ -1250,7 +1248,6 @@
       </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-    <script src="/assets/js/modules/ai-assistant.js"></script>
     <script>
     // Ініціалізація після завантаження всіх скриптів
     $(window).on('load', function() {
@@ -1277,7 +1274,7 @@
     fabBtn.onclick = () => { modal.style.display = 'block'; };
     document.querySelector('.ai-chat-close').onclick = () => { modal.style.display = 'none'; };
     </script>
-    <!-- AI Assistant Widget -->
-    <script src="/components/ai-widget.js"></script>
+    <!-- AI Universal Widget -->
+    <script src="/components/ai-widget-universal.js"></script>
 </body>
 </html>
