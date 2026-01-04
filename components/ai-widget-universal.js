@@ -209,9 +209,8 @@
                 border-radius: 16px;
                 box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
                 overflow: hidden;
-                animation: slideUp 0.3s ease-out;
-                display: flex;
                 flex-direction: column;
+                z-index: 99999;
             }
 
             @keyframes slideUp {
@@ -227,6 +226,7 @@
 
             .ai-chat-modal.visible {
                 display: flex;
+                animation: slideUp 0.3s ease-out;
             }
 
             .ai-chat-header {
@@ -764,20 +764,24 @@
         const closeBtn = document.getElementById('ai-chat-close');
 
         // ✅ Відкривати ТІЛЬКИ по кліку на кнопку
-        fabBtn.addEventListener('click', () => {
+        fabBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
             modal.classList.toggle('visible');
             if (modal.classList.contains('visible')) {
                 document.getElementById('ai-message-input').focus();
             }
         });
 
-        closeBtn.addEventListener('click', () => {
+        closeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
             modal.classList.remove('visible');
         });
 
         // Закрити при кліку поза модалкою
         document.addEventListener('click', (e) => {
-            if (!modal.contains(e.target) && !fabBtn.contains(e.target)) {
+            if (modal.classList.contains('visible') && 
+                !modal.contains(e.target) && 
+                !fabBtn.contains(e.target)) {
                 modal.classList.remove('visible');
             }
         });
