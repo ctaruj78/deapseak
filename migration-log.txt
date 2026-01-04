@@ -1,0 +1,11 @@
+[0;34m╔════════════════════════════════════════════╗[0m
+[0;34m║  🚀 AI Widget Migration to Universal      ║[0m
+[0;34m╚════════════════════════════════════════════╝[0m
+
+[0;34m📁 Finding HTML files in pages/...[0m
+
+[0;34mFound 88 HTML files[0m
+
+[1;33mStarting migration...[0m
+
+[0;32m✓ Added:[0m pages/admin/admin-dashboard.html (new widget)
