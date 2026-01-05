@@ -120,31 +120,6 @@
             border-radius: 50%;
             background: #007bff;
         }
-
-        .quick-actions {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            z-index: 1000;
-        }
-
-        .fab {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            font-size: 1.5rem;
-            transition: all 0.3s ease;
-        }
-
-        .fab:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 25px rgba(0,0,0,0.4);
-            color: white;
-        }
     </style>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -492,9 +467,7 @@
                             <label>Технік:</label>
                             <select class="form-control" id="filterTechnician">
                                 <option value="">Всі техніки</option>
-                                <option value="tech1">Петров І.В.</option>
-                                <option value="tech2">Сидоров П.П.</option>
-                                <option value="tech3">Козлов А.А.</option>
+                                <!-- Завантажується динамічно -->
                             </select>
                         </div>
                     </div>
@@ -579,13 +552,6 @@
             <b>Версія</b> 2.1.4
         </div>
     </footer>
-</div>
-
-<!-- Quick Action Button -->
-<div class="quick-actions">
-    <button class="fab" onclick="openNewRequestModal()" title="Створити нову заявку">
-        <i class="fas fa-plus"></i>
-    </button>
 </div>
 
 <!-- New Request Modal -->
@@ -1663,9 +1629,18 @@ class ServiceRequestManager {
     }
 
     async deleteRequest(requestId) {
-        // Знаходимо заявку за display ID
-        const request = this.requests.find(r => r.id === requestId);
+        console.log('🗑️ Видалення заявки:', requestId);
+        
+        // Знаходимо заявку - requestId може бути display ID або _id
+        const request = this.requests.find(r => 
+            r.id === requestId || 
+            r._id === requestId || 
+            (r._id && r._id.toString && r._id.toString() === requestId)
+        );
+        
         if (!request) {
+            console.error('❌ Заявку не знайдено:', requestId);
+            console.log('Доступні заявки:', this.requests.map(r => ({id: r.id, _id: r._id})));
             toastr.error('Заявку не знайдено');
             return;
         }
@@ -1676,22 +1651,27 @@ class ServiceRequestManager {
             // Використовуємо реальний MongoDB _id для API
             const mongoId = request._id;
             
-            if (mongoId) {
-                // Видаляємо через API якщо є _id
-                const response = await AuthManager.fetchWithAuth(`/api/requests/${mongoId}`, {
-                    method: 'DELETE'
-                });
-                
-                if (!response || !response.ok) {
-                    throw new Error('Помилка видалення через API');
-                }
+            if (!mongoId) {
+                throw new Error('Відсутній MongoDB ID заявки');
             }
             
-            // Видаляємо з локального масиву
-            this.requests = this.requests.filter(r => {
-                const id = (r._id && r._id.toString) ? r._id.toString() : (r._id || r.id);
-                return id !== requestId;
+            console.log('🔄 Відправка запиту на видалення, MongoDB ID:', mongoId);
+            
+            // Видаляємо через API
+            const response = await AuthManager.fetchWithAuth(`/api/requests/${mongoId}`, {
+                method: 'DELETE'
             });
+            
+            if (!response || !response.ok) {
+                const error = await response.json().catch(() => ({}));
+                throw new Error(error.message || 'Помилка видалення через API');
+            }
+            
+            const result = await response.json();
+            console.log('✅ Відповідь API:', result);
+            
+            // Видаляємо з локального масиву
+            this.requests = this.requests.filter(r => r._id !== mongoId);
             this.renderRequests();
             this.updateStatistics();
             
@@ -1703,14 +1683,53 @@ class ServiceRequestManager {
     }
 
     applyFilters() {
-        // Логіка фільтрації
+        console.log('🔍 Застосування фільтрів...');
+        
         const type = $('#filterType').val();
         const status = $('#filterStatus').val();
         const priority = $('#filterPriority').val();
         const technician = $('#filterTechnician').val();
-
-        // Тут можна додати логіку фільтрації DataTable
-        toastr.info('Фільтри застосовано');
+        
+        if (!window.serviceManager || !window.serviceManager.requests) {
+            console.warn('⚠️ Дані заявок ще не завантажені');
+            return;
+        }
+        
+        const allRequests = window.serviceManager.requests;
+        
+        // Якщо всі фільтри порожні - показуємо все
+        if (!type && !status && !priority && !technician) {
+            console.log('✅ Фільтри очищені - показуємо всі заявки');
+            window.serviceManager.renderRequests();
+            return;
+        }
+        
+        // Фільтруємо заявки
+        const filtered = allRequests.filter(req => {
+            let matches = true;
+            
+            if (type && req.type !== type) matches = false;
+            if (status && req.status !== status) matches = false;
+            if (priority && req.priority !== priority) matches = false;
+            if (technician) {
+                // Фільтр по техніку - перевіряємо technicianId або technician
+                const reqTechId = req.technicianId || req.technician;
+                if (reqTechId !== technician) matches = false;
+            }
+            
+            return matches;
+        });
+        
+        console.log(`✅ Знайдено заявок: ${filtered.length} з ${allRequests.length}`);
+        console.log('🔍 Фільтри:', { type, status, priority, technician });
+        
+        // Тимчасово замінюємо requests на відфільтровані
+        const originalRequests = window.serviceManager.requests;
+        window.serviceManager.requests = filtered;
+        window.serviceManager.renderRequests();
+        window.serviceManager.requests = originalRequests;
+        
+        toastr.info(`Знайдено: ${filtered.length} заявок`);
     }
 
     clearFilters() {
@@ -2429,6 +2448,30 @@ async function refreshRequests() {
     }
 }
 
+// Завантаження техніків у фільтр
+async function loadTechniciansFilter() {
+    try {
+        const response = await AuthManager.fetchWithAuth('/api/users');
+        if (response && response.ok) {
+            const result = await response.json();
+            const users = result.success && result.data ? result.data : [];
+            const technicians = users.filter(u => u.role === 'tech' || u.role === 'technician');
+            
+            const select = $('#filterTechnician');
+            select.find('option:not(:first)').remove(); // Видаляємо всі крім "Всі техніки"
+            
+            technicians.forEach(tech => {
+                const name = `${tech.firstName || ''} ${tech.lastName || ''}`.trim() || tech.username;
+                select.append(`<option value="${tech._id}">${name}</option>`);
+            });
+            
+            console.log(`✅ Завантажено техніків у фільтр: ${technicians.length}`);
+        }
+    } catch (error) {
+        console.error('❌ Помилка завантаження техніків:', error);
+    }
+}
+
 // Ініціалізація
 $(document).ready(function() {
     console.log('🚀 Запуск системи заявок на обслуговування...');
@@ -2439,6 +2482,8 @@ $(document).ready(function() {
             console.error('❌ AuthManager не завантажено після затримки!');
         } else {
             console.log('✅ AuthManager завантажено');
+            // Завантажуємо техніків у фільтр
+            loadTechniciansFilter();
         }
     }, 100);
     
