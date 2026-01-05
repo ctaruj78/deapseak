@@ -127,7 +127,7 @@ class AIAssistant {
             const aiButton = document.createElement('button');
             aiButton.className = 'ai-assistant-btn';
             aiButton.innerHTML = `
-                <i class="fas fa-robot"></i>
+                <i class="fas fa-magic"></i>
                 <span class="ai-pulse"></span>
             `;
             aiButton.title = 'AI Асистент (Ctrl+Space)';
@@ -174,7 +174,7 @@ class AIAssistant {
             <div class="ai-chat-container">
                 <div class="ai-chat-header">
                     <div class="ai-chat-title">
-                        <i class="fas fa-robot"></i>
+                        <i class="fas fa-magic"></i>
                         <h4>AI Асистент</h4>
                         <span class="ai-status-indicator"></span>
                     </div>

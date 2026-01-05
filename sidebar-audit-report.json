@@ -1,0 +1,393 @@
+{
+  "timestamp": "2026-01-04T13:10:01.239Z",
+  "summary": {
+    "total": 51,
+    "withAPI": 12,
+    "withDemo": 2,
+    "noData": 34,
+    "notExists": 3
+  },
+  "byRole": {
+    "admin": [
+      {
+        "page": "admin-dashboard.html",
+        "status": "⚠️  Немає даних",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": null
+      },
+      {
+        "page": "qr-management.html",
+        "status": "⚠️  Немає даних",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": null
+      },
+      {
+        "page": "qr-analytics.html",
+        "status": "⚠️  Немає даних",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": null
+      },
+      {
+        "page": "qr-history.html",
+        "status": "⚠️  Немає даних",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": null
+      },
+      {
+        "page": "lifts.html",
+        "status": "✅ API",
+        "exists": true,
+        "hasRealAPI": true,
+        "hasDemoData": null
+      },
+      {
+        "page": "requests.html",
+        "status": "✅ API",
+        "exists": true,
+        "hasRealAPI": true,
+        "hasDemoData": null
+      },
+      {
+        "page": "maps.html",
+        "status": "✅ API",
+        "exists": true,
+        "hasRealAPI": true,
+        "hasDemoData": null
+      },
+      {
+        "page": "users.html",
+        "status": "✅ API",
+        "exists": true,
+        "hasRealAPI": true,
+        "hasDemoData": null
+      },
+      {
+        "page": "invoice-template.html",
+        "status": "✅ API",
+        "exists": true,
+        "hasRealAPI": true,
+        "hasDemoData": null
+      },
+      {
+        "page": "orcamentos-list.html",
+        "status": "⚠️  Немає даних",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": null
+      },
+      {
+        "page": "reports.html",
+        "status": "⚠️  Немає даних",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": null
+      },
+      {
+        "page": "email-template.html",
+        "status": "✅ API",
+        "exists": true,
+        "hasRealAPI": true,
+        "hasDemoData": null
+      },
+      {
+        "page": "unified-analytics.html",
+        "status": "⚠️  Немає даних",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": null
+      },
+      {
+        "page": "predictive-maintenance.html",
+        "status": "❌ DEMO",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": [
+          "const sampleAlerts = [\n            {\n                id: 1"
+        ]
+      },
+      {
+        "page": "ai-assistant-full.html",
+        "status": "⚠️  Немає даних",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": null
+      },
+      {
+        "page": "notifications.html",
+        "status": "❌ DEMO",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": [
+          "const notifications = [\n            {\n                id: 1"
+        ]
+      },
+      {
+        "page": "settings.html",
+        "status": "⚠️  Немає даних",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": null
+      }
+    ],
+    "client": [
+      {
+        "page": "dashboard.html",
+        "status": "✅ API",
+        "exists": true,
+        "hasRealAPI": true,
+        "hasDemoData": null
+      },
+      {
+        "page": "my-lifts.html",
+        "status": "⚠️  Немає даних",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": null
+      },
+      {
+        "page": "requests.html",
+        "status": "✅ API",
+        "exists": true,
+        "hasRealAPI": true,
+        "hasDemoData": null
+      },
+      {
+        "page": "history.html",
+        "status": "⚠️  Немає даних",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": null
+      },
+      {
+        "page": "invoices.html",
+        "status": "⚠️  Немає даних",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": null
+      },
+      {
+        "page": "documentation.html",
+        "status": "✅ API",
+        "exists": true,
+        "hasRealAPI": true,
+        "hasDemoData": null
+      },
+      {
+        "page": "ai-assistant.html",
+        "status": "NOT_EXISTS",
+        "exists": false
+      },
+      {
+        "page": "notifications.html",
+        "status": "⚠️  Немає даних",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": null
+      },
+      {
+        "page": "support.html",
+        "status": "⚠️  Немає даних",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": null
+      },
+      {
+        "page": "profile.html",
+        "status": "⚠️  Немає даних",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": null
+      }
+    ],
+    "tech": [
+      {
+        "page": "dashboard.html",
+        "status": "⚠️  Немає даних",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": null
+      },
+      {
+        "page": "tasks.html",
+        "status": "✅ API",
+        "exists": true,
+        "hasRealAPI": true,
+        "hasDemoData": null
+      },
+      {
+        "page": "schedule.html",
+        "status": "⚠️  Немає даних",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": null
+      },
+      {
+        "page": "manutencao.html",
+        "status": "✅ API",
+        "exists": true,
+        "hasRealAPI": true,
+        "hasDemoData": null
+      },
+      {
+        "page": "inspections.html",
+        "status": "⚠️  Немає даних",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": null
+      },
+      {
+        "page": "reports.html",
+        "status": "⚠️  Немає даних",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": null
+      },
+      {
+        "page": "qr-scanner.html",
+        "status": "⚠️  Немає даних",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": null
+      },
+      {
+        "page": "ar-helper.html",
+        "status": "⚠️  Немає даних",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": null
+      },
+      {
+        "page": "tools.html",
+        "status": "⚠️  Немає даних",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": null
+      },
+      {
+        "page": "knowledge-base.html",
+        "status": "⚠️  Немає даних",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": null
+      },
+      {
+        "page": "manuals.html",
+        "status": "⚠️  Немає даних",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": null
+      },
+      {
+        "page": "checklists.html",
+        "status": "⚠️  Немає даних",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": null
+      },
+      {
+        "page": "videos.html",
+        "status": "⚠️  Немає даних",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": null
+      },
+      {
+        "page": "ai-assistant.html",
+        "status": "NOT_EXISTS",
+        "exists": false
+      },
+      {
+        "page": "support.html",
+        "status": "⚠️  Немає даних",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": null
+      }
+    ],
+    "dispatcher": [
+      {
+        "page": "dashboard.html",
+        "status": "⚠️  Немає даних",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": null
+      },
+      {
+        "page": "monitoring.html",
+        "status": "⚠️  Немає даних",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": null
+      },
+      {
+        "page": "assignments.html",
+        "status": "✅ API",
+        "exists": true,
+        "hasRealAPI": true,
+        "hasDemoData": null
+      },
+      {
+        "page": "technicians.html",
+        "status": "⚠️  Немає даних",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": null
+      },
+      {
+        "page": "clients.html",
+        "status": "⚠️  Немає даних",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": null
+      },
+      {
+        "page": "qr-management.html",
+        "status": "⚠️  Немає даних",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": null
+      },
+      {
+        "page": "reports.html",
+        "status": "⚠️  Немає даних",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": null
+      },
+      {
+        "page": "ai-assistant.html",
+        "status": "NOT_EXISTS",
+        "exists": false
+      },
+      {
+        "page": "settings.html",
+        "status": "⚠️  Немає даних",
+        "exists": true,
+        "hasRealAPI": false,
+        "hasDemoData": null
+      }
+    ]
+  },
+  "priorities": {
+    "missing": [
+      {
+        "role": "client",
+        "page": "ai-assistant.html"
+      },
+      {
+        "role": "tech",
+        "page": "ai-assistant.html"
+      },
+      {
+        "role": "dispatcher",
+        "page": "ai-assistant.html"
+      }
+    ],
+    "demo": [],
+    "important": []
+  }
+}

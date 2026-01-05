@@ -17,6 +17,10 @@ const multer = require('multer');
 const fs = require('fs').promises;
 const https = require('https');
 
+// 🤖 Google Gemini AI
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+
 // 📧 Email Service (Brevo SMTP)
 const emailService = require('./backend/services/emailService');
 
@@ -523,6 +527,34 @@ app.get('/api/statistics', authenticateToken, async (req, res) => {
     }
 });
 
+// 🆕 PUBLIC dashboard stats (без авторизації для швидкого перегляду)
+app.get('/api/dashboard/public', async (req, res) => {
+    try {
+        if (!db) {
+            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+        }
+        
+        const [usersCount, liftsCount, requestsCount] = await Promise.all([
+            db.collection('users').countDocuments(),
+            db.collection('lifts').countDocuments(),
+            db.collection('requests').countDocuments({ status: { $ne: 'completed' } })
+        ]);
+        
+        res.json({
+            success: true,
+            data: {
+                totalUsers: usersCount,
+                totalLifts: liftsCount,
+                activeRequests: requestsCount,
+                totalRevenue: 0
+            }
+        });
+    } catch (error) {
+        console.error('❌ Помилка public dashboard:', error);
+        res.status(500).json({ success: false, message: 'Помилка сервера' });
+    }
+});
+
 // GET dashboard data
 app.get('/api/dashboard', authenticateToken, async (req, res) => {
     try {
@@ -533,9 +565,10 @@ app.get('/api/dashboard', authenticateToken, async (req, res) => {
         const role = req.user.role;
         
         // Базова статистика для всіх
-        const [liftsCount, requestsCount] = await Promise.all([
+        const [liftsCount, requestsCount, usersCount] = await Promise.all([
             db.collection('lifts').countDocuments(),
-            db.collection('requests').countDocuments({ status: { $ne: 'completed' } })
+            db.collection('requests').countDocuments({ status: { $ne: 'completed' } }),
+            db.collection('users').countDocuments()
         ]);
         
         // Останні заявки
@@ -554,6 +587,7 @@ app.get('/api/dashboard', authenticateToken, async (req, res) => {
         res.json({
             success: true,
             data: {
+                totalUsers: usersCount,
                 totalLifts: liftsCount,
                 activeRequests: requestsCount,
                 recentRequests,
@@ -877,8 +911,8 @@ app.get('/api/lifts', authenticateToken, async (req, res) => {
         // 🔐 ФІЛЬТРАЦІЯ ПО РОЛЯХ
         if (req.user.role === 'client') {
             // Клієнт бачить тільки свої ліфти (де він власник)
-            query.clientId = req.user.userId;
-            console.log(`👤 Клієнт ${req.user.username} запитує свої ліфти (clientId: ${req.user.userId})`);
+            query.client = req.user.userId;
+            console.log(`👤 Клієнт ${req.user.username} запитує свої ліфти (client: ${req.user.userId})`);
         } else if (req.user.role === 'technician') {
             // Технік бачить ліфти з призначених йому запитів
             const requests = await db.collection('requests')
@@ -1724,11 +1758,11 @@ app.post('/api/requests/:id/comment', authenticateToken, async (req, res) => {
     try {
         const { ObjectId } = require('mongodb');
         const requestId = new ObjectId(req.params.id);
-        const { comment } = req.body;
+        const commentText = req.body.comment || req.body.text;
         
         console.log('💬 Додавання коментаря до заявки:', req.params.id);
         
-        if (!comment || !comment.trim()) {
+        if (!commentText || !commentText.trim()) {
             return res.status(400).json({
                 success: false,
                 message: 'Коментар не може бути порожнім'
@@ -1738,7 +1772,7 @@ app.post('/api/requests/:id/comment', authenticateToken, async (req, res) => {
         // Створюємо об'єкт коментаря
         const newComment = {
             id: new ObjectId().toString(),
-            text: comment.trim(),
+            text: commentText.trim(),
             author: {
                 id: req.user.userId,
                 username: req.user.username,
@@ -1843,6 +1877,99 @@ app.post('/api/requests/:id/complete', authenticateToken, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Помилка завершення заявки'
+        });
+    }
+});
+
+// POST /api/requests/:id/assign - призначити техніка до заявки
+app.post('/api/requests/:id/assign', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const requestId = new ObjectId(req.params.id);
+        const { technicianId, instructions, deadline } = req.body;
+        
+        console.log('👨‍🔧 Призначення техніка:', technicianId, 'до заявки:', req.params.id);
+        
+        // Перевірка прав (тільки admin або dispatcher)
+        if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
+            return res.status(403).json({
+                success: false,
+                message: 'У вас немає прав для призначення техніків'
+            });
+        }
+        
+        if (!technicianId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Не вказано техніка'
+            });
+        }
+        
+        // Перевірка чи технік існує
+        const technician = await db.collection('users').findOne({
+            _id: new ObjectId(technicianId)
+        });
+        
+        if (!technician) {
+            return res.status(404).json({
+                success: false,
+                message: 'Техніка не знайдено'
+            });
+        }
+        
+        if (technician.role !== 'tech' && technician.role !== 'technician') {
+            return res.status(400).json({
+                success: false,
+                message: 'Вибраний користувач не є техніком'
+            });
+        }
+        
+        const updateData = {
+            technician: technicianId,
+            technicianName: `${technician.firstName} ${technician.lastName}`,
+            status: 'assigned',
+            assignedAt: new Date().toISOString(),
+            assignedBy: {
+                id: req.user.userId,
+                username: req.user.username,
+                role: req.user.role
+            },
+            updatedAt: new Date().toISOString(),
+            updatedBy: req.user.username
+        };
+        
+        if (instructions) {
+            updateData.instructions = instructions.trim();
+        }
+        
+        if (deadline) {
+            updateData.deadline = new Date(deadline).toISOString();
+        }
+        
+        const result = await db.collection('requests').updateOne(
+            { _id: requestId },
+            { $set: updateData }
+        );
+        
+        if (result.matchedCount === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Заявку не знайдено'
+            });
+        }
+        
+        console.log('✅ Техніка призначено успішно');
+        
+        res.json({
+            success: true,
+            message: 'Техніка призначено успішно',
+            data: updateData
+        });
+    } catch (error) {
+        console.error('❌ Помилка призначення техніка:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка призначення техніка'
         });
     }
 });
@@ -2447,6 +2574,167 @@ function getDeadline(severity) {
     return deadlines[severity] || '30 dias';
 }
 
+// ═══════════════════════════════════════════════════════════
+// 🤖 AI CHAT WITH GOOGLE GEMINI
+// ═══════════════════════════════════════════════════════════
+
+// Helper function to get role-specific system prompt
+function getSystemPromptForRole(role, username) {
+    const basePrompt = `You are DeapSeak AI Assistant - an intelligent consultant for a Portuguese lift (elevator) management system. 
+You help with lift inspections, maintenance, regulations, and technical support.
+
+IMPORTANT: Respond ONLY in Portuguese (pt-PT). Do not use Ukrainian or any other language.
+
+Current user: ${username}
+Role: ${role}
+
+Available data:
+- 7 Portuguese lift regulations with 34+ articles (DL 320/2002, Regulamento 513/70, etc.)
+- Inspection protocols with C1/C2/C3 violation classifications
+- Technical documentation and safety standards
+- General knowledge from internet (when needed)
+
+🚨 CRITICAL SECURITY RULES - YOU MUST FOLLOW:
+
+1. **READ-ONLY ACCESS**: You are a CONSULTANT, not an OPERATOR
+   - You can EXPLAIN, GUIDE, RECOMMEND
+   - You CANNOT modify, delete, or create data in the system
+   - You CANNOT execute commands or change system logic
+   - You CANNOT access database directly
+
+2. **DATA PRIVACY**: Strict privacy boundaries
+   - Users can ONLY see their own data
+   - NEVER reveal information about other clients' lifts
+   - NEVER share personal data of other users
+   - If asked about other clients: "Desculpe, não tenho acesso a dados de outros clientes por motivos de privacidade"
+
+3. **RESPONSE GUIDELINES**:
+   - Provide comprehensive, helpful answers IN PORTUGUESE ONLY
+   - Use internet knowledge for general topics (safety, regulations, technical concepts)
+   - For specific data (lift counts, user names): Direct user to their dashboard
+   - For Portuguese regulations: Provide accurate citations with article numbers
+   - Always be professional, clear, and helpful
+
+4. **WHAT YOU CAN DO**:
+   ✅ Explain Portuguese lift regulations (Artigos, Decretos-Lei)
+   ✅ Provide technical guidance (motors, cables, safety systems)
+   ✅ Interpret inspection reports (C1/C2/C3 violations)
+   ✅ Suggest maintenance procedures
+   ✅ Explain compliance deadlines
+   ✅ Search internet for technical information
+   ✅ Answer questions about lift safety and operations
+
+5. **WHAT YOU CANNOT DO**:
+   ❌ Modify any data in system
+   ❌ Show data from other clients
+   ❌ Execute system commands
+   ❌ Override access permissions
+   ❌ Create/delete users, lifts, requests
+   ❌ Change system configuration`;
+
+    const roleSpecific = {
+        admin: `\n\n👨‍💼 ADMINISTRATOR CONTEXT:
+You assist the system administrator with:
+- System overview and analytics interpretation
+- Regulatory compliance guidance
+- User management best practices
+- Technical documentation standards
+
+Remember: Even as admin assistant, you cannot modify data. Guide them to use the proper admin interface.
+Respond in Portuguese only.`,
+        
+        dispatcher: `\n\n📞 DISPATCHER CONTEXT:
+You assist the dispatcher with:
+- Technician coordination strategies
+- Priority management guidance
+- Inspection scheduling best practices
+- Emergency response protocols
+
+Remember: You provide guidance. They use the system interface for actual assignments.
+Respond in Portuguese only.`,
+        
+        tech: `\n\n🔧 TECHNICIAN CONTEXT:
+You assist technicians with:
+- Repair procedures and troubleshooting
+- Safety protocols (NR-12, PT regulations)
+- Technical specifications (motors, cables, brakes)
+- Diagnostic methods for common issues
+- Part compatibility and sourcing
+
+You can search internet for:
+- Manufacturer manuals
+- Technical diagrams
+- Safety bulletins
+- Industry best practices
+
+Respond in Portuguese only.`,
+        
+        client: `\n\n👤 CLIENT CONTEXT:
+You assist building owners/managers with:
+- Understanding inspection reports
+- Compliance requirements and legal deadlines
+- Maintenance planning and budgeting
+- Safety regulations explanation
+- Contract obligations
+
+IMPORTANT: You can ONLY discuss their own lifts. Never reveal data about other clients' properties.
+Respond in Portuguese only.`
+    };
+
+    return basePrompt + (roleSpecific[role] || roleSpecific.client);
+}
+
+// Helper function to call Gemini AI
+async function callGeminiAI(message, role, username, regulationsContext = null) {
+    try {
+        if (!process.env.GEMINI_API_KEY) {
+            throw new Error('GEMINI_API_KEY not configured');
+        }
+
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        
+        const systemPrompt = getSystemPromptForRole(role, username);
+        let contextualPrompt = systemPrompt + '\n\n';
+        
+        // Add regulations context if found
+        if (regulationsContext) {
+            contextualPrompt += `RELEVANT PORTUGUESE REGULATION:\n` +
+                               `Article: ${regulationsContext.article}\n` +
+                               `Regulation: ${regulationsContext.regulation}\n` +
+                               `Requirement: ${regulationsContext.requirement}\n` +
+                               `Description: ${regulationsContext.description}\n` +
+                               `Explanation: ${regulationsContext.explanation}\n`;
+            
+            if (regulationsContext.violations && regulationsContext.violations.length > 0) {
+                contextualPrompt += `Common Violations: ${regulationsContext.violations.join(', ')}\n`;
+            }
+            
+            contextualPrompt += `\nPlease explain this regulation in context of the user's question.\n\n`;
+        }
+        
+        contextualPrompt += `USER QUESTION: ${message}`;
+        
+        const result = await model.generateContent(contextualPrompt);
+        const response = await result.response;
+        const text = response.text();
+        
+        console.log('✅ Gemini AI response generated:', text.substring(0, 100) + '...');
+        return text;
+        
+    } catch (error) {
+        console.error('❌ Gemini AI error:', error.message);
+        
+        // Graceful fallback
+        if (error.message.includes('API key')) {
+            return '⚠️ Sistema de IA temporariamente indisponível. / Система ШІ тимчасово недоступна.\n\n' +
+                   'Entre em contato com o administrador. / Зверніться до адміністратора.';
+        }
+        
+        return '❌ Desculpe, ocorreu um erro ao processar sua pergunta. / Вибачте, сталася помилка при обробці вашого запитання.\n\n' +
+               'Tente novamente ou reformule sua pergunta. / Спробуйте ще раз або переформулюйте запитання.';
+    }
+}
+
 // AI Chat endpoint
 app.post('/api/ai/chat', authenticateToken, async (req, res) => {
     try {
@@ -2459,7 +2747,10 @@ app.post('/api/ai/chat', authenticateToken, async (req, res) => {
             });
         }
 
-        console.log('🤖 AI Chat request:', message.substring(0, 100), 'from', req.user.email || req.user.username);
+        const username = req.user.email || req.user.username;
+        const role = req.user.role || 'client';
+        
+        console.log(`🤖 AI Chat request from ${username} (${role}):`, message.substring(0, 100));
         
         // Перевірка чи це звіт інспекції
         if (context && context.reportText) {
@@ -2477,15 +2768,13 @@ app.post('/api/ai/chat', authenticateToken, async (req, res) => {
             });
         }
 
-        // Simple AI response based on keywords (PT + UA)
         let response = '';
         const lowerMessage = message.toLowerCase();
         
-        console.log(`💬 Chat received: "${message}" | lowercase: "${lowerMessage}"`);
-        
-        // SEARCH IN REGULATIONS DATABASE FIRST
-        // Check if question contains Portuguese technical terms from regulations
+        // STEP 1: SEARCH IN REGULATIONS DATABASE FIRST
+        console.log('🔍 Searching regulations database...');
         let foundInRegulations = null;
+        
         for (const reg of portugueseRegulations.regulations) {
             if (reg.inspection_points) {
                 for (const point of reg.inspection_points) {
@@ -2523,26 +2812,43 @@ app.post('/api/ai/chat', authenticateToken, async (req, res) => {
             if (foundInRegulations) break;
         }
         
-        // If found in regulations database, use that
+        // STEP 2: USE GEMINI AI WITH REGULATIONS CONTEXT
         if (foundInRegulations) {
-            response = `📖 ${foundInRegulations.article} - Decreto ${foundInRegulations.regulation}\n` +
-                      `${foundInRegulations.title}\n\n` +
-                      `**${foundInRegulations.requirement}**\n\n` +
-                      `${foundInRegulations.description}\n\n` +
-                      `💡 Explicação / Пояснення:\n${foundInRegulations.explanation}\n\n`;
-            
-            if (foundInRegulations.violations.length > 0) {
-                response += `⚠️ Violações comuns / Típові порушення:\n` +
-                           foundInRegulations.violations.map(v => `🔴 ${v}`).join('\n') + '\n\n';
-            }
-            
-            // Add official source link
-            if (foundInRegulations.officialSource) {
-                response += `📜 **Офіційний текст закону / Texto oficial:**\n` +
-                           `${foundInRegulations.officialSource}`;
-            }
+            console.log(`📖 Found regulation: ${foundInRegulations.article}`);
+            // Ask Gemini to explain the regulation in context
+            response = await callGeminiAI(message, role, username, foundInRegulations);
+        } else {
+            console.log('💡 No specific regulation found, using general AI');
+            // General AI response without specific regulation
+            response = await callGeminiAI(message, role, username);
         }
-        // Otherwise use manual responses below
+
+        // STEP 3: RETURN AI RESPONSE
+        res.json({
+            success: true,
+            data: {
+                response,
+                timestamp: new Date().toISOString(),
+                powered_by: 'Google Gemini 1.5 Flash',
+                role: role
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ AI chat error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erro ao processar mensagem'
+        });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════
+// 🔧 OLD KEYWORD-BASED RESPONSES ARCHIVED BELOW
+// ═══════════════════════════════════════════════════════════
+// This code was replaced with Gemini AI integration above
+// Kept as reference for regulation keywords and topics
+/*
         // CABOS E POLIAS / ТРОСИ ТА ШКІВИ
         else if (lowerMessage.includes('cabo') || lowerMessage.includes('трос') || 
             lowerMessage.includes('polia') || lowerMessage.includes('шків') ||
@@ -3149,23 +3455,8 @@ app.post('/api/ai/chat', authenticateToken, async (req, res) => {
                       `📜 Certificados, documentos / Сертифікати, документи\n` +
                       `💰 Custos e prazos / Вартість та терміни`;
         }
-
-        res.json({
-            success: true,
-            data: {
-                response,
-                timestamp: new Date().toISOString()
-            }
-        });
-
-    } catch (error) {
-        console.error('❌ AI chat error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erro ao processar mensagem'
-        });
-    }
-});
+*/
+// End of archived keyword-based responses
 
 // AI Consult endpoint (alias for chat for legal questions)
 app.post('/api/ai/consult', authenticateToken, async (req, res) => {
@@ -4687,8 +4978,6 @@ app.post('/api/orcamentos/:id/enviar', authenticateToken, async (req, res) => {
                 message: 'Orçamento enviado com sucesso',
                 data: orcamento
             });
-        } else {
-            throw new Error(emailResult.error);
         }
     } catch (error) {
         console.error('❌ Erro ao enviar orçamento:', error);
@@ -4696,6 +4985,76 @@ app.post('/api/orcamentos/:id/enviar', authenticateToken, async (req, res) => {
             success: false,
             message: 'Erro ao enviar orçamento',
             error: error.message
+        });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════
+// 🔄 REGULATIONS AUTO-UPDATE API
+// ═══════════════════════════════════════════════════════════
+
+const RegulationsUpdater = require('./services/regulations-updater');
+
+// Перевірити оновлення регламентів (ТІЛЬКИ для адмінів)
+app.post('/api/regulations/check-updates', authenticateToken, async (req, res) => {
+    try {
+        // Перевірка ролі адміна
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Доступ дозволено тільки адміністраторам'
+            });
+        }
+
+        console.log(`🔍 Admin ${req.user.email} запустив перевірку оновлень регламентів...`);
+
+        const updater = new RegulationsUpdater();
+        const report = await updater.checkForUpdates();
+
+        res.json({
+            success: true,
+            message: 'Перевірка завершена',
+            data: report
+        });
+
+    } catch (error) {
+        console.error('❌ Помилка перевірки регламентів:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка при перевірці оновлень',
+            error: error.message
+        });
+    }
+});
+
+// Отримати статус останньої перевірки
+app.get('/api/regulations/last-check', authenticateToken, async (req, res) => {
+    try {
+        const fs = require('fs').promises;
+        const path = require('path');
+        
+        const reportPath = path.join(__dirname, 'logs/regulations-check-report.json');
+        
+        try {
+            const data = await fs.readFile(reportPath, 'utf-8');
+            const report = JSON.parse(data);
+            
+            res.json({
+                success: true,
+                data: report
+            });
+        } catch (err) {
+            res.json({
+                success: true,
+                data: null,
+                message: 'Перевірка ще не виконувалась'
+            });
+        }
+    } catch (error) {
+        console.error('❌ Помилка читання звіту:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка при отриманні звіту'
         });
     }
 });

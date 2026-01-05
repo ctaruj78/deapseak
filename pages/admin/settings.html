@@ -191,7 +191,7 @@
 
         <li class="nav-item">
             <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link">
-                <i class="nav-icon fas fa-robot"></i>
+                <i class="nav-icon fas fa-magic"></i>
                 <p>AI Асистент</p>
             </a>
         </li>
@@ -327,7 +327,7 @@ function logout() {
 }
 
 // Функція ініціалізації - викликається після завантаження всіх скриптів
-function initializeSettings() {
+async function initializeSettings() {
     // Показуємо індикатор завантаження
     document.getElementById('settings-content').innerHTML = 
         '<div class="text-center p-5"><i class="fas fa-spinner fa-spin fa-3x text-primary"></i><p class="mt-3">Завантаження налаштувань...</p></div>';
@@ -345,6 +345,22 @@ function initializeSettings() {
         if (!AuthManager.isAuthenticated()) {
             window.location.replace('/pages/auth/login.html');
             return;
+        }
+
+        // 🔥 ПІДКЛЮЧЕНО ДО РЕАЛЬНОГО API /api/settings
+        const token = localStorage.getItem('token');
+        
+        // Завантаження налаштувань з API
+        const settingsResponse = await fetch('/api/settings', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        let serverSettings = {};
+        if (settingsResponse.ok) {
+            serverSettings = await settingsResponse.json();
+            console.log('✅ Settings loaded from API:', serverSettings);
+        } else {
+            console.warn('⚠️ API /api/settings not available, using defaults');
         }
         
         // Check i18n
@@ -376,11 +392,16 @@ function initializeSettings() {
             SettingsPage: typeof SettingsPage
         });
         
-        // Initialize
+        // Initialize with server settings
         console.log('🔧 Initializing components...');
         
         settingsManager.init().then(function() {
             console.log('✅ settingsManager ready');
+            
+            // Merge server settings with local
+            if (serverSettings && Object.keys(serverSettings).length > 0) {
+                Object.assign(settingsManager.settings, serverSettings);
+            }
             
             var settingsPage = new SettingsPage();
             return settingsPage.init();

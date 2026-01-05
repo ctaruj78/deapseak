@@ -282,7 +282,7 @@
 
         <li class="nav-item">
             <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link">
-                <i class="nav-icon fas fa-robot"></i>
+                <i class="nav-icon fas fa-magic"></i>
                 <p>AI Асистент</p>
             </a>
         </li>
@@ -502,70 +502,64 @@
     <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js"></script>
 
     <script>
-        // Demo notifications data
-        const notifications = [
-            {
-                id: 1,
-                title: "Системне оновлення завершено",
-                message: "Автоматичне оновлення системи LiftMaster Pro успішно завершено. Всі компоненти працюють нормально.",
-                type: "system",
-                status: "unread",
-                priority: "info",
-                timestamp: "2024-01-15T10:30:00Z",
-                icon: "fas fa-cogs"
-            },
-            {
-                id: 2,
-                title: "Новий користувач зареєструвався",
-                message: "Користувач 'ivan.petrenko@example.com' успішно зареєструвався в системі.",
-                type: "user",
-                status: "unread",
-                priority: "success",
-                timestamp: "2024-01-15T09:15:00Z",
-                icon: "fas fa-user-plus"
-            },
-            {
-                id: 3,
-                title: "Помилка безпеки виявлена",
-                message: "Виявлено спробу несанкціонованого доступу до системи. IP адреса: 192.168.1.100",
-                type: "security",
-                status: "unread",
-                priority: "error",
-                timestamp: "2024-01-15T08:45:00Z",
-                icon: "fas fa-shield-alt"
-            },
-            {
-                id: 4,
-                title: "Заплановане обслуговування",
-                message: "Система буде недоступна для планового обслуговування з 02:00 до 04:00 ночі.",
-                type: "maintenance",
-                status: "read",
-                priority: "warning",
-                timestamp: "2024-01-14T14:20:00Z",
-                icon: "fas fa-tools"
-            },
-            {
-                id: 5,
-                title: "Звіт про продуктивність готовий",
-                message: "Місячний звіт про продуктивність системи доступний для перегляду.",
-                type: "system",
-                status: "read",
-                priority: "info",
-                timestamp: "2024-01-14T12:00:00Z",
-                icon: "fas fa-chart-line"
-            }
-        ];
-
+        // 🔥 ПІДКЛЮЧЕНО ДО РЕАЛЬНОГО API /api/notifications
+        let notifications = [];
         let currentPage = 1;
         const itemsPerPage = 10;
-        let filteredNotifications = [...notifications];
+        let filteredNotifications = [];
 
         // Initialize page
-        $(document).ready(function() {
+        $(document).ready(async function() {
+            await loadNotificationsFromAPI();
             loadNotifications();
             updateStats();
             setupEventListeners();
         });
+
+        // 🆕 Завантаження з API
+        async function loadNotificationsFromAPI() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    window.location.href = '/pages/auth/login.html';
+                    return;
+                }
+
+                const response = await fetch('/api/notifications', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                notifications = await response.json();
+                filteredNotifications = [...notifications];
+                
+                console.log('✅ Notifications loaded from API:', notifications.length);
+            } catch (error) {
+                console.error('❌ Error loading notifications:', error);
+                
+                // Fallback to empty array if API fails
+                notifications = [];
+                filteredNotifications = [];
+                
+                // Show error notification
+                $('#notificationsList').html(`
+                    <div class="alert alert-warning m-3">
+                        <h5><i class="fas fa-exclamation-triangle"></i> Не вдалося завантажити сповіщення</h5>
+                        <p>Помилка підключення до API: ${error.message}</p>
+                        <button class="btn btn-primary btn-sm" onclick="location.reload()">
+                            <i class="fas fa-sync"></i> Спробувати знову
+                        </button>
+                    </div>
+                `);
+            }
+        }
 
         function setupEventListeners() {
             $('#markAllRead').click(markAllAsRead);

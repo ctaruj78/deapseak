@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Юридичний консультант - DeapSeaK AI</title>
+    <link rel="stylesheet" href="../plugins/fontawesome/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .legal-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f7fafc;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: #4a5568;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab:hover {
+            background: #edf2f7;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            background: white;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Консультант */
+        .consultation-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .question-input {
+            background: #f7fafc;
+            padding: 30px;
+            border-radius: 15px;
+        }
+
+        .question-input h3 {
+            margin-bottom: 20px;
+            color: #2d3748;
+        }
+
+        .question-input textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+        }
+
+        .question-input textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .quick-questions {
+            margin-top: 20px;
+        }
+
+        .quick-questions h4 {
+            margin-bottom: 10px;
+            color: #4a5568;
+            font-size: 14px;
+        }
+
+        .quick-question-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+        }
+
+        .quick-question-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .answer-display {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 30px;
+            min-height: 400px;
+        }
+
+        .answer-display.loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .answer-display h3 {
+            margin-bottom: 20px;
+            color: #2d3748;
+        }
+
+        .urgency-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .urgency-critical {
+            background: #fed7d7;
+            color: #c53030;
+        }
+
+        .urgency-high {
+            background: #feebc8;
+            color: #c05621;
+        }
+
+        .urgency-medium {
+            background: #bee3f8;
+            color: #2c5282;
+        }
+
+        .urgency-info {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        /* Список законів */
+        .regulations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .regulation-card {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .regulation-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .regulation-card h3 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .regulation-card .reg-number {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .regulation-card .reg-summary {
+            color: #4a5568;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .regulation-card .reg-status {
+            display: inline-block;
+            padding: 3px 10px;
+            background: #c6f6d5;
+            color: #22543d;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        /* Аналіз звіту */
+        .inspection-analyzer {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .inspection-input {
+            background: #f7fafc;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .inspection-input h3 {
+            margin-bottom: 15px;
+            color: #2d3748;
+        }
+
+        .inspection-input textarea {
+            width: 100%;
+            min-height: 250px;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .analysis-result {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 30px;
+        }
+
+        .analysis-summary {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .summary-card {
+            text-align: center;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 10px;
+        }
+
+        .summary-card .number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .summary-card .label {
+            color: #4a5568;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .issue-item {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #cbd5e0;
+        }
+
+        .issue-item.critical {
+            border-left-color: #fc8181;
+        }
+
+        .issue-item.high {
+            border-left-color: #f6ad55;
+        }
+
+        .issue-item h4 {
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .issue-item p {
+            color: #4a5568;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+
+        .issue-item .legal-ref {
+            font-size: 12px;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .issue-item .cost {
+            font-size: 14px;
+            color: #22543d;
+            background: #c6f6d5;
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        /* FAQ */
+        .faq-list {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            background: #f7fafc;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .faq-question {
+            padding: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #2d3748;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.3s;
+        }
+
+        .faq-question:hover {
+            background: #edf2f7;
+        }
+
+        .faq-answer {
+            padding: 0 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .faq-item.open .faq-answer {
+            padding: 20px;
+            max-height: 500px;
+        }
+
+        .faq-answer p {
+            color: #4a5568;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+
+        /* Кнопки */
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="legal-container">
+        <div class="header">
+            <h1>⚖️ Юридичний консультант AI</h1>
+            <p>Португальське законодавство про ліфти • Актуальні норми 2025</p>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" data-tab="consult">
+                <i class="fas fa-comments"></i> Консультація
+            </div>
+            <div class="tab" data-tab="regulations">
+                <i class="fas fa-book"></i> Законодавство
+            </div>
+            <div class="tab" data-tab="analyze">
+                <i class="fas fa-clipboard-check"></i> Аналіз звіту
+            </div>
+            <div class="tab" data-tab="faq">
+                <i class="fas fa-question-circle"></i> FAQ
+            </div>
+        </div>
+
+        <!-- Консультація -->
+        <div class="tab-content active" id="consult">
+            <div class="consultation-area">
+                <div class="question-input">
+                    <h3>📝 Ваше питання</h3>
+                    <textarea id="questionInput" placeholder="Наприклад: O inspetor marcou bloqueio de porta defeituoso. O que devo fazer?"></textarea>
+                    
+                    <div class="quick-questions">
+                        <h4>Часті питання:</h4>
+                        <button class="quick-question-btn" data-question="O que é UCM e por que é obrigatório?">
+                            Що таке UCM і чому це обов'язково?
+                        </button>
+                        <button class="quick-question-btn" data-question="De quanto em quanto tempo preciso fazer inspeção?">
+                            Як часто потрібна інспекція?
+                        </button>
+                        <button class="quick-question-btn" data-question="Falta Braille nos botões. É grave?">
+                            Відсутній Брайль на кнопках - це серйозно?
+                        </button>
+                        <button class="quick-question-btn" data-question="O alarme não funciona. Posso usar o elevador?">
+                            Сигналізація не працює - чи можна користуватись?
+                        </button>
+                    </div>
+                    
+                    <button class="btn btn-primary" id="askBtn" style="margin-top: 20px; width: 100%;">
+                        <i class="fas fa-paper-plane"></i> Отримати консультацію
+                    </button>
+                </div>
+
+                <div class="answer-display" id="answerDisplay">
+                    <h3>💡 Відповідь з'явиться тут</h3>
+                    <p style="color: #a0aec0;">Поставте питання про ваш звіт інспекції або виберіть одне з швидких питань зліва.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Законодавство -->
+        <div class="tab-content" id="regulations">
+            <h2 style="margin-bottom: 30px; color: #2d3748;">📚 Актуальне законодавство</h2>
+            <div class="regulations-grid" id="regulationsGrid">
+                <!-- Будуть завантажені через API -->
+            </div>
+        </div>
+
+        <!-- Аналіз звіту -->
+        <div class="tab-content" id="analyze">
+            <div class="inspection-analyzer">
+                <div class="inspection-input">
+                    <h3>📋 Вставте звіт інспектора</h3>
+                    <p style="color: #4a5568; margin-bottom: 15px;">
+                        Скопіюйте сюди список проблем зі звіту інспекції. Кожна проблема з нового рядка.
+                    </p>
+                    <textarea id="inspectionInput" placeholder="Приклад:
+• Bloqueio de porta defeituoso
+• Falta iluminação de emergência
+• UCM não instalado
+• Sistema de alarme não funcional
+• Botões sem Braille"></textarea>
+                    
+                    <button class="btn btn-primary" id="analyzeBtn" style="margin-top: 20px; width: 100%;">
+                        <i class="fas fa-search"></i> Аналізувати звіт
+                    </button>
+                </div>
+
+                <div class="analysis-result" id="analysisResult" style="display: none;">
+                    <!-- Результати аналізу -->
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ -->
+        <div class="tab-content" id="faq">
+            <h2 style="margin-bottom: 30px; color: #2d3748;">❓ Часті питання</h2>
+            <div class="faq-list" id="faqList">
+                <!-- Будуть завантажені через API -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tabs switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.dataset.tab;
+                
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(tabName).classList.add('active');
+                
+                // Load content if needed
+                if (tabName === 'regulations') {
+                    loadRegulations();
+                } else if (tabName === 'faq') {
+                    loadFAQ();
+                }
+            });
+        });
+
+        // Quick questions
+        document.querySelectorAll('.quick-question-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.getElementById('questionInput').value = btn.dataset.question;
+                askQuestion();
+            });
+        });
+
+        // Ask question
+        document.getElementById('askBtn').addEventListener('click', askQuestion);
+
+        async function askQuestion() {
+            const question = document.getElementById('questionInput').value.trim();
+            if (!question) {
+                alert('Будь ласка, введіть питання');
+                return;
+            }
+
+            const answerDisplay = document.getElementById('answerDisplay');
+            answerDisplay.classList.add('loading');
+            answerDisplay.innerHTML = '<div class="spinner"></div>';
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/legal/consult', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ question })
+                });
+
+                const result = await response.json();
+                
+                answerDisplay.classList.remove('loading');
+                
+                if (result.success) {
+                    displayAnswer(result.data);
+                } else {
+                    answerDisplay.innerHTML = '<p style="color: red;">Помилка: ' + result.error + '</p>';
+                }
+            } catch (error) {
+                answerDisplay.classList.remove('loading');
+                answerDisplay.innerHTML = '<p style="color: red;">Помилка з'єднання з сервером</p>';
+            }
+        }
+
+        function displayAnswer(data) {
+            const answerDisplay = document.getElementById('answerDisplay');
+            
+            let urgencyClass = 'urgency-info';
+            let urgencyText = 'Інформація';
+            
+            if (data.urgency === 'critical') {
+                urgencyClass = 'urgency-critical';
+                urgencyText = 'Критично';
+            } else if (data.urgency === 'high') {
+                urgencyClass = 'urgency-high';
+                urgencyText = 'Високий пріоритет';
+            } else if (data.urgency === 'medium') {
+                urgencyClass = 'urgency-medium';
+                urgencyText = 'Середній пріоритет';
+            }
+            
+            let html = '<h3>💡 Відповідь</h3>';
+            html += `<span class="urgency-badge ${urgencyClass}">${urgencyText}</span>`;
+            html += `<div style="margin-top: 20px;">${data.answer.replace(/\n/g, '<br>')}</div>`;
+            
+            if (data.regulation) {
+                html += `<p style="margin-top: 20px; color: #667eea; font-weight: 600;">📜 ${data.regulation}</p>`;
+            }
+            
+            answerDisplay.innerHTML = html;
+        }
+
+        // Load regulations
+        async function loadRegulations() {
+            const grid = document.getElementById('regulationsGrid');
+            if (grid.children.length > 0) return; // Already loaded
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/legal/regulations', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    grid.innerHTML = result.data.regulations.map(reg => `
+                        <div class="regulation-card">
+                            <div class="reg-number">${reg.number}</div>
+                            <h3>${reg.title}</h3>
+                            <p class="reg-summary">${reg.summary}</p>
+                            <span class="reg-status">${reg.status === 'vigente' ? 'Діє' : reg.status}</span>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                grid.innerHTML = '<p>Помилка завантаження законодавства</p>';
+            }
+        }
+
+        // Load FAQ
+        async function loadFAQ() {
+            const list = document.getElementById('faqList');
+            if (list.children.length > 0) return; // Already loaded
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/legal/faq', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    list.innerHTML = result.data.map((item, idx) => `
+                        <div class="faq-item">
+                            <div class="faq-question" onclick="toggleFAQ(${idx})">
+                                <span>${item.question}</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                            <div class="faq-answer">
+                                <p>${item.answer}</p>
+                                <p style="color: #667eea; font-weight: 600;">📜 ${item.regulation}</p>
+                                <p style="color: #22543d;">💰 ${item.estimated_cost}</p>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                list.innerHTML = '<p>Помилка завантаження FAQ</p>';
+            }
+        }
+
+        function toggleFAQ(idx) {
+            const items = document.querySelectorAll('.faq-item');
+            items[idx].classList.toggle('open');
+        }
+
+        // Analyze inspection
+        document.getElementById('analyzeBtn').addEventListener('click', analyzeInspection);
+
+        async function analyzeInspection() {
+            const input = document.getElementById('inspectionInput').value.trim();
+            if (!input) {
+                alert('Будь ласка, вставте звіт інспекції');
+                return;
+            }
+
+            // Parse items
+            const items = input.split('\n')
+                .map(line => line.replace(/^[•\-\d\.)\s]+/, '').trim())
+                .filter(line => line.length > 5);
+
+            if (items.length === 0) {
+                alert('Не вдалося розпізнати проблеми у звіті');
+                return;
+            }
+
+            const resultDiv = document.getElementById('analysisResult');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<div style="text-align: center;"><div class="spinner"></div></div>';
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/legal/analyze-inspection', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ items })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayAnalysis(result.data);
+                } else {
+                    resultDiv.innerHTML = '<p style="color: red;">Помилка аналізу</p>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<p style="color: red;">Помилка з'єднання</p>';
+            }
+        }
+
+        function displayAnalysis(data) {
+            const resultDiv = document.getElementById('analysisResult');
+            
+            let html = '<h3>📊 Результати аналізу</h3>';
+            
+            html += '<div class="analysis-summary">';
+            html += `<div class="summary-card"><div class="number">${data.total_items}</div><div class="label">Всього проблем</div></div>`;
+            html += `<div class="summary-card"><div class="number">${data.critical_issues.length}</div><div class="label">Критичних</div></div>`;
+            html += `<div class="summary-card"><div class="number">${data.high_priority.length}</div><div class="label">Високий пріоритет</div></div>`;
+            html += `<div class="summary-card"><div class="number">€${data.estimated_total_cost.min}-${data.estimated_total_cost.max}</div><div class="label">Вартість</div></div>`;
+            html += '</div>';
+            
+            html += '<h4 style="margin-top: 30px; margin-bottom: 15px;">Детальний розбір:</h4>';
+            
+            data.items_detail.forEach(item => {
+                const severityClass = item.severity === 'critical' ? 'critical' : item.severity === 'high' ? 'high' : '';
+                html += `
+                    <div class="issue-item ${severityClass}">
+                        <h4>${item.issue}</h4>
+                        <p>${item.explanation}</p>
+                        <div class="legal-ref">📜 ${item.legal_basis}</div>
+                        ${item.estimated_cost ? `<div class="cost">€${item.estimated_cost.min} - €${item.estimated_cost.max}</div>` : ''}
+                    </div>
+                `;
+            });
+            
+            resultDiv.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,669 @@
+{
+  "timestamp": "2026-01-04T13:13:33.637Z",
+  "summary": {
+    "total": 65,
+    "used": 30,
+    "unused": 35
+  },
+  "categories": {
+    "auth": [
+      {
+        "method": "POST",
+        "path": "/api/auth/login",
+        "pattern": "/api/auth/login",
+        "usedIn": []
+      },
+      {
+        "method": "POST",
+        "path": "/api/auth/logout",
+        "pattern": "/api/auth/logout",
+        "usedIn": []
+      },
+      {
+        "method": "POST",
+        "path": "/api/auth/refresh",
+        "pattern": "/api/auth/refresh",
+        "usedIn": []
+      }
+    ],
+    "lifts": [
+      {
+        "method": "GET",
+        "path": "/api/lifts",
+        "pattern": "/api/lifts",
+        "usedIn": [
+          "admin/analytics-dashboard.html",
+          "admin/lifts.html",
+          "admin/maps.html",
+          "admin/requests.html",
+          "client/ai-predictions.html",
+          "client/dashboard.html",
+          "tech/task-map.html"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/api/lifts",
+        "pattern": "/api/lifts",
+        "usedIn": [
+          "admin/analytics-dashboard.html",
+          "admin/lifts.html",
+          "admin/maps.html",
+          "admin/requests.html",
+          "client/ai-predictions.html",
+          "client/dashboard.html",
+          "tech/task-map.html"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/api/lifts/:id",
+        "pattern": "/api/lifts/[^/]+",
+        "usedIn": [
+          "admin/lifts.html",
+          "tech/task-map.html"
+        ]
+      },
+      {
+        "method": "PUT",
+        "path": "/api/lifts/:id",
+        "pattern": "/api/lifts/[^/]+",
+        "usedIn": [
+          "admin/lifts.html",
+          "tech/task-map.html"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/api/lifts/:id/contract",
+        "pattern": "/api/lifts/[^/]+/contract",
+        "usedIn": []
+      },
+      {
+        "method": "POST",
+        "path": "/api/lifts/:id/inspection-report",
+        "pattern": "/api/lifts/[^/]+/inspection-report",
+        "usedIn": []
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/lifts/:id",
+        "pattern": "/api/lifts/[^/]+",
+        "usedIn": [
+          "admin/lifts.html",
+          "tech/task-map.html"
+        ]
+      }
+    ],
+    "users": [
+      {
+        "method": "GET",
+        "path": "/api/users/me",
+        "pattern": "/api/users/me",
+        "usedIn": []
+      },
+      {
+        "method": "GET",
+        "path": "/api/users",
+        "pattern": "/api/users",
+        "usedIn": [
+          "admin/requests.html",
+          "admin/users.html",
+          "dispatcher/assignments.html"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/api/users",
+        "pattern": "/api/users",
+        "usedIn": [
+          "admin/requests.html",
+          "admin/users.html",
+          "dispatcher/assignments.html"
+        ]
+      },
+      {
+        "method": "PUT",
+        "path": "/api/users/:id",
+        "pattern": "/api/users/[^/]+",
+        "usedIn": [
+          "admin/users.html"
+        ]
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/users/:id",
+        "pattern": "/api/users/[^/]+",
+        "usedIn": [
+          "admin/users.html"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/api/users/:id",
+        "pattern": "/api/users/[^/]+",
+        "usedIn": [
+          "admin/users.html"
+        ]
+      }
+    ],
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/api/requests",
+        "pattern": "/api/requests",
+        "usedIn": [
+          "admin/analytics-dashboard.html",
+          "admin/requests.html",
+          "client/dashboard.html",
+          "client/requests.html",
+          "tech/tasks.html",
+          "dispatcher/assignments.html",
+          "dispatcher/calendar.html"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/api/requests/:id",
+        "pattern": "/api/requests/[^/]+",
+        "usedIn": [
+          "admin/requests.html",
+          "client/requests.html",
+          "tech/tasks.html",
+          "dispatcher/assignments.html"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/api/requests",
+        "pattern": "/api/requests",
+        "usedIn": [
+          "admin/analytics-dashboard.html",
+          "admin/requests.html",
+          "client/dashboard.html",
+          "client/requests.html",
+          "tech/tasks.html",
+          "dispatcher/assignments.html",
+          "dispatcher/calendar.html"
+        ]
+      },
+      {
+        "method": "PUT",
+        "path": "/api/requests/:id",
+        "pattern": "/api/requests/[^/]+",
+        "usedIn": [
+          "admin/requests.html",
+          "client/requests.html",
+          "tech/tasks.html",
+          "dispatcher/assignments.html"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/api/requests/:id/comment",
+        "pattern": "/api/requests/[^/]+/comment",
+        "usedIn": []
+      },
+      {
+        "method": "POST",
+        "path": "/api/requests/:id/complete",
+        "pattern": "/api/requests/[^/]+/complete",
+        "usedIn": []
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/requests/:id",
+        "pattern": "/api/requests/[^/]+",
+        "usedIn": [
+          "admin/requests.html",
+          "client/requests.html",
+          "tech/tasks.html",
+          "dispatcher/assignments.html"
+        ]
+      }
+    ],
+    "notifications": [
+      {
+        "method": "GET",
+        "path": "/api/notifications",
+        "pattern": "/api/notifications",
+        "usedIn": []
+      }
+    ],
+    "ai": [
+      {
+        "method": "POST",
+        "path": "/api/ai/chat",
+        "pattern": "/api/ai/chat",
+        "usedIn": []
+      },
+      {
+        "method": "POST",
+        "path": "/api/ai/consult",
+        "pattern": "/api/ai/consult",
+        "usedIn": []
+      },
+      {
+        "method": "POST",
+        "path": "/api/ai/law-question",
+        "pattern": "/api/ai/law-question",
+        "usedIn": []
+      },
+      {
+        "method": "GET",
+        "path": "/api/ai/regulations",
+        "pattern": "/api/ai/regulations",
+        "usedIn": []
+      },
+      {
+        "method": "GET",
+        "path": "/api/ai/regulations/search",
+        "pattern": "/api/ai/regulations/search",
+        "usedIn": []
+      },
+      {
+        "method": "GET",
+        "path": "/api/ai/regulations/:id",
+        "pattern": "/api/ai/regulations/[^/]+",
+        "usedIn": []
+      }
+    ],
+    "email": [
+      {
+        "method": "POST",
+        "path": "/api/email/send-inspection-report",
+        "pattern": "/api/email/send-inspection-report",
+        "usedIn": []
+      },
+      {
+        "method": "POST",
+        "path": "/api/email/send-critical-alert",
+        "pattern": "/api/email/send-critical-alert",
+        "usedIn": []
+      },
+      {
+        "method": "POST",
+        "path": "/api/email/send-action-plan",
+        "pattern": "/api/email/send-action-plan",
+        "usedIn": []
+      },
+      {
+        "method": "POST",
+        "path": "/api/email/send-orcamento",
+        "pattern": "/api/email/send-orcamento",
+        "usedIn": [
+          "admin/invoice-template.html"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/api/email/send-contract",
+        "pattern": "/api/email/send-contract",
+        "usedIn": [
+          "admin/lifts.html"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/api/email/send-inspection-pdf",
+        "pattern": "/api/email/send-inspection-pdf",
+        "usedIn": [
+          "admin/lifts.html"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/api/email/send-inspection-reminder",
+        "pattern": "/api/email/send-inspection-reminder",
+        "usedIn": [
+          "admin/lifts.html"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/api/email/send-template",
+        "pattern": "/api/email/send-template",
+        "usedIn": [
+          "admin/email-template.html"
+        ]
+      }
+    ],
+    "settings": [
+      {
+        "method": "GET",
+        "path": "/api/settings",
+        "pattern": "/api/settings",
+        "usedIn": []
+      },
+      {
+        "method": "PUT",
+        "path": "/api/settings",
+        "pattern": "/api/settings",
+        "usedIn": []
+      },
+      {
+        "method": "PUT",
+        "path": "/api/settings/language",
+        "pattern": "/api/settings/language",
+        "usedIn": []
+      },
+      {
+        "method": "PUT",
+        "path": "/api/settings/theme",
+        "pattern": "/api/settings/theme",
+        "usedIn": []
+      }
+    ],
+    "orcamentos": [
+      {
+        "method": "GET",
+        "path": "/api/orcamentos",
+        "pattern": "/api/orcamentos",
+        "usedIn": [
+          "admin/invoice-template.html",
+          "admin/orcamentos-list.html"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/api/orcamentos/:id",
+        "pattern": "/api/orcamentos/[^/]+",
+        "usedIn": [
+          "admin/orcamentos-list.html"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/api/orcamentos",
+        "pattern": "/api/orcamentos",
+        "usedIn": [
+          "admin/invoice-template.html",
+          "admin/orcamentos-list.html"
+        ]
+      },
+      {
+        "method": "PUT",
+        "path": "/api/orcamentos/:id",
+        "pattern": "/api/orcamentos/[^/]+",
+        "usedIn": [
+          "admin/orcamentos-list.html"
+        ]
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/orcamentos/:id",
+        "pattern": "/api/orcamentos/[^/]+",
+        "usedIn": [
+          "admin/orcamentos-list.html"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/api/orcamentos/:id/enviar",
+        "pattern": "/api/orcamentos/[^/]+/enviar",
+        "usedIn": []
+      }
+    ],
+    "regulations": [
+      {
+        "method": "GET",
+        "path": "/api/regulations",
+        "pattern": "/api/regulations",
+        "usedIn": [
+          "client/documentation.html"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/api/regulations/check-updates",
+        "pattern": "/api/regulations/check-updates",
+        "usedIn": []
+      },
+      {
+        "method": "GET",
+        "path": "/api/regulations/last-check",
+        "pattern": "/api/regulations/last-check",
+        "usedIn": []
+      }
+    ],
+    "other": [
+      {
+        "method": "GET",
+        "path": "/api/health",
+        "pattern": "/api/health",
+        "usedIn": []
+      },
+      {
+        "method": "GET",
+        "path": "/api/qr/history",
+        "pattern": "/api/qr/history",
+        "usedIn": []
+      },
+      {
+        "method": "POST",
+        "path": "/api/qr/scan",
+        "pattern": "/api/qr/scan",
+        "usedIn": []
+      },
+      {
+        "method": "GET",
+        "path": "/api/inspections",
+        "pattern": "/api/inspections",
+        "usedIn": [
+          "admin/inspection-template.html",
+          "tech/manutencao.html"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/api/inspections/:id",
+        "pattern": "/api/inspections/[^/]+",
+        "usedIn": [
+          "admin/inspection-template.html",
+          "tech/manutencao.html"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/api/tasks",
+        "pattern": "/api/tasks",
+        "usedIn": []
+      },
+      {
+        "method": "GET",
+        "path": "/api/tasks/:id",
+        "pattern": "/api/tasks/[^/]+",
+        "usedIn": []
+      },
+      {
+        "method": "GET",
+        "path": "/api/statistics",
+        "pattern": "/api/statistics",
+        "usedIn": []
+      },
+      {
+        "method": "GET",
+        "path": "/api/dashboard",
+        "pattern": "/api/dashboard",
+        "usedIn": []
+      },
+      {
+        "method": "POST",
+        "path": "/api/pdf/upload",
+        "pattern": "/api/pdf/upload",
+        "usedIn": []
+      },
+      {
+        "method": "GET",
+        "path": "/api/en-standards",
+        "pattern": "/api/en-standards",
+        "usedIn": []
+      },
+      {
+        "method": "POST",
+        "path": "/api/contact",
+        "pattern": "/api/contact",
+        "usedIn": []
+      },
+      {
+        "method": "POST",
+        "path": "/api/send-email",
+        "pattern": "/api/send-email",
+        "usedIn": [
+          "admin/users.html"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/api/inspections/send-report",
+        "pattern": "/api/inspections/send-report",
+        "usedIn": [
+          "admin/inspection-template.html",
+          "tech/manutencao.html"
+        ]
+      }
+    ]
+  },
+  "unused": [
+    {
+      "method": "POST",
+      "path": "/api/auth/login"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/logout"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/refresh"
+    },
+    {
+      "method": "POST",
+      "path": "/api/lifts/:id/contract"
+    },
+    {
+      "method": "POST",
+      "path": "/api/lifts/:id/inspection-report"
+    },
+    {
+      "method": "GET",
+      "path": "/api/users/me"
+    },
+    {
+      "method": "POST",
+      "path": "/api/requests/:id/comment"
+    },
+    {
+      "method": "POST",
+      "path": "/api/requests/:id/complete"
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications"
+    },
+    {
+      "method": "POST",
+      "path": "/api/ai/chat"
+    },
+    {
+      "method": "POST",
+      "path": "/api/ai/consult"
+    },
+    {
+      "method": "POST",
+      "path": "/api/ai/law-question"
+    },
+    {
+      "method": "GET",
+      "path": "/api/ai/regulations"
+    },
+    {
+      "method": "GET",
+      "path": "/api/ai/regulations/search"
+    },
+    {
+      "method": "GET",
+      "path": "/api/ai/regulations/:id"
+    },
+    {
+      "method": "POST",
+      "path": "/api/email/send-inspection-report"
+    },
+    {
+      "method": "POST",
+      "path": "/api/email/send-critical-alert"
+    },
+    {
+      "method": "POST",
+      "path": "/api/email/send-action-plan"
+    },
+    {
+      "method": "GET",
+      "path": "/api/settings"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/settings"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/settings/language"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/settings/theme"
+    },
+    {
+      "method": "POST",
+      "path": "/api/orcamentos/:id/enviar"
+    },
+    {
+      "method": "POST",
+      "path": "/api/regulations/check-updates"
+    },
+    {
+      "method": "GET",
+      "path": "/api/regulations/last-check"
+    },
+    {
+      "method": "GET",
+      "path": "/api/health"
+    },
+    {
+      "method": "GET",
+      "path": "/api/qr/history"
+    },
+    {
+      "method": "POST",
+      "path": "/api/qr/scan"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tasks"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tasks/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/statistics"
+    },
+    {
+      "method": "GET",
+      "path": "/api/dashboard"
+    },
+    {
+      "method": "POST",
+      "path": "/api/pdf/upload"
+    },
+    {
+      "method": "GET",
+      "path": "/api/en-standards"
+    },
+    {
+      "method": "POST",
+      "path": "/api/contact"
+    }
+  ]
+}

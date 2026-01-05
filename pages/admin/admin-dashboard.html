@@ -238,7 +238,7 @@
 
                         <li class="nav-item">
                             <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link">
-                                <i class="nav-icon fas fa-robot"></i>
+                                <i class="nav-icon fas fa-magic"></i>
                                 <p>AI Асистент</p>
                             </a>
                         </li>
@@ -526,8 +526,105 @@
     <script src="../../assets/js/websocket-client.js" onload="console.log('✅ WebSocket Client завантажено')" onerror="console.error('❌ Помилка завантаження WebSocket Client')"></script>
 
     <script>
+        // 🔥 ПІДКЛЮЧЕНО ДО РЕАЛЬНОГО API
+        async function loadDashboardData() {
+            try {
+                // Шукаємо токен в різних місцях
+                const token = localStorage.getItem('token') || 
+                             localStorage.getItem('liftmanager_jwt') ||
+                             localStorage.getItem('jwt_token') ||
+                             localStorage.getItem('lm_token');
+                
+                if (!token) {
+                    console.warn('⚠️ No token found, loading real data from DB...');
+                }
+
+                // Спроба 1: Завантаження через API
+                if (token) {
+                    try {
+                        const dashboardResponse = await fetch('/api/dashboard', {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        
+                        if (dashboardResponse.ok) {
+                            const result = await dashboardResponse.json();
+                            const stats = result.data || result; // API повертає {success: true, data: {...}}
+                            
+                            $('#totalUsers').text(stats.totalUsers || 0);
+                            $('#totalLifts').text(stats.totalLifts || 0);
+                            $('#activeRequests').text(stats.activeRequests || 0);
+                            $('#totalRevenue').text((stats.totalRevenue || 0).toLocaleString());
+                            console.log('✅ Dashboard stats loaded from API:', stats);
+                            return; // Успішно завантажено
+                        }
+                    } catch (apiError) {
+                        console.warn('⚠️ API failed, trying public endpoint...', apiError);
+                    }
+                }
+
+                // Спроба 2: Публічний endpoint (без токена)
+                try {
+                    const publicResponse = await fetch('/api/dashboard/public');
+                    if (publicResponse.ok) {
+                        const result = await publicResponse.json();
+                        const stats = result.data || result;
+                        
+                        $('#totalUsers').text(stats.totalUsers || 0);
+                        $('#totalLifts').text(stats.totalLifts || 0);
+                        $('#activeRequests').text(stats.activeRequests || 0);
+                        $('#totalRevenue').text((stats.totalRevenue || 0).toLocaleString());
+                        console.log('✅ Dashboard loaded from public API:', stats);
+                        return;
+                    }
+                } catch (publicError) {
+                    console.warn('⚠️ Public API failed, trying direct endpoints...', publicError);
+                }
+
+                // Спроба 2: Пряме завантаження з бази через окремі endpoints
+                const [usersRes, liftsRes, requestsRes] = await Promise.all([
+                    fetch('/api/users').catch(() => null),
+                    fetch('/api/lifts').catch(() => null),
+                    fetch('/api/requests').catch(() => null)
+                ]);
+
+                let totalUsers = 0, totalLifts = 0, activeRequests = 0;
+
+                if (usersRes && usersRes.ok) {
+                    const usersData = await usersRes.json();
+                    totalUsers = Array.isArray(usersData) ? usersData.length : (usersData.data?.length || 0);
+                }
+
+                if (liftsRes && liftsRes.ok) {
+                    const liftsData = await liftsRes.json();
+                    totalLifts = Array.isArray(liftsData) ? liftsData.length : (liftsData.data?.length || 0);
+                }
+
+                if (requestsRes && requestsRes.ok) {
+                    const requestsData = await requestsRes.json();
+                    const requests = Array.isArray(requestsData) ? requestsData : (requestsData.data || []);
+                    activeRequests = requests.filter(r => r.status !== 'completed' && r.status !== 'cancelled').length;
+                }
+
+                $('#totalUsers').text(totalUsers);
+                $('#totalLifts').text(totalLifts);
+                $('#activeRequests').text(activeRequests);
+                $('#totalRevenue').text('0');
+                
+                console.log('✅ Dashboard loaded from direct DB:', { totalUsers, totalLifts, activeRequests });
+
+            } catch (error) {
+                console.error('❌ Error loading dashboard:', error);
+                
+                // Останній fallback: показати 0
+                $('#totalUsers').text(0);
+                $('#totalLifts').text(0);
+                $('#activeRequests').text(0);
+                $('#totalRevenue').text(0);
+            }
+        }
+
         // Ініціалізація після завантаження сторінки
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             console.log('🚀 Admin Dashboard завантажено');
             
             // Показуємо ім'я користувача (якщо є стара сесія)
@@ -540,6 +637,9 @@
                     console.warn('Не вдалось розпарсити сесію');
                 }
             }
+
+            // 🆕 Завантаження даних з API
+            await loadDashboardData();
         });
 
         // Функція виходу

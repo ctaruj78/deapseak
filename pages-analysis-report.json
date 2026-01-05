@@ -1,0 +1,333 @@
+{
+  "timestamp": "2026-01-04T13:07:21.541Z",
+  "summary": {
+    "total": 74,
+    "realAPI": 17,
+    "demoData": 2,
+    "noData": 55,
+    "backup": 0
+  },
+  "details": {
+    "realAPI": [
+      {
+        "path": "pages/admin/analytics-dashboard.html",
+        "file": "analytics-dashboard.html",
+        "hasDemo": false
+      },
+      {
+        "path": "pages/admin/email-template.html",
+        "file": "email-template.html",
+        "hasDemo": false
+      },
+      {
+        "path": "pages/admin/inspection-template.html",
+        "file": "inspection-template.html",
+        "hasDemo": false
+      },
+      {
+        "path": "pages/admin/invoice-template.html",
+        "file": "invoice-template.html",
+        "hasDemo": false
+      },
+      {
+        "path": "pages/admin/lifts.html",
+        "file": "lifts.html",
+        "hasDemo": false
+      },
+      {
+        "path": "pages/admin/maps.html",
+        "file": "maps.html",
+        "hasDemo": false
+      },
+      {
+        "path": "pages/admin/requests.html",
+        "file": "requests.html",
+        "hasDemo": false
+      },
+      {
+        "path": "pages/admin/users.html",
+        "file": "users.html",
+        "hasDemo": false
+      },
+      {
+        "path": "pages/client/ai-predictions.html",
+        "file": "ai-predictions.html",
+        "hasDemo": false
+      },
+      {
+        "path": "pages/client/dashboard.html",
+        "file": "dashboard.html",
+        "hasDemo": false
+      },
+      {
+        "path": "pages/client/documentation.html",
+        "file": "documentation.html",
+        "hasDemo": false
+      },
+      {
+        "path": "pages/client/requests.html",
+        "file": "requests.html",
+        "hasDemo": false
+      },
+      {
+        "path": "pages/tech/manutencao.html",
+        "file": "manutencao.html",
+        "hasDemo": false
+      },
+      {
+        "path": "pages/tech/task-map.html",
+        "file": "task-map.html",
+        "hasDemo": false
+      },
+      {
+        "path": "pages/tech/tasks.html",
+        "file": "tasks.html",
+        "hasDemo": false
+      },
+      {
+        "path": "pages/dispatcher/assignments.html",
+        "file": "assignments.html",
+        "hasDemo": false
+      },
+      {
+        "path": "pages/dispatcher/calendar.html",
+        "file": "calendar.html",
+        "hasDemo": false
+      }
+    ],
+    "demoData": [
+      {
+        "path": "pages/admin/notifications.html",
+        "file": "notifications.html"
+      },
+      {
+        "path": "pages/admin/predictive-maintenance.html",
+        "file": "predictive-maintenance.html"
+      }
+    ],
+    "noData": [
+      {
+        "path": "pages/admin/admin-dashboard.html",
+        "file": "admin-dashboard.html"
+      },
+      {
+        "path": "pages/admin/ai-assistant-full.html",
+        "file": "ai-assistant-full.html"
+      },
+      {
+        "path": "pages/admin/ai-diagnostics-full.html",
+        "file": "ai-diagnostics-full.html"
+      },
+      {
+        "path": "pages/admin/analytics.html",
+        "file": "analytics.html"
+      },
+      {
+        "path": "pages/admin/audit-log.html",
+        "file": "audit-log.html"
+      },
+      {
+        "path": "pages/admin/import-checklists.html",
+        "file": "import-checklists.html"
+      },
+      {
+        "path": "pages/admin/includes/sidebar.html",
+        "file": "sidebar.html"
+      },
+      {
+        "path": "pages/admin/login.html",
+        "file": "login.html"
+      },
+      {
+        "path": "pages/admin/maps-simple.html",
+        "file": "maps-simple.html"
+      },
+      {
+        "path": "pages/admin/orcamentos-list.html",
+        "file": "orcamentos-list.html"
+      },
+      {
+        "path": "pages/admin/profile.html",
+        "file": "profile.html"
+      },
+      {
+        "path": "pages/admin/qr-analytics.html",
+        "file": "qr-analytics.html"
+      },
+      {
+        "path": "pages/admin/qr-batch.html",
+        "file": "qr-batch.html"
+      },
+      {
+        "path": "pages/admin/qr-generator.html",
+        "file": "qr-generator.html"
+      },
+      {
+        "path": "pages/admin/qr-history.html",
+        "file": "qr-history.html"
+      },
+      {
+        "path": "pages/admin/qr-management.html",
+        "file": "qr-management.html"
+      },
+      {
+        "path": "pages/admin/report-template.html",
+        "file": "report-template.html"
+      },
+      {
+        "path": "pages/admin/reports.html",
+        "file": "reports.html"
+      },
+      {
+        "path": "pages/admin/role-manager.html",
+        "file": "role-manager.html"
+      },
+      {
+        "path": "pages/admin/settings.html",
+        "file": "settings.html"
+      },
+      {
+        "path": "pages/admin/simple-nav-test.html",
+        "file": "simple-nav-test.html"
+      },
+      {
+        "path": "pages/admin/support.html",
+        "file": "support.html"
+      },
+      {
+        "path": "pages/admin/test-navigation.html",
+        "file": "test-navigation.html"
+      },
+      {
+        "path": "pages/admin/unified-analytics.html",
+        "file": "unified-analytics.html"
+      },
+      {
+        "path": "pages/client/history.html",
+        "file": "history.html"
+      },
+      {
+        "path": "pages/client/invoices.html",
+        "file": "invoices.html"
+      },
+      {
+        "path": "pages/client/my-lifts.html",
+        "file": "my-lifts.html"
+      },
+      {
+        "path": "pages/client/notifications.html",
+        "file": "notifications.html"
+      },
+      {
+        "path": "pages/client/profile.html",
+        "file": "profile.html"
+      },
+      {
+        "path": "pages/client/settings.html",
+        "file": "settings.html"
+      },
+      {
+        "path": "pages/client/support.html",
+        "file": "support.html"
+      },
+      {
+        "path": "pages/tech/ar-helper.html",
+        "file": "ar-helper.html"
+      },
+      {
+        "path": "pages/tech/checklists.html",
+        "file": "checklists.html"
+      },
+      {
+        "path": "pages/tech/dashboard.html",
+        "file": "dashboard.html"
+      },
+      {
+        "path": "pages/tech/inspections.html",
+        "file": "inspections.html"
+      },
+      {
+        "path": "pages/tech/knowledge-base.html",
+        "file": "knowledge-base.html"
+      },
+      {
+        "path": "pages/tech/manuals.html",
+        "file": "manuals.html"
+      },
+      {
+        "path": "pages/tech/notifications.html",
+        "file": "notifications.html"
+      },
+      {
+        "path": "pages/tech/profile.html",
+        "file": "profile.html"
+      },
+      {
+        "path": "pages/tech/qr-scanner.html",
+        "file": "qr-scanner.html"
+      },
+      {
+        "path": "pages/tech/reports.html",
+        "file": "reports.html"
+      },
+      {
+        "path": "pages/tech/schedule.html",
+        "file": "schedule.html"
+      },
+      {
+        "path": "pages/tech/support.html",
+        "file": "support.html"
+      },
+      {
+        "path": "pages/tech/tools.html",
+        "file": "tools.html"
+      },
+      {
+        "path": "pages/tech/videos.html",
+        "file": "videos.html"
+      },
+      {
+        "path": "pages/dispatcher/clients.html",
+        "file": "clients.html"
+      },
+      {
+        "path": "pages/dispatcher/dashboard.html",
+        "file": "dashboard.html"
+      },
+      {
+        "path": "pages/dispatcher/monitoring.html",
+        "file": "monitoring.html"
+      },
+      {
+        "path": "pages/dispatcher/notifications.html",
+        "file": "notifications.html"
+      },
+      {
+        "path": "pages/dispatcher/profile.html",
+        "file": "profile.html"
+      },
+      {
+        "path": "pages/dispatcher/qr-management.html",
+        "file": "qr-management.html"
+      },
+      {
+        "path": "pages/dispatcher/reports.html",
+        "file": "reports.html"
+      },
+      {
+        "path": "pages/dispatcher/settings.html",
+        "file": "settings.html"
+      },
+      {
+        "path": "pages/dispatcher/support.html",
+        "file": "support.html"
+      },
+      {
+        "path": "pages/dispatcher/technicians.html",
+        "file": "technicians.html"
+      }
+    ],
+    "backup": [],
+    "total": 74
+  }
+}

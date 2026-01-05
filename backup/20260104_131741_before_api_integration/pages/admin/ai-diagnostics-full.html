@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Діагностика AI прогнозування</title>
+    <link rel="stylesheet" href="../../plugins/bootstrap/bootstrap.min.css">
+    <script src="../../plugins/chart.js/chart.umd.min.js"></script>
+    <style>
+        .console-output {
+            background: #1e1e1e;
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .error { color: #ff6b6b; }
+        .success { color: #51cf66; }
+        .warning { color: #ffd43b; }
+        .info { color: #74c0fc; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <h1>🔍 Повна діагностика AI прогнозування</h1>
+                <p class="text-muted">Перевірка всіх компонентів системи AI прогнозування</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>📋 Тестові дії</h5>
+                    </div>
+                    <div class="card-body">
+                        <button class="btn btn-primary btn-sm mb-2" onclick="checkScripts()">1. Перевірити скрипти</button><br>
+                        <button class="btn btn-info btn-sm mb-2" onclick="checkClasses()">2. Перевірити класи</button><br>
+                        <button class="btn btn-success btn-sm mb-2" onclick="testInitialization()">3. Тест ініціалізації</button><br>
+                        <button class="btn btn-warning btn-sm mb-2" onclick="testChart()">4. Тест графіка</button><br>
+                        <button class="btn btn-secondary btn-sm mb-2" onclick="simulateOriginalPage()">5. Симулювати оригінал</button><br>
+                        <hr>
+                        <button class="btn btn-danger btn-sm" onclick="clearConsole()">Очистити консоль</button>
+                    </div>
+                </div>
+
+                <!-- Тестова зона для графіка -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h6>📊 Тестовий графік</h6>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="test-prediction-chart" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>🖥️ Консоль виводу</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="console" class="console-output"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Тестові AI рекомендації -->
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>🤖 Тестові AI рекомендації</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="test-ai-recommendations">
+                            <!-- Тут будуть рекомендації -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Підключаємо оригінальні скрипти -->
+    <script src="../../assets/js/predictive-maintenance.js"></script>
+    <script src="../../assets/js/unified-analytics-engine.js"></script>
+
+    <script>
+        let logCount = 0;
+        
+        function log(message, type = 'info') {
+            const console = document.getElementById('console');
+            const time = new Date().toLocaleTimeString();
+            const className = type;
+            logCount++;
+            
+            const logLine = document.createElement('div');
+            logLine.className = className;
+            logLine.innerHTML = `[${logCount}] ${time} - ${message}`;
+            
+            console.appendChild(logLine);
+            console.scrollTop = console.scrollHeight;
+        }
+
+        function clearConsole() {
+            document.getElementById('console').innerHTML = '';
+            logCount = 0;
+        }
+
+        function checkScripts() {
+            log('🔍 Перевіряємо завантажені скрипти...', 'info');
+            
+            // Перевіряємо наявність скриптів
+            const scripts = document.querySelectorAll('script[src*="predictive-maintenance"], script[src*="unified-analytics-engine"]');
+            log(`📜 Знайдено ${scripts.length} AI скриптів`, scripts.length > 0 ? 'success' : 'error');
+            
+            scripts.forEach((script, i) => {
+                log(`   ${i+1}. ${script.src}`, 'info');
+            });
+        }
+
+        function checkClasses() {
+            log('🏗️ Перевіряємо доступність класів...', 'info');
+            
+            // Перевіряємо PredictiveMaintenanceSystem
+            if (typeof PredictiveMaintenanceSystem !== 'undefined') {
+                log('✅ PredictiveMaintenanceSystem - ЗНАЙДЕНО', 'success');
+                
+                try {
+                    const testInstance = new PredictiveMaintenanceSystem();
+                    log('✅ Можна створити екземпляр PredictiveMaintenanceSystem', 'success');
+                    
+                    // Перевіряємо методи
+                    const methods = ['init', 'generateRecommendations', 'getSystemPredictions'];
+                    methods.forEach(method => {
+                        if (typeof testInstance[method] === 'function') {
+                            log(`✅ Метод ${method}() - є`, 'success');
+                        } else {
+                            log(`❌ Метод ${method}() - відсутній`, 'error');
+                        }
+                    });
+                    
+                } catch (error) {
+                    log(`❌ Помилка створення екземпляра: ${error.message}`, 'error');
+                }
+            } else {
+                log('❌ PredictiveMaintenanceSystem - НЕ ЗНАЙДЕНО', 'error');
+            }
+            
+            // Перевіряємо глобальні функції
+            const globalFunctions = ['initPredictiveAnalytics', 'activateAIPredictive'];
+            globalFunctions.forEach(func => {
+                if (typeof window[func] === 'function') {
+                    log(`✅ Функція ${func}() - є`, 'success');
+                } else {
+                    log(`❌ Функція ${func}() - відсутня`, 'error');
+                }
+            });
+        }
+
+        function testInitialization() {
+            log('🚀 Тестуємо ініціалізацію системи...', 'info');
+            
+            try {
+                if (typeof window.initPredictiveAnalytics === 'function') {
+                    log('🔄 Викликаємо initPredictiveAnalytics()...', 'info');
+                    const result = window.initPredictiveAnalytics();
+                    log(`📊 Результат ініціалізації: ${result}`, result ? 'success' : 'warning');
+                } else {
+                    log('❌ initPredictiveAnalytics не знайдено', 'error');
+                }
+                
+                // Створюємо екземпляр системи
+                if (!window.testPredictiveSystem) {
+                    log('🏗️ Створюємо тестовий екземпляр системи...', 'info');
+                    window.testPredictiveSystem = new PredictiveMaintenanceSystem();
+                    log('✅ Тестовий екземпляр створено', 'success');
+                }
+                
+            } catch (error) {
+                log(`❌ Помилка ініціалізації: ${error.message}`, 'error');
+                console.error('Детальна помилка:', error);
+            }
+        }
+
+        function testChart() {
+            log('📊 Тестуємо створення графіка...', 'info');
+            
+            try {
+                const canvas = document.getElementById('test-prediction-chart');
+                if (!canvas) {
+                    log('❌ Canvas не знайдено', 'error');
+                    return;
+                }
+                
+                const ctx = canvas.getContext('2d');
+                
+                // Створюємо тестові дані
+                const data = {
+                    labels: ['Тиждень 1', 'Тиждень 2', 'Тиждень 3', 'Тиждень 4'],
+                    datasets: [{
+                        label: 'Ймовірність поломки (%)',
+                        data: [Math.random()*50, Math.random()*50, Math.random()*50, Math.random()*50],
+                        borderColor: '#ff6b6b',
+                        backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                };
+                
+                new Chart(ctx, {
+                    type: 'line',
+                    data: data,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Тестовий прогноз ТО'
+                            }
+                        }
+                    }
+                });
+                
+                log('✅ Тестовий графік створено успішно', 'success');
+                
+                // Тестуємо AI рекомендації
+                loadTestRecommendations();
+                
+            } catch (error) {
+                log(`❌ Помилка створення графіка: ${error.message}`, 'error');
+            }
+        }
+
+        function loadTestRecommendations() {
+            log('🤖 Завантажуємо тестові AI рекомендації...', 'info');
+            
+            const container = document.getElementById('test-ai-recommendations');
+            if (!container) {
+                log('❌ Контейнер рекомендацій не знайдено', 'error');
+                return;
+            }
+            
+            const recommendations = [
+                { type: 'danger', icon: '🚨', text: 'Критичне: Ліфт #L003 потребує негайного огляду' },
+                { type: 'warning', icon: '⚠️', text: 'Увага: Планове ТО для ліфтів #L001, #L005 через 7 днів' },
+                { type: 'info', icon: '💡', text: 'Підказка: Виявлено можливість оптимізації енергоспоживання' },
+                { type: 'success', icon: '✅', text: 'Чудово: Ліфти #L002, #L004 працюють оптимально' }
+            ];
+            
+            const html = recommendations.map(rec => `
+                <div class="alert alert-${rec.type} mb-2">
+                    <strong>${rec.icon}</strong> ${rec.text}
+                </div>
+            `).join('');
+            
+            container.innerHTML = html;
+            log('✅ AI рекомендації завантажено', 'success');
+        }
+
+        function simulateOriginalPage() {
+            log('🔄 Симулюємо роботу оригінальної сторінки...', 'info');
+            
+            // Симулюємо завантаження сторінки з хешем
+            log('📍 Симулюємо hash: #predictive-analytics', 'info');
+            
+            // Перевіряємо чи спрацьовує логіка
+            if (window.location.hash === '#predictive-analytics' || true) {
+                log('✅ Hash збігається, активуємо AI таб', 'success');
+                
+                setTimeout(() => {
+                    if (window.activateAIPredictive) {
+                        log('🎯 Викликаємо activateAIPredictive()...', 'info');
+                        try {
+                            const success = window.activateAIPredictive();
+                            log(`📊 Результат активації: ${success}`, success ? 'success' : 'warning');
+                        } catch (error) {
+                            log(`❌ Помилка активації: ${error.message}`, 'error');
+                        }
+                    } else {
+                        log('❌ activateAIPredictive не знайдено', 'error');
+                    }
+                }, 100);
+            }
+        }
+
+        // Автоматичний запуск при завантаженні
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🔄 Діагностика розпочата автоматично...', 'info');
+            setTimeout(() => checkScripts(), 500);
+            setTimeout(() => checkClasses(), 1000);
+            
+            // Перехоплюємо оригінальний console.log
+            const originalLog = console.log;
+            const originalError = console.error;
+            const originalWarn = console.warn;
+            
+            console.log = function(...args) {
+                log(`[console.log] ${args.join(' ')}`, 'info');
+                originalLog.apply(console, args);
+            };
+            
+            console.error = function(...args) {
+                log(`[console.error] ${args.join(' ')}`, 'error');
+                originalError.apply(console, args);
+            };
+            
+            console.warn = function(...args) {
+                log(`[console.warn] ${args.join(' ')}`, 'warning');
+                originalWarn.apply(console, args);
+            };
+        });
+    </script>
+</body>
+</html>

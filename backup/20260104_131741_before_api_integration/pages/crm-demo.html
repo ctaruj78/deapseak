@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeapSeaK CRM - Teste do Sistema</title>
+    <link rel="stylesheet" href="../plugins/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="../plugins/fontawesome/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+        .role-card {
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .role-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        .role-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        .admin-card { border-top: 5px solid #dc3545; }
+        .dispatcher-card { border-top: 5px solid #ffc107; }
+        .tech-card { border-top: 5px solid #28a745; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="text-center mb-5">
+                    <h1 class="text-white mb-3">
+                        <i class="fas fa-elevator"></i>
+                        DeapSeaK CRM - Escolha de Função
+                    </h1>
+                    <p class="text-white-50">Escolha uma função para testar o sistema</p>
+                </div>
+                
+                <div class="row">
+                    <!-- Адміністратор -->
+                    <div class="col-md-3 mb-4">
+                        <div class="card role-card admin-card h-100">
+                            <div class="card-body text-center">
+                                <div class="role-icon text-danger">
+                                    <i class="fas fa-crown"></i>
+                                </div>
+                                <h3 class="card-title">Administrador</h3>
+                                <p class="card-text">Acesso total a todas as funções do sistema:</p>
+                                <ul class="list-unstyled text-left">
+                                    <li><i class="fas fa-check text-success"></i> Gestão de utilizadores</li>
+                                    <li><i class="fas fa-check text-success"></i> Análise completa de códigos QR</li>
+                                    <li><i class="fas fa-check text-success"></i> Configurações do sistema</li>
+                                    <li><i class="fas fa-check text-success"></i> Todos os relatórios e estatísticas</li>
+                                </ul>
+                                <a href="crm-unified.html?role=admin" class="btn btn-danger btn-block">
+                                    <i class="fas fa-sign-in-alt"></i> Entrar como Admin
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Диспетчер -->
+                    <div class="col-md-3 mb-4">
+                        <div class="card role-card dispatcher-card h-100">
+                            <div class="card-body text-center">
+                                <div class="role-icon text-warning">
+                                    <i class="fas fa-headset"></i>
+                                </div>
+                                <h3 class="card-title">Despachante</h3>
+                                <p class="card-text">Gestão de tarefas e monitorização:</p>
+                                <ul class="list-unstyled text-left">
+                                    <li><i class="fas fa-check text-success"></i> Atribuição de tarefas</li>
+                                    <li><i class="fas fa-check text-success"></i> Gestão básica de QR</li>
+                                    <li><i class="fas fa-check text-success"></i> Monitorização de técnicos</li>
+                                    <li><i class="fas fa-times text-danger"></i> <del>Configurações do sistema</del></li>
+                                </ul>
+                                <a href="crm-unified.html?role=dispatcher" class="btn btn-warning btn-block">
+                                    <i class="fas fa-sign-in-alt"></i> Entrar como Despachante
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Технік -->
+                    <div class="col-md-3 mb-4">
+                        <div class="card role-card tech-card h-100">
+                            <div class="card-body text-center">
+                                <div class="role-icon text-success">
+                                    <i class="fas fa-hard-hat"></i>
+                                </div>
+                                <h3 class="card-title">Técnico</h3>
+                                <p class="card-text">Execução de tarefas e trabalho no terreno:</p>
+                                <ul class="list-unstyled text-left">
+                                    <li><i class="fas fa-check text-success"></i> Minhas tarefas</li>
+                                    <li><i class="fas fa-check text-success"></i> Scanner QR</li>
+                                    <li><i class="fas fa-check text-success"></i> Checklists</li>
+                                    <li><i class="fas fa-times text-danger"></i> <del>Análise e gestão</del></li>
+                                </ul>
+                                <a href="crm-unified.html?role=tech" class="btn btn-success btn-block">
+                                    <i class="fas fa-sign-in-alt"></i> Entrar como Técnico
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Клієнт -->
+                    <div class="col-md-3 mb-4">
+                        <div class="card role-card h-100" style="border-top: 5px solid #17a2b8;">
+                            <div class="card-body text-center">
+                                <div class="role-icon text-info">
+                                    <i class="fas fa-user-tie"></i>
+                                </div>
+                                <h3 class="card-title">Cliente</h3>
+                                <p class="card-text">Monitorização dos próprios elevadores:</p>
+                                <ul class="list-unstyled text-left">
+                                    <li><i class="fas fa-check text-success"></i> Meus elevadores</li>
+                                    <li><i class="fas fa-check text-success"></i> Assistente IA</li>
+                                    <li><i class="fas fa-check text-success"></i> Histórico de manutenção</li>
+                                    <li><i class="fas fa-check text-success"></i> Previsão de estado técnico</li>
+                                    <li><i class="fas fa-check text-success"></i> Pedidos de manutenção</li>
+                                    <li><i class="fas fa-times text-danger"></i> <del>Gestão do sistema</del></li>
+                                </ul>
+                                <a href="crm-unified.html?role=client" class="btn btn-info btn-block">
+                                    <i class="fas fa-sign-in-alt"></i> Entrar como Cliente
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-info-circle text-info"></i>
+                                    Sobre o novo sistema CRM
+                                </h5>
+                                <p class="card-text">
+                                    Este é um sistema CRM único com acesso baseado em funções que substitui três painéis separados.
+                                    Agora, uma interface adapta-se a diferentes funções de utilizador,
+                                    mostrando apenas a funcionalidade necessária sem duplicação de código.
+                                </p>
+                                <div class="row text-center">
+                                    <div class="col-md-3">
+                                        <i class="fas fa-code text-primary fa-2x"></i>
+                                        <p class="mt-2"><strong>Menos código</strong><br>Um componente em vez de quatro</p>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <i class="fas fa-sync text-success fa-2x"></i>
+                                        <p class="mt-2"><strong>Manutenção mais fácil</strong><br>Alterações num só lugar</p>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <i class="fas fa-shield-alt text-warning fa-2x"></i>
+                                        <p class="mt-2"><strong>Segurança</strong><br>Controlo de acesso baseado em funções</p>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <i class="fas fa-users text-info fa-2x"></i>
+                                        <p class="mt-2"><strong>4 funções</strong><br>Admin, Despachante, Técnico, Cliente</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../plugins/jquery/jquery.min.js"></script>
+    <script src="../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+</body>
+</html>

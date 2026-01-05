@@ -171,7 +171,7 @@
 
         <li class="nav-item">
             <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link">
-                <i class="nav-icon fas fa-robot"></i>
+                <i class="nav-icon fas fa-magic"></i>
                 <p>AI Асистент</p>
                 <span class="badge badge-success right">Новинка</span>
             </a>
@@ -387,16 +387,29 @@
             }
         }
 
-        // Функція завантаження призначень техніка
+        // 🔥 ПІДКЛЮЧЕНО ДО РЕАЛЬНОГО API /api/tasks
         async function loadTechAssignments() {
             try {
-                const response = await window.authManager.apiRequest('/assignments/tech/my');
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    console.error('❌ No token found');
+                    return [];
+                }
+
+                const response = await fetch('/api/tasks', {
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
                 
                 if (response.ok) {
                     const data = await response.json();
-                    return Array.isArray(data) ? data : data.assignments || [];
+                    console.log('✅ Tasks loaded from API:', data.length);
+                    return Array.isArray(data) ? data : data.tasks || [];
                 }
                 
+                console.warn('⚠️ API /api/tasks returned non-OK status:', response.status);
                 return [];
             } catch (error) {
                 console.warn('API недоступний, використовуємо локальні дані');

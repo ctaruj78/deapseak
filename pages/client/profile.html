@@ -478,7 +478,7 @@
 
         <li class="nav-item">
             <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link">
-                <i class="nav-icon fas fa-robot"></i>
+                <i class="nav-icon fas fa-magic"></i>
                 <p>AI Асистент</p>
                 <span class="badge badge-success right">Новинка</span>
             </a>
@@ -718,7 +718,7 @@
                                         <link rel="stylesheet" href="/assets/css/ai-assistant.css">
                                         <div id="ai-assistant-fab" style="position:fixed;bottom:32px;right:32px;z-index:9999;">
                                             <button class="ai-fab-btn" title="AI Асистент" style="background:#3a86ff;color:#fff;border:none;border-radius:50%;width:56px;height:56px;box-shadow:0 2px 8px rgba(0,0,0,0.2);font-size:28px;cursor:pointer;">
-                                                <i class="fas fa-robot"></i>
+                                                <i class="fas fa-magic"></i>
                                             </button>
                                         </div>
                                         <div id="ai-assistant-modal" style="display:none;position:fixed;bottom:100px;right:32px;z-index:10000;max-width:350px;width:100%;">
@@ -1142,12 +1142,85 @@
                 );
             }, 30000);
 
-            // Завантаження даних користувача
-            const userData = JSON.parse(localStorage.getItem('userData')) || {};
-            if (userData.firstName) {
-                $('#clientName').text(userData.firstName);
-                $('#sidebarName').text(userData.firstName);
+            // 🔥 ПІДКЛЮЧЕНО ДО РЕАЛЬНОГО API /api/users/me
+            await loadUserProfile();
+        });
+
+        async function loadUserProfile() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    console.error('❌ No token, redirecting to login');
+                    window.location.href = '/pages/auth/login.html';
+                    return;
+                }
+
+                const response = await fetch('/api/users/me', {
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const userData = await response.json();
+                    console.log('✅ User profile loaded from API');
+                    
+                    // Оновлюємо UI
+                    if (userData.firstName) {
+                        $('#clientName').text(userData.firstName);
+                        $('#sidebarName').text(userData.firstName);
+                    }
+                    if (userData.email) {
+                        $('#userEmail').text(userData.email);
+                    }
+                    if (userData.phone) {
+                        $('#userPhone').text(userData.phone);
+                    }
+                    
+                    // Зберігаємо в localStorage для кешування
+                    localStorage.setItem('userData', JSON.stringify(userData));
+                } else {
+                    console.warn('⚠️ API /api/users/me failed, using localStorage fallback');
+                    
+                    // Fallback до localStorage
+                    const userData = JSON.parse(localStorage.getItem('userData')) || {};
+                    if (userData.firstName) {
+                        $('#clientName').text(userData.firstName);
+                        $('#sidebarName').text(userData.firstName);
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Error loading user profile:', error);
+                
+                // Fallback до localStorage
+                const userData = JSON.parse(localStorage.getItem('userData')) || {};
+                if (userData.firstName) {
+                    $('#clientName').text(userData.firstName);
+                    $('#sidebarName').text(userData.firstName);
+                }
             }
+        }
+
+        $(document).ready(function() {
+            // Ініціалізація AdminLTE
+            $('[data-widget="pushmenu"]').PushMenu();
+            
+            // Темна тема
+            $('#darkModeToggle').on('click', function() {
+                $('body').toggleClass('dark-mode');
+                $(this).find('i').toggleClass('fa-moon fa-sun');
+            });
+
+            // Перевірка з'єднання
+            setInterval(() => {
+                const online = navigator.onLine;
+                $('#connectionStatus').html(
+                    online ? 
+                    '<i class="fas fa-wifi text-success"></i> Online' : 
+                    '<i class="fas fa-wifi-slash text-danger"></i> Offline'
+                );
+            }, 30000);
 
             // Simple ProfileManager stub to prevent console errors
             class ProfileManager {

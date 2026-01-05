@@ -350,7 +350,7 @@
 
         <li class="nav-item">
             <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link">
-                <i class="nav-icon fas fa-robot"></i>
+                <i class="nav-icon fas fa-magic"></i>
                 <p>AI Асистент</p>
             </a>
         </li>
@@ -685,6 +685,41 @@
                         <div id="requestDetails">
                             <!-- Деталі заявки -->
                         </div>
+                        
+                        <!-- 🆕 КОМЕНТАРІ ДО ЗАЯВКИ -->
+                        <div class="card mt-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-comments"></i> Коментарі
+                                    <span class="badge badge-primary ml-2" id="commentsCount">0</span>
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <!-- Список коментарів -->
+                                <div id="commentsList" style="max-height: 300px; overflow-y: auto;">
+                                    <p class="text-muted text-center py-3">
+                                        <i class="fas fa-inbox"></i> Коментарів поки немає
+                                    </p>
+                                </div>
+                                
+                                <!-- Форма нового коментаря -->
+                                <div class="mt-3 border-top pt-3">
+                                    <div class="form-group">
+                                        <textarea 
+                                            class="form-control" 
+                                            id="newCommentText" 
+                                            rows="2" 
+                                            placeholder="Додати коментар..."></textarea>
+                                    </div>
+                                    <button 
+                                        class="btn btn-primary btn-sm" 
+                                        onclick="addComment()">
+                                        <i class="fas fa-paper-plane"></i> Додати коментар
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div class="request-timeline" id="requestTimeline">
                             <!-- Таймлайн заявки -->
                         </div>
@@ -694,19 +729,8 @@
                             <div class="card-header">
                                 <h6>Швидкі дії</h6>
                             </div>
-                            <div class="card-body">
-                                <button class="btn btn-success btn-block btn-sm" onclick="changeRequestStatus('in_progress')">
-                                    <i class="fas fa-play"></i> Розпочати роботу
-                                </button>
-                                <button class="btn btn-info btn-block btn-sm" onclick="assignTechnician()">
-                                    <i class="fas fa-user-plus"></i> Призначити техніка
-                                </button>
-                                <button class="btn btn-warning btn-block btn-sm" onclick="addComment()">
-                                    <i class="fas fa-comment"></i> Додати коментар
-                                </button>
-                                <button class="btn btn-primary btn-block btn-sm" onclick="completeRequest()">
-                                    <i class="fas fa-check"></i> Завершити
-                                </button>
+                            <div class="card-body" id="quickActionsContainer">
+                                <!-- Кнопки генеруються динамічно через generateQuickActions() -->
                             </div>
                         </div>
                     </div>
@@ -912,11 +936,8 @@ class ServiceRequestManager {
                         const liftId = req.liftMunicipalNumber || req.liftId || 'Невідомий';
                         const liftAddress = req.liftAddress || 'Адреса невідома';
                         
-                        // Отримуємо дані техніка
-                        const techData = req.assignedTo || {};
-                        const techName = techData.firstName && techData.lastName 
-                            ? `${techData.firstName} ${techData.lastName}`
-                            : techData.username || null;
+                        // Отримуємо дані техніка - використовуємо technicianName з API
+                        const techName = req.technicianName || null;
                         
                         return {
                             id: displayId,
@@ -930,7 +951,7 @@ class ServiceRequestManager {
                             title: req.title || 'Без назви',
                             description: req.description || 'Без опису',
                             technician: techName,
-                            technicianId: req.assignedTo?._id || req.assignedTo,
+                            technicianId: req.technician,
                             createdAt: req.createdAt,
                             scheduledAt: req.scheduledDate,
                             completedAt: req.completedDate,
@@ -1270,7 +1291,7 @@ class ServiceRequestManager {
                         </span>
                     </td>
                     <td>
-                        ${request.technician ? this.getTechnicianName(request.technician) : 'Не призначено'}
+                        ${request.technicianName || (request.technician ? 'Призначено' : 'Не призначено')}
                     </td>
                     <td>
                         ${new Date(request.createdAt).toLocaleDateString('uk-UA', {
@@ -1477,7 +1498,7 @@ class ServiceRequestManager {
                         <strong>Статус:</strong> <span class="status-badge status-${request.status}">${this.getStatusText(request.status)}</span>
                     </div>
                     <div class="col-md-6">
-                        <strong>Технік:</strong> ${request.technician ? this.getTechnicianName(request.technician) : 'Не призначено'}
+                        <strong>Технік:</strong> ${request.technicianName || (request.technician ? 'Призначено' : 'Не призначено')}
                     </div>
                 </div>
                 <div class="mb-3">
@@ -1509,9 +1530,13 @@ class ServiceRequestManager {
         
         $('#requestTimeline').html(timeline);
         
+        // 🆕 Завантажуємо коментарі для заявки
+        const requestIdForComments = request._id || request.id;
+        loadComments(requestIdForComments);
+        
         // Генеруємо кнопки в залежності від статусу
         const quickActionsHtml = this.generateQuickActions(request);
-        $('#viewRequestModal .card-body').html(quickActionsHtml);
+        $('#quickActionsContainer').html(quickActionsHtml);
         
         // Додаємо кнопку експорту PDF
         const exportBtnHtml = `
@@ -1521,7 +1546,7 @@ class ServiceRequestManager {
                 </button>
             </div>
         `;
-        $('#viewRequestModal .card-body').append(exportBtnHtml);
+        $('#quickActionsContainer').append(exportBtnHtml);
         
         $('#viewRequestModal').modal('show');
     }
@@ -1996,128 +2021,93 @@ async function changeRequestStatus(newStatus) {
     }
 }
 
-async function addComment() {
-    // Перевірка наявності AuthManager
-    if (typeof AuthManager === 'undefined') {
-        alert('Для виконання цієї дії потрібна авторизація.\nБудь ласка, увійдіть через сторінку логіну.');
-        window.location.replace('/pages/auth/login.html');
-        return;
-    }
-    
-    if (!AuthManager.isAuthenticated()) {
-        alert('Ваша сесія закінчилась.\nБудь ласка, увійдіть знову.');
-        window.location.replace('/pages/auth/login.html');
-        return;
-    }
-    
-    // Перевірка чи заявка не завершена
-    if (window.serviceManager?.currentRequest?.status === 'completed') {
-        alert('Неможливо додати коментар.\nЦя заявка вже завершена.');
-        return;
-    }
-    
-    if (!window.serviceManager || !window.serviceManager.currentRequest) {
-        alert('Заявка не обрана');
-        return;
-    }
-    
-    const comment = prompt('Введіть коментар:');
-    if (!comment || comment.trim() === '') {
-        return;
-    }
-    
-    try {
-        const requestId = window.serviceManager.currentRequest._id;
-        
-        if (!requestId) {
-            throw new Error('ID заявки не знайдено');
-        }
-        
-        console.log(`Додавання коментаря до заявки ${requestId}`);
-        
-        const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/comment`, {
-            method: 'POST',
-            body: JSON.stringify({ text: comment })
-        });
-        
-        if (!response || !response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Помилка додавання коментаря');
-        }
-        
-        const result = await response.json();
-        
-        alert('Коментар успішно додано!');
-        
-        // Закриваємо модальне вікно
-        $('#viewRequestModal').modal('hide');
-        
-        // Перезавантажуємо список заявок
-        await window.serviceManager.loadRequests();
-        window.serviceManager.renderRequests();
-        
-    } catch (error) {
-        console.error('Помилка додавання коментаря:', error);
-        alert('Не вдалося додати коментар: ' + error.message);
-    }
-}
-
 async function completeRequest() {
-    // Перевірка наявності AuthManager
-    if (typeof AuthManager === 'undefined') {
-        alert('Для виконання цієї дії потрібна авторизація.\nБудь ласка, увійдіть через сторінку логіну.');
+    if (typeof AuthManager === 'undefined' || !AuthManager.isAuthenticated()) {
+        alert('Потрібна авторизація');
         window.location.replace('/pages/auth/login.html');
         return;
     }
     
-    if (!AuthManager.isAuthenticated()) {
-        alert('Ваша сесія закінчилась.\nБудь ласка, увійдіть знову.');
-        window.location.replace('/pages/auth/login.html');
-        return;
-    }
-    
-    if (!window.serviceManager || !window.serviceManager.currentRequest) {
+    if (!window.serviceManager?.currentRequest) {
         alert('Заявка не обрана');
         return;
     }
     
-    if (!confirm('Ви впевнені, що хочете завершити цю заявку?')) {
+    const workDescription = prompt('Введіть опис виконаної роботи:');
+    if (!workDescription?.trim()) {
+        alert('Опис виконаної роботи обов\'язковий');
         return;
     }
     
     try {
-        const requestId = window.serviceManager.currentRequest._id;
-        
-        if (!requestId) {
-            throw new Error('ID заявки не знайдено');
-        }
-        
-        console.log(`Завершення заявки ${requestId}`);
+        const requestId = window.serviceManager.currentRequest._id || window.serviceManager.currentRequest.id;
         
         const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/complete`, {
             method: 'POST',
-            body: JSON.stringify({})
+            body: JSON.stringify({ resolution: workDescription.trim() })
         });
         
-        if (!response || !response.ok) {
+        if (!response?.ok) {
             const error = await response.json();
-            throw new Error(error.message || 'Помилка завершення заявки');
+            throw new Error(error.message || 'Помилка завершення');
         }
         
-        const result = await response.json();
-        
-        alert('Заявку успішно завершено!');
-        
-        // Закриваємо модальне вікно
+        alert('Заявку завершено успішно!');
         $('#viewRequestModal').modal('hide');
         
-        // Перезавантажуємо список заявок
         await window.serviceManager.loadRequests();
         window.serviceManager.renderRequests();
         
     } catch (error) {
-        console.error('Помилка завершення заявки:', error);
+        console.error('Помилка завершення:', error);
         alert('Не вдалося завершити заявку: ' + error.message);
+    }
+}
+
+async function addComment() {
+    try {
+        const commentTextRaw = $('#newCommentText').val();
+        
+        if (!commentTextRaw || typeof commentTextRaw !== 'string') {
+            alert('Введіть текст коментаря');
+            return;
+        }
+        
+        const commentText = commentTextRaw.trim();
+        
+        if (!commentText) {
+            alert('Введіть текст коментаря');
+            return;
+        }
+
+        if (!window.serviceManager.currentRequest) {
+            alert('Не вибрана заявка');
+            return;
+        }
+
+        const requestId = window.serviceManager.currentRequest._id || window.serviceManager.currentRequest.id;
+        
+        const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/comment`, {
+            method: 'POST',
+            body: JSON.stringify({ comment: commentText })
+        });
+
+        if (!response.ok) {
+            throw new Error('Помилка додавання коментаря');
+        }
+
+        const result = await response.json();
+        console.log('✅ Comment added:', result);
+
+        $('#newCommentText').val('');
+        await window.serviceManager.loadRequests();
+        await loadComments(requestId);
+
+        alert('Коментар додано успішно');
+
+    } catch (error) {
+        console.error('❌ Error adding comment:', error);
+        alert('Помилка додавання коментаря: ' + error.message);
     }
 }
 
@@ -2214,19 +2204,14 @@ async function showAssignTechnicianModal() {
         const result = await response.json();
         console.log('Отримано відповідь від API:', result);
         
-        // API повертає масив напряму або об'єкт з data
-        let allUsers;
-        if (Array.isArray(result)) {
-            // API повертає масив напряму
+        // API повертає {success: true, data: [...]} - масив користувачів в data
+        let allUsers = [];
+        if (result.success && result.data) {
+            allUsers = Array.isArray(result.data) ? result.data : [];
+        } else if (Array.isArray(result)) {
             allUsers = result;
-        } else if (result.data) {
-            // API повертає {success: true, data: {users: [...]} } або {data: [...]}
-            allUsers = Array.isArray(result.data) ? result.data : (result.data.users || []);
         } else if (result.users) {
-            // API повертає {users: [...]}
             allUsers = result.users;
-        } else {
-            allUsers = [];
         }
         
         console.log('Список користувачів:', allUsers);
@@ -2379,6 +2364,55 @@ function getCurrentAssignmentId() {
     // TODO: Логіка для отримання ID поточно обраної заявки
     // Це може бути збережено в глобальній змінній або отримано з UI
     return window.currentAssignmentId || null;
+}
+
+function logout() {
+    if (confirm('Ви дійсно хочете вийти?')) {
+        window.location.replace('/pages/auth/login.html');
+    }
+}
+
+// 🆕 Функції для роботи з коментарями
+async function loadComments(requestId) {
+    try {
+        const request = window.serviceManager.requests.find(r => r._id === requestId || r.id === requestId);
+        if (!request) return;
+
+        const comments = request.rawData?.comments || [];
+        
+        if (comments.length === 0) {
+            $('#commentsList').html(`
+                <p class="text-muted text-center py-3">
+                    <i class="fas fa-inbox"></i> Коментарів поки немає
+                </p>
+            `);
+            $('#commentsCount').text('0');
+            return;
+        }
+
+        $('#commentsCount').text(comments.length);
+        
+        const commentsHtml = comments.map(comment => {
+            const username = comment.user?.username || comment.user?.firstName || 'Користувач';
+            const timestamp = new Date(comment.createdAt).toLocaleString('uk-UA');
+            
+            return `
+                <div class="border-bottom pb-2 mb-2">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <strong class="text-primary">
+                            <i class="fas fa-user-circle"></i> ${username}
+                        </strong>
+                        <small class="text-muted">${timestamp}</small>
+                    </div>
+                    <p class="mb-1 mt-1">${comment.text}</p>
+                </div>
+            `;
+        }).join('');
+        
+        $('#commentsList').html(commentsHtml);
+    } catch (error) {
+        console.error('❌ Error loading comments:', error);
+    }
 }
 
 function logout() {

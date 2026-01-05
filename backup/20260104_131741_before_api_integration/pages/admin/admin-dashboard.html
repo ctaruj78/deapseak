@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Адмін-панель - LiftMaster Pro</title>
+    <!-- Global Settings - ПЕРШЕ що завантажується -->
+    <script src="../../assets/js/global-settings.js"></script>
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    <!-- Dark Theme CSS -->
+    <link rel="stylesheet" href="../../assets/css/theme-dark.css">
+    <!-- Chart.js ЛОКАЛЬНИЙ -->
+    <script src="../../plugins/chart.js/chart.umd.min.js"></script>
+    
+    <style>
+        .stats-box {
+            text-align: center;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            color: white;
+        }
+        .bg-gradient-primary { background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); }
+        .bg-gradient-success { background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%); }
+        .bg-gradient-warning { background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%); }
+        .bg-gradient-info { background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); }
+        .bg-gradient-danger { background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); }
+        
+        .quick-action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: #333;
+        }
+        .quick-action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-color: #007bff;
+            text-decoration: none;
+            color: #007bff;
+        }
+        .quick-action-btn i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed" data-required-role="admin">
+    <div class="wrapper">
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button">
+                        <i class="fas fa-bars"></i>
+                    </a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="admin-dashboard.html" class="nav-link">Головна</a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="navbar-search" href="#" role="button">
+                        <i class="fas fa-search"></i>
+                    </a>
+                    <div class="navbar-search-block">
+                        <form class="form-inline">
+                            <div class="input-group input-group-sm">
+                                <input class="form-control form-control-navbar" type="search" placeholder="Пошук" aria-label="Search">
+                                <div class="input-group-append">
+                                    <button class="btn btn-navbar" type="submit">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../pages/auth/login.html" role="button">
+                        <i class="fas fa-sign-out-alt"></i> Вийти
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Sidebar Container -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <!-- Brand Logo -->
+            <a href="admin-dashboard.html" class="brand-link">
+                <i class="brand-image fas fa-elevator"></i>
+                <span class="brand-text font-weight-light">LiftMaster Pro</span>
+            </a>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Sidebar Menu -->
+                <nav class="mt-2">
+                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                        <li class="nav-item">
+                            <a href="admin-dashboard.html" class="nav-link active">
+                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                                <p>Дашборд</p>
+                            </a>
+                        </li>
+
+                        <!-- QR System Menu -->
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-qrcode"></i>
+                                <p>
+                                    QR Система
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="qr-management.html" class="nav-link">
+                                        <i class="fas fa-cog nav-icon"></i>
+                                        <p>Керування QR-кодами</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="unified-analytics.html#qr-analytics" class="nav-link">
+                                        <i class="fas fa-chart-line nav-icon"></i>
+                                        <p>Аналітика QR-кодів</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="qr-history.html" class="nav-link">
+                                        <i class="fas fa-history nav-icon"></i>
+                                        <p>Історія QR-кодів</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- Lifts Menu -->
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-elevator"></i>
+                                <p>
+                                    Ліфти
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="lifts.html" class="nav-link">
+                                        <i class="fas fa-list nav-icon"></i>
+                                        <p>Управління ліфтами</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="requests.html" class="nav-link">
+                                        <i class="fas fa-clipboard-list nav-icon"></i>
+                                        <p>Заявки на обслуговування</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="maps.html" class="nav-link">
+                                        <i class="fas fa-map-marked-alt nav-icon"></i>
+                                        <p>Мапа ліфтів</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="users.html" class="nav-link">
+                                <i class="nav-icon fas fa-users"></i>
+                                <p>Користувачі</p>
+                            </a>
+                        </li>
+
+
+
+                        <!-- Analytics Menu -->
+                        <li class="nav-item">
+                            <a href="unified-analytics.html" class="nav-link">
+                                <i class="nav-icon fas fa-chart-line"></i>
+                                <p>Аналітика</p>
+                            </a>
+                        </li>
+
+                        <!-- Predictive Analytics -->
+                        <li class="nav-item">
+                            <a href="predictive-maintenance.html" class="nav-link">
+                                <i class="nav-icon fas fa-brain"></i>
+                                <p>AI Прогнозування</p>
+                            </a>
+                        </li>
+
+                        <!-- Reports -->
+                        <li class="nav-item">
+                            <a href="reports.html" class="nav-link">
+                                <i class="nav-icon fas fa-chart-bar"></i>
+                                <p>Звіти</p>
+                            </a>
+                        </li>
+
+                        <!-- Support Menu -->
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-headset"></i>
+                                <p>
+                                    Підтримка
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="support.html" class="nav-link">
+                                        <i class="fas fa-ticket-alt nav-icon"></i>
+                                        <p>Технічна підтримка</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="notifications.html" class="nav-link">
+                                        <i class="fas fa-bell nav-icon"></i>
+                                        <p>Сповіщення</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link">
+                                <i class="nav-icon fas fa-magic"></i>
+                                <p>AI Асистент</p>
+                            </a>
+                        </li>
+
+                        <!-- Documents Menu -->
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-file-alt"></i>
+                                <p>
+                                    Документи
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="email-template.html" class="nav-link">
+                                        <i class="fas fa-envelope nav-icon"></i>
+                                        <p>Email шаблони</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="invoice-template.html" class="nav-link">
+                                        <i class="fas fa-file-invoice nav-icon"></i>
+                                        <p>Рахунки</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="inspection-template.html" class="nav-link">
+                                        <i class="fas fa-clipboard-check nav-icon"></i>
+                                        <p>Інспекції</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="report-template.html" class="nav-link">
+                                        <i class="fas fa-file-medical nav-icon"></i>
+                                        <p>Звіт шаблони</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="profile.html" class="nav-link">
+                                <i class="nav-icon fas fa-user"></i>
+                                <p>Профіль</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="settings.html" class="nav-link">
+                                <i class="nav-icon fas fa-cog"></i>
+                                <p>Налаштування</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" onclick="logout()">
+                                <i class="nav-icon fas fa-sign-out-alt"></i>
+                                <p>Вийти</p>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <!-- Content Header -->
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">Адмін дашборд</h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="#">Головна</a></li>
+                                <li class="breadcrumb-item active">Дашборд</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+                    <!-- Stats Boxes -->
+                    <div class="row">
+                        <div class="col-lg-3 col-6">
+                            <div class="stats-box bg-gradient-primary">
+                                <div class="inner">
+                                    <h3 id="totalUsers">0</h3>
+                                    <p>Користувачів</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="stats-box bg-gradient-success">
+                                <div class="inner">
+                                    <h3 id="totalLifts">0</h3>
+                                    <p>Ліфтів</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-elevator"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="stats-box bg-gradient-warning">
+                                <div class="inner">
+                                    <h3 id="activeRequests">0</h3>
+                                    <p>Активних заявок</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-clipboard-list"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="stats-box bg-gradient-info">
+                                <div class="inner">
+                                    <h3 id="totalRevenue">0</h3>
+                                    <p>Доходів (грн)</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-money-bill"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Швидкі дії</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-3 col-sm-6 mb-3">
+                                            <a href="users.html" class="quick-action-btn">
+                                                <i class="fas fa-user-plus text-primary"></i>
+                                                <h6>Додати користувача</h6>
+                                                <p class="text-muted small mb-0">Створити новий обліковий запис</p>
+                                            </a>
+                                        </div>
+                                        <div class="col-md-3 col-sm-6 mb-3">
+                                            <a href="lifts.html" class="quick-action-btn">
+                                                <i class="fas fa-elevator text-success"></i>
+                                                <h6>Управління ліфтами</h6>
+                                                <p class="text-muted small mb-0">Додати або редагувати ліфти</p>
+                                            </a>
+                                        </div>
+                                        <div class="col-md-3 col-sm-6 mb-3">
+                                            <a href="unified-analytics.html" class="quick-action-btn">
+                                                <i class="fas fa-chart-line text-warning"></i>
+                                                <h6>Аналітика</h6>
+                                                <p class="text-muted small mb-0">Єдина система аналітики та звітів</p>
+                                            </a>
+                                        </div>
+                                        <div class="col-md-3 col-sm-6 mb-3">
+                                            <a href="settings.html" class="quick-action-btn">
+                                                <i class="fas fa-cog text-info"></i>
+                                                <h6>Налаштування</h6>
+                                                <p class="text-muted small mb-0">Конфігурація системи</p>
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Останні дії</h3>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled" id="recentActivity">
+                                        <li class="media mb-3">
+                                            <i class="fas fa-user-plus text-primary mr-3 mt-1"></i>
+                                            <div class="media-body">
+                                                <h6 class="mt-0 mb-1">Новий користувач зареєстрований</h6>
+                                                <small class="text-muted">2 хвилини тому</small>
+                                            </div>
+                                        </li>
+                                        <li class="media mb-3">
+                                            <i class="fas fa-tools text-warning mr-3 mt-1"></i>
+                                            <div class="media-body">
+                                                <h6 class="mt-0 mb-1">Заявка на ТО завершена</h6>
+                                                <small class="text-muted">15 хвилин тому</small>
+                                            </div>
+                                        </li>
+                                        <li class="media mb-3">
+                                            <i class="fas fa-elevator text-success mr-3 mt-1"></i>
+                                            <div class="media-body">
+                                                <h6 class="mt-0 mb-1">Ліфт додано до системи</h6>
+                                                <small class="text-muted">1 година тому</small>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Система</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="info-box mb-3">
+                                        <span class="info-box-icon bg-success"><i class="fas fa-server"></i></span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">Стан сервера</span>
+                                            <span class="info-box-number">Онлайн</span>
+                                        </div>
+                                    </div>
+                                    <div class="info-box mb-3">
+                                        <span class="info-box-icon bg-info"><i class="fas fa-database"></i></span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">База даних</span>
+                                            <span class="info-box-number">Підключено</span>
+                                        </div>
+                                    </div>
+                                    <div class="info-box">
+                                        <span class="info-box-icon bg-warning"><i class="fas fa-clock"></i></span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">Останнє оновлення</span>
+                                            <span class="info-box-number" id="lastUpdate">Зараз</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer class="main-footer">
+            <strong>&copy; 2024 <a href="#">LiftMaster Pro</a>.</strong>
+            Всі права захищені.
+            <div class="float-right d-none d-sm-inline-block">
+                <b>Версія</b> 3.2.0
+            </div>
+        </footer>
+    </div>
+
+    <!-- jQuery -->
+    <script src="../../plugins/jquery/jquery.min.js"></script>
+    <!-- Bootstrap -->
+    <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+    <!-- AdminLTE -->
+    <script src="../../plugins/adminlte/adminlte.min.js"></script>
+
+    <!-- Load sidebar dynamically -->
+    <script>
+        $(document).ready(function() {
+            $(".main-sidebar").load("includes/sidebar.html");
+        });
+    </script>
+    
+    <!-- 🌍 Система багатомовності -->
+    <script src="../../assets/js/i18n.js"></script>
+    
+    <!-- Security Manager -->
+    <script src="../../assets/js/auth.js" onload="console.log('✅ AuthManager завантажено')" onerror="console.error('❌ Помилка завантаження AuthManager')"></script>
+    
+    <!-- Dashboard Data Loader (NEW) -->
+    <script src="../../assets/js/dashboard-loader.js"></script>
+    
+    <!-- WebSocket Client -->
+    <script src="../../assets/js/websocket-client.js" onload="console.log('✅ WebSocket Client завантажено')" onerror="console.error('❌ Помилка завантаження WebSocket Client')"></script>
+
+    <script>
+        // Ініціалізація після завантаження сторінки
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Admin Dashboard завантажено');
+            
+            // Показуємо ім'я користувача (якщо є стара сесія)
+            const userSession = localStorage.getItem('lm_session');
+            if (userSession) {
+                try {
+                    const userData = JSON.parse(userSession);
+                    $('.user-panel .info a').text(`${userData.firstName || userData.username} ${userData.lastName || ''}`);
+                } catch (e) {
+                    console.warn('Не вдалось розпарсити сесію');
+                }
+            }
+        });
+
+        // Функція виходу
+        function logout() {
+            if (confirm('Ви впевнені, що хочете вийти?')) {
+                localStorage.removeItem('lm_session');
+                localStorage.removeItem('liftmanager_jwt');
+                localStorage.removeItem('token');
+                window.location.replace('/pages/auth/login.html');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профіль - Lift Management System</title>
+    <link rel="stylesheet" href="../../assets/css/main.css">
+    <link rel="stylesheet" href="../../assets/css/responsive.css">
+</head>
+<body class="profile-page">
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <img src="../../assets/img/logo.png" alt="Logo">
+            <h3>Мій профіль</h3>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li class="active"><a href="#personal">Особиста інформація</a></li>
+                <li><a href="#security">Безпека</a></li>
+                <li><a href="#notifications">Сповіщення</a></li>
+                <li><a href="login.html" class="logout">Вийти</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <header class="content-header">
+            <h1>Мій профіль</h1>
+            <div class="user-menu">
+                <span id="userRole">Користувач</span>
+                <img src="../../assets/img/avatars/default.png" alt="User" class="avatar" id="profileAvatar">
+            </div>
+        </header>
+
+        <div class="profile-content">
+            <section id="personal" class="profile-section">
+                <h2>Особиста інформація</h2>
+                <form id="personalInfoForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="firstName">Ім'я</label>
+                            <input type="text" id="firstName" name="firstName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="lastName">Прізвище</label>
+                            <input type="text" id="lastName" name="lastName" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Електронна пошта</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Телефон</label>
+                        <input type="tel" id="phone" name="phone">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="avatar">Аватар</label>
+                        <input type="file" id="avatar" accept="image/*" class="file-input">
+                        <div class="file-preview" id="avatarPreview"></div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Зберегти зміни</button>
+                </form>
+            </section>
+
+            <section id="security" class="profile-section">
+                <h2>Безпека</h2>
+                <form id="securityForm">
+                    <div class="form-group">
+                        <label for="currentPassword">Поточний пароль</label>
+                        <input type="password" id="currentPassword" name="currentPassword" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="newPassword">Новий пароль</label>
+                        <input type="password" id="newPassword" name="newPassword" required>
+                        <div class="password-strength">
+                            <div class="strength-bar"></div>
+                            <span class="strength-text">Надійність пароля: низька</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmPassword">Підтвердження пароля</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Змінити пароль</button>
+                </form>
+
+                <div class="security-settings">
+                    <h3>Додаткові налаштування</h3>
+                    <div class="setting-item">
+                        <label class="switch">
+                            <input type="checkbox" id="twoFactorAuth">
+                            <span class="slider"></span>
+                        </label>
+                        <span>Двофакторна аутентифікація</span>
+                    </div>
+                    <div class="setting-item">
+                        <label class="switch">
+                            <input type="checkbox" id="sessionTimeout" checked>
+                            <span class="slider"></span>
+                        </label>
+                        <span>Автоматичний вихід після неактивності</span>
+                    </div>
+                </div>
+            </section>
+
+            <section id="notifications" class="profile-section">
+                <h2>Сповіщення</h2>
+                <div class="notification-settings">
+                    <div class="setting-category">
+                        <h3>Email сповіщення</h3>
+                        <div class="setting-item">
+                            <label class="switch">
+                                <input type="checkbox" id="emailMaintenance" checked>
+                                <span class="slider"></span>
+                            </label>
+                            <span>Технічне обслуговування</span>
+                        </div>
+                        <div class="setting-item">
+                            <label class="switch">
+                                <input type="checkbox" id="emailUpdates" checked>
+                                <span class="slider"></span>
+                            </label>
+                            <span>Оновлення статусу</span>
+                        </div>
+                        <div class="setting-item">
+                            <label class="switch">
+                                <input type="checkbox" id="emailPromotions">
+                                <span class="slider"></span>
+                            </label>
+                            <span>Спеціальні пропозиції</span>
+                        </div>
+                    </div>
+
+                    <div class="setting-category">
+                        <h3>Push-сповіщення</h3>
+                        <div class="setting-item">
+                            <label class="switch">
+                                <input type="checkbox" id="pushUrgent" checked>
+                                <span class="slider"></span>
+                            </label>
+                            <span>Термінові завдання</span>
+                        </div>
+                        <div class="setting-item">
+                            <label class="switch">
+                                <input type="checkbox" id="pushAssignments" checked>
+                                <span class="slider"></span>
+                            </label>
+                            <span>Нові призначення</span>
+                        </div>
+                        <div class="setting-item">
+                            <label class="switch">
+                                <input type="checkbox" id="pushMessages" checked>
+                                <span class="slider"></span>
+                            </label>
+                            <span>Повідомлення чату</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="saveNotificationSettings()">Зберегти налаштування</button>
+            </section>
+        </div>
+    </div>
+
+    <script src="../../assets/js/config.js"></script>
+    <script src="../../assets/js/database.js"></script>
+    
+</body>
+</html>
