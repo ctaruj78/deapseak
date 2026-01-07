@@ -572,6 +572,16 @@ class EnhancedLiftModal {
                 this.showMessage(isEdit ? 'Ліфт успішно оновлено!' : 'Ліфт успішно збережено!', 'success');
                 $('#enhancedLiftModal').modal('hide');
                 
+                // 🏛️ Перевірка municipality notification (тільки для нових ліфтів)
+                if (!isEdit && liftObject.municipality && liftObject.municipality.name) {
+                    console.log('🏛️ Виявлено município:', liftObject.municipality.name);
+                    if (typeof window.showMunicipalityNotificationModal === 'function') {
+                        window.showMunicipalityNotificationModal(liftObject);
+                    } else {
+                        console.warn('⚠️ Функція showMunicipalityNotificationModal не знайдена');
+                    }
+                }
+                
                 // Скидаємо currentLiftId після успішного збереження
                 this.currentLiftId = null;
                 
