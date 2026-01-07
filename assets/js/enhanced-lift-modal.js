@@ -467,16 +467,16 @@ class EnhancedLiftModal {
     }
 
     validateCoordinates(data) {
-        if (!data.lat || !data.lng) {
-            this.showMessage('Вкажіть координати ліфта на карті або введіть їх вручну', 'warning');
-            $('#enhancedLiftLat, #enhancedLiftLng').addClass('is-invalid');
-            return false;
-        }
-        
-        if (data.lat < -90 || data.lat > 90 || data.lng < -180 || data.lng > 180) {
-            this.showMessage('Некоректні координати. Перевірте широту (-90 до 90) та довготу (-180 до 180)', 'warning');
-            $('#enhancedLiftLat, #enhancedLiftLng').addClass('is-invalid');
-            return false;
+        // 🏛️ Координати тепер опціональні - backend використає геокодування за адресою
+        // Якщо координати вказані - перевіряємо їх валідність
+        if (data.lat && data.lng) {
+            if (data.lat < -90 || data.lat > 90 || data.lng < -180 || data.lng > 180) {
+                this.showMessage('Некоректні координати. Перевірте широту (-90 до 90) та довготу (-180 до 180)', 'warning');
+                $('#enhancedLiftLat, #enhancedLiftLng').addClass('is-invalid');
+                return false;
+            }
+        } else {
+            console.log('ℹ️ Координати не вказані - backend використає геокодування адреси');
         }
         
         $('#enhancedLiftLat, #enhancedLiftLng').removeClass('is-invalid');
