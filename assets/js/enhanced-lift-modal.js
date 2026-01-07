@@ -497,20 +497,17 @@ class EnhancedLiftModal {
             const testClientId = '6915a14c8c41cac851f25c7e';
             
             // Конвертуємо дані в формат API v2
-            // Координати: використовуємо реальні якщо є, інакше Лісабон за замовчуванням
+            // 🗺️ Координати: якщо є вручну введені - використовуємо їх
+            // Якщо немає - НЕ передаємо location, щоб backend геокодував адресу автоматично
             const hasCoords = liftData.lat && liftData.lng && 
                              !isNaN(parseFloat(liftData.lat)) && 
                              !isNaN(parseFloat(liftData.lng));
-            
-            const finalLat = hasCoords ? parseFloat(liftData.lat) : 38.7223; // Лісабон
-            const finalLng = hasCoords ? parseFloat(liftData.lng) : -9.1393; // Лісабон
             
             console.log('📍 Координати для збереження:', { 
                 hasCoords, 
                 inputLat: liftData.lat, 
                 inputLng: liftData.lng,
-                finalLat, 
-                finalLng 
+                message: hasCoords ? 'Використовуємо введені координати' : '⚡ Backend геокодує адресу автоматично'
             });
             
             const apiData = {
@@ -523,16 +520,7 @@ class EnhancedLiftModal {
                 speed: liftData.speed,
                 floors: liftData.floorsCount || 5,
                 installationDate: liftData.installationYear ? `${liftData.installationYear}-01-01` : null,
-                address: {
-                    street: liftData.address,
-                    city: 'Lisboa', // Лісабон
-                    zipCode: liftData.postcode,
-                    country: 'Portugal' // Португалія
-                },
-                location: {
-                    type: 'Point',
-                    coordinates: [finalLng, finalLat] // [longitude, latitude]
-                },
+                address: liftData.address, // 🏛️ Backend використає це для геокодування та municipality detection
                 client: testClientId, // ID клієнта
                 clientName: liftData.clientName,
                 clientEmail: liftData.clientEmail,
@@ -544,6 +532,18 @@ class EnhancedLiftModal {
                 nextInspectionDate: liftData.nextMaintenance,
                 inspectionFrequency: liftData.inspectionFrequency,
                 maintenanceNotes: liftData.maintenanceNotes
+            };
+            
+            // ✅ Додаємо координати ТІЛЬКИ якщо користувач ввів їх вручну
+            if (hasCoords) {
+                apiData.location = {
+                    type: 'Point',
+                    coordinates: [parseFloat(liftData.lng), parseFloat(liftData.lat)]
+                };
+                console.log('✅ Використано вручну введені координати');
+            } else {
+                console.log('⚡ Backend геокодує адресу: ' + liftData.address);
+            }
             };
             
             console.log('📤 Sending to API:', apiData);
