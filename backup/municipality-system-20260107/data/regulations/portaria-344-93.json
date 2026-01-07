@@ -1,0 +1,92 @@
+{
+  "id": "portaria-344-93",
+  "title": "Portaria n.º 344/93",
+  "description": "Regula os procedimentos de inspeção periódica de elevadores",
+  "date": "1993-04-09",
+  "source": "Diário da República - I Série-B N.º 83/1993",
+  "url": "https://diariodarepublica.pt/dr/detalhe/portaria/344-1993-629466",
+  "priority": "HIGH",
+  "scope": "Procedimentos de inspeção periódica",
+  "articles": [
+    {
+      "number": "Art. 1.º",
+      "title": "Objecto",
+      "text": "A presente portaria estabelece os procedimentos de inspeção periódica obrigatória dos elevadores em serviço, em conformidade com o Decreto-Lei n.º 320/2002.",
+      "keywords": ["inspeção periódica", "elevadores em serviço", "procedimentos"]
+    },
+    {
+      "number": "Art. 2.º",
+      "title": "Periodicidade das inspeções",
+      "text": "As inspeções periódicas devem ser realizadas com a seguinte periodicidade:\na) Anualmente, para elevadores com mais de 10 anos;\nb) Bienalmente, para elevadores com até 10 anos;\nc) Após qualquer alteração significativa ou acidente.",
+      "keywords": ["periodicidade", "anual", "bienal", "inspeção"]
+    },
+    {
+      "number": "Art. 3.º",
+      "title": "Entidades inspetoras",
+      "text": "As inspeções devem ser realizadas por entidades inspetoras acreditadas pelo Instituto Português de Acreditação (IPAC), que disponham de técnicos certificados.",
+      "keywords": ["entidades inspetoras", "acreditação", "IPAC", "técnicos certificados"]
+    },
+    {
+      "number": "Art. 4.º",
+      "title": "Documentação da inspeção",
+      "text": "De cada inspeção deve resultar:\na) Relatório de inspeção com identificação do elevador;\nb) Lista de cláusulas detetadas (C1, C2, C3);\nc) Prazo para correção das não conformidades;\nd) Conclusão: Aprovado ou Reprovado.",
+      "keywords": ["relatório", "cláusulas", "não conformidades", "aprovado", "reprovado"]
+    },
+    {
+      "number": "Art. 5.º",
+      "title": "Lista de verificação",
+      "text": "A inspeção deve verificar:\na) Dispositivos de segurança (para-quedas, limitadores de velocidade);\nb) Portas de piso e cabine;\nc) Instalações elétricas e iluminação;\nd) Máquinas, motores e freios;\ne) Cabos e polias;\nf) Casa de máquinas e caixa de elevador;\ng) Sinalização e instruções de uso.",
+      "keywords": ["dispositivos de segurança", "portas", "iluminação", "máquinas", "cabos", "sinalização"]
+    },
+    {
+      "number": "Art. 6.º",
+      "title": "Classificação das cláusulas",
+      "text": "As não conformidades são classificadas em:\na) C1 - Cláusulas de tipo 1: Situações de elevado risco. Obrigam à imobilização imediata.\nb) C2 - Cláusulas de tipo 2: Situações de médio risco. Devem ser corrigidas no prazo estabelecido.\nc) C3 - Cláusulas de tipo 3: Situações de baixo risco. Devem ser corrigidas na próxima inspeção.",
+      "keywords": ["C1", "C2", "C3", "classificação", "risco", "imobilização"]
+    },
+    {
+      "number": "Art. 7.º",
+      "title": "Prazos de regularização",
+      "text": "Os prazos para regularização são:\na) C1: Imobilização imediata até correção;\nb) C2: Conforme estabelecido no relatório (geralmente 30 dias, alterado por Despacho 17/2022);\nc) C3: Até à próxima inspeção periódica.",
+      "keywords": ["prazos", "regularização", "imobilização", "correção"]
+    },
+    {
+      "number": "Art. 8.º",
+      "title": "Obrigações do proprietário",
+      "text": "O proprietário ou responsável pelo elevador deve:\na) Garantir a realização das inspeções periódicas;\nb) Corrigir as não conformidades nos prazos estabelecidos;\nc) Manter o elevador em condições de segurança;\nd) Conservar os relatórios de inspeção durante 5 anos.",
+      "keywords": ["proprietário", "obrigações", "correção", "segurança", "relatórios"]
+    },
+    {
+      "number": "Art. 9.º",
+      "title": "Fiscalização",
+      "text": "A fiscalização do cumprimento da presente portaria compete à Inspeção-Geral do Ambiente e do Ordenamento do Território (IGAOT), podendo aplicar as sanções previstas na legislação em vigor.",
+      "keywords": ["fiscalização", "IGAOT", "sanções"]
+    },
+    {
+      "number": "Art. 10.º",
+      "title": "Entrada em vigor",
+      "text": "A presente portaria entra em vigor 30 dias após a sua publicação.",
+      "keywords": ["entrada em vigor"]
+    }
+  ],
+  "violations_examples": [
+    {
+      "classification": "C1",
+      "article": "Art. 6.º",
+      "description": "Falta de dispositivo de segurança obrigatório (para-quedas inoperante)",
+      "action": "Imobilização imediata do elevador"
+    },
+    {
+      "classification": "C2",
+      "article": "Art. 7.º",
+      "description": "Portas de piso sem fechadura conforme",
+      "action": "Correção no prazo de 30 dias (ou conforme Despacho 17/2022)"
+    },
+    {
+      "classification": "C3",
+      "article": "Art. 5.º",
+      "description": "Iluminação da cabine insuficiente",
+      "action": "Correção até próxima inspeção"
+    }
+  ]
+}

@@ -1,0 +1,478 @@
+{
+  "id": "directiva-95-16-ce",
+  "title": "Directiva 95/16/CE do Parlamento Europeu e do Conselho",
+  "type": "EU_DIRECTIVE",
+  "date": "1995-06-29",
+  "published": "1995-09-07",
+  "source": "http://eur-lex.europa.eu/legal-content/PT/TXT/?uri=CELEX:31995L0016",
+  "status": "REVOKED_2016",
+  "replaced_by": "Directiva 2014/33/UE",
+  "description": "Directiva fundacional da UE relativa à aproximação das legislações dos Estados-Membros respeitantes aos ascensores. Base para todas as leis nacionais portuguesas (DL 320/2002, DL 295/98).",
+  "scope": [
+    "Ascensores permanentes em edifícios",
+    "Componentes de segurança",
+    "Marcação CE",
+    "Requisitos essenciais de segurança",
+    "Procedimentos de avaliação de conformidade"
+  ],
+  "key_concepts": {
+    "instalador": "Pessoa singular ou colectiva que assume responsabilidade pela concepção, fabrico, instalação e colocação no mercado do ascensor",
+    "componente_seguranca": "Componentes listados no Anexo IV (dispositivos de bloqueio, para-quedas, limitadores de velocidade, amortecedores, etc.)",
+    "marcacao_ce": "Marcação obrigatória que indica conformidade com requisitos essenciais",
+    "organismo_notificado": "Entidade designada pelos Estados-Membros para avaliação de conformidade"
+  },
+  "chapters": [
+    {
+      "number": 1,
+      "title": "CAPÍTULO I - Âmbito de aplicação, colocação no mercado e livre circulação",
+      "articles": [
+        {
+          "number": 1,
+          "title": "Âmbito de aplicação",
+          "content": "A presente directiva aplica-se aos ascensores utilizados de forma permanente em edifícios e construções. Aplica-se igualmente aos componentes de segurança utilizados nesses ascensores, cuja lista consta do anexo IV.",
+          "definitions": {
+            "ascensor": "Aparelho que serve níveis definidos por meio de uma cabina que se desloca ao longo de guias rígidas e cuja inclinação em relação à horizontal é superior a 15°",
+            "uso": "Transporte de pessoas, pessoas e objectos, ou unicamente objectos se a cabina for acessível"
+          },
+          "exclusions": [
+            "Instalações de cabos (funiculares)",
+            "Ascensores militares ou de manutenção da ordem pública",
+            "Ascensores para poços de minas",
+            "Elevadores de maquinaria de teatro",
+            "Ascensores em meios de transporte",
+            "Ascensores ligados a máquinas (acesso a locais de trabalho)",
+            "Comboios de cremalheira",
+            "Ascensores de estaleiro"
+          ]
+        },
+        {
+          "number": 2,
+          "title": "Obrigações dos Estados-Membros",
+          "content": "Os Estados-membros tomarão todas as medidas úteis para que os ascensores só possam ser colocados no mercado e entrar em serviço se não comprometerem a segurança e a saúde das pessoas quando convenientemente instalados, sujeitos a manutenção e utilizados de acordo com o fim a que se destinam.",
+          "requirements": [
+            "Troca de informações entre responsável pela construção e instalador",
+            "Garantir bom funcionamento e segurança de utilização",
+            "Proibição de canalizações não necessárias no poço do ascensor"
+          ]
+        },
+        {
+          "number": 3,
+          "title": "Requisitos essenciais",
+          "content": "Os ascensores abrangidos pela presente directiva devem satisfazer os requisitos essenciais de segurança e de saúde referidos no anexo I."
+        },
+        {
+          "number": 4,
+          "title": "Livre circulação",
+          "content": "Os Estados-membros não podem proibir, restringir ou entravar a colocação no mercado e a entrada em serviço de ascensores e/ou componentes de segurança que satisfaçam os requisitos da presente directiva."
+        },
+        {
+          "number": 5,
+          "title": "Presunção de conformidade",
+          "content": "Os Estados-membros considerarão conformes com a totalidade das disposições os ascensores e componentes de segurança que ostentem a marcação CE e sejam acompanhados da declaração CE de conformidade.",
+          "harmonized_standards": "Presume-se conformidade se fabricado de acordo com normas harmonizadas publicadas no Jornal Oficial"
+        },
+        {
+          "number": 6,
+          "title": "Comité permanente",
+          "content": "A Comissão será assistida por um Comité permanente composto por representantes dos Estados-membros. O comité pode analisar qualquer questão relativa à aplicação da directiva."
+        },
+        {
+          "number": 7,
+          "title": "Cláusula de salvaguarda",
+          "content": "Se um Estado-membro verificar que um ascensor com marcação CE pode comprometer a segurança, tomará medidas para retirá-lo do mercado e informará imediatamente a Comissão.",
+          "grounds": [
+            "Desrespeito dos requisitos essenciais",
+            "Má aplicação das normas harmonizadas",
+            "Lacuna das próprias normas"
+          ]
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "title": "CAPÍTULO II - Processo de avaliação da conformidade",
+      "articles": [
+        {
+          "number": 8,
+          "title": "Procedimentos de avaliação",
+          "content": "Define os procedimentos que fabricantes e instaladores devem seguir antes da colocação no mercado.",
+          "safety_components": [
+            "Exame CE de tipo (Anexo V)",
+            "Controlos de produção (Anexo XI)",
+            "Sistema de garantia de qualidade (Anexo VIII ou IX)"
+          ],
+          "lifts": [
+            "Exame CE de tipo do ascensor-modelo",
+            "Controlo final (Anexo VI)",
+            "Sistema de garantia de qualidade (Anexos XII, XIII, XIV)",
+            "Verificação por unidade (Anexo X)"
+          ]
+        },
+        {
+          "number": 9,
+          "title": "Organismos notificados",
+          "content": "Os Estados-membros devem notificar a Comissão dos organismos designados para executar os procedimentos de avaliação. Os organismos devem satisfazer os critérios do Anexo VII.",
+          "criteria": [
+            "Independência e imparcialidade",
+            "Competência técnica",
+            "Pessoal qualificado",
+            "Seguro de responsabilidade civil",
+            "Segredo profissional"
+          ]
+        }
+      ]
+    },
+    {
+      "number": 3,
+      "title": "CAPÍTULO III - Marcação CE",
+      "articles": [
+        {
+          "number": 10,
+          "title": "Marcação CE de conformidade",
+          "content": "A marcação CE é constituída pela sigla CE. Deve ser aposta em cada cabina de ascensor de forma clara e visível, e em cada componente de segurança.",
+          "rules": [
+            "Altura mínima: 5 mm (excepto componentes pequenos)",
+            "Acompanhada do número do organismo notificado",
+            "Proibidas marcações que induzam em erro",
+            "Só pode ser aposta após conformidade verificada"
+          ],
+          "sanctions": "Estados-membros devem tomar medidas se marcação for indevida"
+        }
+      ]
+    },
+    {
+      "number": 4,
+      "title": "CAPÍTULO IV - Disposições finais",
+      "articles": [
+        {
+          "number": 11,
+          "title": "Decisões fundamentadas",
+          "content": "Qualquer decisão que conduza a restringir colocação no mercado ou utilização deve ser fundamentada de forma precisa e notificada ao interessado com indicação das vias de recurso."
+        },
+        {
+          "number": 12,
+          "title": "Disponibilização de dados",
+          "content": "A Comissão tomará medidas para tornar disponíveis dados que enumeram todas as decisões pertinentes relativas à aplicação da directiva."
+        },
+        {
+          "number": 13,
+          "title": "Revogação",
+          "content": "São revogadas, com efeitos a partir de 1 de Julho de 1999, as Directivas 84/528/CEE e 84/529/CEE."
+        },
+        {
+          "number": 14,
+          "title": "Relação com Directiva 89/106/CEE",
+          "content": "A presente directiva é uma directiva na acepção do nº 3 do artigo 2º da Directiva 89/106/CEE (produtos de construção), no que respeita aos aspectos ligados à instalação de ascensores."
+        },
+        {
+          "number": 15,
+          "title": "Transposição",
+          "content": "Os Estados-membros adoptarão e publicarão antes de 1 de Janeiro de 1997 as disposições necessárias para dar cumprimento à presente directiva. Aplicação a partir de 1 de Julho de 1997.",
+          "transition": "Até 30 de Junho de 1999, Estados-membros admitirão colocação no mercado de ascensores conformes com regulamentações anteriores."
+        },
+        {
+          "number": 16,
+          "title": "Reanálise",
+          "content": "O mais tardar em 1 de Julho de 2002, a Comissão reanalisará o funcionamento dos procedimentos previstos pela directiva."
+        },
+        {
+          "number": 17,
+          "title": "Destinatários",
+          "content": "Os Estados-membros são os destinatários da presente directiva. Feito em Bruxelas, em 29 de Junho de 1995."
+        }
+      ]
+    }
+  ],
+  "annexes": [
+    {
+      "number": 1,
+      "title": "ANEXO I - Requisitos essenciais de segurança e de saúde",
+      "sections": [
+        {
+          "section": "1. GENERALIDADES",
+          "requirements": [
+            {
+              "number": "1.1",
+              "title": "Aplicação da Directiva 89/392/CEE (Máquinas)",
+              "content": "Quando exista risco não tratado neste anexo, aplicam-se requisitos essenciais da Directiva Máquinas."
+            },
+            {
+              "number": "1.2",
+              "title": "Cabina",
+              "content": "A cabina deve oferecer espaço e resistência correspondentes ao número máximo de pessoas e carga nominal. Se destinar-se a pessoas, dimensões devem permitir acesso e utilização a pessoas deficientes."
+            },
+            {
+              "number": "1.3",
+              "title": "Dispositivos de suspensão e suporte",
+              "content": "Devem garantir nível de segurança adequado e reduzir ao mínimo risco de queda. Quando usar cabos/correntes: mínimo DOIS independentes, cada com próprio engate, sem extensões ou nós."
+            },
+            {
+              "number": "1.4",
+              "title": "Controlo das solicitações",
+              "content": "Ordens de comando devem permanecer bloqueadas se carga ultrapassar valor nominal. Obrigatório limitador de excesso de velocidade. Ascensores rápidos: dispositivo de controlo e pilotagem. Roldanas de atrito: garantir estabilidade dos cabos."
+            },
+            {
+              "number": "1.5",
+              "title": "Maquinaria",
+              "content": "Cada ascensor de pessoas deve possuir máquina própria (excepto 2 cabinas com contrapeso). Instalador deve assegurar que máquina só é acessível para manutenção e emergências."
+            },
+            {
+              "number": "1.6",
+              "title": "Órgãos de comando",
+              "content": "Para uso por pessoas deficientes não acompanhadas: órgãos devem ser concebidos e dispostos adequadamente. Funções claramente assinaladas. Material eléctrico instalado sem confusão com outros circuitos."
+            }
+          ]
+        },
+        {
+          "section": "2. RISCOS PARA PESSOAS NO EXTERIOR DA CABINA",
+          "requirements": [
+            {
+              "number": "2.1",
+              "title": "Acesso ao vão",
+              "content": "Deve ser impedido acesso ao vão percorrido pela cabina excepto para manutenção e emergências. Antes de penetrar no vão, utilização normal deve ser impossibilitada."
+            },
+            {
+              "number": "2.2",
+              "title": "Espaço livre / refúgio",
+              "content": "Deve existir espaço livre ou refúgio para além das posições extremas para impedir risco de esmagamento. Em casos excepcionais (edifícios existentes), Estados-membros podem autorizar outros meios."
+            },
+            {
+              "number": "2.3",
+              "title": "Portas de patamar",
+              "content": "Níveis de entrada/saída devem ter portas com resistência mecânica suficiente. Dispositivo de bloqueio interligado deve impossibilitar: movimento se portas não fechadas/trancadas, abertura se cabina não parada no patamar. Permitidos movimentos de reposicionamento em zonas definidas com velocidade controlada."
+            }
+          ]
+        },
+        {
+          "section": "3. RISCOS PARA PESSOAS NO INTERIOR DA CABINA",
+          "requirements": [
+            {
+              "number": "3.1",
+              "title": "Cabinas fechadas",
+              "content": "Cabinas devem ser completamente fechadas por paredes cheias (excepto ventilação) e equipadas com portas cheias. Portas concebidas para que cabina não mova-se se não fechadas e imobilize-se em caso de abertura. Portas devem permanecer fechadas/trancadas se paragem entre pisos e existir risco de queda."
+            },
+            {
+              "number": "3.2",
+              "title": "Dispositivos anti-queda",
+              "content": "CRÍTICO: Ascensor deve ter dispositivos para impedir queda livre ou movimentos ascendentes incontrolados em caso de falha. Dispositivo anti-queda deve ser INDEPENDENTE dos dispositivos de suspensão. Deve parar cabina com carga nominal à velocidade máxima sem desaceleração perigosa."
+            },
+            {
+              "number": "3.3",
+              "title": "Amortecedores",
+              "content": "Devem ser instalados entre fundo do poço e chão da cabina, excepto se sistema de tracção não permite entrada no espaço livre."
+            },
+            {
+              "number": "3.4",
+              "title": "Verificação operacional",
+              "content": "Ascensores não podem ser postos em movimento se dispositivo anti-queda não estiver em posição operacional."
+            }
+          ]
+        },
+        {
+          "section": "4. OUTROS RISCOS",
+          "requirements": [
+            {
+              "number": "4.1",
+              "title": "Portas motorizadas",
+              "content": "Se portas forem motorizadas, devem ter dispositivo que evita risco de esmagamento durante movimentação."
+            },
+            {
+              "number": "4.2",
+              "title": "Resistência ao fogo",
+              "content": "Portas de patamar que devem contribuir para protecção contra incêndios devem oferecer resistência adequada (integridade, não propagação chamas, transmissão calor)."
+            },
+            {
+              "number": "4.3",
+              "title": "Contrapesos",
+              "content": "Devem ser instalados para evitar colisão com cabina ou queda sobre esta."
+            },
+            {
+              "number": "4.4",
+              "title": "Libertação e evacuação",
+              "content": "Ascensores devem ter meios para libertar e evacuar pessoas retidas na cabina."
+            },
+            {
+              "number": "4.5",
+              "title": "Comunicação bidireccional",
+              "content": "Cabinas devem ter meios de comunicação bidireccional com serviço de intervenção rápida."
+            },
+            {
+              "number": "4.6",
+              "title": "Temperatura máxima",
+              "content": "Se ultrapassada temperatura máxima na casa de máquina: terminar movimentos em curso mas recusar novas ordens."
+            },
+            {
+              "number": "4.7",
+              "title": "Ventilação",
+              "content": "Cabinas devem assegurar ventilação suficiente aos passageiros, mesmo em paragem prolongada."
+            },
+            {
+              "number": "4.8",
+              "title": "Iluminação",
+              "content": "Iluminação suficiente quando cabina em uso ou porta aberta. Prever iluminação de emergência."
+            },
+            {
+              "number": "4.9",
+              "title": "Autonomia emergência",
+              "content": "Comunicação (4.5) e iluminação de emergência (4.8) devem funcionar sem fonte normal de energia por tempo suficiente para intervenção de socorros."
+            },
+            {
+              "number": "4.10",
+              "title": "Ascensores para incêndio",
+              "content": "Circuito de comando deve permitir impedir serventia a certos níveis e controlo prioritário por equipas de socorro."
+            }
+          ]
+        },
+        {
+          "section": "5. MARCAÇÃO",
+          "requirements": [
+            {
+              "number": "5.1",
+              "title": "Chapa na cabina",
+              "content": "Cada cabina deve ter chapa bem visível indicando claramente: carga nominal (kg) e número máximo de pessoas autorizado."
+            },
+            {
+              "number": "5.2",
+              "title": "Instruções de auto-libertação",
+              "content": "Se pessoas retidas possam libertar-se sem auxílio exterior, instruções devem ser claras e visíveis no interior da cabina."
+            }
+          ]
+        },
+        {
+          "section": "6. INSTRUÇÕES DE UTILIZAÇÃO",
+          "requirements": [
+            {
+              "number": "6.1",
+              "title": "Manual componentes de segurança",
+              "content": "Componentes segurança (Anexo IV) devem ter manual de instruções para montagem, ligação, regulação, manutenção eficaz e sem riscos."
+            },
+            {
+              "number": "6.2",
+              "title": "Documentação do ascensor",
+              "content": "Cada ascensor deve ter: manual de instruções (desenhos, esquemas para utilização, conservação, inspecção, reparação, verificações, manobras socorro) + livrete de registo (anotar reparações e verificações periódicas)."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 4,
+      "title": "ANEXO IV - Lista dos componentes de segurança",
+      "components": [
+        {
+          "number": 1,
+          "name": "Dispositivos de bloqueio das portas de patamar",
+          "function": "Impedir abertura não autorizada e movimento com portas abertas"
+        },
+        {
+          "number": 2,
+          "name": "Dispositivos anti-queda",
+          "function": "Impedir queda da cabina ou movimentos ascendentes descontrolados (referido no ponto 3.2 Anexo I)"
+        },
+        {
+          "number": 3,
+          "name": "Dispositivos limitadores de excesso de velocidade",
+          "function": "Detectar e controlar velocidade excessiva"
+        },
+        {
+          "number": 4,
+          "name": "Amortecedores",
+          "types": [
+            "Amortecedores de acumulação de energia (característica não linear ou com amortecimento de retorno)",
+            "Amortecedores de dissipação de energia"
+          ]
+        },
+        {
+          "number": 5,
+          "name": "Dispositivos de segurança em macacos hidráulicos",
+          "function": "Quando utilizados como dispositivos anti-queda em circuitos hidráulicos de potência"
+        },
+        {
+          "number": 6,
+          "name": "Dispositivos de segurança eléctricos",
+          "specification": "Interruptores de segurança que contenham componentes electrónicos"
+        }
+      ]
+    }
+  ],
+  "violation_codes": [
+    {
+      "code": "DIR95/ART3",
+      "severity": "C1",
+      "title": "Não conformidade com requisitos essenciais",
+      "description": "Ascensor não satisfaz requisitos essenciais de segurança e saúde do Anexo I",
+      "penalty": "Retirada do mercado obrigatória"
+    },
+    {
+      "code": "DIR95/ART10",
+      "severity": "C2",
+      "title": "Marcação CE indevida ou ausente",
+      "description": "Marcação CE aposta incorrectamente, ilegível ou ausente",
+      "penalty": "Proibição de colocação no mercado"
+    },
+    {
+      "code": "DIR95/ANX1-3.2",
+      "severity": "C1",
+      "title": "Dispositivo anti-queda ausente ou inoperacional",
+      "description": "Ascensor sem dispositivo para impedir queda livre ou dispositivo não funcional",
+      "penalty": "DESACTIVAÇÃO IMEDIATA - Risco de queda fatal"
+    },
+    {
+      "code": "DIR95/ANX1-2.3",
+      "severity": "C1",
+      "title": "Bloqueio interligado de portas não funcional",
+      "description": "Dispositivo de bloqueio permite movimento com portas abertas ou abertura com cabina em movimento",
+      "penalty": "DESACTIVAÇÃO IMEDIATA - Risco de queda no vão"
+    },
+    {
+      "code": "DIR95/ANX1-1.3",
+      "severity": "C1",
+      "title": "Cabos de suspensão deteriorados",
+      "description": "Menos de 2 cabos independentes ou cabos com deterioração grave",
+      "penalty": "DESACTIVAÇÃO IMEDIATA - Risco de ruptura"
+    },
+    {
+      "code": "DIR95/ANX1-4.5",
+      "severity": "C2",
+      "title": "Comunicação bidireccional ausente",
+      "description": "Cabina sem meio de comunicação com serviço de intervenção rápida",
+      "penalty": "30 dias para instalação"
+    },
+    {
+      "code": "DIR95/ANX1-4.8",
+      "severity": "C2",
+      "title": "Iluminação de emergência ausente",
+      "description": "Falta iluminação de emergência funcional na cabina",
+      "penalty": "30 dias para instalação"
+    }
+  ],
+  "technical_terms": {
+    "ascensor_modelo": "Ascensor representativo cuja documentação mostra como requisitos essenciais serão respeitados por ascensores derivados",
+    "declaracao_ce": "Declaração de conformidade CE emitida pelo instalador/fabricante",
+    "exame_ce_tipo": "Procedimento pelo qual organismo notificado verifica e certifica conformidade de modelo",
+    "controlo_final": "Verificação e ensaios do ascensor instalado antes da colocação no mercado",
+    "garantia_qualidade": "Sistema aprovado para assegurar conformidade na produção/instalação"
+  },
+  "related_standards": [
+    "EN 81-20:2014 (Regras de segurança para construção e instalação)",
+    "EN 81-50:2014 (Regras de segurança - Exame e ensaios)",
+    "EN 81-70:2003 (Acessibilidade a pessoas com deficiência)",
+    "EN 81-72:2003 (Segurança contra incêndio)",
+    "EN 81-73:2005 (Comportamento em caso de incêndio)",
+    "EN 81-77:2014 (Medidas contra sismo)"
+  ],
+  "transposition_portugal": [
+    "Decreto-Lei n.º 320/2002 - Transpõe Directiva 95/16/CE para ordem jurídica portuguesa",
+    "Decreto-Lei n.º 295/98 - Transpõe aspectos de marcação CE"
+  ],
+  "metadata": {
+    "version": "1.0",
+    "created": "2025-12-10",
+    "total_articles": 17,
+    "total_annexes": 14,
+    "total_requirements": 45,
+    "language": "pt-PT",
+    "jurisdiction": "European Union",
+    "legal_force": "Revogada em 2016 pela Directiva 2014/33/UE, mas base histórica para legislação portuguesa vigente"
+  }
+}

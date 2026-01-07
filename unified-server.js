@@ -999,10 +999,58 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
         
         console.log('🏷️ Згенеровано QR код:', qrCode);
         
+        // 🏛️ АВТОМАТИЧНЕ ВИЗНАЧЕННЯ МУНІЦИПАЛІТЕТУ
+        let municipalityData = null;
+        
+        if (req.body.address) {
+            console.log('🏛️ Визначення муніципалітету за адресою...');
+            try {
+                // Витягуємо поштовий код з адреси (формат: XXXX-XXX)
+                const postalCodeMatch = req.body.address.match(/(\d{4})-?\d{3}/);
+                
+                if (postalCodeMatch) {
+                    const postalCode = postalCodeMatch[1];
+                    console.log('📮 Знайдено поштовий код:', postalCode);
+                    
+                    // Завантажуємо базу муніципалітетів
+                    const fs = require('fs').promises;
+                    const municipalitiesData = JSON.parse(
+                        await fs.readFile('./data/municipalities-lisboa-120km.json', 'utf8')
+                    );
+                    
+                    // Шукаємо відповідний муніципалітет
+                    const municipality = municipalitiesData.municipalities.find(m => 
+                        m.postal_codes.some(code => code.startsWith(postalCode))
+                    );
+                    
+                    if (municipality) {
+                        municipalityData = {
+                            id: municipality.id,
+                            name: municipality.name,
+                            distrito: municipality.distrito,
+                            email: municipality.email,
+                            phone: municipality.phone,
+                            website: municipality.website,
+                            distance_km: municipality.distance_km,
+                            notified: false, // Буде встановлено в true після відправки email
+                            notification_history: []
+                        };
+                        
+                        console.log('✅ Визначено муніципалітет:', municipality.name);
+                    } else {
+                        console.warn('⚠️ Муніципалітет не знайдено для поштового коду:', postalCode);
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Помилка визначення муніципалітету:', error);
+            }
+        }
+        
         const newLift = {
             ...req.body,
             qrCode: qrCode, // ✅ QR код генерується автоматично
             location: locationData, // Використовуємо геокодовані координати або ручні
+            municipality: municipalityData, // 🏛️ Дані муніципалітету
             createdAt: new Date().toISOString(),
             createdBy: req.user.username,
             updatedAt: new Date().toISOString()
@@ -1321,6 +1369,159 @@ app.delete('/api/lifts/:id', authenticateToken, async (req, res) => {
         });
     }
 });
+
+// ========================================
+// 🏛️ MUNICIPALITY API ENDPOINTS
+// ========================================
+
+// GET /api/municipalities - отримання всіх муніципалітетів
+app.get('/api/municipalities', authenticateToken, async (req, res) => {
+    try {
+        const fs = require('fs').promises;
+        const municipalitiesData = JSON.parse(
+            await fs.readFile('./data/municipalities-lisboa-120km.json', 'utf8')
+        );
+        
+        res.json({
+            success: true,
+            data: municipalitiesData.municipalities,
+            center: municipalitiesData.center,
+            statistics: municipalitiesData.statistics
+        });
+    } catch (error) {
+        console.error('❌ Помилка завантаження муніципалітетів:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка завантаження муніципалітетів'
+        });
+    }
+});
+
+// POST /api/municipalities/detect - визначення муніципалітету за адресою/кодом
+app.post('/api/municipalities/detect', authenticateToken, async (req, res) => {
+    try {
+        const { address, postalCode } = req.body;
+        
+        if (!address && !postalCode) {
+            return res.status(400).json({
+                success: false,
+                message: 'Необхідно надати адресу або поштовий код'
+            });
+        }
+        
+        const fs = require('fs').promises;
+        const municipalitiesData = JSON.parse(
+            await fs.readFile('./data/municipalities-lisboa-120km.json', 'utf8')
+        );
+        
+        let detectedCode = postalCode;
+        
+        // Якщо тільки адреса - витягуємо код
+        if (!detectedCode && address) {
+            const match = address.match(/(\d{4})-?\d{3}/);
+            if (match) {
+                detectedCode = match[1];
+            }
+        }
+        
+        if (!detectedCode) {
+            return res.json({
+                success: false,
+                message: 'Не вдалося визначити поштовий код'
+            });
+        }
+        
+        // Шукаємо муніципалітет
+        const municipality = municipalitiesData.municipalities.find(m => 
+            m.postal_codes.some(code => code.startsWith(detectedCode))
+        );
+        
+        if (municipality) {
+            res.json({
+                success: true,
+                data: municipality,
+                postal_code: detectedCode
+            });
+        } else {
+            res.json({
+                success: false,
+                message: `Муніципалітет не знайдено для коду ${detectedCode}`,
+                postal_code: detectedCode
+            });
+        }
+    } catch (error) {
+        console.error('❌ Помилка визначення муніципалітету:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка визначення муніципалітету'
+        });
+    }
+});
+
+// GET /api/municipalities/:id/lifts - ліфти в конкретному муніципалітеті
+app.get('/api/municipalities/:id/lifts', authenticateToken, async (req, res) => {
+    try {
+        const municipalityId = req.params.id;
+        
+        const lifts = await db.collection('lifts').find({
+            'municipality.id': municipalityId
+        }).toArray();
+        
+        res.json({
+            success: true,
+            data: lifts,
+            total: lifts.length
+        });
+    } catch (error) {
+        console.error('❌ Помилка отримання ліфтів муніципалітету:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка отримання ліфтів'
+        });
+    }
+});
+
+// GET /api/municipalities/stats - статистика по муніципалітетам
+app.get('/api/municipalities/stats', authenticateToken, async (req, res) => {
+    try {
+        // Агрегуємо статистику по муніципалітетам
+        const stats = await db.collection('lifts').aggregate([
+            {
+                $match: { 'municipality.id': { $exists: true } }
+            },
+            {
+                $group: {
+                    _id: '$municipality.id',
+                    name: { $first: '$municipality.name' },
+                    distrito: { $first: '$municipality.distrito' },
+                    total_lifts: { $sum: 1 },
+                    notified_count: {
+                        $sum: { $cond: ['$municipality.notified', 1, 0] }
+                    },
+                    addresses: { $push: '$address' }
+                }
+            },
+            {
+                $sort: { total_lifts: -1 }
+            }
+        ]).toArray();
+        
+        res.json({
+            success: true,
+            data: stats
+        });
+    } catch (error) {
+        console.error('❌ Помилка отримання статистики:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка отримання статистики'
+        });
+    }
+});
+
+// ========================================
+// 👥 USERS API ENDPOINTS
+// ========================================
 
 // GET /api/users - отримання користувачів
 app.get('/api/users', authenticateToken, async (req, res) => {

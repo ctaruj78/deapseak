@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notificação - Fim de Manutenção</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .email-container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px;
+        }
+        .greeting {
+            font-size: 18px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        .info-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #38ef7d;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .info-box h3 {
+            margin: 0 0 15px 0;
+            color: #11998e;
+            font-size: 18px;
+        }
+        .info-row {
+            display: flex;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #495057;
+            min-width: 180px;
+        }
+        .info-value {
+            color: #212529;
+        }
+        .success-box {
+            background-color: #d4edda;
+            border: 2px solid #28a745;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .success-box h3 {
+            color: #155724;
+            margin: 0 0 10px 0;
+            font-size: 20px;
+        }
+        .success-box p {
+            color: #155724;
+            margin: 5px 0;
+            font-size: 16px;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px 30px;
+            text-align: center;
+            font-size: 14px;
+            color: #6c757d;
+            border-top: 1px solid #e9ecef;
+        }
+        .company-info {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #dee2e6;
+        }
+        .company-info strong {
+            color: #495057;
+        }
+        @media only screen and (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            .content {
+                padding: 20px;
+            }
+            .info-row {
+                flex-direction: column;
+            }
+            .info-label {
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>✅ Manutenção Concluída</h1>
+            <p>Elevador Retomou Serviço Normal</p>
+        </div>
+        
+        <div class="content">
+            <p class="greeting">Exmos. Senhores da Câmara Municipal de {{municipalityName}},</p>
+            
+            <p>Informamos que a manutenção do elevador abaixo identificado foi <strong>concluída com sucesso</strong>, e o equipamento retomou o serviço normal.</p>
+            
+            <div class="success-box">
+                <h3>✅ Equipamento Operacional</h3>
+                <p><strong>Data de Conclusão:</strong> {{maintenanceEndDate}}</p>
+                <p><strong>Estado Atual:</strong> Em Serviço Normal</p>
+            </div>
+            
+            <div class="info-box">
+                <h3>📋 Identificação do Elevador</h3>
+                <div class="info-row">
+                    <div class="info-label">Número Municipal:</div>
+                    <div class="info-value">{{municipalNumber}}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Código QR:</div>
+                    <div class="info-value">{{qrCode}}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Morada:</div>
+                    <div class="info-value">{{liftAddress}}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Data de Conclusão:</div>
+                    <div class="info-value">{{maintenanceEndDate}}</div>
+                </div>
+            </div>
+            
+            <div class="info-box">
+                <h3>🔧 Resumo da Intervenção</h3>
+                <div class="info-row">
+                    <div class="info-label">Tipo de Manutenção:</div>
+                    <div class="info-value">{{maintenanceType}}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Duração:</div>
+                    <div class="info-value">{{maintenanceDuration}}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Trabalhos Realizados:</div>
+                    <div class="info-value">{{workPerformed}}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Técnico Responsável:</div>
+                    <div class="info-value">{{technicianName}}</div>
+                </div>
+            </div>
+            
+            <p>Foram efetuados todos os testes de segurança exigidos e o equipamento encontra-se em perfeitas condições de funcionamento, cumprindo todos os requisitos legais.</p>
+            
+            <p>A próxima manutenção preventiva está agendada para <strong>{{nextMaintenanceDate}}</strong>.</p>
+            
+            <p>Caso necessitem de qualquer esclarecimento adicional, estamos inteiramente ao vosso dispor.</p>
+            
+            <p style="margin-top: 30px;">Com os melhores cumprimentos,</p>
+        </div>
+        
+        <div class="footer">
+            <div class="company-info">
+                <strong>{{companyName}}</strong><br>
+                📍 Av. do Parque 84B, Rio de Mouro, 2635-609 Sintra<br>
+                📞 {{companyPhone}} | 📧 {{companyEmail}}<br>
+                🌐 {{companyWebsite}}
+            </div>
+            <p style="margin-top: 15px; font-size: 12px; color: #868e96;">
+                Este email é gerado automaticamente pelo sistema de gestão de elevadores.<br>
+                Emergências 24/7: {{emergencyPhone}}
+            </p>
+        </div>
+    </div>
+</body>
+</html>
