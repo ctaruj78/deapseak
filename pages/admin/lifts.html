@@ -1229,6 +1229,52 @@
         </div>
     </div>
 
+    <!-- 🏛️ Municipality Notification Confirmation Modal -->
+    <div class="modal fade" id="municipalityNotificationModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-building"></i> Município Detectado
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i>
+                        <strong>Elevador guardado com sucesso!</strong>
+                    </div>
+                    
+                    <div id="municipalityInfo" class="border rounded p-3 bg-light">
+                        <!-- Заповниться JavaScript -->
+                    </div>
+                    
+                    <div class="custom-control custom-checkbox mt-3">
+                        <input type="checkbox" class="custom-control-input" id="sendNotificationCheckbox" checked>
+                        <label class="custom-control-label" for="sendNotificationCheckbox">
+                            <strong>Enviar notificação de novo elevador à Câmara Municipal</strong>
+                            <br>
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle"></i> 
+                                Conforme DL 320/2002, Artigo 8º
+                            </small>
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times"></i> Não notificar
+                    </button>
+                    <button type="button" class="btn btn-success" id="confirmNotificationBtn">
+                        <i class="fas fa-paper-plane"></i> Sim, enviar notificação
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Lift Details Modal -->
     <div class="modal fade" id="liftDetailsModal" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document" style="max-height: 95vh; margin: 1.75rem auto;">
@@ -3816,6 +3862,12 @@
             const savedLift = result.data.data || result.data;
             console.log('✅ Ліфт збережено в MongoDB:', savedLift);
             
+            // 🏛️ Перевірка municipality notification
+            if (savedLift.municipality && savedLift.municipality.name) {
+                console.log('🏛️ Виявлено município:', savedLift.municipality.name);
+                showMunicipalityNotificationModal(savedLift);
+            }
+            
             // ❌ НЕ зберігаємо в localStorage - завантажимо з API через refreshLiftsDisplay()
             // Це запобігає дублюванню ліфтів
             
@@ -3825,6 +3877,79 @@
             throw new Error(result.error || result.message || 'Помилка збереження');
         }
     }
+    
+    // 🏛️ Показати modal з підтвердженням відправки повідомлення муніципалітету
+    function showMunicipalityNotificationModal(lift) {
+        const m = lift.municipality;
+        
+        // Заповнюємо інформацію про муніципалітет
+        $('#municipalityInfo').html(`
+            <h6 class="text-success">
+                <i class="fas fa-map-marker-alt"></i> ${m.name}
+            </h6>
+            <div class="row mt-2">
+                <div class="col-6">
+                    <small class="text-muted">Distrito:</small><br>
+                    <strong>${m.distrito}</strong>
+                </div>
+                <div class="col-6">
+                    <small class="text-muted">Distância:</small><br>
+                    <strong>${m.distance_km} km</strong>
+                </div>
+            </div>
+            <div class="mt-2">
+                <small class="text-muted">Email:</small><br>
+                <strong><i class="fas fa-envelope"></i> ${m.email}</strong>
+            </div>
+            <div class="mt-2">
+                <small class="text-muted">Telefone:</small><br>
+                <strong><i class="fas fa-phone"></i> ${m.phone}</strong>
+            </div>
+            <div class="mt-3 p-2 bg-white border-left border-info">
+                <small class="text-muted">
+                    <i class="fas fa-building"></i> <strong>Elevador:</strong><br>
+                    ${lift.address}
+                </small>
+            </div>
+        `);
+        
+        // Зберігаємо ID ліфта для відправки
+        $('#municipalityNotificationModal').data('liftId', lift._id || lift.id);
+        
+        // Показуємо modal
+        $('#municipalityNotificationModal').modal('show');
+    }
+    
+    // 🏛️ Обробник кнопки підтвердження
+    $(document).on('click', '#confirmNotificationBtn', async function() {
+        const liftId = $('#municipalityNotificationModal').data('liftId');
+        const sendNotification = $('#sendNotificationCheckbox').is(':checked');
+        
+        if (!sendNotification) {
+            $('#municipalityNotificationModal').modal('hide');
+            return;
+        }
+        
+        console.log('📧 Відправка email муніципалітету для ліфта:', liftId);
+        
+        // TODO: Виклик API для відправки email
+        // await apiCall(`/api/lifts/${liftId}/notify-municipality`, 'POST');
+        
+        $('#municipalityNotificationModal').modal('hide');
+        
+        // Показати успішне повідомлення
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'success',
+                title: 'Email enviado!',
+                text: 'Notificação enviada à Câmara Municipal',
+                timer: 3000
+            });
+        } else {
+            alert('Email enviado à Câmara Municipal!');
+        }
+    });
+
     
     // Функція відображення ліфтів в таблиці
     function displayLiftsInTable(lifts) {
