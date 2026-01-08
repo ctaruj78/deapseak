@@ -2532,6 +2532,18 @@
             if (window.enhancedLiftModal.resetForm) {
                 window.enhancedLiftModal.resetForm();
             }
+            
+            // Ініціалізуємо карту для нового ліфта (центр Португалії)
+            $('#enhancedLiftModal').on('shown.bs.modal', function() {
+                // Відключаємо обробник після виконання
+                $('#enhancedLiftModal').off('shown.bs.modal');
+                
+                console.log('🗺️ Ініціалізація карти для нового ліфта...');
+                setTimeout(() => {
+                    // Центр Португалії (Лісабон) як початкова точка
+                    initEditMap(38.7223, -9.1393, 'Lisboa, Portugal');
+                }, 100);
+            });
         }
         
         // ВАЖЛИВО: Відкриваємо модалку ПІСЛЯ налаштування
@@ -3765,6 +3777,93 @@
     
     // Запускаємо ініціалізацію після завантаження всіх скриптів
     setTimeout(initializeEnhancedModal, 500);
+
+    // ========================================================================
+    // ГЕОКОДУВАННЯ АДРЕСИ
+    // ========================================================================
+    
+    // Додаємо обробник для кнопки геокодування
+    $(document).ready(function() {
+        // Кнопка геокодування
+        $('#enhancedBtnGeocode').on('click', async function() {
+            console.log('🌍 Геокодування адреси...');
+            
+            const address = $('#enhancedLiftAddress').val();
+            const postcode = $('#enhancedLiftPostcode').val();
+            
+            if (!address || address.trim() === '') {
+                alert('Будь ласка, введіть адресу');
+                return;
+            }
+            
+            // Формуємо повну адресу
+            const fullAddress = postcode ? `${address}, ${postcode}, Portugal` : `${address}, Portugal`;
+            
+            console.log('📍 Геокодування:', fullAddress);
+            
+            // Показуємо індикатор завантаження
+            const btn = $(this);
+            const originalHtml = btn.html();
+            btn.html('<i class="fas fa-spinner fa-spin"></i>').prop('disabled', true);
+            
+            try {
+                // Використовуємо Nominatim API
+                const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(fullAddress)}&format=json&limit=1`;
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'User-Agent': 'DeapSeaK-LiftManagement/2.0'
+                    }
+                });
+                
+                const results = await response.json();
+                
+                if (results && results.length > 0) {
+                    const lat = parseFloat(results[0].lat);
+                    const lon = parseFloat(results[0].lon);
+                    
+                    console.log('✅ Геокодовано:', { lat, lon });
+                    
+                    // Оновлюємо поля координат
+                    $('#enhancedLiftLat').val(lat.toFixed(6));
+                    $('#enhancedLiftLng').val(lon.toFixed(6));
+                    
+                    // Оновлюємо карту
+                    if (window.editMapInstance) {
+                        window.editMapInstance.setView([lat, lon], 15);
+                        
+                        // Оновлюємо маркер
+                        if (window.editMapInstance._layers) {
+                            Object.values(window.editMapInstance._layers).forEach(layer => {
+                                if (layer instanceof L.Marker) {
+                                    layer.setLatLng([lat, lon]);
+                                    layer.bindPopup(`<strong>${address}</strong><br><small>Перетягніть маркер для зміни позиції</small>`).openPopup();
+                                }
+                            });
+                        }
+                    } else {
+                        // Ініціалізуємо карту якщо її ще немає
+                        initEditMap(lat, lon, address);
+                    }
+                    
+                    // Показуємо повідомлення
+                    toastr.success('Координати знайдено!', 'Геокодування');
+                } else {
+                    console.warn('⚠️ Адреса не знайдена');
+                    alert('Не вдалося знайти координати для цієї адреси. Спробуйте ввести більш детальну адресу.');
+                }
+                
+            } catch (error) {
+                console.error('❌ Помилка геокодування:', error);
+                alert('Помилка геокодування адреси. Перевірте інтернет-з\'єднання.');
+            } finally {
+                // Повертаємо кнопку
+                btn.html(originalHtml).prop('disabled', false);
+            }
+        });
+        
+        console.log('✅ Обробник геокодування підключено');
+    });
 
     // 🔧 ВИДАЛЕНО: Старий обробник submit - тепер використовується EnhancedLiftModal
     // Проблема: форма зберігалась двічі через два обробники submit
