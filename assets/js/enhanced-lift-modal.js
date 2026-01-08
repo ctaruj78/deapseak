@@ -521,6 +521,7 @@ class EnhancedLiftModal {
                 floors: liftData.floorsCount || 5,
                 installationDate: liftData.installationYear ? `${liftData.installationYear}-01-01` : null,
                 address: liftData.address, // 🏛️ Backend використає це для геокодування та municipality detection
+                postalCode: liftData.postcode, // 📮 Поштовий індекс для визначення муніципалітету
                 client: testClientId, // ID клієнта
                 clientName: liftData.clientName,
                 clientEmail: liftData.clientEmail,

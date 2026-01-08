@@ -1,0 +1,37 @@
+{
+  "timestamp": "2026-01-08T21:56:52.631Z",
+  "total": 67,
+  "passed": 34,
+  "failed": 0,
+  "skipped": 0,
+  "auth": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4
+  },
+  "pages": {
+    "passed": 30,
+    "failed": 0,
+    "total": 40
+  },
+  "api": {
+    "passed": 0,
+    "failed": 0,
+    "total": 15
+  },
+  "access": {
+    "passed": 0,
+    "failed": 0,
+    "total": 2
+  },
+  "municipalities": {
+    "passed": 0,
+    "failed": 0,
+    "total": 2
+  },
+  "database": {
+    "passed": 0,
+    "failed": 0,
+    "total": 4
+  }
+}

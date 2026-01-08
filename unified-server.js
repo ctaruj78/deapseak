@@ -151,13 +151,30 @@ connectMongo();
 const JWT_SECRET = process.env.JWT_SECRET || 'deapseak_secret_key_2024';
 
 // API маршрути
-app.get('/api/health', (req, res) => {
-    res.json({ 
-        status: 'ok', 
-        timestamp: new Date().toISOString(),
-        port: PORT,
-        mode: 'unified'
-    });
+app.get('/api/health', async (req, res) => {
+    try {
+        // Перевіряємо MongoDB
+        let mongoStatus = 'disconnected';
+        if (db) {
+            await db.command({ ping: 1 });
+            mongoStatus = 'connected';
+        }
+        
+        res.json({ 
+            status: 'ok', 
+            timestamp: new Date().toISOString(),
+            port: PORT,
+            mode: 'unified',
+            mongodb: mongoStatus,
+            version: '2.0.0'
+        });
+    } catch (error) {
+        res.status(503).json({
+            status: 'error',
+            mongodb: 'error',
+            error: error.message
+        });
+    }
 });
 
 // Логін
@@ -903,6 +920,44 @@ app.get('/api/en-standards', authenticateToken, async (req, res) => {
 });
 
 // Захищені маршрути
+
+// GET /api/lifts/stats - статистика ліфтів (МАЄ БУТИ ПЕРЕД /api/lifts/:id!)
+app.get('/api/lifts/stats', authenticateToken, async (req, res) => {
+    try {
+        const liftsCollection = db.collection('lifts');
+        
+        const totalLifts = await liftsCollection.countDocuments();
+        const activeLifts = await liftsCollection.countDocuments({ status: 'active' });
+        const inactiveLifts = await liftsCollection.countDocuments({ status: 'inactive' });
+        const maintenanceLifts = await liftsCollection.countDocuments({ status: 'maintenance' });
+        
+        // Статистика по муніципалітетам
+        const municipalityStats = await liftsCollection.aggregate([
+            { $match: { 'municipality.name': { $exists: true, $ne: null } } },
+            { $group: { _id: '$municipality.name', count: { $sum: 1 } } },
+            { $sort: { count: -1 } },
+            { $limit: 10 }
+        ]).toArray();
+        
+        res.json({
+            success: true,
+            data: {
+                total: totalLifts,
+                active: activeLifts,
+                inactive: inactiveLifts,
+                maintenance: maintenanceLifts,
+                byMunicipality: municipalityStats
+            }
+        });
+    } catch (error) {
+        console.error('❌ Помилка отримання статистики ліфтів:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка отримання статистики'
+        });
+    }
+});
+
 app.get('/api/lifts', authenticateToken, async (req, res) => {
     try {
         const { ObjectId } = require('mongodb');
@@ -1002,52 +1057,83 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
         // 🏛️ АВТОМАТИЧНЕ ВИЗНАЧЕННЯ МУНІЦИПАЛІТЕТУ
         let municipalityData = null;
         
-        if (req.body.address) {
-            console.log('🏛️ Визначення муніципалітету за адресою...');
+        // Спочатку перевіряємо чи є окреме поле postalCode (з форми)
+        let postalCodeToCheck = req.body.postalCode;
+        
+        // Якщо окреме поле не заповнене - шукаємо в адресі
+        if (!postalCodeToCheck && req.body.address) {
+            const postalCodeMatch = req.body.address.match(/(\d{4})-?\d{3}/);
+            if (postalCodeMatch) {
+                postalCodeToCheck = postalCodeMatch[1]; // Тільки перші 4 цифри
+            }
+        }
+        
+        // Якщо postalCode має формат XXXX-XXX - витягуємо перші 4 цифри
+        if (postalCodeToCheck && postalCodeToCheck.includes('-')) {
+            postalCodeToCheck = postalCodeToCheck.split('-')[0];
+        }
+        
+        if (postalCodeToCheck) {
+            console.log('🏛️ Визначення муніципалітету за поштовим кодом:', postalCodeToCheck);
             try {
-                // Витягуємо поштовий код з адреси (формат: XXXX-XXX)
-                const postalCodeMatch = req.body.address.match(/(\d{4})-?\d{3}/);
+                // Завантажуємо базу муніципалітетів
+                const fs = require('fs').promises;
+                const municipalitiesData = JSON.parse(
+                    await fs.readFile('./data/municipalities-lisboa-120km.json', 'utf8')
+                );
                 
-                if (postalCodeMatch) {
-                    const postalCode = postalCodeMatch[1];
-                    console.log('📮 Знайдено поштовий код:', postalCode);
+                // Шукаємо відповідний муніципалітет (перші 4 цифри коду)
+                const municipality = municipalitiesData.municipalities.find(m => 
+                    m.postal_codes.some(code => code.startsWith(postalCodeToCheck))
+                );
+                
+                if (municipality) {
+                    municipalityData = {
+                        id: municipality.id,
+                        name: municipality.name,
+                        distrito: municipality.distrito,
+                        email: municipality.email,
+                        phone: municipality.phone,
+                        website: municipality.website,
+                        distance_km: municipality.distance_km,
+                        notified: false, // Буде встановлено в true після відправки email
+                        notification_history: []
+                    };
                     
-                    // Завантажуємо базу муніципалітетів
-                    const fs = require('fs').promises;
-                    const municipalitiesData = JSON.parse(
-                        await fs.readFile('./data/municipalities-lisboa-120km.json', 'utf8')
-                    );
-                    
-                    // Шукаємо відповідний муніципалітет
-                    const municipality = municipalitiesData.municipalities.find(m => 
-                        m.postal_codes.some(code => code.startsWith(postalCode))
-                    );
-                    
-                    if (municipality) {
-                        municipalityData = {
-                            id: municipality.id,
-                            name: municipality.name,
-                            distrito: municipality.distrito,
-                            email: municipality.email,
-                            phone: municipality.phone,
-                            website: municipality.website,
-                            distance_km: municipality.distance_km,
-                            notified: false, // Буде встановлено в true після відправки email
-                            notification_history: []
-                        };
-                        
-                        console.log('✅ Визначено муніципалітет:', municipality.name);
-                    } else {
-                        console.warn('⚠️ Муніципалітет не знайдено для поштового коду:', postalCode);
-                    }
+                    console.log('✅ Визначено муніципалітет:', municipality.name);
+                } else {
+                    console.warn('⚠️ Муніципалітет не знайдено для поштового коду:', postalCodeToCheck);
                 }
             } catch (error) {
                 console.error('❌ Помилка визначення муніципалітету:', error);
             }
+        } else {
+            console.warn('⚠️ Поштовий код не знайдено ні в полі postalCode, ні в адресі');
+        }
+        
+        // Підготовка даних для збереження
+        const liftData = { ...req.body };
+        
+        // 📮 Перетворюємо postalCode в address.zipCode для сумісності з моделлю
+        if (liftData.postalCode) {
+            if (!liftData.address || typeof liftData.address === 'string') {
+                // Якщо address - рядок, розбиваємо на структуру
+                liftData.address = {
+                    street: liftData.address || '',
+                    city: '',
+                    zipCode: liftData.postalCode,
+                    country: 'Portugal'
+                };
+            } else {
+                // Якщо address - об'єкт, додаємо zipCode
+                liftData.address.zipCode = liftData.postalCode;
+            }
+            // Видаляємо окреме поле postalCode після копіювання
+            delete liftData.postalCode;
         }
         
         const newLift = {
-            ...req.body,
+            ...liftData,
             qrCode: qrCode, // ✅ QR код генерується автоматично
             location: locationData, // Використовуємо геокодовані координати або ручні
             municipality: municipalityData, // 🏛️ Дані муніципалітету
@@ -1075,7 +1161,6 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
     }
 });
 
-// GET /api/lifts/:id - отримання одного ліфта
 app.get('/api/lifts/:id', authenticateToken, async (req, res) => {
     try {
         const { ObjectId } = require('mongodb');
@@ -1118,7 +1203,7 @@ app.get('/api/lifts/:id', authenticateToken, async (req, res) => {
         
         res.json({
             success: true,
-            lift: lift
+            data: lift  // 🔧 Консистентна структура відповіді (data замість lift)
         });
     } catch (error) {
         console.error('❌ Помилка отримання ліфта:', error);
@@ -1523,8 +1608,56 @@ app.get('/api/municipalities/stats', authenticateToken, async (req, res) => {
 // 👥 USERS API ENDPOINTS
 // ========================================
 
-// GET /api/users - отримання користувачів
+// GET /api/users/profile - профіль поточного користувача
+app.get('/api/users/profile', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const userId = req.user.userId;
+        
+        // Перевірка чи userId є валідним ObjectId
+        let query;
+        if (ObjectId.isValid(userId)) {
+            query = { _id: new ObjectId(userId) };
+        } else {
+            // Якщо userId - це email або username
+            query = { $or: [{ email: userId }, { username: userId }] };
+        }
+        
+        const user = await db.collection('users').findOne(
+            query,
+            { projection: { password: 0 } }
+        );
+        
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'Користувач не знайдений'
+            });
+        }
+        
+        res.json({
+            success: true,
+            data: user
+        });
+    } catch (error) {
+        console.error('❌ Помилка отримання профілю:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка отримання профілю',
+            error: error.message
+        });
+    }
+});
+
+// GET /api/users - отримання користувачів (тільки admin)
 app.get('/api/users', authenticateToken, async (req, res) => {
+    // Перевірка ролі admin
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({
+            success: false,
+            message: 'Доступ заборонено. Тільки адміністратори можуть переглядати список користувачів.'
+        });
+    }
     try {
         const users = await db.collection('users').find({}, {
             projection: { password: 0 } // Не віддаємо паролі
@@ -1719,6 +1852,51 @@ app.get('/api/users/:id', authenticateToken, async (req, res) => {
 });
 
 // Заявки на обслуговування
+
+// GET /api/requests/stats - статистика запитів (МАЄ БУТИ ПЕРЕД /api/requests/:id!)
+app.get('/api/requests/stats', authenticateToken, async (req, res) => {
+    try {
+        const requestsCollection = db.collection('requests');
+        
+        const totalRequests = await requestsCollection.countDocuments();
+        const pendingRequests = await requestsCollection.countDocuments({ status: 'pending' });
+        const inProgressRequests = await requestsCollection.countDocuments({ status: 'in_progress' });
+        const completedRequests = await requestsCollection.countDocuments({ status: 'completed' });
+        const cancelledRequests = await requestsCollection.countDocuments({ status: 'cancelled' });
+        
+        // Статистика по типам
+        const typeStats = await requestsCollection.aggregate([
+            { $group: { _id: '$type', count: { $sum: 1 } } },
+            { $sort: { count: -1 } }
+        ]).toArray();
+        
+        // Статистика по пріоритетам
+        const priorityStats = await requestsCollection.aggregate([
+            { $group: { _id: '$priority', count: { $sum: 1 } } },
+            { $sort: { _id: 1 } }
+        ]).toArray();
+        
+        res.json({
+            success: true,
+            data: {
+                total: totalRequests,
+                pending: pendingRequests,
+                inProgress: inProgressRequests,
+                completed: completedRequests,
+                cancelled: cancelledRequests,
+                byType: typeStats,
+                byPriority: priorityStats
+            }
+        });
+    } catch (error) {
+        console.error('❌ Помилка отримання статистики запитів:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка отримання статистики'
+        });
+    }
+});
+
 app.get('/api/requests', authenticateToken, async (req, res) => {
     try {
         const requests = await db.collection('requests').find({}).toArray();
@@ -1735,7 +1913,6 @@ app.get('/api/requests', authenticateToken, async (req, res) => {
     }
 });
 
-// GET /api/requests/:id - отримання однієї заявки
 app.get('/api/requests/:id', authenticateToken, async (req, res) => {
     try {
         const { ObjectId } = require('mongodb');

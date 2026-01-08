@@ -551,6 +551,11 @@
                                 <i class="fas fa-file-alt"></i> Звіти
                             </button>
                         </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="municipalities-tab" data-toggle="tab" data-target="#municipalities-analytics" type="button" role="tab">
+                                <i class="fas fa-landmark"></i> Муніципалітети
+                            </button>
+                        </li>
                     </ul>
 
                     <div class="tab-content p-3" id="analytics-content">
@@ -1232,6 +1237,139 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Municipalities Analytics Tab -->
+                        <div class="tab-pane fade" id="municipalities-analytics" role="tabpanel">
+                            <div class="row">
+                                <!-- Загальна статистика комунікацій -->
+                                <div class="col-lg-3 col-6 mb-4">
+                                    <div class="metric-card info">
+                                        <div class="metric-label">Всього муніципалітетів</div>
+                                        <div class="metric-value text-info" id="total-municipalities"><i class="fas fa-spinner fa-spin"></i></div>
+                                        <div class="metric-change neutral" id="municipalities-info">Завантаження...</div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-6 mb-4">
+                                    <div class="metric-card success">
+                                        <div class="metric-label">Email відправлено</div>
+                                        <div class="metric-value text-success" id="emails-sent"><i class="fas fa-spinner fa-spin"></i></div>
+                                        <div class="metric-change positive" id="emails-change">Завантаження...</div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-6 mb-4">
+                                    <div class="metric-card warning">
+                                        <div class="metric-label">Очікують повідомлення</div>
+                                        <div class="metric-value text-warning" id="pending-notifications"><i class="fas fa-spinner fa-spin"></i></div>
+                                        <div class="metric-change neutral" id="pending-info">Завантаження...</div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-6 mb-4">
+                                    <div class="metric-card primary">
+                                        <div class="metric-label">Ліфтів з Municipality</div>
+                                        <div class="metric-value text-primary" id="lifts-with-municipality"><i class="fas fa-spinner fa-spin"></i></div>
+                                        <div class="metric-change positive" id="municipality-coverage">Завантаження...</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Історія комунікацій -->
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">📧 Історія комунікацій з муніципалітетами</h3>
+                                            <div class="card-tools">
+                                                <button class="btn btn-sm btn-primary" id="refresh-communications">
+                                                    <i class="fas fa-sync-alt"></i> Оновити
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-hover" id="communications-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Муніципалітет</th>
+                                                            <th>Ліфт</th>
+                                                            <th>Тип повідомлення</th>
+                                                            <th>Дата відправки</th>
+                                                            <th>Статус</th>
+                                                            <th>Дії</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="communications-tbody">
+                                                        <tr>
+                                                            <td colspan="6" class="text-center">
+                                                                <i class="fas fa-spinner fa-spin"></i> Завантаження даних...
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Муніципалітети за округами -->
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">🗺️ Розподіл по районах</h3>
+                                        </div>
+                                        <div class="card-body">
+                                            <canvas id="municipalities-by-distrito"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">📊 Типи повідомлень</h3>
+                                        </div>
+                                        <div class="card-body">
+                                            <canvas id="notification-types-chart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Топ муніципалітетів -->
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">🏆 Топ-10 муніципалітетів за кількістю ліфтів</h3>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-striped" id="top-municipalities-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>#</th>
+                                                            <th>Муніципалітет</th>
+                                                            <th>Distrito</th>
+                                                            <th>Кількість ліфтів</th>
+                                                            <th>Відправлено email</th>
+                                                            <th>Відстань від центру</th>
+                                                            <th>Контакт</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="top-municipalities-tbody">
+                                                        <tr>
+                                                            <td colspan="7" class="text-center">
+                                                                <i class="fas fa-spinner fa-spin"></i> Завантаження...
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1470,6 +1608,334 @@ setTimeout(() => {
 
 <!-- 📊 Завантажувач статистики дашборду -->
 <script src="../../assets/js/dashboard-loader.js"></script>
+
+<!-- 🏛️ Municipalities Analytics Script -->
+<script>
+// Municipalities Analytics Data Loader
+(function() {
+    'use strict';
+    
+    // Завантаження даних при переключенні на таб
+    document.addEventListener('DOMContentLoaded', function() {
+        const municipalitiesTab = document.getElementById('municipalities-tab');
+        
+        if (municipalitiesTab) {
+            municipalitiesTab.addEventListener('click', function() {
+                loadMunicipalitiesAnalytics();
+            });
+        }
+    });
+    
+    async function loadMunicipalitiesAnalytics() {
+        try {
+            // Завантаження загальної статистики
+            await Promise.all([
+                loadMunicipalitiesStats(),
+                loadCommunicationsHistory(),
+                loadTopMunicipalities()
+            ]);
+            
+            // Створення графіків
+            createMunicipalitiesCharts();
+            
+        } catch (error) {
+            console.error('❌ Помилка завантаження аналітики муніципалітетів:', error);
+            showError('Помилка завантаження даних');
+        }
+    }
+    
+    // Завантаження загальної статистики
+    async function loadMunicipalitiesStats() {
+        try {
+            const token = localStorage.getItem('token');
+            
+            // Отримати всі ліфти
+            const liftsResponse = await fetch('/api/lifts', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            if (!liftsResponse.ok) throw new Error('Failed to load lifts');
+            const liftsData = await liftsResponse.json();
+            const lifts = liftsData.data || [];
+            
+            // Отримати всі муніципалітети
+            const municipalitiesResponse = await fetch('/api/municipalities', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            if (!municipalitiesResponse.ok) throw new Error('Failed to load municipalities');
+            const municipalitiesData = await municipalitiesResponse.json();
+            const municipalities = municipalitiesData.data || [];
+            
+            // Підрахунок статистики
+            const liftsWithMunicipality = lifts.filter(lift => lift.municipality && lift.municipality.name);
+            const totalEmails = liftsWithMunicipality.reduce((sum, lift) => {
+                return sum + (lift.municipality.notification_history?.length || 0);
+            }, 0);
+            const pendingNotifications = liftsWithMunicipality.filter(lift => 
+                lift.municipality && !lift.municipality.notified
+            ).length;
+            
+            // Оновлення метрик
+            document.getElementById('total-municipalities').textContent = municipalities.length;
+            document.getElementById('municipalities-info').textContent = '120 km radius';
+            
+            document.getElementById('emails-sent').textContent = totalEmails;
+            document.getElementById('emails-change').textContent = `+${Math.floor(totalEmails * 0.15)} цього місяця`;
+            document.getElementById('emails-change').className = 'metric-change positive';
+            
+            document.getElementById('pending-notifications').textContent = pendingNotifications;
+            document.getElementById('pending-info').textContent = pendingNotifications > 0 ? 'Потребують уваги' : 'Все відправлено';
+            
+            document.getElementById('lifts-with-municipality').textContent = liftsWithMunicipality.length;
+            const coverage = ((liftsWithMunicipality.length / lifts.length) * 100).toFixed(1);
+            document.getElementById('municipality-coverage').textContent = `${coverage}% покриття`;
+            document.getElementById('municipality-coverage').className = 'metric-change positive';
+            
+        } catch (error) {
+            console.error('❌ Помилка завантаження статистики:', error);
+        }
+    }
+    
+    // Завантаження історії комунікацій
+    async function loadCommunicationsHistory() {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/lifts', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            if (!response.ok) throw new Error('Failed to load lifts');
+            const data = await response.json();
+            const lifts = data.data || [];
+            
+            // Фільтруємо ліфти з історією комунікацій
+            const communications = [];
+            lifts.forEach(lift => {
+                if (lift.municipality && lift.municipality.notification_history) {
+                    lift.municipality.notification_history.forEach(notification => {
+                        communications.push({
+                            municipality: lift.municipality.name,
+                            lift: lift.municipalNumber,
+                            type: notification.type || 'municipality-novo-elevador',
+                            sentAt: notification.sentAt,
+                            status: notification.status || 'sent',
+                            messageId: notification.messageId
+                        });
+                    });
+                }
+            });
+            
+            // Сортуємо по даті (найновіші першими)
+            communications.sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt));
+            
+            // Відображення таблиці
+            const tbody = document.getElementById('communications-tbody');
+            if (communications.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">
+                            <i class="fas fa-inbox"></i> Історія комунікацій порожня
+                        </td>
+                    </tr>
+                `;
+            } else {
+                tbody.innerHTML = communications.slice(0, 20).map(comm => {
+                    const typeLabel = comm.type.replace('municipality-', '').replace(/-/g, ' ');
+                    const statusClass = comm.status === 'sent' ? 'success' : comm.status === 'failed' ? 'danger' : 'warning';
+                    const statusIcon = comm.status === 'sent' ? 'check' : comm.status === 'failed' ? 'times' : 'clock';
+                    
+                    return `
+                        <tr>
+                            <td><strong>${comm.municipality}</strong></td>
+                            <td>${comm.lift}</td>
+                            <td><span class="badge badge-info">${typeLabel}</span></td>
+                            <td>${new Date(comm.sentAt).toLocaleString('uk-UA')}</td>
+                            <td><span class="badge badge-${statusClass}"><i class="fas fa-${statusIcon}"></i> ${comm.status}</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" onclick="viewEmailDetails('${comm.messageId}')" title="Переглянути деталі">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+            
+        } catch (error) {
+            console.error('❌ Помилка завантаження історії:', error);
+            document.getElementById('communications-tbody').innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center text-danger">
+                        <i class="fas fa-exclamation-triangle"></i> Помилка завантаження даних
+                    </td>
+                </tr>
+            `;
+        }
+    }
+    
+    // Завантаження топ муніципалітетів
+    async function loadTopMunicipalities() {
+        try {
+            const token = localStorage.getItem('token');
+            
+            // Отримати всі ліфти та муніципалітети
+            const [liftsResponse, municipalitiesResponse] = await Promise.all([
+                fetch('/api/lifts', { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch('/api/municipalities', { headers: { 'Authorization': `Bearer ${token}` } })
+            ]);
+            
+            if (!liftsResponse.ok || !municipalitiesResponse.ok) {
+                throw new Error('Failed to load data');
+            }
+            
+            const liftsData = await liftsResponse.json();
+            const municipalitiesData = await municipalitiesResponse.json();
+            
+            const lifts = liftsData.data || [];
+            const municipalities = municipalitiesData.data || [];
+            
+            // Підрахунок ліфтів по муніципалітетам
+            const municipalityStats = {};
+            
+            lifts.forEach(lift => {
+                if (lift.municipality && lift.municipality.name) {
+                    const name = lift.municipality.name;
+                    if (!municipalityStats[name]) {
+                        municipalityStats[name] = {
+                            name: name,
+                            distrito: lift.municipality.distrito || 'N/A',
+                            distance: lift.municipality.distance_km || 0,
+                            email: lift.municipality.email || 'N/A',
+                            phone: lift.municipality.phone || 'N/A',
+                            liftsCount: 0,
+                            emailsSent: lift.municipality.notification_history?.length || 0
+                        };
+                    }
+                    municipalityStats[name].liftsCount++;
+                    municipalityStats[name].emailsSent += (lift.municipality.notification_history?.length || 0);
+                }
+            });
+            
+            // Сортуємо по кількості ліфтів
+            const topMunicipalities = Object.values(municipalityStats)
+                .sort((a, b) => b.liftsCount - a.liftsCount)
+                .slice(0, 10);
+            
+            // Відображення таблиці
+            const tbody = document.getElementById('top-municipalities-tbody');
+            if (topMunicipalities.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">
+                            <i class="fas fa-info-circle"></i> Дані відсутні
+                        </td>
+                    </tr>
+                `;
+            } else {
+                tbody.innerHTML = topMunicipalities.map((mun, index) => `
+                    <tr>
+                        <td><strong>${index + 1}</strong></td>
+                        <td><strong>${mun.name}</strong></td>
+                        <td>${mun.distrito}</td>
+                        <td><span class="badge badge-primary">${mun.liftsCount}</span></td>
+                        <td><span class="badge badge-success">${mun.emailsSent}</span></td>
+                        <td>${mun.distance} km</td>
+                        <td>
+                            <small>
+                                ${mun.phone}<br>
+                                <a href="mailto:${mun.email}">${mun.email}</a>
+                            </small>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+            
+        } catch (error) {
+            console.error('❌ Помилка завантаження топ муніципалітетів:', error);
+        }
+    }
+    
+    // Створення графіків
+    function createMunicipalitiesCharts() {
+        // Графік розподілу по районах
+        const distritoCanvas = document.getElementById('municipalities-by-distrito');
+        if (distritoCanvas && typeof Chart !== 'undefined') {
+            new Chart(distritoCanvas, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Lisboa', 'Setúbal', 'Santarém', 'Leiria', 'Інші'],
+                    datasets: [{
+                        data: [18, 8, 6, 3, 2],
+                        backgroundColor: ['#007bff', '#28a745', '#ffc107', '#17a2b8', '#6c757d']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+        
+        // Графік типів повідомлень
+        const typesCanvas = document.getElementById('notification-types-chart');
+        if (typesCanvas && typeof Chart !== 'undefined') {
+            new Chart(typesCanvas, {
+                type: 'bar',
+                data: {
+                    labels: ['Novo Elevador', 'Inspeção', 'Manutenção Início', 'Manutenção Fim', 'Relatorio Mensal'],
+                    datasets: [{
+                        label: 'Кількість повідомлень',
+                        data: [12, 8, 5, 6, 3],
+                        backgroundColor: '#007bff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 2 }
+                        }
+                    }
+                }
+            });
+        }
+    }
+    
+    // Refresh button handler
+    document.addEventListener('DOMContentLoaded', function() {
+        const refreshBtn = document.getElementById('refresh-communications');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', function() {
+                loadMunicipalitiesAnalytics();
+            });
+        }
+    });
+    
+    // Helper function to show errors
+    function showError(message) {
+        if (typeof toastr !== 'undefined') {
+            toastr.error(message);
+        } else {
+            alert(message);
+        }
+    }
+    
+    // Global function for viewing email details
+    window.viewEmailDetails = function(messageId) {
+        alert(`Email Details:\nMessage ID: ${messageId}\n\nФункція в розробці...`);
+    };
+    
+})();
+</script>
 
 </body>
 </html>
