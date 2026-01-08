@@ -4277,7 +4277,7 @@
                         <p><strong>Fabricante:</strong> ${lift.manufacturer || 'N/A'}</p>
                         <p><strong>Modelo:</strong> ${lift.model || 'N/A'}</p>
                         <p><strong>Capacidade:</strong> ${lift.capacity || 'N/A'} pessoas</p>
-                        <p><strong>Data de Instalação:</strong> ${lift.installationDate ? new Date(lift.installationDate).toLocaleDateString('pt-PT') : 'N/A'}</p>
+                        <p><strong>Data de Início de Serviço:</strong> ${lift.createdAt ? new Date(lift.createdAt).toLocaleDateString('pt-PT') : new Date().toLocaleDateString('pt-PT')}</p>
                     </div>
                     
                     <div class="info-box" style="background: #e3f2fd;">
