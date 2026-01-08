@@ -2004,6 +2004,106 @@
         </div>
     </div>
 
+    <!-- Municipality Notification Modal -->
+    <div class="modal fade" id="municipalityModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-gradient-primary">
+                    <h5 class="modal-title text-white">
+                        <i class="fas fa-building mr-2"></i>Відправити звіт до муніципалітету
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        <strong>Інформація:</strong> Звіт буде автоматично відправлено до відповідного муніципалітету на основі адреси ліфта.
+                    </div>
+
+                    <!-- Lift Info -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="fas fa-elevator mr-2"></i>Інформація про ліфт</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Муніципальний номер:</strong> <span id="mun-municipal-number">-</span></p>
+                                    <p><strong>Адреса:</strong> <span id="mun-address">-</span></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>QR код:</strong> <span id="mun-qr-code">-</span></p>
+                                    <p><strong>Поштовий код:</strong> <span id="mun-postal-code">-</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Municipality Info -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-success">
+                            <h6 class="mb-0 text-white"><i class="fas fa-landmark mr-2"></i>Муніципалітет</h6>
+                        </div>
+                        <div class="card-body">
+                            <div id="municipality-info-loading" class="text-center py-3">
+                                <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+                                <p class="mt-2 text-muted">Визначення муніципалітету...</p>
+                            </div>
+                            <div id="municipality-info-content" style="display: none;">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>Concelho:</strong> <span id="mun-concelho-name">-</span></p>
+                                        <p><strong>Distrito:</strong> <span id="mun-distrito-name">-</span></p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>Email:</strong> <span id="mun-email">-</span></p>
+                                        <p><strong>Телефон:</strong> <span id="mun-phone">-</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="municipality-info-error" class="alert alert-danger" style="display: none;">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>
+                                <span id="municipality-error-message">Не вдалося визначити муніципалітет</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Email Template Selection -->
+                    <div class="form-group">
+                        <label for="email-template-type">
+                            <i class="fas fa-file-alt mr-1"></i>Тип звіту
+                        </label>
+                        <select id="email-template-type" class="form-control">
+                            <option value="municipality-novo-elevador">🏢 Novo Elevador - Реєстрація нового ліфта</option>
+                            <option value="municipality-inspecao">📋 Inspeção - Звіт інспекції</option>
+                            <option value="municipality-manutencao-inicio">🔧 Manutenção Início - Початок ТО</option>
+                            <option value="municipality-manutencao-fim">✅ Manutenção Fim - Завершення ТО</option>
+                            <option value="municipality-relatorio-mensal">📊 Relatório Mensal - Місячний звіт</option>
+                        </select>
+                    </div>
+
+                    <!-- Additional Notes -->
+                    <div class="form-group">
+                        <label for="municipality-notes">
+                            <i class="fas fa-comment mr-1"></i>Додаткові примітки (опціонально)
+                        </label>
+                        <textarea id="municipality-notes" class="form-control" rows="3" placeholder="Додайте додаткову інформацію для муніципалітету..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times mr-1"></i>Скасувати
+                    </button>
+                    <button type="button" class="btn btn-primary" id="btn-send-to-municipality">
+                        <i class="fas fa-paper-plane mr-1"></i>Відправити звіт
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="../../plugins/jquery/jquery.min.js"></script>
     <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
@@ -2542,7 +2642,15 @@
                 setTimeout(() => {
                     // Центр Португалії (Лісабон) як початкова точка
                     initEditMap(38.7223, -9.1393, 'Lisboa, Portugal');
-                }, 100);
+                    
+                    // Додатковий виклик invalidateSize після повної ініціалізації
+                    setTimeout(() => {
+                        if (window.editMapInstance) {
+                            window.editMapInstance.invalidateSize();
+                            console.log('✅ Карта створення - додатковий invalidateSize()');
+                        }
+                    }, 300);
+                }, 200);
             });
         }
         
@@ -3841,6 +3949,12 @@
                                 }
                             });
                         }
+                        
+                        // ВИПРАВЛЕННЯ: Оновлюємо розмір карти після геокодування
+                        setTimeout(() => {
+                            window.editMapInstance.invalidateSize();
+                            console.log('✅ Карта оновлена після геокодування');
+                        }, 200);
                     } else {
                         // Ініціалізуємо карту якщо її ще немає
                         initEditMap(lat, lon, address);
@@ -4334,6 +4448,11 @@
                                 onclick="generateQRCodeForLift('${liftId}')"
                                 title="Генерувати QR код">
                             <i class="fas fa-qrcode"></i>
+                        </button>
+                        <button type="button" class="btn btn-secondary" 
+                                onclick="openMunicipalityModal('${liftId}')"
+                                title="Відправити до муніципалітету">
+                            <i class="fas fa-building"></i>
                         </button>
                         <button type="button" class="btn btn-warning" 
                                 onclick="scheduleMaintenance('${liftId}')"
@@ -4922,7 +5041,15 @@
             setTimeout(() => {
                 window.editMapInstance.invalidateSize();
                 console.log('✅ Розмір карти редагування оновлено');
-            }, 100);
+            }, 200);
+            
+            // Додатковий виклик після анімації модального вікна
+            setTimeout(() => {
+                if (window.editMapInstance) {
+                    window.editMapInstance.invalidateSize();
+                    console.log('✅ Другий виклик invalidateSize() після анімації');
+                }
+            }, 500);
             
         } catch (error) {
             console.error('❌ Помилка ініціалізації карти редагування:', error);
@@ -6197,6 +6324,138 @@
         } else {
             console.warn('⚠️ Кнопка exportPDFBtn не знайдена');
         }
+    });
+    
+    // ============================================
+    // Municipality Modal Functions
+    // ============================================
+    
+    let currentMunicipalityLiftId = null;
+    
+    async function openMunicipalityModal(liftId) {
+        console.log('🏛️ Відкриття модального вікна муніципалітету для ліфта:', liftId);
+        
+        currentMunicipalityLiftId = liftId;
+        
+        try {
+            // Завантажуємо дані ліфта
+            const result = await apiCall(`/api/lifts/${liftId}`, 'GET');
+            
+            let lift;
+            if (result.success) {
+                lift = result.data?.lift || result.data || result.lift;
+            } else {
+                throw new Error('Не вдалося завантажити дані ліфта');
+            }
+            
+            console.log('✅ Дані ліфта завантажено:', lift);
+            
+            // Заповнюємо інформацію про ліфт
+            $('#mun-municipal-number').text(lift.municipalNumber || 'Не вказано');
+            $('#mun-qr-code').text(lift.qrCode || 'Не вказано');
+            
+            const address = lift.address || {};
+            const addressStr = address.street 
+                ? `${address.street}, ${address.city || ''}` 
+                : lift.address || 'Не вказано';
+            $('#mun-address').text(addressStr);
+            $('#mun-postal-code').text(address.zipCode || lift.postalCode || 'Не вказано');
+            
+            // Показуємо модальне вікно
+            $('#municipalityModal').modal('show');
+            
+            // Визначаємо муніципалітет
+            $('#municipality-info-loading').show();
+            $('#municipality-info-content').hide();
+            $('#municipality-info-error').hide();
+            
+            const postalCode = address.zipCode || lift.postalCode;
+            
+            if (postalCode) {
+                try {
+                    const munResult = await apiCall(`/api/municipalities/by-postal/${postalCode}`, 'GET');
+                    
+                    if (munResult.success && munResult.data) {
+                        const mun = munResult.data;
+                        
+                        $('#mun-concelho-name').text(mun.concelho || 'Не вказано');
+                        $('#mun-distrito-name').text(mun.distrito || 'Не вказано');
+                        $('#mun-email').text(mun.email || 'Не вказано');
+                        $('#mun-phone').text(mun.phone || 'Не вказано');
+                        
+                        $('#municipality-info-loading').hide();
+                        $('#municipality-info-content').show();
+                        
+                        console.log('✅ Муніципалітет визначено:', mun);
+                    } else {
+                        throw new Error('Муніципалітет не знайдено');
+                    }
+                } catch (error) {
+                    console.error('❌ Помилка визначення муніципалітету:', error);
+                    $('#municipality-error-message').text(error.message || 'Не вдалося визначити муніципалітет');
+                    $('#municipality-info-loading').hide();
+                    $('#municipality-info-error').show();
+                }
+            } else {
+                $('#municipality-error-message').text('Поштовий код не вказано');
+                $('#municipality-info-loading').hide();
+                $('#municipality-info-error').show();
+            }
+            
+        } catch (error) {
+            console.error('❌ Помилка відкриття модального вікна муніципалітету:', error);
+            alert('Помилка завантаження даних ліфта: ' + error.message);
+        }
+    }
+    
+    // Обробник кнопки відправки
+    $(document).ready(function() {
+        $('#btn-send-to-municipality').on('click', async function() {
+            console.log('📤 Відправка звіту до муніципалітету...');
+            
+            if (!currentMunicipalityLiftId) {
+                alert('Помилка: ID ліфта не визначено');
+                return;
+            }
+            
+            const templateType = $('#email-template-type').val();
+            const notes = $('#municipality-notes').val();
+            
+            // Показуємо індикатор завантаження
+            const $btn = $(this);
+            const originalText = $btn.html();
+            $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i>Відправка...');
+            
+            try {
+                // TODO: Реалізувати відправку через API endpoint
+                // const result = await apiCall(`/api/lifts/${currentMunicipalityLiftId}/notify-municipality`, 'POST', {
+                //     templateType: templateType,
+                //     notes: notes
+                // });
+                
+                // Поки що просто показуємо повідомлення
+                console.log('📧 Дані для відправки:', {
+                    liftId: currentMunicipalityLiftId,
+                    templateType: templateType,
+                    notes: notes
+                });
+                
+                setTimeout(() => {
+                    alert('⚠️ Функція відправки email ще не реалізована.\n\nДані готові до відправки:\n' +
+                          `- ID ліфта: ${currentMunicipalityLiftId}\n` +
+                          `- Тип звіту: ${templateType}\n` +
+                          `- Примітки: ${notes || 'Немає'}`);
+                    
+                    $btn.prop('disabled', false).html(originalText);
+                    $('#municipalityModal').modal('hide');
+                }, 500);
+                
+            } catch (error) {
+                console.error('❌ Помилка відправки звіту:', error);
+                alert('Помилка відправки звіту: ' + error.message);
+                $btn.prop('disabled', false).html(originalText);
+            }
+        });
     });
     
     </script>
