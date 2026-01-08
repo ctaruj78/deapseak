@@ -544,7 +544,6 @@ class EnhancedLiftModal {
             } else {
                 console.log('⚡ Backend геокодує адресу: ' + liftData.address);
             }
-            };
             
             console.log('📤 Sending to API:', apiData);
             
