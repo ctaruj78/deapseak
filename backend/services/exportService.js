@@ -213,7 +213,7 @@ class ExportService {
             { header: 'Статус', key: 'status', width: 15 },
             { header: 'Вантажопідйомність', key: 'capacity', width: 20 },
             { header: 'Поверхів', key: 'floors', width: 12 },
-            { header: 'Дата встановлення', key: 'installationDate', width: 20 },
+            { header: 'Початок обслуговування', key: 'installationDate', width: 25 },
             { header: 'Остання інспекція', key: 'lastInspection', width: 20 }
         ];
 

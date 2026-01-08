@@ -109,7 +109,7 @@ class PDFGenerator {
             ['Серійний номер:', lift.serialNumber],
             ['Виробник:', lift.manufacturer],
             ['Модель:', lift.model],
-            ['Рік встановлення:', new Date(lift.installationDate).getFullYear()],
+            ['Рік початку обслуговування:', lift.installationDate ? new Date(lift.installationDate).getFullYear() : new Date(lift.createdAt).getFullYear()],
             ['Клієнт:', lift.client]
         ];
 
