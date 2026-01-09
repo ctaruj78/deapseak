@@ -5077,24 +5077,30 @@
             // Завантажуємо дані ліфта з API
             const result = await apiCall(`/api/lifts/${liftId}`, 'GET');
             
+            console.log('✅ Повна відповідь API:', result);
+            console.log('📦 result.data:', result.data);
+            console.log('📦 result.data.lift:', result.data?.lift);
+            
             let lift;
-            if (result.success) {
-                console.log('✅ Ліфт завантажено з API:', result);
-                // API повертає { success: true, data: {...} }
-                lift = result.data?.lift || result.data || result.lift;
+            if (result.success && result.data) {
+                // API повертає { success: true, data: { lift: {...} } }
+                lift = result.data.lift || result.data;
+                console.log('✅ Витягнуто lift:', lift);
             } else {
                 // Fallback до localStorage
                 const lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
                 lift = lifts.find(l => (l._id || l.id) === liftId);
+                console.log('📂 Lift з localStorage:', lift);
             }
             
             if (!lift) {
+                console.error('❌ Ліфт не знайдено після всіх спроб');
                 alert('Ліфт не знайдено');
                 return;
             }
             
-            console.log('🏷️ Дані ліфта для QR:', lift);
-            console.log('📊 Ключі об\'єкта:', Object.keys(lift));
+            console.log('🏷️ Фінальний об\'єкт lift:', lift);
+            console.log('📊 Ключі об\'єкта lift:', Object.keys(lift));
             console.log('🆔 lift._id:', lift._id);
             console.log('🆔 lift.id:', lift.id);
             console.log('📍 lift.municipalNumber:', lift.municipalNumber);
@@ -6357,9 +6363,14 @@
             // Завантажуємо дані ліфта
             const result = await apiCall(`/api/lifts/${liftId}`, 'GET');
             
+            console.log('📦 Municipality modal - повна відповідь API:', result);
+            console.log('📦 result.data:', result.data);
+            console.log('📦 result.data.lift:', result.data?.lift);
+            
             let lift;
-            if (result.success) {
-                lift = result.data?.lift || result.data || result.lift;
+            if (result.success && result.data) {
+                // API повертає { success: true, data: { lift: {...} } }
+                lift = result.data.lift || result.data;
             } else {
                 throw new Error('Не вдалося завантажити дані ліфта');
             }
@@ -6368,6 +6379,7 @@
             currentMunicipalityLiftData = lift;
             
             console.log('✅ Дані ліфта завантажено:', lift);
+            console.log('📊 Ключі об\'єкта lift:', Object.keys(lift));
             
             // Заповнюємо інформацію про ліфт
             $('#mun-municipal-number').text(lift.municipalNumber || 'Не вказано');
