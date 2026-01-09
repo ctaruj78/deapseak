@@ -5084,16 +5084,19 @@
             
             let lift;
             if (result.success && result.data) {
-                // Структура: {success: true, data: {success: true, data: {...lift...}}}
-                // Реальні дані ліфта в result.data.data (не result.data.data.lift!)
-                if (result.data.data && typeof result.data.data === 'object' && result.data.data._id) {
-                    lift = result.data.data;  // ← Ліфт тут!
-                } else if (result.data.lift) {
-                    lift = result.data.lift;
-                } else if (result.data._id) {
+                // API повертає дані безпосередньо в result.data
+                if (result.data._id) {
+                    // Дані ліфта безпосередньо в result.data
                     lift = result.data;
-                } else {
-                    lift = result.data.data || result.data;
+                    console.log('✅ Lift знайдено: result.data (direct)');
+                } else if (result.data.lift && result.data.lift._id) {
+                    // Альтернативний формат з обгорткою .lift
+                    lift = result.data.lift;
+                    console.log('✅ Lift знайдено: result.data.lift');
+                } else if (result.data.data && result.data.data._id) {
+                    // Альтернативний формат з подвійною обгорткою
+                    lift = result.data.data;
+                    console.log('✅ Lift знайдено: result.data.data');
                 }
                 console.log('✅ Витягнуто lift:', lift);
             } else {
@@ -6380,16 +6383,22 @@
             
             let lift;
             if (result.success && result.data) {
-                // Структура: {success: true, data: {success: true, data: {...lift...}}}
-                // Реальні дані ліфта в result.data.data (не result.data.data.lift!)
-                if (result.data.data && typeof result.data.data === 'object' && result.data.data._id) {
-                    lift = result.data.data;  // ← Ліфт тут!
-                } else if (result.data.lift) {
-                    lift = result.data.lift;
-                } else if (result.data._id) {
+                // API повертає дані безпосередньо в result.data
+                if (result.data._id) {
+                    // Дані ліфта безпосередньо в result.data
                     lift = result.data;
+                    console.log('✅ Lift знайдено: result.data (direct)');
+                } else if (result.data.lift && result.data.lift._id) {
+                    // Альтернативний формат з обгорткою .lift
+                    lift = result.data.lift;
+                    console.log('✅ Lift знайдено: result.data.lift');
+                } else if (result.data.data && result.data.data._id) {
+                    // Альтернативний формат з подвійною обгорткою
+                    lift = result.data.data;
+                    console.log('✅ Lift знайдено: result.data.data');
+                }
                 } else {
-                    lift = result.data.data || result.data;
+                    lift = result.data;
                 }
             } else {
                 throw new Error('Не вдалося завантажити дані ліфта');

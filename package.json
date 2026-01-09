@@ -1,5 +1,6 @@
 {
   "devDependencies": {
+    "axios": "^1.13.2",
     "browserify": "^17.0.1",
     "eslint": "^9.39.1",
     "jest": "^30.1.3",
