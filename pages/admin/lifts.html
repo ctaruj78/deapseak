@@ -5084,19 +5084,25 @@
             
             let lift;
             if (result.success && result.data) {
-                // API повертає дані безпосередньо в result.data
-                if (result.data._id) {
-                    // Дані ліфта безпосередньо в result.data
-                    lift = result.data;
-                    console.log('✅ Lift знайдено: result.data (direct)');
-                } else if (result.data.lift && result.data.lift._id) {
-                    // Альтернативний формат з обгорткою .lift
-                    lift = result.data.lift;
-                    console.log('✅ Lift знайдено: result.data.lift');
-                } else if (result.data.data && result.data.data._id) {
-                    // Альтернативний формат з подвійною обгорткою
+                // 🔍 ПЕРЕВІРКА 1: Чи result.data.data містить _id? (подвійна обгортка)
+                if (result.data.data && result.data.data._id) {
                     lift = result.data.data;
                     console.log('✅ Lift знайдено: result.data.data');
+                } 
+                // 🔍 ПЕРЕВІРКА 2: Чи result.data має success/data? (обгортка API)
+                else if (result.data.success && result.data.data && result.data.data._id) {
+                    lift = result.data.data;
+                    console.log('✅ Lift знайдено: result.data.data (unwrapped API response)');
+                }
+                // 🔍 ПЕРЕВІРКА 3: Чи result.data.lift існує?
+                else if (result.data.lift && result.data.lift._id) {
+                    lift = result.data.lift;
+                    console.log('✅ Lift знайдено: result.data.lift');
+                } 
+                // 🔍 ПЕРЕВІРКА 4: Дані безпосередньо в result.data (БЕЗ обгортки)
+                else if (result.data._id) {
+                    lift = result.data;
+                    console.log('✅ Lift знайдено: result.data (direct)');
                 }
                 console.log('✅ Витягнуто lift:', lift);
             } else {
@@ -6383,20 +6389,25 @@
             
             let lift;
             if (result.success && result.data) {
-                // API повертає дані безпосередньо в result.data
-                if (result.data._id) {
-                    // Дані ліфта безпосередньо в result.data
-                    lift = result.data;
-                    console.log('✅ Lift знайдено: result.data (direct)');
-                } else if (result.data.lift && result.data.lift._id) {
-                    // Альтернативний формат з обгорткою .lift
-                    lift = result.data.lift;
-                    console.log('✅ Lift знайдено: result.data.lift');
-                } else if (result.data.data && result.data.data._id) {
-                    // Альтернативний формат з подвійною обгорткою
+                // 🔍 ПЕРЕВІРКА 1: Чи result.data.data містить _id? (подвійна обгортка)
+                if (result.data.data && result.data.data._id) {
                     lift = result.data.data;
                     console.log('✅ Lift знайдено: result.data.data');
+                } 
+                // 🔍 ПЕРЕВІРКА 2: Чи result.data має success/data? (обгортка API)
+                else if (result.data.success && result.data.data && result.data.data._id) {
+                    lift = result.data.data;
+                    console.log('✅ Lift знайдено: result.data.data (unwrapped API response)');
                 }
+                // 🔍 ПЕРЕВІРКА 3: Чи result.data.lift існує?
+                else if (result.data.lift && result.data.lift._id) {
+                    lift = result.data.lift;
+                    console.log('✅ Lift знайдено: result.data.lift');
+                } 
+                // 🔍 ПЕРЕВІРКА 4: Дані безпосередньо в result.data (БЕЗ обгортки)
+                else if (result.data._id) {
+                    lift = result.data;
+                    console.log('✅ Lift знайдено: result.data (direct)');
                 } else {
                     lift = result.data;
                 }
