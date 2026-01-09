@@ -2081,6 +2081,18 @@
                         </select>
                     </div>
 
+                    <!-- Service Start Date -->
+                    <div class="form-group">
+                        <label for="service-start-date">
+                            <i class="fas fa-calendar mr-1"></i>Data de Início de Serviço
+                        </label>
+                        <input type="date" id="service-start-date" class="form-control" 
+                               value="${new Date().toISOString().split('T')[0]}">
+                        <small class="form-text text-muted">
+                            📅 Data em que o elevador começou a ser mantido pela FESTLIFT
+                        </small>
+                    </div>
+
                     <!-- Additional Notes -->
                     <div class="form-group">
                         <label for="municipality-notes">
@@ -4256,8 +4268,8 @@
             previewWindow.document.body.innerHTML = `
                 <div class="email-container">
                     <div class="header">
-                        <div class="logo">🏢 FestLift Portugal</div>
-                        <p style="margin: 5px 0; color: #666;">Gestão de Elevadores</p>
+                        <div class="logo">🏢 FESTLIFT</div>
+                        <p style="margin: 5px 0; color: #666;">Elevadores e Serviços</p>
                     </div>
                     
                     <h1>Notificação de Novo Elevador</h1>
@@ -4289,10 +4301,12 @@
                     <p>Estamos à disposição para fornecer informações adicionais ou documentação complementar que considerem necessária.</p>
                     
                     <div class="footer">
-                        <p><strong>FestLift Portugal - Gestão de Elevadores</strong></p>
-                        <p>Email: info@festlift.pt | Telefone: +351 xxx xxx xxx</p>
-                        <p style="margin-top: 10px; font-size: 11px;">
-                            Esta é uma pré-visualização. O email real será enviado usando template HTML profissional.
+                        <p><strong>FESTLIFT, LDA - Elevadores e Serviços</strong></p>
+                        <p>📍 Av. do Parque 84B, Rio de Mouro, Lisboa 2635-609</p>
+                        <p>📞 +351 214 190 863 | 📱 +351 926 380 243/244</p>
+                        <p>📧 info@festlift.pt | 🏢 NIF: 515924741</p>
+                        <p style="margin-top: 10px; font-size: 11px; color: #666;">
+                            ℹ️ Esta é uma pré-visualização. O email real será enviado com template HTML profissional.
                         </p>
                     </div>
                 </div>
@@ -6358,6 +6372,10 @@
             $('#mun-address').text(addressStr);
             $('#mun-postal-code').text(address.zipCode || lift.postalCode || 'Не вказано');
             
+            // Встановлюємо дату початку обслуговування (сьогодні за замовчуванням)
+            const today = new Date().toISOString().split('T')[0];
+            $('#service-start-date').val(today);
+            
             // Показуємо модальне вікно
             $('#municipalityModal').modal('show');
             
@@ -6438,9 +6456,12 @@
             $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i>Відправка...');
             
             try {
+                const serviceStartDate = $('#service-start-date').val();
+                
                 // TODO: Реалізувати відправку через API endpoint
                 // const result = await apiCall(`/api/lifts/${currentMunicipalityLiftId}/notify-municipality`, 'POST', {
                 //     templateType: templateType,
+                //     serviceStartDate: serviceStartDate,
                 //     notes: notes
                 // });
                 
@@ -6448,14 +6469,16 @@
                 console.log('📧 Дані для відправки:', {
                     liftId: currentMunicipalityLiftId,
                     templateType: templateType,
+                    serviceStartDate: serviceStartDate,
                     notes: notes
                 });
                 
                 setTimeout(() => {
-                    alert('⚠️ Функція відправки email ще не реалізована.\n\nДані готові до відправки:\n' +
-                          `- ID ліфта: ${currentMunicipalityLiftId}\n` +
-                          `- Тип звіту: ${templateType}\n` +
-                          `- Примітки: ${notes || 'Немає'}`);
+                    alert('⚠️ Função de envio de email ainda não implementada.\n\nDados prontos para envio:\n' +
+                          `- ID do elevador: ${currentMunicipalityLiftId}\n` +
+                          `- Tipo de relatório: ${templateType}\n` +
+                          `- Data de início: ${serviceStartDate}\n` +
+                          `- Notas: ${notes || 'Nenhuma'}`);
                     
                     $btn.prop('disabled', false).html(originalText);
                     $('#municipalityModal').modal('hide');
