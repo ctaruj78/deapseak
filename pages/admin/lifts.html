@@ -2076,11 +2076,8 @@
                             <i class="fas fa-file-alt mr-1"></i>Тип звіту
                         </label>
                         <select id="email-template-type" class="form-control">
-                            <option value="municipality-novo-elevador">🏢 Novo Elevador - Реєстрація нового ліфта</option>
-                            <option value="municipality-inspecao">📋 Inspeção - Звіт інспекції</option>
-                            <option value="municipality-manutencao-inicio">🔧 Manutenção Início - Початок ТО</option>
-                            <option value="municipality-manutencao-fim">✅ Manutenção Fim - Завершення ТО</option>
-                            <option value="municipality-relatorio-mensal">📊 Relatório Mensal - Місячний звіт</option>
+                            <option value="municipality-inicio-servico">✅ Início de Serviço - Початок обслуговування ліфта</option>
+                            <option value="municipality-fim-servico">❌ Fim de Serviço - Припинення обслуговування ліфта</option>
                         </select>
                     </div>
 
@@ -6373,26 +6370,40 @@
             
             if (postalCode) {
                 try {
-                    const munResult = await apiCall(`/api/municipalities/by-postal/${postalCode}`, 'GET');
+                    // Використовуємо POST /api/municipalities/detect
+                    const munResult = await apiCall('/api/municipalities/detect', 'POST', {
+                        postalCode: postalCode,
+                        address: addressStr
+                    });
                     
                     if (munResult.success && munResult.data) {
                         const mun = munResult.data;
                         
-                        $('#mun-concelho-name').text(mun.concelho || 'Не вказано');
-                        $('#mun-distrito-name').text(mun.distrito || 'Не вказано');
-                        $('#mun-email').text(mun.email || 'Не вказано');
-                        $('#mun-phone').text(mun.phone || 'Не вказано');
+                        // Використовуємо email департаменту ліфтів, якщо він є
+                        const liftEmail = mun.lift_department?.email || mun.email;
+                        const deptName = mun.lift_department?.department_name || 'Câmara Municipal';
+                        
+                        $('#mun-concelho-name').text(mun.name || 'Não especificado');
+                        $('#mun-distrito-name').text(mun.distrito || 'Não especificado');
+                        $('#mun-email').text(liftEmail || 'Não especificado');
+                        $('#mun-phone').text(mun.phone || 'Não especificado');
+                        
+                        // Показуємо інформацію про департамент, якщо є
+                        if (mun.lift_department) {
+                            $('#mun-concelho-name').append(`<br><small class="text-muted">${deptName}</small>`);
+                        }
                         
                         $('#municipality-info-loading').hide();
                         $('#municipality-info-content').show();
                         
-                        console.log('✅ Муніципалітет визначено:', mun);
+                        console.log('✅ Município detectado:', mun);
+                        console.log('📧 Email departamento:', liftEmail);
                     } else {
-                        throw new Error('Муніципалітет не знайдено');
+                        throw new Error(munResult.message || 'Município não encontrado');
                     }
                 } catch (error) {
-                    console.error('❌ Помилка визначення муніципалітету:', error);
-                    $('#municipality-error-message').text(error.message || 'Не вдалося визначити муніципалітет');
+                    console.error('❌ Erro ao detectar município:', error);
+                    $('#municipality-error-message').text(error.message || 'Não foi possível detectar o município');
                     $('#municipality-info-loading').hide();
                     $('#municipality-info-error').show();
                 }
