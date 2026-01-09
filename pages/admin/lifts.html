@@ -5079,12 +5079,19 @@
             
             console.log('✅ Повна відповідь API:', result);
             console.log('📦 result.data:', result.data);
-            console.log('📦 result.data.lift:', result.data?.lift);
+            console.log('📦 result.data.data:', result.data?.data);
+            console.log('📦 result.data.data.lift:', result.data?.data?.lift);
             
             let lift;
             if (result.success && result.data) {
-                // API повертає { success: true, data: { lift: {...} } }
-                lift = result.data.lift || result.data;
+                // API має подвійну обгортку: result.data.data.lift
+                if (result.data.data && result.data.data.lift) {
+                    lift = result.data.data.lift;
+                } else if (result.data.lift) {
+                    lift = result.data.lift;
+                } else {
+                    lift = result.data;
+                }
                 console.log('✅ Витягнуто lift:', lift);
             } else {
                 // Fallback до localStorage
@@ -6365,12 +6372,19 @@
             
             console.log('📦 Municipality modal - повна відповідь API:', result);
             console.log('📦 result.data:', result.data);
-            console.log('📦 result.data.lift:', result.data?.lift);
+            console.log('📦 result.data.data:', result.data?.data);
+            console.log('📦 result.data.data.lift:', result.data?.data?.lift);
             
             let lift;
             if (result.success && result.data) {
-                // API повертає { success: true, data: { lift: {...} } }
-                lift = result.data.lift || result.data;
+                // API має подвійну обгортку: result.data.data.lift
+                if (result.data.data && result.data.data.lift) {
+                    lift = result.data.data.lift;
+                } else if (result.data.lift) {
+                    lift = result.data.lift;
+                } else {
+                    lift = result.data;
+                }
             } else {
                 throw new Error('Не вдалося завантажити дані ліфта');
             }
