@@ -2105,6 +2105,9 @@
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">
                         <i class="fas fa-times mr-1"></i>Скасувати
                     </button>
+                    <button type="button" class="btn btn-info" id="btn-preview-municipality-email">
+                        <i class="fas fa-eye mr-1"></i>Попередній перегляд
+                    </button>
                     <button type="button" class="btn btn-primary" id="btn-send-to-municipality">
                         <i class="fas fa-paper-plane mr-1"></i>Відправити звіт
                     </button>
@@ -6461,6 +6464,162 @@
     
     // Обробник кнопки відправки
     $(document).ready(function() {
+        // Preview email button
+        $('#btn-preview-municipality-email').on('click', async function() {
+            console.log('👁️ Попередній перегляд email...');
+            
+            if (!currentMunicipalityLiftId) {
+                alert('Помилка: ID ліфта не визначено');
+                return;
+            }
+            
+            try {
+                // Збираємо всі дані з модального вікна
+                const liftData = {
+                    municipalNumber: $('#mun-municipal-number').text(),
+                    address: $('#mun-address').text(),
+                    qrCode: $('#mun-qr-code').text(),
+                    postalCode: $('#mun-postal-code').text()
+                };
+                
+                const municipalityData = {
+                    concelho: $('#mun-concelho-name').text(),
+                    distrito: $('#mun-distrito-name').text(),
+                    email: $('#mun-email').text(),
+                    phone: $('#mun-phone').text()
+                };
+                
+                const templateType = $('#email-template-type').val();
+                const serviceStartDate = $('#service-start-date').val();
+                const notes = $('#municipality-notes').val();
+                
+                // Завантажуємо шаблон email
+                const templatePath = `/templates/emails/${templateType}.html`;
+                const response = await fetch(templatePath);
+                
+                if (!response.ok) {
+                    throw new Error(`Не вдалося завантажити шаблон: ${response.statusText}`);
+                }
+                
+                let htmlContent = await response.text();
+                
+                // Форматуємо дату у португальському форматі
+                const formatDate = (dateStr) => {
+                    if (!dateStr) return new Date().toLocaleDateString('pt-PT');
+                    const date = new Date(dateStr);
+                    return date.toLocaleDateString('pt-PT', { 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                    });
+                };
+                
+                // Замінюємо плейсхолдери реальними даними
+                htmlContent = htmlContent
+                    .replace(/{{municipalityName}}/g, municipalityData.concelho || 'N/A')
+                    .replace(/{{municipalNumber}}/g, liftData.municipalNumber || 'N/A')
+                    .replace(/{{qrCode}}/g, liftData.qrCode || 'N/A')
+                    .replace(/{{liftAddress}}/g, liftData.address || 'N/A')
+                    .replace(/{{postalCode}}/g, liftData.postalCode || 'N/A')
+                    .replace(/{{concelho}}/g, municipalityData.concelho || 'N/A')
+                    .replace(/{{distrito}}/g, municipalityData.distrito || 'N/A')
+                    .replace(/{{serviceStartDate}}/g, formatDate(serviceStartDate))
+                    .replace(/{{currentDate}}/g, formatDate(new Date().toISOString().split('T')[0]))
+                    .replace(/{{notes}}/g, notes || 'Sem notas adicionais');
+                
+                // Відкриваємо нове вікно з попереднім переглядом
+                const previewWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes');
+                
+                if (!previewWindow) {
+                    alert('⚠️ Будь ласка, дозвольте спливаючі вікна для попереднього перегляду');
+                    return;
+                }
+                
+                // Додаємо стилі та контент
+                previewWindow.document.write(`
+                    <!DOCTYPE html>
+                    <html lang="pt">
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>Preview - ${templateType}</title>
+                        <style>
+                            body {
+                                font-family: Arial, sans-serif;
+                                padding: 20px;
+                                background-color: #f5f5f5;
+                            }
+                            .preview-header {
+                                background-color: #007bff;
+                                color: white;
+                                padding: 15px;
+                                border-radius: 5px 5px 0 0;
+                                margin-bottom: 0;
+                            }
+                            .email-content {
+                                background-color: white;
+                                padding: 20px;
+                                border-radius: 0 0 5px 5px;
+                                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                            }
+                            .btn-print {
+                                position: fixed;
+                                bottom: 20px;
+                                right: 20px;
+                                padding: 10px 20px;
+                                background-color: #28a745;
+                                color: white;
+                                border: none;
+                                border-radius: 5px;
+                                cursor: pointer;
+                                font-size: 16px;
+                                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                            }
+                            .btn-print:hover {
+                                background-color: #218838;
+                            }
+                            @media print {
+                                .preview-header,
+                                .btn-print {
+                                    display: none;
+                                }
+                                body {
+                                    background-color: white;
+                                    padding: 0;
+                                }
+                                .email-content {
+                                    box-shadow: none;
+                                }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="preview-header">
+                            <h2>📧 Preview - Email para Município</h2>
+                            <p><strong>Para:</strong> ${municipalityData.email}</p>
+                            <p><strong>Tipo:</strong> ${templateType === 'municipality-inicio-servico' ? 'Início de Serviço' : 'Fim de Serviço'}</p>
+                        </div>
+                        <div class="email-content">
+                            ${htmlContent}
+                        </div>
+                        <button class="btn-print" onclick="window.print()">
+                            🖨️ Imprimir
+                        </button>
+                    </body>
+                    </html>
+                `);
+                
+                previewWindow.document.close();
+                
+                console.log('✅ Preview відкрито успішно');
+                
+            } catch (error) {
+                console.error('❌ Помилка попереднього перегляду:', error);
+                alert('Помилка попереднього перегляду: ' + error.message);
+            }
+        });
+        
+        // Send email button
         $('#btn-send-to-municipality').on('click', async function() {
             console.log('📤 Відправка звіту до муніципалітету...');
             
