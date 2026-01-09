@@ -6486,7 +6486,22 @@
                     console.log('🔍 Keys of munResult.data:', Object.keys(munResult.data || {}));
                     
                     if (munResult.success && munResult.data) {
-                        const mun = munResult.data;
+                        // API повертає подвійну обгортку: {success: true, data: {success: true, data: {...}}}
+                        // Треба витягнути munResult.data.data
+                        let mun;
+                        
+                        if (munResult.data.data) {
+                            // Подвійна обгортка - витягуємо внутрішній data
+                            mun = munResult.data.data;
+                            console.log('✅ Витягнуто з munResult.data.data');
+                        } else if (munResult.data.name) {
+                            // Пряма структура без обгортки
+                            mun = munResult.data;
+                            console.log('✅ Використано munResult.data напряму');
+                        } else {
+                            console.error('❌ Не знайдено даних муніципалітету в відповіді');
+                            throw new Error('Структура відповіді API не розпізнана');
+                        }
                         
                         console.log('✅ Município detectado:', mun);
                         console.log('🔍 mun.lift_department:', mun.lift_department);
