@@ -5084,13 +5084,16 @@
             
             let lift;
             if (result.success && result.data) {
-                // API має подвійну обгортку: result.data.data.lift
-                if (result.data.data && result.data.data.lift) {
-                    lift = result.data.data.lift;
+                // Структура: {success: true, data: {success: true, data: {...lift...}}}
+                // Реальні дані ліфта в result.data.data (не result.data.data.lift!)
+                if (result.data.data && typeof result.data.data === 'object' && result.data.data._id) {
+                    lift = result.data.data;  // ← Ліфт тут!
                 } else if (result.data.lift) {
                     lift = result.data.lift;
-                } else {
+                } else if (result.data._id) {
                     lift = result.data;
+                } else {
+                    lift = result.data.data || result.data;
                 }
                 console.log('✅ Витягнуто lift:', lift);
             } else {
@@ -6377,13 +6380,16 @@
             
             let lift;
             if (result.success && result.data) {
-                // API має подвійну обгортку: result.data.data.lift
-                if (result.data.data && result.data.data.lift) {
-                    lift = result.data.data.lift;
+                // Структура: {success: true, data: {success: true, data: {...lift...}}}
+                // Реальні дані ліфта в result.data.data (не result.data.data.lift!)
+                if (result.data.data && typeof result.data.data === 'object' && result.data.data._id) {
+                    lift = result.data.data;  // ← Ліфт тут!
                 } else if (result.data.lift) {
                     lift = result.data.lift;
-                } else {
+                } else if (result.data._id) {
                     lift = result.data;
+                } else {
+                    lift = result.data.data || result.data;
                 }
             } else {
                 throw new Error('Не вдалося завантажити дані ліфта');
