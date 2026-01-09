@@ -6371,22 +6371,25 @@
             
             // Заповнюємо інформацію про ліфт
             $('#mun-municipal-number').text(lift.municipalNumber || 'Не вказано');
-            $('#mun-qr-code').text(lift.qrCode || 'Не вказано');
+            $('#mun-qr-code').text(lift.qrCode?.code || lift.qrCode || 'Не вказано');
             
-            // Обробка адреси - може бути як об'єкт, так і рядок
+            // Обробка адреси - модель має address як об'єкт {street, city, zipCode, country}
             let addressStr = 'Не вказано';
             let postalCode = '';
             
             if (lift.address) {
                 if (typeof lift.address === 'string') {
-                    // Адреса як рядок
+                    // Старий формат - адреса як рядок
                     addressStr = lift.address;
-                    postalCode = lift.postalCode || '';
-                } else if (typeof lift.address === 'object') {
-                    // Адреса як об'єкт
-                    addressStr = lift.address.street 
-                        ? `${lift.address.street}${lift.address.city ? ', ' + lift.address.city : ''}` 
-                        : 'Не вказано';
+                    postalCode = lift.postalCode || lift.zipCode || '';
+                } else if (typeof lift.address === 'object' && lift.address !== null) {
+                    // Новий формат - адреса як об'єкт
+                    const parts = [];
+                    if (lift.address.street) parts.push(lift.address.street);
+                    if (lift.address.city) parts.push(lift.address.city);
+                    if (lift.address.country && lift.address.country !== 'Ukraine') parts.push(lift.address.country);
+                    
+                    addressStr = parts.length > 0 ? parts.join(', ') : 'Не вказано';
                     postalCode = lift.address.zipCode || lift.address.postalCode || '';
                 }
             }
@@ -6486,41 +6489,61 @@
                 const lift = currentMunicipalityLiftData;
                 const mun = currentMunicipalityData;
                 
-                // Обробка адреси
+                console.log('🔍 DEBUG lift object:', lift);
+                console.log('🔍 DEBUG lift.address:', lift.address);
+                
+                // Обробка адреси - модель має address як об'єкт {street, city, zipCode, country}
                 let addressStr = 'Não especificado';
                 let postalCode = 'Não especificado';
                 
                 if (lift.address) {
                     if (typeof lift.address === 'string') {
+                        // Старий формат - адреса як рядок
                         addressStr = lift.address;
                         postalCode = lift.postalCode || lift.zipCode || 'Não especificado';
-                    } else if (typeof lift.address === 'object') {
-                        addressStr = lift.address.street 
-                            ? `${lift.address.street}${lift.address.city ? ', ' + lift.address.city : ''}` 
-                            : 'Não especificado';
-                        postalCode = lift.address.zipCode || lift.address.postalCode || lift.postalCode || lift.zipCode || 'Não especificado';
+                    } else if (typeof lift.address === 'object' && lift.address !== null) {
+                        // Новий формат - адреса як об'єкт
+                        const parts = [];
+                        if (lift.address.street) parts.push(lift.address.street);
+                        if (lift.address.city) parts.push(lift.address.city);
+                        if (lift.address.country && lift.address.country !== 'Ukraine') parts.push(lift.address.country);
+                        
+                        addressStr = parts.length > 0 ? parts.join(', ') : 'Não especificado';
+                        postalCode = lift.address.zipCode || lift.address.postalCode || 'Não especificado';
                     }
-                } else {
+                }
+                
+                // Якщо postal code не знайдено, перевіряємо на верхньому рівні
+                if (postalCode === 'Não especificado') {
                     postalCode = lift.postalCode || lift.zipCode || 'Não especificado';
                 }
+                
+                console.log('📍 Parsed address:', addressStr);
+                console.log('📮 Parsed postal code:', postalCode);
                 
                 // Обробка даних клієнта
                 let clientName = 'Não especificado';
                 let clientPhone = 'Não especificado';
                 let clientEmail = 'Não especificado';
                 
-                if (lift.client) {
-                    if (typeof lift.client === 'object') {
-                        clientName = lift.client.name || lift.client.companyName || 'Não especificado';
-                        clientPhone = lift.client.phone || 'Não especificado';
-                        clientEmail = lift.client.email || 'Não especificado';
-                    }
+                // Спочатку перевіряємо прямі поля
+                if (lift.clientName) clientName = lift.clientName;
+                if (lift.clientPhone) clientPhone = lift.clientPhone;
+                if (lift.clientEmail) clientEmail = lift.clientEmail;
+                
+                // Якщо є populated client object
+                if (lift.client && typeof lift.client === 'object') {
+                    clientName = lift.client.name || lift.client.companyName || clientName;
+                    clientPhone = lift.client.phone || clientPhone;
+                    clientEmail = lift.client.email || clientEmail;
                 }
+                
+                console.log('👤 Client data:', {clientName, clientPhone, clientEmail});
                 
                 const liftData = {
                     municipalNumber: lift.municipalNumber || 'Não especificado',
                     address: addressStr,
-                    qrCode: lift.qrCode || 'Não especificado',
+                    qrCode: lift.qrCode?.code || lift.qrCode || 'Não especificado',
                     postalCode: postalCode,
                     clientName: clientName,
                     clientPhone: clientPhone,
@@ -6534,8 +6557,8 @@
                     phone: mun?.phone || 'Não especificado'
                 };
                 
-                console.log('📋 Lift data for preview:', liftData);
-                console.log('🏛️ Municipality data for preview:', municipalityData);
+                console.log('📋 Final lift data for preview:', liftData);
+                console.log('🏛️ Final municipality data for preview:', municipalityData);
                 
                 const templateType = $('#email-template-type').val();
                 const serviceStartDate = $('#service-start-date').val();
