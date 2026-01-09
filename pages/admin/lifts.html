@@ -6482,12 +6482,20 @@
                     if (munResult.success && munResult.data) {
                         const mun = munResult.data;
                         
+                        console.log('✅ Município detectado:', mun);
+                        console.log('🔍 mun.lift_department:', mun.lift_department);
+                        console.log('🔍 mun.email:', mun.email);
+                        console.log('🔍 mun.name:', mun.name);
+                        
                         // Зберігаємо дані муніципалітету для preview
                         currentMunicipalityData = mun;
                         
                         // Використовуємо email департаменту ліфтів, якщо він є
                         const liftEmail = mun.lift_department?.email || mun.email;
                         const deptName = mun.lift_department?.department_name || 'Câmara Municipal';
+                        
+                        console.log('📧 Email departamento:', liftEmail);
+                        console.log('🏢 Department name:', deptName);
                         
                         $('#mun-concelho-name').text(mun.name || 'Não especificado');
                         $('#mun-distrito-name').text(mun.distrito || 'Não especificado');
@@ -6501,9 +6509,6 @@
                         
                         $('#municipality-info-loading').hide();
                         $('#municipality-info-content').show();
-                        
-                        console.log('✅ Município detectado:', mun);
-                        console.log('📧 Email departamento:', liftEmail);
                     } else {
                         throw new Error(munResult.message || 'Município não encontrado');
                     }
