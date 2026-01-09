@@ -6345,6 +6345,8 @@
     // ============================================
     
     let currentMunicipalityLiftId = null;
+    let currentMunicipalityLiftData = null;
+    let currentMunicipalityData = null;
     
     async function openMunicipalityModal(liftId) {
         console.log('🏛️ Відкриття модального вікна муніципалітету для ліфта:', liftId);
@@ -6361,6 +6363,9 @@
             } else {
                 throw new Error('Не вдалося завантажити дані ліфта');
             }
+            
+            // Зберігаємо дані для preview
+            currentMunicipalityLiftData = lift;
             
             console.log('✅ Дані ліфта завантажено:', lift);
             
@@ -6422,6 +6427,9 @@
                     if (munResult.success && munResult.data) {
                         const mun = munResult.data;
                         
+                        // Зберігаємо дані муніципалітету для preview
+                        currentMunicipalityData = mun;
+                        
                         // Використовуємо email департаменту ліфтів, якщо він є
                         const liftEmail = mun.lift_department?.email || mun.email;
                         const deptName = mun.lift_department?.department_name || 'Câmara Municipal';
@@ -6468,26 +6476,66 @@
         $('#btn-preview-municipality-email').on('click', async function() {
             console.log('👁️ Попередній перегляд email...');
             
-            if (!currentMunicipalityLiftId) {
-                alert('Помилка: ID ліфта не визначено');
+            if (!currentMunicipalityLiftId || !currentMunicipalityLiftData) {
+                alert('Помилка: Дані ліфта не завантажені');
                 return;
             }
             
             try {
-                // Збираємо всі дані з модального вікна
+                // Використовуємо збережені дані lift замість тексту з DOM
+                const lift = currentMunicipalityLiftData;
+                const mun = currentMunicipalityData;
+                
+                // Обробка адреси
+                let addressStr = 'Não especificado';
+                let postalCode = 'Não especificado';
+                
+                if (lift.address) {
+                    if (typeof lift.address === 'string') {
+                        addressStr = lift.address;
+                        postalCode = lift.postalCode || lift.zipCode || 'Não especificado';
+                    } else if (typeof lift.address === 'object') {
+                        addressStr = lift.address.street 
+                            ? `${lift.address.street}${lift.address.city ? ', ' + lift.address.city : ''}` 
+                            : 'Não especificado';
+                        postalCode = lift.address.zipCode || lift.address.postalCode || lift.postalCode || lift.zipCode || 'Não especificado';
+                    }
+                } else {
+                    postalCode = lift.postalCode || lift.zipCode || 'Não especificado';
+                }
+                
+                // Обробка даних клієнта
+                let clientName = 'Não especificado';
+                let clientPhone = 'Não especificado';
+                let clientEmail = 'Não especificado';
+                
+                if (lift.client) {
+                    if (typeof lift.client === 'object') {
+                        clientName = lift.client.name || lift.client.companyName || 'Não especificado';
+                        clientPhone = lift.client.phone || 'Não especificado';
+                        clientEmail = lift.client.email || 'Não especificado';
+                    }
+                }
+                
                 const liftData = {
-                    municipalNumber: $('#mun-municipal-number').text(),
-                    address: $('#mun-address').text(),
-                    qrCode: $('#mun-qr-code').text(),
-                    postalCode: $('#mun-postal-code').text()
+                    municipalNumber: lift.municipalNumber || 'Não especificado',
+                    address: addressStr,
+                    qrCode: lift.qrCode || 'Não especificado',
+                    postalCode: postalCode,
+                    clientName: clientName,
+                    clientPhone: clientPhone,
+                    clientEmail: clientEmail
                 };
                 
                 const municipalityData = {
-                    concelho: $('#mun-concelho-name').text(),
-                    distrito: $('#mun-distrito-name').text(),
-                    email: $('#mun-email').text(),
-                    phone: $('#mun-phone').text()
+                    concelho: mun?.name || 'Não especificado',
+                    distrito: mun?.distrito || 'Não especificado',
+                    email: mun?.lift_department?.email || mun?.email || 'Não especificado',
+                    phone: mun?.phone || 'Não especificado'
                 };
+                
+                console.log('📋 Lift data for preview:', liftData);
+                console.log('🏛️ Municipality data for preview:', municipalityData);
                 
                 const templateType = $('#email-template-type').val();
                 const serviceStartDate = $('#service-start-date').val();
@@ -6516,13 +6564,16 @@
                 
                 // Замінюємо плейсхолдери реальними даними
                 htmlContent = htmlContent
-                    .replace(/{{municipalityName}}/g, municipalityData.concelho || 'N/A')
-                    .replace(/{{municipalNumber}}/g, liftData.municipalNumber || 'N/A')
-                    .replace(/{{qrCode}}/g, liftData.qrCode || 'N/A')
-                    .replace(/{{liftAddress}}/g, liftData.address || 'N/A')
-                    .replace(/{{postalCode}}/g, liftData.postalCode || 'N/A')
-                    .replace(/{{concelho}}/g, municipalityData.concelho || 'N/A')
-                    .replace(/{{distrito}}/g, municipalityData.distrito || 'N/A')
+                    .replace(/{{municipalityName}}/g, municipalityData.concelho)
+                    .replace(/{{municipalNumber}}/g, liftData.municipalNumber)
+                    .replace(/{{qrCode}}/g, liftData.qrCode)
+                    .replace(/{{liftAddress}}/g, liftData.address)
+                    .replace(/{{postalCode}}/g, liftData.postalCode)
+                    .replace(/{{concelho}}/g, municipalityData.concelho)
+                    .replace(/{{distrito}}/g, municipalityData.distrito)
+                    .replace(/{{clientName}}/g, liftData.clientName)
+                    .replace(/{{clientPhone}}/g, liftData.clientPhone)
+                    .replace(/{{clientEmail}}/g, liftData.clientEmail)
                     .replace(/{{serviceStartDate}}/g, formatDate(serviceStartDate))
                     .replace(/{{currentDate}}/g, formatDate(new Date().toISOString().split('T')[0]))
                     .replace(/{{notes}}/g, notes || 'Sem notas adicionais');
