@@ -1487,6 +1487,8 @@ app.post('/api/municipalities/detect', authenticateToken, async (req, res) => {
     try {
         const { address, postalCode } = req.body;
         
+        console.log('🔍 Municipality detect request:', { address, postalCode });
+        
         if (!address && !postalCode) {
             return res.status(400).json({
                 success: false,
@@ -1509,10 +1511,20 @@ app.post('/api/municipalities/detect', authenticateToken, async (req, res) => {
             }
         }
         
+        // Витягуємо тільки перші 4 цифри з postal code (формат: 2345-465 → 2345)
+        if (detectedCode) {
+            const codeMatch = detectedCode.toString().match(/^(\d{4})/);
+            if (codeMatch) {
+                detectedCode = codeMatch[1];
+            }
+        }
+        
+        console.log('🔍 Detected code (перші 4 цифри):', detectedCode);
+        
         if (!detectedCode) {
             return res.json({
                 success: false,
-                message: 'Не вдалося визначити поштовий код'
+                message: 'Não foi possível detectar o código postal'
             });
         }
         
@@ -1520,6 +1532,8 @@ app.post('/api/municipalities/detect', authenticateToken, async (req, res) => {
         const municipality = municipalitiesData.municipalities.find(m => 
             m.postal_codes.some(code => code.startsWith(detectedCode))
         );
+        
+        console.log('🏛️ Municipality found:', municipality ? municipality.name : 'NÃO ENCONTRADO');
         
         if (municipality) {
             res.json({
@@ -1530,7 +1544,7 @@ app.post('/api/municipalities/detect', authenticateToken, async (req, res) => {
         } else {
             res.json({
                 success: false,
-                message: `Муніципалітет не знайдено для коду ${detectedCode}`,
+                message: `Município não encontrado para o código ${detectedCode}`,
                 postal_code: detectedCode
             });
         }
@@ -1538,7 +1552,7 @@ app.post('/api/municipalities/detect', authenticateToken, async (req, res) => {
         console.error('❌ Помилка визначення муніципалітету:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка визначення муніципалітету'
+            message: 'Erro ao detectar município'
         });
     }
 });
