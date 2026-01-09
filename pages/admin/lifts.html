@@ -6365,12 +6365,34 @@
             $('#mun-municipal-number').text(lift.municipalNumber || 'Не вказано');
             $('#mun-qr-code').text(lift.qrCode || 'Не вказано');
             
-            const address = lift.address || {};
-            const addressStr = address.street 
-                ? `${address.street}, ${address.city || ''}` 
-                : lift.address || 'Не вказано';
+            // Обробка адреси - може бути як об'єкт, так і рядок
+            let addressStr = 'Не вказано';
+            let postalCode = '';
+            
+            if (lift.address) {
+                if (typeof lift.address === 'string') {
+                    // Адреса як рядок
+                    addressStr = lift.address;
+                    postalCode = lift.postalCode || '';
+                } else if (typeof lift.address === 'object') {
+                    // Адреса як об'єкт
+                    addressStr = lift.address.street 
+                        ? `${lift.address.street}${lift.address.city ? ', ' + lift.address.city : ''}` 
+                        : 'Не вказано';
+                    postalCode = lift.address.zipCode || lift.address.postalCode || '';
+                }
+            }
+            
+            // Якщо postal code не знайдено в address, шукаємо на верхньому рівні
+            if (!postalCode) {
+                postalCode = lift.postalCode || lift.zipCode || '';
+            }
+            
+            console.log('📍 Address string:', addressStr);
+            console.log('📮 Postal code:', postalCode);
+            
             $('#mun-address').text(addressStr);
-            $('#mun-postal-code').text(address.zipCode || lift.postalCode || 'Не вказано');
+            $('#mun-postal-code').text(postalCode || 'Не вказано');
             
             // Встановлюємо дату початку обслуговування (сьогодні за замовчуванням)
             const today = new Date().toISOString().split('T')[0];
@@ -6384,10 +6406,10 @@
             $('#municipality-info-content').hide();
             $('#municipality-info-error').hide();
             
-            const postalCode = address.zipCode || lift.postalCode;
-            
+            // Використовуємо вже визначений postalCode з верху
             if (postalCode) {
                 try {
+                    console.log('🔍 Пошук муніципалітету для postal code:', postalCode);
                     // Використовуємо POST /api/municipalities/detect
                     const munResult = await apiCall('/api/municipalities/detect', 'POST', {
                         postalCode: postalCode,
