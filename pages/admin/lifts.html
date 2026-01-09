@@ -6479,6 +6479,12 @@
                         address: addressStr
                     });
                     
+                    console.log('🔍 RAW munResult:', munResult);
+                    console.log('🔍 munResult.success:', munResult.success);
+                    console.log('🔍 munResult.data:', munResult.data);
+                    console.log('🔍 Type of munResult.data:', typeof munResult.data);
+                    console.log('🔍 Keys of munResult.data:', Object.keys(munResult.data || {}));
+                    
                     if (munResult.success && munResult.data) {
                         const mun = munResult.data;
                         
