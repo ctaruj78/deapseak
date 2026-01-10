@@ -216,6 +216,37 @@
         /* Виправлення для таблиці */
         .table-responsive {
             overflow-x: auto;
+            overflow-y: visible;
+            max-width: 100%;
+            -webkit-overflow-scrolling: touch;
+            /* Scrollbar завжди видимий для горизонтального скролу */
+            scrollbar-width: thin;
+            scrollbar-color: #007bff #f1f1f1;
+        }
+        
+        /* Кастомний scrollbar для WebKit браузерів */
+        .table-responsive::-webkit-scrollbar {
+            height: 12px;
+        }
+        
+        .table-responsive::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 6px;
+        }
+        
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: #007bff;
+            border-radius: 6px;
+        }
+        
+        .table-responsive::-webkit-scrollbar-thumb:hover {
+            background: #0056b3;
+        }
+        
+        /* Фіксований скрол для таблиці ліфтів */
+        #liftsTable {
+            min-width: 1200px; /* Мінімальна ширина таблиці для активації горизонтального скролу */
+            margin-bottom: 0;
         }
         
         /* Компактний режим таблиці */
