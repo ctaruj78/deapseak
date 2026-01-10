@@ -222,6 +222,12 @@
             /* Scrollbar завжди видимий для горизонтального скролу */
             scrollbar-width: thin;
             scrollbar-color: #007bff #f1f1f1;
+            cursor: grab;
+            user-select: none;
+        }
+        
+        .table-responsive:active {
+            cursor: grabbing;
         }
         
         /* Кастомний scrollbar для WebKit браузерів */
@@ -247,6 +253,11 @@
         #liftsTable {
             min-width: 1200px; /* Мінімальна ширина таблиці для активації горизонтального скролу */
             margin-bottom: 0;
+        }
+        
+        /* Дозволяємо клікати на елементи всередині таблиці */
+        .table-responsive * {
+            user-select: auto;
         }
         
         /* Компактний режим таблиці */
@@ -2483,6 +2494,46 @@
                 }
             }
         }
+
+        // Drag-to-scroll функціонал для таблиці
+        document.addEventListener('DOMContentLoaded', function() {
+            const tableContainer = document.querySelector('.table-responsive');
+            if (!tableContainer) return;
+
+            let isDown = false;
+            let startX;
+            let scrollLeft;
+
+            tableContainer.addEventListener('mousedown', (e) => {
+                // Пропускаємо клік на кнопках, посиланнях та input елементах
+                if (e.target.closest('button, a, input, select, .btn, .badge')) {
+                    return;
+                }
+                
+                isDown = true;
+                tableContainer.style.cursor = 'grabbing';
+                startX = e.pageX - tableContainer.offsetLeft;
+                scrollLeft = tableContainer.scrollLeft;
+            });
+
+            tableContainer.addEventListener('mouseleave', () => {
+                isDown = false;
+                tableContainer.style.cursor = 'grab';
+            });
+
+            tableContainer.addEventListener('mouseup', () => {
+                isDown = false;
+                tableContainer.style.cursor = 'grab';
+            });
+
+            tableContainer.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - tableContainer.offsetLeft;
+                const walk = (x - startX) * 2; // Множник швидкості скролу
+                tableContainer.scrollLeft = scrollLeft - walk;
+            });
+        });
 
 
     </script>
