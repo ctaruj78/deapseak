@@ -1,0 +1,173 @@
+/**
+ * Universal Drag-to-Scroll для таблиць
+ * Автоматично активується на всіх .table-responsive контейнерах
+ * 
+ * Використання: Додайте клас .table-responsive до контейнера з таблицею
+ * 
+ * @author DeapSeaK Team
+ * @version 1.0.0
+ */
+
+/* Базові стилі для контейнерів таблиць */
+.table-responsive {
+    overflow-x: auto;
+    overflow-y: visible;
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
+    cursor: grab;
+    user-select: none;
+    position: relative;
+}
+
+.table-responsive:active {
+    cursor: grabbing;
+}
+
+/* Кастомний scrollbar для кращої видимості */
+.table-responsive {
+    scrollbar-width: thin;
+    scrollbar-color: #007bff #f1f1f1;
+}
+
+.table-responsive::-webkit-scrollbar {
+    height: 12px;
+    width: 12px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 6px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #007bff;
+    border-radius: 6px;
+    transition: background 0.3s ease;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* Дозволяємо клікати на інтерактивні елементи всередині таблиці */
+.table-responsive button,
+.table-responsive a,
+.table-responsive input,
+.table-responsive select,
+.table-responsive textarea,
+.table-responsive .btn,
+.table-responsive .badge,
+.table-responsive .dropdown-toggle {
+    cursor: pointer;
+    user-select: auto;
+}
+
+/* Мінімальна ширина для таблиць щоб активувати скрол */
+.table-responsive table {
+    min-width: 100%;
+}
+
+/* Для великих таблиць */
+.table-responsive.table-wide table {
+    min-width: 1200px;
+}
+
+.table-responsive.table-extra-wide table {
+    min-width: 1600px;
+}
+
+/* Індикатор що таблиця має скрол */
+.table-responsive::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 30px;
+    background: linear-gradient(to left, rgba(255, 255, 255, 0.9), transparent);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 1;
+}
+
+.table-responsive.has-scroll::after {
+    opacity: 1;
+}
+
+/* Для темної теми */
+.dark-mode .table-responsive::after {
+    background: linear-gradient(to left, rgba(52, 58, 64, 0.9), transparent);
+}
+
+.dark-mode .table-responsive::-webkit-scrollbar-track {
+    background: #343a40;
+}
+
+.dark-mode .table-responsive::-webkit-scrollbar-thumb {
+    background: #6c757d;
+}
+
+.dark-mode .table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #868e96;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .table-responsive {
+        cursor: auto; /* На мобільних пристроях використовуємо звичайний скрол */
+    }
+    
+    .table-responsive::after {
+        width: 20px;
+    }
+}
+
+/* Анімація для плавного скролу */
+.table-responsive {
+    scroll-behavior: smooth;
+}
+
+/* Стилі для таблиць всередині */
+.table-responsive table {
+    margin-bottom: 0;
+}
+
+/* Компактний режим для великих таблиць */
+.table-responsive.table-compact tbody tr {
+    line-height: 1.2;
+}
+
+.table-responsive.table-compact tbody td {
+    padding: 0.4rem 0.5rem !important;
+    font-size: 0.875rem;
+    vertical-align: middle;
+}
+
+.table-responsive.table-compact thead th {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+    white-space: nowrap;
+}
+
+/* Підказка для користувача */
+.table-responsive[data-hint="true"]::before {
+    content: '👆 Тягніть для прокрутки';
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 123, 255, 0.9);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 12px;
+    z-index: 100;
+    pointer-events: none;
+    animation: fadeOut 3s forwards;
+}
+
+@keyframes fadeOut {
+    0%, 70% { opacity: 1; }
+    100% { opacity: 0; display: none; }
+}
