@@ -200,10 +200,10 @@ http://localhost:5000/test-search.html
 ```
 
 **Спробуйте:**
-- Введіть "Київ" → Знайде 2 QR
+- Введіть "Lisboa" → Знайде 2 QR
 - Введіть "LIFT-A1" → Знайде 1 QR
 - Введіть "active" → Знайде 3 QR
-- Натисніть Enter → Миттєвий пошук
+- Натисніть Enter → Миттєво!
 
 ### Метод 3: Реальна сторінка
 
@@ -286,7 +286,7 @@ http://localhost:5000/pages/admin/qr-management.html
 ### Event flow:
 
 ```
-Користувач вводить "Київ"
+Користувач вводить "Lisboa"
         ↓
 Event: input
         ↓
@@ -294,14 +294,14 @@ Debounce (300ms)
         ↓
 searchQR()
         ↓
-currentFilters.search = "київ"
+currentFilters.search = "lisboa"
         ↓
 filterQRData()
         ↓
 Перевірка 4 полів:
-  - code.includes("київ") ?
-  - name.includes("київ") ? ✅
-  - location.includes("київ") ? ✅
+  - code.includes("lisboa") ?
+  - name.includes("lisboa") ? ✅
+  - location.includes("lisboa") ? ✅
   - id.includes("київ") ?
         ↓
 renderQRTable(filtered)
