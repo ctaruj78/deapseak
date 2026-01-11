@@ -6000,8 +6000,9 @@
             console.log(`✅ Результат фільтрації: ${filtered.length} з ${window.allLiftsData.length}`);
             displayLiftsInTable(filtered);
             
-            // ✅ ВИПРАВЛЕННЯ: Оновлюємо статистику для відфільтрованих даних
-            updateLiftsStatistics(filtered);
+            // ✅ ВИПРАВЛЕННЯ: Статистичні картки завжди показують ПОВНУ статистику
+            // Тільки таблиця показує відфільтровані дані
+            updateLiftsStatistics(window.allLiftsData);
         }
         
         if (statusFilter) {
