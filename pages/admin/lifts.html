@@ -4067,8 +4067,9 @@
                 
                 console.log('✅ Elevadores завантажено з API:', lifts.length);
                 
-                // Оновлюємо таблицю
+                // ✅ ВИПРАВЛЕННЯ: Зберігаємо повний список в глобальну змінну
                 if (Array.isArray(lifts)) {
+                    window.allLiftsData = lifts;
                     displayLiftsInTable(lifts);
                     return lifts;
                 } else {
@@ -4121,10 +4122,8 @@
     function displayLiftsInTable(lifts) {
         console.log('📋 Відображення ліфтів в таблиці:', lifts.length);
         
-        // ✅ ВИПРАВЛЕННЯ: Зберігаємо дані в глобальну змінну для фільтрації
-        if (Array.isArray(lifts)) {
-            window.allLiftsData = lifts;
-        }
+        // ⚠️ НЕ перезаписуємо window.allLiftsData - це має бути тільки повний список!
+        // window.allLiftsData встановлюється тільки при завантаженні з API
         
         const tableBody = document.getElementById('lifts-table-body');
         if (!tableBody) {
@@ -6000,6 +5999,9 @@
             
             console.log(`✅ Результат фільтрації: ${filtered.length} з ${window.allLiftsData.length}`);
             displayLiftsInTable(filtered);
+            
+            // ✅ ВИПРАВЛЕННЯ: Оновлюємо статистику для відфільтрованих даних
+            updateLiftsStatistics(filtered);
         }
         
         if (statusFilter) {
