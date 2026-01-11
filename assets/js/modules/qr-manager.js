@@ -69,7 +69,7 @@ const qrManager = (function() {
                     type: 'lift',
                     liftType: lift.type || 'passenger',
                     status: lift.status === 'operational' ? 'active' : 'inactive',
-                    location: lift.location?.city || 'Невідоме місто',
+                    location: lift.address?.city || 'Невідоме місто',
                     created: lift.installationDate || lift.createdAt,
                     scans: 0,
                     liftData: lift
@@ -187,6 +187,17 @@ const qrManager = (function() {
                 const matchName = qr.name.toLowerCase().includes(search);
                 const matchLocation = qr.location.toLowerCase().includes(search);
                 const matchId = qr.id.toLowerCase().includes(search);
+                
+                console.log(`🔍 Перевірка QR ${qr.code}:`, {
+                    search,
+                    code: qr.code,
+                    name: qr.name,
+                    location: qr.location,
+                    matchCode,
+                    matchName,
+                    matchLocation,
+                    matchId
+                });
                 
                 if (!matchCode && !matchName && !matchLocation && !matchId) {
                     return false;
