@@ -27,21 +27,34 @@ const qrManager = (function() {
 
     // Load data from API
     async function loadInitialData() {
+        console.log('🔄 Завантаження даних з API...');
+        
         try {
             const token = localStorage.getItem('token');
             if (!token) {
-                console.warn('No auth token found');
+                console.warn('⚠️ No auth token found');
                 currentQRs = [];
+                renderQRTable();
+                updateStatistics();
                 return;
             }
+
+            // Fetch з timeout (15 секунд max)
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000);
 
             const response = await fetch('/api/lifts', {
                 headers: {
                     'Authorization': `Bearer ${token}`
-                }
+                },
+                signal: controller.signal
             });
 
-            if (!response.ok) throw new Error('Failed to load lifts');
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                throw new Error(`API Error: ${response.status}`);
+            }
 
             const data = await response.json();
             const lifts = data.data || data;
@@ -83,8 +96,20 @@ const qrManager = (function() {
             updateStatistics();
 
         } catch (error) {
-            console.error('Error loading lifts:', error);
+            console.error('❌ Error loading lifts:', error);
+            
+            // Показуємо помилку користувачу
+            if (error.name === 'AbortError') {
+                console.error('⏱️ Timeout: завантаження триває понад 15 секунд');
+                alert('Завантаження даних займає занадто багато часу.\nПеревірте з\'єднання з інтернетом та спробуйте оновити сторінку (F5).');
+            } else {
+                console.error('🔥 Помилка:', error.message);
+            }
+            
             currentQRs = [];
+            // ВАЖЛИВО: завжди викликаємо render навіть при помилці
+            renderQRTable();
+            updateStatistics();
         }
     }
 
