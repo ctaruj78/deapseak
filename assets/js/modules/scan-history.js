@@ -273,6 +273,13 @@ const scanHistory = (function() {
 
         // Setup event listeners
         $('#searchBtn').on('click', searchScans);
+        $('#searchInput').on('input', debounce(searchScans, 300)); // Автопошук при введенні
+        $('#searchInput').on('keypress', function(e) {
+            if (e.which === 13) { // Enter
+                e.preventDefault();
+                searchScans();
+            }
+        });
         $('#resetBtn').on('click', resetFilters);
         $('#exportBtn').on('click', exportToExcel);
         $('#clearHistoryBtn').on('click', clearHistory);
@@ -287,6 +294,15 @@ const scanHistory = (function() {
                 }
             });
         }
+    }
+
+    // Debounce функція для затримки пошуку
+    function debounce(func, wait) {
+        let timeout;
+        return function(...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), wait);
+        };
     }
 
     // Public methods

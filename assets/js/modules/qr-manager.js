@@ -96,8 +96,14 @@ const qrManager = (function() {
         // Print selected button
         $('#printSelectedBtn').on('click', () => printSelected());
 
-        // Search
+        // Search - підтримка input, Enter та кнопки
         $('#searchInput').on('input', debounce(searchQR, 300));
+        $('#searchInput').on('keypress', function(e) {
+            if (e.which === 13) { // Enter key
+                e.preventDefault();
+                searchQR();
+            }
+        });
 
         // Filters
         $('#statusFilter').on('change', applyFilters);
@@ -151,15 +157,27 @@ const qrManager = (function() {
     function filterQRData() {
         return currentQRs.filter(qr => {
             // Status filter
-            if (currentFilters.status !== 'all' && qr.status !== currentFilters.status) return false;
+            if (currentFilters.status !== 'all' && qr.status !== currentFilters.status) {
+                return false;
+            }
             
             // City filter
-            if (currentFilters.city && !qr.location.toLowerCase().includes(currentFilters.city)) return false;
+            if (currentFilters.city && !qr.location.toLowerCase().includes(currentFilters.city)) {
+                return false;
+            }
             
-            // Search filter
-            if (currentFilters.search && 
-                !qr.code.toLowerCase().includes(currentFilters.search.toLowerCase()) && 
-                !qr.name.toLowerCase().includes(currentFilters.search.toLowerCase())) return false;
+            // Search filter - шукаємо по коду, адресі, локації
+            if (currentFilters.search) {
+                const search = currentFilters.search.toLowerCase();
+                const matchCode = qr.code.toLowerCase().includes(search);
+                const matchName = qr.name.toLowerCase().includes(search);
+                const matchLocation = qr.location.toLowerCase().includes(search);
+                const matchId = qr.id.toLowerCase().includes(search);
+                
+                if (!matchCode && !matchName && !matchLocation && !matchId) {
+                    return false;
+                }
+            }
             
             return true;
         });
@@ -219,7 +237,9 @@ const qrManager = (function() {
 
     // Search
     function searchQR() {
-        currentFilters.search = $('#searchInput').val();
+        const searchValue = $('#searchInput').val();
+        console.log('🔍 Пошук:', searchValue);
+        currentFilters.search = searchValue;
         currentPage = 1;
         renderQRTable();
         updateStatistics();
