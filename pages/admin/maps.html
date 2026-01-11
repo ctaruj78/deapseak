@@ -604,8 +604,8 @@
                         location: fullAddress || 'Адреса не вказана',
                         city: lift.address?.city || 'Невідомо',
                         country: lift.address?.country || 'Невідомо',
-                        lat: lift.location?.coordinates?.[1] || 50.4501,
-                        lng: lift.location?.coordinates?.[0] || 30.5234,
+                        lat: lift.location?.coordinates?.[1] || 38.7223, // Lisboa default
+                        lng: lift.location?.coordinates?.[0] || -9.1393, // Lisboa default
                         status: mapStatus(lift.status),
                         lastMaintenance: lift.lastInspectionDate ? new Date(lift.lastInspectionDate).toLocaleDateString('uk-UA') : 'Невідомо',
                         municipalNumber: lift.municipalNumber
@@ -616,9 +616,9 @@
                 console.log('📍 Перший ліфт:', lifts[0]);
             } catch (error) {
                 console.error('❌ Помилка завантаження ліфтів:', error);
-                // Fallback до тестових даних
+                // Fallback до тестових даних (Lisboa)
                 lifts = [
-                    { id: 'sample_1', model: 'Ліфт №1', address: 'Rua Хрещатик, 1', lat: 50.4501, lng: 30.5234, status: 'active', lastMaintenance: '2024-01-10', location: 'Rua Хрещатик, 1' }
+                    { id: 'sample_1', model: 'Ліфт №1', address: 'Lisboa, Portugal', lat: 38.7223, lng: -9.1393, status: 'active', lastMaintenance: '2024-01-10', location: 'Lisboa, Portugal' }
                 ];
             }
         }
@@ -676,8 +676,8 @@
             console.log('🗺️ Ініціалізація мапи...');
             console.log('📍 Кількість ліфтів для відображення:', lifts.length);
             
-            // Initialize map centered on Kyiv
-            map = L.map('liftsMap').setView([50.4501, 30.5234], 13);
+            // Initialize map centered on Lisboa, Portugal (default)
+            map = L.map('liftsMap').setView([38.7223, -9.1393], 11);
 
             // Add OpenStreetMap tiles
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -689,6 +689,8 @@
             if (lifts.length === 0) {
                 console.warn('⚠️ Немає ліфтів для відображення на мапі');
             } else {
+                const bounds = [];
+                
                 lifts.forEach((lift, index) => {
                     console.log(`➕ Додаємо маркер ${index + 1}:`, {
                         id: lift.id,
@@ -697,8 +699,16 @@
                         address: lift.address
                     });
                     addLiftMarker(lift);
+                    bounds.push([lift.lat, lift.lng]);
                 });
+                
                 console.log('✅ Всі маркери додано:', markers.length);
+                
+                // 🎯 Автоматично центруємо карту на всіх маркерах
+                if (bounds.length > 0) {
+                    map.fitBounds(bounds, { padding: [50, 50] });
+                    console.log('✅ Карта автоматично центрована на маркерах');
+                }
             }
         }
 
@@ -736,16 +746,108 @@
 
             return `
                 <div class="lift-popup">
-                    <h6>${displayName}</h6>
-                    <p><strong>Адреса:</strong> ${displayAddress}</p>
-                    <p><strong>Статус:</strong> <span class="lift-status ${statusClass}">${statusText}</span></p>
-                    <p><strong>Останнє ТО:</strong> ${lastService}</p>
+                    <h6><i class="fas fa-elevator"></i> ${displayName}</h6>
+                    <p><strong>📍 Адреса:</strong><br>${displayAddress}</p>
+                    <p><strong>📊 Статус:</strong> <span class="lift-status ${statusClass}">${statusText}</span></p>
+                    <p><strong>🔧 Останнє ТО:</strong> ${lastService}</p>
                     <div class="text-center mt-2">
-                        <a href="lifts.html" class="btn btn-sm btn-primary">Переглянути деталі</a>
+                        <button class="btn btn-sm btn-success" onclick="createRouteToLift('${lift.id}')">
+                            <i class="fas fa-route"></i> Прокласти маршрут
+                        </button>
+                        <a href="lifts.html" class="btn btn-sm btn-primary">
+                            <i class="fas fa-info-circle"></i> Деталі
+                        </a>
                     </div>
                 </div>
             `;
         }
+
+        // Глобальна функція для кнопки "Прокласти маршрут" в popup
+        window.createRouteToLift = function(liftId) {
+            console.log('🗺️ Прокладання маршруту до ліфта:', liftId);
+            
+            const lift = lifts.find(l => l.id === liftId);
+            if (!lift) {
+                console.error('❌ Ліфт не знайдено:', liftId);
+                return;
+            }
+
+            // Перевірити чи є геолокація користувача
+            if (!userLocation) {
+                alert('Не вдалося визначити вашу поточну локацію. Дозвольте доступ до геолокації в браузері.');
+                map.setView([lift.lat, lift.lng], 16);
+                return;
+            }
+
+            // Eliminar попередній маршрут
+            if (routingControl) {
+                map.removeControl(routingControl);
+            }
+
+            // Побудова маршруту
+            console.log('  Від (користувач):', userLocation.lat, userLocation.lng);
+            console.log('  До (ліфт):', lift.lat, lift.lng);
+            
+            routingControl = L.Routing.control({
+                waypoints: [
+                    L.latLng(userLocation.lat, userLocation.lng),
+                    L.latLng(lift.lat, lift.lng)
+                ],
+                routeWhileDragging: false,
+                showAlternatives: false,
+                lineOptions: {
+                    styles: [{color: '#007bff', weight: 5, opacity: 0.7}]
+                },
+                createMarker: function() { return null; },
+                language: 'pt',
+                fitSelectedRoutes: true,
+                addWaypoints: false
+            }).on('routesfound', function(e) {
+                const routes = e.routes;
+                const summary = routes[0].summary;
+                console.log('✅ Маршрут знайдено:', (summary.totalDistance/1000).toFixed(2), 'км');
+                
+                // Додати кнопку закриття
+                setTimeout(() => {
+                    const container = document.querySelector('.leaflet-routing-container');
+                    if (container && !container.querySelector('.route-close-btn')) {
+                        const closeBtn = document.createElement('button');
+                        closeBtn.className = 'route-close-btn';
+                        closeBtn.innerHTML = '×';
+                        closeBtn.title = 'Fechar rota';
+                        closeBtn.style.cssText = `
+                            position: absolute;
+                            top: 5px;
+                            right: 10px;
+                            background: transparent;
+                            border: none;
+                            font-size: 28px;
+                            font-weight: bold;
+                            color: #fff;
+                            cursor: pointer;
+                            width: 30px;
+                            height: 30px;
+                            line-height: 26px;
+                            text-align: center;
+                            border-radius: 50%;
+                            z-index: 1001;
+                        `;
+                        
+                        closeBtn.addEventListener('click', function() {
+                            if (routingControl) {
+                                map.removeControl(routingControl);
+                                routingControl = null;
+                            }
+                        });
+                        
+                        container.appendChild(closeBtn);
+                    }
+                }, 100);
+            }).addTo(map);
+
+            const displayName = lift.model || lift.name || `Ліфт ${lift.id}`;
+            console.log(`🗺️ Маршрут до: ${displayName}`);
+        };
 
         function populateLiftSelector() {
             const selector = $('#routeToLift');
