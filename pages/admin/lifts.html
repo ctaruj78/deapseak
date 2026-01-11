@@ -2480,17 +2480,21 @@
                         statusFilter.value = filterValue;
                         
                         // Викликаємо подію change щоб застосувати фільтр
-                        const event = new Event('change', { bubbles: true });
-                        statusFilter.dispatchEvent(event);
+                        // ✅ ВИПРАВЛЕННЯ: Додаємо невелику затримку для синхронізації
+                        setTimeout(() => {
+                            const event = new Event('change', { bubbles: true });
+                            statusFilter.dispatchEvent(event);
+                            
+                            console.log(`🔍 Фільтр застосовано: ${filterName} (value: ${filterValue})`);
+                        }, 100);
                         
                         // Прокручуємо до таблиці
-                        const liftsTable = document.querySelector('.card-primary');
-                        if (liftsTable) {
-                            liftsTable.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }
-                        
-                        // Показуємо повідомлення
-                        console.log(`🔍 Фільтр застосовано: ${filterName}`);
+                        setTimeout(() => {
+                            const liftsTable = document.querySelector('.card-primary');
+                            if (liftsTable) {
+                                liftsTable.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }
+                        }, 200);
                     }
                 });
             });
@@ -4116,6 +4120,11 @@
     // Функція відображення ліфтів в таблиці
     function displayLiftsInTable(lifts) {
         console.log('📋 Відображення ліфтів в таблиці:', lifts.length);
+        
+        // ✅ ВИПРАВЛЕННЯ: Зберігаємо дані в глобальну змінну для фільтрації
+        if (Array.isArray(lifts)) {
+            window.allLiftsData = lifts;
+        }
         
         const tableBody = document.getElementById('lifts-table-body');
         if (!tableBody) {
