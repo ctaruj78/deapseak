@@ -2444,6 +2444,56 @@
                     }
                 });
             }
+            
+            // 📊 Обробники для кнопок "Детальніше" в статистичних картках
+            const statsCards = document.querySelectorAll('.small-box-footer');
+            statsCards.forEach((link, index) => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Визначаємо який фільтр застосувати на основі індексу картки
+                    let filterValue = 'all';
+                    let filterName = 'Всі ліфти';
+                    
+                    switch(index) {
+                        case 0: // Загальна кількість
+                            filterValue = 'all';
+                            filterName = 'Всі ліфти';
+                            break;
+                        case 1: // Активні
+                            filterValue = 'operational';
+                            filterName = 'Активні ліфти';
+                            break;
+                        case 2: // В обслуговуванні
+                            filterValue = 'maintenance';
+                            filterName = 'Ліфти в обслуговуванні';
+                            break;
+                        case 3: // Неактивні
+                            filterValue = 'broken';
+                            filterName = 'Неактивні ліфти';
+                            break;
+                    }
+                    
+                    // Встановлюємо фільтр в select
+                    const statusFilter = document.getElementById('statusFilter');
+                    if (statusFilter) {
+                        statusFilter.value = filterValue;
+                        
+                        // Викликаємо подію change щоб застосувати фільтр
+                        const event = new Event('change', { bubbles: true });
+                        statusFilter.dispatchEvent(event);
+                        
+                        // Прокручуємо до таблиці
+                        const liftsTable = document.querySelector('.card-primary');
+                        if (liftsTable) {
+                            liftsTable.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                        
+                        // Показуємо повідомлення
+                        console.log(`🔍 Фільтр застосовано: ${filterName}`);
+                    }
+                });
+            });
         });
 
         // Функція виходу
