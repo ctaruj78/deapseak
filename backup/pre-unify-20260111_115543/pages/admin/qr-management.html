@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Керування QR-кодами - FestLift</title>
+    
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap4.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css">
+    
+    <style>
+        /* Кольорові бейджі статусу */
+        .badge-success { background-color: #28a745 !important; color: #fff; }
+        .badge-secondary { background-color: #6c757d !important; color: #fff; }
+        .badge-danger { background-color: #dc3545 !important; color: #fff; }
+        .badge-info { background-color: #17a2b8 !important; color: #fff; }
+        .badge-warning { background-color: #ffc107 !important; color: #212529; }
+        /* Анімація для сповіщень */
+        .alert-notification {
+            animation: fadeInDown 0.7s;
+        }
+        @keyframes fadeInDown {
+            0% { opacity: 0; transform: translateY(-30px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .qr-card {
+            transition: all 0.3s ease;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .qr-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-color: #007bff;
+        }
+        
+        .qr-image {
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa;
+            padding: 10px;
+        }
+        
+        .qr-image img {
+            max-height: 100%;
+            max-width: 100%;
+            object-fit: contain;
+        }
+        
+        .qr-status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 0.75rem;
+        }
+        
+        .stats-card {
+            border-left: 4px solid;
+            transition: transform 0.2s ease;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .stats-card.total { border-left-color: #007bff; }
+        .stats-card.active { border-left-color: #28a745; }
+        .stats-card.inactive { border-left-color: #6c757d; }
+        .stats-card.expired { border-left-color: #dc3545; }
+        
+        .batch-actions {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .qr-preview-large {
+            max-width: 300px;
+            margin: 0 auto;
+        }
+        
+        .scan-history {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .scan-item {
+            border-left: 3px solid;
+            padding: 10px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .scan-success { border-left-color: #28a745; }
+        .scan-warning { border-left-color: #ffc107; }
+        .scan-error { border-left-color: #dc3545; }
+        
+        .custom-table th {
+            background: #f8f9fa;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-xs {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+        
+        /* Анімації */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        .qr-type-badge {
+            font-size: 0.75rem;
+            padding: 0.35em 0.65em;
+            border-radius: 0.25rem;
+        }
+        
+        .type-lift { background-color: #007bff; color: white; }
+        .type-technician { background-color: #28a745; color: white; }
+        .type-location { background-color: #6f42c1; color: white; }
+        .type-equipment { background-color: #fd7e14; color: white; }
+        .type-maintenance { background-color: #17a2b8; color: white; }
+        
+        /* Кастомні скроллбари */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        
+        /* Адаптивність */
+        @media (max-width: 768px) {
+            .qr-image {
+                height: 100px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn-xs {
+                margin-bottom: 5px;
+            }
+        }
+
+        /* Нотифікації */
+        .alert-notification {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 1060;
+            min-width: 300px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: slideInRight 0.3s ease;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="/assets/css/table-drag-scroll.css">
+</head>
+<body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper">
+
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button">
+                        <i class="fas fa-bars"></i>
+                    </a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="admin-dashboard.html" class="nav-link">Головна</a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="#" class="nav-link">QR-коди</a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-toggle="control-sidebar">
+                        <i class="fas fa-cog"></i>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../auth/login.html">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Sidebar -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <a href="admin-dashboard.html" class="brand-link text-center">
+                <i class="brand-image fas fa-qrcode fa-2x"></i>
+                <span class="brand-text font-weight-light">FestLift</span>
+            </a>
+
+            <div class="sidebar">
+                <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                    <div class="image">
+                        <img src="assets/img/user-avatar.png" class="img-circle elevation-2" alt="User Image" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiMwMDc0YzYiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJDNi40OCAyIDIgNi40OCAyIDEyczQuNDggMTAgMTAgMTAgMTAtNC40OCAxMC0xMFMxNy41MiAyIDEyIDJ6bTAgM2MyLjIxIDAgNCAxLjc5IDQgNHMtMS43OSA0LTQgNC00LTEuNzktNC00IDEuNzktNCA0LTR6bTAgMTcuMDJjLTMuMzMgMC02LjI4LTEuNzEtOC02LjAyIDIuMDUtMy4xNiA1LjI2LTUgOC41LTUgMy4yNCAwIDYuNDUgMS44NCA4LjUgNSAwdCA4LTYuMDJjLTMuMzIgMC02LjI3IDEuNzEtOCA2LjAyeiIgZmlsbD0id2hpdGUiLz4KPC9zdmc+Cg=='">
+                    </div>
+                    <div class="info">
+                        <a href="profile.html" class="d-block">Іван Петренко</a>
+                        <small class="text-success">Адміністратор</small>
+                    </div>
+                </div>
+
+                <!-- CANONICAL ADMIN SIDEBAR - Copy this to all admin pages -->
+<nav class="mt-2">
+    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+        <!-- Dashboard -->
+        <li class="nav-item">
+            <a href="/pages/admin/admin-dashboard.html" class="nav-link">
+                <i class="nav-icon fas fa-tachometer-alt"></i>
+                <p>Дашборд</p>
+            </a>
+        </li>
+
+        <!-- QR System -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-qrcode"></i>
+                <p>
+                    QR Система
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/admin/qr-management.html" class="nav-link active">
+                        <i class="fas fa-cog nav-icon"></i>
+                        <p>Керування QR-кодами</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/qr-analytics.html" class="nav-link">
+                        <i class="fas fa-chart-line nav-icon"></i>
+                        <p>Аналітика QR-кодів</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/qr-history.html" class="nav-link">
+                        <i class="fas fa-history nav-icon"></i>
+                        <p>Історія сканувань</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Lifts -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-elevator"></i>
+                <p>
+                    Ліфти
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/admin/lifts.html" class="nav-link">
+                        <i class="fas fa-list nav-icon"></i>
+                        <p>Управління ліфтами</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/requests.html" class="nav-link">
+                        <i class="fas fa-clipboard-list nav-icon"></i>
+                        <p>Заявки</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/maps.html" class="nav-link">
+                        <i class="fas fa-map-marked-alt nav-icon"></i>
+                        <p>Мапа ліфтів</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Users -->
+        <li class="nav-item">
+            <a href="/pages/admin/users.html" class="nav-link">
+                <i class="nav-icon fas fa-users"></i>
+                <p>Користувачі</p>
+            </a>
+        </li>
+
+        <!-- Documents -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-file-alt"></i>
+                <p>
+                    Документи
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/admin/invoice-template.html" class="nav-link">
+                        <i class="fas fa-file-invoice nav-icon"></i>
+                        <p>Orçamentos (Створити)</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/orcamentos-list.html" class="nav-link">
+                        <i class="fas fa-list nav-icon"></i>
+                        <p>Orçamentos (Список)</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/email-template.html" class="nav-link">
+                        <i class="fas fa-envelope nav-icon"></i>
+                        <p>Email шаблони</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Analytics -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-chart-line"></i>
+                <p>
+                    Аналітика
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/admin/unified-analytics.html" class="nav-link">
+                        <i class="fas fa-chart-area nav-icon"></i>
+                        <p>Unified Analytics</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/predictive-maintenance.html" class="nav-link">
+                        <i class="fas fa-brain nav-icon"></i>
+                        <p>Predictive Maintenance</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/reports.html" class="nav-link">
+                        <i class="fas fa-chart-bar nav-icon"></i>
+                        <p>Звіти</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <li class="nav-item">
+            <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link">
+                <i class="nav-icon fas fa-magic"></i>
+                <p>AI Асистент</p>
+            </a>
+        </li>
+
+        <!-- Support -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-headset"></i>
+                <p>
+                    Підтримка
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/admin/notifications.html" class="nav-link">
+                        <i class="fas fa-bell nav-icon"></i>
+                        <p>Сповіщення</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Settings -->
+        <li class="nav-item">
+            <a href="/pages/admin/settings.html" class="nav-link">
+                <i class="nav-icon fas fa-cogs"></i>
+                <p>Налаштування</p>
+            </a>
+        </li>
+    </ul>
+</nav>
+            </div>
+        </aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <section class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1>Керування QR-кодами</h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="admin-dashboard.html">Головна</a></li>
+                                <li class="breadcrumb-item"><a href="#">QR Система</a></li>
+                                <li class="breadcrumb-item active">Керування QR-кодами</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+                    <!-- Статистика -->
+                    <div class="row mb-4">
+                        <div class="col-lg-4 col-6">
+                            <div class="small-box bg-info stats-card total">
+                                <div class="inner">
+                                    <h3 id="totalQRCodes">0</h3>
+                                    <p>Всього ліфтів</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-elevator"></i>
+                                </div>
+                                <a href="#" class="small-box-footer" onclick="qrManager.resetFilters()">
+                                    Переглянути всі <i class="fas fa-arrow-circle-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-6">
+                            <div class="small-box bg-success stats-card active">
+                                <div class="inner">
+                                    <h3 id="activeQRCodes">0</h3>
+                                    <p>Працюючих ліфтів</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <a href="#" class="small-box-footer" onclick="qrManager.filterByStatus('active')">
+                                    Фільтрувати <i class="fas fa-arrow-circle-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-6">
+                            <div class="small-box bg-warning stats-card inactive">
+                                <div class="inner">
+                                    <h3 id="inactiveQRCodes">0</h3>
+                                    <p>На ремонті / Зупинені</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-tools"></i>
+                                </div>
+                                <a href="#" class="small-box-footer" onclick="qrManager.filterByStatus('inactive')">
+                                    Фільтрувати <i class="fas fa-arrow-circle-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Фільтри та пошук -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Фільтри та пошук</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label>Статус ліфта:</label>
+                                                <select id="statusFilter" class="form-control">
+                                                    <option value="all">Всі статуси</option>
+                                                    <option value="active">Активні</option>
+                                                    <option value="inactive">Неактивні</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label>Місто:</label>
+                                                <input type="text" id="cityFilter" class="form-control" placeholder="Фільтр по місту...">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label>Пошук:</label>
+                                                <div class="input-group">
+                                                    <input type="text" id="searchInput" class="form-control" placeholder="Адреса, номер, QR код...">
+                                                    <div class="input-group-append">
+                                                        <button class="btn btn-primary" onclick="qrManager.searchQR()">
+                                                            <i class="fas fa-search"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <button class="btn btn-secondary" onclick="qrManager.resetFilters()">
+                                        <i class="fas fa-sync"></i> Скинути фільтри
+                                    </button>
+                                    <button class="btn btn-info ml-2" id="exportCSVBtn">
+                                        <i class="fas fa-file-excel"></i> Експорт в Excel
+                                    </button>
+                                    <button class="btn btn-success ml-2" id="printSelectedBtn">
+                                        <i class="fas fa-print"></i> Друкувати вибрані
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Основний контент -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Список QR-кодів</h3>
+                                    <div class="card-tools">
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                                <i class="fas fa-minus"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-tool" data-card-widget="maximize">
+                                                <i class="fas fa-expand"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Масові дії -->
+                                    <div class="mb-2" id="bulkActionsPanel" style="display:none;">
+                                        <div class="alert alert-info py-2 mb-2 d-flex align-items-center">
+                                            <span class="mr-2"><i class="fas fa-tasks"></i></span>
+                                            <span id="bulkSelectedCount">0</span> вибрано
+                                            <button class="btn btn-danger btn-sm ml-3" id="bulkDeleteBtn" title="Видалити вибрані" aria-label="Видалити вибрані"><i class="fas fa-trash"></i> Видалити</button>
+                                            <button class="btn btn-secondary btn-sm ml-2" id="bulkStatusBtn" title="Змінити статус" aria-label="Змінити статус"><i class="fas fa-exchange-alt"></i> Статус</button>
+                                            <button class="btn btn-info btn-sm ml-2" id="bulkExportBtn" title="Експортувати" aria-label="Експортувати"><i class="fas fa-download"></i> Експортувати</button>
+                                        </div>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table id="qrCodesTable" class="table table-bordered table-striped table-hover custom-table">
+                                            <thead>
+                                                <tr>
+                                                    <th width="20">
+                                                        <input type="checkbox" id="selectAll" aria-label="Вибрати всі">
+                                                    </th>
+                                                    <th width="80">QR код</th>
+                                                    <th>ID коду</th>
+                                                    <th>Тип</th>
+                                                    <th>Призначення</th>
+                                                    <th>Статус</th>
+                                                    <th>Створено</th>
+                                                    <th>Дійсний до</th>
+                                                    <th>Сканувань</th>
+                                                    <th width="120">Дії</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <!-- Дані будуть додані через JavaScript -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="card-footer clearfix">
+                                    <div class="pagination-container d-flex justify-content-between align-items-center">
+                                        <div class="pagination-info">
+                                            Показано <span id="showingCount">0</span> з <span id="totalCount">0</span> записів
+                                        </div>
+                                        <ul class="pagination pagination-sm m-0" id="pagination">
+                                            <!-- Пагінація буде додана через JavaScript -->
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer class="main-footer">
+            <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
+            Sistema de gestão de elevadores v2.1.0.
+            <div class="float-right d-none d-sm-inline-block">
+                <b>Versão</b> 2.1.0
+            </div>
+        </footer>
+    </div>
+    <!-- Модальне вікно перегляду деталей QR-коду -->
+    <div class="modal fade" id="viewQRModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-info">
+                    <h5 class="modal-title" id="viewQRModalTitle">Деталі QR-коду</h5>
+                    <button type="button" class="btn btn-light btn-sm mr-2" id="printQRBtn" title="Друкувати" aria-label="Друкувати QR-код"><i class="fas fa-print"></i> Друк</button>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Закрити"><span>&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <!-- QR Code Display -->
+                        <div class="col-md-5 text-center">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div id="qrCodeCanvas" class="mb-3"></div>
+                                    <h5 id="qrCodeText" class="text-primary"></h5>
+                                    <button class="btn btn-sm btn-success mt-2" id="downloadQRBtn">
+                                        <i class="fas fa-download"></i> Завантажити PNG
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Details -->
+                        <div class="col-md-7">
+                            <div id="viewQRContent">
+                                <!-- Дані будуть підставлені через JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальне вікно створення QR-коду -->
+    <div class="modal fade" id="generateQRModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary">
+                    <h5 class="modal-title">Створення нового QR-коду</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <form id="generateQRForm">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Тип QR-коду *</label>
+                                    <select id="qrType" class="form-control" required onchange="if(typeof qrManager !== 'undefined') qrManager.onTypeChange(); else console.log('QR Manager not ready')">
+                                        <option value="">Оберіть тип...</option>
+                                        <option value="lift">Для ліфта</option>
+                                        <option value="technician">Для техніка</option>
+                                        <option value="location">Для локації</option>
+                                        <option value="equipment">Для обладнання</option>
+                                        <option value="maintenance">Для ТО</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Призначення *</label>
+                                    <select id="qrTarget" class="form-control" required>
+                                        <option value="">Спочатку оберіть тип QR-коду...</option>
+                                    </select>
+                                    <small class="form-text text-muted">Оберіть конкретне призначення залежно від типу</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Динамічні поля залежно від типу -->
+                        <div id="dynamicFields" style="display:none;">
+                            <!-- Поля для ліфта -->
+                            <div id="liftFields" class="dynamic-section" style="display:none;">
+                                <h6 class="text-primary"><i class="fas fa-elevator"></i> Деталі ліфта</h6>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>Номер ліфта</label>
+                                            <input type="text" id="liftNumber" class="form-control" placeholder="Наприклад: 101">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>Виробник</label>
+                                            <select id="liftManufacturer" class="form-control">
+                                                <option value="">Оберіть...</option>
+                                                <option value="Schindler">Schindler</option>
+                                                <option value="Otis">Otis</option>
+                                                <option value="Kone">Kone</option>
+                                                <option value="ThyssenKrupp">ThyssenKrupp</option>
+                                                <option value="Інший">Інший</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>Модель</label>
+                                            <input type="text" id="liftModel" class="form-control" placeholder="Наприклад: SX-500">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>Адреса установки</label>
+                                            <input type="text" id="liftAddress" class="form-control" placeholder="Вулиця, будинок">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label>Поверхи</label>
+                                            <input type="number" id="liftFloors" class="form-control" min="2" placeholder="5">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label>Вантажопідйомність (кг)</label>
+                                            <input type="number" id="liftCapacity" class="form-control" min="100" placeholder="630">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Поля для техніка -->
+                            <div id="technicianFields" class="dynamic-section" style="display:none;">
+                                <h6 class="text-success"><i class="fas fa-user-cog"></i> Деталі техніка</h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>Ім'я техніка</label>
+                                            <input type="text" id="techName" class="form-control" placeholder="ПІБ">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>Спеціалізація</label>
+                                            <select id="techSpecialization" class="form-control">
+                                                <option value="">Оберіть...</option>
+                                                <option value="електрик">Електрик</option>
+                                                <option value="механік">Механік</option>
+                                                <option value="інженер">Інженер</option>
+                                                <option value="універсал">Універсал</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Поля для локації -->
+                            <div id="locationFields" class="dynamic-section" style="display:none;">
+                                <h6 class="text-info"><i class="fas fa-map-marker-alt"></i> Деталі локації</h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>Адреса</label>
+                                            <input type="text" id="locationAddress" class="form-control" placeholder="Повна адреса">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label>Широта</label>
+                                            <input type="number" id="locationLat" class="form-control" step="0.000001" placeholder="50.4501">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label>Довгота</label>
+                                            <input type="number" id="locationLng" class="form-control" step="0.000001" placeholder="30.5234">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Статус *</label>
+                                    <select id="qrStatus" class="form-control" required>
+                                        <option value="active">Активний</option>
+                                        <option value="inactive">Неактивний</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Дійсний до *</label>
+                                    <input type="date" id="qrExpiry" class="form-control" required>
+                                    <small class="form-text text-muted">Мінімум 30 днів від сьогодні</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Попередній перегляд QR -->
+                        <div class="form-group">
+                            <label>Попередній перегляд QR-коду</label>
+                            <div class="text-center p-3 border rounded" id="qrPreview">
+                                <div class="text-muted">
+                                    <i class="fas fa-qrcode fa-3x mb-2"></i>
+                                    <p>QR-код з'явиться після заповнення полів</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Додаткові дані (JSON)</label>
+                            <textarea id="qrMetadata" class="form-control" rows="3" placeholder='{"note": "Додаткова інформація"}'></textarea>
+                            <small class="form-text text-muted">Додаткові параметри у форматі JSON (необов'язково)</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                        <button type="submit" class="btn btn-primary">Створити QR-код</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальне вікно редагування QR-коду -->
+    <div class="modal fade" id="editQRModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary">
+                    <h5 class="modal-title">Редагування QR-коду</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <form id="editQRForm">
+                    <input type="hidden" id="editQrId">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Тип QR-коду *</label>
+                                    <select id="editQrType" class="form-control" required>
+                                        <option value="lift">Для ліфта</option>
+                                        <option value="technician">Для техніка</option>
+                                        <option value="location">Для локації</option>
+                                        <option value="equipment">Для обладнання</option>
+                                        <option value="maintenance">Для ТО</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Призначення *</label>
+                                    <input type="text" id="editQrTarget" class="form-control" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Статус *</label>
+                                    <select id="editQrStatus" class="form-control" required>
+                                        <option value="active">Активний</option>
+                                        <option value="inactive">Неактивний</option>
+                                        <option value="expired">Протермінований</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Дійсний до *</label>
+                                    <input type="date" id="editQrExpiry" class="form-control" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Додаткові дані (JSON)</label>
+                            <textarea id="editQrMetadata" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                        <button type="submit" class="btn btn-primary">Зберегти зміни</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальні вікна -->
+    <!-- Модальне вікно: Історія сканувань (заглушка) -->
+    <div class="modal fade" id="scanHistoryModal" tabindex="-1" role="dialog" aria-labelledby="scanHistoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-secondary text-white">
+                    <h5 class="modal-title" id="scanHistoryModalLabel"><i class="fas fa-history"></i> Історія сканувань QR-коду</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Закрити">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-muted">Тут буде історія сканувань для QR-коду (заглушка).</div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальне вікно: Шаблон QR-коду (заглушка) -->
+    <div class="modal fade" id="qrTemplateModal" tabindex="-1" role="dialog" aria-labelledby="qrTemplateModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title" id="qrTemplateModalLabel"><i class="fas fa-file-alt"></i> Шаблон QR-коду</h5>
+                    <button type="button" class="close text-dark" data-dismiss="modal" aria-label="Закрити">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-muted">Тут буде шаблон для друку/експорту QR-коду (заглушка).</div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Audit Log (журнал дій) -->
+    <div class="card mt-4" id="auditLogCard">
+        <div class="card-header bg-light">
+            <h5 class="card-title mb-0"><i class="fas fa-clipboard-list"></i> Журнал дій (audit log)</h5>
+        </div>
+        <div class="card-body p-3">
+            <ul class="list-unstyled mb-0" id="auditLogList">
+                <li class="text-muted">Журнал дій порожній (заглушка)</li>
+            </ul>
+        </div>
+    </div>
+    <!-- Модальне вікно для масової зміни статусу -->
+    <div class="modal fade" id="bulkStatusModal" tabindex="-1" role="dialog" aria-labelledby="bulkStatusModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-secondary text-white">
+                    <h5 class="modal-title" id="bulkStatusModalLabel"><i class="fas fa-exchange-alt"></i> Масова зміна статусу</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Закрити">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="bulkStatusSelect">Виберіть новий статус для <span id="bulkStatusCount">0</span> QR-кодів:</label>
+                        <select id="bulkStatusSelect" class="form-control">
+                            <option value="active">Активний</option>
+                            <option value="inactive">Неактивний</option>
+                            <option value="expired">Протермінований</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                    <button type="button" class="btn btn-primary" id="confirmBulkStatusBtn">Змінити статус</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Модальне підтвердження масового видалення -->
+    <div class="modal fade" id="bulkDeleteModal" tabindex="-1" role="dialog" aria-labelledby="bulkDeleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="bulkDeleteModalLabel"><i class="fas fa-trash"></i> Підтвердження масового видалення</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Закрити">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Ви дійсно бажаєте <b>видалити</b> <span id="bulkDeleteCount">0</span> вибраних QR-кодів? Цю дію не можна скасувати.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                    <button type="button" class="btn btn-danger" id="confirmBulkDeleteBtn">Видалити</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Підключення скриптів -->
+    <script src="../../plugins/jquery/jquery.min.js"></script>
+    <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/adminlte@3.2/dist/js/adminlte.min.js"></script>
+
+    <!-- Load sidebar dynamically -->
+    <script>
+        $(document).ready(function() {
+            $(".main-sidebar").load("includes/sidebar.html");
+        });
+    </script>
+    
+    <!-- QR Code Library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    
+    <!-- 🌍 Система багатомовності -->
+    <script src="../../assets/js/i18n.js"></script>
+    <script src="../../assets/js/init-i18n.js"></script>
+    
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/daterangepicker@3.1/daterangepicker.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script src="../../assets/js/config.js"></script>
+    <script src="../../assets/js/auth.js"></script>
+    <script src="../../assets/js/modules/qr-manager.js"></script>
+    <script>
+    // Ініціалізація QR Manager одразу після завантаження скрипта
+    console.log('Initializing QR Manager...');
+    
+    // Обробники кнопок експорту
+    $(document).ready(function() {
+        // Експорт CSV
+        $('#exportCSVBtn').on('click', function() {
+            console.log('Експорт CSV...');
+            showNotification('Експорт у CSV тимчасово недоступний', 'info');
+        });
+        
+        // Експорт PDF
+        $('#exportPDFBtn').on('click', function() {
+            console.log('Експорт PDF...');
+            showNotification('Експорт у PDF тимчасово недоступний', 'info');
+        });
+        
+        // Експорт XLSX
+        $('#exportXLSXBtn').on('click', function() {
+            console.log('Експорт XLSX...');
+            showNotification('Експорт у XLSX тимчасово недоступний', 'info');
+        });
+        
+        // Експорт JSON
+        $('#exportJSONBtn').on('click', function() {
+            console.log('Експорт JSON...');
+            showNotification('Експорт у JSON тимчасово недоступний', 'info');
+        });
+        
+        // Масові дії - видалення
+        $('#bulkDeleteBtn').on('click', function() {
+            const count = $('.qr-checkbox:checked').length;
+            if (count === 0) {
+                showNotification('Виберіть QR-коди для видалення', 'warning');
+                return;
+            }
+            $('#bulkDeleteCount').text(count);
+            $('#bulkDeleteModal').modal('show');
+        });
+        
+        // Масові дії - зміна статусу
+        $('#bulkStatusBtn').on('click', function() {
+            const count = $('.qr-checkbox:checked').length;
+            if (count === 0) {
+                showNotification('Виберіть QR-коди для зміни статусу', 'warning');
+                return;
+            }
+            $('#bulkStatusCount').text(count);
+            $('#bulkStatusModal').modal('show');
+        });
+        
+        // Масові дії - експорт
+        $('#bulkExportBtn').on('click', function() {
+            const count = $('.qr-checkbox:checked').length;
+            if (count === 0) {
+                showNotification('Виберіть QR-коди для експорту', 'warning');
+                return;
+            }
+            showNotification(`Експорт ${count} QR-кодів...`, 'info');
+        });
+        
+        // Підтвердження масового видалення
+        $('#confirmBulkDeleteBtn').on('click', function() {
+            const checkedBoxes = $('.qr-checkbox:checked');
+            checkedBoxes.closest('tr').fadeOut(300, function() {
+                $(this).remove();
+            });
+            $('#bulkDeleteModal').modal('hide');
+            showNotification('QR-коди успішно видалено', 'success');
+            $('#bulkActionsPanel').hide();
+        });
+        
+        // Підтвердження зміни статусу
+        $('#confirmBulkStatusBtn').on('click', function() {
+            const newStatus = $('#bulkStatusSelect').val();
+            const checkedBoxes = $('.qr-checkbox:checked');
+            
+            checkedBoxes.each(function() {
+                const row = $(this).closest('tr');
+                const statusBadge = row.find('.badge');
+                
+                // Оновлюємо статус
+                statusBadge.removeClass('badge-success badge-secondary badge-danger');
+                if (newStatus === 'active') {
+                    statusBadge.addClass('badge-success').text('Активний');
+                } else if (newStatus === 'inactive') {
+                    statusBadge.addClass('badge-secondary').text('Неактивний');
+                } else if (newStatus === 'expired') {
+                    statusBadge.addClass('badge-danger').text('Протермінований');
+                }
+            });
+            
+            $('#bulkStatusModal').modal('hide');
+            showNotification('Статус успішно змінено', 'success');
+        });
+        
+        // Вибір всіх
+        $('#selectAll').on('change', function() {
+            $('.qr-checkbox').prop('checked', this.checked);
+            updateBulkActions();
+        });
+        
+        // Обробка вибору окремих чекбоксів
+        $(document).on('change', '.qr-checkbox', function() {
+            updateBulkActions();
+        });
+        
+        function updateBulkActions() {
+            const count = $('.qr-checkbox:checked').length;
+            if (count > 0) {
+                $('#bulkActionsPanel').show();
+                $('#bulkSelectedCount').text(count);
+            } else {
+                $('#bulkActionsPanel').hide();
+            }
+        }
+        
+        // Друк QR-коду
+        $('#printQRBtn').on('click', function() {
+            window.print();
+        });
+        
+        // Функція показу сповіщень
+        function showNotification(message, type = 'info') {
+            const alertClass = type === 'success' ? 'alert-success' : 
+                             type === 'error' ? 'alert-danger' :
+                             type === 'warning' ? 'alert-warning' : 'alert-info';
+            
+            const notification = $(`
+                <div class="alert ${alertClass} alert-dismissible fade show alert-notification" role="alert" style="position: fixed; top: 80px; right: 20px; z-index: 9999; min-width: 300px;">
+                    <strong>${message}</strong>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            `);
+            
+            $('body').append(notification);
+            
+            setTimeout(() => {
+                notification.alert('close');
+            }, 3000);
+        }
+        
+        // Ініціалізація qrManager - тільки один раз!
+        console.log('🚀 Запуск ініціалізації QR Manager...');
+        if (typeof qrManager !== 'undefined') {
+            qrManager.init();
+            console.log('✅ QR Manager ініціалізовано успішно');
+        } else {
+            console.error('❌ QR Manager script not loaded');
+        }
+    });
+    </script>
+
+    <link rel="stylesheet" href="/assets/css/ai-assistant.css">
+    <div id="ai-assistant-fab" style="position:fixed;bottom:32px;right:32px;z-index:9999;">
+      <button class="ai-fab-btn" title="AI Асистент" style="background:#3a86ff;color:#fff;border:none;border-radius:50%;width:56px;height:56px;box-shadow:0 2px 8px rgba(0,0,0,0.2);font-size:28px;cursor:pointer;">
+        <i class="fas fa-magic"></i>
+      </button>
+    </div>
+    <div id="ai-assistant-modal" style="display:none;position:fixed;bottom:100px;right:32px;z-index:10000;max-width:350px;width:100%;">
+      <div class="ai-chat-container">
+        <div class="ai-chat-header">
+          <h4>AI Асистент</h4>
+          <button class="ai-chat-close"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="ai-chat-messages">
+          <div class="ai-message ai-message-assistant">
+            <div class="ai-message-content">
+              <div class="ai-message-text">Привіт! Я ваш AI асистент. Чим можу допомогти з QR-кодами?</div>
+              <div class="ai-message-time">Зараз</div>
+            </div>
+          </div>
+        </div>
+        <div class="ai-chat-input">
+          <textarea class="ai-message-input" placeholder="Напишіть повідомлення..."></textarea>
+          <div class="ai-chat-actions">
+            <button class="ai-send-message"><i class="fas fa-paper-plane"></i> Надіслати</button>
+            <button class="ai-voice-toggle"><i class="fas fa-microphone"></i> Голос</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script>
+    // Видалено window.load - використовуємо тільки document.ready вище
+    
+    // Відкриття/закриття модального вікна
+    const fabBtn = document.getElementById('ai-assistant-fab');
+    const modal = document.getElementById('ai-assistant-modal');
+    fabBtn.onclick = () => { modal.style.display = 'block'; };
+    document.querySelector('.ai-chat-close').onclick = () => { modal.style.display = 'none'; };
+    </script>
+    <script src="/assets/js/table-drag-scroll.js"></script>
+</body>
+</html>

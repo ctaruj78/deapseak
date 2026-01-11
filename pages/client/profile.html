@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Профіль - Клієнт</title>
+    <title>Perfil - Клієнт</title>
     
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
@@ -378,7 +378,7 @@
                     <a href="/pages/client/dashboard.html" class="nav-link">Головна</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="/pages/client/profile.html" class="nav-link active">Профіль</a>
+                    <a href="/pages/client/profile.html" class="nav-link active">Perfil</a>
                 </li>
             </ul>
 
@@ -391,7 +391,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/pages/client/support.html" title="Підтримка">
+                    <a class="nav-link" href="/pages/client/support.html" title="Suporte">
                         <i class="fas fa-headset"></i>
                     </a>
                 </li>
@@ -496,7 +496,7 @@
         <li class="nav-item">
             <a href="/pages/client/support.html" class="nav-link">
                 <i class="nav-icon fas fa-headset"></i>
-                <p>Підтримка</p>
+                <p>Suporte</p>
             </a>
         </li>
 
@@ -504,7 +504,7 @@
         <li class="nav-item">
             <a href="/pages/client/profile.html" class="nav-link active">
                 <i class="nav-icon fas fa-user-circle"></i>
-                <p>Профіль</p>
+                <p>Perfil</p>
             </a>
         </li>
     </ul>
@@ -523,7 +523,7 @@
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
                                 <li class="breadcrumb-item"><a href="/pages/client/dashboard.html">Головна</a></li>
-                                <li class="breadcrumb-item active">Профіль</li>
+                                <li class="breadcrumb-item active">Perfil</li>
                             </ol>
                         </div>
                     </div>
@@ -603,7 +603,7 @@
                                         </li>
                                         <li class="nav-item">
                                             <a class="nav-link" id="settings-tab" data-toggle="pill" href="#settings" role="tab">
-                                                <i class="fas fa-cog mr-2"></i>Налаштування
+                                                <i class="fas fa-cog mr-2"></i>Configurações
                                             </a>
                                         </li>
                                     </ul>
@@ -660,7 +660,7 @@
                                                         </div>
                                                         <div class="info-content">
                                                             <div class="info-label">Адреса</div>
-                                                            <div class="info-value" id="infoAddress">м. Київ, вул. Прикладна, 123</div>
+                                                            <div class="info-value" id="infoAddress">м. Lisboa, Rua Прикладна, 123</div>
                                                         </div>
                                                     </div>
                                                     <div class="info-item">
@@ -669,7 +669,7 @@
                                                         </div>
                                                         <div class="info-content">
                                                             <div class="info-label">Місто</div>
-                                                            <div class="info-value" id="infoCity">Київ</div>
+                                                            <div class="info-value" id="infoCity">Lisboa</div>
                                                         </div>
                                                     </div>
                                                     <div class="info-item">
@@ -678,7 +678,7 @@
                                                         </div>
                                                         <div class="info-content">
                                                             <div class="info-label">Область</div>
-                                                            <div class="info-value" id="infoRegion">Київська область</div>
+                                                            <div class="info-value" id="infoRegion">Lisboaська область</div>
                                                         </div>
                                                     </div>
                                                     <div class="info-item">
@@ -694,14 +694,14 @@
                                             </div>
                                             <div class="text-center mt-4">
                                                 <button class="btn btn-primary" onclick="profileManager.editProfile()">
-                                                    <i class="fas fa-edit mr-2"></i>Редагувати профіль
+                                                    <i class="fas fa-edit mr-2"></i>Editar профіль
                                                 </button>
                                             </div>
                                         </div>
 
                                         <!-- Безпека -->
                                         <div class="tab-pane fade" id="security" role="tabpanel">
-                                            <h4 class="mb-4">Налаштування безпеки</h4>
+                                            <h4 class="mb-4">Configurações безпеки</h4>
                                             <div class="row">
                                                 <div class="col-md-6">
                                                     <div class="card mb-4">
@@ -920,7 +920,7 @@
                                                             <i class="fas fa-credit-card mr-2"></i>Методи оплати
                                                         </button>
                                                         <button class="btn btn-outline-danger">
-                                                            <i class="fas fa-ban mr-2"></i>Скасувати підписку
+                                                            <i class="fas fa-ban mr-2"></i>Cancelar підписку
                                                         </button>
                                                     </div>
                                                 </div>
@@ -935,9 +935,9 @@
                                             </div>
                                         </div>
 
-                                        <!-- Налаштування -->
+                                        <!-- Configurações -->
                                         <div class="tab-pane fade" id="settings" role="tabpanel">
-                                            <h4 class="mb-4">Налаштування профілю</h4>
+                                            <h4 class="mb-4">Configurações профілю</h4>
                                             <div class="row">
                                                 <div class="col-md-6">
                                                     <div class="card mb-4">
@@ -983,7 +983,7 @@
                                                             <div class="form-group">
                                                                 <label for="timezoneSelect">Часовий пояс</label>
                                                                 <select class="form-control" id="timezoneSelect">
-                                                                    <option value="Europe/Kiev" selected>Київ (UTC+2)</option>
+                                                                    <option value="Europe/Kiev" selected>Lisboa (UTC+2)</option>
                                                                     <option value="Europe/London">Лондон (UTC+1)</option>
                                                                     <option value="Europe/Berlin">Берлін (UTC+1)</option>
                                                                 </select>
@@ -994,15 +994,15 @@
                                             </div>
                                             <div class="card">
                                                 <div class="card-header">
-                                                    <h5 class="card-title">Експорт даних</h5>
+                                                    <h5 class="card-title">Exportar даних</h5>
                                                 </div>
                                                 <div class="card-body">
                                                     <p>Ви можете завантажити копію ваших даних у форматі JSON.</p>
                                                     <button class="btn btn-outline-primary" onclick="profileManager.exportData()">
-                                                        <i class="fas fa-download mr-2"></i>Експорт даних
+                                                        <i class="fas fa-download mr-2"></i>Exportar даних
                                                     </button>
                                                     <button class="btn btn-outline-danger ml-2" onclick="profileManager.deleteAccount()">
-                                                        <i class="fas fa-trash mr-2"></i>Видалити акаунт
+                                                        <i class="fas fa-trash mr-2"></i>Eliminar акаунт
                                                     </button>
                                                 </div>
                                             </div>
@@ -1018,9 +1018,10 @@
 
         <!-- Footer -->
         <footer class="main-footer">
-            <strong>Клієнтська панель &copy; 2024</strong>
+            <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
+            Sistema de gestão de elevadores v2.1.0.
             <div class="float-right d-none d-sm-inline-block">
-                <small id="connectionStatus"><i class="fas fa-wifi text-success"></i> Online</small>
+                <b>Versão</b> 2.1.0
             </div>
         </footer>
     </div>
@@ -1090,9 +1091,9 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-primary" onclick="profileManager.saveProfile()">
-                        <i class="fas fa-save mr-2"></i>Зберегти зміни
+                        <i class="fas fa-save mr-2"></i>Guardar зміни
                     </button>
                 </div>
             </div>
@@ -1240,17 +1241,17 @@
                 }
                 
                 exportData() {
-                    alert('Експорт даних розпочато');
+                    alert('Exportar даних розпочато');
                 }
                 
                 deleteAccount() {
-                    if (confirm('Видалити аккаунт назавжди?')) {
+                    if (confirm('Eliminar аккаунт назавжди?')) {
                         alert('Аккаунт буде видалено');
                     }
                 }
                 
                 saveProfile() {
-                    alert('Профіль збережено');
+                    alert('Perfil збережено');
                     $('#profileModal').modal('hide');
                 }
                 

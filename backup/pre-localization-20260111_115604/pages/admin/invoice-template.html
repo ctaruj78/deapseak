@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orçamento - Administração</title>
+    
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    
+    <style>
+        .invoice-preview {
+            border: 1px solid #ddd;
+            padding: 30px;
+            background: white;
+            font-family: Arial, sans-serif;
+        }
+        .invoice-header {
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+        .invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .invoice-table th,
+        .invoice-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .invoice-table th {
+            background-color: #f2f2f2;
+        }
+        .invoice-total {
+            text-align: right;
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        @media print {
+            .no-print { display: none !important; }
+        }
+    </style>
+    <link rel="stylesheet" href="/assets/css/table-drag-scroll.css">
+</head>
+<body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper">
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light no-print">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="admin-dashboard.html" class="nav-link">Головна</a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="invoice-template.html" class="nav-link active">Рахунки</a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="../auth/login.html" role="button">
+                        <i class="fas fa-sign-out-alt"></i> Вийти
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Sidebar Container -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4 no-print">
+            <!-- Brand Logo -->
+            <a href="admin-dashboard.html" class="brand-link">
+                <i class="brand-image fas fa-elevator"></i>
+                <span class="brand-text font-weight-light">FestLift</span>
+            </a>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- CANONICAL ADMIN SIDEBAR - Copy this to all admin pages -->
+<nav class="mt-2">
+    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+        <!-- Dashboard -->
+        <li class="nav-item">
+            <a href="/pages/admin/admin-dashboard.html" class="nav-link">
+                <i class="nav-icon fas fa-tachometer-alt"></i>
+                <p>Дашборд</p>
+            </a>
+        </li>
+
+        <!-- QR System -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-qrcode"></i>
+                <p>
+                    QR Система
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/admin/qr-management.html" class="nav-link">
+                        <i class="fas fa-cog nav-icon"></i>
+                        <p>Керування QR-кодами</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/qr-analytics.html" class="nav-link">
+                        <i class="fas fa-chart-line nav-icon"></i>
+                        <p>Аналітика QR-кодів</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/qr-history.html" class="nav-link">
+                        <i class="fas fa-history nav-icon"></i>
+                        <p>Історія сканувань</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Lifts -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-elevator"></i>
+                <p>
+                    Ліфти
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/admin/lifts.html" class="nav-link">
+                        <i class="fas fa-list nav-icon"></i>
+                        <p>Управління ліфтами</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/requests.html" class="nav-link">
+                        <i class="fas fa-clipboard-list nav-icon"></i>
+                        <p>Заявки</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/maps.html" class="nav-link">
+                        <i class="fas fa-map-marked-alt nav-icon"></i>
+                        <p>Мапа ліфтів</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Users -->
+        <li class="nav-item">
+            <a href="/pages/admin/users.html" class="nav-link">
+                <i class="nav-icon fas fa-users"></i>
+                <p>Користувачі</p>
+            </a>
+        </li>
+
+        <!-- Documents -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-file-alt"></i>
+                <p>
+                    Документи
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/admin/invoice-template.html" class="nav-link active">
+                        <i class="fas fa-file-invoice nav-icon"></i>
+                        <p>Orçamentos (Створити)</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="orcamentos-list.html" class="nav-link">
+                        <i class="fas fa-list nav-icon"></i>
+                        <p>Orçamentos (Список)</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="email-template.html" class="nav-link">
+                        <i class="fas fa-envelope nav-icon"></i>
+                        <p>Email шаблони</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Analytics -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-chart-line"></i>
+                <p>
+                    Аналітика
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/admin/unified-analytics.html" class="nav-link">
+                        <i class="fas fa-chart-area nav-icon"></i>
+                        <p>Unified Analytics</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="predictive-maintenance.html" class="nav-link">
+                        <i class="fas fa-brain nav-icon"></i>
+                        <p>Predictive Maintenance</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="reports.html" class="nav-link">
+                        <i class="fas fa-chart-bar nav-icon"></i>
+                        <p>Звіти</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <li class="nav-item">
+            <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link">
+                <i class="nav-icon fas fa-magic"></i>
+                <p>AI Асистент</p>
+            </a>
+        </li>
+
+        <!-- Support -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-headset"></i>
+                <p>
+                    Підтримка
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/admin/notifications.html" class="nav-link">
+                        <i class="fas fa-bell nav-icon"></i>
+                        <p>Сповіщення</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Settings -->
+        <li class="nav-item">
+            <a href="/pages/admin/settings.html" class="nav-link">
+                <i class="nav-icon fas fa-cogs"></i>
+                <p>Налаштування</p>
+            </a>
+        </li>
+    </ul>
+</nav>
+            </div>
+        </aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <!-- Content Header -->
+            <div class="content-header no-print">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">Orçamentos</h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="admin-dashboard.html">Início</a></li>
+                                <li class="breadcrumb-item active">Orçamentos</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+                    <!-- Invoice Form -->
+                    <div class="row no-print">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Criar Orçamento</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-primary btn-sm" onclick="saveOrcamento()">
+                                            <i class="fas fa-save"></i> Guardar Orçamento
+                                        </button>
+                                        <button type="button" class="btn btn-success btn-sm" onclick="generateInvoice()">
+                                            <i class="fas fa-plus"></i> Novo número
+                                        </button>
+                                        <button type="button" class="btn btn-info btn-sm" onclick="loadTemplate()">
+                                            <i class="fas fa-file-import"></i> Modelo
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <form id="invoiceForm">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="clientName">Cliente</label>
+                                                    <input type="text" class="form-control" id="clientName" placeholder="Nome da empresa ou pessoa" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="clientAddress">Morada do Cliente</label>
+                                                    <textarea class="form-control" id="clientAddress" rows="3" placeholder="Morada completa do cliente"></textarea>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="clientEmail">Email</label>
+                                                    <input type="email" class="form-control" id="clientEmail" placeholder="cliente@exemplo.pt" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="invoiceNumber">Número do Orçamento</label>
+                                                    <input type="text" class="form-control" id="invoiceNumber" placeholder="ORC-2024-001" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="invoiceDate">Data do Orçamento</label>
+                                                    <input type="date" class="form-control" id="invoiceDate" required>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Services Table -->
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <h5>Serviços/Produtos</h5>
+                                                <div class="table-responsive">
+                                                    <table class="table table-bordered" id="servicesTable">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Descrição</th>
+                                                                <th>Quantidade</th>
+                                                                <th>Preço Unit.</th>
+                                                                <th>Total</th>
+                                                                <th>Ações</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td><input type="text" class="form-control" placeholder="Manutenção técnica de elevador"></td>
+                                                                <td><input type="number" class="form-control qty" value="1" min="1"></td>
+                                                                <td><input type="number" class="form-control price" placeholder="100.00" step="0.01"></td>
+                                                                <td class="total">0.00</td>
+                                                                <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                <button type="button" class="btn btn-info btn-sm" onclick="addServiceRow()">
+                                                    <i class="fas fa-plus"></i> Adicionar serviço
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="row mt-3">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="notes">Notas</label>
+                                                    <textarea class="form-control" id="notes" rows="3" placeholder="Informação adicional ou condições"></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label>Resumo</label>
+                                                    <div class="card">
+                                                        <div class="card-body">
+                                                            <div class="d-flex justify-content-between">
+                                                                <span>Subtotal:</span>
+                                                                <span id="subtotal">0.00 €</span>
+                                                            </div>
+                                                            <div class="d-flex justify-content-between">
+                                                                <span>IVA (23%):</span>
+                                                                <span id="tax">0.00 €</span>
+                                                            </div>
+                                                            <hr>
+                                                            <div class="d-flex justify-content-between font-weight-bold">
+                                                                <span>Total:</span>
+                                                                <span id="grandTotal">0.00 €</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Invoice Preview -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header no-print">
+                                    <h3 class="card-title">Pré-visualização do Orçamento</h3>
+                                    <div class="card-tools">
+                                        <button class="btn btn-primary btn-sm" onclick="printInvoice()">
+                                            <i class="fas fa-print"></i> Imprimir
+                                        </button>
+                                        <button class="btn btn-success btn-sm" onclick="downloadPDF()">
+                                            <i class="fas fa-download"></i> PDF
+                                        </button>
+                                        <button class="btn btn-info btn-sm" onclick="sendEmail()">
+                                            <i class="fas fa-envelope"></i> Email
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="invoice-preview" id="invoicePreview">
+                                        <div class="invoice-header">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <!-- Логотип FestLift -->
+                                                    <div class="mb-3">
+                                                        <img src="/assets/img/festlift-logo.png" 
+                                                             alt="FESTLIFT, LDA" 
+                                                             style="max-height: 80px; max-width: 250px;"
+                                                             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                                        <h2 style="color: #007bff; font-weight: bold; display: none;">FESTLIFT, LDA</h2>
+                                                    </div>
+                                                    <p style="line-height: 1.8;">
+                                                        <strong>Av. do Parque 84B</strong><br>
+                                                        Rio de Mouro, Lisboa 2635-609<br>
+                                                        <i class="fas fa-phone"></i> +351 214 190 863<br>
+                                                        <i class="fas fa-mobile-alt"></i> +351 926 380 243 / 244<br>
+                                                        <i class="fas fa-envelope"></i> info@festlift.pt<br>
+                                                        <strong>NIF:</strong> 515924741
+                                                    </p>
+                                                </div>
+                                                <div class="col-md-6 text-right">
+                                                    <h3>ORÇAMENTO</h3>
+                                                    <p>
+                                                        <strong>Nº:</strong> <span id="previewInvoiceNumber">ORC-2024-001</span><br>
+                                                        <strong>Data:</strong> <span id="previewInvoiceDate"></span><br>
+                                                        <strong>Validade:</strong> <span class="text-muted">30 dias a partir da data de apresentação</span>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h5>Orçamento para:</h5>
+                                                <div id="previewClientInfo">
+                                                    <strong id="previewClientName">Nome do Cliente</strong><br>
+                                                    <span id="previewClientAddress">Morada do Cliente</span><br>
+                                                    Email: <span id="previewClientEmail">cliente@exemplo.pt</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <table class="invoice-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Nº</th>
+                                                    <th>Descrição</th>
+                                                    <th>Quantidade</th>
+                                                    <th>Preço Unit.</th>
+                                                    <th>Total</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="previewServicesTable">
+                                                <tr>
+                                                    <td>1</td>
+                                                    <td>Manutenção Técnica de Elevador</td>
+                                                    <td>1</td>
+                                                    <td>100,00 €</td>
+                                                    <td>100,00 €</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+
+                                        <div class="row mt-4">
+                                            <div class="col-md-6">
+                                                <h5>Notas:</h5>
+                                                <p id="previewNotes">Este orçamento é válido por 30 dias a partir da data de apresentação.</p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="invoice-total">
+                                                    <div class="d-flex justify-content-between">
+                                                        <span>Subtotal:</span>
+                                                        <span id="previewSubtotal">100,00 €</span>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between">
+                                                        <span>IVA (23%):</span>
+                                                        <span id="previewTax">23,00 €</span>
+                                                    </div>
+                                                    <hr>
+                                                    <div class="d-flex justify-content-between" style="font-size: 20px;">
+                                                        <span><strong>Total do Orçamento:</strong></span>
+                                                        <span><strong id="previewGrandTotal">123,00 €</strong></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Bank Details -->
+                                        <div class="alert alert-info mt-4">
+                                            <h5 class="mb-2"><i class="fas fa-university"></i> Dados Bancários para Pagamento</h5>
+                                            <p class="mb-1"><strong>Banco BPI</strong></p>
+                                            <p class="mb-0" style="font-family: 'Courier New', monospace; font-size: 14px;">
+                                                IBAN: <strong>PT50 0010 0000 5854 8320 0015 4</strong>
+                                            </p>
+                                        </div>
+
+                                        <div class="text-center mt-4">
+                                            <p><small>Obrigado pela sua confiança!</small></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer class="main-footer">
+            <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
+            Sistema de gestão de elevadores v2.1.0.
+            <div class="float-right d-none d-sm-inline-block">
+                <b>Versão</b> 2.1.0
+            </div>
+        </footer>
+    </div>
+
+    <!-- jQuery -->
+    <script src="../../plugins/jquery/jquery.min.js"></script>
+    <!-- Bootstrap -->
+    <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+    <!-- AdminLTE -->
+    <script src="../../plugins/adminlte/adminlte.min.js"></script>
+
+    <!-- Load sidebar dynamically -->
+    <script>
+        $(document).ready(function() {
+            $(".main-sidebar").load("includes/sidebar.html");
+        });
+    </script>
+
+    <script>
+        // Invoice management
+        const invoiceManager = {
+            init() {
+                // Set current date
+                const today = new Date().toISOString().split('T')[0];
+                $('#invoiceDate').val(today);
+
+                // Generate invoice number
+                this.generateInvoiceNumber();
+
+                // Bind events
+                this.bindEvents();
+
+                // Update preview
+                this.updatePreview();
+            },
+
+            bindEvents() {
+                // Update totals on input change
+                $(document).on('input', '.qty, .price', this.calculateTotals);
+                
+                // Update preview on form change
+                $('#invoiceForm input, #invoiceForm textarea').on('input', this.updatePreview);
+            },
+
+            generateInvoiceNumber() {
+                const year = new Date().getFullYear();
+                const month = String(new Date().getMonth() + 1).padStart(2, '0');
+                const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+                const number = `ORC-${year}-${month}-${random}`;
+                $('#invoiceNumber').val(number);
+            },
+
+            addServiceRow() {
+                const newRow = `
+                    <tr>
+                        <td><input type="text" class="form-control" placeholder="Descrição do serviço"></td>
+                        <td><input type="number" class="form-control qty" value="1" min="1"></td>
+                        <td><input type="number" class="form-control price" placeholder="0.00" step="0.01"></td>
+                        <td class="total">0.00</td>
+                        <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
+                    </tr>
+                `;
+                $('#servicesTable tbody').append(newRow);
+            },
+
+            removeRow(button) {
+                $(button).closest('tr').remove();
+                this.calculateTotals();
+                this.updatePreview();
+            },
+
+            calculateTotals() {
+                let subtotal = 0;
+
+                $('#servicesTable tbody tr').each(function() {
+                    const qty = parseFloat($(this).find('.qty').val()) || 0;
+                    const price = parseFloat($(this).find('.price').val()) || 0;
+                    const total = qty * price;
+                    
+                    $(this).find('.total').text(total.toFixed(2));
+                    subtotal += total;
+                });
+
+                const tax = subtotal * 0.23; // 23% IVA
+                const grandTotal = subtotal + tax;
+
+                $('#subtotal').text(subtotal.toFixed(2) + ' €');
+                $('#tax').text(tax.toFixed(2) + ' €');
+                $('#grandTotal').text(grandTotal.toFixed(2) + ' €');
+
+                // Update preview
+                invoiceManager.updatePreview();
+            },
+
+            updatePreview() {
+                // Update preview with current form data
+                $('#previewInvoiceNumber').text($('#invoiceNumber').val());
+                $('#previewInvoiceDate').text($('#invoiceDate').val());
+                $('#previewClientName').text($('#clientName').val() || 'Nome do Cliente');
+                $('#previewClientAddress').html($('#clientAddress').val().replace(/\n/g, '<br>') || 'Morada do Cliente');
+                $('#previewClientEmail').text($('#clientEmail').val() || 'cliente@exemplo.pt');
+                $('#previewNotes').text($('#notes').val() || 'Este orçamento é válido por 30 dias a partir da data de apresentação.');
+
+                // Update services table
+                const previewTable = $('#previewServicesTable');
+                previewTable.empty();
+
+                $('#servicesTable tbody tr').each(function(index) {
+                    const description = $(this).find('input[type="text"]').val() || 'Serviço';
+                    const qty = $(this).find('.qty').val() || '0';
+                    const price = parseFloat($(this).find('.price').val()) || 0;
+                    const total = (parseFloat(qty) * price).toFixed(2);
+
+                    const row = `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${description}</td>
+                            <td>${qty}</td>
+                            <td>${price.toFixed(2)} €</td>
+                            <td>${total} €</td>
+                        </tr>
+                    `;
+                    previewTable.append(row);
+                });
+
+                // Update totals in preview
+                $('#previewSubtotal').text($('#subtotal').text());
+                $('#previewTax').text($('#tax').text());
+                $('#previewGrandTotal').text($('#grandTotal').text());
+            },
+
+            printInvoice() {
+                window.print();
+            },
+
+            downloadPDF() {
+                // Here you would implement PDF generation
+                alert('Download de PDF será adicionado nas próximas versões');
+            },
+
+            async sendEmail() {
+                // Перевірка чи орçаменто збережено
+                if (!window.lastSavedOrcamentoId) {
+                    const save = confirm('Orçamento não foi salvo. Deseja salvar antes de enviar?');
+                    if (save) {
+                        await saveOrcamento();
+                        if (!window.lastSavedOrcamentoId) {
+                            alert('Não foi possível salvar o orçamento');
+                            return;
+                        }
+                    } else {
+                        return;
+                    }
+                }
+
+                const clientEmail = prompt('Insira o email do cliente:');
+                if (!clientEmail) return;
+
+                // Валідація email
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(clientEmail)) {
+                    alert('Email inválido');
+                    return;
+                }
+
+                try {
+                    const token = localStorage.getItem('liftmanager_jwt') || 
+                                 localStorage.getItem('jwt_token') ||
+                                 localStorage.getItem('token') || 
+                                 localStorage.getItem('lm_token');
+                    
+                    console.log('🔑 Sending email with token:', token ? 'EXISTS' : 'NOT FOUND');
+                    console.log('🔑 Token keys in localStorage:', Object.keys(localStorage).filter(k => k.includes('token') || k.includes('jwt')));
+                    
+                    if (!token) {
+                        alert('Autenticação necessária. Faça login novamente.');
+                        window.location.href = '/pages/auth/login.html';
+                        return;
+                    }
+
+                    const response = await fetch('/api/email/send-orcamento', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            orcamentoId: window.lastSavedOrcamentoId,
+                            clientEmail: clientEmail
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        alert(`✅ ${result.message}`);
+                    } else {
+                        alert(`❌ Erro: ${result.error}`);
+                    }
+
+                } catch (error) {
+                    console.error('Erro ao enviar email:', error);
+                    alert('Não foi possível enviar o email: ' + error.message);
+                }
+            },
+
+            loadTemplate() {
+                // Load predefined template
+                $('#clientName').val('Empresa Exemplo Lda');
+                $('#clientAddress').val('Rua Exemplo, 123\nLisboa, 1000-001');
+                $('#clientEmail').val('contato@exemplo.pt');
+                $('#notes').val('Este orçamento é válido por 30 dias a partir da data de apresentação.');
+                
+                this.updatePreview();
+            }
+        };
+
+        // Global functions
+        function addServiceRow() {
+            invoiceManager.addServiceRow();
+        }
+
+        function removeRow(button) {
+            invoiceManager.removeRow(button);
+        }
+
+        function printInvoice() {
+            invoiceManager.printInvoice();
+        }
+
+        function downloadPDF() {
+            invoiceManager.downloadPDF();
+        }
+
+        function sendEmail() {
+            invoiceManager.sendEmail();
+        }
+
+        function loadTemplate() {
+            invoiceManager.loadTemplate();
+        }
+
+        function generateInvoice() {
+            invoiceManager.generateInvoiceNumber();
+            invoiceManager.updatePreview();
+        }
+
+        // Função para SALVAR orçamento no MongoDB
+        async function saveOrcamento() {
+            const servicos = [];
+            
+            $('#servicesTable tbody tr').each(function() {
+                const descricao = $(this).find('input[type="text"]').val();
+                const quantidade = parseFloat($(this).find('.qty').val()) || 0;
+                const precoUnitario = parseFloat($(this).find('.price').val()) || 0;
+                
+                if (descricao && quantidade > 0 && precoUnitario > 0) {
+                    servicos.push({
+                        descricao,
+                        quantidade,
+                        precoUnitario,
+                        total: quantidade * precoUnitario
+                    });
+                }
+            });
+            
+            if (servicos.length === 0) {
+                alert('Adicione pelo menos um serviço!');
+                return;
+            }
+            
+            const data = {
+                cliente: {
+                    nome: $('#clientName').val(),
+                    morada: $('#clientAddress').val(),
+                    email: $('#clientEmail').val()
+                },
+                servicos,
+                subtotal: parseFloat($('#subtotal').text().replace(' €', '')) || 0,
+                iva: parseFloat($('#tax').text().replace(' €', '')) || 0,
+                total: parseFloat($('#grandTotal').text().replace(' €', '')) || 0,
+                notas: $('#notes').val() || 'Este orçamento é válido por 30 dias a partir da data de apresentação.'
+            };
+            
+            // Validação
+            if (!data.cliente.nome || !data.cliente.email || !data.cliente.morada) {
+                alert('Preencha todos os dados do cliente!');
+                return;
+            }
+            
+            try {
+                const token = localStorage.getItem('liftmanager_jwt') || 
+                             localStorage.getItem('token') || 
+                             localStorage.getItem('lm_token');
+                
+                console.log('💾 Saving orçamento with token:', token ? 'EXISTS' : 'NOT FOUND');
+                
+                if (!token) {
+                    alert('Sessão expirada. Faça login novamente.');
+                    window.location.href = '../auth/login.html';
+                    return;
+                }
+                
+                const response = await fetch('/api/orcamentos', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Зберігаємо ID для можливості відправки email
+                    window.lastSavedOrcamentoId = result.data._id;
+                    
+                    alert(`✅ Orçamento ${result.data.numero} salvo com sucesso!`);
+                    // Redirecionar para lista de orçamentos
+                    if (confirm('Ver lista de orçamentos?')) {
+                        window.location.href = 'orcamentos-list.html';
+                    } else {
+                        // Не перезавантажуємо, щоб можна було відправити email
+                        // location.reload();
+                    }
+                } else {
+                    alert('❌ Erro: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Erro ao salvar orçamento:', error);
+                alert('❌ Erro ao salvar orçamento: ' + error.message);
+            }
+        }
+
+        // Initialize when document is ready
+        $(document).ready(function() {
+            // Перевірка авторизації
+            const token = localStorage.getItem('liftmanager_jwt') || 
+                         localStorage.getItem('jwt_token') ||
+                         localStorage.getItem('token') || 
+                         localStorage.getItem('lm_token');
+            
+            if (!token) {
+                alert('Sessão expirada. Faça login novamente.');
+                window.location.href = '/pages/auth/login.html';
+                return;
+            }
+            
+            invoiceManager.init();
+        });
+    </script>
+    <script src="/assets/js/table-drag-scroll.js"></script>
+</body>
+</html>

@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вхід - FestLift</title>
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../assets/css/main.css">
+    <link rel="stylesheet" href="../../assets/css/auth.css">
+</head>
+<body class="hold-transition login-page bg-light">
+    <div class="login-box">
+        <div class="login-logo mb-4">
+            <a href="../../index.html"><i class="fas fa-elevator text-primary"></i> <b>FestLift</b></a>
+        </div>
+        <div class="card shadow-lg">
+            <div class="card-header bg-primary text-white text-center">
+                <h3 class="card-title mb-0">Вхід до системи</h3>
+            </div>
+            <div class="card-body">
+                <form id="login-form">
+                    <div class="input-group mb-3">
+                        <input type="email" id="email" name="email" class="form-control" placeholder="Email (наприклад: info@festlift.pt)" required autofocus autocomplete="username">
+                        <div class="input-group-append">
+                            <div class="input-group-text"><span class="fas fa-envelope"></span></div>
+                        </div>
+                    </div>
+                    <div class="input-group mb-3">
+                        <input type="password" id="password" name="password" class="form-control" placeholder="Пароль" required autocomplete="current-password">
+                        <div class="input-group-append">
+                            <div class="input-group-text"><span class="fas fa-lock"></span></div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                                <label class="form-check-label" for="remember">Запам'ятати мене</label>
+                            </div>
+                        </div>
+                        <div class="col-6 text-right">
+                            <a href="forgot-password.html">Забули пароль?</a>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <i class="fas fa-sign-in-alt"></i> Увійти
+                    </button>
+                </form>
+                
+                <!-- Demo акаунти -->
+                <div class="mt-4">
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle"></i> Демо акаунти для тестування:</h6>
+                        <small>
+                            <strong>Адмін:</strong> info@festlift.pt / admin123<br>
+                            <strong>Диспетчер:</strong> dispatcher@festlift.pt / dispatcher123<br>
+                            <strong>Технік 1:</strong> tech1@festlift.pt / tech123<br>
+                            <strong>Технік 2:</strong> tech2@festlift.pt / tech123<br>
+                            <strong>Клієнт:</strong> client@festlift.pt / client123
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Scripts -->
+    <!-- jQuery (Must be first!) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Config -->
+    <script src="../../assets/js/config.js"></script>
+    <!-- Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- AdminLTE -->
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+    
+    <!-- Система авторизації -->
+    <script src="../../assets/js/auth.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginForm = document.getElementById('login-form');
+            
+            // Автозаповнення з URL параметрів (для швидкого тестування)
+            const urlParams = new URLSearchParams(window.location.search);
+            const emailFromUrl = urlParams.get('email');
+            const passwordFromUrl = urlParams.get('password');
+            const autoLoginRequested = emailFromUrl && passwordFromUrl;
+            
+            // Якщо запитано автологін - очищуємо старий токен
+            if (autoLoginRequested && typeof AuthManager !== 'undefined') {
+                console.log('🔄 Автологін запитано - очищуємо старі дані');
+                AuthManager.logout();
+            }
+            
+            if (emailFromUrl) {
+                document.getElementById('email').value = decodeURIComponent(emailFromUrl);
+                console.log('📧 Email автозаповнено з URL');
+            }
+            if (passwordFromUrl) {
+                document.getElementById('password').value = decodeURIComponent(passwordFromUrl);
+                console.log('🔑 Password автозаповнено з URL');
+            }
+            
+            // Перевіряємо чи користувач вже увійшов через AuthManager
+            // Додаємо захист від циклу редиректів
+            const redirecting = sessionStorage.getItem('redirecting');
+            if (redirecting) {
+                console.log('⚠️ Запобігання циклу редиректів - очищуємо session');
+                sessionStorage.removeItem('redirecting');
+                // Очищуємо всі дані автентифікації
+                if (typeof AuthManager !== 'undefined') {
+                    localStorage.removeItem(AuthManager.TOKEN_KEY);
+                    localStorage.removeItem(AuthManager.USER_KEY);
+                }
+            } else if (!autoLoginRequested && typeof AuthManager !== 'undefined' && AuthManager.isAuthenticated()) {
+                const user = AuthManager.getCurrentUser();
+                if (user && user.role) {
+                    // Перевіряємо чи користувач хоче вийти (якщо в URL є параметр logout)
+                    const urlParams = new URLSearchParams(window.location.search);
+                    if (urlParams.get('logout') === 'true') {
+                        console.log('🚪 Користувач хоче вийти, очищуємо дані...');
+                        AuthManager.logout();
+                        return;
+                    }
+                    
+                    console.log('✅ Користувач вже авторизований:', user.username, '(' + user.role + ')');
+                    
+                    // Показуємо повідомлення з можливістю вийти
+                    const loginContainer = document.querySelector('.login-container');
+                    if (loginContainer) {
+                        loginContainer.innerHTML = `
+                            <div style="text-align: center; padding: 40px;">
+                                <i class="fas fa-user-check" style="font-size: 64px; color: #28a745; margin-bottom: 20px;"></i>
+                                <h3>Ви вже авторизовані</h3>
+                                <p>Користувач: <strong>${user.username}</strong></p>
+                                <p>Роль: <strong>${getRoleName(user.role)}</strong></p>
+                                <div style="margin-top: 30px;">
+                                    <button onclick="window.redirectUserByRole('${user.role}')" class="btn btn-primary btn-lg" style="margin: 5px;">
+                                        <i class="fas fa-arrow-right"></i> Продовжити до панелі
+                                    </button>
+                                    <button onclick="AuthManager.logout(); location.reload();" class="btn btn-outline-secondary btn-lg" style="margin: 5px;">
+                                        <i class="fas fa-sign-out-alt"></i> Вийти та обрати іншу роль
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    return; // Не робимо автоматичний редирект
+                }
+            }
+            
+            // Очищуємо старі дані якщо є
+            localStorage.removeItem('lm_session');
+            localStorage.removeItem('lm_user');
+            
+            // Автоматичний submit якщо є параметри в URL
+            if (autoLoginRequested) {
+                console.log('🚀 Автоматичний вхід через 500ms...');
+                setTimeout(() => {
+                    console.log('📤 Відправка форми логіну...');
+                    loginForm.requestSubmit();
+                }, 500);
+            }
+            
+            // Функція перенаправлення за ролями (ГЛОБАЛЬНА)
+            window.redirectUserByRole = function(role) {
+                // Очищуємо sessionStorage після редиректу
+                setTimeout(() => sessionStorage.removeItem('redirecting'), 100);
+                
+                // Використовуємо АБСОЛЮТНІ шляхи від кореня сайту
+                switch (role) {
+                    case 'admin':
+                        window.location.replace('/pages/admin/admin-dashboard.html');
+                        break;
+                    case 'dispatcher':
+                        window.location.replace('/pages/dispatcher/dashboard.html');
+                        break;
+                    case 'technician':
+                    case 'tech':
+                        window.location.replace('/pages/tech/dashboard.html');
+                        break;
+                    case 'client':
+                        window.location.replace('/pages/client/dashboard.html');
+                        break;
+                    default:
+                        window.location.replace('/pages/admin/admin-dashboard.html');
+                }
+            };
+            
+            // Продовжити до панелі (для вже авторизованих)
+            function continueToPanel() {
+                const user = AuthManager.getCurrentUser();
+                if (user && user.role) {
+                    sessionStorage.setItem('redirecting', 'true');
+                    redirectUserByRole(user.role);
+                }
+            }
+            
+            // Вийти та обрати іншу роль
+            function logoutAndChooseRole() {
+                if (confirm('Ви впевнені що хочете вийти?')) {
+                    AuthManager.logout();
+                    location.reload();
+                }
+            }
+            
+            // Отримати назву ролі українською
+            function getRoleName(role) {
+                const roleNames = {
+                    'admin': 'Адміністратор',
+                    'dispatcher': 'Диспетчер',
+                    'technician': 'Технік',
+                    'tech': 'Технік',
+                    'client': 'Клієнт'
+                };
+                return roleNames[role] || role;
+            }
+            
+            // Показ повідомлень
+            function showMessage(message, type = 'error') {
+                let alertDiv = document.getElementById('login-message');
+                if (!alertDiv) {
+                    alertDiv = document.createElement('div');
+                    alertDiv.id = 'login-message';
+                    alertDiv.className = `alert alert-${type === 'error' ? 'danger' : 'success'}`;
+                    loginForm.insertBefore(alertDiv, loginForm.firstChild);
+                }
+                
+                alertDiv.textContent = message;
+                alertDiv.style.display = 'block';
+                
+                // Автоматично приховати через 5 секунд
+                setTimeout(() => {
+                    alertDiv.style.display = 'none';
+                }, 5000);
+            }
+            
+            // Обробка форми входу - ТІЛЬКИ ОДИН РАЗ
+            let isSubmitting = false;
+            
+            const handleLogin = async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                
+                // Подвійна перевірка - глобальна та на формі
+                if (isSubmitting || loginForm.dataset.processing === 'true') {
+                    console.log('⏸️ Форма вже обробляється, БЛОКУЄМО повторний submit');
+                    return false;
+                }
+                
+                // Встановлюємо обидва прапорці
+                isSubmitting = true;
+                loginForm.dataset.processing = 'true';
+                console.log('🔒 Форму ЗАБЛОКОВАНО для обробки');
+                
+                // Видаляємо обробник події щоб запобігти повторному виклику
+                loginForm.removeEventListener('submit', handleLogin);
+                console.log('🗑️ Submit обробник ВИДАЛЕНО');
+                
+                const submitButton = loginForm.querySelector('button[type="submit"]');
+                const originalButtonText = submitButton.innerHTML;
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Вхід...';
+                
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                
+                console.log('🔐 Форма логіну відправлена - v2.1.0 ' + new Date().toISOString());
+                console.log('📝 Email:', email);
+                console.log('🔑 Password length:', password ? password.length : 0);
+                
+                if (!email || !password) {
+                    showMessage('Введіть email/логін та пароль');
+                    isSubmitting = false;
+                    loginForm.dataset.processing = 'false';
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalButtonText;
+                    // Повертаємо обробник
+                    loginForm.addEventListener('submit', handleLogin);
+                    return false;
+                }
+                
+                try {
+                    console.log('🔐 Спроба входу для:', email);
+                    
+                    // Формування API URL для GitHub Codespaces та локальної розробки
+                    let apiUrl;
+                    const hostname = window.location.hostname;
+                    
+                    if (hostname.includes('.app.github.dev')) {
+                        // GitHub Codespaces: unified-server на порту 5000
+                        const baseUrl = window.location.protocol + '//' + hostname.replace(/(-\d+)(\.app\.github\.dev)/, '-5000$2');
+                        apiUrl = baseUrl + '/api/auth/login';
+                    } else if (window.location.port === '8080' || window.location.port === '3000' || window.location.hostname === 'localhost') {
+                        // Локальна розробка - unified-server на порту 5000
+                        apiUrl = 'http://localhost:5000/api/auth/login';
+                    } else {
+                        // Відносний шлях
+                        apiUrl = '/api/auth/login';
+                    }
+                    
+                    console.log('🌐 Запит до:', apiUrl);
+                    
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ 
+                            email: email,
+                            password: password
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    console.log('📝 Відповідь сервера:', data);
+                    console.log('✅ Response OK:', response.ok);
+                    console.log('🔢 Status Code:', response.status);
+                    
+                    if (response.ok && data.success) {
+                        // V2 API: отримуємо token та user з data
+                        const token = data.data?.token || data.token;
+                        const user = data.data?.user || data.user;
+                        
+                        console.log('💾 Зберігаю токен:', token?.substring(0, 20) + '...');
+                        console.log('👤 Зберігаю користувача:', user);
+                        
+                        // Зберігаємо токен у всіх форматах для сумісності
+                        localStorage.setItem('token', token);           // Головний токен
+                        localStorage.setItem('lm_token', token);        // Старий формат
+                        localStorage.setItem('deapseak_token', token);  // V2 формат
+                        localStorage.setItem('liftmanager_jwt', token); // AuthManager формат
+                        
+                        // Зберігаємо користувача
+                        localStorage.setItem('user', JSON.stringify(user));           // Головний
+                        localStorage.setItem('lm_session', JSON.stringify(user));     // Старий формат
+                        localStorage.setItem('liftmanager_user', JSON.stringify(user)); // AuthManager формат
+                        
+                        console.log('✅ Токен збережено в localStorage');
+                        
+                        showMessage('Успішний вхід! Перенаправлення...', 'success');
+                        
+                        // ⚠️ НЕ розблоковуємо кнопку - користувач перенаправляється
+                        // Це запобігає повторному кліку під час перенаправлення
+                        
+                        // Перевіряємо чи є збережене перенаправлення
+                        const redirectUrl = sessionStorage.getItem('redirect_after_login');
+                        
+                        // Перенаправлення через 500мс
+                        setTimeout(() => {
+                            if (redirectUrl) {
+                                sessionStorage.removeItem('redirect_after_login');
+                                window.location.href = redirectUrl;
+                            } else {
+                                redirectUserByRole(user.role);
+                            }
+                        }, 500);
+                        
+                    } else {
+                        // Помилка - розблоковуємо форму
+                        showMessage(data.message || 'Помилка входу');
+                        console.error('❌ Помилка входу:', data);
+                        isSubmitting = false;
+                        loginForm.dataset.processing = 'false';
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = originalButtonText;
+                        // Повертаємо обробник для повторної спроби
+                        loginForm.addEventListener('submit', handleLogin);
+                    }
+                } catch (error) {
+                    // Помилка - розблоковуємо форму
+                    console.error('❌ Критична помилка входу:', error);
+                    showMessage('Сталася помилка під час входу. Перевірте з\'єднання з сервером.');
+                    isSubmitting = false;
+                    loginForm.dataset.processing = 'false';
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalButtonText;
+                    // Повертаємо обробник для повторної спроби
+                    loginForm.addEventListener('submit', handleLogin);
+                }
+                
+                return false;
+            };
+            
+            // Прикріплюємо обробник
+            loginForm.addEventListener('submit', handleLogin);
+            console.log('✅ Login form handler attached');
+        });
+    </script>
+</body>
+</html>

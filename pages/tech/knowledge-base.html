@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -390,7 +390,7 @@
         <li class="nav-item">
             <a href="/pages/tech/support.html" class="nav-link">
                 <i class="nav-icon fas fa-headset"></i>
-                <p>Підтримка</p>
+                <p>Suporte</p>
             </a>
         </li>
     </ul>
@@ -419,12 +419,12 @@
             <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
-                    <!-- Пошук -->
+                    <!-- Pesquisar -->
                     <div class="row">
                         <div class="col-12">
                             <div class="card knowledge-card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-search mr-2"></i>Пошук у базі знань</h3>
+                                    <h3 class="card-title"><i class="fas fa-search mr-2"></i>Pesquisar у базі знань</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
@@ -513,7 +513,7 @@
                                 <div class="category-icon">🔍</div>
                                 <div class="category-info">
                                     <h4>Діагностика</h4>
-                                    <p>Пошук та усунення несправностей</p>
+                                    <p>Pesquisar та усунення несправностей</p>
                                     <span class="badge badge-info">22 статті</span>
                                 </div>
                             </div>
@@ -641,7 +641,7 @@
                                             <div class="card bg-light">
                                                 <div class="card-body text-center">
                                                     <i class="fas fa-phone-alt fa-2x text-warning mb-2"></i>
-                                                    <h6>Підтримка</h6>
+                                                    <h6>Suporte</h6>
                                                     <button class="btn btn-sm btn-outline-warning" onclick="window.location.href='support.html'">
                                                         <i class="fas fa-phone"></i> Зателефонувати
                                                     </button>
@@ -659,9 +659,10 @@
 
         <!-- Footer -->
         <footer class="main-footer">
-            <strong>Технічна панель &copy; 2024</strong>
+            <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
+            Sistema de gestão de elevadores v2.1.0.
             <div class="float-right d-none d-sm-inline-block">
-                <small id="connectionStatus"><i class="fas fa-wifi text-success"></i> Online</small>
+                <b>Versão</b> 2.1.0
             </div>
         </footer>
     </div>
@@ -743,7 +744,7 @@
             // Ініціалізація менеджера бази знань
             window.knowledgeManager = new KnowledgeManager();
             
-            // Фільтрація за темами
+            // Filtroація за темами
             $('[data-filter]').on('click', function() {
                 const filter = $(this).data('filter');
                 $('[data-filter]').removeClass('active');

@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Orçamentos - FESTLIFT</title>
+    
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    
+    <style>
+        .orcamento-card {
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+        .orcamento-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .status-badge {
+            font-size: 0.85rem;
+            padding: 5px 10px;
+        }
+        .badge-rascunho { background-color: #6c757d; }
+        .badge-enviado { background-color: #17a2b8; }
+        .badge-aprovado { background-color: #28a745; }
+        .badge-rejeitado { background-color: #dc3545; }
+        .badge-expirado { background-color: #ffc107; color: #000; }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper">
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="admin-dashboard.html" class="nav-link">Início</a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="invoice-template.html" class="nav-link">Novo Orçamento</a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="../auth/login.html" role="button">
+                        <i class="fas fa-sign-out-alt"></i> Sair
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Sidebar -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <a href="admin-dashboard.html" class="brand-link">
+                <i class="brand-image fas fa-elevator"></i>
+                <span class="brand-text font-weight-light">FESTLIFT</span>
+            </a>
+
+            <div class="sidebar">
+                <!-- CANONICAL ADMIN SIDEBAR - Copy this to all admin pages -->
+<nav class="mt-2">
+    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+        <!-- Dashboard -->
+        <li class="nav-item">
+            <a href="/pages/admin/admin-dashboard.html" class="nav-link">
+                <i class="nav-icon fas fa-tachometer-alt"></i>
+                <p>Дашборд</p>
+            </a>
+        </li>
+
+        <!-- QR System -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-qrcode"></i>
+                <p>
+                    QR Система
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/admin/qr-management.html" class="nav-link">
+                        <i class="fas fa-cog nav-icon"></i>
+                        <p>Керування QR-кодами</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/qr-analytics.html" class="nav-link">
+                        <i class="fas fa-chart-line nav-icon"></i>
+                        <p>Аналітика QR-кодів</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/qr-history.html" class="nav-link">
+                        <i class="fas fa-history nav-icon"></i>
+                        <p>Історія сканувань</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Lifts -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-elevator"></i>
+                <p>
+                    Ліфти
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/admin/lifts.html" class="nav-link">
+                        <i class="fas fa-list nav-icon"></i>
+                        <p>Управління ліфтами</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/requests.html" class="nav-link">
+                        <i class="fas fa-clipboard-list nav-icon"></i>
+                        <p>Заявки</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/maps.html" class="nav-link">
+                        <i class="fas fa-map-marked-alt nav-icon"></i>
+                        <p>Мапа ліфтів</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Users -->
+        <li class="nav-item">
+            <a href="/pages/admin/users.html" class="nav-link">
+                <i class="nav-icon fas fa-users"></i>
+                <p>Користувачі</p>
+            </a>
+        </li>
+
+        <!-- Documents -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-file-alt"></i>
+                <p>
+                    Документи
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/admin/invoice-template.html" class="nav-link">
+                        <i class="fas fa-file-invoice nav-icon"></i>
+                        <p>Orçamentos (Створити)</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/orcamentos-list.html" class="nav-link active">
+                        <i class="fas fa-list nav-icon"></i>
+                        <p>Orçamentos (Список)</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/email-template.html" class="nav-link">
+                        <i class="fas fa-envelope nav-icon"></i>
+                        <p>Email шаблони</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Analytics -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-chart-line"></i>
+                <p>
+                    Аналітика
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/admin/unified-analytics.html" class="nav-link">
+                        <i class="fas fa-chart-area nav-icon"></i>
+                        <p>Unified Analytics</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/predictive-maintenance.html" class="nav-link">
+                        <i class="fas fa-brain nav-icon"></i>
+                        <p>Predictive Maintenance</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/reports.html" class="nav-link">
+                        <i class="fas fa-chart-bar nav-icon"></i>
+                        <p>Звіти</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <li class="nav-item">
+            <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link">
+                <i class="nav-icon fas fa-magic"></i>
+                <p>AI Асистент</p>
+            </a>
+        </li>
+
+        <!-- Support -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-headset"></i>
+                <p>
+                    Підтримка
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/admin/notifications.html" class="nav-link">
+                        <i class="fas fa-bell nav-icon"></i>
+                        <p>Сповіщення</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Settings -->
+        <li class="nav-item">
+            <a href="/pages/admin/settings.html" class="nav-link">
+                <i class="nav-icon fas fa-cogs"></i>
+                <p>Налаштування</p>
+            </a>
+        </li>
+    </ul>
+</nav>
+            </div>
+        </aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <section class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1><i class="fas fa-file-invoice-dollar"></i> Orçamentos</h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="admin-dashboard.html">Início</a></li>
+                                <li class="breadcrumb-item active">Orçamentos</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+                    <!-- Filtros -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="fas fa-filter"></i> Filtros</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Status</label>
+                                        <select id="filterStatus" class="form-control">
+                                            <option value="">Todos</option>
+                                            <option value="rascunho">Rascunho</option>
+                                            <option value="enviado">Enviado</option>
+                                            <option value="aprovado">Aprovado</option>
+                                            <option value="rejeitado">Rejeitado</option>
+                                            <option value="expirado">Expirado</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Cliente</label>
+                                        <input type="text" id="filterCliente" class="form-control" placeholder="Nome ou email">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Data de</label>
+                                        <input type="date" id="filterDataDe" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Data até</label>
+                                        <input type="date" id="filterDataAte" class="form-control">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <button class="btn btn-primary" onclick="aplicarFiltros()">
+                                        <i class="fas fa-search"></i> Pesquisar
+                                    </button>
+                                    <button class="btn btn-secondary" onclick="limparFiltros()">
+                                        <i class="fas fa-eraser"></i> Limpar
+                                    </button>
+                                    <a href="invoice-template.html" class="btn btn-success float-right">
+                                        <i class="fas fa-plus"></i> Novo Orçamento
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lista de Orçamentos -->
+                    <div class="row" id="orcamentosList">
+                        <!-- Orçamentos serão carregados aqui -->
+                    </div>
+
+                    <!-- Loading -->
+                    <div class="text-center" id="loading" style="display: none;">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="sr-only">Carregando...</span>
+                        </div>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div class="alert alert-info text-center" id="emptyState" style="display: none;">
+                        <i class="fas fa-info-circle fa-3x mb-3"></i>
+                        <h5>Nenhum orçamento encontrado</h5>
+                        <p>Crie o primeiro orçamento clicando no botão "Novo Orçamento"</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer class="main-footer">
+            <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
+            Sistema de gestão de elevadores v2.1.0.
+            <div class="float-right d-none d-sm-inline-block">
+                <b>Versão</b> 2.1.0
+            </div>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+    <script src="../../assets/js/config.js"></script>
+
+    <script>
+        const API_BASE_URL = window.API_BASE_URL || 'http://localhost:5000';
+
+        // Carregar orçamentos
+        async function carregarOrcamentos(filtros = {}) {
+            const loading = document.getElementById('loading');
+            const lista = document.getElementById('orcamentosList');
+            const emptyState = document.getElementById('emptyState');
+
+            loading.style.display = 'block';
+            lista.innerHTML = '';
+            emptyState.style.display = 'none';
+
+            try {
+                const token = localStorage.getItem('liftmanager_jwt') || 
+                             localStorage.getItem('jwt_token') ||
+                             localStorage.getItem('token') || 
+                             localStorage.getItem('lm_token');
+
+                if (!token) {
+                    alert('Não autorizado. Faça login novamente.');
+                    window.location.href = '../auth/login.html';
+                    return;
+                }
+
+                // Construir query params
+                const params = new URLSearchParams();
+                if (filtros.status) params.append('status', filtros.status);
+                if (filtros.cliente) params.append('cliente', filtros.cliente);
+                if (filtros.dataDe) params.append('dataDe', filtros.dataDe);
+                if (filtros.dataAte) params.append('dataAte', filtros.dataAte);
+
+                const response = await fetch(`${API_BASE_URL}/api/orcamentos?${params.toString()}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erro ao carregar orçamentos');
+                }
+
+                const orcamentos = await response.json();
+
+                if (orcamentos.length === 0) {
+                    emptyState.style.display = 'block';
+                } else {
+                    orcamentos.forEach(orcamento => {
+                        lista.innerHTML += criarCardOrcamento(orcamento);
+                    });
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao carregar orçamentos: ' + error.message);
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        // Criar card de orçamento
+        function criarCardOrcamento(orcamento) {
+            const statusClass = `badge-${orcamento.status || 'rascunho'}`;
+            const statusText = {
+                'rascunho': 'Rascunho',
+                'enviado': 'Enviado',
+                'aprovado': 'Aprovado',
+                'rejeitado': 'Rejeitado',
+                'expirado': 'Expirado'
+            }[orcamento.status] || 'Desconhecido';
+
+            const data = new Date(orcamento.data).toLocaleDateString('pt-PT');
+            const validadeAte = new Date(orcamento.validadeAte).toLocaleDateString('pt-PT');
+            const total = orcamento.totalGeral || 0;
+
+            return `
+                <div class="col-md-4 col-sm-6 mb-4">
+                    <div class="card orcamento-card" onclick="verOrcamento('${orcamento._id}')">
+                        <div class="card-header bg-gradient-primary">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-file-invoice"></i> ${orcamento.numero}
+                            </h5>
+                            <span class="badge status-badge ${statusClass} float-right">${statusText}</span>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-2">
+                                <i class="fas fa-user text-primary"></i>
+                                <strong>${orcamento.cliente.nome}</strong>
+                            </p>
+                            <p class="mb-2">
+                                <i class="fas fa-envelope text-info"></i>
+                                ${orcamento.cliente.email}
+                            </p>
+                            <p class="mb-2">
+                                <i class="fas fa-calendar text-success"></i>
+                                Data: ${data}
+                            </p>
+                            <p class="mb-2">
+                                <i class="fas fa-clock text-warning"></i>
+                                Validade: ${validadeAte}
+                            </p>
+                            <hr>
+                            <h4 class="text-right text-primary">
+                                <strong>€ ${total.toFixed(2)}</strong>
+                            </h4>
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-sm btn-info" onclick="verOrcamento('${orcamento._id}'); event.stopPropagation();">
+                                <i class="fas fa-eye"></i> Ver
+                            </button>
+                            <button class="btn btn-sm btn-warning" onclick="editarOrcamento('${orcamento._id}'); event.stopPropagation();">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="eliminarOrcamento('${orcamento._id}'); event.stopPropagation();">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Ver orçamento
+        function verOrcamento(id) {
+            window.location.href = `invoice-template.html?id=${id}&view=true`;
+        }
+
+        // Editar orçamento
+        function editarOrcamento(id) {
+            window.location.href = `invoice-template.html?id=${id}`;
+        }
+
+        // Eliminar orçamento
+        async function eliminarOrcamento(id) {
+            if (!confirm('Tem certeza que deseja eliminar este orçamento?')) {
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('liftmanager_jwt') || 
+                             localStorage.getItem('jwt_token') ||
+                             localStorage.getItem('token') || 
+                             localStorage.getItem('lm_token');
+
+                const response = await fetch(`${API_BASE_URL}/api/orcamentos/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erro ao eliminar orçamento');
+                }
+
+                alert('Orçamento eliminado com sucesso!');
+                carregarOrcamentos();
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao eliminar orçamento: ' + error.message);
+            }
+        }
+
+        // Aplicar filtros
+        function aplicarFiltros() {
+            const filtros = {
+                status: document.getElementById('filterStatus').value,
+                cliente: document.getElementById('filterCliente').value,
+                dataDe: document.getElementById('filterDataDe').value,
+                dataAte: document.getElementById('filterDataAte').value
+            };
+            carregarOrcamentos(filtros);
+        }
+
+        // Limpar filtros
+        function limparFiltros() {
+            document.getElementById('filterStatus').value = '';
+            document.getElementById('filterCliente').value = '';
+            document.getElementById('filterDataDe').value = '';
+            document.getElementById('filterDataAte').value = '';
+            carregarOrcamentos();
+        }
+
+        // Carregar ao iniciar
+        document.addEventListener('DOMContentLoaded', () => {
+            carregarOrcamentos();
+        });
+    </script>
+</body>
+</html>

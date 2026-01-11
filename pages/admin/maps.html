@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мапа ліфтів - LiftMaster Pro</title>
+    <title>Мапа ліфтів - FestLift</title>
 
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
@@ -201,7 +201,7 @@
             <!-- Brand Logo -->
             <a href="admin-dashboard.html" class="brand-link">
                 <img src="../../assets/img/logo.png" alt="Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
-                <span class="brand-text font-weight-light">LiftMaster Pro</span>
+                <span class="brand-text font-weight-light">FestLift</span>
             </a>
 
             <!-- Sidebar -->
@@ -241,13 +241,13 @@
                 <li class="nav-item">
                     <a href="/pages/admin/qr-management.html" class="nav-link">
                         <i class="fas fa-cog nav-icon"></i>
-                        <p>Керування QR-кодами</p>
+                        <p>Gestão QR-кодами</p>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="/pages/admin/qr-analytics.html" class="nav-link">
                         <i class="fas fa-chart-line nav-icon"></i>
-                        <p>Аналітика QR-кодів</p>
+                        <p>Análise QR-кодів</p>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -264,7 +264,7 @@
             <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-elevator"></i>
                 <p>
-                    Ліфти
+                    Elevadores
                     <i class="right fas fa-angle-left"></i>
                 </p>
             </a>
@@ -294,7 +294,7 @@
         <li class="nav-item">
             <a href="/pages/admin/users.html" class="nav-link">
                 <i class="nav-icon fas fa-users"></i>
-                <p>Користувачі</p>
+                <p>Utilizadores</p>
             </a>
         </li>
 
@@ -334,7 +334,7 @@
             <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-chart-line"></i>
                 <p>
-                    Аналітика
+                    Análise
                     <i class="right fas fa-angle-left"></i>
                 </p>
             </a>
@@ -372,7 +372,7 @@
             <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-headset"></i>
                 <p>
-                    Підтримка
+                    Suporte
                     <i class="right fas fa-angle-left"></i>
                 </p>
             </a>
@@ -390,7 +390,7 @@
         <li class="nav-item">
             <a href="/pages/admin/settings.html" class="nav-link">
                 <i class="nav-icon fas fa-cogs"></i>
-                <p>Налаштування</p>
+                <p>Configurações</p>
             </a>
         </li>
     </ul>
@@ -473,12 +473,12 @@
                     <div class="map-controls">
                         <div class="row">
                             <div class="col-md-3">
-                                <label for="searchInput">Пошук:</label>
+                                <label for="searchInput">Pesquisar:</label>
                                 <input type="text" class="form-control" id="searchInput" 
                                        placeholder="Адреса, номер, клієнт...">
                             </div>
                             <div class="col-md-3">
-                                <label for="statusFilter">Фільтр за статусом:</label>
+                                <label for="statusFilter">Filtro за статусом:</label>
                                 <select class="form-control" id="statusFilter">
                                     <option value="all">Всі ліфти</option>
                                     <option value="active">Активні</option>
@@ -618,7 +618,7 @@
                 console.error('❌ Помилка завантаження ліфтів:', error);
                 // Fallback до тестових даних
                 lifts = [
-                    { id: 'sample_1', model: 'Ліфт №1', address: 'вул. Хрещатик, 1', lat: 50.4501, lng: 30.5234, status: 'active', lastMaintenance: '2024-01-10', location: 'вул. Хрещатик, 1' }
+                    { id: 'sample_1', model: 'Ліфт №1', address: 'Rua Хрещатик, 1', lat: 50.4501, lng: 30.5234, status: 'active', lastMaintenance: '2024-01-10', location: 'Rua Хрещатик, 1' }
                 ];
             }
         }
@@ -650,7 +650,7 @@
                         console.log('  Довгота:', userLocation.lng);
                         console.log('  Точність:', userLocation.accuracy, 'метрів');
                         
-                        // Додати маркер поточної позиції
+                        // Adicionar маркер поточної позиції
                         L.marker([userLocation.lat, userLocation.lng], {
                             icon: L.icon({
                                 iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
@@ -797,7 +797,7 @@
                 }
             });
             
-            console.log(`🔍 Фільтр мапи: статус="${statusFilter}", пошук="${searchQuery}"`);
+            console.log(`🔍 Filtro мапи: статус="${statusFilter}", пошук="${searchQuery}"`);
         }
 
         function showRoute() {
@@ -817,7 +817,7 @@
                 return;
             }
 
-            // Видалити попередній маршрут
+            // Eliminar попередній маршрут
             if (routingControl) {
                 map.removeControl(routingControl);
             }
@@ -848,7 +848,7 @@
                 console.warn('⚠️ ПОПЕРЕДЖЕННЯ: Відстань занадто мала!');
                 console.warn('  Можливо координати ліфта збережені некоректно');
                 console.warn('  Або геолокація браузера визначила вашу позицію неточно');
-                alert(`⚠️ ПОПЕРЕДЖЕННЯ\n\nВідстань до ліфта: ${distance.toFixed(0)}м\n\nЦе занадто мало. Можливо:\n• Ви знаходитесь біля ліфта\n• Координати ліфта в базі даних некоректні\n• Геолокація браузера визначила позицію неточно\n\nПеревірте координати ліфта в розділі "Ліфти".`);
+                alert(`⚠️ ПОПЕРЕДЖЕННЯ\n\nВідстань до ліфта: ${distance.toFixed(0)}м\n\nЦе занадто мало. Можливо:\n• Ви знаходитесь біля ліфта\n• Координати ліфта в базі даних некоректні\n• Геолокація браузера визначила позицію неточно\n\nПеревірте координати ліфта в розділі "Elevadores".`);
             }
 
             // Створити маршрут з поточної позиції до ліфта
@@ -1023,7 +1023,7 @@
             });
             markers = [];
 
-            // Додати маркери знову
+            // Adicionar маркери знову
             lifts.forEach(lift => {
                 addLiftMarker(lift);
             });
@@ -1065,7 +1065,7 @@
 
         function getStatusText(status) {
             switch (status) {
-                case 'active': return 'Активний';
+                case 'active': return 'Ativo';
                 case 'maintenance': return 'На обслуговуванні';
                 case 'inactive': return 'З несправностями';
                 default: return 'Невідомо';

@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Технік - База знань</title>
+    
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    
+    <!-- Додаткові стилі -->
+    <style>
+        .knowledge-card {
+            transition: all 0.3s ease;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .knowledge-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .category-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        
+        .category-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .category-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .article-card {
+            border-left: 4px solid #007bff;
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+        
+        .article-card.featured {
+            border-left-color: #ffc107;
+            background: linear-gradient(135deg, #fff8e1, #fff);
+        }
+        
+        .article-card.urgent {
+            border-left-color: #dc3545;
+            background: linear-gradient(135deg, #f8d7da, #fff);
+        }
+        
+        .search-box {
+            position: relative;
+            max-width: 400px;
+        }
+        
+        .search-box input {
+            padding-right: 50px;
+            border-radius: 25px;
+        }
+        
+        .search-box .btn {
+            position: absolute;
+            right: 5px;
+            top: 5px;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+        }
+        
+        .tag {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin: 2px;
+        }
+        
+        .tag-beginner {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+        
+        .tag-advanced {
+            background: linear-gradient(135deg, #dc3545, #e83e8c);
+            color: white;
+        }
+        
+        .tag-intermediate {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+            color: #212529;
+        }
+        
+        .rating-stars {
+            color: #ffc107;
+            font-size: 0.9rem;
+        }
+        
+        .breadcrumb-custom {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 10px 15px;
+        }
+        
+        .content-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .toc {
+            position: sticky;
+            top: 20px;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .toc-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .toc-item:last-child {
+            border-bottom: none;
+        }
+        
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+        
+        .warning-box {
+            border-left: 4px solid #ffc107;
+            background: #fff8e1;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        
+        .danger-box {
+            border-left: 4px solid #dc3545;
+            background: #f8d7da;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        
+        .success-box {
+            border-left: 4px solid #28a745;
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        
+        .step-number {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background: #007bff;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            margin-right: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .category-icon {
+                font-size: 2rem;
+            }
+            
+            .toc {
+                position: static;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper">
+
+        <!-- Навігаційна панель -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button">
+                        <i class="fas fa-bars"></i>
+                    </a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="dashboard.html" class="nav-link">Головна</a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="tasks.html" class="nav-link">Завдання</a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="knowledge-base.html" class="nav-link active">База знань</a>
+                </li>
+            </ul>
+
+            <!-- Права частина навігації -->
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="ar-helper.html" title="AR помічник">
+                        <i class="fas fa-vr-cardboard"></i>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="tools.html" title="Інструменти">
+                        <i class="fas fa-tools"></i>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" id="darkModeToggle" title="Темна тема">
+                        <i class="fas fa-moon"></i>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="logout()" title="Вийти">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Бічна панель -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <a href="dashboard.html" class="brand-link text-center">
+                <span class="brand-text font-weight-light">Технік</span>
+            </a>
+            
+            <div class="sidebar">
+                <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                    <div class="image">
+                        <img src="../assets/img/avatars/tech.png" class="img-circle elevation-2" alt="Technician">
+                    </div>
+                    <div class="info">
+                        <a href="#" class="d-block" id="techName">Технік</a>
+                        <small class="text-warning"><i class="fas fa-circle mr-1"></i> Online</small>
+                    </div>
+                </div>
+                
+                <!-- CANONICAL TECH SIDEBAR - Copy this to all tech pages -->
+<nav class="mt-2">
+    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+        <!-- Dashboard -->
+        <li class="nav-item">
+            <a href="/pages/tech/dashboard.html" class="nav-link">
+                <i class="nav-icon fas fa-tachometer-alt"></i>
+                <p>Дашборд</p>
+            </a>
+        </li>
+
+        <!-- Tasks -->
+        <li class="nav-item">
+            <a href="/pages/tech/tasks.html" class="nav-link">
+                <i class="nav-icon fas fa-clipboard-list"></i>
+                <p>Мої завдання</p>
+            </a>
+        </li>
+
+        <!-- Schedule -->
+        <li class="nav-item">
+            <a href="/pages/tech/schedule.html" class="nav-link">
+                <i class="nav-icon fas fa-calendar-alt"></i>
+                <p>Розклад</p>
+            </a>
+        </li>
+
+        <!-- Maintenance -->
+        <li class="nav-item">
+            <a href="/pages/tech/manutencao.html" class="nav-link">
+                <i class="nav-icon fas fa-wrench"></i>
+                <p>Manutenção</p>
+            </a>
+        </li>
+
+        <!-- Inspections -->
+        <li class="nav-item">
+            <a href="/pages/tech/inspections.html" class="nav-link">
+                <i class="nav-icon fas fa-clipboard-check"></i>
+                <p>Інспекції</p>
+            </a>
+        </li>
+
+        <!-- Reports -->
+        <li class="nav-item">
+            <a href="/pages/tech/reports.html" class="nav-link">
+                <i class="nav-icon fas fa-file-alt"></i>
+                <p>Звіти робіт</p>
+            </a>
+        </li>
+
+        <!-- Tools & Resources -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-toolbox"></i>
+                <p>
+                    Інструменти
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/tech/qr-scanner.html" class="nav-link">
+                        <i class="fas fa-qrcode nav-icon"></i>
+                        <p>QR Сканер</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/tech/ar-helper.html" class="nav-link">
+                        <i class="fas fa-cube nav-icon"></i>
+                        <p>AR Helper</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/tech/tools.html" class="nav-link">
+                        <i class="fas fa-tools nav-icon"></i>
+                        <p>Калькулятори</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Knowledge Base -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-book"></i>
+                <p>
+                    База знань
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/tech/knowledge-base.html" class="nav-link active">
+                        <i class="fas fa-bookmark nav-icon"></i>
+                        <p>Довідник</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/tech/manuals.html" class="nav-link">
+                        <i class="fas fa-book-open nav-icon"></i>
+                        <p>Інструкції</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/tech/checklists.html" class="nav-link">
+                        <i class="fas fa-tasks nav-icon"></i>
+                        <p>Чеклісти</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/tech/videos.html" class="nav-link">
+                        <i class="fas fa-video nav-icon"></i>
+                        <p>Відео</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <li class="nav-item">
+            <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link">
+                <i class="nav-icon fas fa-magic"></i>
+                <p>AI Асистент</p>
+                <span class="badge badge-success right">Новинка</span>
+            </a>
+        </li>
+
+        <!-- Support -->
+        <li class="nav-item">
+            <a href="/pages/tech/support.html" class="nav-link">
+                <i class="nav-icon fas fa-headset"></i>
+                <p>Підтримка</p>
+            </a>
+        </li>
+    </ul>
+</nav>
+            </div>
+        </aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <section class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1>База знань техніка</h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="dashboard.html">Головна</a></li>
+                                <li class="breadcrumb-item active">База знань</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+                    <!-- Пошук -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card knowledge-card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-search mr-2"></i>Пошук у базі знань</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <div class="search-box">
+                                                <input type="text" id="searchInput" class="form-control form-control-lg" placeholder="Шукайте рішення, інструкції, посібники...">
+                                                <button class="btn btn-primary" onclick="knowledgeManager.searchArticles()">
+                                                    <i class="fas fa-search"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="btn-group btn-block">
+                                                <button class="btn btn-outline-primary" onclick="knowledgeManager.showAllArticles()">
+                                                    <i class="fas fa-list"></i> Всі статті
+                                                </button>
+                                                <button class="btn btn-outline-success" onclick="knowledgeManager.showFeatured()">
+                                                    <i class="fas fa-star"></i> Обрані
+                                                </button>
+                                                <button class="btn btn-outline-info" onclick="knowledgeManager.showRecent()">
+                                                    <i class="fas fa-clock"></i> Нові
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col-12">
+                                            <div class="btn-group">
+                                                <button class="btn btn-sm btn-outline-secondary active" data-filter="all">
+                                                    Всі теми
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-secondary" data-filter="repair">
+                                                    Ремонт
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-secondary" data-filter="maintenance">
+                                                    Обслуговування
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-secondary" data-filter="safety">
+                                                    Безпека
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-secondary" data-filter="troubleshooting">
+                                                    Діагностика
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Категорії -->
+                    <div class="row mt-4">
+                        <div class="col-lg-3 col-md-6">
+                            <div class="category-card">
+                                <div class="category-icon">🔧</div>
+                                <div class="category-info">
+                                    <h4>Ремонт</h4>
+                                    <p>Інструкції з ремонту ліфтів</p>
+                                    <span class="badge badge-primary">24 статті</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="category-card">
+                                <div class="category-icon">🛠️</div>
+                                <div class="category-info">
+                                    <h4>Обслуговування</h4>
+                                    <p>Планове ТО та профілактика</p>
+                                    <span class="badge badge-success">18 статей</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="category-card">
+                                <div class="category-icon">⚠️</div>
+                                <div class="category-info">
+                                    <h4>Безпека</h4>
+                                    <p>Правила безпеки та стандарти</p>
+                                    <span class="badge badge-warning">15 статей</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="category-card">
+                                <div class="category-icon">🔍</div>
+                                <div class="category-info">
+                                    <h4>Діагностика</h4>
+                                    <p>Пошук та усунення несправностей</p>
+                                    <span class="badge badge-info">22 статті</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Популярні статті -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card knowledge-card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-fire mr-2"></i>Популярні статті</h3>
+                                    <div class="card-tools">
+                                        <button class="btn btn-sm btn-primary" onclick="knowledgeManager.showAllPopular()">
+                                            <i class="fas fa-eye"></i> Переглянути всі
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row" id="popularArticles">
+                                        <!-- Популярні статті будуть завантажені тут -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Останні додані -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card knowledge-card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-clock mr-2"></i>Останні додані</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row" id="recentArticles">
+                                        <!-- Останні статті будуть завантажені тут -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Рекомендовані для вас -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card knowledge-card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-user-check mr-2"></i>Рекомендовані для вас</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row" id="recommendedArticles">
+                                        <!-- Рекомендовані статті будуть завантажені тут -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Швидкі посилання -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card knowledge-card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-bolt mr-2"></i>Швидкі посилання</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-3 mb-3">
+                                            <div class="card bg-light">
+                                                <div class="card-body text-center">
+                                                    <i class="fas fa-calendar-alt fa-2x text-info mb-2"></i>
+                                                    <h6>Розклад</h6>
+                                                    <button class="btn btn-sm btn-outline-info" onclick="window.location.href='schedule.html'">
+                                                        <i class="fas fa-calendar"></i> Переглянути
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <div class="card bg-light">
+                                                <div class="card-body text-center">
+                                                    <i class="fas fa-chart-bar fa-2x text-warning mb-2"></i>
+                                                    <h6>Звіти</h6>
+                                                    <button class="btn btn-sm btn-outline-warning" onclick="window.location.href='reports.html'">
+                                                        <i class="fas fa-chart-bar"></i> Переглянути
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <div class="card bg-light">
+                                                <div class="card-body text-center">
+                                                    <i class="fas fa-file-pdf fa-2x text-danger mb-2"></i>
+                                                    <h6>Технічні мануали</h6>
+                                                    <button class="btn btn-sm btn-outline-danger" onclick="window.location.href='manuals.html'">
+                                                        <i class="fas fa-download"></i> Завантажити
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <div class="card bg-light">
+                                                <div class="card-body text-center">
+                                                    <i class="fas fa-video fa-2x text-primary mb-2"></i>
+                                                    <h6>Відеоінструкції</h6>
+                                                    <button class="btn btn-sm btn-outline-primary" onclick="window.location.href='videos.html'">
+                                                        <i class="fas fa-play"></i> Переглянути
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <div class="card bg-light">
+                                                <div class="card-body text-center">
+                                                    <i class="fas fa-list-check fa-2x text-success mb-2"></i>
+                                                    <h6>Чек-листи</h6>
+                                                    <button class="btn btn-sm btn-outline-success" onclick="window.location.href='checklists.html'">
+                                                        <i class="fas fa-download"></i> Отримати
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <div class="card bg-light">
+                                                <div class="card-body text-center">
+                                                    <i class="fas fa-phone-alt fa-2x text-warning mb-2"></i>
+                                                    <h6>Підтримка</h6>
+                                                    <button class="btn btn-sm btn-outline-warning" onclick="window.location.href='support.html'">
+                                                        <i class="fas fa-phone"></i> Зателефонувати
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer class="main-footer">
+            <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
+            Sistema de gestão de elevadores v2.1.0.
+            <div class="float-right d-none d-sm-inline-block">
+                <b>Versão</b> 2.1.0
+            </div>
+        </footer>
+    </div>
+
+    <!-- Модальне вікно перегляду статті -->
+    <div class="modal fade" id="viewArticleModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Перегляд статті</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="articleContent">
+                    <!-- Вміст статті буде завантажено тут -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                    <button type="button" class="btn btn-info" onclick="knowledgeManager.downloadArticle(currentArticleId)">
+                        <i class="fas fa-download"></i> Завантажити
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="knowledgeManager.printArticle(currentArticleId)">
+                        <i class="fas fa-print"></i> Друк
+                    </button>
+                    <button type="button" class="btn btn-warning" onclick="knowledgeManager.toggleBookmark(currentArticleId)" id="bookmarkBtn">
+                        <i class="far fa-bookmark"></i> В обране
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../../plugins/jquery/jquery.min.js"></script>
+    <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="../../plugins/adminlte/adminlte.min.js"></script>
+
+    <!-- Knowledge Base Manager JS -->
+    <script src="../assets/js/modules/knowledge-manager.js"></script>
+
+    <script>
+        let currentArticleId = null;
+        
+        function logout() {
+            if (confirm('Ви впевнені, що хочете вийти з системи?')) {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userData');
+                window.location.replace('/pages/auth/login.html');
+            }
+        }
+
+        $(document).ready(function() {
+            // Ініціалізація AdminLTE
+            $('[data-widget="pushmenu"]').PushMenu();
+            
+            // Темна тема
+            $('#darkModeToggle').on('click', function() {
+                $('body').toggleClass('dark-mode');
+                $(this).find('i').toggleClass('fa-moon fa-sun');
+            });
+
+            // Перевірка з'єднання
+            setInterval(() => {
+                const online = navigator.onLine;
+                $('#connectionStatus').html(
+                    online ? 
+                    '<i class="fas fa-wifi text-success"></i> Online' : 
+                    '<i class="fas fa-wifi-slash text-danger"></i> Offline'
+                );
+            }, 30000);
+
+            // Завантаження даних техніка
+            const userData = JSON.parse(localStorage.getItem('userData')) || {};
+            if (userData.firstName) {
+                $('#techName').text(`${userData.firstName} ${userData.lastName || ''}`);
+            }
+
+            // Ініціалізація менеджера бази знань
+            window.knowledgeManager = new KnowledgeManager();
+            
+            // Фільтрація за темами
+            $('[data-filter]').on('click', function() {
+                const filter = $(this).data('filter');
+                $('[data-filter]').removeClass('active');
+                $(this).addClass('active');
+                knowledgeManager.filterByTopic(filter);
+            });
+        });
+
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', function() {
+            navigator.serviceWorker.register('/service-worker.js').then(function(registration) {
+              console.log('ServiceWorker зареєстровано:', registration);
+            }, function(err) {
+              console.log('ServiceWorker помилка:', err);
+            });
+          });
+        }
+    </script>
+</body>
+</html>

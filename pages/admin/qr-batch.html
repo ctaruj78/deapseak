@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Пакетне керування - LiftMaster Pro</title>
+    <title>Пакетне керування - FestLift</title>
     
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
@@ -149,7 +149,7 @@
         <aside class="main-sidebar sidebar-dark-primary elevation-4">
             <a href="admin-dashboard.html" class="brand-link">
                 <i class="fas fa-elevator brand-image img-circle elevation-3"></i>
-                <span class="brand-text font-weight-light">LiftMaster Pro</span>
+                <span class="brand-text font-weight-light">FestLift</span>
             </a>
             <div class="sidebar">
                 <div class="user-panel mt-3 pb-3 mb-3 d-flex">
@@ -185,13 +185,13 @@
                 <li class="nav-item">
                     <a href="/pages/admin/qr-management.html" class="nav-link">
                         <i class="fas fa-cog nav-icon"></i>
-                        <p>Керування QR-кодами</p>
+                        <p>Gestão QR-кодами</p>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="/pages/admin/qr-analytics.html" class="nav-link">
                         <i class="fas fa-chart-line nav-icon"></i>
-                        <p>Аналітика QR-кодів</p>
+                        <p>Análise QR-кодів</p>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -208,7 +208,7 @@
             <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-elevator"></i>
                 <p>
-                    Ліфти
+                    Elevadores
                     <i class="right fas fa-angle-left"></i>
                 </p>
             </a>
@@ -238,7 +238,7 @@
         <li class="nav-item">
             <a href="/pages/admin/users.html" class="nav-link">
                 <i class="nav-icon fas fa-users"></i>
-                <p>Користувачі</p>
+                <p>Utilizadores</p>
             </a>
         </li>
 
@@ -278,7 +278,7 @@
             <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-chart-line"></i>
                 <p>
-                    Аналітика
+                    Análise
                     <i class="right fas fa-angle-left"></i>
                 </p>
             </a>
@@ -316,7 +316,7 @@
             <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-headset"></i>
                 <p>
-                    Підтримка
+                    Suporte
                     <i class="right fas fa-angle-left"></i>
                 </p>
             </a>
@@ -334,7 +334,7 @@
         <li class="nav-item">
             <a href="/pages/admin/settings.html" class="nav-link">
                 <i class="nav-icon fas fa-cogs"></i>
-                <p>Налаштування</p>
+                <p>Configurações</p>
             </a>
         </li>
     </ul>
@@ -386,10 +386,10 @@
                                     <div class="text-success mb-3">
                                         <i class="fas fa-file-export fa-3x"></i>
                                     </div>
-                                    <h5>Експорт QR-кодів</h5>
+                                    <h5>Exportar QR-кодів</h5>
                                     <p class="text-muted">Завантаження даних у різних форматах</p>
                                     <button class="btn btn-success" onclick="batchManager.showExportModal()">
-                                        <i class="fas fa-download"></i> Експортувати
+                                        <i class="fas fa-download"></i> Exportarувати
                                     </button>
                                 </div>
                             </div>
@@ -445,7 +445,7 @@
                                             <div class="step-label">Перевірка</div>
                                         </div>
                                         <div class="step" id="step3">3
-                                            <div class="step-label">Налаштування</div>
+                                            <div class="step-label">Configurações</div>
                                         </div>
                                         <div class="step" id="step4">4
                                             <div class="step-label">Імпорт</div>
@@ -515,9 +515,9 @@
                                                 <div class="form-group">
                                                     <label>Статус за замовчуванням</label>
                                                     <select id="defaultStatus" class="form-control">
-                                                        <option value="active">Активний</option>
-                                                        <option value="inactive">Неактивний</option>
-                                                        <option value="pending">Очікує активації</option>
+                                                        <option value="active">Ativo</option>
+                                                        <option value="inactive">Inativo</option>
+                                                        <option value="pending">Pendente активації</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -531,7 +531,7 @@
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label>Додати до групи</label>
+                                                    <label>Adicionar до групи</label>
                                                     <select id="importGroup" class="form-control select2">
                                                         <option value="">Без групи</option>
                                                         <option value="group1">Група 1</option>
@@ -611,7 +611,7 @@
                                                     <option value="activate">Активувати</option>
                                                     <option value="deactivate">Деактивувати</option>
                                                     <option value="extend">Продовжити термін</option>
-                                                    <option value="delete">Видалити</option>
+                                                    <option value="delete">Eliminar</option>
                                                     <option value="assign_group">Призначити групу</option>
                                                     <option value="change_type">Змінити тип</option>
                                                 </select>
@@ -642,12 +642,12 @@
                         </div>
                     </div>
 
-                    <!-- Експорт QR-кодів -->
+                    <!-- Exportar QR-кодів -->
                     <div class="row mb-4" id="exportSection">
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h3 class="card-title">Експорт QR-кодів</h3>
+                                    <h3 class="card-title">Exportar QR-кодів</h3>
                                     <div class="card-tools">
                                         <button type="button" class="btn btn-tool" data-card-widget="collapse">
                                             <i class="fas fa-minus"></i>
@@ -723,7 +723,7 @@
                                     </div>
                                     <div class="mt-3">
                                         <button class="btn btn-success" onclick="batchManager.exportData()">
-                                            <i class="fas fa-download"></i> Експортувати дані
+                                            <i class="fas fa-download"></i> Exportarувати дані
                                         </button>
                                         <button class="btn btn-outline-primary ml-2" onclick="batchManager.previewExport()">
                                             <i class="fas fa-eye"></i> Попередній перегляд
@@ -778,7 +778,7 @@
                                         </div>
                                         <div class="col-md-4">
                                             <div class="template-item">
-                                                <h5>Експорт для звітності</h5>
+                                                <h5>Exportar для звітності</h5>
                                                 <p class="text-muted">Шаблон налаштувань експорту для фінансової звітності</p>
                                                 <div class="mt-2">
                                                     <button class="btn btn-sm btn-outline-primary" onclick="batchManager.useTemplate('report-export')">
@@ -808,9 +808,10 @@
 
         <!-- Footer -->
         <footer class="main-footer">
-            <strong>LiftMaster Pro &copy; 2024</strong>
+            <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
+            Sistema de gestão de elevadores v2.1.0.
             <div class="float-right d-none d-sm-inline-block">
-                <b>Версія</b> 2.1.0
+                <b>Versão</b> 2.1.0
             </div>
         </footer>
     </div>

@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"
     <!-- Global Settings -->
     <script src="../../assets/js/global-settings.js"></script>
     <link rel="stylesheet" href="../../assets/css/theme-dark.css">>
-    <title>Заявки на обслуговування - LiftMaster Pro</title>
+    <title>Заявки на обслуговування - FestLift</title>
 
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
@@ -167,7 +167,7 @@
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
         <a href="admin-dashboard.html" class="brand-link">
             <i class="fas fa-elevator brand-image img-circle elevation-3"></i>
-            <span class="brand-text font-weight-light">LiftMaster Pro</span>
+            <span class="brand-text font-weight-light">FestLift</span>
         </a>
 
         <div class="sidebar">
@@ -205,13 +205,13 @@
                 <li class="nav-item">
                     <a href="/pages/admin/qr-management.html" class="nav-link">
                         <i class="fas fa-cog nav-icon"></i>
-                        <p>Керування QR-кодами</p>
+                        <p>Gestão QR-кодами</p>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="/pages/admin/qr-analytics.html" class="nav-link">
                         <i class="fas fa-chart-line nav-icon"></i>
-                        <p>Аналітика QR-кодів</p>
+                        <p>Análise QR-кодів</p>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -228,7 +228,7 @@
             <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-elevator"></i>
                 <p>
-                    Ліфти
+                    Elevadores
                     <i class="right fas fa-angle-left"></i>
                 </p>
             </a>
@@ -258,7 +258,7 @@
         <li class="nav-item">
             <a href="/pages/admin/users.html" class="nav-link">
                 <i class="nav-icon fas fa-users"></i>
-                <p>Користувачі</p>
+                <p>Utilizadores</p>
             </a>
         </li>
 
@@ -298,7 +298,7 @@
             <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-chart-line"></i>
                 <p>
-                    Аналітика
+                    Análise
                     <i class="right fas fa-angle-left"></i>
                 </p>
             </a>
@@ -336,7 +336,7 @@
             <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-headset"></i>
                 <p>
-                    Підтримка
+                    Suporte
                     <i class="right fas fa-angle-left"></i>
                 </p>
             </a>
@@ -354,7 +354,7 @@
         <li class="nav-item">
             <a href="/pages/admin/settings.html" class="nav-link">
                 <i class="nav-icon fas fa-cogs"></i>
-                <p>Налаштування</p>
+                <p>Configurações</p>
             </a>
         </li>
     </ul>
@@ -450,7 +450,7 @@
                                 <option value="">Всі статуси</option>
                                 <option value="new">Нові</option>
                                 <option value="assigned">Призначені</option>
-                                <option value="in_progress">В роботі</option>
+                                <option value="in_progress">Em progresso</option>
                                 <option value="completed">Завершені</option>
                             </select>
                         </div>
@@ -490,13 +490,13 @@
                 <!-- Requests Table -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Керування заявками</h3>
+                        <h3 class="card-title">Gestão заявками</h3>
                         <div class="card-tools">
                             <button class="btn btn-primary" onclick="createRequest()">
                                 <i class="fas fa-plus"></i> Створити заявку
                             </button>
                             <button class="btn btn-success btn-sm ml-2" onclick="exportRequests()">
-                                <i class="fas fa-download"></i> Експорт
+                                <i class="fas fa-download"></i> Exportar
                             </button>
                         </div>
                     </div>
@@ -504,7 +504,7 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <div class="input-group">
-                                    <input type="text" id="searchInput" class="form-control" placeholder="Пошук заявок...">
+                                    <input type="text" id="searchInput" class="form-control" placeholder="Pesquisar заявок...">
                                     <div class="input-group-append">
                                         <button class="btn btn-default">
                                             <i class="fas fa-search"></i>
@@ -547,12 +547,13 @@
     </div>
 
     <!-- Footer -->
-    <footer class="main-footer">
-        <strong>Copyright &copy; 2025 <a href="admin-dashboard.html">LiftMaster Pro</a>.</strong>
-        <div class="float-right d-none d-sm-inline-block">
-            <b>Версія</b> 2.1.4
-        </div>
-    </footer>
+        <footer class="main-footer">
+            <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
+            Sistema de gestão de elevadores v2.1.0.
+            <div class="float-right d-none d-sm-inline-block">
+                <b>Versão</b> 2.1.0
+            </div>
+        </footer>
 </div>
 
 <!-- New Request Modal -->
@@ -627,7 +628,7 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                 <button type="button" class="btn btn-primary" onclick="window.serviceManager.createRequest()">
                     <i class="fas fa-save"></i> Створити заявку
                 </button>
@@ -676,12 +677,12 @@
                                             class="form-control" 
                                             id="newCommentText" 
                                             rows="2" 
-                                            placeholder="Додати коментар..."></textarea>
+                                            placeholder="Adicionar коментар..."></textarea>
                                     </div>
                                     <button 
                                         class="btn btn-primary btn-sm" 
                                         onclick="addComment()">
-                                        <i class="fas fa-paper-plane"></i> Додати коментар
+                                        <i class="fas fa-paper-plane"></i> Adicionar коментар
                                     </button>
                                 </div>
                             </div>
@@ -712,7 +713,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Редагувати заявку</h5>
+                <h5 class="modal-title">Editar заявку</h5>
                 <button type="button" class="close" data-dismiss="modal">
                     <span>&times;</span>
                 </button>
@@ -773,9 +774,9 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                 <button type="button" class="btn btn-primary" onclick="window.serviceManager.saveEditedRequest()">
-                    <i class="fas fa-save"></i> Зберегти зміни
+                    <i class="fas fa-save"></i> Guardar зміни
                 </button>
             </div>
         </div>
@@ -811,7 +812,7 @@
 <script>
 /**
  * Service Request Management System
- * Система управління заявками на обслуговування ліфтів
+ * Sistema de gestão заявками на обслуговування ліфтів
  */
 
 class ServiceRequestManager {
@@ -857,7 +858,7 @@ class ServiceRequestManager {
     }
 
     setupEventListeners() {
-        // Фільтри
+        // Filtroи
         $('#filterType, #filterStatus, #filterPriority, #filterTechnician').on('change', () => {
             this.applyFilters();
         });
@@ -970,7 +971,7 @@ class ServiceRequestManager {
             {
                 id: 'REQ-001',
                 liftId: 'L001',
-                liftAddress: 'вул. Хрещатик, 1',
+                liftAddress: 'Rua Хрещатик, 1',
                 type: 'emergency',
                 priority: 'critical',
                 status: 'new',
@@ -993,7 +994,7 @@ class ServiceRequestManager {
             {
                 id: 'REQ-002',
                 liftId: 'L005',
-                liftAddress: 'вул. Володимирська, 15',
+                liftAddress: 'Rua Володимирська, 15',
                 type: 'maintenance',
                 priority: 'medium',
                 status: 'assigned',
@@ -1057,7 +1058,7 @@ class ServiceRequestManager {
             {
                 id: 'REQ-004',
                 liftId: 'L008',
-                liftAddress: 'вул. Грушевського, 28',
+                liftAddress: 'Rua Грушевського, 28',
                 type: 'inspection',
                 priority: 'medium',
                 status: 'completed',
@@ -1160,7 +1161,7 @@ class ServiceRequestManager {
                     addressText = lift.address;
                 }
                 
-                // Формат: "№123 - вул. Хрещатик, 1, Київ"
+                // Формат: "№123 - Rua Хрещатик, 1, Lisboa"
                 const displayText = `№${municipalNumber} - ${addressText}`;
                 
                 console.log('➕ Додаємо ліфт:', displayText);
@@ -1274,10 +1275,10 @@ class ServiceRequestManager {
                             <button class="btn btn-info btn-sm" onclick="serviceManager.viewRequest('${requestId}')" title="Переглянути">
                                 <i class="fas fa-eye"></i>
                             </button>
-                            <button class="btn btn-warning btn-sm" onclick="serviceManager.editRequest('${requestId}')" title="Редагувати">
+                            <button class="btn btn-warning btn-sm" onclick="serviceManager.editRequest('${requestId}')" title="Editar">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn btn-danger btn-sm" onclick="serviceManager.deleteRequest('${requestId}')" title="Видалити">
+                            <button class="btn btn-danger btn-sm" onclick="serviceManager.deleteRequest('${requestId}')" title="Eliminar">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -1348,7 +1349,7 @@ class ServiceRequestManager {
         const texts = {
             new: 'Нова',
             assigned: 'Призначена',
-            in_progress: 'В роботі',
+            in_progress: 'Em progresso',
             completed: 'Завершена',
             cancelled: 'Скасована'
         };
@@ -1509,7 +1510,7 @@ class ServiceRequestManager {
         const exportBtnHtml = `
             <div class="mt-2">
                 <button class="btn btn-outline-danger btn-sm" onclick="exportRequestPDF('${request.id}')">
-                    <i class="fas fa-file-pdf"></i> Експортувати PDF
+                    <i class="fas fa-file-pdf"></i> Exportarувати PDF
                 </button>
             </div>
         `;
@@ -1545,7 +1546,7 @@ class ServiceRequestManager {
                 <i class="fas fa-user-plus"></i> Призначити техніка
             </button>
             <button class="btn btn-warning btn-block btn-sm" onclick="addComment()">
-                <i class="fas fa-comment"></i> Додати коментар
+                <i class="fas fa-comment"></i> Adicionar коментар
             </button>
             <button class="btn btn-primary btn-block btn-sm" onclick="completeRequest()">
                 <i class="fas fa-check"></i> Завершити
@@ -1700,12 +1701,12 @@ class ServiceRequestManager {
         
         // Якщо всі фільтри порожні - показуємо все
         if (!type && !status && !priority && !technician) {
-            console.log('✅ Фільтри очищені - показуємо всі заявки');
+            console.log('✅ Filtroи очищені - показуємо всі заявки');
             window.serviceManager.renderRequests();
             return;
         }
         
-        // Фільтруємо заявки
+        // Filtroуємо заявки
         const filtered = allRequests.filter(req => {
             let matches = true;
             
@@ -1713,7 +1714,7 @@ class ServiceRequestManager {
             if (status && req.status !== status) matches = false;
             if (priority && req.priority !== priority) matches = false;
             if (technician) {
-                // Фільтр по техніку - перевіряємо technicianId або technician
+                // Filtro по техніку - перевіряємо technicianId або technician
                 const reqTechId = req.technicianId || req.technician;
                 if (reqTechId !== technician) matches = false;
             }
@@ -1722,7 +1723,7 @@ class ServiceRequestManager {
         });
         
         console.log(`✅ Знайдено заявок: ${filtered.length} з ${allRequests.length}`);
-        console.log('🔍 Фільтри:', { type, status, priority, technician });
+        console.log('🔍 Filtroи:', { type, status, priority, technician });
         
         // Тимчасово замінюємо requests на відфільтровані
         const originalRequests = window.serviceManager.requests;
@@ -1844,7 +1845,7 @@ async function exportToExcel() {
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
 
-        toastr.success('Експорт завершено');
+        toastr.success('Exportar завершено');
     } catch (error) {
         console.error('Помилка експорту:', error);
         toastr.error('Помилка експорту: ' + error.message);
@@ -2157,7 +2158,7 @@ async function reopenRequest() {
         return;
     }
     
-    if (!confirm('Ви впевнені, що хочете повернути цю заявку в роботу?\n\nЗаявка отримає статус "В роботі" і її можна буде редагувати.')) {
+    if (!confirm('Ви впевнені, що хочете повернути цю заявку в роботу?\n\nЗаявка отримає статус "Em progresso" і її можна буде редагувати.')) {
         return;
     }
     
@@ -2243,7 +2244,7 @@ async function showAssignTechnicianModal() {
             throw new Error('Неправильний формат даних від сервера');
         }
         
-        // Фільтруємо техніків (роль може бути 'tech' або 'technician')
+        // Filtroуємо техніків (роль може бути 'tech' або 'technician')
         const technicians = allUsers.filter(user => 
             user.role === 'tech' || 
             user.role === 'technician'
@@ -2288,7 +2289,7 @@ async function showAssignTechnicianModal() {
                             </form>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                             <button type="button" class="btn btn-primary" onclick="submitTechnicianAssignment()">
                                 Призначити
                             </button>
@@ -2494,7 +2495,7 @@ $(document).ready(function() {
     // ✅ ДОДАНО: Обробник пошуку заявок
     $('#searchInput').on('input', function(e) {
         const query = $(this).val().toLowerCase().trim();
-        console.log('🔍 Пошук заявок:', query);
+        console.log('🔍 Pesquisar заявок:', query);
         
         if (!window.serviceManager || !window.serviceManager.requests) {
             console.warn('⚠️ Дані заявок ще не завантажені');
@@ -2509,7 +2510,7 @@ $(document).ready(function() {
             return;
         }
         
-        // Фільтруємо заявки
+        // Filtroуємо заявки
         const filtered = allRequests.filter(req => {
             const id = ((req._id || req.id) || '').toString().toLowerCase();
             const title = (req.title || '').toLowerCase();

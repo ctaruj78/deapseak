@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -209,7 +209,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="reportManager.exportAll()" title="Експорт всіх звітів">
+                    <a class="nav-link" href="#" onclick="reportManager.exportAll()" title="Exportar всіх звітів">
                         <i class="fas fa-file-export"></i>
                     </a>
                 </li>
@@ -303,7 +303,7 @@
             <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
-                    <!-- Фільтри звітів -->
+                    <!-- Filtroи звітів -->
                     <div class="filter-bar">
                         <div class="row">
                             <div class="col-md-3">
@@ -350,7 +350,7 @@
                                             <i class="fas fa-sync"></i> Оновити
                                         </button>
                                         <button class="btn btn-success" onclick="reportManager.exportReport()">
-                                            <i class="fas fa-download"></i> Експорт
+                                            <i class="fas fa-download"></i> Exportar
                                         </button>
                                         <button class="btn btn-info" onclick="reportManager.printReport()">
                                             <i class="fas fa-print"></i> Друк
@@ -623,10 +623,10 @@
 
         <!-- Footer -->
         <footer class="main-footer">
-            <strong>Диспетчерська панель &copy; 2024</strong>
+            <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
+            Sistema de gestão de elevadores v2.1.0.
             <div class="float-right d-none d-sm-inline-block">
-                <small id="connectionStatus"><i class="fas fa-wifi text-success"></i> Online</small>
-                <small class="ml-2" id="reportDate">Звіт на: --:--:--</small>
+                <b>Versão</b> 2.1.0
             </div>
         </footer>
     </div>
@@ -636,7 +636,7 @@
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Налаштування звіту</h5>
+                    <h5 class="modal-title">Configurações звіту</h5>
                     <button type="button" class="close" data-dismiss="modal">
                         <span>&times;</span>
                     </button>
@@ -683,7 +683,7 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-primary" onclick="reportManager.applySettings()">
                         <i class="fas fa-check"></i> Застосувати
                     </button>

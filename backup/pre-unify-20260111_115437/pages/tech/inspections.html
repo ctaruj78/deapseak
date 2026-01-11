@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Технік - Інспекції</title>
+    
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    
+    <!-- Додаткові стилі -->
+    <style>
+        .inspection-card {
+            transition: all 0.3s ease;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .inspection-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .inspection-table {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .inspection-table th {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            font-weight: 600;
+            padding: 15px;
+        }
+        
+        .inspection-table td {
+            padding: 15px;
+            vertical-align: middle;
+        }
+        
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        
+        .status-planned {
+            background: linear-gradient(135deg, #17a2b8, #6f42c1);
+            color: white;
+        }
+        
+        .status-in-progress {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+            color: #212529;
+        }
+        
+        .status-completed {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+        
+        .status-overdue {
+            background: linear-gradient(135deg, #dc3545, #e83e8c);
+            color: white;
+        }
+        
+        .priority-high {
+            background: linear-gradient(135deg, #dc3545, #e83e8c);
+            color: white;
+        }
+        
+        .priority-medium {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+            color: #212529;
+        }
+        
+        .priority-low {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+        
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 3px;
+        }
+        
+        .checklist-item {
+            border-left: 4px solid #007bff;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .checklist-item.completed {
+            border-left-color: #28a745;
+            background: #e8f5e8;
+        }
+        
+        .checklist-item.failed {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        
+        .photo-preview {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin: 5px;
+            border: 2px solid #e9ecef;
+            cursor: pointer;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .search-box {
+            position: relative;
+            max-width: 300px;
+        }
+        
+        .search-box input {
+            padding-right: 40px;
+            border-radius: 25px;
+        }
+        
+        .search-box .btn {
+            position: absolute;
+            right: 5px;
+            top: 5px;
+            border-radius: 50%;
+            width: 34px;
+            height: 34px;
+        }
+        
+        @media (max-width: 768px) {
+            .stat-icon {
+                font-size: 2rem;
+            }
+            
+            .inspection-table {
+                font-size: 0.9rem;
+            }
+            
+            .btn-icon {
+                width: 35px;
+                height: 35px;
+                margin: 2px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="/assets/css/table-drag-scroll.css">
+</head>
+<body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper">
+
+        <!-- Навігаційна панель -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button">
+                        <i class="fas fa-bars"></i>
+                    </a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="dashboard.html" class="nav-link">Головна</a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="inspections.html" class="nav-link active">Інспекції</a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="tasks.html" class="nav-link">Завдання</a>
+                </li>
+            </ul>
+
+            <!-- Права частина навігації -->
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="ar-helper.html" title="AR помічник">
+                        <i class="fas fa-vr-cardboard"></i>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="tools.html" title="Інструменти">
+                        <i class="fas fa-tools"></i>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" id="darkModeToggle" title="Темна тема">
+                        <i class="fas fa-moon"></i>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="logout()" title="Вийти">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Бічна панель -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <a href="dashboard.html" class="brand-link text-center">
+                <span class="brand-text font-weight-light">Технік</span>
+            </a>
+            
+            <div class="sidebar">
+                <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                    <div class="image">
+                        <img src="../../assets/img/avatars/tech.png" class="img-circle elevation-2" alt="Technician">
+                    </div>
+                    <div class="info">
+                        <a href="#" class="d-block" id="techName">Технік</a>
+                        <small class="text-warning"><i class="fas fa-circle mr-1"></i> Online</small>
+                    </div>
+                </div>
+                
+                <nav class="mt-2">
+                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                        <li class="nav-item">
+                            <a href="dashboard.html" class="nav-link">
+                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                                <p>Головна</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="tasks.html" class="nav-link">
+                                <i class="nav-icon fas fa-tasks"></i>
+                                <p>Завдання</p>
+                                <span class="badge badge-danger right" id="tasksBadge">0</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="schedule.html" class="nav-link">
+                                <i class="nav-icon fas fa-calendar-alt"></i>
+                                <p>Розклад</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="inspections.html" class="nav-link active">
+                                <i class="nav-icon fas fa-clipboard-check"></i>
+                                <p>Інспекції</p>
+                                <span class="badge badge-warning right" id="inspectionsBadge">0</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="ar-helper.html" class="nav-link">
+                                <i class="nav-icon fas fa-vr-cardboard"></i>
+                                <p>AR помічник</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="tools.html" class="nav-link">
+                                <i class="nav-icon fas fa-tools"></i>
+                                <p>Інструменти</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="reports.html" class="nav-link">
+                                <i class="nav-icon fas fa-chart-bar"></i>
+                                <p>Звіти</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="knowledge-base.html" class="nav-link">
+                                <i class="nav-icon fas fa-book"></i>
+                                <p>База знань</p>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <section class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1>Інспекції та перевірки</h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="dashboard.html">Головна</a></li>
+                                <li class="breadcrumb-item active">Інспекції</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+                    <!-- Статистика -->
+                    <div class="row">
+                        <div class="col-lg-3 col-md-6">
+                            <div class="stat-card">
+                                <div class="stat-icon">📋</div>
+                                <div class="stat-info">
+                                    <h3 id="totalInspections">0</h3>
+                                    <p>Всього інспекцій</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="stat-card">
+                                <div class="stat-icon">⏳</div>
+                                <div class="stat-info">
+                                    <h3 id="plannedInspections">0</h3>
+                                    <p>Заплановані</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="stat-card">
+                                <div class="stat-icon">🔧</div>
+                                <div class="stat-info">
+                                    <h3 id="inProgressInspections">0</h3>
+                                    <p>В процесі</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="stat-card">
+                                <div class="stat-icon">✅</div>
+                                <div class="stat-info">
+                                    <h3 id="completedInspections">0</h3>
+                                    <p>Завершені</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Фільтри -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card inspection-card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-filter mr-2"></i>Фільтри інспекцій</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label>Статус:</label>
+                                                <select id="statusFilter" class="form-control">
+                                                    <option value="all">Всі статуси</option>
+                                                    <option value="planned">Заплановані</option>
+                                                    <option value="in-progress">В процесі</option>
+                                                    <option value="completed">Завершені</option>
+                                                    <option value="overdue">Протерміновані</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label>Тип інспекції:</label>
+                                                <select id="typeFilter" class="form-control">
+                                                    <option value="all">Всі типи</option>
+                                                    <option value="safety">Безпека</option>
+                                                    <option value="technical">Технічна</option>
+                                                    <option value="periodic">Періодична</option>
+                                                    <option value="emergency">Аварійна</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label>Пріоритет:</label>
+                                                <select id="priorityFilter" class="form-control">
+                                                    <option value="all">Всі пріоритети</option>
+                                                    <option value="high">Високий</option>
+                                                    <option value="medium">Середній</option>
+                                                    <option value="low">Низький</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group" style="margin-top: 32px;">
+                                                <button class="btn btn-primary" onclick="inspectionManager.applyFilters()">
+                                                    <i class="fas fa-filter"></i> Застосувати
+                                                </button>
+                                                <button class="btn btn-default" onclick="inspectionManager.resetFilters()">
+                                                    <i class="fas fa-sync"></i> Скинути
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Дії -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card inspection-card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-plus-circle mr-2"></i>Швидкі дії</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <button class="btn btn-primary btn-lg btn-block" onclick="inspectionManager.startNewInspection()">
+                                                <i class="fas fa-plus"></i> Нова інспекція
+                                            </button>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <button class="btn btn-success btn-lg btn-block" onclick="inspectionManager.importChecklist()">
+                                                <i class="fas fa-file-import"></i> Імпорт чек-листа
+                                            </button>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <button class="btn btn-info btn-lg btn-block" onclick="inspectionManager.exportReports()">
+                                                <i class="fas fa-file-export"></i> Експорт звітів
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Список інспекцій -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card inspection-card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-list mr-2"></i>Список інспекцій</h3>
+                                    <div class="card-tools">
+                                        <div class="btn-group">
+                                            <button class="btn btn-success" onclick="inspectionManager.exportInspections()">
+                                                <i class="fas fa-download"></i> Експорт
+                                            </button>
+                                            <button class="btn btn-info" onclick="inspectionManager.printInspections()">
+                                                <i class="fas fa-print"></i> Друк
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover inspection-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Дата</th>
+                                                    <th>Тип</th>
+                                                    <th>Ліфт</th>
+                                                    <th>Статус</th>
+                                                    <th>Пріоритет</th>
+                                                    <th>Результат</th>
+                                                    <th>Дії</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="inspectionsTableBody">
+                                                <!-- Інспекції будуть завантажені тут -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="pagination">
+                                        <button class="btn btn-sm btn-default" onclick="inspectionManager.previousPage()">
+                                            <i class="fas fa-chevron-left"></i> Попередня
+                                        </button>
+                                        <span class="mx-3">Сторінка <span id="currentPage">1</span> з <span id="totalPages">1</span></span>
+                                        <button class="btn btn-sm btn-default" onclick="inspectionManager.nextPage()">
+                                            Наступна <i class="fas fa-chevron-right"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Чек-листи -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card inspection-card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-clipboard-list mr-2"></i>Стандартні чек-листи</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <div class="card">
+                                                <div class="card-body text-center">
+                                                    <i class="fas fa-shield-alt fa-3x text-primary mb-3"></i>
+                                                    <h5>Перевірка безпеки</h5>
+                                                    <p>Стандартний чек-лист перевірки систем безпеки</p>
+                                                    <button class="btn btn-primary btn-sm" onclick="inspectionManager.loadSafetyChecklist()">
+                                                        <i class="fas fa-download"></i> Завантажити
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <div class="card">
+                                                <div class="card-body text-center">
+                                                    <i class="fas fa-cogs fa-3x text-warning mb-3"></i>
+                                                    <h5>Технічний огляд</h5>
+                                                    <p>Повна перевірка технічного стану ліфта</p>
+                                                    <button class="btn btn-primary btn-sm" onclick="inspectionManager.loadTechnicalChecklist()">
+                                                        <i class="fas fa-download"></i> Завантажити
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <div class="card">
+                                                <div class="card-body text-center">
+                                                    <i class="fas fa-calendar-check fa-3x text-success mb-3"></i>
+                                                    <h5>Щорічна інспекція</h5>
+                                                    <p>Чек-лист для щорічної планової інспекції</p>
+                                                    <button class="btn btn-primary btn-sm" onclick="inspectionManager.loadAnnualChecklist()">
+                                                        <i class="fas fa-download"></i> Завантажити
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer class="main-footer">
+            <strong>Технічна панель &copy; 2024</strong>
+            <div class="float-right d-none d-sm-inline-block">
+                <small id="connectionStatus"><i class="fas fa-wifi text-success"></i> Online</small>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Модальне вікно нової інспекції -->
+    <div class="modal fade" id="newInspectionModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Нова інспекція</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="newInspectionForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="inspectionType">Тип інспекції *</label>
+                                    <select id="inspectionType" class="form-control" required>
+                                        <option value="">Оберіть тип...</option>
+                                        <option value="safety">Перевірка безпеки</option>
+                                        <option value="technical">Технічний огляд</option>
+                                        <option value="periodic">Періодична перевірка</option>
+                                        <option value="emergency">Аварійна перевірка</option>
+                                        <option value="custom">Інша перевірка</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="inspectionLift">Ліфт *</label>
+                                    <select id="inspectionLift" class="form-control" required>
+                                        <option value="">Оберіть ліфт...</option>
+                                        <option value="lift1">Otis Gen2 - вул. Центральна, 12</option>
+                                        <option value="lift2">Schindler 3300 - пр. Перемоги, 45</option>
+                                        <option value="lift3">KONE MonoSpace - вул. Шевченка, 78</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="inspectionPriority">Пріоритет *</label>
+                                    <select id="inspectionPriority" class="form-control" required>
+                                        <option value="medium">Середній</option>
+                                        <option value="high">Високий</option>
+                                        <option value="low">Низький</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="inspectionDate">Запланована дата *</label>
+                                    <input type="datetime-local" id="inspectionDate" class="form-control" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="inspectionDescription">Опис інспекції</label>
+                            <textarea id="inspectionDescription" class="form-control" rows="3" 
+                                      placeholder="Опишіть мету та особливості цієї інспекції..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="inspectionChecklist">Чек-лист (необов'язково)</label>
+                            <select id="inspectionChecklist" class="form-control">
+                                <option value="">Оберіть чек-лист...</option>
+                                <option value="safety">Стандартний чек-лист безпеки</option>
+                                <option value="technical">Технічний чек-лист</option>
+                                <option value="annual">Щорічний чек-лист</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                    <button type="button" class="btn btn-primary" onclick="inspectionManager.createInspection()">
+                        <i class="fas fa-save"></i> Створити інспекцію
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальне вікно перегляду інспекції -->
+    <div class="modal fade" id="viewInspectionModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Деталі інспекції</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="inspectionDetailsContent">
+                    <!-- Вміст інспекції буде завантажено тут -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                    <button type="button" class="btn btn-info" onclick="inspectionManager.downloadReport(currentInspectionId)">
+                        <i class="fas fa-download"></i> Завантажити звіт
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="inspectionManager.continueInspection(currentInspectionId)" id="continueInspectionBtn">
+                        <i class="fas fa-play"></i> Продовжити
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../../plugins/jquery/jquery.min.js"></script>
+    <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="../../plugins/adminlte/adminlte.min.js"></script>
+
+    <!-- Inspection Manager JS -->
+    <script src="../../assets/js/modules/inspection-manager.js"></script>
+
+    <script>
+        let currentInspectionId = null;
+        
+        function logout() {
+            if (confirm('Ви впевнені, що хочете вийти з системи?')) {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userData');
+                window.location.replace('/pages/auth/login.html');
+            }
+        }
+
+        $(document).ready(function() {
+            // Ініціалізація AdminLTE
+            $('[data-widget="pushmenu"]').PushMenu();
+            
+            // Темна тема
+            $('#darkModeToggle').on('click', function() {
+                $('body').toggleClass('dark-mode');
+                $(this).find('i').toggleClass('fa-moon fa-sun');
+            });
+
+            // Перевірка з'єднання
+            setInterval(() => {
+                const online = navigator.onLine;
+                $('#connectionStatus').html(
+                    online ? 
+                    '<i class="fas fa-wifi text-success"></i> Online' : 
+                    '<i class="fas fa-wifi-slash text-danger"></i> Offline'
+                );
+            }, 30000);
+
+            // Завантаження даних техніка
+            const userData = JSON.parse(localStorage.getItem('userData')) || {};
+            if (userData.firstName) {
+                $('#techName').text(`${userData.firstName} ${userData.lastName || ''}`);
+            }
+
+            // Ініціалізація менеджера інспекцій
+            window.inspectionManager = new InspectionManager();
+        });
+
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', function() {
+            navigator.serviceWorker.register('/service-worker.js').then(function(registration) {
+              console.log('ServiceWorker зареєстровано:', registration);
+            }, function(err) {
+              console.log('ServiceWorker помилка:', err);
+            });
+          });
+        }
+    </script>
+    <script src="/assets/js/table-drag-scroll.js"></script>
+</body>
+</html>
+    <script src="/assets/js/table-drag-scroll.js"></script>
+</body> -->

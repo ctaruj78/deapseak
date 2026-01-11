@@ -1,0 +1,1943 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Єдина система аналітики - FestLift</title>
+    
+    <!-- Bootstrap CSS (LOCAL) -->
+    <link rel="stylesheet" href="../../plugins/bootstrap/bootstrap.min.css">
+    
+    <!-- AdminLTE CSS (LOCAL) -->
+    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    
+    <!-- Font Awesome (LOCAL) -->
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    
+    <!-- Toastr -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    
+    <style>
+        .analytics-card {
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        }
+        
+        .analytics-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .metric-card {
+            text-align: center;
+            padding: 20px;
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border-left: 4px solid;
+        }
+        
+        .metric-card.primary { border-left-color: #007bff; }
+        .metric-card.success { border-left-color: #28a745; }
+        .metric-card.warning { border-left-color: #ffc107; }
+        .metric-card.info { border-left-color: #17a2b8; }
+        .metric-card.danger { border-left-color: #dc3545; }
+        
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .metric-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .metric-change {
+            font-size: 0.85rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            margin-top: 8px;
+            display: inline-block;
+        }
+        
+        .metric-change.positive { background: #d4edda; color: #155724; }
+        .metric-change.negative { background: #f8d7da; color: #721c24; }
+        .metric-change.neutral { background: #e2e3e5; color: #6c757d; }
+        
+        .chart-container {
+            height: 400px;
+            position: relative;
+            padding: 20px;
+        }
+        
+        .tab-section {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .nav-tabs .nav-link {
+            border: none;
+            color: #6c757d;
+            padding: 12px 24px;
+            font-weight: 500;
+        }
+        
+        .nav-tabs .nav-link.active {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            border-radius: 10px 10px 0 0;
+        }
+        
+        .alert-panel {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .alert-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: white;
+        }
+        
+        .alert-critical { background: #dc3545; }
+        .alert-warning { background: #ffc107; }
+        .alert-info { background: #17a2b8; }
+        
+        .real-time-indicator {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 12px;
+            height: 12px;
+            background: #28a745;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.1); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        /* Стилі для звітів */
+        .report-type-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            height: 100%;
+        }
+        
+        .report-type-card:hover {
+            transform: translateY(-5px);
+            border-color: #007bff;
+            box-shadow: 0 4px 15px rgba(0,123,255,0.1);
+        }
+        
+        .report-type-card.active {
+            border-color: #007bff;
+            background-color: #f8f9fa;
+        }
+        
+        /* Timeline стилі */
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding-bottom: 15px;
+            border-left: 2px solid #dee2e6;
+        }
+        
+        .timeline-date {
+            position: absolute;
+            left: -35px;
+            top: 0;
+            width: 60px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            text-align: center;
+            padding: 2px 0;
+            border-radius: 10px;
+            background: white;
+            border: 2px solid currentColor;
+        }
+        
+        .timeline-content {
+            padding-left: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .prediction-card {
+            background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .system-health {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .health-good { background: #d4edda; color: #155724; }
+        .health-warning { background: #fff3cd; color: #856404; }
+        .health-critical { background: #f8d7da; color: #721c24; }
+    </style>
+    <link rel="stylesheet" href="/assets/css/table-drag-scroll.css">
+</head>
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+    <!-- Header -->
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-widget="pushmenu" href="#" role="button">
+                    <i class="fas fa-bars"></i>
+                </a>
+            </li>
+            <li class="nav-item d-none d-sm-inline-block">
+                <a href="admin-dashboard.html" class="nav-link">
+                    <i class="fas fa-home"></i> Головна
+                </a>
+            </li>
+        </ul>
+        
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <span class="nav-link">
+                    <i class="fas fa-circle text-success"></i>
+                    <span class="real-time-indicator"></span>
+                    Онлайн аналітика
+                </span>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <a href="admin-dashboard.html" class="brand-link">
+            <i class="fas fa-elevator brand-image"></i>
+            <span class="brand-text font-weight-light">FestLift</span>
+        </a>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Sidebar Menu -->
+            <!-- CANONICAL ADMIN SIDEBAR - Copy this to all admin pages -->
+<nav class="mt-2">
+    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+        <!-- Dashboard -->
+        <li class="nav-item">
+            <a href="/pages/admin/admin-dashboard.html" class="nav-link">
+                <i class="nav-icon fas fa-tachometer-alt"></i>
+                <p>Дашборд</p>
+            </a>
+        </li>
+
+        <!-- QR System -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-qrcode"></i>
+                <p>
+                    QR Система
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/admin/qr-management.html" class="nav-link">
+                        <i class="fas fa-cog nav-icon"></i>
+                        <p>Керування QR-кодами</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/qr-analytics.html" class="nav-link">
+                        <i class="fas fa-chart-line nav-icon"></i>
+                        <p>Аналітика QR-кодів</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/qr-history.html" class="nav-link">
+                        <i class="fas fa-history nav-icon"></i>
+                        <p>Історія сканувань</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Lifts -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-elevator"></i>
+                <p>
+                    Ліфти
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/admin/lifts.html" class="nav-link">
+                        <i class="fas fa-list nav-icon"></i>
+                        <p>Управління ліфтами</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/requests.html" class="nav-link">
+                        <i class="fas fa-clipboard-list nav-icon"></i>
+                        <p>Заявки</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/maps.html" class="nav-link">
+                        <i class="fas fa-map-marked-alt nav-icon"></i>
+                        <p>Мапа ліфтів</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Users -->
+        <li class="nav-item">
+            <a href="/pages/admin/users.html" class="nav-link">
+                <i class="nav-icon fas fa-users"></i>
+                <p>Користувачі</p>
+            </a>
+        </li>
+
+        <!-- Documents -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-file-alt"></i>
+                <p>
+                    Документи
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/admin/invoice-template.html" class="nav-link">
+                        <i class="fas fa-file-invoice nav-icon"></i>
+                        <p>Orçamentos (Створити)</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/orcamentos-list.html" class="nav-link">
+                        <i class="fas fa-list nav-icon"></i>
+                        <p>Orçamentos (Список)</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/email-template.html" class="nav-link">
+                        <i class="fas fa-envelope nav-icon"></i>
+                        <p>Email шаблони</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Analytics -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-chart-line"></i>
+                <p>
+                    Аналітика
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/admin/unified-analytics.html" class="nav-link active">
+                        <i class="fas fa-chart-area nav-icon"></i>
+                        <p>Unified Analytics</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/predictive-maintenance.html" class="nav-link">
+                        <i class="fas fa-brain nav-icon"></i>
+                        <p>Predictive Maintenance</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/reports.html" class="nav-link">
+                        <i class="fas fa-chart-bar nav-icon"></i>
+                        <p>Звіти</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <li class="nav-item">
+            <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link">
+                <i class="nav-icon fas fa-magic"></i>
+                <p>AI Асистент</p>
+            </a>
+        </li>
+
+        <!-- Support -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-headset"></i>
+                <p>
+                    Підтримка
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/admin/notifications.html" class="nav-link">
+                        <i class="fas fa-bell nav-icon"></i>
+                        <p>Сповіщення</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Settings -->
+        <li class="nav-item">
+            <a href="/pages/admin/settings.html" class="nav-link">
+                <i class="nav-icon fas fa-cogs"></i>
+                <p>Налаштування</p>
+            </a>
+        </li>
+    </ul>
+</nav>
+        </div>
+    </aside>
+
+    <!-- Content -->
+    <div class="content-wrapper">
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 class="m-0">📊 Єдина система аналітики</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="admin-dashboard.html">Головна</a></li>
+                            <li class="breadcrumb-item active">Аналітика</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="content">
+            <div class="container-fluid">
+                
+                <!-- KPI Cards -->
+                <div class="row mb-4">
+                    <div class="col-lg-3 col-6">
+                        <div class="metric-card primary">
+                            <div class="metric-label">Всього ліфтів</div>
+                            <div class="metric-value text-primary" id="total-lifts"><i class="fas fa-spinner fa-spin"></i></div>
+                            <div class="metric-change positive" id="lifts-change">Завантаження...</div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="metric-card success">
+                            <div class="metric-label">Активних ліфтів</div>
+                            <div class="metric-value text-success" id="active-lifts"><i class="fas fa-spinner fa-spin"></i></div>
+                            <div class="metric-change positive" id="active-change">Завантаження...</div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="metric-card warning">
+                        <div class="metric-label">QR сканувань</div>
+                            <div class="metric-value text-warning" id="qr-scans"><i class="fas fa-spinner fa-spin"></i></div>
+                            <div class="metric-change positive" id="scans-change">Завантаження...</div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="metric-card danger">
+                            <div class="metric-label">Потребують ТО</div>
+                            <div class="metric-value text-danger" id="maintenance-needed"><i class="fas fa-spinner fa-spin"></i></div>
+                            <div class="metric-change neutral" id="maintenance-change">Завантаження...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alerts Panel -->
+                <div class="alert-panel" id="alerts-panel" style="display: none;">
+                    <h6><i class="fas fa-exclamation-triangle"></i> Системні сповіщення</h6>
+                    <div id="alerts-container">
+                        <!-- Динамічні алерти -->
+                    </div>
+                </div>
+
+                <!-- Main Analytics Tabs -->
+                <div class="tab-section">
+                    <ul class="nav nav-tabs" id="analytics-tabs" role="tablist">
+                                                <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="overview-tab" data-toggle="tab" data-target="#overview" type="button" role="tab">
+                                <i class="fas fa-chart-line"></i> Огляд
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="lifts-tab" data-toggle="tab" data-target="#lifts-analytics" type="button" role="tab">
+                                <i class="fas fa-elevator"></i> Ліфти
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="maintenance-tab" data-toggle="tab" data-target="#maintenance-analytics" type="button" role="tab">
+                                <i class="fas fa-tools"></i> ТО
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="qr-tab" data-toggle="tab" data-target="#qr-analytics" type="button" role="tab">
+                                <i class="fas fa-qrcode"></i> QR Аналітика
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="predictive-tab" data-toggle="tab" data-target="#predictive-analytics" type="button" role="tab">
+                                <i class="fas fa-brain"></i> Прогнозування
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="financial-tab" data-toggle="tab" data-target="#financial-analytics" type="button" role="tab">
+                                <i class="fas fa-money-bill-wave"></i> Фінанси
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="inspections-tab" data-toggle="tab" data-target="#inspections-analytics" type="button" role="tab">
+                                <i class="fas fa-clipboard-check"></i> Інспекції
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="users-tab" data-toggle="tab" data-target="#users-analytics" type="button" role="tab">
+                                <i class="fas fa-users"></i> Користувачі
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="reports-tab" data-toggle="tab" data-target="#reports-analytics" type="button" role="tab">
+                                <i class="fas fa-file-alt"></i> Звіти
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="municipalities-tab" data-toggle="tab" data-target="#municipalities-analytics" type="button" role="tab">
+                                <i class="fas fa-landmark"></i> Муніципалітети
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content p-3" id="analytics-content">
+                        <!-- Overview Tab -->
+                        <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">📈 Загальна активність системи</h3>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="overview-chart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">🏥 Стан системи</h3>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="system-health health-good">
+                                                <i class="fas fa-server mr-2"></i>
+                                                <div>
+                                                    <strong>Сервер</strong><br>
+                                                    <small>Онлайн • 99.9% uptime</small>
+                                                </div>
+                                            </div>
+                                            <div class="system-health health-good">
+                                                <i class="fas fa-database mr-2"></i>
+                                                <div>
+                                                    <strong>База даних</strong><br>
+                                                    <small>Стабільно • 2ms відповідь</small>
+                                                </div>
+                                            </div>
+                                            <div class="system-health health-warning">
+                                                <i class="fas fa-wifi mr-2"></i>
+                                                <div>
+                                                    <strong>IoT з'єднання</strong><br>
+                                                    <small>Стабільно • 95% ліфтів онлайн</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lifts Analytics Tab -->
+                        <div class="tab-pane fade" id="lifts-analytics" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">🏢 Розподіл ліфтів по статусу</h3>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="lifts-status-chart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">📍 Географічний розподіл</h3>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="lifts-location-chart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Maintenance Analytics Tab -->
+                        <div class="tab-pane fade" id="maintenance-analytics" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">🔧 Історія технічного обслуговування</h3>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="maintenance-chart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">⏰ Найближчі ТО</h3>
+                                        </div>
+                                        <div class="card-body" id="upcoming-maintenance">
+                                            <!-- Динамічний контент -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- QR Analytics Tab -->
+                        <div class="tab-pane fade" id="qr-analytics" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">📱 QR сканування по часу</h3>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="qr-scans-chart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">👥 Топ користувачів QR</h3>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="qr-users-chart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Predictive Analytics Tab -->
+                        <div class="tab-pane fade" id="predictive-analytics" role="tabpanel">
+                            <div class="prediction-card">
+                                <h4><i class="fas fa-brain"></i> AI Прогнозування та рекомендації</h4>
+                                <p>Розумна система аналізу даних та машинного навчання</p>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">🔮 Прогноз поломок</h3>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="prediction-chart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">💡 AI Рекомендації</h3>
+                                        </div>
+                                        <div class="card-body" id="ai-recommendations">
+                                            <!-- Динамічні AI рекомендації -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Financial Analytics Tab -->
+                        <div class="tab-pane fade" id="financial-analytics" role="tabpanel">
+                            
+                            <!-- КПІ фінанси -->
+                            <div class="row mb-4">
+                                <div class="col-md-3">
+                                    <div class="analytics-card">
+                                        <div class="card-body text-center">
+                                            <h3 class="text-success">₴67,000</h3>
+                                            <p class="mb-0">Дохід цього місяця</p>
+                                            <small class="text-success"><i class="fas fa-arrow-up"></i> +12% до мин. місяця</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="analytics-card">
+                                        <div class="card-body text-center">
+                                            <h3 class="text-warning">₴35,000</h3>
+                                            <p class="mb-0">Витрати на ТО</p>
+                                            <small class="text-warning"><i class="fas fa-arrow-up"></i> +5% до мин. місяця</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="analytics-card">
+                                        <div class="card-body text-center">
+                                            <h3 class="text-primary">₴32,000</h3>
+                                            <p class="mb-0">Чистий прибуток</p>
+                                            <small class="text-success"><i class="fas fa-arrow-up"></i> +18% до мин. місяця</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="analytics-card">
+                                        <div class="card-body text-center">
+                                            <h3 class="text-info">47.8%</h3>
+                                            <p class="mb-0">Рентабельність</p>
+                                            <small class="text-success"><i class="fas fa-arrow-up"></i> +3.2% до мин. місяця</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Головні графіки -->
+                            <div class="row mb-4">
+                                <div class="col-md-8">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">💰 Доходи та витрати по місяцях</h3>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="financial-chart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">� Структура витрат</h3>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="expenses-pie-chart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Деталізація -->
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">📈 Рентабельність по об'єктах</h3>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="profitability-chart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">💳 Методи оплати</h3>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="payment-methods-chart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Фінансові таблиці -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">🏢 Найприбутковіші об'єкти</h3>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-sm">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Об'єкт</th>
+                                                            <th>Дохід</th>
+                                                            <th>Прибуток</th>
+                                                            <th>%</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>ТРЦ "Глобус"</td>
+                                                            <td>₴25,000</td>
+                                                            <td>₴15,000</td>
+                                                            <td class="text-success">60%</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Офіс-центр "Пріоритет"</td>
+                                                            <td>₴18,500</td>
+                                                            <td>₴9,200</td>
+                                                            <td class="text-success">49.7%</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>ЖК "Сонячний"</td>
+                                                            <td>₴15,300</td>
+                                                            <td>₴5,100</td>
+                                                            <td class="text-warning">33.3%</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>БЦ "Технопарк"</td>
+                                                            <td>₴8,200</td>
+                                                            <td>₴2,700</td>
+                                                            <td class="text-danger">32.9%</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">📅 Фінансовий календар</h3>
+                                        </div>
+                                        <div class="card-body">
+                                            <h6>📋 Найближчі платежі:</h6>
+                                            <div class="timeline">
+                                                <div class="timeline-item">
+                                                    <div class="timeline-date text-primary">07.10</div>
+                                                    <div class="timeline-content">
+                                                        <strong>ТРЦ "Глобус"</strong><br>
+                                                        <small>Щомісячний контракт - ₴25,000</small>
+                                                    </div>
+                                                </div>
+                                                <div class="timeline-item">
+                                                    <div class="timeline-date text-warning">10.10</div>
+                                                    <div class="timeline-content">
+                                                        <strong>Оплата запчастин</strong><br>
+                                                        <small>Щомісячний закуп - ₴12,000</small>
+                                                    </div>
+                                                </div>
+                                                <div class="timeline-item">
+                                                    <div class="timeline-date text-success">15.10</div>
+                                                    <div class="timeline-content">
+                                                        <strong>ЖК "Сонячний"</strong><br>
+                                                        <small>Квартальний платіж - ₴45,900</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <hr>
+                                            
+                                            <h6>💡 Фінансові поради:</h6>
+                                            <div class="alert alert-info small">
+                                                <i class="fas fa-lightbulb"></i>
+                                                Розгляньте можливість збільшення частоти ТО для ТРЦ "Глобус" - 
+                                                це може підвищити рентабельність до 65%.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Inspections Analytics Tab -->
+                        <div class="tab-pane fade" id="inspections-analytics" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">🔍 Статистика інспекцій</h3>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="inspections-chart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">📋 Результати інспекцій</h3>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="inspection-results-chart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Users Analytics Tab -->
+                        <div class="tab-pane fade" id="users-analytics" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">👥 Активність користувачів</h3>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="users-activity-chart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">📊 Статистика користувачів</h3>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="metric-card success">
+                                                <div class="metric-label">Активні користувачі</div>
+                                                <div class="metric-value text-success" id="active-users">0</div>
+                                            </div>
+                                            <div class="metric-card info">
+                                                <div class="metric-label">Техніки</div>
+                                                <div class="metric-value text-info" id="technicians-count">0</div>
+                                            </div>
+                                            <div class="metric-card warning">
+                                                <div class="metric-label">Адміністратори</div>
+                                                <div class="metric-value text-warning" id="admins-count">0</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Reports Analytics Tab -->
+                        <div class="tab-pane fade" id="reports-analytics" role="tabpanel">
+                            
+                            <!-- Типи звітів -->
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">📄 Типи звітів</h3>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-3 col-sm-6 mb-3">
+                                                    <div class="card report-type-card active" data-report-type="maintenance">
+                                                        <div class="card-body text-center">
+                                                            <div style="font-size: 2.5rem; margin-bottom: 1rem; color: #007bff;">🔧</div>
+                                                            <h5>Технічне обслуговування</h5>
+                                                            <p class="text-muted">Звіти про ТО ліфтів</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 col-sm-6 mb-3">
+                                                    <div class="card report-type-card" data-report-type="financial">
+                                                        <div class="card-body text-center">
+                                                            <div style="font-size: 2.5rem; margin-bottom: 1rem; color: #007bff;">💰</div>
+                                                            <h5>Фінансовий</h5>
+                                                            <p class="text-muted">Фінансові звіти та аналітика</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 col-sm-6 mb-3">
+                                                    <div class="card report-type-card" data-report-type="performance">
+                                                        <div class="card-body text-center">
+                                                            <div style="font-size: 2.5rem; margin-bottom: 1rem; color: #007bff;">📊</div>
+                                                            <h5>Продуктивність</h5>
+                                                            <p class="text-muted">Ефективність роботи техніків</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 col-sm-6 mb-3">
+                                                    <div class="card report-type-card" data-report-type="inventory">
+                                                        <div class="card-body text-center">
+                                                            <div style="font-size: 2.5rem; margin-bottom: 1rem; color: #007bff;">📦</div>
+                                                            <h5>Інвентаризація</h5>
+                                                            <p class="text-muted">Залишки запчастин та матеріалів</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Календарний період -->
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">📅 Період звіту</h3>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="startDate">З дати</label>
+                                                        <input type="date" id="startDate" class="form-control">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="endDate">До дати</label>
+                                                        <input type="date" id="endDate" class="form-control">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="mt-3">
+                                                <h6>Швидкі періоди:</h6>
+                                                <button class="btn btn-outline-secondary btn-sm mr-2 mb-2" data-period="today">
+                                                    <i class="fas fa-calendar-day"></i> Сьогодні
+                                                </button>
+                                                <button class="btn btn-outline-secondary btn-sm mr-2 mb-2" data-period="week">
+                                                    <i class="fas fa-calendar-week"></i> Цей тиждень
+                                                </button>
+                                                <button class="btn btn-outline-secondary btn-sm mr-2 mb-2" data-period="month">
+                                                    <i class="fas fa-calendar-alt"></i> Цей місяць
+                                                </button>
+                                                <button class="btn btn-outline-secondary btn-sm mr-2 mb-2" data-period="quarter">
+                                                    <i class="fas fa-calendar"></i> Цей квартал
+                                                </button>
+                                                <button class="btn btn-outline-secondary btn-sm mr-2 mb-2" data-period="year">
+                                                    <i class="fas fa-calendar-check"></i> Цей рік
+                                                </button>
+                                                <button class="btn btn-outline-info btn-sm mr-2 mb-2" data-period="last-7">
+                                                    <i class="fas fa-backward"></i> Останні 7 днів
+                                                </button>
+                                                <button class="btn btn-outline-info btn-sm mr-2 mb-2" data-period="last-30">
+                                                    <i class="fas fa-backward"></i> Останні 30 днів
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Фільтри -->
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">🔍 Фільтри</h3>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    <div class="form-group">
+                                                        <label for="technicianFilter">Технік</label>
+                                                        <select id="technicianFilter" class="form-control">
+                                                            <option value="all">Всі техніки</option>
+                                                            <option value="tech1">Іван Петренко</option>
+                                                            <option value="tech2">Марія Коваленко</option>
+                                                            <option value="tech3">Олексій Сидоренко</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="form-group">
+                                                        <label for="statusFilter">Статус</label>
+                                                        <select id="statusFilter" class="form-control">
+                                                            <option value="all">Всі статуси</option>
+                                                            <option value="completed">Завершено</option>
+                                                            <option value="pending">В очікуванні</option>
+                                                            <option value="in-progress">В роботі</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="form-group">
+                                                        <label for="priorityFilter">Пріоритет</label>
+                                                        <select id="priorityFilter" class="form-control">
+                                                            <option value="all">Всі пріоритети</option>
+                                                            <option value="high">Високий</option>
+                                                            <option value="medium">Середній</option>
+                                                            <option value="low">Низький</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="form-group">
+                                                        <label for="buildingFilter">Будівля</label>
+                                                        <select id="buildingFilter" class="form-control">
+                                                            <option value="all">Всі будівлі</option>
+                                                            <option value="building1">ТРЦ "Глобус"</option>
+                                                            <option value="building2">Офіс-центр "Пріоритет"</option>
+                                                            <option value="building3">ЖК "Сонячний"</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Дії та готові звіти -->
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">📊 Готові звіти</h3>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-striped">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Назва звіту</th>
+                                                            <th>Тип</th>
+                                                            <th>Період</th>
+                                                            <th>Створено</th>
+                                                            <th>Статус</th>
+                                                            <th>Дії</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="reports-table">
+                                                        <tr>
+                                                            <td>Щоденний звіт активності</td>
+                                                            <td><span class="badge badge-info">ТО</span></td>
+                                                            <td>04.10.2025</td>
+                                                            <td>15 хв тому</td>
+                                                            <td><span class="badge badge-success">Готовий</span></td>
+                                                            <td>
+                                                                <button class="btn btn-sm btn-outline-primary mr-1">
+                                                                    <i class="fas fa-download"></i>
+                                                                </button>
+                                                                <button class="btn btn-sm btn-outline-info">
+                                                                    <i class="fas fa-eye"></i>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Тижневий фінансовий звіт</td>
+                                                            <td><span class="badge badge-warning">Фінанси</span></td>
+                                                            <td>28.09 - 04.10.2025</td>
+                                                            <td>1 год тому</td>
+                                                            <td><span class="badge badge-warning">Генерується</span></td>
+                                                            <td>
+                                                                <button class="btn btn-sm btn-outline-secondary" disabled>
+                                                                    <i class="fas fa-spinner fa-spin"></i>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Місячний звіт продуктивності</td>
+                                                            <td><span class="badge badge-primary">Продуктивність</span></td>
+                                                            <td>Вересень 2025</td>
+                                                            <td>2 години тому</td>
+                                                            <td><span class="badge badge-success">Готовий</span></td>
+                                                            <td>
+                                                                <button class="btn btn-sm btn-outline-primary mr-1">
+                                                                    <i class="fas fa-download"></i>
+                                                                </button>
+                                                                <button class="btn btn-sm btn-outline-info">
+                                                                    <i class="fas fa-eye"></i>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">🚀 Створити звіт</h3>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="d-grid gap-2">
+                                                <button class="btn btn-primary btn-block mb-2" id="generate-report">
+                                                    <i class="fas fa-file-export"></i> Створити звіт
+                                                </button>
+                                                <button class="btn btn-outline-success btn-block mb-2">
+                                                    <i class="fas fa-calendar-plus"></i> Запланувати звіт
+                                                </button>
+                                                <button class="btn btn-outline-info btn-block">
+                                                    <i class="fas fa-cog"></i> Налаштування звітів
+                                                </button>
+                                            </div>
+                                            
+                                            <hr>
+                                            
+                                            <h6>📈 Статистика звітів:</h6>
+                                            <div class="small">
+                                                <div class="d-flex justify-content-between">
+                                                    <span>Згенеровано сьогодні:</span>
+                                                    <strong>12</strong>
+                                                </div>
+                                                <div class="d-flex justify-content-between">
+                                                    <span>Заплановано:</span>
+                                                    <strong>5</strong>
+                                                </div>
+                                                <div class="d-flex justify-content-between">
+                                                    <span>Помилки генерації:</span>
+                                                    <strong class="text-danger">0</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Municipalities Analytics Tab -->
+                        <div class="tab-pane fade" id="municipalities-analytics" role="tabpanel">
+                            <div class="row">
+                                <!-- Загальна статистика комунікацій -->
+                                <div class="col-lg-3 col-6 mb-4">
+                                    <div class="metric-card info">
+                                        <div class="metric-label">Всього муніципалітетів</div>
+                                        <div class="metric-value text-info" id="total-municipalities"><i class="fas fa-spinner fa-spin"></i></div>
+                                        <div class="metric-change neutral" id="municipalities-info">Завантаження...</div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-6 mb-4">
+                                    <div class="metric-card success">
+                                        <div class="metric-label">Email відправлено</div>
+                                        <div class="metric-value text-success" id="emails-sent"><i class="fas fa-spinner fa-spin"></i></div>
+                                        <div class="metric-change positive" id="emails-change">Завантаження...</div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-6 mb-4">
+                                    <div class="metric-card warning">
+                                        <div class="metric-label">Очікують повідомлення</div>
+                                        <div class="metric-value text-warning" id="pending-notifications"><i class="fas fa-spinner fa-spin"></i></div>
+                                        <div class="metric-change neutral" id="pending-info">Завантаження...</div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-6 mb-4">
+                                    <div class="metric-card primary">
+                                        <div class="metric-label">Ліфтів з Municipality</div>
+                                        <div class="metric-value text-primary" id="lifts-with-municipality"><i class="fas fa-spinner fa-spin"></i></div>
+                                        <div class="metric-change positive" id="municipality-coverage">Завантаження...</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Історія комунікацій -->
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">📧 Історія комунікацій з муніципалітетами</h3>
+                                            <div class="card-tools">
+                                                <button class="btn btn-sm btn-primary" id="refresh-communications">
+                                                    <i class="fas fa-sync-alt"></i> Оновити
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-hover" id="communications-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Муніципалітет</th>
+                                                            <th>Ліфт</th>
+                                                            <th>Тип повідомлення</th>
+                                                            <th>Дата відправки</th>
+                                                            <th>Статус</th>
+                                                            <th>Дії</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="communications-tbody">
+                                                        <tr>
+                                                            <td colspan="6" class="text-center">
+                                                                <i class="fas fa-spinner fa-spin"></i> Завантаження даних...
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Муніципалітети за округами -->
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">🗺️ Розподіл по районах</h3>
+                                        </div>
+                                        <div class="card-body">
+                                            <canvas id="municipalities-by-distrito"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">📊 Типи повідомлень</h3>
+                                        </div>
+                                        <div class="card-body">
+                                            <canvas id="notification-types-chart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Топ муніципалітетів -->
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="analytics-card">
+                                        <div class="card-header">
+                                            <h3 class="card-title">🏆 Топ-10 муніципалітетів за кількістю ліфтів</h3>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-striped" id="top-municipalities-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>#</th>
+                                                            <th>Муніципалітет</th>
+                                                            <th>Distrito</th>
+                                                            <th>Кількість ліфтів</th>
+                                                            <th>Відправлено email</th>
+                                                            <th>Відстань від центру</th>
+                                                            <th>Контакт</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="top-municipalities-tbody">
+                                                        <tr>
+                                                            <td colspan="7" class="text-center">
+                                                                <i class="fas fa-spinner fa-spin"></i> Завантаження...
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+        <footer class="main-footer">
+            <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
+            Sistema de gestão de elevadores v2.1.0.
+            <div class="float-right d-none d-sm-inline-block">
+                <b>Versão</b> 2.1.0
+            </div>
+        </footer>
+</div>
+
+<!-- Scripts (LOCAL) -->
+<script src="../../plugins/jquery/jquery.min.js"></script>
+<script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="../../plugins/adminlte/adminlte.min.js"></script>
+
+    <!-- Load sidebar dynamically -->
+    <script>
+        $(document).ready(function() {
+            $(".main-sidebar").load("includes/sidebar.html");
+        });
+    </script>
+    
+    <!-- 🌍 Система багатомовності -->
+    <script src="../../assets/js/i18n.js"></script>
+    <script src="../../assets/js/init-i18n.js"></script>
+
+<!-- Chart.js ЛОКАЛЬНИЙ - не залежить від CDN -->
+<script src="../../plugins/chart.js/chart.umd.min.js"></script>
+
+<!-- Predictive Maintenance System -->
+<script src="../../assets/js/predictive-maintenance.js?v=1.7"></script>
+
+<!-- Unified Analytics Engine -->
+<script src="../../assets/js/unified-analytics-engine.js?v=2.1"></script>
+
+<!-- Додатковий скрипт для гарантованої активації AI прогнозування -->
+<script>
+// Функція для активації AI прогнозування
+window.activateAIPredictive = function() {
+    console.log('🤖 Активація AI прогнозування...');
+    
+    try {
+        // Деактивуємо всі таби
+        document.querySelectorAll('.nav-link').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.querySelectorAll('.tab-pane').forEach(pane => {
+            pane.classList.remove('active', 'show');
+        });
+        
+        // Знаходимо і активуємо AI таб
+        const tabButton = document.querySelector('[data-target="#predictive-analytics"]') || 
+                         document.querySelector('#predictive-tab');
+        const tabPane = document.querySelector('#predictive-analytics');
+        
+        console.log('🔍 AI елементи:', { tabButton, tabPane });
+        
+        if (tabButton && tabPane) {
+            // Активуємо кнопку табу
+            tabButton.classList.add('active');
+            tabButton.setAttribute('aria-selected', 'true');
+            
+            // Активуємо панель табу
+            tabPane.classList.add('active', 'show');
+            
+            console.log('✅ AI таб активовано');
+            
+            // Ініціалізуємо AI компоненти
+            setTimeout(() => {
+                if (window.initPredictiveAnalytics && typeof window.initPredictiveAnalytics === 'function') {
+                    console.log('🚀 Запуск ініціалізації AI компонентів...');
+                    window.initPredictiveAnalytics();
+                } else {
+                    console.warn('⚠️ initPredictiveAnalytics не знайдено');
+                }
+            }, 100);
+            
+            return true;
+        } else {
+            console.error('❌ AI таб елементи не знайдено');
+            return false;
+        }
+        
+    } catch (error) {
+        console.error('❌ Помилка активації AI прогнозування:', error);
+        return false;
+    }
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔍 Перевіряємо хеш при завантаженні сторінки...');
+    
+    // Функція для повідомлення батьківської сторінки про активний пункт меню
+    function updateParentMenu(menuItem) {
+        try {
+            // Зберігаємо стан меню
+            sessionStorage.setItem('activeMenuItem', menuItem);
+            
+            // Якщо це не iframe, можемо безпосередньо оновити меню на цій сторінці
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => link.classList.remove('active'));
+            
+            console.log(`📋 Оновлено активний пункт меню: ${menuItem}`);
+        } catch (error) {
+            console.warn('⚠️ Не вдалося оновити стан меню:', error);
+        }
+    }
+    
+    // Якщо в URL є хеш predictive-analytics, форсуємо активацію
+    if (window.location.hash === '#predictive-analytics') {
+        console.log('🎯 Знайдено хеш AI прогнозування, форсуємо активацію...');
+        
+        // Повідомляємо що активний AI прогнозування пункт меню
+        updateParentMenu('ai-predictive');
+        
+        // Чекаємо поки все завантажиться і активуємо таб
+        setTimeout(() => {
+            console.log('🔍 Перевіряємо наявність функції activateAIPredictive...');
+            
+            if (window.activateAIPredictive) {
+                console.log('✅ Функція activateAIPredictive знайдена, викликаємо...');
+                const success = window.activateAIPredictive();
+                console.log(success ? '✅ AI таб активовано успішно' : '❌ Не вдалося активувати AI таб');
+                
+                // Додатково ініціалізуємо AI компоненти
+                if (window.initPredictiveAnalytics) {
+                    console.log('🤖 Ініціалізуємо AI компоненти...');
+                    window.initPredictiveAnalytics();
+                }
+                
+            } else {
+                console.warn('⚠️ Функція activateAIPredictive не знайдена, використовуємо fallback...');
+                
+                // Fallback - пряма активація
+                console.log('🔄 Використовуємо fallback активацію...');
+                const tabButton = document.querySelector('[data-target="#predictive-analytics"]');
+                const tabPane = document.querySelector('#predictive-analytics');
+                
+                console.log('Знайдені елементи:', { tabButton, tabPane });
+                
+                if (tabButton && tabPane) {
+                    // Деактивуємо всі таби
+                    document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('active'));
+                    document.querySelectorAll('.tab-pane').forEach(pane => {
+                        pane.classList.remove('active', 'show');
+                    });
+                    
+                    // Активуємо AI таб
+                    tabButton.classList.add('active');
+                    tabPane.classList.add('active', 'show');
+                    
+                    console.log('✅ Fallback активація AI таба успішна');
+                } else {
+                    console.error('❌ Не вдалося знайти елементи AI таба');
+                }
+            }
+        }, 2000); // Збільшена затримка для надійності
+    } else {
+        // Якщо немає хешу, то це звичайна аналітика
+        updateParentMenu('analytics');
+    }
+});
+
+// Додаємо обробник для всіх посилань на AI прогнозування
+document.addEventListener('click', function(e) {
+    const link = e.target.closest('a[href*="#predictive-analytics"]');
+    if (link) {
+        e.preventDefault();
+        console.log('🔗 Перехоплено клік по посиланню AI прогнозування');
+        
+        // Оновлюємо URL
+        window.history.pushState(null, null, '#predictive-analytics');
+        
+        // Повідомляємо про зміну активного пункту меню
+        sessionStorage.setItem('activeMenuItem', 'ai-predictive');
+        
+        // Активуємо таб
+        setTimeout(() => {
+            if (window.activateAIPredictive) {
+                window.activateAIPredictive();
+            }
+        }, 100);
+    }
+});
+
+// Слухаємо зміни в хеші для оновлення меню
+window.addEventListener('hashchange', function() {
+    const hash = window.location.hash;
+    if (hash === '#predictive-analytics') {
+        sessionStorage.setItem('activeMenuItem', 'ai-predictive');
+    } else {
+        sessionStorage.setItem('activeMenuItem', 'analytics');
+    }
+});
+
+// Ініціалізуємо AI систему при завантаженні
+setTimeout(() => {
+    console.log('🤖 Ініціалізуємо Predictive Maintenance System...');
+    
+    try {
+        // Створюємо екземпляр системи прогнозування якщо його немає
+        if (!window.predictiveMaintenanceSystem) {
+            window.predictiveMaintenanceSystem = new PredictiveMaintenanceSystem();
+            console.log('✅ PredictiveMaintenanceSystem створено');
+        }
+        
+        // Ініціалізуємо unified analytics engine
+        if (typeof window.initPredictiveAnalytics === 'function') {
+            window.initPredictiveAnalytics();
+            console.log('✅ Predictive Analytics ініціалізовано');
+        } else {
+            console.warn('⚠️ initPredictiveAnalytics функція не знайдена');
+        }
+        
+        // Якщо це AI прогнозування таб - активуємо його
+        if (window.location.hash === '#predictive-analytics') {
+            setTimeout(() => {
+                if (window.activateAIPredictive) {
+                    window.activateAIPredictive();
+                    console.log('✅ AI прогнозування таб активовано');
+                }
+            }, 1000);
+        }
+        
+    } catch (error) {
+        console.error('❌ Помилка ініціалізації AI системи:', error);
+    }
+}, 2000);
+</script>
+
+<!-- 📊 Завантажувач статистики дашборду -->
+<script src="../../assets/js/dashboard-loader.js"></script>
+
+<!-- 🏛️ Municipalities Analytics Script -->
+<script>
+// Municipalities Analytics Data Loader
+(function() {
+    'use strict';
+    
+    // Завантаження даних при переключенні на таб
+    document.addEventListener('DOMContentLoaded', function() {
+        const municipalitiesTab = document.getElementById('municipalities-tab');
+        
+        if (municipalitiesTab) {
+            municipalitiesTab.addEventListener('click', function() {
+                loadMunicipalitiesAnalytics();
+            });
+        }
+    });
+    
+    async function loadMunicipalitiesAnalytics() {
+        try {
+            // Завантаження загальної статистики
+            await Promise.all([
+                loadMunicipalitiesStats(),
+                loadCommunicationsHistory(),
+                loadTopMunicipalities()
+            ]);
+            
+            // Створення графіків
+            createMunicipalitiesCharts();
+            
+        } catch (error) {
+            console.error('❌ Помилка завантаження аналітики муніципалітетів:', error);
+            showError('Помилка завантаження даних');
+        }
+    }
+    
+    // Завантаження загальної статистики
+    async function loadMunicipalitiesStats() {
+        try {
+            const token = localStorage.getItem('token');
+            
+            // Отримати всі ліфти
+            const liftsResponse = await fetch('/api/lifts', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            if (!liftsResponse.ok) throw new Error('Failed to load lifts');
+            const liftsData = await liftsResponse.json();
+            const lifts = liftsData.data || [];
+            
+            // Отримати всі муніципалітети
+            const municipalitiesResponse = await fetch('/api/municipalities', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            if (!municipalitiesResponse.ok) throw new Error('Failed to load municipalities');
+            const municipalitiesData = await municipalitiesResponse.json();
+            const municipalities = municipalitiesData.data || [];
+            
+            // Підрахунок статистики
+            const liftsWithMunicipality = lifts.filter(lift => lift.municipality && lift.municipality.name);
+            const totalEmails = liftsWithMunicipality.reduce((sum, lift) => {
+                return sum + (lift.municipality.notification_history?.length || 0);
+            }, 0);
+            const pendingNotifications = liftsWithMunicipality.filter(lift => 
+                lift.municipality && !lift.municipality.notified
+            ).length;
+            
+            // Оновлення метрик
+            document.getElementById('total-municipalities').textContent = municipalities.length;
+            document.getElementById('municipalities-info').textContent = '120 km radius';
+            
+            document.getElementById('emails-sent').textContent = totalEmails;
+            document.getElementById('emails-change').textContent = `+${Math.floor(totalEmails * 0.15)} цього місяця`;
+            document.getElementById('emails-change').className = 'metric-change positive';
+            
+            document.getElementById('pending-notifications').textContent = pendingNotifications;
+            document.getElementById('pending-info').textContent = pendingNotifications > 0 ? 'Потребують уваги' : 'Все відправлено';
+            
+            document.getElementById('lifts-with-municipality').textContent = liftsWithMunicipality.length;
+            const coverage = ((liftsWithMunicipality.length / lifts.length) * 100).toFixed(1);
+            document.getElementById('municipality-coverage').textContent = `${coverage}% покриття`;
+            document.getElementById('municipality-coverage').className = 'metric-change positive';
+            
+        } catch (error) {
+            console.error('❌ Помилка завантаження статистики:', error);
+        }
+    }
+    
+    // Завантаження історії комунікацій
+    async function loadCommunicationsHistory() {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/lifts', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            if (!response.ok) throw new Error('Failed to load lifts');
+            const data = await response.json();
+            const lifts = data.data || [];
+            
+            // Фільтруємо ліфти з історією комунікацій
+            const communications = [];
+            lifts.forEach(lift => {
+                if (lift.municipality && lift.municipality.notification_history) {
+                    lift.municipality.notification_history.forEach(notification => {
+                        communications.push({
+                            municipality: lift.municipality.name,
+                            lift: lift.municipalNumber,
+                            type: notification.type || 'municipality-novo-elevador',
+                            sentAt: notification.sentAt,
+                            status: notification.status || 'sent',
+                            messageId: notification.messageId
+                        });
+                    });
+                }
+            });
+            
+            // Сортуємо по даті (найновіші першими)
+            communications.sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt));
+            
+            // Відображення таблиці
+            const tbody = document.getElementById('communications-tbody');
+            if (communications.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">
+                            <i class="fas fa-inbox"></i> Історія комунікацій порожня
+                        </td>
+                    </tr>
+                `;
+            } else {
+                tbody.innerHTML = communications.slice(0, 20).map(comm => {
+                    const typeLabel = comm.type.replace('municipality-', '').replace(/-/g, ' ');
+                    const statusClass = comm.status === 'sent' ? 'success' : comm.status === 'failed' ? 'danger' : 'warning';
+                    const statusIcon = comm.status === 'sent' ? 'check' : comm.status === 'failed' ? 'times' : 'clock';
+                    
+                    return `
+                        <tr>
+                            <td><strong>${comm.municipality}</strong></td>
+                            <td>${comm.lift}</td>
+                            <td><span class="badge badge-info">${typeLabel}</span></td>
+                            <td>${new Date(comm.sentAt).toLocaleString('uk-UA')}</td>
+                            <td><span class="badge badge-${statusClass}"><i class="fas fa-${statusIcon}"></i> ${comm.status}</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" onclick="viewEmailDetails('${comm.messageId}')" title="Переглянути деталі">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+            
+        } catch (error) {
+            console.error('❌ Помилка завантаження історії:', error);
+            document.getElementById('communications-tbody').innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center text-danger">
+                        <i class="fas fa-exclamation-triangle"></i> Помилка завантаження даних
+                    </td>
+                </tr>
+            `;
+        }
+    }
+    
+    // Завантаження топ муніципалітетів
+    async function loadTopMunicipalities() {
+        try {
+            const token = localStorage.getItem('token');
+            
+            // Отримати всі ліфти та муніципалітети
+            const [liftsResponse, municipalitiesResponse] = await Promise.all([
+                fetch('/api/lifts', { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch('/api/municipalities', { headers: { 'Authorization': `Bearer ${token}` } })
+            ]);
+            
+            if (!liftsResponse.ok || !municipalitiesResponse.ok) {
+                throw new Error('Failed to load data');
+            }
+            
+            const liftsData = await liftsResponse.json();
+            const municipalitiesData = await municipalitiesResponse.json();
+            
+            const lifts = liftsData.data || [];
+            const municipalities = municipalitiesData.data || [];
+            
+            // Підрахунок ліфтів по муніципалітетам
+            const municipalityStats = {};
+            
+            lifts.forEach(lift => {
+                if (lift.municipality && lift.municipality.name) {
+                    const name = lift.municipality.name;
+                    if (!municipalityStats[name]) {
+                        municipalityStats[name] = {
+                            name: name,
+                            distrito: lift.municipality.distrito || 'N/A',
+                            distance: lift.municipality.distance_km || 0,
+                            email: lift.municipality.email || 'N/A',
+                            phone: lift.municipality.phone || 'N/A',
+                            liftsCount: 0,
+                            emailsSent: lift.municipality.notification_history?.length || 0
+                        };
+                    }
+                    municipalityStats[name].liftsCount++;
+                    municipalityStats[name].emailsSent += (lift.municipality.notification_history?.length || 0);
+                }
+            });
+            
+            // Сортуємо по кількості ліфтів
+            const topMunicipalities = Object.values(municipalityStats)
+                .sort((a, b) => b.liftsCount - a.liftsCount)
+                .slice(0, 10);
+            
+            // Відображення таблиці
+            const tbody = document.getElementById('top-municipalities-tbody');
+            if (topMunicipalities.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">
+                            <i class="fas fa-info-circle"></i> Дані відсутні
+                        </td>
+                    </tr>
+                `;
+            } else {
+                tbody.innerHTML = topMunicipalities.map((mun, index) => `
+                    <tr>
+                        <td><strong>${index + 1}</strong></td>
+                        <td><strong>${mun.name}</strong></td>
+                        <td>${mun.distrito}</td>
+                        <td><span class="badge badge-primary">${mun.liftsCount}</span></td>
+                        <td><span class="badge badge-success">${mun.emailsSent}</span></td>
+                        <td>${mun.distance} km</td>
+                        <td>
+                            <small>
+                                ${mun.phone}<br>
+                                <a href="mailto:${mun.email}">${mun.email}</a>
+                            </small>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+            
+        } catch (error) {
+            console.error('❌ Помилка завантаження топ муніципалітетів:', error);
+        }
+    }
+    
+    // Створення графіків
+    function createMunicipalitiesCharts() {
+        // Графік розподілу по районах
+        const distritoCanvas = document.getElementById('municipalities-by-distrito');
+        if (distritoCanvas && typeof Chart !== 'undefined') {
+            new Chart(distritoCanvas, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Lisboa', 'Setúbal', 'Santarém', 'Leiria', 'Інші'],
+                    datasets: [{
+                        data: [18, 8, 6, 3, 2],
+                        backgroundColor: ['#007bff', '#28a745', '#ffc107', '#17a2b8', '#6c757d']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+        
+        // Графік типів повідомлень
+        const typesCanvas = document.getElementById('notification-types-chart');
+        if (typesCanvas && typeof Chart !== 'undefined') {
+            new Chart(typesCanvas, {
+                type: 'bar',
+                data: {
+                    labels: ['Novo Elevador', 'Inspeção', 'Manutenção Início', 'Manutenção Fim', 'Relatorio Mensal'],
+                    datasets: [{
+                        label: 'Кількість повідомлень',
+                        data: [12, 8, 5, 6, 3],
+                        backgroundColor: '#007bff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 2 }
+                        }
+                    }
+                }
+            });
+        }
+    }
+    
+    // Refresh button handler
+    document.addEventListener('DOMContentLoaded', function() {
+        const refreshBtn = document.getElementById('refresh-communications');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', function() {
+                loadMunicipalitiesAnalytics();
+            });
+        }
+    });
+    
+    // Helper function to show errors
+    function showError(message) {
+        if (typeof toastr !== 'undefined') {
+            toastr.error(message);
+        } else {
+            alert(message);
+        }
+    }
+    
+    // Global function for viewing email details
+    window.viewEmailDetails = function(messageId) {
+        alert(`Email Details:\nMessage ID: ${messageId}\n\nФункція в розробці...`);
+    };
+    
+})();
+</script>
+
+    <script src="/assets/js/table-drag-scroll.js"></script>
+</body>
+</html>

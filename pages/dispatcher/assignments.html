@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -352,7 +352,7 @@
         <li class="nav-item">
             <a href="/pages/dispatcher/settings.html" class="nav-link">
                 <i class="nav-icon fas fa-cogs"></i>
-                <p>Налаштування</p>
+                <p>Configurações</p>
             </a>
         </li>
     </ul>
@@ -401,7 +401,7 @@
                         </div>
                     </div>
 
-                    <!-- Фільтри -->
+                    <!-- Filtroи -->
                     <div class="filter-bar">
                         <div class="row">
                             <div class="col-md-3">
@@ -411,7 +411,7 @@
                                         <option value="all">Всі статуси</option>
                                         <option value="pending">В очікуванні</option>
                                         <option value="assigned">Призначені</option>
-                                        <option value="in-progress">В роботі</option>
+                                        <option value="in-progress">Em progresso</option>
                                         <option value="completed">Завершені</option>
                                         <option value="cancelled">Скасовані</option>
                                     </select>
@@ -458,7 +458,7 @@
                                         <i class="fas fa-sync"></i> Скинути
                                     </button>
                                     <button class="btn btn-success" onclick="assignmentManager.exportAssignments()">
-                                        <i class="fas fa-download"></i> Експорт
+                                        <i class="fas fa-download"></i> Exportar
                                     </button>
                                     <button class="btn btn-info" onclick="assignmentManager.showCalendarView()">
                                         <i class="fas fa-calendar"></i> Календар
@@ -496,7 +496,7 @@
                                     <h3 class="card-title">Список призначень</h3>
                                     <div class="card-tools">
                                         <div class="input-group input-group-sm" style="width: 200px;">
-                                            <input type="text" id="searchInput" class="form-control" placeholder="Пошук...">
+                                            <input type="text" id="searchInput" class="form-control" placeholder="Pesquisar...">
                                             <div class="input-group-append">
                                                 <button class="btn btn-primary" onclick="assignmentManager.searchAssignments()">
                                                     <i class="fas fa-search"></i>
@@ -570,10 +570,10 @@
 
         <!-- Footer -->
         <footer class="main-footer">
-            <strong>Диспетчерська панель &copy; 2024</strong>
+            <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
+            Sistema de gestão de elevadores v2.1.0.
             <div class="float-right d-none d-sm-inline-block">
-                <small id="connectionStatus"><i class="fas fa-wifi text-success"></i> Online</small>
-                <small class="ml-2" id="lastUpdate">Оновлено: --:--:--</small>
+                <b>Versão</b> 2.1.0
             </div>
         </footer>
     </div>
@@ -583,7 +583,7 @@
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Керування призначенням</h5>
+                    <h5 class="modal-title">Gestão призначенням</h5>
                     <button type="button" class="close" data-dismiss="modal">
                         <span>&times;</span>
                     </button>
@@ -632,7 +632,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-primary" onclick="assignmentManager.submitBulkAssignment()">
                         <i class="fas fa-check"></i> Призначити вибрані
                     </button>
@@ -894,8 +894,8 @@
                     'new': 'Нова',
                     'assigned': 'Призначено',
                     'approved': 'Підтверджено',
-                    'in_progress': 'В роботі',
-                    'completed': 'Завершено',
+                    'in_progress': 'Em progresso',
+                    'completed': 'Concluído',
                     'cancelled': 'Скасовано'
                 };
                 return statusMap[status] || status;
@@ -953,22 +953,22 @@
                     console.log('Застосування фільтрів...');
                     const priority = $('#priorityFilter').val();
                     const status = $('#statusFilter').val();
-                    console.log('Фільтри:', { priority, status });
-                    alert(`Фільтри застосовано: Пріоритет=${priority}, Статус=${status}`);
+                    console.log('Filtroи:', { priority, status });
+                    alert(`Filtroи застосовано: Пріоритет=${priority}, Статус=${status}`);
                 },
                 
                 // Скинути фільтри
                 resetFilters: function() {
                     $('#priorityFilter').val('');
                     $('#statusFilter').val('');
-                    console.log('Фільтри скинуто');
-                    alert('Фільтри скинуто');
+                    console.log('Filtroи скинуто');
+                    alert('Filtroи скинуто');
                 },
                 
-                // Експорт призначень
+                // Exportar призначень
                 exportAssignments: function() {
-                    console.log('Експорт призначень...');
-                    alert('Експорт розпочато. Файл буде завантажено через кілька секунд.');
+                    console.log('Exportar призначень...');
+                    alert('Exportar розпочато. Файл буде завантажено через кілька секунд.');
                 },
                 
                 // Показати календар
@@ -978,11 +978,11 @@
                     window.location.href = 'calendar.html';
                 },
                 
-                // Пошук призначень  
+                // Pesquisar призначень  
                 searchAssignments: function() {
                     const query = $('#searchQuery').val();
-                    console.log('Пошук:', query);
-                    alert(`Пошук за запитом: "${query}"`);
+                    console.log('Pesquisar:', query);
+                    alert(`Pesquisar за запитом: "${query}"`);
                 },
                 
                 // Попередня сторінка
@@ -1117,7 +1117,7 @@
                     }
                 },
                 
-                // Додати коментар
+                // Adicionar коментар
                 addComment: async function(requestId) {
                     const comment = prompt('Введіть коментар:');
                     if (!comment || comment.trim() === '') {
@@ -1155,7 +1155,7 @@
                             method: 'POST',
                             body: JSON.stringify({
                                 workDetails: {
-                                    summary: 'Завершено диспетчером'
+                                    summary: 'Concluído диспетчером'
                                 }
                             })
                         });

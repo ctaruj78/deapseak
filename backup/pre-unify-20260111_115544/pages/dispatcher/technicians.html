@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управління техніками - Диспетчер</title>
+    
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    
+    <!-- Додаткові стилі -->
+    <style>
+        .tech-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            height: 100%;
+            position: relative;
+        }
+        
+        .tech-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .tech-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            border: 3px solid #e9ecef;
+            object-fit: cover;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        
+        .status-indicator.online {
+            background: #28a745;
+            box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+        }
+        
+        .status-indicator.busy {
+            background: #ffc107;
+            box-shadow: 0 0 10px rgba(255, 193, 7, 0.5);
+        }
+        
+        .status-indicator.offline {
+            background: #6c757d;
+        }
+        
+        .skill-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            margin: 2px;
+            border-radius: 12px;
+            background: #f8f9fa;
+            color: #495057;
+            font-size: 0.75rem;
+        }
+        
+        .stats-box {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .stats-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #007bff;
+        }
+        
+        .stats-label {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        
+        .workload-bar {
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .workload-progress {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .workload-low { background: #28a745; }
+        .workload-medium { background: #ffc107; }
+        .workload-high { background: #dc3545; }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 15px;
+        }
+        
+        .tech-filter {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .location-map {
+            height: 200px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+        }
+        
+        @media (max-width: 768px) {
+            .tech-avatar {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper">
+
+        <!-- Навігаційна панель -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button">
+                        <i class="fas fa-bars"></i>
+                    </a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="dashboard.html" class="nav-link">Головна</a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="assignments.html" class="nav-link">Призначення</a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="monitoring.html" class="nav-link">Моніторинг</a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="technicians.html" class="nav-link active">Техніки</a>
+                </li>
+            </ul>
+
+            <!-- Права частина навігації -->
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="technicianManager.showNotifications()" title="Сповіщення">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-dot" id="notificationDot"></span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="technicianManager.showMessages()" title="Повідомлення">
+                        <i class="fas fa-comments"></i>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" id="darkModeToggle" title="Темна тема">
+                        <i class="fas fa-moon"></i>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="logout()" title="Вийти">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Бічна панель -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <a href="dashboard.html" class="brand-link text-center">
+                <span class="brand-text font-weight-light">Диспетчер</span>
+            </a>
+            
+            <div class="sidebar">
+                <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                    <div class="image">
+                        <img src="../../assets/img/avatars/dispatcher.png" class="img-circle elevation-2" alt="Dispatcher">
+                        <span class="status-indicator online"></span>
+                    </div>
+                    <div class="info">
+                        <a href="#" class="d-block" id="dispatcherName">Диспетчер</a>
+                        <small class="text-warning"><i class="fas fa-circle mr-1"></i> Online</small>
+                    </div>
+                </div>
+                
+                <!-- CANONICAL DISPATCHER SIDEBAR - Copy this to all dispatcher pages -->
+<nav class="mt-2">
+    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+        <!-- Dashboard -->
+        <li class="nav-item">
+            <a href="/pages/dispatcher/dashboard.html" class="nav-link">
+                <i class="nav-icon fas fa-tachometer-alt"></i>
+                <p>Дашборд</p>
+            </a>
+        </li>
+
+        <!-- Monitoring -->
+        <li class="nav-item">
+            <a href="/pages/dispatcher/monitoring.html" class="nav-link">
+                <i class="nav-icon fas fa-eye"></i>
+                <p>Моніторинг</p>
+            </a>
+        </li>
+
+        <!-- Assignments -->
+        <li class="nav-item">
+            <a href="/pages/dispatcher/assignments.html" class="nav-link">
+                <i class="nav-icon fas fa-tasks"></i>
+                <p>Призначення</p>
+            </a>
+        </li>
+
+        <!-- Technicians -->
+        <li class="nav-item">
+            <a href="/pages/dispatcher/technicians.html" class="nav-link active">
+                <i class="nav-icon fas fa-user-hard-hat"></i>
+                <p>Технічники</p>
+            </a>
+        </li>
+
+        <!-- Clients -->
+        <li class="nav-item">
+            <a href="/pages/dispatcher/clients.html" class="nav-link">
+                <i class="nav-icon fas fa-users"></i>
+                <p>Клієнти</p>
+            </a>
+        </li>
+
+        <!-- QR Management -->
+        <li class="nav-item">
+            <a href="/pages/dispatcher/qr-management.html" class="nav-link">
+                <i class="nav-icon fas fa-qrcode"></i>
+                <p>QR Система</p>
+            </a>
+        </li>
+
+        <!-- Reports -->
+        <li class="nav-item">
+            <a href="/pages/dispatcher/reports.html" class="nav-link">
+                <i class="nav-icon fas fa-chart-bar"></i>
+                <p>Звіти</p>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link">
+                <i class="nav-icon fas fa-magic"></i>
+                <p>AI Асистент</p>
+                <span class="badge badge-success right">Новинка</span>
+            </a>
+        </li>
+
+        <!-- Settings -->
+        <li class="nav-item">
+            <a href="/pages/dispatcher/settings.html" class="nav-link">
+                <i class="nav-icon fas fa-cogs"></i>
+                <p>Налаштування</p>
+            </a>
+        </li>
+    </ul>
+</nav>
+            </div>
+        </aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <section class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1>Управління техніками</h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="dashboard.html">Головна</a></li>
+                                <li class="breadcrumb-item active">Техніки</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+                    <!-- Фільтри та пошук -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="tech-filter">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="statusFilter">Статус</label>
+                                            <select id="statusFilter" class="form-control">
+                                                <option value="all">Всі статуси</option>
+                                                <option value="online">Онлайн</option>
+                                                <option value="busy">Зайняті</option>
+                                                <option value="offline">Офлайн</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="specialtyFilter">Спеціалізація</label>
+                                            <select id="specialtyFilter" class="form-control">
+                                                <option value="all">Всі спеціалізації</option>
+                                                <option value="network">Мережі</option>
+                                                <option value="hardware">Обладнання</option>
+                                                <option value="software">ПЗ</option>
+                                                <option value="security">Безпека</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="workloadFilter">Завантаження</label>
+                                            <select id="workloadFilter" class="form-control">
+                                                <option value="all">Будь-яке завантаження</option>
+                                                <option value="low">Низьке</option>
+                                                <option value="medium">Середнє</option>
+                                                <option value="high">Високе</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="searchInput">Пошук</label>
+                                            <div class="input-group">
+                                                <input type="text" id="searchInput" class="form-control" placeholder="Пошук техніків...">
+                                                <div class="input-group-append">
+                                                    <button class="btn btn-primary" onclick="technicianManager.searchTechnicians()">
+                                                        <i class="fas fa-search"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Статистика техніків -->
+                    <div class="row">
+                        <div class="col-lg-3 col-md-6">
+                            <div class="stats-box">
+                                <div class="stats-number" id="totalTechs">0</div>
+                                <div class="stats-label">Всього техніків</div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="stats-box">
+                                <div class="stats-number" id="availableTechs">0</div>
+                                <div class="stats-label">Доступні техніки</div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="stats-box">
+                                <div class="stats-number" id="activeAssignments">0</div>
+                                <div class="stats-label">Активні завдання</div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="stats-box">
+                                <div class="stats-number" id="avgCompletion">0%</div>
+                                <div class="stats-label">Середня завершеність</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Список техніків -->
+                    <div class="row mt-4" id="techniciansGrid">
+                        <!-- Техніки будуть завантажені тут -->
+                    </div>
+
+                    <!-- Кнопка додавання нового техніка -->
+                    <div class="row mt-4">
+                        <div class="col-12 text-center">
+                            <button class="btn btn-success btn-lg" onclick="technicianManager.showAddTechnicianModal()">
+                                <i class="fas fa-plus"></i> Додати нового техніка
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer class="main-footer">
+            <strong>Диспетчерська панель &copy; 2024</strong>
+            <div class="float-right d-none d-sm-inline-block">
+                <small id="connectionStatus"><i class="fas fa-wifi text-success"></i> Online</small>
+                <small class="ml-2" id="lastUpdate">Оновлено: --:--:--</small>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Модальне вікно додавання/редагування техніка -->
+    <div class="modal fade" id="technicianModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="technicianModalTitle">Додати техніка</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="technicianForm">
+                        <input type="hidden" id="techId">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="techFirstName">Ім'я *</label>
+                                    <input type="text" id="techFirstName" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="techLastName">Прізвище *</label>
+                                    <input type="text" id="techLastName" class="form-control" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="techEmail">Email *</label>
+                                    <input type="email" id="techEmail" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="techPhone">Телефон *</label>
+                                    <input type="tel" id="techPhone" class="form-control" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="techSpecialty">Спеціалізація *</label>
+                                    <select id="techSpecialty" class="form-control" required>
+                                        <option value="network">Мережі</option>
+                                        <option value="hardware">Обладнання</option>
+                                        <option value="software">ПЗ</option>
+                                        <option value="security">Безпека</option>
+                                        <option value="general">Загальна підтримка</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="techStatus">Статус *</label>
+                                    <select id="techStatus" class="form-control" required>
+                                        <option value="active">Активний</option>
+                                        <option value="inactive">Неактивний</option>
+                                        <option value="vacation">У відпустці</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="techSkills">Навички (через кому)</label>
+                            <input type="text" id="techSkills" class="form-control" 
+                                   placeholder="Наприклад: мережеве обладнання, Windows Server, кібербезпека">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="techLocation">Місцезнаходження</label>
+                            <input type="text" id="techLocation" class="form-control" 
+                                   placeholder="Введіть адресу або координати">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="techAvatar">Аватар</label>
+                            <div class="custom-file">
+                                <input type="file" class="custom-file-input" id="techAvatar">
+                                <label class="custom-file-label" for="techAvatar">Оберіть файл</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="techNotes">Додаткові нотатки</label>
+                            <textarea id="techNotes" class="form-control" rows="3" 
+                                      placeholder="Додаткова інформація про техніка..."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                    <button type="button" class="btn btn-primary" onclick="technicianManager.saveTechnician()">
+                        <i class="fas fa-save"></i> Зберегти
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальне вікно перегляду техніка -->
+    <div class="modal fade" id="viewTechnicianModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Деталі техніка</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <img id="viewTechAvatar" src="../../assets/img/avatars/tech-default.png" 
+                                 class="tech-avatar" alt="Технік">
+                            <h4 id="viewTechName" class="mt-2">Ім'я Техніка</h4>
+                            <div id="viewTechStatus" class="mb-2">
+                                <span class="status-indicator online"></span>
+                                <span>Онлайн</span>
+                            </div>
+                            <div class="action-buttons">
+                                <button class="btn btn-sm btn-primary" onclick="technicianManager.editTechnician()">
+                                    <i class="fas fa-edit"></i> Редагувати
+                                </button>
+                                <button class="btn btn-sm btn-info" onclick="technicianManager.messageTechnician()">
+                                    <i class="fas fa-comment"></i> Написати
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="row">
+                                <div class="col-6">
+                                    <p><strong>Email:</strong> <span id="viewTechEmail">email@example.com</span></p>
+                                </div>
+                                <div class="col-6">
+                                    <p><strong>Телефон:</strong> <span id="viewTechPhone">+380123456789</span></p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <p><strong>Спеціалізація:</strong> <span id="viewTechSpecialty">Мережі</span></p>
+                                </div>
+                                <div class="col-6">
+                                    <p><strong>Завантаження:</strong> <span id="viewTechWorkload">Середнє</span></p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <p><strong>Навички:</strong></p>
+                                    <div id="viewTechSkills">
+                                        <!-- Навички будуть завантажені тут -->
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <p><strong>Поточні завдання:</strong></p>
+                                    <ul id="viewTechAssignments" class="list-group">
+                                        <!-- Завдання будуть завантажені тут -->
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <p><strong>Місцезнаходження:</strong></p>
+                                    <div class="location-map" id="viewTechLocation">
+                                        <i class="fas fa-map-marker-alt mr-2"></i>
+                                        <span>Карта недоступна</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../../plugins/jquery/jquery.min.js"></script>
+    <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="../../plugins/adminlte/adminlte.min.js"></script>
+
+    <!-- Technician Management JS -->
+    <script src="../../assets/js/modules/technician-manager.js"></script>
+
+    <script>
+        function logout() {
+            if (confirm('Ви впевнені, що хочете вийти з системи?')) {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userData');
+                window.location.replace('/pages/auth/login.html');
+            }
+        }
+
+        $(document).ready(function() {
+            // Ініціалізація AdminLTE
+            $('[data-widget="pushmenu"]').PushMenu();
+            
+            // Темна тема
+            $('#darkModeToggle').on('click', function() {
+                $('body').toggleClass('dark-mode');
+                $(this).find('i').toggleClass('fa-moon fa-sun');
+            });
+
+            // Перевірка з'єднання
+            setInterval(() => {
+                const online = navigator.onLine;
+                $('#connectionStatus').html(
+                    online ? 
+                    '<i class="fas fa-wifi text-success"></i> Online' : 
+                    '<i class="fas fa-wifi-slash text-danger"></i> Offline'
+                );
+            }, 30000);
+
+            // Завантаження даних диспетчера
+            const userData = JSON.parse(localStorage.getItem('userData')) || {};
+            if (userData.firstName) {
+                $('#dispatcherName').text(`${userData.firstName} ${userData.lastName || ''}`);
+            }
+
+            // Ініціалізація менеджера техніків
+            window.technicianManager = new TechnicianManager();
+            
+            // Обробка вибору файлу
+            $('.custom-file-input').on('change', function() {
+                let fileName = $(this).val().split('\\').pop();
+                $(this).next('.custom-file-label').addClass("selected").html(fileName);
+            });
+            
+            // Фільтрація техніків
+            $('#statusFilter, #specialtyFilter, #workloadFilter').on('change', function() {
+                technicianManager.filterTechnicians();
+            });
+            
+            // Пошук при натисканні Enter
+            $('#searchInput').on('keypress', function(e) {
+                if (e.which === 13) {
+                    technicianManager.searchTechnicians();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+</body> -->

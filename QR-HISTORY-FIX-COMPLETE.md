@@ -296,7 +296,7 @@ function viewDetails(scanId) {
         timestamp: "2024-12-08T14:30:00",
         liftId: "LIFT_001",
         qrCode: "QR0023",
-        location: "Київ, вул. Центральна 12",
+        location: "Lisboa, вул. Центральна 12",
         latitude: 50.4501,
         longitude: 30.5234,
         user: "Олексій Коваленко",

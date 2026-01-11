@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="pt">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -84,7 +84,7 @@
     <!-- Brand Logo -->
     <a href="../../index.html" class="brand-link">
       <img src="../../assets/img/AdminLTELogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
-      <span class="brand-text font-weight-light">DeapSeaK</span>
+      <span class="brand-text font-weight-light">FestLift</span>
     </a>
 
     <!-- Sidebar -->
@@ -171,7 +171,7 @@
         <li class="nav-item">
             <a href="/pages/dispatcher/settings.html" class="nav-link">
                 <i class="nav-icon fas fa-cogs"></i>
-                <p>Налаштування</p>
+                <p>Configurações</p>
             </a>
         </li>
     </ul>
@@ -264,7 +264,7 @@
             </div>
           </div>
           
-          <!-- Фільтри та масові дії -->
+          <!-- Filtroи та масові дії -->
           <div class="card-body">
             <div class="bulk-actions">
               <div class="row">
@@ -285,8 +285,8 @@
                     <label for="filter-status">Статус:</label>
                     <select class="form-control" id="filter-status">
                       <option value="">Всі статуси</option>
-                      <option value="active">Активний</option>
-                      <option value="inactive">Неактивний</option>
+                      <option value="active">Ativo</option>
+                      <option value="inactive">Inativo</option>
                       <option value="expired">Протермінований</option>
                     </select>
                   </div>
@@ -324,7 +324,7 @@
                       <i class="fas fa-play"></i> Активувати вибрані
                     </button>
                     <button type="button" class="btn btn-outline-danger" id="bulk-delete-btn">
-                      <i class="fas fa-trash"></i> Видалити вибрані
+                      <i class="fas fa-trash"></i> Eliminar вибрані
                     </button>
                   </div>
                 </div>
@@ -359,12 +359,13 @@
   </div>
 
   <!-- Footer -->
-  <footer class="main-footer">
-    <div class="float-right d-none d-sm-block">
-      <b>Версія</b> 1.0.0
-    </div>
-    <strong>Copyright &copy; 2024 <a href="https://example.com">DeapSeaK</a>.</strong> Всі права захищено.
-  </footer>
+        <footer class="main-footer">
+            <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
+            Sistema de gestão de elevadores v2.1.0.
+            <div class="float-right d-none d-sm-inline-block">
+                <b>Versão</b> 2.1.0
+            </div>
+        </footer>
 </div>
 
 <!-- Модальне вікно створення QR-коду -->
@@ -414,8 +415,8 @@
               <div class="form-group">
                 <label for="qr-status">Статус</label>
                 <select class="form-control" id="qr-status" name="status">
-                  <option value="active">Активний</option>
-                  <option value="inactive">Неактивний</option>
+                  <option value="active">Ativo</option>
+                  <option value="inactive">Inativo</option>
                 </select>
               </div>
             </div>
@@ -448,8 +449,8 @@
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
-        <button type="button" class="btn btn-primary" id="save-qr-btn">Зберегти</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="save-qr-btn">Guardar</button>
       </div>
     </div>
   </div>
@@ -474,7 +475,7 @@
           </div>
           
           <div class="form-group">
-            <label>Фільтр ліфтів</label>
+            <label>Filtro ліфтів</label>
             <div class="row">
               <div class="col-md-6">
                 <select class="form-control" id="bulk-lift-status">
@@ -484,7 +485,7 @@
                 </select>
               </div>
               <div class="col-md-6">
-                <input type="text" class="form-control" id="bulk-lift-search" placeholder="Пошук за адресою...">
+                <input type="text" class="form-control" id="bulk-lift-search" placeholder="Pesquisar за адресою...">
               </div>
             </div>
           </div>
@@ -496,7 +497,7 @@
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
         <button type="button" class="btn btn-success" id="create-bulk-lifts-btn">Створити QR-коди</button>
       </div>
     </div>
@@ -529,7 +530,7 @@ document.addEventListener("DOMContentLoaded", function() {
         return;
     }
     
-    // Налаштування для користувача
+    // Configurações для користувача
     const user = getCurrentUser();
     if (user && user.role !== 'dispatcher' && user.role !== 'admin') {
         // Якщо не диспетчер або адмін - перенаправляємо
@@ -629,8 +630,8 @@ document.addEventListener("DOMContentLoaded", function() {
             // Статус
             const statusClass = qrCode.status === 'active' ? 'status-active' : 
                                qrCode.status === 'inactive' ? 'status-inactive' : 'status-expired';
-            const statusText = qrCode.status === 'active' ? 'Активний' : 
-                              qrCode.status === 'inactive' ? 'Неактивний' : 'Протермінований';
+            const statusText = qrCode.status === 'active' ? 'Ativo' : 
+                              qrCode.status === 'inactive' ? 'Inativo' : 'Протермінований';
             
             // Тип QR-коду
             const typeText = qrCode.type === 'lift' ? 'Ліфт' :
@@ -649,7 +650,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 qrCode.scans || 0,
                 `
                 <div class="qr-actions">
-                    <button class="btn btn-sm btn-info edit-qr-btn" data-id="${qrCode._id}" title="Редагувати">
+                    <button class="btn btn-sm btn-info edit-qr-btn" data-id="${qrCode._id}" title="Editar">
                         <i class="fas fa-edit"></i>
                     </button>
                     <button class="btn btn-sm btn-success view-qr-btn" data-qr="${encodeURIComponent(JSON.stringify(qrCode.data))}" title="Переглянути QR">
@@ -658,7 +659,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     <button class="btn btn-sm btn-warning toggle-status-btn" data-id="${qrCode._id}" data-status="${qrCode.status}" title="${qrCode.status === 'active' ? 'Деактивувати' : 'Активувати'}">
                         <i class="fas fa-${qrCode.status === 'active' ? 'pause' : 'play'}"></i>
                     </button>
-                    <button class="btn btn-sm btn-danger delete-qr-btn" data-id="${qrCode._id}" title="Видалити">
+                    <button class="btn btn-sm btn-danger delete-qr-btn" data-id="${qrCode._id}" title="Eliminar">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
@@ -716,7 +717,7 @@ document.addEventListener("DOMContentLoaded", function() {
             const qrCode = await qrUtils.getQRCodeById(qrId);
             if (qrCode.success) {
                 fillQRForm(qrCode.data);
-                $('#qr-modal-title').text('Редагувати QR-код');
+                $('#qr-modal-title').text('Editar QR-код');
                 $('#createQRModal').modal('show');
             }
         } catch (error) {
@@ -775,14 +776,14 @@ document.addEventListener("DOMContentLoaded", function() {
         const qrId = $(this).data('id');
         
         const result = await Swal.fire({
-            title: 'Видалити QR-код?',
+            title: 'Eliminar QR-код?',
             text: 'Цю дію неможливо скасувати!',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
             cancelButtonColor: '#3085d6',
             confirmButtonText: 'Так, видалити',
-            cancelButtonText: 'Скасувати'
+            cancelButtonText: 'Cancelar'
         });
         
         if (result.isConfirmed) {

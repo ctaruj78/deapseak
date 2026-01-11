@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="pt">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -108,7 +108,7 @@
     <!-- Brand Logo -->
     <a href="../../index.html" class="brand-link">
       <img src="../../assets/img/AdminLTELogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
-      <span class="brand-text font-weight-light">DeapSeaK</span>
+      <span class="brand-text font-weight-light">FestLift</span>
     </a>
 
     <!-- Sidebar -->
@@ -255,7 +255,7 @@
         <li class="nav-item">
             <a href="/pages/tech/support.html" class="nav-link">
                 <i class="nav-icon fas fa-headset"></i>
-                <p>Підтримка</p>
+                <p>Suporte</p>
             </a>
         </li>
     </ul>
@@ -434,12 +434,13 @@
   </div>
   <!-- /.content-wrapper -->
 
-  <footer class="main-footer">
-    <div class="float-right d-none d-sm-block">
-      <b>Версія</b> 1.0.0
-    </div>
-    <strong>Copyright &copy; 2024 <a href="https://example.com">DeapSeaK</a>.</strong> Всі права захищено.
-  </footer>
+        <footer class="main-footer">
+            <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
+            Sistema de gestão de elevadores v2.1.0.
+            <div class="float-right d-none d-sm-inline-block">
+                <b>Versão</b> 2.1.0
+            </div>
+        </footer>
 
   <!-- Control Sidebar -->
   <aside class="control-sidebar control-sidebar-dark">
@@ -477,7 +478,7 @@ document.addEventListener("DOMContentLoaded", function() {
         return;
     }
     
-    // Налаштування для користувача
+    // Configurações для користувача
     const user = getCurrentUser();
     if (user && user.role !== 'technician' && user.role !== 'admin' && user.role !== 'dispatcher') {
         // Якщо не технік, адмін або диспетчер - перенаправляємо
@@ -780,7 +781,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                     <th>Статус</th>
                                     <td>
                                         <span class="badge badge-${lift.status === 'active' ? 'success' : lift.status === 'maintenance' ? 'warning' : 'danger'}">
-                                            ${lift.status === 'active' ? 'Активний' : lift.status === 'maintenance' ? 'На обслуговуванні' : 'Несправний'}
+                                            ${lift.status === 'active' ? 'Ativo' : lift.status === 'maintenance' ? 'На обслуговуванні' : 'Несправний'}
                                         </span>
                                     </td>
                                 </tr>
@@ -826,9 +827,9 @@ document.addEventListener("DOMContentLoaded", function() {
                                     <th>Статус</th>
                                     <td>
                                         <span class="badge badge-${request.status === 'pending' ? 'warning' : request.status === 'in_progress' ? 'primary' : request.status === 'completed' ? 'success' : 'secondary'}">
-                                            ${request.status === 'pending' ? 'Очікує' : 
-                                              request.status === 'in_progress' ? 'В роботі' : 
-                                              request.status === 'completed' ? 'Завершено' : 'Невідомо'}
+                                            ${request.status === 'pending' ? 'Pendente' : 
+                                              request.status === 'in_progress' ? 'Em progresso' : 
+                                              request.status === 'completed' ? 'Concluído' : 'Невідомо'}
                                         </span>
                                     </td>
                                 </tr>

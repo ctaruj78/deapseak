@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -370,12 +370,12 @@
                         </div>
                     </div>
 
-                    <!-- Фільтри -->
+                    <!-- Filtroи -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card inspection-card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-filter mr-2"></i>Фільтри інспекцій</h3>
+                                    <h3 class="card-title"><i class="fas fa-filter mr-2"></i>Filtroи інспекцій</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
@@ -451,7 +451,7 @@
                                         </div>
                                         <div class="col-md-4 mb-3">
                                             <button class="btn btn-info btn-lg btn-block" onclick="inspectionManager.exportReports()">
-                                                <i class="fas fa-file-export"></i> Експорт звітів
+                                                <i class="fas fa-file-export"></i> Exportar звітів
                                             </button>
                                         </div>
                                     </div>
@@ -469,7 +469,7 @@
                                     <div class="card-tools">
                                         <div class="btn-group">
                                             <button class="btn btn-success" onclick="inspectionManager.exportInspections()">
-                                                <i class="fas fa-download"></i> Експорт
+                                                <i class="fas fa-download"></i> Exportar
                                             </button>
                                             <button class="btn btn-info" onclick="inspectionManager.printInspections()">
                                                 <i class="fas fa-print"></i> Друк
@@ -569,9 +569,10 @@
 
         <!-- Footer -->
         <footer class="main-footer">
-            <strong>Технічна панель &copy; 2024</strong>
+            <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
+            Sistema de gestão de elevadores v2.1.0.
             <div class="float-right d-none d-sm-inline-block">
-                <small id="connectionStatus"><i class="fas fa-wifi text-success"></i> Online</small>
+                <b>Versão</b> 2.1.0
             </div>
         </footer>
     </div>
@@ -607,9 +608,9 @@
                                     <label for="inspectionLift">Ліфт *</label>
                                     <select id="inspectionLift" class="form-control" required>
                                         <option value="">Оберіть ліфт...</option>
-                                        <option value="lift1">Otis Gen2 - вул. Центральна, 12</option>
+                                        <option value="lift1">Otis Gen2 - Rua Центральна, 12</option>
                                         <option value="lift2">Schindler 3300 - пр. Перемоги, 45</option>
-                                        <option value="lift3">KONE MonoSpace - вул. Шевченка, 78</option>
+                                        <option value="lift3">KONE MonoSpace - Rua Шевченка, 78</option>
                                     </select>
                                 </div>
                             </div>
@@ -652,7 +653,7 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-primary" onclick="inspectionManager.createInspection()">
                         <i class="fas fa-save"></i> Створити інспекцію
                     </button>

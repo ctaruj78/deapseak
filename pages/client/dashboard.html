@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -267,7 +267,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/pages/client/support.html" title="Підтримка">
+                    <a class="nav-link" href="/pages/client/support.html" title="Suporte">
                         <i class="fas fa-headset"></i>
                     </a>
                 </li>
@@ -368,13 +368,13 @@
                         <li class="nav-item">
                             <a href="/pages/client/support.html" class="nav-link">
                                 <i class="nav-icon fas fa-headset"></i>
-                                <p>Підтримка</p>
+                                <p>Suporte</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/pages/client/profile.html" class="nav-link">
                                 <i class="nav-icon fas fa-user"></i>
-                                <p>Профіль</p>
+                                <p>Perfil</p>
                             </a>
                         </li>
                     </ul>
@@ -567,7 +567,7 @@
                                         <div class="col-6 mb-3">
                                             <div class="action-button bg-warning text-dark">
                                                 <i class="fas fa-headset action-icon"></i>
-                                                <h5>Підтримка</h5>
+                                                <h5>Suporte</h5>
                                                 <p>Зв'язатися з підтримкою</p>
                                                 <button class="btn btn-dark btn-sm" onclick="location.href='support.html'">
                                                     Зв'язатися
@@ -648,9 +648,10 @@
 
         <!-- Footer -->
         <footer class="main-footer">
-            <strong>Клієнтська панель &copy; 2024</strong>
+            <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
+            Sistema de gestão de elevadores v2.1.0.
             <div class="float-right d-none d-sm-inline-block">
-                <small id="connectionStatus"><i class="fas fa-wifi text-success"></i> Online</small>
+                <b>Versão</b> 2.1.0
             </div>
         </footer>
     </div>
@@ -800,7 +801,7 @@
                     const data = await response.json();
                     const clientLifts = data.data || [];
                     
-                    console.log('✅ Ліфти завантажено:', clientLifts.length);
+                    console.log('✅ Elevadores завантажено:', clientLifts.length);
                     
                     // ✅ API вже повертає тільки ліфти цього клієнта (фільтрація на сервері)
                     
@@ -909,7 +910,7 @@
                 }).length;
                 $('#completedThisMonth').text(completedThisMonth);
                 
-                // Ліфти на обслуговуванні
+                // Elevadores на обслуговуванні
                 const liftsInMaintenance = lifts.filter(l => l.status === 'maintenance').length;
                 $('#liftsInMaintenance').text(liftsInMaintenance);
             }
@@ -979,7 +980,7 @@
                     case 'open':
                         return '<span class="badge badge-primary">Відкрита</span>';
                     case 'in_progress':
-                        return '<span class="badge badge-warning">В роботі</span>';
+                        return '<span class="badge badge-warning">Em progresso</span>';
                     case 'completed':
                         return '<span class="badge badge-success">Завершена</span>';
                     case 'cancelled':

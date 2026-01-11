@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Технік панель - FestLift</title>
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    <!-- Universal WebSocket Manager -->
+    <script src="/assets/js/universal-websocket.js"></script>
+    <!-- Auth Manager -->
+    <script src="../../assets/js/auth.js"></script>
+    
+    <!-- MongoDB ObjectId Converter -->
+    <script src="../../assets/js/id-converter.js"></script>
+    <link rel="stylesheet" href="/assets/css/table-drag-scroll.css">
+</head>
+<body class="hold-transition sidebar-mini layout-fixed" data-required-role="tech">
+    <div class="wrapper">
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button">
+                        <i class="fas fa-bars"></i>
+                    </a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="dashboard.html" class="nav-link active">Головна</a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="../../pages/auth/login.html" role="button">
+                        <i class="fas fa-sign-out-alt"></i> Вийти
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Sidebar Container -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <!-- Brand Logo -->
+            <a href="dashboard.html" class="brand-link">
+                <i class="brand-image fas fa-tools"></i>
+                <span class="brand-text font-weight-light">Технік</span>
+            </a>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- CANONICAL TECH SIDEBAR - Copy this to all tech pages -->
+<nav class="mt-2">
+    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+        <!-- Dashboard -->
+        <li class="nav-item">
+            <a href="/pages/tech/dashboard.html" class="nav-link active">
+                <i class="nav-icon fas fa-tachometer-alt"></i>
+                <p>Дашборд</p>
+            </a>
+        </li>
+
+        <!-- Tasks -->
+        <li class="nav-item">
+            <a href="/pages/tech/tasks.html" class="nav-link">
+                <i class="nav-icon fas fa-clipboard-list"></i>
+                <p>Мої завдання</p>
+            </a>
+        </li>
+
+        <!-- Schedule -->
+        <li class="nav-item">
+            <a href="/pages/tech/schedule.html" class="nav-link">
+                <i class="nav-icon fas fa-calendar-alt"></i>
+                <p>Розклад</p>
+            </a>
+        </li>
+
+        <!-- Maintenance -->
+        <li class="nav-item">
+            <a href="/pages/tech/manutencao.html" class="nav-link">
+                <i class="nav-icon fas fa-wrench"></i>
+                <p>Manutenção</p>
+            </a>
+        </li>
+
+        <!-- Inspections -->
+        <li class="nav-item">
+            <a href="/pages/tech/inspections.html" class="nav-link">
+                <i class="nav-icon fas fa-clipboard-check"></i>
+                <p>Інспекції</p>
+            </a>
+        </li>
+
+        <!-- Reports -->
+        <li class="nav-item">
+            <a href="/pages/tech/reports.html" class="nav-link">
+                <i class="nav-icon fas fa-file-alt"></i>
+                <p>Звіти робіт</p>
+            </a>
+        </li>
+
+        <!-- Tools & Resources -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-toolbox"></i>
+                <p>
+                    Інструменти
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/tech/qr-scanner.html" class="nav-link">
+                        <i class="fas fa-qrcode nav-icon"></i>
+                        <p>QR Сканер</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/tech/ar-helper.html" class="nav-link">
+                        <i class="fas fa-cube nav-icon"></i>
+                        <p>AR Helper</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/tech/tools.html" class="nav-link">
+                        <i class="fas fa-tools nav-icon"></i>
+                        <p>Калькулятори</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Knowledge Base -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-book"></i>
+                <p>
+                    База знань
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/tech/knowledge-base.html" class="nav-link">
+                        <i class="fas fa-bookmark nav-icon"></i>
+                        <p>Довідник</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/tech/manuals.html" class="nav-link">
+                        <i class="fas fa-book-open nav-icon"></i>
+                        <p>Інструкції</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/tech/checklists.html" class="nav-link">
+                        <i class="fas fa-tasks nav-icon"></i>
+                        <p>Чеклісти</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/tech/videos.html" class="nav-link">
+                        <i class="fas fa-video nav-icon"></i>
+                        <p>Відео</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <li class="nav-item">
+            <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link">
+                <i class="nav-icon fas fa-magic"></i>
+                <p>AI Асистент</p>
+                <span class="badge badge-success right">Новинка</span>
+            </a>
+        </li>
+
+        <!-- Support -->
+        <li class="nav-item">
+            <a href="/pages/tech/support.html" class="nav-link">
+                <i class="nav-icon fas fa-headset"></i>
+                <p>Підтримка</p>
+            </a>
+        </li>
+    </ul>
+</nav>
+            </div>
+        </aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">Панель техніка</h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="#">Головна</a></li>
+                                <li class="breadcrumb-item active">Дашборд</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <section class="content">
+                <div class="container-fluid">
+                    <!-- Stats -->
+                    <div class="row">
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-info">
+                                <div class="inner">
+                                    <h3 id="activeAssignments">0</h3>
+                                    <p>Активні заявки</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-clipboard-list"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-success">
+                                <div class="inner">
+                                    <h3 id="completedToday">0</h3>
+                                    <p>Завершено сьогодні</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-warning">
+                                <div class="inner">
+                                    <h3 id="urgentAssignments">0</h3>
+                                    <p>Термінові</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-danger">
+                                <div class="inner">
+                                    <h3 id="overdueAssignments">0</h3>
+                                    <p>Прострочені</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Today's Tasks -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Завдання на сьогодні</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Час</th>
+                                                    <th>Адреса</th>
+                                                    <th>Тип роботи</th>
+                                                    <th>Пріоритет</th>
+                                                    <th>Статус</th>
+                                                    <th>Дії</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="todayTasks">
+                                                <!-- Завдання будуть завантажені динамічно -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer class="main-footer">
+            <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
+            Sistema de gestão de elevadores v2.1.0.
+            <div class="float-right d-none d-sm-inline-block">
+                <b>Versão</b> 2.1.0
+            </div>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../../plugins/jquery/jquery.min.js"></script>
+    <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="../../plugins/adminlte/adminlte.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Перевірка авторизації
+            const sessionData = localStorage.getItem('lm_session');
+            if (!sessionData) {
+                window.location.replace('/pages/auth/login.html');
+                return;
+            }
+
+            try {
+                const session = JSON.parse(sessionData);
+                const now = new Date();
+                
+                if (new Date(session.expiresAt) <= now) {
+                    localStorage.removeItem('lm_session');
+                    window.location.replace('/pages/auth/login.html');
+                    return;
+                }
+
+                if (session.user && (session.user.role !== 'tech' && session.user.role !== 'technician')) {
+                    alert('Доступ заборонено. Необхідні права техніка.');
+                    window.location.replace('/pages/auth/login.html');
+                    return;
+                }
+
+                // Завантажуємо дані
+                loadTechData();
+                
+                // Ініціалізація WebSocket для техніка
+                initTechWebSocket(session.user);
+                
+            } catch (error) {
+                console.error('Session error:', error);
+                localStorage.removeItem('lm_session');
+                window.location.replace('/pages/auth/login.html');
+            }
+        });
+
+        async function loadTechData() {
+            console.log('🔄 Завантаження даних техніка...');
+            
+            try {
+                // Отримуємо дані з API
+                const [assignments, requests] = await Promise.all([
+                    loadTechAssignments(),
+                    loadTechRequests()
+                ]);
+
+                // Обчислюємо статистики
+                const activeAssignments = assignments.filter(a => a.status === 'assigned' || a.status === 'in_progress').length;
+                const completedToday = assignments.filter(a => {
+                    return a.status === 'completed' && 
+                           new Date(a.updatedAt).toDateString() === new Date().toDateString();
+                }).length;
+                const urgentAssignments = assignments.filter(a => a.priority === 'high' && a.status !== 'completed').length;
+                const overdueAssignments = assignments.filter(a => {
+                    return a.status !== 'completed' && 
+                           a.deadline && 
+                           new Date(a.deadline) < new Date();
+                }).length;
+
+                // Оновлюємо інтерфейс
+                $('#activeAssignments').text(activeAssignments);
+                $('#completedToday').text(completedToday);
+                $('#urgentAssignments').text(urgentAssignments);
+                $('#overdueAssignments').text(overdueAssignments);
+
+                // Завантажуємо список завдань
+                displayTechTasks(assignments);
+                
+                console.log('✅ Дані техніка завантажено');
+
+            } catch (error) {
+                console.error('❌ Помилка завантаження даних техніка:', error);
+                
+                // Fallback до тестових даних
+                $('#activeAssignments').text(Math.floor(Math.random() * 10) + 5);
+                $('#completedToday').text(Math.floor(Math.random() * 5) + 2);
+                $('#urgentAssignments').text(Math.floor(Math.random() * 3) + 1);
+                $('#overdueAssignments').text(Math.floor(Math.random() * 2));
+            }
+        }
+
+        // 🔥 ПІДКЛЮЧЕНО ДО РЕАЛЬНОГО API /api/tasks
+        async function loadTechAssignments() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    console.error('❌ No token found');
+                    return [];
+                }
+
+                const response = await fetch('/api/tasks', {
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('✅ Tasks loaded from API:', data.length);
+                    return Array.isArray(data) ? data : data.tasks || [];
+                }
+                
+                console.warn('⚠️ API /api/tasks returned non-OK status:', response.status);
+                return [];
+            } catch (error) {
+                console.warn('API недоступний, використовуємо локальні дані');
+                return JSON.parse(localStorage.getItem('tech_assignments') || '[]');
+            }
+        }
+
+        // Функція завантаження запитів техніка
+        async function loadTechRequests() {
+            try {
+                const response = await window.authManager.apiRequest('/requests/tech/my');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    return Array.isArray(data) ? data : data.requests || [];
+                }
+                
+                return [];
+            } catch (error) {
+                console.warn('API недоступний, використовуємо локальні дані');
+                return JSON.parse(localStorage.getItem('tech_requests') || '[]');
+            }
+        }
+
+        // Функція відображення завдань техніка
+        function displayTechTasks(assignments) {
+            // Знаходимо таблицю завдань на сьогодні
+            const tasksTable = document.getElementById('todayTasks');
+            
+            if (!tasksTable) {
+                console.log('Таблиця завдань не знайдена');
+                return;
+            }
+
+            // Очищуємо таблицю
+            tasksTable.innerHTML = '';
+
+            if (!assignments || assignments.length === 0) {
+                tasksTable.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            <i class="fas fa-clipboard-check fa-3x mb-3 d-block"></i>
+                            <p class="mb-0">Завдань на сьогодні немає</p>
+                            <small>Нові завдання з'являться тут автоматично</small>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            // Фільтруємо завдання на сьогодні
+            const today = new Date();
+            const todayTasks = assignments.filter(assignment => {
+                if (!assignment.scheduledDate && !assignment.deadline) return true; // Якщо дати немає, вважаємо що на сьогодні
+                
+                const taskDate = new Date(assignment.scheduledDate || assignment.deadline);
+                return taskDate.toDateString() === today.toDateString();
+            });
+
+            if (todayTasks.length === 0) {
+                tasksTable.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            <i class="fas fa-calendar-check fa-2x mb-2 d-block"></i>
+                            <p class="mb-0">Завдань на сьогодні немає</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            todayTasks.forEach(task => {
+                // Convert MongoDB ObjectId to string
+                const taskId = window.safeId ? window.safeId(task) : ((task._id && task._id.toString) ? task._id.toString() : (task._id || task.id || ''));
+                const liftId = task.lift ? (window.safeId ? window.safeId(task.lift) : ((task.lift._id && task.lift._id.toString) ? task.lift._id.toString() : (task.lift._id || task.lift.id || ''))) : '';
+                
+                if (!taskId) {
+                    console.error('❌ Завдання без ID:', task);
+                    return;
+                }
+                
+                const row = document.createElement('tr');
+                
+                // Час завдання
+                const time = task.scheduledTime || 
+                           (task.createdAt ? new Date(task.createdAt).toLocaleTimeString('uk-UA', {hour: '2-digit', minute:'2-digit'}) : 
+                           '09:00');
+                
+                // Пріоритет
+                const priorityBadge = getPriorityBadge(task.priority);
+                
+                // Статус
+                const statusBadge = getStatusBadge(task.status);
+                
+                // Тип роботи
+                const workType = task.type || task.workType || 'Технічне обслуговування';
+                
+                // Адреса
+                const address = task.location || task.lift?.address || task.address || 'Адресу не вказано';
+                
+                row.innerHTML = `
+                    <td>${time}</td>
+                    <td>
+                        ${address}
+                        ${task.lift?.municipalNumber ? `<br><small class="text-muted">Ліфт №${task.lift.municipalNumber}</small>` : ''}
+                    </td>
+                    <td>${workType}</td>
+                    <td>${priorityBadge}</td>
+                    <td>${statusBadge}</td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-info" onclick="openTaskDetails('${taskId}')" title="Деталі">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            ${liftId ? 
+                                `<button class="btn btn-outline-success" onclick="showRoute('${liftId}')" title="Маршрут до ліфта">
+                                    <i class="fas fa-route"></i>
+                                </button>` : ''
+                            }
+                            ${task.status === 'assigned' ? 
+                                `<button class="btn btn-outline-primary" onclick="startTask('${taskId}')" title="Почати">
+                                    <i class="fas fa-play"></i>
+                                </button>` : ''
+                            }
+                            ${task.status === 'in_progress' ? 
+                                `<button class="btn btn-outline-success" onclick="completeTask('${taskId}')" title="Завершити">
+                                    <i class="fas fa-check"></i>
+                                </button>` : ''
+                            }
+                            <button class="btn btn-outline-warning" onclick="addTaskNote('${taskId}')" title="Додати примітку">
+                                <i class="fas fa-sticky-note"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                
+                tasksTable.appendChild(row);
+            });
+        }
+
+        // Допоміжні функції для відображення
+        function getPriorityBadge(priority) {
+            switch (priority) {
+                case 'high':
+                    return '<span class="badge badge-danger">Високий</span>';
+                case 'medium':
+                    return '<span class="badge badge-warning">Середній</span>';
+                case 'low':
+                    return '<span class="badge badge-info">Низький</span>';
+                default:
+                    return '<span class="badge badge-secondary">Не визначено</span>';
+            }
+        }
+
+        function getStatusBadge(status) {
+            switch (status) {
+                case 'assigned':
+                    return '<span class="badge badge-primary">Призначено</span>';
+                case 'in_progress':
+                    return '<span class="badge badge-warning">В роботі</span>';
+                case 'completed':
+                    return '<span class="badge badge-success">Завершено</span>';
+                case 'cancelled':
+                    return '<span class="badge badge-danger">Скасовано</span>';
+                default:
+                    return '<span class="badge badge-secondary">Невизначено</span>';
+            }
+        }
+
+        // Функції обробки завдань
+        function openTaskDetails(taskId) {
+            console.log('📋 Відкриття деталей завдання:', taskId);
+            
+            // Тут можна відкрити модальне вікно або перейти на сторінку деталей
+            alert(`Деталі завдання ${taskId}\n\nФункція в розробці`);
+        }
+
+        function startTask(taskId) {
+            console.log('▶️ Початок виконання завдання:', taskId);
+            
+            if (confirm('Почати виконання цього завдання?')) {
+                // Оновити статус завдання
+                updateTaskStatus(taskId, 'in_progress');
+            }
+        }
+
+        function completeTask(taskId) {
+            console.log('✅ Завершення завдання:', taskId);
+            
+            if (confirm('Завершити це завдання?')) {
+                // Оновити статус завдання
+                updateTaskStatus(taskId, 'completed');
+            }
+        }
+
+        function addTaskNote(taskId) {
+            console.log('📝 Додавання примітки до завдання:', taskId);
+            
+            const note = prompt('Введіть примітку до завдання:');
+            if (note && note.trim()) {
+                addNoteToTask(taskId, note.trim());
+            }
+        }
+
+        // Функція додавання примітки до завдання
+        async function addNoteToTask(taskId, note) {
+            try {
+                const response = await window.authManager.apiRequest(`/assignments/${taskId}/notes`, {
+                    method: 'POST',
+                    body: JSON.stringify({ 
+                        note: note,
+                        timestamp: new Date().toISOString()
+                    })
+                });
+
+                if (response.ok) {
+                    console.log('✅ Примітка додана');
+                    alert('Примітка успішно додана');
+                } else {
+                    throw new Error('Помилка додавання примітки');
+                }
+            } catch (error) {
+                console.error('❌ Помилка додавання примітки:', error);
+                
+                // Fallback - зберегти локально
+                const localNotes = JSON.parse(localStorage.getItem('task_notes') || '{}');
+                if (!localNotes[taskId]) {
+                    localNotes[taskId] = [];
+                }
+                localNotes[taskId].push({
+                    note: note,
+                    timestamp: new Date().toISOString()
+                });
+                localStorage.setItem('task_notes', JSON.stringify(localNotes));
+                
+                alert('Примітка збережена локально');
+            }
+        }
+
+        // Функція оновлення статусу завдання
+        async function updateTaskStatus(taskId, newStatus) {
+            try {
+                const response = await window.authManager.apiRequest(`/assignments/${taskId}/status`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                if (response.ok) {
+                    console.log('✅ Статус завдання оновлено');
+                    // Перезавантажити дані
+                    loadTechData();
+                } else {
+                    throw new Error('Помилка оновлення статусу');
+                }
+            } catch (error) {
+                console.error('❌ Помилка оновлення статусу:', error);
+                alert('Помилка оновлення статусу завдання');
+            }
+        }
+        
+        /**
+         * Ініціалізація WebSocket для технічної панелі
+         */
+        function initTechWebSocket(user) {
+            if (typeof UniversalWebSocketManager === 'undefined') {
+                console.warn('[Tech Dashboard] UniversalWebSocketManager не знайдено');
+                return;
+            }
+            
+            try {
+                window.techWebSocket = new UniversalWebSocketManager('tech', user.id || user.username);
+                
+                // Підписка на події
+                window.techWebSocket.on('connected', function() {
+                    console.log('[Tech Dashboard] WebSocket підключено');
+                    showTechNotification('Підключено до системи', 'success');
+                });
+                
+                window.techWebSocket.on('assignment_update', function(data) {
+                    console.log('[Tech Dashboard] Нове завдання:', data);
+                    handleNewAssignment(data);
+                    showTechNotification(`Нове завдання: ${data.title}`, 'info');
+                });
+                
+                window.techWebSocket.on('priority_alert', function(data) {
+                    console.log('[Tech Dashboard] Термінове завдання:', data);
+                    handlePriorityAlert(data);
+                    showTechNotification(`ТЕРМІНОВО: ${data.message}`, 'warning');
+                });
+                
+                window.techWebSocket.on('lift_diagnostic', function(data) {
+                    console.log('[Tech Dashboard] Діагностика ліфта:', data);
+                    handleLiftDiagnostic(data);
+                });
+                
+                window.techWebSocket.on('disconnected', function() {
+                    console.log('[Tech Dashboard] WebSocket відключено');
+                    showTechNotification('Відключено від системи', 'warning');
+                });
+                
+                window.techWebSocket.on('error', function(error) {
+                    console.error('[Tech Dashboard] WebSocket помилка:', error);
+                    showTechNotification('Помилка з\'єднання', 'error');
+                });
+                
+                // Підключення
+                window.techWebSocket.connect();
+                
+            } catch (error) {
+                console.error('[Tech Dashboard] Помилка ініціалізації WebSocket:', error);
+            }
+        }
+        
+        /**
+         * Обробка нового завдання
+         */
+        function handleNewAssignment(data) {
+            // Оновлюємо лічильник активних завдань
+            const currentActive = parseInt($('#activeAssignments').text()) || 0;
+            $('#activeAssignments').text(currentActive + 1);
+            
+            // Якщо це терміново, оновлюємо лічильник термінових
+            if (data.priority === 'urgent') {
+                const currentUrgent = parseInt($('#urgentAssignments').text()) || 0;
+                $('#urgentAssignments').text(currentUrgent + 1);
+            }
+        }
+        
+        /**
+         * Обробка термінового сповіщення
+         */
+        function handlePriorityAlert(data) {
+            // Міняємо колір статистики на червоний для привернення уваги
+            $('#urgentAssignments').closest('.stat-card').addClass('border-danger');
+            
+            // Додаємо мигання
+            $('#urgentAssignments').closest('.stat-card').fadeOut(300).fadeIn(300).fadeOut(300).fadeIn(300);
+        }
+        
+        /**
+         * Обробка діагностики ліфта
+         */
+        function handleLiftDiagnostic(data) {
+            console.log('[Tech Dashboard] Діагностика ліфта:', data);
+            // Тут можна додати логіку обробки діагностичних даних
+        }
+        
+        /**
+         * Відображення сповіщень для техніка
+         */
+        function showTechNotification(message, type = 'info') {
+            const alertClass = {
+                'success': 'alert-success',
+                'info': 'alert-info', 
+                'warning': 'alert-warning',
+                'error': 'alert-danger'
+            }[type] || 'alert-info';
+            
+            const notification = $(`
+                <div class="alert ${alertClass} alert-dismissible fade show" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
+                    <i class="fas fa-tools"></i> ${message}
+                    <button type="button" class="close" data-dismiss="alert">
+                        <span>&times;</span>
+                    </button>
+                </div>
+            `);
+            
+            $('body').append(notification);
+            
+            // Автоматичне видалення через 7 секунд для техніків (більше часу на реакцію)
+            setTimeout(() => {
+                notification.alert('close');
+            }, 7000);
+        }
+        
+        /**
+         * Показати маршрут до ліфта
+         */
+        function showRoute(liftId) {
+            if (!liftId) {
+                alert('Помилка: ID ліфта не вказано');
+                return;
+            }
+            
+            // Відкрити task-map.html з ID ліфта
+            window.open(`task-map.html?lift=${liftId}`, '_blank', 'width=1200,height=800');
+        }
+    </script>
+    <script src="/assets/js/table-drag-scroll.js"></script>
+</body>
+</html>

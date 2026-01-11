@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Технік панель - LiftMaster Pro</title>
+    <title>Технік панель - FestLift</title>
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
     <!-- Font Awesome -->
@@ -182,7 +182,7 @@
         <li class="nav-item">
             <a href="/pages/tech/support.html" class="nav-link">
                 <i class="nav-icon fas fa-headset"></i>
-                <p>Підтримка</p>
+                <p>Suporte</p>
             </a>
         </li>
     </ul>
@@ -196,7 +196,7 @@
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1 class="m-0">Панель техніка</h1>
+                            <h1 class="m-0">Painel de técnico</h1>
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
@@ -227,7 +227,7 @@
                             <div class="small-box bg-success">
                                 <div class="inner">
                                     <h3 id="completedToday">0</h3>
-                                    <p>Завершено сьогодні</p>
+                                    <p>Concluído сьогодні</p>
                                 </div>
                                 <div class="icon">
                                     <i class="fas fa-check-circle"></i>
@@ -293,9 +293,10 @@
 
         <!-- Footer -->
         <footer class="main-footer">
-            <strong>&copy; 2024 LiftMaster Pro.</strong> Панель техніка.
+            <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
+            Sistema de gestão de elevadores v2.1.0.
             <div class="float-right d-none d-sm-inline-block">
-                <b>Версія</b> 3.2.0
+                <b>Versão</b> 2.1.0
             </div>
         </footer>
     </div>
@@ -461,7 +462,7 @@
                 return;
             }
 
-            // Фільтруємо завдання на сьогодні
+            // Filtroуємо завдання на сьогодні
             const today = new Date();
             const todayTasks = assignments.filter(assignment => {
                 if (!assignment.scheduledDate && !assignment.deadline) return true; // Якщо дати немає, вважаємо що на сьогодні
@@ -540,7 +541,7 @@
                                     <i class="fas fa-check"></i>
                                 </button>` : ''
                             }
-                            <button class="btn btn-outline-warning" onclick="addTaskNote('${taskId}')" title="Додати примітку">
+                            <button class="btn btn-outline-warning" onclick="addTaskNote('${taskId}')" title="Adicionar примітку">
                                 <i class="fas fa-sticky-note"></i>
                             </button>
                         </div>
@@ -570,9 +571,9 @@
                 case 'assigned':
                     return '<span class="badge badge-primary">Призначено</span>';
                 case 'in_progress':
-                    return '<span class="badge badge-warning">В роботі</span>';
+                    return '<span class="badge badge-warning">Em progresso</span>';
                 case 'completed':
-                    return '<span class="badge badge-success">Завершено</span>';
+                    return '<span class="badge badge-success">Concluído</span>';
                 case 'cancelled':
                     return '<span class="badge badge-danger">Скасовано</span>';
                 default:

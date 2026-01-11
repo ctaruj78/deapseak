@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сторінку не знайдено - Lift Management System</title>
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/responsive.css">
+</head>
+<body class="error-page">
+    <div class="error-container">
+        <div class="error-content">
+            <div class="error-icon">🔍</div>
+            <h1>404</h1>
+            <h2>Сторінку не знайдено</h2>
+            <p>Вибачте, сторінка, яку ви шукаєте, не існує або була переміщена.</p>
+            
+            <div class="error-actions">
+                <button class="btn btn-primary" onclick="history.back()">Повернутися назад</button>
+                <button class="btn btn-secondary" onclick="location.href='index.html'">На головну</button>
+            </div>
+
+            <div class="error-search">
+                <h3>Або знайдіть потрібну інформацію:</h3>
+                <div class="search-box">
+                    <input type="text" placeholder="Пошук по сайту..." id="errorSearch">
+                    <button class="btn btn-icon">🔍</button>
+                </div>
+            </div>
+
+            <div class="quick-links">
+                <h3>Швидкі посилання:</h3>
+                <ul>
+                    <li><a href="login.html">Вхід в систему</a></li>
+                    <li><a href="pages/crm-unified.html?role=admin">Панель адміністратора</a></li>
+                    <li><a href="pages/crm-unified.html?role=tech">Панель техніка</a></li>
+                    <li><a href="pages/client/dashboard.html">Панель клієнта</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="error-footer">
+            <p>Потребуєте допомоги? <a href="mailto:support@liftmanagement.com">Зв'яжіться з нами</a></p>
+            <p>&copy; 2023 Lift Management System. Всі права захищені.</p>
+        </div>
+    </div>
+
+    <script src="assets/js/common.js"></script>
+</body>
+</html>

@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Диспетчер | Управління QR-кодами</title>
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="../../plugins/fontawesome-free/css/all.min.css">
+  <!-- DataTables -->
+  <link rel="stylesheet" href="../../plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+  <link rel="stylesheet" href="../../plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="../../plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
+  <link rel="stylesheet" href="../../assets/css/adminlte.min.css">
+  <style>
+    .qr-code-preview {
+      width: 100px;
+      height: 100px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 5px;
+    }
+    .status-badge {
+      padding: 5px 10px;
+      border-radius: 15px;
+      font-size: 0.8em;
+      font-weight: bold;
+    }
+    .status-active { background-color: #28a745; color: white; }
+    .status-inactive { background-color: #6c757d; color: white; }
+    .status-expired { background-color: #dc3545; color: white; }
+    .qr-actions {
+      display: flex;
+      gap: 5px;
+    }
+    .bulk-actions {
+      margin-bottom: 20px;
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-radius: 5px;
+    }
+    .stats-card {
+      border-left: 4px solid #007bff;
+    }
+  </style>
+</head>
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+  <!-- Navbar -->
+  <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+    <!-- Left navbar links -->
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+      </li>
+      <li class="nav-item d-none d-sm-inline-block">
+        <a href="../../index.html" class="nav-link">Головна</a>
+      </li>
+      <li class="nav-item d-none d-sm-inline-block">
+        <a href="#" class="nav-link">Диспетчерська</a>
+      </li>
+    </ul>
+
+    <!-- Right navbar links -->
+    <ul class="navbar-nav ml-auto">
+      <li class="nav-item">
+        <a class="nav-link" data-widget="fullscreen" href="#" role="button">
+          <i class="fas fa-expand-arrows-alt"></i>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-widget="control-sidebar" data-slide="true" href="#" role="button">
+          <i class="fas fa-th-large"></i>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Main Sidebar Container -->
+  <aside class="main-sidebar sidebar-dark-primary elevation-4">
+    <!-- Brand Logo -->
+    <a href="../../index.html" class="brand-link">
+      <img src="../../assets/img/AdminLTELogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
+      <span class="brand-text font-weight-light">DeapSeaK</span>
+    </a>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <!-- Sidebar user panel -->
+      <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+        <div class="image">
+          <img src="../../assets/img/user2-160x160.jpg" class="img-circle elevation-2" alt="User Image" id="user-avatar">
+        </div>
+        <div class="info">
+          <a href="#" class="d-block" id="username">Диспетчер</a>
+        </div>
+      </div>
+
+      <!-- Sidebar Menu -->
+      <!-- CANONICAL DISPATCHER SIDEBAR - Copy this to all dispatcher pages -->
+<nav class="mt-2">
+    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+        <!-- Dashboard -->
+        <li class="nav-item">
+            <a href="/pages/dispatcher/dashboard.html" class="nav-link">
+                <i class="nav-icon fas fa-tachometer-alt"></i>
+                <p>Дашборд</p>
+            </a>
+        </li>
+
+        <!-- Monitoring -->
+        <li class="nav-item">
+            <a href="/pages/dispatcher/monitoring.html" class="nav-link">
+                <i class="nav-icon fas fa-eye"></i>
+                <p>Моніторинг</p>
+            </a>
+        </li>
+
+        <!-- Assignments -->
+        <li class="nav-item">
+            <a href="/pages/dispatcher/assignments.html" class="nav-link">
+                <i class="nav-icon fas fa-tasks"></i>
+                <p>Призначення</p>
+            </a>
+        </li>
+
+        <!-- Technicians -->
+        <li class="nav-item">
+            <a href="/pages/dispatcher/technicians.html" class="nav-link">
+                <i class="nav-icon fas fa-user-hard-hat"></i>
+                <p>Технічники</p>
+            </a>
+        </li>
+
+        <!-- Clients -->
+        <li class="nav-item">
+            <a href="/pages/dispatcher/clients.html" class="nav-link">
+                <i class="nav-icon fas fa-users"></i>
+                <p>Клієнти</p>
+            </a>
+        </li>
+
+        <!-- QR Management -->
+        <li class="nav-item">
+            <a href="/pages/dispatcher/qr-management.html" class="nav-link active">
+                <i class="nav-icon fas fa-qrcode"></i>
+                <p>QR Система</p>
+            </a>
+        </li>
+
+        <!-- Reports -->
+        <li class="nav-item">
+            <a href="/pages/dispatcher/reports.html" class="nav-link">
+                <i class="nav-icon fas fa-chart-bar"></i>
+                <p>Звіти</p>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link">
+                <i class="nav-icon fas fa-magic"></i>
+                <p>AI Асистент</p>
+                <span class="badge badge-success right">Новинка</span>
+            </a>
+        </li>
+
+        <!-- Settings -->
+        <li class="nav-item">
+            <a href="/pages/dispatcher/settings.html" class="nav-link">
+                <i class="nav-icon fas fa-cogs"></i>
+                <p>Налаштування</p>
+            </a>
+        </li>
+    </ul>
+</nav>
+    </div>
+  </aside>
+
+  <!-- Content Wrapper -->
+  <div class="content-wrapper">
+    <!-- Content Header -->
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>Управління QR-кодами</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="../../index.html">Головна</a></li>
+              <li class="breadcrumb-item"><a href="../../pages/dispatcher/dashboard.html">Диспетчер</a></li>
+              <li class="breadcrumb-item active">QR-коди</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+      <div class="container-fluid">
+        <!-- Статистика QR-кодів -->
+        <div class="row mb-4">
+          <div class="col-lg-3 col-6">
+            <div class="small-box bg-info stats-card">
+              <div class="inner">
+                <h3 id="total-qr-codes">0</h3>
+                <p>Всього QR-кодів</p>
+              </div>
+              <div class="icon">
+                <i class="fas fa-qrcode"></i>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-3 col-6">
+            <div class="small-box bg-success stats-card">
+              <div class="inner">
+                <h3 id="active-qr-codes">0</h3>
+                <p>Активних</p>
+              </div>
+              <div class="icon">
+                <i class="fas fa-check-circle"></i>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-3 col-6">
+            <div class="small-box bg-warning stats-card">
+              <div class="inner">
+                <h3 id="scanned-today">0</h3>
+                <p>Сканувань сьогодні</p>
+              </div>
+              <div class="icon">
+                <i class="fas fa-eye"></i>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-3 col-6">
+            <div class="small-box bg-danger stats-card">
+              <div class="inner">
+                <h3 id="expired-qr-codes">0</h3>
+                <p>Протерміновані</p>
+              </div>
+              <div class="icon">
+                <i class="fas fa-exclamation-triangle"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Управління QR-кодами -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">QR-коди системи</h3>
+            <div class="card-tools">
+              <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createQRModal">
+                <i class="fas fa-plus"></i> Створити QR-код
+              </button>
+              <button type="button" class="btn btn-success" id="bulk-create-lifts-btn">
+                <i class="fas fa-building"></i> Масове створення для ліфтів
+              </button>
+            </div>
+          </div>
+          
+          <!-- Фільтри та масові дії -->
+          <div class="card-body">
+            <div class="bulk-actions">
+              <div class="row">
+                <div class="col-md-3">
+                  <div class="form-group">
+                    <label for="filter-type">Тип QR-коду:</label>
+                    <select class="form-control" id="filter-type">
+                      <option value="">Всі типи</option>
+                      <option value="lift">Ліфт</option>
+                      <option value="request">Заявка</option>
+                      <option value="technician">Технік</option>
+                      <option value="other">Інше</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="form-group">
+                    <label for="filter-status">Статус:</label>
+                    <select class="form-control" id="filter-status">
+                      <option value="">Всі статуси</option>
+                      <option value="active">Активний</option>
+                      <option value="inactive">Неактивний</option>
+                      <option value="expired">Протермінований</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="form-group">
+                    <label>&nbsp;</label>
+                    <div>
+                      <button type="button" class="btn btn-info btn-block" id="apply-filters-btn">
+                        <i class="fas fa-filter"></i> Застосувати фільтри
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="form-group">
+                    <label>&nbsp;</label>
+                    <div>
+                      <button type="button" class="btn btn-secondary btn-block" id="clear-filters-btn">
+                        <i class="fas fa-times"></i> Скинути фільтри
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Масові дії -->
+              <div class="row mt-3">
+                <div class="col-md-12">
+                  <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-warning" id="bulk-deactivate-btn">
+                      <i class="fas fa-pause"></i> Деактивувати вибрані
+                    </button>
+                    <button type="button" class="btn btn-outline-success" id="bulk-activate-btn">
+                      <i class="fas fa-play"></i> Активувати вибрані
+                    </button>
+                    <button type="button" class="btn btn-outline-danger" id="bulk-delete-btn">
+                      <i class="fas fa-trash"></i> Видалити вибрані
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Таблиця QR-кодів -->
+            <table id="qr-codes-table" class="table table-bordered table-striped">
+              <thead>
+                <tr>
+                  <th>
+                    <input type="checkbox" id="select-all-checkbox">
+                  </th>
+                  <th>Прев'ю</th>
+                  <th>Назва</th>
+                  <th>Тип</th>
+                  <th>Статус</th>
+                  <th>Створено</th>
+                  <th>Термін дії</th>
+                  <th>Сканувань</th>
+                  <th>Дії</th>
+                </tr>
+              </thead>
+              <tbody id="qr-codes-tbody">
+                <!-- Дані будуть завантажені через JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Footer -->
+  <footer class="main-footer">
+    <div class="float-right d-none d-sm-block">
+      <b>Версія</b> 1.0.0
+    </div>
+    <strong>Copyright &copy; 2024 <a href="https://example.com">DeapSeaK</a>.</strong> Всі права захищено.
+  </footer>
+</div>
+
+<!-- Модальне вікно створення QR-коду -->
+<div class="modal fade" id="createQRModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="qr-modal-title">Створити новий QR-код</h4>
+        <button type="button" class="close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="qr-form">
+          <input type="hidden" id="qr-id" name="id">
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="qr-type">Тип QR-коду *</label>
+                <select class="form-control" id="qr-type" name="type" required>
+                  <option value="">Оберіть тип</option>
+                  <option value="lift">Ліфт</option>
+                  <option value="request">Заявка</option>
+                  <option value="technician">Технік</option>
+                  <option value="document">Документ</option>
+                  <option value="other">Інше</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="qr-name">Назва QR-коду *</label>
+                <input type="text" class="form-control" id="qr-name" name="name" required>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="qr-reference">Референс (ID об'єкта)</label>
+                <input type="text" class="form-control" id="qr-reference" name="reference">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="qr-status">Статус</label>
+                <select class="form-control" id="qr-status" name="status">
+                  <option value="active">Активний</option>
+                  <option value="inactive">Неактивний</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="qr-expiry">Термін дії</label>
+            <input type="datetime-local" class="form-control" id="qr-expiry" name="expiryDate">
+          </div>
+
+          <div class="form-group">
+            <label for="qr-data">Дані QR-коду (JSON) *</label>
+            <textarea class="form-control" id="qr-data" name="data" rows="5" required 
+                      placeholder='{"id": "123", "name": "Test"}'></textarea>
+            <small class="form-text text-muted">Введіть дані у форматі JSON</small>
+          </div>
+
+          <!-- Прев'ю QR-коду -->
+          <div class="form-group">
+            <label>Прев'ю QR-коду</label>
+            <div class="text-center">
+              <canvas id="qr-preview" width="200" height="200" style="border: 1px solid #ddd;"></canvas>
+              <div class="mt-2">
+                <button type="button" class="btn btn-sm btn-info" id="generate-preview-btn">
+                  <i class="fas fa-eye"></i> Згенерувати прев'ю
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+        <button type="button" class="btn btn-primary" id="save-qr-btn">Зберегти</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Модальне вікно масового створення QR-кодів для ліфтів -->
+<div class="modal fade" id="bulkCreateLiftsModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Масове створення QR-кодів для ліфтів</h4>
+        <button type="button" class="close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="bulk-lifts-form">
+          <div class="form-group">
+            <label for="bulk-expiry">Термін дії для всіх QR-кодів</label>
+            <input type="datetime-local" class="form-control" id="bulk-expiry" name="expiryDate">
+            <small class="form-text text-muted">За замовчуванням: 1 рік</small>
+          </div>
+          
+          <div class="form-group">
+            <label>Фільтр ліфтів</label>
+            <div class="row">
+              <div class="col-md-6">
+                <select class="form-control" id="bulk-lift-status">
+                  <option value="">Всі ліфти</option>
+                  <option value="active">Тільки активні</option>
+                  <option value="maintenance">На обслуговуванні</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <input type="text" class="form-control" id="bulk-lift-search" placeholder="Пошук за адресою...">
+              </div>
+            </div>
+          </div>
+          
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i>
+            Буде створено QR-код для кожного ліфта, що відповідає критеріям фільтрації.
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+        <button type="button" class="btn btn-success" id="create-bulk-lifts-btn">Створити QR-коди</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- jQuery -->
+<script src="../../plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="../../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- DataTables -->
+<script src="../../plugins/datatables/jquery.dataTables.min.js"></script>
+<script src="../../plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="../../plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+<!-- AdminLTE App -->
+<script src="../../assets/js/adminlte.min.js"></script>
+<!-- QR Code Libraries -->
+<script src="../../plugins/qrcode/qrcode.min.js"></script>
+<!-- SweetAlert2 -->
+<script src="../../plugins/sweetalert2/sweetalert2.min.js"></script>
+<!-- Utility scripts -->
+<script src="../../assets/js/auth.js"></script>
+<script src="../../assets/js/qr-utils.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Перевірка авторизації
+    if (!isAuthenticated()) {
+        window.location.replace('/pages/auth/login.html');
+        return;
+    }
+    
+    // Налаштування для користувача
+    const user = getCurrentUser();
+    if (user && user.role !== 'dispatcher' && user.role !== 'admin') {
+        // Якщо не диспетчер або адмін - перенаправляємо
+        window.location.replace('/index.html');
+        return;
+    }
+    
+    // Відображення інформації про користувача
+    if (user) {
+        document.getElementById('username').textContent = user.firstName + ' ' + user.lastName;
+        if (user.avatar) {
+            document.getElementById('user-avatar').src = user.avatar;
+        }
+    }
+
+    // Ініціалізація DataTables
+    let qrTable = $('#qr-codes-table').DataTable({
+        responsive: true,
+        processing: true,
+        serverSide: false,
+        order: [[5, 'desc']], // Сортування за датою створення
+        columnDefs: [
+            { orderable: false, targets: [0, 1, 8] }, // Відключити сортування для чекбоксів, прев'ю та дій
+            { searchable: false, targets: [0, 1, 8] }
+        ],
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.10.24/i18n/Ukrainian.json'
+        }
+    });
+
+    // Змінні для роботи з QR-кодами
+    let allQRCodes = [];
+    let currentFilters = {};
+
+    // Функція для завантаження статистики QR-кодів
+    async function loadQRStatistics() {
+        try {
+            const stats = await qrUtils.getQRStats();
+            
+            if (stats.success) {
+                const statsData = stats.stats;
+                
+                document.getElementById('total-qr-codes').textContent = statsData.total || 0;
+                document.getElementById('active-qr-codes').textContent = statsData.status.active || 0;
+                document.getElementById('scanned-today').textContent = statsData.scans.lastMonth || 0;
+                document.getElementById('expired-qr-codes').textContent = statsData.status.expired || 0;
+            }
+        } catch (error) {
+            console.error('Помилка завантаження статистики QR-кодів:', error);
+        }
+    }
+
+    // Функція для завантаження списку QR-кодів
+    async function loadQRCodes(filters = {}) {
+        try {
+            // Показуємо індикатор завантаження
+            qrTable.processing(true);
+            
+            const qrCodes = await qrUtils.getQRCodes(filters, 1, 1000);
+            
+            if (qrCodes.success) {
+                allQRCodes = qrCodes.data;
+                displayQRCodes(qrCodes.data);
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Помилка',
+                    text: 'Не вдалося завантажити QR-коди',
+                    confirmButtonText: 'Зрозуміло'
+                });
+            }
+        } catch (error) {
+            console.error('Помилка завантаження QR-кодів:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Помилка',
+                text: 'Не вдалося завантажити QR-коди',
+                confirmButtonText: 'Зрозуміло'
+            });
+        }
+    }
+
+    // Функція для відображення QR-кодів у таблиці
+    function displayQRCodes(qrCodes) {
+        // Очищуємо таблицю
+        qrTable.clear();
+        
+        qrCodes.forEach(qrCode => {
+            // Форматування дати створення
+            const createdDate = qrCode.createdAt ? 
+                new Date(qrCode.createdAt).toLocaleDateString('uk-UA') : 'Не вказано';
+            
+            // Форматування терміну дії
+            const expiryDate = qrCode.expiryDate ? 
+                new Date(qrCode.expiryDate).toLocaleDateString('uk-UA') : 'Без терміну';
+            
+            // Статус
+            const statusClass = qrCode.status === 'active' ? 'status-active' : 
+                               qrCode.status === 'inactive' ? 'status-inactive' : 'status-expired';
+            const statusText = qrCode.status === 'active' ? 'Активний' : 
+                              qrCode.status === 'inactive' ? 'Неактивний' : 'Протермінований';
+            
+            // Тип QR-коду
+            const typeText = qrCode.type === 'lift' ? 'Ліфт' :
+                            qrCode.type === 'request' ? 'Заявка' :
+                            qrCode.type === 'technician' ? 'Технік' : 'Інше';
+            
+            // Додаємо рядок у таблицю
+            qrTable.row.add([
+                `<input type="checkbox" class="qr-checkbox" data-id="${qrCode._id}">`,
+                `<canvas class="qr-code-preview" data-qr="${encodeURIComponent(JSON.stringify(qrCode.data))}"></canvas>`,
+                qrCode.name || 'Без назви',
+                typeText,
+                `<span class="status-badge ${statusClass}">${statusText}</span>`,
+                createdDate,
+                expiryDate,
+                qrCode.scans || 0,
+                `
+                <div class="qr-actions">
+                    <button class="btn btn-sm btn-info edit-qr-btn" data-id="${qrCode._id}" title="Редагувати">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-success view-qr-btn" data-qr="${encodeURIComponent(JSON.stringify(qrCode.data))}" title="Переглянути QR">
+                        <i class="fas fa-qrcode"></i>
+                    </button>
+                    <button class="btn btn-sm btn-warning toggle-status-btn" data-id="${qrCode._id}" data-status="${qrCode.status}" title="${qrCode.status === 'active' ? 'Деактивувати' : 'Активувати'}">
+                        <i class="fas fa-${qrCode.status === 'active' ? 'pause' : 'play'}"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger delete-qr-btn" data-id="${qrCode._id}" title="Видалити">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                `
+            ]);
+        });
+        
+        // Перерисовуємо таблицю
+        qrTable.draw();
+        
+        // Генеруємо прев'ю QR-кодів
+        setTimeout(() => {
+            generateQRPreviews();
+        }, 100);
+    }
+
+    // Функція для генерації прев'ю QR-кодів
+    function generateQRPreviews() {
+        document.querySelectorAll('.qr-code-preview').forEach(canvas => {
+            const qrDataEncoded = canvas.getAttribute('data-qr');
+            if (qrDataEncoded) {
+                try {
+                    const qrData = JSON.parse(decodeURIComponent(qrDataEncoded));
+                    const qrDataString = JSON.stringify(qrData);
+                    
+                    // Генеруємо QR-код на canvas
+                    QRCode.toCanvas(canvas, qrDataString, {
+                        width: 100,
+                        height: 100,
+                        margin: 1
+                    }, function (error) {
+                        if (error) {
+                            console.error('Помилка генерації QR-коду:', error);
+                            // Показуємо заглушку при помилці
+                            const ctx = canvas.getContext('2d');
+                            ctx.fillStyle = '#f0f0f0';
+                            ctx.fillRect(0, 0, 100, 100);
+                            ctx.fillStyle = '#999';
+                            ctx.font = '12px Arial';
+                            ctx.textAlign = 'center';
+                            ctx.fillText('QR', 50, 50);
+                        }
+                    });
+                } catch (error) {
+                    console.error('Помилка парсингу даних QR-коду:', error);
+                }
+            }
+        });
+    }
+
+    // Обробники подій для кнопок дій
+    $(document).on('click', '.edit-qr-btn', async function() {
+        const qrId = $(this).data('id');
+        try {
+            const qrCode = await qrUtils.getQRCodeById(qrId);
+            if (qrCode.success) {
+                fillQRForm(qrCode.data);
+                $('#qr-modal-title').text('Редагувати QR-код');
+                $('#createQRModal').modal('show');
+            }
+        } catch (error) {
+            console.error('Помилка завантаження QR-коду:', error);
+        }
+    });
+
+    $(document).on('click', '.view-qr-btn', function() {
+        const qrDataEncoded = $(this).data('qr');
+        try {
+            const qrData = JSON.parse(decodeURIComponent(qrDataEncoded));
+            showQRCodeModal(qrData);
+        } catch (error) {
+            console.error('Помилка відображення QR-коду:', error);
+        }
+    });
+
+    $(document).on('click', '.toggle-status-btn', async function() {
+        const qrId = $(this).data('id');
+        const currentStatus = $(this).data('status');
+        const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+        
+        try {
+            // Отримуємо поточний QR-код
+            const qrCodeResponse = await qrUtils.getQRCodeById(qrId);
+            if (qrCodeResponse.success) {
+                const qrCodeData = { ...qrCodeResponse.data, status: newStatus };
+                
+                // Оновлюємо статус
+                const result = await qrUtils.saveQRCode(qrCodeData);
+                if (result.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Успіх',
+                        text: `QR-код ${newStatus === 'active' ? 'активовано' : 'деактивовано'}`,
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    
+                    // Перезавантажуємо таблицю
+                    loadQRCodes(currentFilters);
+                }
+            }
+        } catch (error) {
+            console.error('Помилка зміни статусу QR-коду:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Помилка',
+                text: 'Не вдалося змінити статус QR-коду',
+                confirmButtonText: 'Зрозуміло'
+            });
+        }
+    });
+
+    $(document).on('click', '.delete-qr-btn', async function() {
+        const qrId = $(this).data('id');
+        
+        const result = await Swal.fire({
+            title: 'Видалити QR-код?',
+            text: 'Цю дію неможливо скасувати!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Так, видалити',
+            cancelButtonText: 'Скасувати'
+        });
+        
+        if (result.isConfirmed) {
+            try {
+                const deleteResult = await qrUtils.deleteQRCode(qrId);
+                if (deleteResult.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Видалено',
+                        text: 'QR-код успішно видалено',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    
+                    // Перезавантажуємо таблицю
+                    loadQRCodes(currentFilters);
+                    loadQRStatistics();
+                }
+            } catch (error) {
+                console.error('Помилка видалення QR-коду:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Помилка',
+                    text: 'Не вдалося видалити QR-код',
+                    confirmButtonText: 'Зрозуміло'
+                });
+            }
+        }
+    });
+
+    // Функція для заповнення форми QR-коду
+    function fillQRForm(qrCode) {
+        document.getElementById('qr-id').value = qrCode._id || '';
+        document.getElementById('qr-type').value = qrCode.type || '';
+        document.getElementById('qr-name').value = qrCode.name || '';
+        document.getElementById('qr-reference').value = qrCode.reference || '';
+        document.getElementById('qr-status').value = qrCode.status || 'active';
+        
+        // Форматування дати для datetime-local
+        if (qrCode.expiryDate) {
+            const expiryDate = new Date(qrCode.expiryDate);
+            const formattedDate = expiryDate.toISOString().slice(0, 16);
+            document.getElementById('qr-expiry').value = formattedDate;
+        }
+        
+        document.getElementById('qr-data').value = JSON.stringify(qrCode.data || {}, null, 2);
+    }
+
+    // Функція для очищення форми QR-коду
+    function clearQRForm() {
+        document.getElementById('qr-form').reset();
+        document.getElementById('qr-id').value = '';
+        
+        // Очищення прев'ю
+        const canvas = document.getElementById('qr-preview');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // Функція для показу модального вікна з QR-кодом
+    function showQRCodeModal(qrData) {
+        const qrDataString = JSON.stringify(qrData);
+        
+        Swal.fire({
+            title: 'QR-код',
+            html: `
+                <div class="text-center">
+                    <canvas id="swal-qr-canvas" width="300" height="300"></canvas>
+                    <div class="mt-3">
+                        <button class="btn btn-info" onclick="downloadQRCode()">
+                            <i class="fas fa-download"></i> Завантажити
+                        </button>
+                    </div>
+                </div>
+            `,
+            showConfirmButton: false,
+            showCancelButton: true,
+            cancelButtonText: 'Закрити',
+            didOpen: () => {
+                const canvas = document.getElementById('swal-qr-canvas');
+                QRCode.toCanvas(canvas, qrDataString, {
+                    width: 300,
+                    height: 300,
+                    margin: 2
+                });
+            }
+        });
+    }
+
+    // Функція для завантаження QR-коду
+    window.downloadQRCode = function() {
+        const canvas = document.getElementById('swal-qr-canvas');
+        const link = document.createElement('a');
+        link.download = 'qr-code.png';
+        link.href = canvas.toDataURL();
+        link.click();
+    };
+
+    // Обробники подій
+
+    // Вибір/зняття вибору всіх чекбоксів
+    document.getElementById('select-all-checkbox').addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('.qr-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+    });
+
+    // Застосування фільтрів
+    document.getElementById('apply-filters-btn').addEventListener('click', function() {
+        currentFilters = {
+            type: document.getElementById('filter-type').value,
+            status: document.getElementById('filter-status').value
+        };
+        
+        // Видаляємо порожні фільтри
+        Object.keys(currentFilters).forEach(key => {
+            if (!currentFilters[key]) {
+                delete currentFilters[key];
+            }
+        });
+        
+        loadQRCodes(currentFilters);
+    });
+
+    // Очищення фільтрів
+    document.getElementById('clear-filters-btn').addEventListener('click', function() {
+        document.getElementById('filter-type').value = '';
+        document.getElementById('filter-status').value = '';
+        currentFilters = {};
+        loadQRCodes();
+    });
+
+    // Генерація прев'ю QR-коду у формі
+    document.getElementById('generate-preview-btn').addEventListener('click', function() {
+        const qrDataText = document.getElementById('qr-data').value;
+        
+        if (!qrDataText.trim()) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Порожні дані',
+                text: 'Введіть дані для генерації QR-коду',
+                confirmButtonText: 'Зрозуміло'
+            });
+            return;
+        }
+        
+        try {
+            // Перевіряємо валідність JSON
+            JSON.parse(qrDataText);
+            
+            // Генеруємо QR-код
+            const canvas = document.getElementById('qr-preview');
+            QRCode.toCanvas(canvas, qrDataText, {
+                width: 200,
+                height: 200,
+                margin: 2
+            });
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Помилка',
+                text: 'Неправильний формат JSON даних',
+                confirmButtonText: 'Зрозуміло'
+            });
+        }
+    });
+
+    // Збереження QR-коду
+    document.getElementById('save-qr-btn').addEventListener('click', async function() {
+        const form = document.getElementById('qr-form');
+        
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+        
+        try {
+            // Отримуємо дані з форми
+            const formData = new FormData(form);
+            const qrCodeData = {};
+            
+            for (let [key, value] of formData.entries()) {
+                if (key === 'data') {
+                    // Парсимо JSON дані
+                    qrCodeData[key] = JSON.parse(value);
+                } else if (key === 'id' && value) {
+                    qrCodeData._id = value;
+                } else if (value) {
+                    qrCodeData[key] = value;
+                }
+            }
+            
+            // Зберігаємо QR-код
+            const result = await qrUtils.saveQRCode(qrCodeData);
+            
+            if (result.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Успіх',
+                    text: qrCodeData._id ? 'QR-код успішно оновлено' : 'QR-код успішно створено',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+                
+                // Закриваємо модальне вікно та очищуємо форму
+                $('#createQRModal').modal('hide');
+                clearQRForm();
+                
+                // Перезавантажуємо дані
+                loadQRCodes(currentFilters);
+                loadQRStatistics();
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Помилка',
+                    text: result.message || 'Не вдалося зберегти QR-код',
+                    confirmButtonText: 'Зрозуміло'
+                });
+            }
+        } catch (error) {
+            console.error('Помилка збереження QR-коду:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Помилка',
+                text: 'Не вдалося зберегти QR-код. Перевірте правильність даних.',
+                confirmButtonText: 'Зрозуміло'
+            });
+        }
+    });
+
+    // Масове створення QR-кодів для ліфтів
+    document.getElementById('bulk-create-lifts-btn').addEventListener('click', function() {
+        $('#bulkCreateLiftsModal').modal('show');
+    });
+
+    document.getElementById('create-bulk-lifts-btn').addEventListener('click', async function() {
+        try {
+            const options = {
+                expiryDate: document.getElementById('bulk-expiry').value,
+                filter: {}
+            };
+            
+            // Додаємо фільтри, якщо вони задані
+            const liftStatus = document.getElementById('bulk-lift-status').value;
+            if (liftStatus) {
+                options.filter.status = liftStatus;
+            }
+            
+            const liftSearch = document.getElementById('bulk-lift-search').value.trim();
+            if (liftSearch) {
+                options.filter.address = { $regex: liftSearch, $options: 'i' };
+            }
+            
+            // Створюємо QR-коди
+            const result = await qrUtils.bulkCreateLiftQRCodes(options);
+            
+            if (result.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Успіх',
+                    text: result.message,
+                    confirmButtonText: 'Зрозуміло'
+                });
+                
+                // Закриваємо модальне вікно
+                $('#bulkCreateLiftsModal').modal('hide');
+                
+                // Перезавантажуємо дані
+                loadQRCodes(currentFilters);
+                loadQRStatistics();
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Помилка',
+                    text: result.message || 'Не вдалося створити QR-коди',
+                    confirmButtonText: 'Зрозуміло'
+                });
+            }
+        } catch (error) {
+            console.error('Помилка масового створення QR-кодів:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Помилка',
+                text: 'Не вдалося створити QR-коди для ліфтів',
+                confirmButtonText: 'Зрозуміло'
+            });
+        }
+    });
+
+    // Очищення форми при закритті модального вікна
+    $('#createQRModal').on('hidden.bs.modal', function() {
+        clearQRForm();
+        $('#qr-modal-title').text('Створити новий QR-код');
+    });
+
+    // Кнопка виходу
+    document.getElementById('logout-button').addEventListener('click', function() {
+        logout();
+        window.location.replace('/pages/auth/login.html');
+    });
+
+    // Ініціалізація сторінки
+    loadQRStatistics();
+    loadQRCodes();
+});
+</script>
+</body>
+</html>

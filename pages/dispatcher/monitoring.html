@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -455,7 +455,7 @@
         <li class="nav-item">
             <a href="/pages/dispatcher/settings.html" class="nav-link">
                 <i class="nav-icon fas fa-cogs"></i>
-                <p>Налаштування</p>
+                <p>Configurações</p>
             </a>
         </li>
     </ul>
@@ -583,7 +583,7 @@
                                     </h3>
                                     <div class="card-tools">
                                         <div class="input-group input-group-sm" style="width: 150px;">
-                                            <input type="text" id="techSearch" class="form-control" placeholder="Пошук...">
+                                            <input type="text" id="techSearch" class="form-control" placeholder="Pesquisar...">
                                             <div class="input-group-append">
                                                 <button class="btn btn-primary">
                                                     <i class="fas fa-search"></i>
@@ -640,7 +640,7 @@
                                         </div>
                                         <div class="col-md-3 mb-3">
                                             <button class="btn btn-outline-success btn-block" onclick="monitoringManager.exportLogs()">
-                                                <i class="fas fa-download"></i> Експорт логів
+                                                <i class="fas fa-download"></i> Exportar логів
                                             </button>
                                         </div>
                                         <div class="col-md-3 mb-3">
@@ -650,7 +650,7 @@
                                         </div>
                                         <div class="col-md-3 mb-3">
                                             <button class="btn btn-outline-info btn-block" onclick="monitoringManager.showSettings()">
-                                                <i class="fas fa-cog"></i> Налаштування
+                                                <i class="fas fa-cog"></i> Configurações
                                             </button>
                                         </div>
                                     </div>
@@ -707,11 +707,10 @@
 
         <!-- Footer -->
         <footer class="main-footer">
-            <strong>Диспетчерська панель &copy; 2024</strong>
+            <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
+            Sistema de gestão de elevadores v2.1.0.
             <div class="float-right d-none d-sm-inline-block">
-                <small id="connectionStatus"><i class="fas fa-wifi text-success"></i> Online</small>
-                <small class="ml-2" id="lastUpdate">Оновлено: --:--:--</small>
-                <small class="ml-2" id="refreshRate">0мс</small>
+                <b>Versão</b> 2.1.0
             </div>
         </footer>
     </div>
@@ -758,7 +757,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-primary" onclick="monitoringManager.sendBroadcast()">
                         <i class="fas fa-paper-plane"></i> Надіслати
                     </button>
@@ -796,7 +795,7 @@
                 $(this).find('i').toggleClass('fa-moon fa-sun');
             });
 
-            // Пошук техніків
+            // Pesquisar техніків
             $('#techSearch').on('input', function() {
                 monitoringManager.filterTechnicians($(this).val());
             });

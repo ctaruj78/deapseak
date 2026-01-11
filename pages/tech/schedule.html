@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -438,7 +438,7 @@
                                 </button>
                                 <div class="ml-auto">
                                     <button class="btn btn-success" onclick="scheduleManager.exportSchedule()">
-                                        <i class="fas fa-download"></i> Експорт
+                                        <i class="fas fa-download"></i> Exportar
                                     </button>
                                 </div>
                             </div>
@@ -545,12 +545,12 @@
                         </div>
                     </div>
 
-                    <!-- Налаштування розкладу -->
+                    <!-- Configurações розкладу -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card schedule-card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-cog mr-2"></i>Налаштування розкладу</h3>
+                                    <h3 class="card-title"><i class="fas fa-cog mr-2"></i>Configurações розкладу</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
@@ -581,7 +581,7 @@
                                     <div class="row">
                                         <div class="col-12">
                                             <button class="btn btn-primary" onclick="scheduleManager.saveSettings()">
-                                                <i class="fas fa-save"></i> Зберегти налаштування
+                                                <i class="fas fa-save"></i> Guardar налаштування
                                             </button>
                                         </div>
                                     </div>
@@ -595,9 +595,10 @@
 
         <!-- Footer -->
         <footer class="main-footer">
-            <strong>Технічна панель &copy; 2024</strong>
+            <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
+            Sistema de gestão de elevadores v2.1.0.
             <div class="float-right d-none d-sm-inline-block">
-                <small id="connectionStatus"><i class="fas fa-wifi text-success"></i> Online</small>
+                <b>Versão</b> 2.1.0
             </div>
         </footer>
     </div>
@@ -618,7 +619,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
                     <button type="button" class="btn btn-info" onclick="scheduleManager.editEvent(currentEventId)">
-                        <i class="fas fa-edit"></i> Редагувати
+                        <i class="fas fa-edit"></i> Editar
                     </button>
                     <button type="button" class="btn btn-success" onclick="scheduleManager.startEvent(currentEventId)" id="startEventBtn">
                         <i class="fas fa-play"></i> Розпочати

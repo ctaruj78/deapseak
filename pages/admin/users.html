@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Global Settings -->
     <script src="../../assets/js/global-settings.js"></script>
     <link rel="stylesheet" href="../../assets/css/theme-dark.css">
-    <title>Управління користувачами - LiftMaster Pro</title>
+    <title>Управління користувачами - FestLift</title>
     
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
@@ -120,7 +120,7 @@
             <!-- Brand Logo -->
             <a href="admin-dashboard.html" class="brand-link">
                 <i class="fas fa-elevator brand-image img-circle elevation-3"></i>
-                <span class="brand-text font-weight-light">LiftMaster Pro</span>
+                <span class="brand-text font-weight-light">FestLift</span>
             </a>
 
             <!-- Sidebar -->
@@ -161,13 +161,13 @@
                 <li class="nav-item">
                     <a href="/pages/admin/qr-management.html" class="nav-link">
                         <i class="fas fa-cog nav-icon"></i>
-                        <p>Керування QR-кодами</p>
+                        <p>Gestão QR-кодами</p>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="/pages/admin/qr-analytics.html" class="nav-link">
                         <i class="fas fa-chart-line nav-icon"></i>
-                        <p>Аналітика QR-кодів</p>
+                        <p>Análise QR-кодів</p>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -184,7 +184,7 @@
             <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-elevator"></i>
                 <p>
-                    Ліфти
+                    Elevadores
                     <i class="right fas fa-angle-left"></i>
                 </p>
             </a>
@@ -214,7 +214,7 @@
         <li class="nav-item">
             <a href="/pages/admin/users.html" class="nav-link active">
                 <i class="nav-icon fas fa-users"></i>
-                <p>Користувачі</p>
+                <p>Utilizadores</p>
             </a>
         </li>
 
@@ -254,7 +254,7 @@
             <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-chart-line"></i>
                 <p>
-                    Аналітика
+                    Análise
                     <i class="right fas fa-angle-left"></i>
                 </p>
             </a>
@@ -292,7 +292,7 @@
             <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-headset"></i>
                 <p>
-                    Підтримка
+                    Suporte
                     <i class="right fas fa-angle-left"></i>
                 </p>
             </a>
@@ -310,7 +310,7 @@
         <li class="nav-item">
             <a href="/pages/admin/settings.html" class="nav-link">
                 <i class="nav-icon fas fa-cogs"></i>
-                <p>Налаштування</p>
+                <p>Configurações</p>
             </a>
         </li>
     </ul>
@@ -330,7 +330,7 @@
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
                                 <li class="breadcrumb-item"><a href="pages/admin/admin-dashboard.html">Головна</a></li>
-                                <li class="breadcrumb-item active">Користувачі</li>
+                                <li class="breadcrumb-item active">Utilizadores</li>
                             </ol>
                         </div>
                     </div>
@@ -397,10 +397,10 @@
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h3 class="card-title">Керування користувачами</h3>
+                                    <h3 class="card-title">Gestão користувачами</h3>
                                     <div class="card-tools">
                                         <button class="btn btn-primary" data-toggle="modal" data-target="#userModal">
-                                            <i class="fas fa-plus"></i> Додати користувача
+                                            <i class="fas fa-plus"></i> Adicionar користувача
                                         </button>
                                     </div>
                                 </div>
@@ -408,7 +408,7 @@
                                     <div class="row mb-3">
                                         <div class="col-md-6">
                                             <div class="input-group">
-                                                <input type="text" id="searchInput" class="form-control" placeholder="Пошук користувачів...">
+                                                <input type="text" id="searchInput" class="form-control" placeholder="Pesquisar користувачів...">
                                                 <div class="input-group-append">
                                                     <button class="btn btn-default">
                                                         <i class="fas fa-search"></i>
@@ -465,8 +465,11 @@
 
         <!-- Main Footer -->
         <footer class="main-footer">
-            <strong>Copyright &copy; 2024 <a href="admin-dashboard.html">LiftMaster Pro</a>.</strong>
-            Всі права захищені.
+            <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
+            Sistema de gestão de elevadores v2.1.0.
+            <div class="float-right d-none d-sm-inline-block">
+                <b>Versão</b> 2.1.0
+            </div>
         </footer>
     </div>
 
@@ -475,7 +478,7 @@
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modalTitle">Додати користувача</h5>
+                    <h5 class="modal-title" id="modalTitle">Adicionar користувача</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -525,8 +528,8 @@
                                     <div class="form-group">
                                         <label for="userStatus">Статус *</label>
                                         <select id="userStatus" class="form-control" required>
-                                            <option value="active">Активний</option>
-                                            <option value="inactive">Неактивний</option>
+                                            <option value="active">Ativo</option>
+                                            <option value="inactive">Inativo</option>
                                         </select>
                                     </div>
                                 </div>
@@ -564,8 +567,8 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
-                        <button type="submit" class="btn btn-primary">Зберегти</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
                     </div>
                 </form>
             </div>
@@ -746,7 +749,7 @@
 
             async saveUsers() {
                 // Видалено - тепер зберігання через API при створенні/редагуванні
-                console.log('ℹ️ Користувачі зберігаються через API endpoints');
+                console.log('ℹ️ Utilizadores зберігаються через API endpoints');
             }
 
             setupEventListeners() {
@@ -756,10 +759,10 @@
                     const userId = button.data('user-id');
                     
                     if (userId) {
-                        $('#modalTitle').text('Редагувати користувача');
+                        $('#modalTitle').text('Editar користувача');
                         this.editUser(userId);
                     } else {
-                        $('#modalTitle').text('Додати користувача');
+                        $('#modalTitle').text('Adicionar користувача');
                         this.resetForm();
                     }
                 });
@@ -801,10 +804,10 @@
                         <tr>
                             <td colspan="7" class="text-center py-4">
                                 <i class="fas fa-users fa-3x text-muted mb-3"></i>
-                                <h5>Користувачів не знайдено</h5>
+                                <h5>Utilizadoresв не знайдено</h5>
                                 <p class="text-muted">Спробуйте змінити фільтри або додати нового користувача</p>
                                 <button class="btn btn-primary" data-toggle="modal" data-target="#userModal">
-                                    <i class="fas fa-plus"></i> Додати користувача
+                                    <i class="fas fa-plus"></i> Adicionar користувача
                                 </button>
                             </td>
                         </tr>
@@ -844,7 +847,7 @@
                                 <button class="btn btn-sm ${user.status === 'active' ? 'btn-warning' : 'btn-success'}" onclick="userManager.toggleUserStatus('${userId}')">
                                     <i class="fas ${user.status === 'active' ? 'fa-ban' : 'fa-check'}"></i>
                                 </button>
-                                <button class="btn btn-sm btn-danger" onclick="userManager.deleteUser('${userId}')" title="Видалити користувача">
+                                <button class="btn btn-sm btn-danger" onclick="userManager.deleteUser('${userId}')" title="Eliminar користувача">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </td>
@@ -974,7 +977,7 @@
                 this.filteredUsers = this.allUsers.filter(user => {
                     let roleMatch = roleFilter === 'all';
                     if (!roleMatch) {
-                        // Підтримка обох варіантів: tech та technician
+                        // Suporte обох варіантів: tech та technician
                         if (roleFilter === 'technician') {
                             roleMatch = user.role === 'technician' || user.role === 'tech';
                         } else {
@@ -1066,7 +1069,7 @@
                     
                     if (password) {
                         userData.password = password;
-                        // Зберегти пароль для показу (тільки якщо він був згенерований)
+                        // Guardar пароль для показу (тільки якщо він був згенерований)
                         if (!userId) {
                             passwordToSend = password;
                         }
@@ -1226,10 +1229,10 @@
 
             getStatusLabel(status) {
                 const statuses = {
-                    'active': 'Активний',
-                    'inactive': 'Неактивний'
+                    'active': 'Ativo',
+                    'inactive': 'Inativo'
                 };
-                return statuses[status] || 'Активний';
+                return statuses[status] || 'Ativo';
             }
 
             formatDate(dateString) {
@@ -1318,10 +1321,10 @@
                     </div>
                 `;
                 
-                // Видалити старе модальне вікно якщо є
+                // Eliminar старе модальне вікно якщо є
                 $('#generatedPasswordModal').remove();
                 
-                // Додати нове
+                // Adicionar нове
                 $('body').append(modalHTML);
                 
                 // Показати
@@ -1371,7 +1374,7 @@
                     }
                 });
                 
-                // Видалити модальне вікно після закриття
+                // Eliminar модальне вікно після закриття
                 $('#generatedPasswordModal').on('hidden.bs.modal', function() {
                     $(this).remove();
                 });
@@ -1385,7 +1388,7 @@
                     // Дані для email
                     const emailData = {
                         to: email,
-                        subject: 'Ваш доступ до LiftMaster Pro',
+                        subject: 'Ваш доступ до FestLift',
                         html: `
                             <!DOCTYPE html>
                             <html>
@@ -1406,12 +1409,12 @@
                             <body>
                                 <div class="container">
                                     <div class="header">
-                                        <h1>🔑 Ласкаво просимо до LiftMaster Pro!</h1>
-                                        <p>Система управління ліфтами від FestLift</p>
+                                        <h1>🔑 Ласкаво просимо до FestLift!</h1>
+                                        <p>Sistema de gestão ліфтами від FestLift</p>
                                     </div>
                                     <div class="content">
                                         <h2>Вітаємо!</h2>
-                                        <p>Для вас створено обліковий запис в системі <strong>LiftMaster Pro</strong>.</p>
+                                        <p>Для вас створено обліковий запис в системі <strong>FestLift</strong>.</p>
                                         
                                         <div class="credentials">
                                             <h3>📧 Ваші дані для входу:</h3>

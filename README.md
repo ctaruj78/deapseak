@@ -1,6 +1,6 @@
-# 🏢 DeapSeaK v2 - Lift Management System
+# 🏢 FestLift - Gestão de Elevadores
 
-Система управління ліфтами з повною підтримкою MongoDB, JWT автентифікацією, WebSocket real-time оновленнями та адаптивним інтерфейсом.
+Sistema de gestão de elevadores з повною підтримкою MongoDB, JWT автентифікацією, WebSocket real-time оновленнями та адаптивним інтерфейсом.
 
 ---
 

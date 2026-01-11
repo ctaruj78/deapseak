@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мапа ліфтів - LiftMaster Pro</title>
+
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        #liftsMap {
+            height: 70vh;
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .map-controls {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .lift-marker {
+            background-color: #007bff;
+            border: 2px solid white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .lift-popup {
+            min-width: 250px;
+        }
+
+        .lift-status {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .status-active { background-color: #d4edda; color: #155724; }
+        .status-maintenance { background-color: #fff3cd; color: #856404; }
+        .status-error { background-color: #f8d7da; color: #721c24; }
+
+        .stats-card {
+            border-left: 4px solid;
+            transition: transform 0.2s ease;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stats-card.total { border-left-color: #007bff; }
+        .stats-card.active { border-left-color: #28a745; }
+        .stats-card.maintenance { border-left-color: #ffc107; }
+        .stats-card.error { border-left-color: #dc3545; }
+
+        /* ═══════════════════════════════════════════════════════════
+         * 🗺️ ROUTING CONTROL - Вікно з маршрутом (DRAGGABLE)
+         * ═══════════════════════════════════════════════════════════*/
+        
+        /* Вікно маршруту - можна перетягувати */
+        .leaflet-routing-container {
+            position: absolute !important;
+            top: 10px !important;
+            right: 10px !important;
+            max-width: 350px !important;
+            max-height: 450px !important;
+            overflow-y: auto !important;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
+            z-index: 1000 !important;
+            cursor: move !important;
+        }
+
+        /* Стилізація заголовка - активна зона для перетягування */
+        .leaflet-routing-container h2,
+        .leaflet-routing-container h3 {
+            background: #007bff !important;
+            color: white !important;
+            padding: 10px 40px 10px 15px !important;
+            margin: 0 !important;
+            font-size: 16px !important;
+            border-radius: 8px 8px 0 0 !important;
+            position: relative !important;
+            cursor: move !important;
+            user-select: none !important;
+        }
+
+        /* Іконка перетягування в заголовку */
+        .leaflet-routing-container h2::after,
+        .leaflet-routing-container h3::after {
+            content: '⋮⋮';
+            position: absolute;
+            left: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            opacity: 0.7;
+            letter-spacing: -2px;
+        }
+
+        /* Альтернативи маршруту */
+        .leaflet-routing-alt {
+            padding: 10px !important;
+            border-bottom: 1px solid #eee !important;
+            cursor: default !important;
+        }
+
+        .leaflet-routing-alt:hover {
+            background: #f8f9fa !important;
+        }
+
+        /* Кнопки згортання */
+        .leaflet-routing-collapse-btn {
+            color: white !important;
+            background: transparent !important;
+            border: none !important;
+            font-size: 20px !important;
+            cursor: pointer !important;
+        }
+
+        /* Скролбар */
+        .leaflet-routing-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .leaflet-routing-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .leaflet-routing-container::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .leaflet-routing-container::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Приховати зайві елементи */
+        .leaflet-routing-geocoders {
+            display: none !important;
+        }
+
+        /* Кнопка закриття маршруту */
+        .route-close-btn {
+            transition: all 0.2s ease;
+            cursor: pointer !important;
+        }
+
+        .route-close-btn:hover {
+            background: rgba(255,255,255,0.3) !important;
+            transform: scale(1.1);
+        }
+
+        /* Анімація при перетягуванні */
+        .leaflet-routing-container.dragging {
+            opacity: 0.8;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4) !important;
+        }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper">
+
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="admin-dashboard.html" class="nav-link">Головна</a>
+                </li>
+            </ul>
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="#" id="refreshMap">
+                        <i class="fas fa-sync-alt"></i> Оновити
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Sidebar Container -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <!-- Brand Logo -->
+            <a href="admin-dashboard.html" class="brand-link">
+                <img src="../../assets/img/logo.png" alt="Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
+                <span class="brand-text font-weight-light">LiftMaster Pro</span>
+            </a>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Sidebar user panel (optional) -->
+                <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                    <div class="image">
+                        <img src="https://via.placeholder.com/160x160/007bff/ffffff?text=A" class="img-circle elevation-2" alt="User Image">
+                    </div>
+                    <div class="info">
+                        <a href="#" class="d-block">Адміністратор</a>
+                    </div>
+                </div>
+
+                <!-- Sidebar Menu -->
+                <!-- CANONICAL ADMIN SIDEBAR - Copy this to all admin pages -->
+<nav class="mt-2">
+    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+        <!-- Dashboard -->
+        <li class="nav-item">
+            <a href="/pages/admin/admin-dashboard.html" class="nav-link">
+                <i class="nav-icon fas fa-tachometer-alt"></i>
+                <p>Дашборд</p>
+            </a>
+        </li>
+
+        <!-- QR System -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-qrcode"></i>
+                <p>
+                    QR Система
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/admin/qr-management.html" class="nav-link">
+                        <i class="fas fa-cog nav-icon"></i>
+                        <p>Керування QR-кодами</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/qr-analytics.html" class="nav-link">
+                        <i class="fas fa-chart-line nav-icon"></i>
+                        <p>Аналітика QR-кодів</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/qr-history.html" class="nav-link">
+                        <i class="fas fa-history nav-icon"></i>
+                        <p>Історія сканувань</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Lifts -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-elevator"></i>
+                <p>
+                    Ліфти
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/admin/lifts.html" class="nav-link">
+                        <i class="fas fa-list nav-icon"></i>
+                        <p>Управління ліфтами</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/requests.html" class="nav-link">
+                        <i class="fas fa-clipboard-list nav-icon"></i>
+                        <p>Заявки</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/maps.html" class="nav-link active">
+                        <i class="fas fa-map-marked-alt nav-icon"></i>
+                        <p>Мапа ліфтів</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Users -->
+        <li class="nav-item">
+            <a href="/pages/admin/users.html" class="nav-link">
+                <i class="nav-icon fas fa-users"></i>
+                <p>Користувачі</p>
+            </a>
+        </li>
+
+        <!-- Documents -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-file-alt"></i>
+                <p>
+                    Документи
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/admin/invoice-template.html" class="nav-link">
+                        <i class="fas fa-file-invoice nav-icon"></i>
+                        <p>Orçamentos (Створити)</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/orcamentos-list.html" class="nav-link">
+                        <i class="fas fa-list nav-icon"></i>
+                        <p>Orçamentos (Список)</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/email-template.html" class="nav-link">
+                        <i class="fas fa-envelope nav-icon"></i>
+                        <p>Email шаблони</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Analytics -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-chart-line"></i>
+                <p>
+                    Аналітика
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/admin/unified-analytics.html" class="nav-link">
+                        <i class="fas fa-chart-area nav-icon"></i>
+                        <p>Unified Analytics</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/predictive-maintenance.html" class="nav-link">
+                        <i class="fas fa-brain nav-icon"></i>
+                        <p>Predictive Maintenance</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/reports.html" class="nav-link">
+                        <i class="fas fa-chart-bar nav-icon"></i>
+                        <p>Звіти</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <li class="nav-item">
+            <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link">
+                <i class="nav-icon fas fa-magic"></i>
+                <p>AI Асистент</p>
+            </a>
+        </li>
+
+        <!-- Support -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-headset"></i>
+                <p>
+                    Підтримка
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/admin/notifications.html" class="nav-link">
+                        <i class="fas fa-bell nav-icon"></i>
+                        <p>Сповіщення</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Settings -->
+        <li class="nav-item">
+            <a href="/pages/admin/settings.html" class="nav-link">
+                <i class="nav-icon fas fa-cogs"></i>
+                <p>Налаштування</p>
+            </a>
+        </li>
+    </ul>
+</nav>
+            </div>
+        </aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <!-- Content Header -->
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">Мапа ліфтів</h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="admin-dashboard.html">Головна</a></li>
+                                <li class="breadcrumb-item active">Мапа ліфтів</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+
+                    <!-- Statistics Cards -->
+                    <div class="row">
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-info stats-card total">
+                                <div class="inner">
+                                    <h3 id="totalLifts"><i class="fas fa-spinner fa-spin"></i></h3>
+                                    <p>Всього ліфтів</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-building"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-success stats-card active">
+                                <div class="inner">
+                                    <h3 id="activeLifts"><i class="fas fa-spinner fa-spin"></i></h3>
+                                    <p>Активних</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-warning stats-card maintenance">
+                                <div class="inner">
+                                    <h3 id="maintenanceLifts"><i class="fas fa-spinner fa-spin"></i></h3>
+                                    <p>На обслуговуванні</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-tools"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-danger stats-card error">
+                                <div class="inner">
+                                    <h3 id="errorLifts"><i class="fas fa-spinner fa-spin"></i></h3>
+                                    <p>З несправностями</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Map Controls -->
+                    <div class="map-controls">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label for="searchInput">Пошук:</label>
+                                <input type="text" class="form-control" id="searchInput" 
+                                       placeholder="Адреса, номер, клієнт...">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="statusFilter">Фільтр за статусом:</label>
+                                <select class="form-control" id="statusFilter">
+                                    <option value="all">Всі ліфти</option>
+                                    <option value="active">Активні</option>
+                                    <option value="maintenance">На обслуговуванні</option>
+                                    <option value="inactive">З несправностями</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="routeToLift">Прокласти маршрут до ліфта:</label>
+                                <select id="routeToLift" class="form-control">
+                                    <option value="">Оберіть ліфт</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label>&nbsp;</label>
+                                <button id="btnRoute" class="btn btn-primary btn-block">
+                                    <i class="fas fa-route"></i> Маршрут
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Map Container -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Інтерактивна мапа ліфтів</h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <button type="button" class="btn btn-tool" data-card-widget="maximize">
+                                    <i class="fas fa-expand"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="liftsMap"></div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../../plugins/jquery/jquery.min.js"></script>
+    <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+        <!-- AdminLTE App -->
+    <script src="../../plugins/adminlte/adminlte.min.js"></script>
+
+    <!-- Load sidebar dynamically -->
+    <script>
+        $(document).ready(function() {
+            $(".main-sidebar").load("includes/sidebar.html");
+        });
+    </script>
+    
+    <!-- 🌍 Система багатомовності -->
+    <script src="../../assets/js/i18n.js"></script>
+    <script src="../../assets/js/init-i18n.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet Routing Machine -->
+    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+    <!-- Auth Manager -->
+    <script src="../../assets/js/auth.js"></script>
+    <script src="../../assets/js/config.js"></script>
+
+    <script>
+        let lifts = [];
+        let map;
+        let markers = [];
+        let routingControl = null;
+        let userLocation = null;
+
+        $(document).ready(async function() {
+            // Перевірка авторизації
+            if (!AuthManager.isAuthenticated()) {
+                window.location.replace('/pages/auth/login.html');
+                return;
+            }
+
+            await loadLiftsFromAPI();
+            initializeMap();
+            populateLiftSelector();
+            setupEventListeners();
+            updateStats();
+            getUserLocation();
+        });
+
+        // Завантаження ліфтів з API
+        async function loadLiftsFromAPI() {
+            try {
+                console.log('🔄 Завантаження ліфтів з API...');
+                const response = await AuthManager.fetchWithAuth('/api/lifts');
+                
+                if (!response.ok) {
+                    throw new Error('Помилка завантаження ліфтів');
+                }
+
+                const data = await response.json();
+                console.log('📦 Отримані дані з API:', data);
+                console.log('✅ Завантажено ліфтів:', data.data?.length || 0);
+                
+                // Конвертуємо дані з MongoDB в формат для мапи
+                lifts = (data.data || []).map(lift => {
+                    console.log('🔄 Обробка ліфта:', lift._id, lift.location?.coordinates);
+                    
+                    // Формуємо повну адресу з містом і країною
+                    const fullAddress = [
+                        lift.address?.street,
+                        lift.address?.city,
+                        lift.address?.country
+                    ].filter(Boolean).join(', ');
+                    
+                    return {
+                        id: lift._id,
+                        model: lift.model || 'Невідомо',
+                        manufacturer: lift.manufacturer,
+                        address: fullAddress || 'Адреса не вказана',
+                        location: fullAddress || 'Адреса не вказана',
+                        city: lift.address?.city || 'Невідомо',
+                        country: lift.address?.country || 'Невідомо',
+                        lat: lift.location?.coordinates?.[1] || 50.4501,
+                        lng: lift.location?.coordinates?.[0] || 30.5234,
+                        status: mapStatus(lift.status),
+                        lastMaintenance: lift.lastInspectionDate ? new Date(lift.lastInspectionDate).toLocaleDateString('uk-UA') : 'Невідомо',
+                        municipalNumber: lift.municipalNumber
+                    };
+                });
+
+                console.log('✅ Оброблено ліфтів для мапи:', lifts.length);
+                console.log('📍 Перший ліфт:', lifts[0]);
+            } catch (error) {
+                console.error('❌ Помилка завантаження ліфтів:', error);
+                // Fallback до тестових даних
+                lifts = [
+                    { id: 'sample_1', model: 'Ліфт №1', address: 'вул. Хрещатик, 1', lat: 50.4501, lng: 30.5234, status: 'active', lastMaintenance: '2024-01-10', location: 'вул. Хрещатик, 1' }
+                ];
+            }
+        }
+
+        // Мапування статусів MongoDB до статусів мапи
+        function mapStatus(mongoStatus) {
+            const statusMap = {
+                'operational': 'active',
+                'maintenance': 'maintenance',
+                'out_of_service': 'error',
+                'inactive': 'error'
+            };
+            return statusMap[mongoStatus] || 'active';
+        }
+
+        // Отримання геолокації користувача
+        function getUserLocation() {
+            if (navigator.geolocation) {
+                console.log('🔍 Запит геолокації...');
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        userLocation = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude,
+                            accuracy: position.coords.accuracy
+                        };
+                        console.log('📍 Отримано геолокацію користувача:');
+                        console.log('  Широта:', userLocation.lat);
+                        console.log('  Довгота:', userLocation.lng);
+                        console.log('  Точність:', userLocation.accuracy, 'метрів');
+                        
+                        // Додати маркер поточної позиції
+                        L.marker([userLocation.lat, userLocation.lng], {
+                            icon: L.icon({
+                                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+                                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                                iconSize: [25, 41],
+                                iconAnchor: [12, 41],
+                                popupAnchor: [1, -34],
+                                shadowSize: [41, 41]
+                            })
+                        })
+                        .addTo(map)
+                        .bindPopup('Ваша поточна позиція')
+                        .openPopup();
+                    },
+                    (error) => {
+                        console.warn('⚠️ Не вдалося отримати геолокацію:', error.message);
+                    }
+                );
+            }
+        }
+
+        function initializeMap() {
+            console.log('🗺️ Ініціалізація мапи...');
+            console.log('📍 Кількість ліфтів для відображення:', lifts.length);
+            
+            // Initialize map centered on Kyiv
+            map = L.map('liftsMap').setView([50.4501, 30.5234], 13);
+
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
+
+            // Add lift markers
+            if (lifts.length === 0) {
+                console.warn('⚠️ Немає ліфтів для відображення на мапі');
+            } else {
+                lifts.forEach((lift, index) => {
+                    console.log(`➕ Додаємо маркер ${index + 1}:`, {
+                        id: lift.id,
+                        lat: lift.lat,
+                        lng: lift.lng,
+                        address: lift.address
+                    });
+                    addLiftMarker(lift);
+                });
+                console.log('✅ Всі маркери додано:', markers.length);
+            }
+        }
+
+        function addLiftMarker(lift) {
+            console.log('🎯 addLiftMarker викликано для:', lift.id, 'координати:', lift.lat, lift.lng);
+            
+            const markerColor = getStatusColor(lift.status);
+            const markerHtml = `<div class="lift-marker" style="background-color: ${markerColor}"></div>`;
+
+            const customIcon = L.divIcon({
+                html: markerHtml,
+                className: 'custom-lift-marker',
+                iconSize: [20, 20],
+                iconAnchor: [10, 10]
+            });
+
+            try {
+                const marker = L.marker([lift.lat, lift.lng], { icon: customIcon })
+                    .addTo(map)
+                    .bindPopup(createLiftPopup(lift));
+
+                markers.push({ marker, lift });
+                console.log('✅ Маркер додано успішно');
+            } catch (error) {
+                console.error('❌ Помилка додавання маркера:', error);
+            }
+        }
+
+        function createLiftPopup(lift) {
+            const statusClass = `status-${lift.status}`;
+            const statusText = getStatusText(lift.status);
+            const displayName = lift.model || lift.name || `Ліфт ${lift.id}`;
+            const displayAddress = lift.location || lift.address || 'Адреса не вказана';
+            const lastService = lift.lastMaintenance || lift.lastService || 'Невідомо';
+
+            return `
+                <div class="lift-popup">
+                    <h6>${displayName}</h6>
+                    <p><strong>Адреса:</strong> ${displayAddress}</p>
+                    <p><strong>Статус:</strong> <span class="lift-status ${statusClass}">${statusText}</span></p>
+                    <p><strong>Останнє ТО:</strong> ${lastService}</p>
+                    <div class="text-center mt-2">
+                        <a href="lifts.html" class="btn btn-sm btn-primary">Переглянути деталі</a>
+                    </div>
+                </div>
+            `;
+        }
+
+        function populateLiftSelector() {
+            const selector = $('#routeToLift');
+            selector.empty(); // Очистити попередні опції
+            selector.append('<option value="">Оберіть ліфт</option>');
+            lifts.forEach(lift => {
+                const displayName = lift.model || lift.name || `Ліфт ${lift.id}`;
+                const displayAddress = lift.location || lift.address || 'Адреса не вказана';
+                selector.append(`<option value="${lift.id}">${displayName} - ${displayAddress}</option>`);
+            });
+        }
+
+        function setupEventListeners() {
+            $('#statusFilter').change(filterLifts);
+            $('#searchInput').on('input', filterLifts);
+            $('#btnRoute').click(showRoute);
+            $('#refreshMap').click(refreshMap);
+        }
+
+        function filterLifts() {
+            const statusFilter = $('#statusFilter').val();
+            const searchQuery = $('#searchInput').val().toLowerCase().trim();
+
+            markers.forEach(({ marker, lift }) => {
+                let statusMatch = statusFilter === 'all' || lift.status === statusFilter;
+                let searchMatch = true;
+                
+                if (searchQuery) {
+                    const searchableText = [
+                        lift.name || '',
+                        lift.model || '',
+                        lift.municipalNumber || '',
+                        lift.location || '',
+                        lift.address || '',
+                        (lift.address && typeof lift.address === 'object') 
+                            ? `${lift.address.street || ''} ${lift.address.city || ''}` 
+                            : '',
+                        lift.manufacturer || '',
+                        lift.client || ''
+                    ].join(' ').toLowerCase();
+                    
+                    searchMatch = searchableText.includes(searchQuery);
+                }
+                
+                if (statusMatch && searchMatch) {
+                    map.addLayer(marker);
+                } else {
+                    map.removeLayer(marker);
+                }
+            });
+            
+            console.log(`🔍 Фільтр мапи: статус="${statusFilter}", пошук="${searchQuery}"`);
+        }
+
+        function showRoute() {
+            const liftId = $('#routeToLift').val();
+            if (!liftId) {
+                alert('Оберіть ліфт для прокладання маршруту');
+                return;
+            }
+
+            const lift = lifts.find(l => l.id == liftId);
+            if (!lift) return;
+
+            // Перевірити чи є геолокація користувача
+            if (!userLocation) {
+                alert('Не вдалося визначити вашу поточну локацію. Дозвольте доступ до геолокації в браузері.');
+                map.setView([lift.lat, lift.lng], 16);
+                return;
+            }
+
+            // Видалити попередній маршрут
+            if (routingControl) {
+                map.removeControl(routingControl);
+            }
+
+            // Логування координат перед побудовою маршруту
+            console.log('🗺️ Побудова маршруту:');
+            console.log('  Від (користувач):', userLocation.lat, userLocation.lng);
+            console.log('  До (ліфт):', lift.lat, lift.lng);
+            console.log('  Адреса ліфта:', lift.address);
+            
+            // Розрахунок прямої відстані (Haversine formula)
+            const R = 6371e3; // Earth radius in meters
+            const φ1 = userLocation.lat * Math.PI/180;
+            const φ2 = lift.lat * Math.PI/180;
+            const Δφ = (lift.lat - userLocation.lat) * Math.PI/180;
+            const Δλ = (lift.lng - userLocation.lng) * Math.PI/180;
+            const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                      Math.cos(φ1) * Math.cos(φ2) *
+                      Math.sin(Δλ/2) * Math.sin(Δλ/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            const distance = R * c;
+            const distanceKm = (distance/1000).toFixed(2);
+            console.log('  Пряма відстань:', distanceKm, 'км');
+            console.log('  Відстань у метрах:', distance.toFixed(2), 'м');
+            
+            // Перевірка: якщо відстань менше 50 метрів
+            if (distance < 50) {
+                console.warn('⚠️ ПОПЕРЕДЖЕННЯ: Відстань занадто мала!');
+                console.warn('  Можливо координати ліфта збережені некоректно');
+                console.warn('  Або геолокація браузера визначила вашу позицію неточно');
+                alert(`⚠️ ПОПЕРЕДЖЕННЯ\n\nВідстань до ліфта: ${distance.toFixed(0)}м\n\nЦе занадто мало. Можливо:\n• Ви знаходитесь біля ліфта\n• Координати ліфта в базі даних некоректні\n• Геолокація браузера визначила позицію неточно\n\nПеревірте координати ліфта в розділі "Ліфти".`);
+            }
+
+            // Створити маршрут з поточної позиції до ліфта
+            routingControl = L.Routing.control({
+                waypoints: [
+                    L.latLng(userLocation.lat, userLocation.lng),
+                    L.latLng(lift.lat, lift.lng)
+                ],
+                routeWhileDragging: false,
+                showAlternatives: false,
+                lineOptions: {
+                    styles: [{color: '#007bff', weight: 5, opacity: 0.7}]
+                },
+                createMarker: function() { return null; }, // Не створювати додаткові маркери
+                language: 'en', // Використовуємо англійську, бо українська не підтримується
+                fitSelectedRoutes: true,
+                addWaypoints: false
+            }).on('routesfound', function(e) {
+                const routes = e.routes;
+                const summary = routes[0].summary;
+                console.log('✅ Маршрут знайдено:');
+                console.log('  Відстань маршруту:', (summary.totalDistance/1000).toFixed(2), 'км');
+                console.log('  Час у дорозі:', Math.round(summary.totalTime/60), 'хв');
+                
+                // Додаємо кнопку закриття після того як контейнер створено
+                setTimeout(() => {
+                    const container = document.querySelector('.leaflet-routing-container');
+                    if (container && !container.querySelector('.route-close-btn')) {
+                        const closeBtn = document.createElement('button');
+                        closeBtn.className = 'route-close-btn';
+                        closeBtn.innerHTML = '×';
+                        closeBtn.title = 'Закрити маршрут';
+                        closeBtn.style.cssText = `
+                            position: absolute;
+                            top: 5px;
+                            right: 10px;
+                            background: transparent;
+                            border: none;
+                            font-size: 28px;
+                            font-weight: bold;
+                            color: #fff;
+                            cursor: pointer;
+                            width: 30px;
+                            height: 30px;
+                            line-height: 26px;
+                            text-align: center;
+                            border-radius: 50%;
+                            z-index: 1001;
+                            transition: all 0.2s ease;
+                        `;
+                        
+                        closeBtn.addEventListener('mouseenter', function() {
+                            this.style.background = 'rgba(255,255,255,0.2)';
+                        });
+                        
+                        closeBtn.addEventListener('mouseleave', function() {
+                            this.style.background = 'transparent';
+                        });
+                        
+                        closeBtn.addEventListener('click', function() {
+                            if (routingControl) {
+                                map.removeControl(routingControl);
+                                routingControl = null;
+                                console.log('🗺️ Маршрут закрито');
+                            }
+                        });
+                        
+                        container.appendChild(closeBtn);
+                    }
+                    
+                    // ═══════════════════════════════════════════════════════════
+                    // 🖱️ DRAGGABLE - Робимо вікно перетягуваним
+                    // ═══════════════════════════════════════════════════════════
+                    if (!container.dataset.draggableInitialized) {
+                        container.dataset.draggableInitialized = 'true';
+                        
+                        let isDragging = false;
+                        let currentX;
+                        let currentY;
+                        let initialX;
+                        let initialY;
+                        let xOffset = 0;
+                        let yOffset = 0;
+                        
+                        // Знаходимо заголовок (область для перетягування)
+                        const header = container.querySelector('h2, h3');
+                        
+                        if (header) {
+                            header.addEventListener('mousedown', dragStart);
+                            document.addEventListener('mousemove', drag);
+                            document.addEventListener('mouseup', dragEnd);
+                            
+                            // Touch events для мобільних пристроїв
+                            header.addEventListener('touchstart', dragStart);
+                            document.addEventListener('touchmove', drag);
+                            document.addEventListener('touchend', dragEnd);
+                        }
+                        
+                        function dragStart(e) {
+                            // Ігноруємо клік на кнопці закриття
+                            if (e.target.classList.contains('route-close-btn')) {
+                                return;
+                            }
+                            
+                            if (e.type === 'touchstart') {
+                                initialX = e.touches[0].clientX - xOffset;
+                                initialY = e.touches[0].clientY - yOffset;
+                            } else {
+                                initialX = e.clientX - xOffset;
+                                initialY = e.clientY - yOffset;
+                            }
+                            
+                            if (e.target === header || header.contains(e.target)) {
+                                isDragging = true;
+                                container.classList.add('dragging');
+                            }
+                        }
+                        
+                        function drag(e) {
+                            if (isDragging) {
+                                e.preventDefault();
+                                
+                                if (e.type === 'touchmove') {
+                                    currentX = e.touches[0].clientX - initialX;
+                                    currentY = e.touches[0].clientY - initialY;
+                                } else {
+                                    currentX = e.clientX - initialX;
+                                    currentY = e.clientY - initialY;
+                                }
+                                
+                                xOffset = currentX;
+                                yOffset = currentY;
+                                
+                                setTranslate(currentX, currentY, container);
+                            }
+                        }
+                        
+                        function dragEnd() {
+                            if (isDragging) {
+                                initialX = currentX;
+                                initialY = currentY;
+                                isDragging = false;
+                                container.classList.remove('dragging');
+                            }
+                        }
+                        
+                        function setTranslate(xPos, yPos, el) {
+                            el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
+                        }
+                        
+                        console.log('🖱️ Вікно маршруту тепер можна перетягувати за заголовок');
+                    }
+                }, 100);
+            }).on('routingerror', function(e) {
+                console.error('❌ Помилка побудови маршруту:', e.error);
+                alert('Не вдалося побудувати маршрут. Можливо, адреса занадто далеко або недоступна для автомобільного руху.');
+            }).addTo(map);
+
+            const displayName = lift.model || lift.name || `Ліфт ${lift.id}`;
+            console.log(`🗺️ Маршрут до: ${displayName} (${lift.location || lift.address})`);
+        }
+
+        async function refreshMap() {
+            console.log('🔄 Оновлення мапи...');
+            
+            // Оновити дані з API
+            await loadLiftsFromAPI();
+
+            // Очистити існуючі маркери
+            markers.forEach(({ marker }) => {
+                map.removeLayer(marker);
+            });
+            markers = [];
+
+            // Додати маркери знову
+            lifts.forEach(lift => {
+                addLiftMarker(lift);
+            });
+
+            // Оновити селектор маршрутів
+            populateLiftSelector();
+
+            // Оновити статистику
+            updateStats();
+
+            // Показати індикатор завантаження
+            $('#refreshMap i').addClass('fa-spin');
+            setTimeout(() => {
+                $('#refreshMap i').removeClass('fa-spin');
+                console.log('✅ Мапа оновлена');
+            }, 500);
+        }
+
+        function updateStats() {
+            const total = lifts.length;
+            const active = lifts.filter(l => l.status === 'active').length;
+            const maintenance = lifts.filter(l => l.status === 'maintenance').length;
+            const error = lifts.filter(l => l.status === 'inactive').length;
+
+            $('#totalLifts').text(total);
+            $('#activeLifts').text(active);
+            $('#maintenanceLifts').text(maintenance);
+            $('#errorLifts').text(error);
+        }
+
+        function getStatusColor(status) {
+            switch (status) {
+                case 'active': return '#28a745';
+                case 'maintenance': return '#ffc107';
+                case 'inactive': return '#dc3545';
+                default: return '#6c757d';
+            }
+        }
+
+        function getStatusText(status) {
+            switch (status) {
+                case 'active': return 'Активний';
+                case 'maintenance': return 'На обслуговуванні';
+                case 'inactive': return 'З несправностями';
+                default: return 'Невідомо';
+            }
+        }
+    </script>
+</body>
+</html>

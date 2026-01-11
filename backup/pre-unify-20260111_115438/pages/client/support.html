@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Підтримка - Клієнт</title>
+    
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    
+    <style>
+        .support-page {
+            background-color: #f8f9fa;
+        }
+        
+        .support-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .support-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .support-category {
+            text-align: center;
+            padding: 30px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .support-category:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .category-technical {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+        }
+        
+        .category-billing {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
+        .category-emergency {
+            background: linear-gradient(135deg, #fd7e14 0%, #fcc419 100%);
+            color: #212529;
+        }
+        
+        .category-general {
+            background: linear-gradient(135deg, #20c997 0%, #38d39f 100%);
+            color: white;
+        }
+        
+        .category-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        
+        .ticket-card {
+            border-left: 4px solid #007bff;
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+        
+        .ticket-card.pending {
+            border-left-color: #ffc107;
+        }
+        
+        .ticket-card.in-progress {
+            border-left-color: #17a2b8;
+        }
+        
+        .ticket-card.resolved {
+            border-left-color: #28a745;
+        }
+        
+        .ticket-card.closed {
+            border-left-color: #6c757d;
+        }
+        
+        .chat-container {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .chat-message {
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 12px;
+            max-width: 80%;
+        }
+        
+        .message-support {
+            background: #e3f2fd;
+            margin-right: auto;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .message-client {
+            background: #f8f9fa;
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .message-time {
+            font-size: 0.75rem;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        .knowledge-base-item {
+            border-left: 3px solid #007bff;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .knowledge-base-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .faq-item {
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+        
+        .contact-method {
+            text-align: center;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .contact-method:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .contact-phone {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        
+        .contact-email {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: #212529;
+        }
+        
+        .contact-chat {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #212529;
+        }
+        
+        .contact-form {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .support-status {
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-pending {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .status-in-progress {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .status-resolved {
+            background: #28a745;
+            color: white;
+        }
+        
+        .status-closed {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .dark-mode .support-card {
+            background-color: #2d3748;
+            color: white;
+        }
+        
+        .dark-mode .chat-message.message-support {
+            background: #2d3748;
+            color: white;
+        }
+        
+        .dark-mode .chat-message.message-client {
+            background: #4a5568;
+            color: white;
+        }
+        
+        .dark-mode .knowledge-base-item {
+            background-color: #2d3748;
+            color: white;
+        }
+        
+        @media (max-width: 768px) {
+            .support-category {
+                padding: 20px 15px;
+            }
+            
+            .category-icon {
+                font-size: 2.5rem;
+            }
+            
+            .chat-message {
+                max-width: 90%;
+            }
+            
+            .contact-method {
+                padding: 15px;
+            }
+        }
+        
+        /* Анімації */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        /* Спеціальні стилі для форми */
+        .form-floating {
+            position: relative;
+        }
+        
+        .form-floating label {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            padding: 1rem 0.75rem;
+            pointer-events: none;
+            border: 1px solid transparent;
+            transform-origin: 0 0;
+            transition: opacity 0.1s ease-in-out, transform 0.1s ease-in-out;
+        }
+        
+        .form-floating > .form-control:focus ~ label,
+        .form-floating > .form-control:not(:placeholder-shown) ~ label {
+            transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+            opacity: 0.65;
+        }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed support-page">
+    <div class="wrapper">
+
+        <!-- Навігаційна панель -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button">
+                        <i class="fas fa-bars"></i>
+                    </a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="/pages/client/dashboard.html" class="nav-link">Головна</a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="/pages/client/support.html" class="nav-link active">Підтримка</a>
+                </li>
+            </ul>
+
+            <!-- Права частина навігації -->
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link notification-bell" href="/pages/client/notifications.html" title="Сповіщення">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge bg-danger" id="notificationCount">0</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/pages/client/support.html" title="Підтримка">
+                        <i class="fas fa-headset"></i>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" id="darkModeToggle" title="Темна тема">
+                        <i class="fas fa-moon"></i>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="logout()" title="Вийти">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Бічна панель -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <a href="/pages/client/dashboard.html" class="brand-link text-center">
+                <span class="brand-text font-weight-light">Клієнт</span>
+            </a>
+            
+            <div class="sidebar">
+                <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                    <div class="image">
+                        <img src="../../assets/img/avatars/client.png" class="img-circle elevation-2" alt="Client">
+                    </div>
+                    <div class="info">
+                        <a href="#" class="d-block" id="clientName">Клієнт</a>
+                        <small class="text-success"><i class="fas fa-circle mr-1"></i> Online</small>
+                    </div>
+                </div>
+                
+                <!-- CANONICAL CLIENT SIDEBAR - Copy this to all client pages -->
+<nav class="mt-2">
+    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+        <!-- Dashboard -->
+        <li class="nav-item">
+            <a href="/pages/client/dashboard.html" class="nav-link">
+                <i class="nav-icon fas fa-tachometer-alt"></i>
+                <p>Дашборд</p>
+            </a>
+        </li>
+
+        <!-- My Lifts -->
+        <li class="nav-item">
+            <a href="/pages/client/my-lifts.html" class="nav-link">
+                <i class="nav-icon fas fa-elevator"></i>
+                <p>Мої ліфти</p>
+            </a>
+        </li>
+
+        <!-- Requests -->
+        <li class="nav-item">
+            <a href="/pages/client/requests.html" class="nav-link">
+                <i class="nav-icon fas fa-clipboard-list"></i>
+                <p>Заявки</p>
+            </a>
+        </li>
+
+        <!-- History -->
+        <li class="nav-item">
+            <a href="/pages/client/history.html" class="nav-link">
+                <i class="nav-icon fas fa-history"></i>
+                <p>Історія</p>
+            </a>
+        </li>
+
+        <!-- Invoices -->
+        <li class="nav-item">
+            <a href="/pages/client/invoices.html" class="nav-link">
+                <i class="nav-icon fas fa-file-invoice"></i>
+                <p>Рахунки</p>
+            </a>
+        </li>
+
+        <!-- Documentation -->
+        <li class="nav-item">
+            <a href="/pages/client/documentation.html" class="nav-link">
+                <i class="nav-icon fas fa-folder-open"></i>
+                <p>Документація</p>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link">
+                <i class="nav-icon fas fa-magic"></i>
+                <p>AI Асистент</p>
+                <span class="badge badge-success right">Новинка</span>
+            </a>
+        </li>
+
+        <!-- Notifications -->
+        <li class="nav-item">
+            <a href="/pages/client/notifications.html" class="nav-link">
+                <i class="nav-icon fas fa-bell"></i>
+                <p>Сповіщення</p>
+            </a>
+        </li>
+
+        <!-- Support -->
+        <li class="nav-item">
+            <a href="/pages/client/support.html" class="nav-link active">
+                <i class="nav-icon fas fa-headset"></i>
+                <p>Підтримка</p>
+            </a>
+        </li>
+
+        <!-- Profile -->
+        <li class="nav-item">
+            <a href="/pages/client/profile.html" class="nav-link">
+                <i class="nav-icon fas fa-user-circle"></i>
+                <p>Профіль</p>
+            </a>
+        </li>
+    </ul>
+</nav>
+            </div>
+        </aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <section class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1>Служба підтримки</h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="/pages/client/dashboard.html">Головна</a></li>
+                                <li class="breadcrumb-item active">Підтримка</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+                    <!-- Категорії підтримки -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-layer-group mr-2"></i>Оберіть категорію запитання</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-lg-3 col-md-6 mb-3">
+                                            <div class="support-category category-technical" onclick="supportManager.showCategory('technical')">
+                                                <div class="category-icon">
+                                                    <i class="fas fa-tools"></i>
+                                                </div>
+                                                <h4>Технічні питання</h4>
+                                                <p>Проблеми з ліфтами, ремонт, обслуговування</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 col-md-6 mb-3">
+                                            <div class="support-category category-billing" onclick="supportManager.showCategory('billing')">
+                                                <div class="category-icon">
+                                                    <i class="fas fa-file-invoice-dollar"></i>
+                                                </div>
+                                                <h4>Рахунки та оплата</h4>
+                                                <p>Питання щодо рахунків, оплати, тарифів</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 col-md-6 mb-3">
+                                            <div class="support-category category-emergency" onclick="supportManager.showCategory('emergency')">
+                                                <div class="category-icon">
+                                                    <i class="fas fa-exclamation-triangle"></i>
+                                                </div>
+                                                <h4>Аварійні ситуації</h4>
+                                                <p>Термінова допомога, аварійні виклики</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 col-md-6 mb-3">
+                                            <div class="support-category category-general" onclick="supportManager.showCategory('general')">
+                                                <div class="category-icon">
+                                                    <i class="fas fa-question-circle"></i>
+                                                </div>
+                                                <h4>Загальні питання</h4>
+                                                <p>Інша інформація, документація, довідка</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Контактні методи -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-phone-alt mr-2"></i>Контактні методи</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-lg-3 col-md-6 mb-3">
+                                            <div class="contact-method contact-phone">
+                                                <i class="fas fa-phone fa-3x mb-3"></i>
+                                                <h4>Телефон</h4>
+                                                <p>+380 (44) 123-45-67</p>
+                                                <p>Пн-Пт: 9:00-18:00</p>
+                                                <button class="btn btn-light mt-2" onclick="supportManager.callSupport()">
+                                                    <i class="fas fa-phone"></i> Зателефонувати
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 col-md-6 mb-3">
+                                            <div class="contact-method contact-email">
+                                                <i class="fas fa-envelope fa-3x mb-3"></i>
+                                                <h4>Email</h4>
+                                                <p>support@liftservice.com</p>
+                                                <p>Відповідь протягом 24 год</p>
+                                                <button class="btn btn-dark mt-2" onclick="supportManager.emailSupport()">
+                                                    <i class="fas fa-envelope"></i> Написати
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 col-md-6 mb-3">
+                                            <div class="contact-method contact-chat">
+                                                <i class="fas fa-comments fa-3x mb-3"></i>
+                                                <h4>Онлайн-чат</h4>
+                                                <p>Ми онлайн зараз</p>
+                                                <p>Швидка допомога</p>
+                                                <button class="btn btn-primary mt-2" onclick="supportManager.startChat()">
+                                                    <i class="fas fa-comment"></i> Почати чат
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 col-md-6 mb-3">
+                                            <div class="contact-method contact-form">
+                                                <i class="fas fa-headset fa-3x mb-3"></i>
+                                                <h4>Форма звернення</h4>
+                                                <p>Створення тикету</p>
+                                                <p>Системне відстеження</p>
+                                                <button class="btn btn-light mt-2" onclick="supportManager.showTicketForm()">
+                                                    <i class="fas fa-ticket-alt"></i> Створити тикет
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Активні тикети -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-ticket-alt mr-2"></i>Мої активні звернення</h3>
+                                    <div class="card-tools">
+                                        <span class="badge badge-primary" id="activeTicketsCount">0</span>
+                                    </div>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div id="activeTicketsList">
+                                        <!-- Активні тикети будуть завантажені тут -->
+                                    </div>
+                                </div>
+                                <div class="card-footer text-center">
+                                    <a href="tickets.html" class="btn btn-sm btn-default">
+                                        <i class="fas fa-list"></i> Всі мої звернення
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- База знань -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-book mr-2"></i>База знань</h3>
+                                    <div class="card-tools">
+                                        <div class="input-group input-group-sm" style="width: 150px;">
+                                            <input type="text" class="form-control" placeholder="Пошук..." id="knowledgeBaseSearch">
+                                            <div class="input-group-append">
+                                                <button class="btn btn-primary" onclick="supportManager.searchKnowledgeBase()">
+                                                    <i class="fas fa-search"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row" id="knowledgeBaseList">
+                                        <!-- База знань буде завантажена тут -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Часті запитання (FAQ) -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-question-circle mr-2"></i>Часті запитання</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div id="faqAccordion">
+                                        <!-- FAQ буде завантажено тут -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Форма звернення -->
+                    <div class="row" id="ticketFormSection" style="display: none;">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-ticket-alt mr-2"></i>Нове звернення</h3>
+                                </div>
+                                <div class="card-body">
+                                    <form id="ticketForm">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="ticketCategory">Категорія *</label>
+                                                    <select class="form-control" id="ticketCategory" required>
+                                                        <option value="">Оберіть категорію...</option>
+                                                        <option value="technical">Технічне питання</option>
+                                                        <option value="billing">Рахунки та оплата</option>
+                                                        <option value="emergency">Аварійна ситуація</option>
+                                                        <option value="general">Загальне питання</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="ticketPriority">Пріоритет *</label>
+                                                    <select class="form-control" id="ticketPriority" required>
+                                                        <option value="low">Низький</option>
+                                                        <option value="medium" selected>Середній</option>
+                                                        <option value="high">Високий</option>
+                                                        <option value="critical">Критичний</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="ticketSubject">Тема *</label>
+                                            <input type="text" class="form-control" id="ticketSubject" placeholder="Короткий опис проблеми" required>
+                                        <div class="form-group">
+                                            <label for="ticketDescription">Опис проблеми *</label>
+                                            <textarea class="form-control" id="ticketDescription" rows="5" 
+                                                      placeholder="Детально опишіть вашу проблему або запитання..." required></textarea>
+                                        </div>
+                                        
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="ticketLift">Пов'язаний ліфт (якщо є)</label>
+                                                    <select class="form-control" id="ticketLift">
+                                                        <option value="">Оберіть ліфт...</option>
+                                                        <option value="lift-1">Ліфт №1 - вул. Центральна, 12</option>
+                                                        <option value="lift-2">Ліфт №2 - вул. Центральна, 12</option>
+                                                        <option value="lift-3">Ліфт №3 - вул. Головна, 25</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="ticketAttachment">Додати файл</label>
+                                                    <div class="custom-file">
+                                                        <input type="file" class="custom-file-input" id="ticketAttachment">
+                                                        <label class="custom-file-label" for="ticketAttachment">Обрати файл</label>
+                                                    </div>
+                                                    <small class="form-text text-muted">Максимальний розмір: 5MB (jpg, png, pdf)</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <div class="custom-control custom-checkbox">
+                                                <input type="checkbox" class="custom-control-input" id="ticketUrgent">
+                                                <label class="custom-control-label" for="ticketUrgent">
+                                                    <strong>Термінове звернення</strong> (відповідь протягом 2 годин)
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="card-footer">
+                                    <button type="button" class="btn btn-secondary" onclick="supportManager.hideTicketForm()">
+                                        <i class="fas fa-times"></i> Скасувати
+                                    </button>
+                                    <button type="button" class="btn btn-primary float-right" onclick="supportManager.submitTicket()">
+                                        <i class="fas fa-paper-plane"></i> Надіслати звернення
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Чат з підтримкою -->
+                    <div class="row mt-4" id="chatSection" style="display: none;">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-comments mr-2"></i>Онлайн-чат з підтримкою
+                                        <span class="badge badge-success ml-2" id="supportStatus">Онлайн</span>
+                                    </h3>
+                                    <div class="card-tools">
+                                        <button class="btn btn-sm btn-danger" onclick="supportManager.endChat()">
+                                            <i class="fas fa-times"></i> Завершити чат
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="chat-container" id="chatMessages">
+                                        <!-- Повідомлення чату будуть тут -->
+                                    </div>
+                                    <div class="input-group mt-3">
+                                        <input type="text" class="form-control" placeholder="Напишіть ваше повідомлення..." id="chatInput">
+                                        <div class="input-group-append">
+                                            <button class="btn btn-primary" onclick="supportManager.sendMessage()">
+                                                <i class="fas fa-paper-plane"></i> Надіслати
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer class="main-footer">
+            <strong>Клієнтська панель &copy; 2024</strong>
+            <div class="float-right d-none d-sm-inline-block">
+                <small id="connectionStatus"><i class="fas fa-wifi text-success"></i> Online</small>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Модальне вікно перегляду тикету -->
+    <div class="modal fade" id="viewTicketModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="ticketModalTitle">Деталі звернення</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h4 id="ticketSubject"></h4>
+                            <div class="ticket-meta mb-3">
+                                <span class="badge" id="ticketStatusBadge"></span>
+                                <span class="badge ml-2" id="ticketPriorityBadge"></span>
+                                <span class="text-muted ml-2" id="ticketDate"></span>
+                            </div>
+                            <div class="ticket-description">
+                                <h6>Опис:</h6>
+                                <p id="ticketDescription"></p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="ticket-info">
+                                <h6>Інформація:</h6>
+                                <p><strong>Номер:</strong> <span id="ticketNumber"></span></p>
+                                <p><strong>Категорія:</strong> <span id="ticketCategory"></span></p>
+                                <p><strong>Ліфт:</strong> <span id="ticketLiftInfo"></span></p>
+                                <p><strong>Відповідальний:</strong> <span id="ticketAssignee"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ticket-updates mt-4">
+                        <h6>Оновлення:</h6>
+                        <div id="ticketUpdates">
+                            <!-- Оновлення тикету будуть тут -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                    <button type="button" class="btn btn-primary" onclick="supportManager.addComment()">
+                        <i class="fas fa-comment"></i> Додати коментар
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../../plugins/jquery/jquery.min.js"></script>
+    <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="../../plugins/adminlte/adminlte.min.js"></script>
+
+    <script>
+        // Simple SupportManager stub to prevent console errors
+        class SupportManager {
+            showCategory(category) {
+                console.log('Showing category:', category);
+                alert(`Показ категорії: ${category}`);
+            }
+            
+            callSupport() {
+                alert('Дзвінок в підтримку: +380 44 123-45-67');
+            }
+            
+            emailSupport() {
+                window.location.href = 'mailto:support@liftmaster.com';
+            }
+            
+            startChat() {
+                alert('Функція чату буде доступна незабаром');
+            }
+            
+            showTicketForm() {
+                $('#ticketModal').modal('show');
+            }
+            
+            hideTicketForm() {
+                $('#ticketModal').modal('hide');
+            }
+            
+            submitTicket() {
+                alert('Тикет успішно відправлений!');
+                $('#ticketModal').modal('hide');
+            }
+            
+            searchKnowledgeBase() {
+                const query = $('#knowledgeSearch').val() || $('#knowledgeBaseSearch').val();
+                console.log('Searching knowledge base for:', query);
+                alert(`Пошук в базі знань: ${query || 'пустий запит'}`);
+            }
+            
+            sendMessage() {
+                alert('Повідомлення відправлено');
+            }
+            
+            endChat() {
+                alert('Чат завершено');
+            }
+            
+            addComment() {
+                alert('Коментар додано');
+            }
+        }
+
+        function logout() {
+            if (confirm('Ви впевнені, що хочете вийти з системи?')) {
+                if (typeof AuthManager !== 'undefined') {
+                    AuthManager.logout();
+                } else {
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    window.location.replace('/pages/auth/login.html');
+                }
+            }
+        }
+
+        $(document).ready(function() {
+            // Ініціалізація AdminLTE
+            $('[data-widget="pushmenu"]').PushMenu();
+            
+            // Темна тема
+            $('#darkModeToggle').on('click', function() {
+                $('body').toggleClass('dark-mode');
+                $(this).find('i').toggleClass('fa-moon fa-sun');
+            });
+
+            // Перевірка з'єднання
+            setInterval(() => {
+                const online = navigator.onLine;
+                $('#connectionStatus').html(
+                    online ? 
+                    '<i class="fas fa-wifi text-success"></i> Online' : 
+                    '<i class="fas fa-wifi-slash text-danger"></i> Offline'
+                );
+            }, 30000);
+
+            // Завантаження даних користувача
+            const userData = JSON.parse(localStorage.getItem('userData')) || {};
+            if (userData.firstName) {
+                $('#clientName').text(userData.firstName);
+            }
+
+            // Ініціалізація менеджера підтримки
+            window.supportManager = new SupportManager();
+            
+            // Обробка вибору файлу
+            $('.custom-file-input').on('change', function() {
+                let fileName = $(this).val().split('\\').pop();
+                $(this).next('.custom-file-label').addClass("selected").html(fileName);
+            });
+            
+            // Пошук при натисканні Enter
+            $('#knowledgeBaseSearch').on('keypress', function(e) {
+                if (e.which === 13) {
+                    supportManager.searchKnowledgeBase();
+                }
+            });
+            
+            $('#chatInput').on('keypress', function(e) {
+                if (e.which === 13) {
+                    supportManager.sendMessage();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

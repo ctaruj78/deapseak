@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🤖 AI Прогнозування - DeapSeaK</title>
+    <title>🤖 AI Прогнозування - FestLift</title>
     
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
@@ -175,7 +175,7 @@
         </ul>
         
         <div class="navbar-nav mx-auto">
-            <h4 class="mb-0">🤖 AI Прогнозування і Аналітика</h4>
+            <h4 class="mb-0">🤖 AI Прогнозування і Análise</h4>
         </div>
         
         <ul class="navbar-nav ml-auto">
@@ -189,7 +189,7 @@
     <!-- Main Sidebar -->
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
         <a href="/" class="brand-link">
-            <span class="brand-text font-weight-light">DeapSeaK Predictive</span>
+            <span class="brand-text font-weight-light">FestLift Predictive</span>
         </a>
         
         <div class="sidebar">
@@ -217,13 +217,13 @@
                 <li class="nav-item">
                     <a href="/pages/admin/qr-management.html" class="nav-link">
                         <i class="fas fa-cog nav-icon"></i>
-                        <p>Керування QR-кодами</p>
+                        <p>Gestão QR-кодами</p>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="/pages/admin/qr-analytics.html" class="nav-link">
                         <i class="fas fa-chart-line nav-icon"></i>
-                        <p>Аналітика QR-кодів</p>
+                        <p>Análise QR-кодів</p>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -240,7 +240,7 @@
             <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-elevator"></i>
                 <p>
-                    Ліфти
+                    Elevadores
                     <i class="right fas fa-angle-left"></i>
                 </p>
             </a>
@@ -270,7 +270,7 @@
         <li class="nav-item">
             <a href="/pages/admin/users.html" class="nav-link">
                 <i class="nav-icon fas fa-users"></i>
-                <p>Користувачі</p>
+                <p>Utilizadores</p>
             </a>
         </li>
 
@@ -310,7 +310,7 @@
             <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-chart-line"></i>
                 <p>
-                    Аналітика
+                    Análise
                     <i class="right fas fa-angle-left"></i>
                 </p>
             </a>
@@ -348,7 +348,7 @@
             <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-headset"></i>
                 <p>
-                    Підтримка
+                    Suporte
                     <i class="right fas fa-angle-left"></i>
                 </p>
             </a>
@@ -366,7 +366,7 @@
         <li class="nav-item">
             <a href="/pages/admin/settings.html" class="nav-link">
                 <i class="nav-icon fas fa-cogs"></i>
-                <p>Налаштування</p>
+                <p>Configurações</p>
             </a>
         </li>
     </ul>
@@ -389,7 +389,7 @@
                                 <i class="fas fa-sync-alt"></i> Запустити аналіз
                             </button>
                             <button class="btn btn-success btn-sm ml-2" onclick="exportPredictions()">
-                                <i class="fas fa-download"></i> Експорт
+                                <i class="fas fa-download"></i> Exportar
                             </button>
                         </div>
                     </div>
@@ -623,7 +623,7 @@
                                     <h3 class="card-title"><i class="fas fa-calendar-alt"></i> Оптимізований графік ТО</h3>
                                     <div class="card-tools">
                                         <button class="btn btn-sm btn-success" onclick="exportSchedule()">
-                                            <i class="fas fa-download"></i> Експорт календаря
+                                            <i class="fas fa-download"></i> Exportar календаря
                                         </button>
                                     </div>
                                 </div>
@@ -714,7 +714,7 @@ window.runAnalysis = function() {
     }
 };
 
-// Експорт прогнозів
+// Exportar прогнозів
 window.exportPredictions = function() {
     if (window.predictiveMaintenance) {
         const data = {
@@ -751,7 +751,7 @@ window.acknowledgeAllAlerts = function() {
     toastr.success('Всі алерти підтверджено!');
 };
 
-// Експорт графіка
+// Exportar графіка
 window.exportSchedule = function() {
     const scheduleData = {
         month: new Date().getMonth() + 1,
@@ -1253,7 +1253,7 @@ class PredictiveMaintenanceDashboard {
             cables: 'Троси',
             brakes: 'Гальма',
             doors: 'Двері',
-            control_system: 'Система управління',
+            control_system: 'Sistema de gestão',
             safety_systems: 'Системи безпеки'
         };
         return translations[component] || component;

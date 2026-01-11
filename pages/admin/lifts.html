@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"
@@ -524,13 +524,13 @@
                 <li class="nav-item">
                     <a href="/pages/admin/qr-management.html" class="nav-link">
                         <i class="fas fa-cog nav-icon"></i>
-                        <p>Керування QR-кодами</p>
+                        <p>Gestão QR-кодами</p>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="/pages/admin/qr-analytics.html" class="nav-link">
                         <i class="fas fa-chart-line nav-icon"></i>
-                        <p>Аналітика QR-кодів</p>
+                        <p>Análise QR-кодів</p>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -547,7 +547,7 @@
             <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-elevator"></i>
                 <p>
-                    Ліфти
+                    Elevadores
                     <i class="right fas fa-angle-left"></i>
                 </p>
             </a>
@@ -577,7 +577,7 @@
         <li class="nav-item">
             <a href="/pages/admin/users.html" class="nav-link">
                 <i class="nav-icon fas fa-users"></i>
-                <p>Користувачі</p>
+                <p>Utilizadores</p>
             </a>
         </li>
 
@@ -617,7 +617,7 @@
             <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-chart-line"></i>
                 <p>
-                    Аналітика
+                    Análise
                     <i class="right fas fa-angle-left"></i>
                 </p>
             </a>
@@ -655,7 +655,7 @@
             <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-headset"></i>
                 <p>
-                    Підтримка
+                    Suporte
                     <i class="right fas fa-angle-left"></i>
                 </p>
             </a>
@@ -673,7 +673,7 @@
         <li class="nav-item">
             <a href="/pages/admin/settings.html" class="nav-link">
                 <i class="nav-icon fas fa-cogs"></i>
-                <p>Налаштування</p>
+                <p>Configurações</p>
             </a>
         </li>
     </ul>
@@ -692,7 +692,7 @@
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
                                 <li class="breadcrumb-item"><a href="admin-dashboard.html">Головна</a></li>
-                                <li class="breadcrumb-item active">Ліфти</li>
+                                <li class="breadcrumb-item active">Elevadores</li>
                             </ol>
                         </div>
                     </div>
@@ -761,7 +761,7 @@
                                     <h3 class="card-title">Список ліфтів <span id="lift-count">(0)</span></h3>
                                     <div class="card-tools">
                                         <button id="add-lift-button" class="btn btn-success btn-sm" onclick="openEnhancedModal()">
-                                            <i class="fas fa-plus"></i> Додати ліфт
+                                            <i class="fas fa-plus"></i> Adicionar ліфт
                                         </button>
                                     </div>
                                 </div>
@@ -770,9 +770,9 @@
                                     <div class="row mb-3">
                                         <div class="col-md-4">
                                             <div class="form-group">
-                                                <label>Пошук:</label>
+                                                <label>Pesquisar:</label>
                                                 <div class="input-group">
-                                                    <input type="text" id="searchInput" class="form-control" placeholder="Пошук по моделі, адресі, ID..." aria-label="Пошук ліфтів">
+                                                    <input type="text" id="searchInput" class="form-control" placeholder="Pesquisar по моделі, адресі, ID..." aria-label="Pesquisar ліфтів">
                                                     <div class="input-group-append">
                                                         <button class="btn btn-primary" id="searchBtn" aria-label="Виконати пошук">
                                                             <i class="fas fa-search"></i>
@@ -784,7 +784,7 @@
                                         <div class="col-md-4">
                                             <div class="form-group">
                                                 <label>Статус:</label>
-                                                <select id="statusFilter" class="form-control" aria-label="Фільтр по статусу">
+                                                <select id="statusFilter" class="form-control" aria-label="Filtro по статусу">
                                                     <option value="all">Всі статуси</option>
                                                     <option value="operational">Працює</option>
                                                     <option value="maintenance">Обслуговування</option>
@@ -795,7 +795,7 @@
                                         <div class="col-md-4">
                                             <div class="form-group">
                                                 <label>Тип:</label>
-                                                <select id="typeFilter" class="form-control" aria-label="Фільтр по типу">
+                                                <select id="typeFilter" class="form-control" aria-label="Filtro по типу">
                                                     <option value="all">Всі типи</option>
                                                     <option value="passenger">Пасажирський</option>
                                                     <option value="freight">Вантажний</option>
@@ -831,10 +831,10 @@
                                 <div class="card-footer clearfix">
                                     <div class="float-left">
                                         <button class="btn btn-success btn-sm" id="exportCSVBtn">
-                                            <i class="fas fa-download"></i> Експорт CSV
+                                            <i class="fas fa-download"></i> Exportar CSV
                                         </button>
                                         <button class="btn btn-info btn-sm ml-2" id="exportPDFBtn">
-                                            <i class="fas fa-file-pdf"></i> Експорт PDF
+                                            <i class="fas fa-file-pdf"></i> Exportar PDF
                                         </button>
                                     </div>
                                     <div class="pagination-container d-flex justify-content-between align-items-center">
@@ -855,8 +855,11 @@
 
         <!-- Footer -->
         <footer class="main-footer">
-            <strong>Lift Management &copy; 2024</strong>
-            Всі права захищені.
+            <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
+            Sistema de gestão de elevadores v2.1.0.
+            <div class="float-right d-none d-sm-inline-block">
+                <b>Versão</b> 2.1.0
+            </div>
         </footer>
     </div>
 
@@ -867,7 +870,7 @@
         <div class="modal-dialog modal-xl" role="document" style="max-height: 95vh; margin: 1.75rem auto;">
             <div class="modal-content" style="max-height: 95vh; display: flex; flex-direction: column;">
                 <div class="modal-header bg-success" style="flex-shrink: 0;">
-                    <h5 class="modal-title" id="enhancedModalTitle">Додати ліфт з картою</h5>
+                    <h5 class="modal-title" id="enhancedModalTitle">Adicionar ліфт з картою</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -1022,7 +1025,7 @@
                                         <div class="form-group">
                                             <label for="enhancedLiftAddress">Повна адреса *</label>
                                             <div class="input-group">
-                                                <input type="text" id="enhancedLiftAddress" name="liftAddress" class="form-control" required placeholder="вул. Хрещатик, 1, Київ">
+                                                <input type="text" id="enhancedLiftAddress" name="liftAddress" class="form-control" required placeholder="Rua Хрещатик, 1, Lisboa">
                                                 <div class="input-group-append">
                                                     <button type="button" class="btn btn-outline-info" id="enhancedBtnGeocode">
                                                         <i class="fas fa-search-location"></i>
@@ -1144,7 +1147,7 @@
                                                 <option value="operational">Працює</option>
                                                 <option value="maintenance">На технічному обслуговуванні</option>
                                                 <option value="broken">Поламаний</option>
-                                                <option value="inactive">Неактивний</option>
+                                                <option value="inactive">Inativo</option>
                                             </select>
                                         </div>
                                     </div>
@@ -1212,7 +1215,7 @@
                                 <div class="row">
                                     <div class="col-12">
                                         <button type="button" class="btn btn-outline-info" id="addInspectionReportBtn">
-                                            <i class="fas fa-plus"></i> Додати звіт інспекції
+                                            <i class="fas fa-plus"></i> Adicionar звіт інспекції
                                         </button>
                                     </div>
                                 </div>
@@ -1221,10 +1224,10 @@
                     </div>
                     <div class="modal-footer" style="flex-shrink: 0; border-top: 1px solid #dee2e6;">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                            <i class="fas fa-times"></i> Скасувати
+                            <i class="fas fa-times"></i> Cancelar
                         </button>
                         <button type="submit" class="btn btn-success">
-                            <i class="fas fa-save"></i> Зберегти ліфт з картою
+                            <i class="fas fa-save"></i> Guardar ліфт з картою
                         </button>
                     </div>
                 </form>
@@ -1387,11 +1390,11 @@
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h6>Звіти інспекцій</h6>
                                 <button type="button" class="btn btn-sm btn-primary" onclick="showAddReportModal()">
-                                    <i class="fas fa-plus"></i> Додати звіт
+                                    <i class="fas fa-plus"></i> Adicionar звіт
                                 </button>
                             </div>
                             
-                            <!-- Фільтри -->
+                            <!-- Filtroи -->
                             <div class="card mb-2">
                                 <div class="card-body p-2">
                                     <div class="row">
@@ -1414,7 +1417,7 @@
                                         </div>
                                         <div class="col-md-4">
                                             <input type="text" id="filter-report-search" class="form-control form-control-sm" 
-                                                   placeholder="Пошук..." onkeyup="filterReports()">
+                                                   placeholder="Pesquisar..." onkeyup="filterReports()">
                                         </div>
                                         <div class="col-md-2">
                                             <button class="btn btn-sm btn-secondary btn-block" onclick="clearReportFilters()">
@@ -1457,7 +1460,7 @@
                 </div>
                 <div class="modal-footer" style="flex-shrink: 0; border-top: 1px solid #dee2e6;">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
-                    <button type="button" class="btn btn-primary" id="edit-lift-from-details">Редагувати</button>
+                    <button type="button" class="btn btn-primary" id="edit-lift-from-details">Editar</button>
                 </div>
             </div>
         </div>
@@ -1500,7 +1503,7 @@
         <div class="modal-dialog" role="document" style="max-height: 95vh; margin: 1.75rem auto;">
             <div class="modal-content" style="max-height: 95vh; display: flex; flex-direction: column;">
                 <div class="modal-header bg-primary" style="flex-shrink: 0;">
-                    <h5 class="modal-title">Додати звіт інспекції</h5>
+                    <h5 class="modal-title">Adicionar звіт інспекції</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -1534,9 +1537,9 @@
                     </form>
                 </div>
                 <div class="modal-footer" style="flex-shrink: 0; border-top: 1px solid #dee2e6;">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-primary" onclick="submitReport()">
-                        <i class="fas fa-save"></i> Зберегти
+                        <i class="fas fa-save"></i> Guardar
                     </button>
                 </div>
             </div>
@@ -1580,7 +1583,7 @@
                     </form>
                 </div>
                 <div class="modal-footer" style="flex-shrink: 0; border-top: 1px solid #dee2e6;">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-success" onclick="submitContract()">
                         <i class="fas fa-upload"></i> Завантажити
                     </button>
@@ -1634,7 +1637,7 @@
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header bg-danger">
-                    <h5 class="modal-title">Додати втручання</h5>
+                    <h5 class="modal-title">Adicionar втручання</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -1679,7 +1682,7 @@
                                 <div class="form-group">
                                     <label for="intStatus">Статус *</label>
                                     <select id="intStatus" class="form-control" required>
-                                        <option value="completed">Завершено</option>
+                                        <option value="completed">Concluído</option>
                                         <option value="in-progress">В процесі</option>
                                         <option value="scheduled">Заплановано</option>
                                         <option value="cancelled">Скасовано</option>
@@ -1733,8 +1736,8 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
-                    <button type="button" class="btn btn-danger" id="saveInterventionBtn">Зберегти втручання</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="saveInterventionBtn">Guardar втручання</button>
                 </div>
             </div>
         </div>
@@ -1777,7 +1780,7 @@
             <div class="modal-content" style="max-height: 90vh; display: flex; flex-direction: column;">
                 <div class="modal-header bg-warning">
                     <h5 class="modal-title">
-                        <i class="fas fa-clipboard-check mr-2"></i>Додати звіт інспекції
+                        <i class="fas fa-clipboard-check mr-2"></i>Adicionar звіт інспекції
                     </h5>
                     <button type="button" class="close" id="closeInspectionModalBtn" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
@@ -1836,7 +1839,7 @@
                                                 <option value="passed">Пройдено успішно</option>
                                                 <option value="failed">Виявлені порушення</option>
                                                 <option value="conditional">Умовно пройдено</option>
-                                                <option value="pending">Очікує повторної перевірки</option>
+                                                <option value="pending">Pendente повторної перевірки</option>
                                             </select>
                                         </div>
                                     </div>
@@ -1885,7 +1888,7 @@
                                                     <i class="fas fa-archive mr-1"></i>Архівувати
                                                 </button>
                                                 <button type="button" class="btn btn-danger btn-sm" onclick="removeInspectionPDF()">
-                                                    <i class="fas fa-trash mr-1"></i>Видалити
+                                                    <i class="fas fa-trash mr-1"></i>Eliminar
                                                 </button>
                                             </div>
                                         </div>
@@ -1948,10 +1951,10 @@
                         </div>
                         <div>
                             <button type="button" class="btn btn-secondary mr-2" id="cancelInspectionReportBtn">
-                                <i class="fas fa-times"></i> Скасувати
+                                <i class="fas fa-times"></i> Cancelar
                             </button>
                             <button type="button" class="btn btn-success" id="saveInspectionReportBtn">
-                                <i class="fas fa-save"></i> Зберегти звіт інспекції
+                                <i class="fas fa-save"></i> Guardar звіт інспекції
                             </button>
                         </div>
                     </div>
@@ -2059,7 +2062,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                        <i class="fas fa-times mr-1"></i>Скасувати
+                        <i class="fas fa-times mr-1"></i>Cancelar
                     </button>
                     <button type="button" class="btn btn-info" id="btn-preview-municipality-email">
                         <i class="fas fa-eye mr-1"></i>Попередній перегляд
@@ -2188,13 +2191,13 @@
 Надсилаємо вам технічний звіт по вашому ліфту.
 
 З повагою,
-Команда DeapSeaK
+Команда FestLift
                                         </textarea>
                                     </div>
                                 </form>
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                                 <button type="button" class="btn btn-primary" onclick="sendEmailWithPDF()">Надіслати</button>
                             </div>
                         </div>
@@ -2406,7 +2409,7 @@
         }
 
         function deleteArchivedReport(reportId) {
-            if (confirm('Видалити цей звіт з архіву назавжди?')) {
+            if (confirm('Eliminar цей звіт з архіву назавжди?')) {
                 let archivedReports = JSON.parse(localStorage.getItem('archived_reports') || '[]');
                 archivedReports = archivedReports.filter(report => report.id !== reportId);
                 localStorage.setItem('archived_reports', JSON.stringify(archivedReports));
@@ -2514,7 +2517,7 @@
                     detailsModal.modal('hide');
                     setTimeout(() => {
                         window.enhancedLiftModal.loadLiftData(liftId);
-                        $('#modalTitle').text('Редагувати ліфт');
+                        $('#modalTitle').text('Editar ліфт');
                         $('#enhancedLiftModal').modal('show');
                     }, 300);
                 }
@@ -2583,7 +2586,7 @@
             window.enhancedLiftModal.currentLiftId = liftData.id || liftData._id;
             console.log('✅ Set currentLiftId BEFORE opening modal:', window.enhancedLiftModal.currentLiftId);
             
-            $('#enhancedModalTitle').text('Редагувати ліфт');
+            $('#enhancedModalTitle').text('Editar ліфт');
             
             if (window.enhancedLiftModal.loadLiftForEdit) {
                 window.enhancedLiftModal.loadLiftForEdit(liftData);
@@ -2594,7 +2597,7 @@
         } else {
             // Режим створення - скидаємо форму
             console.log('➕ CREATE MODE: New lift');
-            $('#enhancedModalTitle').text('Додати новий ліфт');
+            $('#enhancedModalTitle').text('Adicionar новий ліфт');
             
             // Очищуємо currentLiftId для режиму створення
             window.enhancedLiftModal.currentLiftId = null;
@@ -2630,14 +2633,14 @@
         $('#enhancedLiftModal').modal('show');
     };
 
-    // 🔧 ВИДАЛЕНО: Старий обробник "Зберегти і створити QR код"
+    // 🔧 ВИДАЛЕНО: Старий обробник "Guardar і створити QR код"
     // Причина: викликав дублювання ліфтів через збереження в localStorage
     // Тепер використовується EnhancedLiftModal.handleFormSubmit() з API
     
     document.addEventListener('DOMContentLoaded', function() {
         // Старий код видалено - використовуємо тільки API через EnhancedLiftModal
 
-        // Система управління інспекціями
+        // Sistema de gestão інспекціями
         const scheduleInspectionBtn = document.getElementById('scheduleInspectionBtn');
         if (scheduleInspectionBtn) {
             scheduleInspectionBtn.addEventListener('click', function() {
@@ -2838,7 +2841,7 @@
     }
 
     function cancelInspection(inspectionId) {
-        if (confirm('Скасувати цю інспекцію?')) {
+        if (confirm('Cancelar цю інспекцію?')) {
             let inspections = JSON.parse(localStorage.getItem('scheduled_inspections') || '[]');
             inspections = inspections.filter(i => i.id !== inspectionId);
             localStorage.setItem('scheduled_inspections', JSON.stringify(inspections));
@@ -2925,7 +2928,7 @@
     // Робимо функцію глобально доступною
     window.closeInspectionModal = closeInspectionModal;
 
-    // Обробник кнопки "Додати звіт інспекції"
+    // Обробник кнопки "Adicionar звіт інспекції"
     document.addEventListener('DOMContentLoaded', function() {
         const addInspectionReportBtn = document.getElementById('addInspectionReportBtn');
         if (addInspectionReportBtn) {
@@ -3508,12 +3511,12 @@
 Статус: ${document.getElementById('inspectionStatus').options[document.getElementById('inspectionStatus').selectedIndex]?.text || 'Не вказано'}
 
 З повагою,
-Команда DeapSeaK</textarea>
+Команда FestLift</textarea>
                                 </div>
                             </form>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                             <button type="button" class="btn btn-primary" onclick="sendEmailWithInspectionPDF()">Надіслати</button>
                         </div>
                     </div>
@@ -3646,7 +3649,7 @@
         
         // 🚀 EventBus: Налаштовуємо слухачів для автоматичної роботи системи
         if (window.eventBus) {
-            console.log('🚀 Налаштування EventBus інтеграції для сторінки ліфтів...');
+            console.log('🚀 Configurações EventBus інтеграції для сторінки ліфтів...');
             
             // Слухаємо створення QR кодів для автоматичного оновлення інтерфейсу
             eventBus.on('qr:auto-generated', (data) => {
@@ -3762,7 +3765,7 @@
                 // Зберігаємо стан в sessionStorage
                 sessionStorage.setItem('activeMenuItem', 'analytics');
                 
-                console.log('✅ Активовано пункт меню Аналітика');
+                console.log('✅ Активовано пункт меню Análise');
             });
         }
         
@@ -3891,7 +3894,7 @@
                 
                 const response = await fetch(url, {
                     headers: {
-                        'User-Agent': 'DeapSeaK-LiftManagement/2.0'
+                        'User-Agent': 'FestLift-LiftManagement/2.0'
                     }
                 });
                 
@@ -4008,7 +4011,7 @@
                 const apiData = result.data.data || result.data;
                 const lifts = apiData.lifts || apiData;
                 
-                console.log('✅ Ліфти завантажено з API:', lifts.length);
+                console.log('✅ Elevadores завантажено з API:', lifts.length);
                 
                 // Оновлюємо таблицю
                 if (Array.isArray(lifts)) {
@@ -4078,8 +4081,8 @@
                 <tr>
                     <td colspan="10" class="text-center text-muted py-4">
                         <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
-                        <p class="mb-0">Ліфти не знайдені</p>
-                        <small>Додайте перший ліфт, натиснувши кнопку "Додати ліфт"</small>
+                        <p class="mb-0">Elevadores не знайдені</p>
+                        <small>Додайте перший ліфт, натиснувши кнопку "Adicionar ліфт"</small>
                     </td>
                 </tr>
             `;
@@ -4088,7 +4091,7 @@
             return;
         }
 
-        // Додати рядки ліфтів
+        // Adicionar рядки ліфтів
         lifts.forEach(lift => {
             // ✅ ВИПРАВЛЕННЯ: Конвертуємо ObjectId в string
             const liftId = (lift._id && lift._id.toString) ? lift._id.toString() : (lift._id || lift.id || '');
@@ -4148,7 +4151,7 @@
                         </button>
                         <button type="button" class="btn btn-primary" 
                                 onclick="editLift('${liftId}')"
-                                title="Редагувати">
+                                title="Editar">
                             <i class="fas fa-edit"></i>
                         </button>
                         <button type="button" class="btn btn-success" 
@@ -4168,7 +4171,7 @@
                         </button>
                         <button type="button" class="btn btn-danger" 
                                 onclick="deleteLift('${liftId}')"
-                                title="Видалити">
+                                title="Eliminar">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -4256,11 +4259,11 @@
     function getStatusText(status) {
         const statusTexts = {
             'operational': 'Працює',
-            'active': 'Активний',
+            'active': 'Ativo',
             'maintenance': 'Обслуговування',
             'repair': 'Ремонт',
             'out-of-service': 'Не працює',
-            'inactive': 'Неактивний'
+            'inactive': 'Inativo'
         };
         return statusTexts[status] || 'Невизначено';
     }
@@ -4591,7 +4594,7 @@
             }
 
             // Змінюємо заголовок модального вікна
-            $('#enhancedModalTitle').text('Редагувати ліфт');
+            $('#enhancedModalTitle').text('Editar ліфт');
             
             // Заповнюємо приховане поле з ID
             $('#enhancedLiftId').val(lift._id || lift.id);
@@ -4834,7 +4837,7 @@
                 if (address.city) parts.push(address.city);
                 addressStr = parts.join(', ') || 'Адреса не вказана';
             } else if (typeof address === 'string' && address) {
-                // Старий формат: address = "вул. Хрещатик, 1"
+                // Старий формат: address = "Rua Хрещатик, 1"
                 addressStr = address;
             }
             
@@ -5008,7 +5011,7 @@
             return;
         }
 
-        // Видалити з localStorage
+        // Eliminar з localStorage
         let lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
         lifts = lifts.filter(l => (l._id || l.id) !== liftId);
         localStorage.setItem('lifts', JSON.stringify(lifts));
@@ -5102,7 +5105,7 @@
         const periodFilter = document.getElementById('filter-report-period')?.value || 'all';
         const searchFilter = document.getElementById('filter-report-search')?.value.toLowerCase() || '';
         
-        // Фільтруємо по типу
+        // Filtroуємо по типу
         filteredReports = allReports.filter(report => {
             // Тип
             if (typeFilter && (report.inspectionType || report.type) !== typeFilter) {
@@ -5118,7 +5121,7 @@
                 }
             }
             
-            // Пошук
+            // Pesquisar
             if (searchFilter) {
                 const searchableText = [
                     report.inspectionType || '',
@@ -5562,7 +5565,7 @@
                 
                 <div class="footer">
                     <p>Звіт створено ${new Date().toLocaleString('uk-UA')}</p>
-                    <p><strong>LiftMaster Pro</strong> - Система управління ліфтами</p>
+                    <p><strong>FestLift</strong> - Sistema de gestão ліфтами</p>
                 </div>
             </body>
             </html>
@@ -5658,7 +5661,7 @@
                                 <i class="fas fa-sync"></i> Оновити
                             </button>
                             <button type="button" class="btn btn-sm btn-danger" onclick="deleteContract('${liftId}')">
-                                <i class="fas fa-trash"></i> Видалити
+                                <i class="fas fa-trash"></i> Eliminar
                             </button>
                         </div>
                     </div>
@@ -5815,7 +5818,7 @@
         if (searchInput) {
             searchInput.addEventListener('input', function(e) {
                 const query = e.target.value.toLowerCase().trim();
-                console.log('🔍 Пошук ліфтів:', query);
+                console.log('🔍 Pesquisar ліфтів:', query);
                 
                 if (!window.allLiftsData || window.allLiftsData.length === 0) {
                     console.warn('⚠️ Дані ліфтів ще не завантажені');
@@ -5828,7 +5831,7 @@
                     return;
                 }
                 
-                // Фільтруємо ліфти
+                // Filtroуємо ліфти
                 const filtered = window.allLiftsData.filter(lift => {
                     const municipalNumber = (lift.municipalNumber || '').toLowerCase();
                     const manufacturer = (lift.manufacturer || '').toLowerCase();
@@ -5887,7 +5890,7 @@
             
             let filtered = window.allLiftsData;
             
-            // Фільтр по пошуковому запиту
+            // Filtro по пошуковому запиту
             if (searchQuery) {
                 filtered = filtered.filter(lift => {
                     const municipalNumber = (lift.municipalNumber || '').toLowerCase();
@@ -5920,7 +5923,7 @@
                 });
             }
             
-            // Фільтр по статусу
+            // Filtro по статусу
             if (statusValue !== 'all') {
                 filtered = filtered.filter(lift => {
                     const liftStatus = lift.status || 'operational';
@@ -5928,7 +5931,7 @@
                 });
             }
             
-            // Фільтр по типу
+            // Filtro по типу
             if (typeValue !== 'all') {
                 filtered = filtered.filter(lift => {
                     const liftType = lift.type || lift.liftType || '';
@@ -5944,14 +5947,14 @@
             statusFilter.addEventListener('change', applyAllFilters);
             console.log('✅ Обробник фільтру статусу додано');
         } else {
-            console.warn('⚠️ Фільтр statusFilter не знайдено');
+            console.warn('⚠️ Filtro statusFilter не знайдено');
         }
         
         if (typeFilter) {
             typeFilter.addEventListener('change', applyAllFilters);
             console.log('✅ Обробник фільтру типу додано');
         } else {
-            console.warn('⚠️ Фільтр typeFilter не знайдено');
+            console.warn('⚠️ Filtro typeFilter не знайдено');
         }
         
         // Оновлюємо searchInput щоб використовувати applyAllFilters
@@ -5968,7 +5971,7 @@
         const exportCSVBtn = document.getElementById('exportCSVBtn');
         if (exportCSVBtn) {
             exportCSVBtn.addEventListener('click', async function() {
-                console.log('📥 Експорт CSV...');
+                console.log('📥 Exportar CSV...');
                 try {
                     // Отримуємо всі ліфти з API
                     const lifts = await window.loadLiftsFromAPI();
@@ -6048,9 +6051,9 @@
         const exportPDFBtn = document.getElementById('exportPDFBtn');
         if (exportPDFBtn) {
             exportPDFBtn.addEventListener('click', function() {
-                console.log('📄 Експорт PDF...');
-                alert('Експорт PDF буде доступний у наступній версії.\n\nНаразі використовуйте експорт CSV.');
-                // TODO: Додати jsPDF бібліотеку та реалізувати експорт PDF
+                console.log('📄 Exportar PDF...');
+                alert('Exportar PDF буде доступний у наступній версії.\n\nНаразі використовуйте експорт CSV.');
+                // TODO: Adicionar jsPDF бібліотеку та реалізувати експорт PDF
             });
             console.log('✅ Обробник PDF додано');
         } else {
@@ -6165,7 +6168,7 @@
             // Використовуємо вже визначений postalCode з верху
             if (postalCode) {
                 try {
-                    console.log('🔍 Пошук муніципалітету для postal code:', postalCode);
+                    console.log('🔍 Pesquisar муніципалітету для postal code:', postalCode);
                     // Використовуємо POST /api/municipalities/detect
                     const munResult = await apiCall('/api/municipalities/detect', 'POST', {
                         postalCode: postalCode,

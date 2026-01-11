@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Підтримка - Клієнт</title>
+    <title>Suporte - Клієнт</title>
     
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
@@ -284,7 +284,7 @@
                     <a href="/pages/client/dashboard.html" class="nav-link">Головна</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="/pages/client/support.html" class="nav-link active">Підтримка</a>
+                    <a href="/pages/client/support.html" class="nav-link active">Suporte</a>
                 </li>
             </ul>
 
@@ -297,7 +297,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/pages/client/support.html" title="Підтримка">
+                    <a class="nav-link" href="/pages/client/support.html" title="Suporte">
                         <i class="fas fa-headset"></i>
                     </a>
                 </li>
@@ -402,7 +402,7 @@
         <li class="nav-item">
             <a href="/pages/client/support.html" class="nav-link active">
                 <i class="nav-icon fas fa-headset"></i>
-                <p>Підтримка</p>
+                <p>Suporte</p>
             </a>
         </li>
 
@@ -410,7 +410,7 @@
         <li class="nav-item">
             <a href="/pages/client/profile.html" class="nav-link">
                 <i class="nav-icon fas fa-user-circle"></i>
-                <p>Профіль</p>
+                <p>Perfil</p>
             </a>
         </li>
     </ul>
@@ -429,7 +429,7 @@
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
                                 <li class="breadcrumb-item"><a href="/pages/client/dashboard.html">Головна</a></li>
-                                <li class="breadcrumb-item active">Підтримка</li>
+                                <li class="breadcrumb-item active">Suporte</li>
                             </ol>
                         </div>
                     </div>
@@ -581,7 +581,7 @@
                                     <h3 class="card-title"><i class="fas fa-book mr-2"></i>База знань</h3>
                                     <div class="card-tools">
                                         <div class="input-group input-group-sm" style="width: 150px;">
-                                            <input type="text" class="form-control" placeholder="Пошук..." id="knowledgeBaseSearch">
+                                            <input type="text" class="form-control" placeholder="Pesquisar..." id="knowledgeBaseSearch">
                                             <div class="input-group-append">
                                                 <button class="btn btn-primary" onclick="supportManager.searchKnowledgeBase()">
                                                     <i class="fas fa-search"></i>
@@ -665,15 +665,15 @@
                                                     <label for="ticketLift">Пов'язаний ліфт (якщо є)</label>
                                                     <select class="form-control" id="ticketLift">
                                                         <option value="">Оберіть ліфт...</option>
-                                                        <option value="lift-1">Ліфт №1 - вул. Центральна, 12</option>
-                                                        <option value="lift-2">Ліфт №2 - вул. Центральна, 12</option>
-                                                        <option value="lift-3">Ліфт №3 - вул. Головна, 25</option>
+                                                        <option value="lift-1">Ліфт №1 - Rua Центральна, 12</option>
+                                                        <option value="lift-2">Ліфт №2 - Rua Центральна, 12</option>
+                                                        <option value="lift-3">Ліфт №3 - Rua Головна, 25</option>
                                                     </select>
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label for="ticketAttachment">Додати файл</label>
+                                                    <label for="ticketAttachment">Adicionar файл</label>
                                                     <div class="custom-file">
                                                         <input type="file" class="custom-file-input" id="ticketAttachment">
                                                         <label class="custom-file-label" for="ticketAttachment">Обрати файл</label>
@@ -695,7 +695,7 @@
                                 </div>
                                 <div class="card-footer">
                                     <button type="button" class="btn btn-secondary" onclick="supportManager.hideTicketForm()">
-                                        <i class="fas fa-times"></i> Скасувати
+                                        <i class="fas fa-times"></i> Cancelar
                                     </button>
                                     <button type="button" class="btn btn-primary float-right" onclick="supportManager.submitTicket()">
                                         <i class="fas fa-paper-plane"></i> Надіслати звернення
@@ -742,9 +742,10 @@
 
         <!-- Footer -->
         <footer class="main-footer">
-            <strong>Клієнтська панель &copy; 2024</strong>
+            <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
+            Sistema de gestão de elevadores v2.1.0.
             <div class="float-right d-none d-sm-inline-block">
-                <small id="connectionStatus"><i class="fas fa-wifi text-success"></i> Online</small>
+                <b>Versão</b> 2.1.0
             </div>
         </footer>
     </div>
@@ -793,7 +794,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
                     <button type="button" class="btn btn-primary" onclick="supportManager.addComment()">
-                        <i class="fas fa-comment"></i> Додати коментар
+                        <i class="fas fa-comment"></i> Adicionar коментар
                     </button>
                 </div>
             </div>
@@ -818,7 +819,7 @@
             }
             
             emailSupport() {
-                window.location.href = 'mailto:support@liftmaster.com';
+                window.location.href = 'mailto:suporte@festlift.pt';
             }
             
             startChat() {
@@ -841,7 +842,7 @@
             searchKnowledgeBase() {
                 const query = $('#knowledgeSearch').val() || $('#knowledgeBaseSearch').val();
                 console.log('Searching knowledge base for:', query);
-                alert(`Пошук в базі знань: ${query || 'пустий запит'}`);
+                alert(`Pesquisar в базі знань: ${query || 'пустий запит'}`);
             }
             
             sendMessage() {
@@ -904,7 +905,7 @@
                 $(this).next('.custom-file-label').addClass("selected").html(fileName);
             });
             
-            // Пошук при натисканні Enter
+            // Pesquisar при натисканні Enter
             $('#knowledgeBaseSearch').on('keypress', function(e) {
                 if (e.which === 13) {
                     supportManager.searchKnowledgeBase();

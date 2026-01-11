@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -425,7 +425,7 @@
                                 <div class="stat-icon">🔧</div>
                                 <div class="stat-info">
                                     <h3 id="inProgressTasks">0</h3>
-                                    <p>В роботі</p>
+                                    <p>Em progresso</p>
                                 </div>
                             </div>
                         </div>
@@ -440,12 +440,12 @@
                         </div>
                     </div>
 
-                    <!-- Фільтри -->
+                    <!-- Filtroи -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card task-card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-filter mr-2"></i>Фільтри завдань</h3>
+                                    <h3 class="card-title"><i class="fas fa-filter mr-2"></i>Filtroи завдань</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
@@ -455,7 +455,7 @@
                                                 <select id="statusFilter" class="form-control">
                                                     <option value="all">Всі статуси</option>
                                                     <option value="pending">В очікуванні</option>
-                                                    <option value="in-progress">В роботі</option>
+                                                    <option value="in-progress">Em progresso</option>
                                                     <option value="completed">Завершені</option>
                                                     <option value="urgent">Термінові</option>
                                                 </select>
@@ -521,7 +521,7 @@
                                         </div>
                                         <div class="col-md-4 mb-3">
                                             <button class="btn btn-info btn-lg btn-block" onclick="taskManager.exportTasks()">
-                                                <i class="fas fa-file-export"></i> Експорт
+                                                <i class="fas fa-file-export"></i> Exportar
                                             </button>
                                         </div>
                                     </div>
@@ -539,7 +539,7 @@
                                     <div class="card-tools">
                                         <div class="btn-group">
                                             <button class="btn btn-success" onclick="taskManager.exportTasks()">
-                                                <i class="fas fa-download"></i> Експорт
+                                                <i class="fas fa-download"></i> Exportar
                                             </button>
                                             <button class="btn btn-info" onclick="taskManager.printTasks()">
                                                 <i class="fas fa-print"></i> Друк
@@ -578,7 +578,7 @@
                                             Наступна <i class="fas fa-chevron-right"></i>
                                         </button>
                                         <div class="search-box ml-3">
-                                            <input type="text" id="searchInput" class="form-control" placeholder="Пошук...">
+                                            <input type="text" id="searchInput" class="form-control" placeholder="Pesquisar...">
                                             <button class="btn btn-primary">
                                                 <i class="fas fa-search"></i>
                                             </button>
@@ -614,9 +614,10 @@
 
         <!-- Footer -->
         <footer class="main-footer">
-            <strong>Технічна панель &copy; 2024</strong>
+            <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
+            Sistema de gestão de elevadores v2.1.0.
             <div class="float-right d-none d-sm-inline-block">
-                <small id="connectionStatus"><i class="fas fa-wifi text-success"></i> Online</small>
+                <b>Versão</b> 2.1.0
             </div>
         </footer>
     </div>
@@ -651,9 +652,9 @@
                                     <label for="taskLift">Ліфт *</label>
                                     <select id="taskLift" class="form-control" required>
                                         <option value="">Оберіть ліфт...</option>
-                                        <option value="lift1">Otis Gen2 - вул. Центральна, 12</option>
+                                        <option value="lift1">Otis Gen2 - Rua Центральна, 12</option>
                                         <option value="lift2">Schindler 3300 - пр. Перемоги, 45</option>
-                                        <option value="lift3">KONE MonoSpace - вул. Шевченка, 78</option>
+                                        <option value="lift3">KONE MonoSpace - Rua Шевченка, 78</option>
                                     </select>
                                 </div>
                             </div>
@@ -702,7 +703,7 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-primary" onclick="taskManager.createTask()">
                         <i class="fas fa-save"></i> Створити завдання
                     </button>
@@ -987,8 +988,8 @@
                 const statusMap = {
                     'new': 'Нове',
                     'assigned': 'Призначено',
-                    'in_progress': 'В роботі',
-                    'completed': 'Завершено',
+                    'in_progress': 'Em progresso',
+                    'completed': 'Concluído',
                     'cancelled': 'Скасовано'
                 };
                 return statusMap[status] || status;

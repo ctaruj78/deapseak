@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -212,8 +212,8 @@
     <!-- Sidebar -->
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
         <a href="/pages/client/dashboard.html" class="brand-link">
-            <img src="../../assets/img/logo.png" alt="DeapSeaK" class="brand-image img-circle elevation-3" style="opacity: .8" onerror="this.src='https://via.placeholder.com/50'">
-            <span class="brand-text font-weight-light">DeapSeaK</span>
+            <img src="../../assets/img/logo.png" alt="FestLift" class="brand-image img-circle elevation-3" style="opacity: .8" onerror="this.src='https://via.placeholder.com/50'">
+            <span class="brand-text font-weight-light">FestLift</span>
         </a>
 
         <div class="sidebar">
@@ -298,7 +298,7 @@
         <li class="nav-item">
             <a href="/pages/client/support.html" class="nav-link">
                 <i class="nav-icon fas fa-headset"></i>
-                <p>Підтримка</p>
+                <p>Suporte</p>
             </a>
         </li>
 
@@ -306,7 +306,7 @@
         <li class="nav-item">
             <a href="/pages/client/profile.html" class="nav-link">
                 <i class="nav-icon fas fa-user-circle"></i>
-                <p>Профіль</p>
+                <p>Perfil</p>
             </a>
         </li>
     </ul>
@@ -378,7 +378,7 @@
                     </div>
                 </div>
 
-                <!-- Фільтри -->
+                <!-- Filtroи -->
                 <div class="row mb-3">
                     <div class="col-md-12">
                         <div class="card">
@@ -443,13 +443,13 @@
     </div>
 
     <!-- Footer -->
-    <footer class="main-footer">
-        <strong>Copyright &copy; 2024 <a href="#">DeapSeaK</a>.</strong>
-        Всі права захищені.
-        <div class="float-right d-none d-sm-inline-block">
-            <b>Версія</b> 2.0.0
-        </div>
-    </footer>
+        <footer class="main-footer">
+            <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
+            Sistema de gestão de elevadores v2.1.0.
+            <div class="float-right d-none d-sm-inline-block">
+                <b>Versão</b> 2.1.0
+            </div>
+        </footer>
 </div>
 
 <!-- Scripts -->
@@ -519,14 +519,14 @@ async function loadClientLifts() {
             console.log('📊 Всього ліфтів з API:', allLifts.length);
             console.log('📋 Приклад ліфта:', allLifts[0]);
             
-            // Фільтруємо тільки ліфти цього клієнта
+            // Filtroуємо тільки ліфти цього клієнта
             clientLifts = allLifts.filter(lift => {
                 const liftClient = lift.client?._id || lift.client;
                 const userId = user._id || user.id;
                 return liftClient === userId || String(liftClient) === String(userId);
             });
             
-            console.log(`✅ Ліфти клієнта (після фільтрації):`, clientLifts.length);
+            console.log(`✅ Elevadores клієнта (після фільтрації):`, clientLifts.length);
             console.log('📋 Дані клієнтських ліфтів:', clientLifts);
         } else {
             console.error('❌ Помилка завантаження ліфтів:', response.status);
@@ -582,7 +582,7 @@ function displayPredictions() {
         }
     });
     
-    // Фільтрація
+    // Filtroація
     const filterRisk = $('#filterRisk').val();
     if (filterRisk !== 'all') {
         predictions = predictions.filter(p => {

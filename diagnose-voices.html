@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <title>Діагностика Голосів</title>
@@ -56,7 +56,7 @@
                 voice.lang.startsWith('pt') && !voice.lang.includes('BR')
             );
             
-            let logicHtml = '<strong>КРОК 1:</strong> Пошук pt-PT або "portugal" (без BR)\n';
+            let logicHtml = '<strong>КРОК 1:</strong> Pesquisar pt-PT або "portugal" (без BR)\n';
             if (portugueseVoice) {
                 logicHtml += `✅ ЗНАЙДЕНО: ${portugueseVoice.name} (${portugueseVoice.lang})\n\n`;
                 logicHtml += '<strong>РЕЗУЛЬТАТ:</strong> Буде використано цей голос ✅';
@@ -71,7 +71,7 @@
                 });
             } else {
                 logicHtml += '❌ НЕ ЗНАЙДЕНО\n\n';
-                logicHtml += '<strong>КРОК 2:</strong> Пошук будь-якого португальського (крім BR)\n';
+                logicHtml += '<strong>КРОК 2:</strong> Pesquisar будь-якого португальського (крім BR)\n';
                 
                 if (anyPortuguese) {
                     logicHtml += `⚠️ ЗНАЙДЕНО АЛЬТЕРНАТИВУ: ${anyPortuguese.name} (${anyPortuguese.lang})\n\n`;

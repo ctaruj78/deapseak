@@ -66,7 +66,7 @@
             <!-- Brand Logo -->
             <a href="admin-dashboard.html" class="brand-link">
                 <i class="brand-image fas fa-elevator"></i>
-                <span class="brand-text font-weight-light">LiftMaster Pro</span>
+                <span class="brand-text font-weight-light">FestLift</span>
             </a>
 
             <!-- Sidebar -->
@@ -95,13 +95,13 @@
                 <li class="nav-item">
                     <a href="/pages/admin/qr-management.html" class="nav-link">
                         <i class="fas fa-cog nav-icon"></i>
-                        <p>Керування QR-кодами</p>
+                        <p>Gestão QR-кодами</p>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="/pages/admin/qr-analytics.html" class="nav-link">
                         <i class="fas fa-chart-line nav-icon"></i>
-                        <p>Аналітика QR-кодів</p>
+                        <p>Análise QR-кодів</p>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -118,7 +118,7 @@
             <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-elevator"></i>
                 <p>
-                    Ліфти
+                    Elevadores
                     <i class="right fas fa-angle-left"></i>
                 </p>
             </a>
@@ -148,7 +148,7 @@
         <li class="nav-item">
             <a href="/pages/admin/users.html" class="nav-link">
                 <i class="nav-icon fas fa-users"></i>
-                <p>Користувачі</p>
+                <p>Utilizadores</p>
             </a>
         </li>
 
@@ -188,7 +188,7 @@
             <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-chart-line"></i>
                 <p>
-                    Аналітика
+                    Análise
                     <i class="right fas fa-angle-left"></i>
                 </p>
             </a>
@@ -226,7 +226,7 @@
             <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-headset"></i>
                 <p>
-                    Підтримка
+                    Suporte
                     <i class="right fas fa-angle-left"></i>
                 </p>
             </a>
@@ -244,7 +244,7 @@
         <li class="nav-item">
             <a href="/pages/admin/settings.html" class="nav-link">
                 <i class="nav-icon fas fa-cogs"></i>
-                <p>Налаштування</p>
+                <p>Configurações</p>
             </a>
         </li>
     </ul>
@@ -314,7 +314,7 @@
                                         Local: {{location}}<br>
                                         Prioridade: {{priority}}<br><br>
                                         Cumprimentos,<br>
-                                        Equipa LiftMaster Pro
+                                        Equipa FestLift
                                     </div>
                                     <div class="mt-3">
                                         <button class="btn btn-warning btn-sm" onclick="editTemplate('assignment')">
@@ -394,7 +394,7 @@
                                         Executado por: {{technician_name}}<br><br>
                                         Obrigado pela confiança!<br><br>
                                         Cumprimentos,<br>
-                                        Equipa LiftMaster Pro
+                                        Equipa FestLift
                                     </div>
                                     <div class="mt-3">
                                         <button class="btn btn-warning btn-sm" onclick="editTemplate('completion')">
@@ -528,7 +528,7 @@
                 assignment: {
                     name: "Notificação de Pedido",
                     subject: "Novo Pedido #{assignment_id}",
-                    content: "Estimado {{technician_name}}!\n\nFoi-lhe atribuído um novo pedido #{{assignment_id}}.\nLocal: {{location}}\nPrioridade: {{priority}}\n\nCumprimentos,\nEquipa LiftMaster Pro"
+                    content: "Estimado {{technician_name}}!\n\nFoi-lhe atribuído um novo pedido #{{assignment_id}}.\nLocal: {{location}}\nPrioridade: {{priority}}\n\nCumprimentos,\nEquipa FestLift"
                 },
                 maintenance: {
                     name: "Lembrete de Manutenção", 
@@ -538,7 +538,7 @@
                 completion: {
                     name: "Conclusão do Trabalho",
                     subject: "Trabalho Concluído - {{work_type}}",
-                    content: "Estimado {{client_name}}!\n\nInformamos a conclusão dos trabalhos:\nTipo de trabalho: {{work_type}}\nData de conclusão: {{completion_date}}\nExecutado por: {{technician_name}}\n\nObrigado pela confiança!\n\nCumprimentos,\nEquipa LiftMaster Pro"
+                    content: "Estimado {{client_name}}!\n\nInformamos a conclusão dos trabalhos:\nTipo de trabalho: {{work_type}}\nData de conclusão: {{completion_date}}\nExecutado por: {{technician_name}}\n\nObrigado pela confiança!\n\nCumprimentos,\nEquipa FestLift"
                 },
                 emergency: {
                     name: "Notificação de Emergência",
@@ -818,12 +818,12 @@
 </div>
 
 <!-- Footer -->
-<footer class="main-footer">
-    <strong>Copyright &copy; 2024 <a href="admin-dashboard.html">LiftMaster Pro</a>.</strong>
-    Todos os direitos reservados.
-    <div class="float-right d-none d-sm-inline-block">
-        <b>Versão</b> 2.0
-    </div>
-</footer>
+        <footer class="main-footer">
+            <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
+            Sistema de gestão de elevadores v2.1.0.
+            <div class="float-right d-none d-sm-inline-block">
+                <b>Versão</b> 2.1.0
+            </div>
+        </footer>
 </body>
 </html>

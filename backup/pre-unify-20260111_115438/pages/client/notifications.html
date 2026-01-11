@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сповіщення - Клієнт</title>
+    
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    
+    <style>
+        .notification-page {
+            background-color: #f8f9fa;
+        }
+        
+        .notification-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .notification-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .notification-card.unread {
+            border-left: 4px solid #007bff;
+            background: linear-gradient(135deg, #ffffff, #f0f8ff);
+        }
+        
+        .notification-card.important {
+            border-left: 4px solid #dc3545;
+            background: linear-gradient(135deg, #ffffff, #fff5f5);
+        }
+        
+        .notification-card.warning {
+            border-left: 4px solid #ffc107;
+            background: linear-gradient(135deg, #ffffff, #fff8e1);
+        }
+        
+        .notification-card.info {
+            border-left: 4px solid #17a2b8;
+            background: linear-gradient(135deg, #ffffff, #e8f4f8);
+        }
+        
+        .notification-card.success {
+            border-left: 4px solid #28a745;
+            background: linear-gradient(135deg, #ffffff, #f0fff4);
+        }
+        
+        .notification-badge {
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .notification-time {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+        
+        .filter-buttons .btn {
+            border-radius: 20px;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        
+        .notification-actions {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .notification-card:hover .notification-actions {
+            opacity: 1;
+        }
+        
+        .notification-priority {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        
+        .priority-high { background-color: #dc3545; }
+        .priority-medium { background-color: #ffc107; }
+        .priority-low { background-color: #28a745; }
+        
+        .notification-type-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            margin-right: 15px;
+        }
+        
+        .type-maintenance { background-color: #17a2b8; color: white; }
+        .type-alert { background-color: #dc3545; color: white; }
+        .type-info { background-color: #6c757d; color: white; }
+        .type-update { background-color: #28a745; color: white; }
+        .type-billing { background-color: #6610f2; color: white; }
+        
+        .notification-content {
+            flex: 1;
+        }
+        
+        .notification-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .notification-message {
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+        
+        .notification-meta {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        .dark-mode .notification-card {
+            background-color: #2d3748;
+            color: white;
+        }
+        
+        .dark-mode .notification-message,
+        .dark-mode .notification-meta,
+        .dark-mode .notification-time {
+            color: #a0aec0;
+        }
+        
+        @media (max-width: 768px) {
+            .notification-card {
+                margin-bottom: 15px;
+            }
+            
+            .notification-type-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 1rem;
+                margin-right: 10px;
+            }
+            
+            .filter-buttons .btn {
+                font-size: 0.8rem;
+                padding: 5px 10px;
+            }
+        }
+        
+        /* Анімації */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .notification-card {
+            animation: slideIn 0.3s ease;
+        }
+        
+        /* Кастомні стилі для пагінації */
+        .pagination-custom .page-link {
+            border-radius: 20px;
+            margin: 0 3px;
+            border: none;
+        }
+        
+        .pagination-custom .page-item.active .page-link {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            border: none;
+        }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed notification-page">
+    <div class="wrapper">
+
+        <!-- Навігаційна панель -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button">
+                        <i class="fas fa-bars"></i>
+                    </a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="/pages/client/dashboard.html" class="nav-link">Головна</a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="/pages/client/notifications.html" class="nav-link active">Сповіщення</a>
+                </li>
+            </ul>
+
+            <!-- Права частина навігації -->
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link notification-bell" href="/pages/client/notifications.html" title="Сповіщення">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge bg-danger" id="notificationCount">0</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/pages/client/support.html" title="Підтримка">
+                        <i class="fas fa-headset"></i>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" id="darkModeToggle" title="Темна тема">
+                        <i class="fas fa-moon"></i>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="logout()" title="Вийти">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Бічна панель -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <a href="/pages/client/dashboard.html" class="brand-link text-center">
+                <span class="brand-text font-weight-light">Клієнт</span>
+            </a>
+            
+            <div class="sidebar">
+                <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                    <div class="image">
+                        <img src="../../assets/img/avatars/client.png" class="img-circle elevation-2" alt="Client">
+                    </div>
+                    <div class="info">
+                        <a href="#" class="d-block" id="clientName">Клієнт</a>
+                        <small class="text-success"><i class="fas fa-circle mr-1"></i> Online</small>
+                    </div>
+                </div>
+                
+                <nav class="mt-2">
+                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                        <li class="nav-item">
+                            <a href="/pages/client/dashboard.html" class="nav-link">
+                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                                <p>Головна</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/client/my-lifts.html" class="nav-link">
+                                <i class="nav-icon fas fa-elevator"></i>
+                                <p>Мої ліфти</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/client/requests.html" class="nav-link">
+                                <i class="nav-icon fas fa-tasks"></i>
+                                <p>Мої заявки</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/client/invoices.html" class="nav-link">
+                                <i class="nav-icon fas fa-file-invoice"></i>
+                                <p>Рахунки</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/client/history.html" class="nav-link">
+                                <i class="nav-icon fas fa-history"></i>
+                                <p>Історія</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/client/notifications.html" class="nav-link active">
+                                <i class="nav-icon fas fa-bell"></i>
+                                <p>Сповіщення</p>
+                                <span class="badge badge-danger right" id="notificationsBadge">0</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/client/support.html" class="nav-link">
+                                <i class="nav-icon fas fa-headset"></i>
+                                <p>Підтримка</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/client/profile.html" class="nav-link">
+                                <i class="nav-icon fas fa-user"></i>
+                                <p>Профіль</p>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <section class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1>Сповіщення</h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="/pages/client/dashboard.html">Головна</a></li>
+                                <li class="breadcrumb-item active">Сповіщення</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+                    <!-- Фільтри та дії -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-6">
+                                            <div class="filter-buttons">
+                                                <button class="btn btn-outline-primary active" data-filter="all">
+                                                    <i class="fas fa-list"></i> Всі
+                                                </button>
+                                                <button class="btn btn-outline-danger" data-filter="unread">
+                                                    <i class="fas fa-envelope"></i> Непрочитані
+                                                </button>
+                                                <button class="btn btn-outline-warning" data-filter="important">
+                                                    <i class="fas fa-exclamation-circle"></i> Важливі
+                                                </button>
+                                                <button class="btn btn-outline-info" data-filter="maintenance">
+                                                    <i class="fas fa-tools"></i> Техобслуговування
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 text-right">
+                                            <div class="btn-group">
+                                                <button class="btn btn-success" onclick="notificationManager.markAllAsRead()">
+                                                    <i class="fas fa-check-double"></i> Позначити всі як прочитані
+                                                </button>
+                                                <button class="btn btn-danger" onclick="notificationManager.clearAll()">
+                                                    <i class="fas fa-trash"></i> Очистити всі
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Пошук -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" placeholder="Пошук сповіщень..." id="searchNotifications">
+                                        <div class="input-group-append">
+                                            <button class="btn btn-primary" onclick="notificationManager.searchNotifications()">
+                                                <i class="fas fa-search"></i> Пошук
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Статистика сповіщень -->
+                    <div class="row mb-4">
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-info">
+                                <div class="inner">
+                                    <h3 id="totalNotifications">0</h3>
+                                    <p>Всього сповіщень</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-bell"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-warning">
+                                <div class="inner">
+                                    <h3 id="unreadNotifications">0</h3>
+                                    <p>Непрочитаних</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-danger">
+                                <div class="inner">
+                                    <h3 id="importantNotifications">0</h3>
+                                    <p>Важливих</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-success">
+                                <div class="inner">
+                                    <h3 id="todayNotifications">0</h3>
+                                    <p>Сьогодні</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-calendar-day"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Список сповіщень -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Список сповіщень</h3>
+                                    <div class="card-tools">
+                                        <div class="btn-group">
+                                            <button class="btn btn-sm btn-outline-secondary" onclick="notificationManager.sortByDate()">
+                                                <i class="fas fa-sort-amount-down"></i> За датою
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary" onclick="notificationManager.sortByPriority()">
+                                                <i class="fas fa-sort-amount-up"></i> За пріоритетом
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div id="notificationsContainer">
+                                        <!-- Сповіщення будуть завантажені тут -->
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <nav aria-label="Notifications pagination">
+                                        <ul class="pagination pagination-custom justify-content-center" id="notificationsPagination">
+                                            <!-- Пагінація буде додана тут -->
+                                        </ul>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Налаштування сповіщень -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-cog mr-2"></i>Налаштування сповіщень</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h5>Типи сповіщень:</h5>
+                                            <div class="form-group">
+                                                <div class="custom-control custom-switch">
+                                                    <input type="checkbox" class="custom-control-input" id="notifyMaintenance" checked>
+                                                    <label class="custom-control-label" for="notifyMaintenance">Технічне обслуговування</label>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="custom-control custom-switch">
+                                                    <input type="checkbox" class="custom-control-input" id="notifyAlerts" checked>
+                                                    <label class="custom-control-label" for="notifyAlerts">Аварійні сповіщення</label>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="custom-control custom-switch">
+                                                    <input type="checkbox" class="custom-control-input" id="notifyBilling" checked>
+                                                    <label class="custom-control-label" for="notifyBilling">Рахунки та оплата</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h5>Спосіб отримання:</h5>
+                                            <div class="form-group">
+                                                <div class="custom-control custom-switch">
+                                                    <input type="checkbox" class="custom-control-input" id="notifyEmail" checked>
+                                                    <label class="custom-control-label" for="notifyEmail">Email сповіщення</label>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="custom-control custom-switch">
+                                                    <input type="checkbox" class="custom-control-input" id="notifyPush" checked>
+                                                    <label class="custom-control-label" for="notifyPush">Push-сповіщення</label>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="custom-control custom-switch">
+                                                    <input type="checkbox" class="custom-control-input" id="notifySMS">
+                                                    <label class="custom-control-label" for="notifySMS">SMS сповіщення</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col-12">
+                                            <button class="btn btn-primary" onclick="notificationManager.saveSettings()">
+                                                <i class="fas fa-save"></i> Зберегти налаштування
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer class="main-footer">
+            <strong>Клієнтська панель &copy; 2024</strong>
+            <div class="float-right d-none d-sm-inline-block">
+                <small id="connectionStatus"><i class="fas fa-wifi text-success"></i> Online</small>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Модальне вікно перегляду сповіщення -->
+    <div class="modal fade" id="viewNotificationModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="notificationModalTitle">Деталі сповіщення</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-2 text-center">
+                            <div class="notification-type-icon" id="modalNotificationIcon">
+                                <i class="fas fa-bell"></i>
+                            </div>
+                        </div>
+                        <div class="col-md-10">
+                            <h4 id="modalNotificationTitle"></h4>
+                            <div class="notification-meta mb-3">
+                                <span class="badge" id="modalNotificationPriority"></span>
+                                <span class="notification-time ml-2" id="modalNotificationTime"></span>
+                            </div>
+                            <div id="modalNotificationContent"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                    <button type="button" class="btn btn-primary" id="modalNotificationActionBtn">
+                        <i class="fas fa-eye"></i> Переглянути деталі
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../../plugins/jquery/jquery.min.js"></script>
+    <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="../../plugins/adminlte/adminlte.min.js"></script>
+
+    <!-- Notification Manager JS -->
+    <script src="../../assets/js/modules/notification-manager.js"></script>
+
+    <script>
+        function logout() {
+            if (confirm('Ви впевнені, що хочете вийти з системи?')) {
+                if (typeof AuthManager !== 'undefined') {
+                    AuthManager.logout();
+                } else {
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    window.location.replace('/pages/auth/login.html');
+                }
+            }
+        }
+
+        $(document).ready(function() {
+            // Ініціалізація AdminLTE
+            $('[data-widget="pushmenu"]').PushMenu();
+            
+            // Темна тема
+            $('#darkModeToggle').on('click', function() {
+                $('body').toggleClass('dark-mode');
+                $(this).find('i').toggleClass('fa-moon fa-sun');
+            });
+
+            // Перевірка з'єднання
+            setInterval(() => {
+                const online = navigator.onLine;
+                $('#connectionStatus').html(
+                    online ? 
+                    '<i class="fas fa-wifi text-success"></i> Online' : 
+                    '<i class="fas fa-wifi-slash text-danger"></i> Offline'
+                );
+            }, 30000);
+
+            // Завантаження даних користувача
+            const userData = JSON.parse(localStorage.getItem('userData')) || {};
+            if (userData.firstName) {
+                $('#clientName').text(userData.firstName);
+            }
+
+            // Ініціалізація менеджера сповіщень
+            window.notificationManager = new NotificationManager();
+            
+            // Фільтрація сповіщень
+            $('[data-filter]').on('click', function() {
+                const filter = $(this).data('filter');
+                $('[data-filter]').removeClass('active');
+                $(this).addClass('active');
+                notificationManager.filterNotifications(filter);
+            });
+            
+            // Пошук при натисканні Enter
+            $('#searchNotifications').on('keypress', function(e) {
+                if (e.which === 13) {
+                    notificationManager.searchNotifications();
+                }
+            });
+        });
+    </script>
+</body>
+
+<link rel="stylesheet" href="/assets/css/ai-assistant.css">
+<div id="ai-assistant-fab" style="position:fixed;bottom:32px;right:32px;z-index:9999;">
+    <button class="ai-fab-btn" title="AI Асистент" style="background:#3a86ff;color:#fff;border:none;border-radius:50%;width:56px;height:56px;box-shadow:0 2px 8px rgba(0,0,0,0.2);font-size:28px;cursor:pointer;">
+        <i class="fas fa-magic"></i>
+    </button>
+</div>
+<div id="ai-assistant-modal" style="display:none;position:fixed;bottom:100px;right:32px;z-index:10000;max-width:350px;width:100%;">
+    <div class="ai-chat-container">
+        <div class="ai-chat-header">
+            <h4>AI Асистент</h4>
+            <button class="ai-chat-close"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="ai-chat-messages">
+            <div class="ai-message ai-message-assistant">
+                <div class="ai-message-content">
+                    <div class="ai-message-text">Привіт! Я ваш AI асистент. Чим можу допомогти?</div>
+                    <div class="ai-message-time">Зараз</div>
+                </div>
+            </div>
+        </div>
+        <div class="ai-chat-input">
+            <textarea class="ai-message-input" placeholder="Напишіть повідомлення..."></textarea>
+            <div class="ai-chat-actions">
+                <button class="ai-send-message"><i class="fas fa-paper-plane"></i> Надіслати</button>
+                <button class="ai-voice-toggle"><i class="fas fa-microphone"></i> Голос</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+<script>
+    // Відкриття/закриття модального вікна
+    const fabBtn = document.getElementById('ai-assistant-fab');
+    const modal = document.getElementById('ai-assistant-modal');
+    fabBtn.onclick = () => { modal.style.display = 'block'; };
+    document.querySelector('.ai-chat-close').onclick = () => { modal.style.display = 'none'; };
+</script>
+</html>
+</body> -->

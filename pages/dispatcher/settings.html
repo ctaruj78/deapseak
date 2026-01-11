@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Налаштування - Система управління</title>
+    <title>Configurações - Sistema de gestão</title>
     
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
@@ -130,7 +130,7 @@
                     <a href="dashboard.html" class="nav-link">Головна</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="settings.html" class="nav-link active">Налаштування</a>
+                    <a href="settings.html" class="nav-link active">Configurações</a>
                 </li>
             </ul>
 
@@ -214,7 +214,7 @@
                         <li class="nav-item">
                             <a href="settings.html" class="nav-link active">
                                 <i class="nav-icon fas fa-cog"></i>
-                                <p>Налаштування</p>
+                                <p>Configurações</p>
                             </a>
                         </li>
                     </ul>
@@ -228,12 +228,12 @@
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1>Налаштування системи</h1>
+                            <h1>Configurações системи</h1>
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
                                 <li class="breadcrumb-item"><a href="dashboard.html">Головна</a></li>
-                                <li class="breadcrumb-item active">Налаштування</li>
+                                <li class="breadcrumb-item active">Configurações</li>
                             </ol>
                         </div>
                     </div>
@@ -265,14 +265,14 @@
                         </div>
                     </div>
 
-                    <!-- Налаштування користувача -->
+                    <!-- Configurações користувача -->
                     <div class="row mt-4">
                         <div class="col-lg-6">
                             <div class="settings-card user-card">
                                 <span class="role-badge badge-info" id="userRoleBadge">Диспетчер</span>
                                 <i class="settings-icon fas fa-user-cog"></i>
-                                <h4>Налаштування профілю</h4>
-                                <p>Керування вашим особистим профілем та налаштуваннями</p>
+                                <h4>Configurações профілю</h4>
+                                <p>Gestão вашим особистим профілем та налаштуваннями</p>
                                 
                                 <form id="profileForm">
                                     <div class="form-group">
@@ -304,7 +304,7 @@
                                     </div>
                                     
                                     <button type="button" class="btn btn-primary" onclick="settingsManager.saveProfile()">
-                                        <i class="fas fa-save"></i> Зберегти зміни
+                                        <i class="fas fa-save"></i> Guardar зміни
                                     </button>
                                 </form>
                             </div>
@@ -314,7 +314,7 @@
                             <div class="settings-card security-card">
                                 <i class="settings-icon fas fa-shield-alt"></i>
                                 <h4>Безпека та доступ</h4>
-                                <p>Керування паролями та налаштуваннями безпеки</p>
+                                <p>Gestão паролями та налаштуваннями безпеки</p>
                                 
                                 <div class="form-group">
                                     <label for="currentPassword">Поточний пароль</label>
@@ -352,13 +352,13 @@
                         </div>
                     </div>
 
-                    <!-- Налаштування сповіщень -->
+                    <!-- Configurações сповіщень -->
                     <div class="row mt-4">
                         <div class="col-lg-6">
                             <div class="settings-card notification-card">
                                 <i class="settings-icon fas fa-bell"></i>
                                 <h4>Сповіщення</h4>
-                                <p>Налаштування сповіщень та повідомлень</p>
+                                <p>Configurações сповіщень та повідомлень</p>
                                 
                                 <h6>Типи сповіщень:</h6>
                                 <div class="form-group">
@@ -412,7 +412,7 @@
                                 </div>
                                 
                                 <button type="button" class="btn btn-info" onclick="settingsManager.saveNotificationSettings()">
-                                    <i class="fas fa-save"></i> Зберегти налаштування
+                                    <i class="fas fa-save"></i> Guardar налаштування
                                 </button>
                             </div>
                         </div>
@@ -434,7 +434,7 @@
                                 <div class="form-group">
                                     <label for="timezoneSelect">Часовий пояс</label>
                                     <select id="timezoneSelect" class="form-control">
-                                        <option value="Europe/Kiev">Київ (UTC+2)</option>
+                                        <option value="Europe/Kiev">Lisboa (UTC+2)</option>
                                         <option value="UTC">UTC</option>
                                         <option value="Europe/London">Лондон (UTC+0)</option>
                                     </select>
@@ -467,13 +467,13 @@
                                 </div>
                                 
                                 <button type="button" class="btn btn-secondary" onclick="settingsManager.saveSystemSettings()">
-                                    <i class="fas fa-save"></i> Зберегти налаштування
+                                    <i class="fas fa-save"></i> Guardar налаштування
                                 </button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Налаштування для адміністратора (тільки для адмінів) -->
+                    <!-- Configurações для адміністратора (тільки для адмінів) -->
                     <div class="row mt-4" id="adminSettingsSection">
                         <div class="col-12">
                             <div class="card admin-only">
@@ -491,10 +491,10 @@
                                         <div class="col-md-6">
                                             <div class="settings-card">
                                                 <i class="settings-icon fas fa-users-cog"></i>
-                                                <h5>Керування користувачами</h5>
+                                                <h5>Gestão користувачами</h5>
                                                 <p>Додавання, редагування та видалення користувачів системи</p>
                                                 <button class="btn btn-outline-primary" onclick="settingsManager.manageUsers()">
-                                                    <i class="fas fa-users"></i> Керування
+                                                    <i class="fas fa-users"></i> Gestão
                                                 </button>
                                             </div>
                                         </div>
@@ -503,7 +503,7 @@
                                             <div class="settings-card">
                                                 <i class="settings-icon fas fa-database"></i>
                                                 <h5>Резервне копіювання</h5>
-                                                <p>Керування резервними копіями даних системи</p>
+                                                <p>Gestão резервними копіями даних системи</p>
                                                 <div class="btn-group">
                                                     <button class="btn btn-outline-success" onclick="settingsManager.backupData()">
                                                         <i class="fas fa-download"></i> Створити backup
@@ -532,7 +532,7 @@
                                             <div class="settings-card">
                                                 <i class="settings-icon fas fa-cogs"></i>
                                                 <h5>Роль та дозволи</h5>
-                                                <p>Керування ролями та правами доступу</p>
+                                                <p>Gestão ролями та правами доступу</p>
                                                 
                                                 <div id="permissionsList">
                                                     <div class="permission-item admin">
@@ -543,7 +543,7 @@
                                                     <div class="permission-item">
                                                         <strong>Диспетчер</strong>
                                                         <br>
-                                                        <small>Керування заявками, техніками, клієнтами</small>
+                                                        <small>Gestão заявками, техніками, клієнтами</small>
                                                     </div>
                                                     <div class="permission-item">
                                                         <strong>Технік</strong>
@@ -553,7 +553,7 @@
                                                 </div>
                                                 
                                                 <button class="btn btn-outline-dark mt-2" onclick="settingsManager.manageRoles()">
-                                                    <i class="fas fa-lock"></i> Керування ролями
+                                                    <i class="fas fa-lock"></i> Gestão ролями
                                                 </button>
                                             </div>
                                         </div>
@@ -702,10 +702,10 @@
 
         <!-- Footer -->
         <footer class="main-footer">
-            <strong>Система управління заявками &copy; 2024</strong>
+            <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
+            Sistema de gestão de elevadores v2.1.0.
             <div class="float-right d-none d-sm-inline-block">
-                <small id="connectionStatus"><i class="fas fa-wifi text-success"></i> Online</small>
-                <small class="ml-2">v<span id="footerVersion">2.1.0</span></small>
+                <b>Versão</b> 2.1.0
             </div>
         </footer>
     </div>
