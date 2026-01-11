@@ -2,6 +2,7 @@
 
 # Скрипт для додавання Universal Drag-to-Scroll до всіх HTML сторінок
 # Автоматично знаходить сторінки з таблицями та додає необхідні файли
+# ПОКРАЩЕНО: Тепер не чіпає теги всередині JavaScript strings
 
 echo "🔍 Пошук HTML сторінок з таблицями..."
 
@@ -41,22 +42,25 @@ for file in $FILES; do
     
     echo "✏️  Оновлюємо $file..."
     
-    # Знайти останній <link> в <head> та додати після нього
-    if grep -q "</head>" "$file"; then
-        # Додати CSS перед </head>
-        sed -i 's|</head>|    <link rel="stylesheet" href="/assets/css/table-drag-scroll.css">\n</head>|' "$file"
+    # Знайти ПЕРШИЙ </head> в файлі (не в JS strings)
+    # Шукаємо </head> що не всередині лапок
+    if grep -q "^</head>" "$file"; then
+        # Додати CSS перед першим </head> на початку рядка
+        sed -i '0,/^<\/head>/s|^</head>|    <link rel="stylesheet" href="/assets/css/table-drag-scroll.css">\n</head>|' "$file"
         echo "   ✅ CSS додано"
     else
-        echo "   ⚠️  Не знайдено </head>"
+        echo "   ⚠️  Не знайдено </head> на початку рядка"
     fi
     
-    # Знайти останній <script> перед </body> та додати після нього
-    if grep -q "</body>" "$file"; then
-        # Додати JS перед </body>
-        sed -i 's|</body>|    <script src="/assets/js/table-drag-scroll.js"></script>\n</body>|' "$file"
+    # Знайти ОСТАННІЙ </body> в файлі (перед </html>)
+    # Додаємо тільки перед останнім </body>
+    if grep -q "^</body>" "$file"; then
+        # Використовуємо tac (reverse cat) для пошуку з кінця
+        tac "$file" | sed '0,/^<\/body>/s|^</body>|</body>\n    <script src="/assets/js/table-drag-scroll.js"></script>|' | tac > "${file}.tmp"
+        mv "${file}.tmp" "$file"
         echo "   ✅ JS додано"
     else
-        echo "   ⚠️  Не знайдено </body>"
+        echo "   ⚠️  Не знайдено </body> на початку рядка"
     fi
     
     UPDATED=$((UPDATED + 1))
@@ -66,6 +70,10 @@ done
 echo ""
 echo "✅ Готово!"
 echo "📊 Оновлено файлів: $UPDATED"
+echo ""
+echo "⚠️  ВАЖЛИВО: Перевірте файли після додавання!"
+echo "   Скрипт шукає </head> та </body> тільки на початку рядка"
+echo "   Це запобігає додаванню всередину JavaScript strings"
 echo ""
 echo "🧪 Для тестування:"
 echo "   ./autostart.sh"
