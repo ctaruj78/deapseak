@@ -5981,10 +5981,22 @@
                 });
             }
             
-            // Filtro по статусу
+            // Filtro по статусу з підтримкою груп статусів
             if (statusValue !== 'all') {
                 filtered = filtered.filter(lift => {
                     const liftStatus = lift.status || 'operational';
+                    
+                    // Перевірка по групах статусів (як в updateLiftsStatistics)
+                    if (statusValue === 'operational') {
+                        return liftStatus === 'operational' || liftStatus === 'active';
+                    } else if (statusValue === 'maintenance') {
+                        return liftStatus === 'maintenance' || liftStatus === 'repair';
+                    } else if (statusValue === 'broken') {
+                        // Неактивні: inactive, out-of-service, broken
+                        return liftStatus === 'inactive' || liftStatus === 'out-of-service' || liftStatus === 'broken';
+                    }
+                    
+                    // Для інших значень - точний збіг
                     return liftStatus === statusValue;
                 });
             }
