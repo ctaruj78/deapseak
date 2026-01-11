@@ -1209,12 +1209,13 @@
             }, 3000);
         }
         
-        // Ініціалізація qrManager
+        // Ініціалізація qrManager - тільки один раз!
+        console.log('🚀 Запуск ініціалізації QR Manager...');
         if (typeof qrManager !== 'undefined') {
             qrManager.init();
-            console.log('QR Manager initialized successfully');
+            console.log('✅ QR Manager ініціалізовано успішно');
         } else {
-            console.error('QR Manager script not loaded');
+            console.error('❌ QR Manager script not loaded');
         }
     });
     </script>
@@ -1250,25 +1251,8 @@
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <script>
-    // Ініціалізація після завантаження всіх скриптів
-    $(window).on('load', function() {
-        console.log('Window loaded, checking qrManager...');
-        console.log('qrManager defined:', typeof qrManager);
-        console.log('qrManager.init defined:', typeof qrManager !== 'undefined' && typeof qrManager.init);
-
-        // Перевірити, чи завантажений qrManager
-        if (typeof qrManager !== 'undefined' && qrManager.init) {
-            try {
-                qrManager.init();
-                console.log('QR Manager initialized successfully');
-            } catch (error) {
-                console.error('Error initializing QR Manager:', error);
-            }
-        } else {
-            console.error('QR Manager not available');
-        }
-    });
-
+    // Видалено window.load - використовуємо тільки document.ready вище
+    
     // Відкриття/закриття модального вікна
     const fabBtn = document.getElementById('ai-assistant-fab');
     const modal = document.getElementById('ai-assistant-modal');

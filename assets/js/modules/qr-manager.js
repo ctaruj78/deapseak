@@ -90,6 +90,13 @@ const qrManager = (function() {
 
     // Setup event listeners
     function setupEventListeners() {
+        console.log('🔗 Налаштування event listeners...');
+        
+        // Перевірка чи елементи існують
+        if (!$('#searchInput').length) {
+            console.warn('⚠️ searchInput not found in DOM');
+        }
+        
         // Export button (тільки Excel залишився)
         $('#exportCSVBtn').on('click', () => exportToCSV());
         
@@ -97,9 +104,14 @@ const qrManager = (function() {
         $('#printSelectedBtn').on('click', () => printSelected());
 
         // Search - підтримка input, Enter та кнопки
-        $('#searchInput').on('input', debounce(searchQR, 300));
+        $('#searchInput').on('input', debounce(function() {
+            console.log('📝 Input event triggered');
+            searchQR();
+        }, 300));
+        
         $('#searchInput').on('keypress', function(e) {
             if (e.which === 13) { // Enter key
+                console.log('⌨️ Enter pressed');
                 e.preventDefault();
                 searchQR();
             }
@@ -108,6 +120,8 @@ const qrManager = (function() {
         // Filters
         $('#statusFilter').on('change', applyFilters);
         $('#cityFilter').on('input', debounce(applyFilters, 300));
+        
+        console.log('✅ Event listeners встановлено');
     }
 
     // Render table
@@ -513,11 +527,5 @@ const qrManager = (function() {
 
 })();
 
-// Auto-initialize on document ready
-$(document).ready(function() {
-    if (typeof qrManager !== 'undefined') {
-        qrManager.init();
-    } else {
-        console.error('qrManager not loaded');
-    }
-});
+// Примітка: Ініціалізація викликається вручну на сторінці
+// після завантаження DOM через $(document).ready() або $(window).on('load')
