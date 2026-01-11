@@ -1103,11 +1103,30 @@
                             // Сервер згенерував пароль
                             const generatedPassword = result.data.temporaryPassword;
                             console.log('🔑 Сервер згенерував пароль:', generatedPassword);
-                            this.showGeneratedPasswordModal(userData.email, generatedPassword);
+                            
+                            // СПОЧАТКУ закрити форму створення
+                            $('#userModal').modal('hide');
+                            
+                            // Почекати поки закриється, ПОТІМ показати пароль
+                            $('#userModal').on('hidden.bs.modal', () => {
+                                this.showGeneratedPasswordModal(userData.email, generatedPassword);
+                                $('#userModal').off('hidden.bs.modal'); // Відключити обробник
+                            });
                         } else if (passwordToSend) {
                             // Клієнт згенерував пароль - також показати модальне вікно
                             console.log('🔑 Показ клієнтського пароля:', passwordToSend);
-                            this.showGeneratedPasswordModal(userData.email, passwordToSend);
+                            
+                            // СПОЧАТКУ закрити форму створення
+                            $('#userModal').modal('hide');
+                            
+                            // Почекати поки закриється, ПОТІМ показати пароль
+                            $('#userModal').on('hidden.bs.modal', () => {
+                                this.showGeneratedPasswordModal(userData.email, passwordToSend);
+                                $('#userModal').off('hidden.bs.modal'); // Відключити обробник
+                            });
+                        } else {
+                            // Якщо не треба показувати пароль - закрити як зазвичай
+                            $('#userModal').modal('hide');
                         }
                     } else {
                         console.log('✏️ Оновлення користувача:', userId);
@@ -1121,9 +1140,11 @@
                             const error = await response.json();
                             throw new Error(error.error || 'Помилка оновлення користувача');
                         }
+                        
+                        // Для оновлення - закрити модальне вікно
+                        $('#userModal').modal('hide');
                     }
 
-                    $('#userModal').modal('hide');
                     this.showNotification('Користувача успішно збережено', 'success');
                     
                     await this.loadUsers();

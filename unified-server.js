@@ -1717,8 +1717,12 @@ app.post('/api/users', authenticateToken, async (req, res) => {
         const bcrypt = require('bcryptjs');
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        // Генеруємо username з email (до @)
+        const username = email.split('@')[0];
+
         const newUser = {
             email,
+            username,
             password: hashedPassword,
             firstName,
             lastName,
