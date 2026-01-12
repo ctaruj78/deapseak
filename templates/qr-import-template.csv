@@ -1,0 +1,3 @@
+liftId,municipalNumber,address,city,zipCode,floor,type,manufacturer
+LIFT-001,12345,"Rua Example 123","Lisboa",1000-001,5,passenger,Otis
+LIFT-002,12346,"Av. da Liberdade 456","Porto",4000-123,8,cargo,Schindler
