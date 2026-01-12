@@ -809,10 +809,13 @@
         $(document).ready(function() {
             console.log('🔧 Initializing sidebar treeview...');
             
-            // Initialize AdminLTE treeview widget
-            $('[data-widget="treeview"]').Treeview('init');
-            
-            console.log('✅ Treeview initialized');
+            // Initialize AdminLTE treeview widget if available
+            if (typeof $.fn.Treeview !== 'undefined') {
+                $('[data-widget="treeview"]').Treeview('init');
+                console.log('✅ Treeview initialized');
+            } else {
+                console.log('⚠️ Treeview plugin not available - using manual handlers');
+            }
         });
     </script>
 
