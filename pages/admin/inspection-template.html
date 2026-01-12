@@ -932,13 +932,15 @@
         $(document).ready(function() {
             // Wait for DOM to fully load, then initialize treeview
             setTimeout(function() {
-                // Initialize all treeview menus
-                $('.nav-sidebar').find('[data-widget="treeview"]').each(function() {
-                    $(this).Treeview('init');
-                });
+                // Initialize all treeview menus if plugin available
+                if (typeof $.fn.Treeview !== 'undefined') {
+                    $('.nav-sidebar').find('[data-widget="treeview"]').each(function() {
+                        $(this).Treeview('init');
+                    });
+                }
                 
                 // Add click handlers for menu items with submenu
-                $('.nav-sidebar .nav-item > .nav-link').on('click', function(e) {
+                $('.nav-sidebar .nav-item > a.nav-link').off('click').on('click', function(e) {
                     const $parent = $(this).parent();
                     const $submenu = $parent.find('> .nav-treeview');
                     

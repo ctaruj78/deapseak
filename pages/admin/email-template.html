@@ -512,8 +512,10 @@
     <script>
         // Initialize AdminLTE treeview
         $(document).ready(function() {
-            // Activate treeview menu
-            $('[data-widget="treeview"]').Treeview('init');
+            // Activate treeview menu if plugin available
+            if (typeof $.fn.Treeview !== 'undefined') {
+                $('[data-widget="treeview"]').Treeview('init');
+            }
             
             // Open parent menu if child is active
             $('.nav-link.active').parents('.nav-item').addClass('menu-open');
