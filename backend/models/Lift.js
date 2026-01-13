@@ -12,7 +12,7 @@ const liftSchema = new mongoose.Schema({
         street: { type: String, required: true },
         city: { type: String, required: true },
         zipCode: String,
-        country: { type: String, default: 'Ukraine' }
+        country: { type: String, default: 'Portugal' }
     },
     location: {
         type: { type: String, enum: ['Point'], default: 'Point' },

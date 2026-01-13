@@ -96,261 +96,107 @@
     </nav>
 
     <!-- Sidebar -->
-    <!-- ═══════════════════════════════════════════════════════════ -->
-<!-- ЕТАЛОННИЙ SIDEBAR ДЛЯ КЛІЄНТСЬКИХ СТОРІНОК -->
-<!-- Версія: 2.0 Portugal (2026-01-13) -->
-<!-- ⚠️ НЕ РЕДАГУЙТЕ ОКРЕМО! Використовуйте цей файл як еталон -->
-<!-- ═══════════════════════════════════════════════════════════ -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <a href="/pages/client/dashboard.html" class="brand-link">
+            <span class="brand-text font-weight-light">FestLift Client</span>
+        </a>
 
-<aside class="main-sidebar sidebar-dark-primary elevation-4">
-    <a href="/pages/client/dashboard.html" class="brand-link text-center">
-        <span class="brand-text font-weight-light">Cliente</span>
-    </a>
-    
-    <div class="sidebar">
-        <!-- Інформація про користувача -->
-        <div class="user-panel mt-3 pb-3 mb-3 d-flex">
-            <div class="image">
-                <img src="../../assets/img/avatars/client.png" class="img-circle elevation-2" alt="Cliente">
+        <div class="sidebar">
+            <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                <div class="image">
+                    <img src="../../assets/img/avatars/client.png" class="img-circle elevation-2" alt="Client">
+                </div>
+                <div class="info">
+                    <a href="#" class="d-block" id="clientName">Cliente</a>
+                </div>
             </div>
-            <div class="info">
-                <a href="/pages/client/profile.html" class="d-block" id="clientName">Cliente</a>
-                <small class="text-success"><i class="fas fa-circle mr-1"></i> Online</small>
-            </div>
+
+            <!-- CANONICAL CLIENT SIDEBAR - Copy this to all client pages -->
+<nav class="mt-2">
+    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+        <!-- Dashboard -->
+        <li class="nav-item">
+            <a href="/pages/client/dashboard.html" class="nav-link">
+                <i class="nav-icon fas fa-tachometer-alt"></i>
+                <p>Дашборд</p>
+            </a>
+        </li>
+
+        <!-- My Lifts -->
+        <li class="nav-item">
+            <a href="/pages/client/my-lifts.html" class="nav-link">
+                <i class="nav-icon fas fa-elevator"></i>
+                <p>Мої ліфти</p>
+            </a>
+        </li>
+
+        <!-- Requests -->
+        <li class="nav-item">
+            <a href="/pages/client/requests.html" class="nav-link">
+                <i class="nav-icon fas fa-clipboard-list"></i>
+                <p>Заявки</p>
+            </a>
+        </li>
+
+        <!-- History -->
+        <li class="nav-item">
+            <a href="/pages/client/history.html" class="nav-link">
+                <i class="nav-icon fas fa-history"></i>
+                <p>Історія</p>
+            </a>
+        </li>
+
+        <!-- Invoices -->
+        <li class="nav-item">
+            <a href="/pages/client/invoices.html" class="nav-link">
+                <i class="nav-icon fas fa-file-invoice"></i>
+                <p>Рахунки</p>
+            </a>
+        </li>
+
+        <!-- Documentation -->
+        <li class="nav-item">
+            <a href="/pages/client/documentation.html" class="nav-link active">
+                <i class="nav-icon fas fa-folder-open"></i>
+                <p>Документація</p>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link">
+                <i class="nav-icon fas fa-magic"></i>
+                <p>AI Асистент</p>
+                <span class="badge badge-success right">Новинка</span>
+            </a>
+        </li>
+
+        <!-- Notifications -->
+        <li class="nav-item">
+            <a href="/pages/client/notifications.html" class="nav-link">
+                <i class="nav-icon fas fa-bell"></i>
+                <p>Сповіщення</p>
+            </a>
+        </li>
+
+        <!-- Support -->
+        <li class="nav-item">
+            <a href="/pages/client/support.html" class="nav-link">
+                <i class="nav-icon fas fa-headset"></i>
+                <p>Suporte</p>
+            </a>
+        </li>
+
+        <!-- Profile -->
+        <li class="nav-item">
+            <a href="/pages/client/profile.html" class="nav-link">
+                <i class="nav-icon fas fa-user-circle"></i>
+                <p>Perfil</p>
+            </a>
+        </li>
+    </ul>
+</nav>
         </div>
-        
-        <!-- Меню навігації -->
-        <nav class="mt-2">
-            <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-                
-                <!-- 1. Dashboard -->
-                <li class="nav-item">
-                    <a href="/pages/client/dashboard.html" class="nav-link" id="nav-dashboard">
-                        <i class="nav-icon fas fa-tachometer-alt"></i>
-                        <p>Dashboard</p>
-                    </a>
-                </li>
-                
-                <!-- 2. Мої ліфти -->
-                <li class="nav-item">
-                    <a href="/pages/client/my-lifts.html" class="nav-link" id="nav-my-lifts">
-                        <i class="nav-icon fas fa-elevator"></i>
-                        <p>Meus Elevadores</p>
-                        <span class="badge badge-info right" id="liftsCount">0</span>
-                    </a>
-                </li>
-                
-                <!-- 3. AI Прогнозування -->
-                <li class="nav-item">
-                    <a href="/pages/client/ai-predictions.html" class="nav-link" id="nav-ai-predictions">
-                        <i class="nav-icon fas fa-brain"></i>
-                        <p>
-                            Previsões AI
-                            <span class="badge badge-purple right">Novo</span>
-                        </p>
-                    </a>
-                </li>
-                
-                <!-- 4. Мої заявки -->
-                <li class="nav-item">
-                    <a href="/pages/client/requests.html" class="nav-link" id="nav-requests">
-                        <i class="nav-icon fas fa-tasks"></i>
-                        <p>Pedidos</p>
-                        <span class="badge badge-warning right" id="requestsCount">0</span>
-                    </a>
-                </li>
-                
-                <!-- 5. Рахунки -->
-                <li class="nav-item">
-                    <a href="/pages/client/invoices.html" class="nav-link" id="nav-invoices">
-                        <i class="nav-icon fas fa-file-invoice"></i>
-                        <p>Faturas</p>
-                        <span class="badge badge-success right" id="invoicesCount">0</span>
-                    </a>
-                </li>
-                
-                <!-- 6. Історія -->
-                <li class="nav-item">
-                    <a href="/pages/client/history.html" class="nav-link" id="nav-history">
-                        <i class="nav-icon fas fa-history"></i>
-                        <p>Histórico</p>
-                    </a>
-                </li>
-                
-                <!-- 7. Документація -->
-                <li class="nav-item">
-                    <a href="/pages/client/documentation.html" class="nav-link" id="nav-documentation">
-                        <i class="nav-icon fas fa-book"></i>
-                        <p>Documentação</p>
-                    </a>
-                </li>
-                
-                <!-- 8. AI Асистент -->
-                <li class="nav-item">
-                    <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link" id="nav-ai-assistant">
-                        <i class="nav-icon fas fa-magic"></i>
-                        <p>Assistente AI</p>
-                        <span class="badge badge-success right">★</span>
-                    </a>
-                </li>
-                
-                <!-- 9. Сповіщення -->
-                <li class="nav-item">
-                    <a href="/pages/client/notifications.html" class="nav-link" id="nav-notifications">
-                        <i class="nav-icon fas fa-bell"></i>
-                        <p>Notificações</p>
-                        <span class="badge badge-danger right" id="notificationsBadge">0</span>
-                    </a>
-                </li>
-                
-                <!-- 10. Підтримка -->
-                <li class="nav-item">
-                    <a href="/pages/client/support.html" class="nav-link" id="nav-support">
-                        <i class="nav-icon fas fa-headset"></i>
-                        <p>Suporte</p>
-                    </a>
-                </li>
-                
-                <!-- 11. Профіль -->
-                <li class="nav-item">
-                    <a href="/pages/client/profile.html" class="nav-link" id="nav-profile">
-                        <i class="nav-icon fas fa-user"></i>
-                        <p>Perfil</p>
-                    </a>
-                </li>
-                
-                <!-- Налаштування (окремо внизу) -->
-                <li class="nav-header">CONFIGURAÇÕES</li>
-                <li class="nav-item">
-                    <a href="/pages/client/settings.html" class="nav-link" id="nav-settings">
-                        <i class="nav-icon fas fa-cog"></i>
-                        <p>Definições</p>
-                    </a>
-                </li>
-                
-                <!-- Вихід -->
-                <li class="nav-item">
-                    <a href="#" onclick="logout()" class="nav-link">
-                        <i class="nav-icon fas fa-sign-out-alt text-danger"></i>
-                        <p>Sair</p>
-                    </a>
-                </li>
-            </ul>
-        </nav>
-    </div>
-</aside>
-
-<!-- Скрипт для підсвічування активного пункту -->
-<script>
-(function() {
-    // Визначити поточну сторінку
-    const currentPage = window.location.pathname.split('/').pop().replace('.html', '');
-    
-    // Мапінг сторінок на ID навігації
-    const pageMap = {
-        'dashboard': 'nav-dashboard',
-        'my-lifts': 'nav-my-lifts',
-        'ai-predictions': 'nav-ai-predictions',
-        'requests': 'nav-requests',
-        'invoices': 'nav-invoices',
-        'history': 'nav-history',
-        'documentation': 'nav-documentation',
-        'ai-assistant': 'nav-ai-assistant',
-        'notifications': 'nav-notifications',
-        'support': 'nav-support',
-        'profile': 'nav-profile',
-        'settings': 'nav-settings'
-    };
-    
-    // Підсвітити активний пункт
-    const activeNav = pageMap[currentPage];
-    if (activeNav) {
-        const navLink = document.getElementById(activeNav);
-        if (navLink) {
-            navLink.classList.add('active');
-        }
-    }
-    
-    // Завантажити лічильники з API
-    loadClientCounts();
-    
-    function loadClientCounts() {
-        const token = localStorage.getItem('token');
-        if (!token) return;
-        
-        // Кількість ліфтів
-        fetch('/api/lifts', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.data && Array.isArray(data.data)) {
-                const count = data.data.length;
-                const badge = document.getElementById('liftsCount');
-                if (badge) badge.textContent = count;
-            }
-        })
-        .catch(err => console.warn('Failed to load lifts count:', err));
-        
-        // Кількість заявок
-        fetch('/api/requests?status=pending,in_progress', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.data && Array.isArray(data.data)) {
-                const count = data.data.length;
-                const badge = document.getElementById('requestsCount');
-                if (badge) badge.textContent = count;
-            }
-        })
-        .catch(err => console.warn('Failed to load requests count:', err));
-        
-        // Кількість рахунків
-        fetch('/api/invoices?status=unpaid', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.data && Array.isArray(data.data)) {
-                const count = data.data.length;
-                const badge = document.getElementById('invoicesCount');
-                if (badge) badge.textContent = count;
-            }
-        })
-        .catch(err => console.warn('Failed to load invoices count:', err));
-        
-        // Кількість сповіщень
-        fetch('/api/notifications?unread=true', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.data && Array.isArray(data.data)) {
-                const count = data.data.length;
-                const badge = document.getElementById('notificationsBadge');
-                if (badge) {
-                    badge.textContent = count;
-                    badge.style.display = count > 0 ? 'inline-block' : 'none';
-                }
-            }
-        })
-        .catch(err => console.warn('Failed to load notifications count:', err));
-    }
-    
-    // Оновлювати лічильники кожні 30 секунд
-    setInterval(loadClientCounts, 30000);
-})();
-</script>
-
-<!-- Стилі для badge purple -->
-<style>
-.badge-purple {
-    background: linear-gradient(135deg, #6f42c1, #8e44ad);
-    color: white;
-}
-</style>
-
+    </aside>
 
     <!-- Content Wrapper -->
     <div class="content-wrapper">

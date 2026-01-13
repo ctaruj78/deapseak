@@ -23,9 +23,10 @@ class LiftsManager {
     async loadLifts() {
         try {
             // Спроба отримати дані з API
+            const token = localStorage.getItem('token');
             const response = await fetch('/api/lifts', {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    'Authorization': `Bearer ${token}`
                 }
             });
             
@@ -34,75 +35,23 @@ class LiftsManager {
                 // API повертає {success: true, data: [...]}
                 this.lifts = result.data || result;
                 console.log('✅ Завантажено ліфтів з API:', this.lifts.length);
+                if (this.lifts.length > 0) {
+                    console.log('📋 Приклад ліфта:', this.lifts[0]);
+                }
                 localStorage.setItem('lifts', JSON.stringify(this.lifts));
             } else {
                 throw new Error('API недоступне');
             }
         } catch (error) {
-            console.warn('Використання локальних даних:', error);
+            console.warn('Помилка завантаження з API:', error);
             this.lifts = JSON.parse(localStorage.getItem('lifts')) || [];
             
             if (this.lifts.length === 0) {
-                this.lifts = this.createSampleLifts();
-                localStorage.setItem('lifts', JSON.stringify(this.lifts));
+                console.info('ℹ️ Немає даних про ліфти. Додайте ліфти через адмін-панель.');
             }
         }
 
         this.applyFilters();
-    }
-
-    createSampleLifts() {
-        return [
-            {
-                id: 'lift1',
-                model: 'Otis Gen2',
-                type: 'passenger',
-                location: 'вул. Центральна, 12',
-                status: 'operational',
-                lastMaintenance: '2024-01-15',
-                nextMaintenance: '2024-02-15',
-                installationDate: '2020-05-10',
-                capacity: 8,
-                floors: 12,
-                manufacturer: 'Otis',
-                serialNumber: 'OTIS-GEN2-12345',
-                maintenanceHistory: [
-                    { date: '2024-01-15', type: 'Планове ТО', technician: 'Іван Петренко' },
-                    { date: '2023-12-10', type: 'Ремонт дверей', technician: 'Петро Іваненко' }
-                ]
-            },
-            {
-                id: 'lift2',
-                model: 'Schindler 3300',
-                type: 'cargo',
-                location: 'пр. Перемоги, 45',
-                status: 'maintenance',
-                lastMaintenance: '2024-01-10',
-                nextMaintenance: '2024-03-10',
-                installationDate: '2019-08-15',
-                capacity: 2000,
-                floors: 8,
-                manufacturer: 'Schindler',
-                serialNumber: 'SCH-3300-67890',
-                maintenanceHistory: [
-                    { date: '2024-01-10', type: 'Аварійний ремонт', technician: 'Олексій Сидоренко' }
-                ]
-            },
-            {
-                id: 'lift3',
-                model: 'KONE MonoSpace',
-                type: 'passenger',
-                location: 'вул. Шевченка, 78',
-                status: 'attention',
-                lastMaintenance: '2023-12-20',
-                nextMaintenance: '2024-01-25',
-                installationDate: '2021-03-15',
-                capacity: 10,
-                floors: 15,
-                manufacturer: 'KONE',
-                serialNumber: 'KONE-MS-54321'
-            }
-        ];
     }
 
     setupEventListeners() {
@@ -145,13 +94,19 @@ class LiftsManager {
         }
 
         // Пошук
-        const searchTerm = $('#searchInput').val().toLowerCase();
+        const searchTerm = $('#searchInput').val()?.toLowerCase() || '';
         if (searchTerm) {
-            filteredLifts = filteredLifts.filter(lift =>
-                lift.model.toLowerCase().includes(searchTerm) ||
-                lift.location.toLowerCase().includes(searchTerm) ||
-                lift.manufacturer.toLowerCase().includes(searchTerm)
-            );
+            filteredLifts = filteredLifts.filter(lift => {
+                // Безпечне отримання значень з перевіркою на undefined
+                const model = String(lift.model || lift.municipalNumber || '').toLowerCase();
+                const addressStr = lift.address ? (typeof lift.address === 'string' ? lift.address : (lift.address.street || '')) : '';
+                const location = String(lift.location || addressStr || '').toLowerCase();
+                const name = String(lift.name || '').toLowerCase();
+                
+                return model.includes(searchTerm) ||
+                       location.includes(searchTerm) ||
+                       name.includes(searchTerm);
+            });
         }
 
         filteredLifts = this.sortLifts(filteredLifts);
@@ -212,26 +167,29 @@ class LiftsManager {
         const statusText = this.getStatusText(lift.status);
         const typeText = this.getTypeText(lift.type);
         
+        // Безпечне отримання адреси
+        const location = this.formatLocation(lift);
+        
         return $(`
             <div class="col-lg-4 col-md-6">
                 <div class="card lift-card">
                     <div class="card-header">
-                        <h3 class="card-title">${lift.model}</h3>
+                        <h3 class="card-title">${lift.model || lift.name || 'Ліфт'}</h3>
                         <span class="badge ${statusClass}">${statusText}</span>
                     </div>
                     <div class="card-body p-0">
                         <div class="lift-image position-relative">
-                            <img src="../../assets/img/lifts/${lift.model.toLowerCase().replace(/\s+/g, '-')}.jpg" 
-                                 alt="${lift.model}" 
-                                 onerror="this.src='../../assets/img/lifts/default.jpg'">
+                            <img src="/assets/img/lifts/${(lift.model || 'default').toLowerCase().replace(/\s+/g, '-')}.jpg" 
+                                 alt="${lift.model || 'Ліфт'}" 
+                                 onerror="this.src='/assets/img/lifts/default.svg'">
                             <div class="lift-overlay">
-                                <button class="btn btn-primary" onclick="liftsManager.viewLiftDetails('${lift.id}')">
+                                <button class="btn btn-primary" onclick="window.liftsManager.viewLiftDetails('${lift.id || lift._id}')">
                                     <i class="fas fa-eye"></i> Деталі
                                 </button>
                             </div>
                         </div>
                         <div class="p-3">
-                            <p><strong><i class="fas fa-map-marker-alt mr-2"></i>Локація:</strong> ${lift.location}</p>
+                            <p><strong><i class="fas fa-map-marker-alt mr-2"></i>Локація:</strong> ${location}</p>
                             <p><strong><i class="fas fa-tag mr-2"></i>Тип:</strong> ${typeText}</p>
                             <p><strong><i class="fas fa-wrench mr-2"></i>Останнє ТО:</strong> ${this.formatDate(lift.lastMaintenance)}</p>
                             <p><strong><i class="fas fa-calendar-alt mr-2"></i>Наступне ТО:</strong> ${this.formatDate(lift.nextMaintenance)}</p>
@@ -239,13 +197,13 @@ class LiftsManager {
                         </div>
                     </div>
                     <div class="card-footer">
-                        <button class="btn btn-sm btn-primary" onclick="liftsManager.requestService('${lift.id}')">
+                        <button class="btn btn-sm btn-primary" onclick="window.liftsManager.requestService('${lift.id || lift._id}')">
                             <i class="fas fa-tools"></i> Замовити послугу
                         </button>
-                        <button class="btn btn-sm btn-info" onclick="liftsManager.viewHistory('${lift.id}')">
+                        <button class="btn btn-sm btn-info" onclick="window.liftsManager.viewHistory('${lift.id || lift._id}')">
                             <i class="fas fa-history"></i> Історія
                         </button>
-                        <button class="btn btn-sm btn-secondary" onclick="liftsManager.viewLiftDetails('${lift.id}')">
+                        <button class="btn btn-sm btn-secondary" onclick="window.liftsManager.viewLiftDetails('${lift.id || lift._id}')">
                             <i class="fas fa-info-circle"></i> Деталі
                         </button>
                     </div>
@@ -288,6 +246,38 @@ class LiftsManager {
         return new Date(dateString).toLocaleDateString('uk-UA');
     }
 
+    formatLocation(lift) {
+        // Якщо location - рядок, повертаємо його
+        if (typeof lift.location === 'string' && lift.location) {
+            return lift.location;
+        }
+        
+        // Якщо location - об'єкт, форматуємо його
+        if (lift.location && typeof lift.location === 'object') {
+            const parts = [];
+            if (lift.location.street) parts.push(lift.location.street);
+            if (lift.location.city) parts.push(lift.location.city);
+            if (lift.location.postalCode) parts.push(lift.location.postalCode);
+            if (parts.length > 0) return parts.join(', ');
+        }
+        
+        // Перевіряємо address як альтернативу
+        if (lift.address) {
+            if (typeof lift.address === 'string') {
+                return lift.address;
+            }
+            if (typeof lift.address === 'object') {
+                const parts = [];
+                if (lift.address.street) parts.push(lift.address.street);
+                if (lift.address.city) parts.push(lift.address.city);
+                if (lift.address.postalCode) parts.push(lift.address.postalCode);
+                if (parts.length > 0) return parts.join(', ');
+            }
+        }
+        
+        return 'Адреса не вказана';
+    }
+
     updateOverview(lifts = this.lifts) {
         $('#totalLifts').text(lifts.length);
         $('#operationalLifts').text(lifts.filter(lift => lift.status === 'operational').length);
@@ -311,8 +301,17 @@ class LiftsManager {
     }
 
     viewLiftDetails(liftId) {
-        const lift = this.lifts.find(l => l.id === liftId);
-        if (!lift) return;
+        const lift = this.lifts.find(l => (l.id === liftId || l._id === liftId));
+        if (!lift) {
+            console.error('Lift not found:', liftId);
+            Swal.fire({
+                icon: 'error',
+                title: 'Помилка',
+                text: 'Ліфт не знайдено',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
 
         currentLiftId = liftId;
         this.currentLift = lift;
@@ -329,45 +328,35 @@ class LiftsManager {
         return `
             <div class="lift-details">
                 <div class="details-header text-center mb-4">
-                    <h2>${lift.model}</h2>
+                    <h2>${lift.model || lift.name || 'Ліфт'}</h2>
                     <span class="badge ${this.getStatusBadgeClass(lift.status)}">
                         ${this.getStatusText(lift.status)}
                     </span>
                 </div>
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="card mb-3">
-                            <div class="card-header">
-                                <h5 class="card-title">Основна інформація</h5>
-                            </div>
-                            <div class="card-body">
-                                <p><strong><i class="fas fa-map-marker-alt"></i> Локація:</strong> ${lift.location}</p>
-                                <p><strong><i class="fas fa-tag"></i> Тип:</strong> ${this.getTypeText(lift.type)}</p>
-                                <p><strong><i class="fas fa-industry"></i> Виробник:</strong> ${lift.manufacturer || 'Невідомо'}</p>
-                                <p><strong><i class="fas fa-barcode"></i> Серійний номер:</strong> ${lift.serialNumber || 'Невідомо'}</p>
-                            </div>
-                        </div>
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="card-title">Інформація про ліфт</h5>
                     </div>
-                    
-                    <div class="col-md-6">
-                        <div class="card mb-3">
-                            <div class="card-header">
-                                <h5 class="card-title">Технічні характеристики</h5>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong><i class="fas fa-map-marker-alt"></i> Локація:</strong> ${this.formatLocation(lift)}</p>
+                                ${lift.type ? `<p><strong><i class="fas fa-tag"></i> Тип:</strong> ${this.getTypeText(lift.type)}</p>` : ''}
+                                ${lift.municipalNumber ? `<p><strong><i class="fas fa-id-card"></i> Номер муніципальний:</strong> ${lift.municipalNumber}</p>` : ''}
                             </div>
-                            <div class="card-body">
-                                <p><strong><i class="fas fa-calendar-alt"></i> Дата встановлення:</strong> ${this.formatDate(lift.installationDate)}</p>
-                                <p><strong><i class="fas fa-users"></i> Місткість:</strong> ${lift.capacity || 'Невідомо'} ${lift.type === 'passenger' ? 'осіб' : 'кг'}</p>
-                                <p><strong><i class="fas fa-building"></i> Кількість поверхів:</strong> ${lift.floors || 'Невідомо'}</p>
+                            <div class="col-md-6">
+                                ${lift.capacity ? `<p><strong><i class="fas fa-users"></i> Місткість:</strong> ${lift.capacity} ${lift.type === 'passenger' ? 'осіб' : 'кг'}</p>` : ''}
                                 <p><strong><i class="fas fa-info-circle"></i> Статус ТО:</strong> 
                                     <span class="badge ${maintenanceStatusClass}">${maintenanceStatus}</span>
                                 </p>
+                                ${lift.qrCode ? `<p><strong><i class="fas fa-qrcode"></i> QR-код:</strong> Згенеровано</p>` : ''}
                             </div>
                         </div>
                     </div>
                 </div>
 
-                ${lift.maintenanceHistory && lift.maintenanceHistory.length > 0 ? `
+                ${lift.maintenanceHistory && Array.isArray(lift.maintenanceHistory) && lift.maintenanceHistory.length > 0 ? `
                 <div class="card">
                     <div class="card-header">
                         <h5 class="card-title">Історія обслуговування</h5>
@@ -460,110 +449,251 @@ class LiftsManager {
 
     loadStatistics() {
         const statsContainer = $('#statisticsContent');
-        statsContainer.empty();
-
-        const stats = {
-            totalUptime: this.calculateUptime(),
-            maintenanceCosts: this.calculateMaintenanceCosts(),
-            usageStats: this.calculateUsageStats()
-        };
-
+        if (!statsContainer.length) return;
+        
+        // Розрахунок реальної статистики з наявних даних
+        const totalLifts = this.lifts.length;
+        const operational = this.lifts.filter(l => l.status === 'operational').length;
+        const maintenance = this.lifts.filter(l => l.status === 'maintenance').length;
+        const needsAttention = this.lifts.filter(l => l.status === 'attention').length;
+        
+        const uptimePercent = totalLifts > 0 ? ((operational / totalLifts) * 100).toFixed(1) : 0;
+        
         statsContainer.html(`
             <div class="stat-item">
                 <h5><i class="fas fa-chart-line"></i> Загальна доступність</h5>
-                ${Object.entries(stats.totalUptime).map(([model, uptime]) => `
-                    <p>${model}: <strong>${uptime}%</strong></p>
-                `).join('')}
+                <p><strong>${uptimePercent}%</strong> ліфтів працюють без проблем</p>
+                <p>Всього ліфтів: <strong>${totalLifts}</strong></p>
             </div>
             <div class="stat-item">
-                <h5><i class="fas fa-money-bill-wave"></i> Витрати на обслуговування</h5>
-                ${Object.entries(stats.maintenanceCosts).map(([model, cost]) => `
-                    <p>${model}: <strong>${cost} грн</strong></p>
-                `).join('')}
-            </div>
-            <div class="stat-item">
-                <h5><i class="fas fa-chart-bar"></i> Статистика використання</h5>
-                ${Object.entries(stats.usageStats).map(([model, usage]) => `
-                    <p>${model}: <strong>${usage} перевезень</strong></p>
-                `).join('')}
+                <h5><i class="fas fa-tools"></i> Статус обслуговування</h5>
+                <p>Працюють: <strong>${operational}</strong></p>
+                <p>На обслуговуванні: <strong>${maintenance}</strong></p>
+                <p>Потребують уваги: <strong>${needsAttention}</strong></p>
             </div>
         `);
     }
 
-    calculateUptime() {
-        // Імітація розрахунків
-        return {
-            'Otis Gen2': '98.7%',
-            'Schindler 3300': '95.2%',
-            'KONE MonoSpace': '99.1%'
-        };
-    }
-
-    calculateMaintenanceCosts() {
-        // Імітація розрахунків
-        return {
-            'Otis Gen2': '8,500',
-            'Schindler 3300': '12,300',
-            'KONE MonoSpace': '7,200'
-        };
-    }
-
-    calculateUsageStats() {
-        // Імітація розрахунків
-        return {
-            'Otis Gen2': '12,456',
-            'Schindler 3300': '8,923',
-            'KONE MonoSpace': '15,678'
-        };
-    }
-
     loadDocuments() {
-        const documents = [
-            { id: 'passport-otis', name: 'Паспорт ліфта Otis Gen2', type: 'pdf' },
-            { id: 'manual-otis', name: 'Інструкція експлуатації', type: 'pdf' },
-            { id: 'act-otis', name: 'Акт введення в експлуатацію', type: 'doc' },
-            { id: 'certificate-schindler', name: 'Сертифікат відповідності Schindler', type: 'pdf' }
-        ];
-
         const documentsContainer = $('#documentsList');
-        documentsContainer.empty();
-
-        documents.forEach(doc => {
-            const icon = doc.type === 'pdf' ? 'fa-file-pdf' : 'fa-file-word';
-            const color = doc.type === 'pdf' ? 'text-danger' : 'text-primary';
-            
-            const item = `
-                <div class="document-item">
-                    <div>
-                        <i class="fas ${icon} ${color} fa-2x mr-3"></i>
-                        <span>${doc.name}</span>
-                    </div>
-                    <button class="btn btn-sm btn-primary" onclick="liftsManager.downloadDocument('${doc.id}')">
-                        <i class="fas fa-download"></i> Завантажити
-                    </button>
-                </div>
-            `;
-            documentsContainer.append(item);
-        });
-    }
-
-    downloadDocument(docId) {
-        this.showNotification(`Завантаження документа ${docId}...`, 'info');
-        // Імітація завантаження
-        setTimeout(() => {
-            this.showNotification('Документ успішно завантажено', 'success');
-        }, 2000);
+        if (!documentsContainer.length) return;
+        
+        // Документи будуть завантажені з реальної бази даних через API
+        documentsContainer.html(`
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                Документи ліфтів будуть доступні після їх додавання адміністратором.
+            </div>
+        `);
     }
 
     requestService(liftId) {
-        const lift = this.lifts.find(l => l.id === liftId);
-        if (!lift) return;
+        const lift = this.lifts.find(l => (l.id === liftId || l._id === liftId));
+        if (!lift) {
+            console.error('Lift not found for service request:', liftId);
+            Swal.fire({
+                icon: 'error',
+                title: 'Помилка',
+                text: 'Ліфт не знайдено',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
 
-        window.location.href = `requests.html?liftId=${liftId}&action=create`;
+        // Показуємо модальне вікно для створення запиту
+        Swal.fire({
+            title: 'Замовити послугу',
+            html: `
+                <div class="text-left">
+                    <p><strong>Ліфт:</strong> ${lift.model || lift.name || 'Ліфт'}</p>
+                    <p><strong>Адреса:</strong> ${this.formatLocation(lift)}</p>
+                    <hr>
+                    <div class="form-group">
+                        <label>Тип послуги:</label>
+                        <select id="serviceType" class="form-control">
+                            <option value="maintenance">Планове обслуговування</option>
+                            <option value="repair">Ремонт</option>
+                            <option value="inspection">Інспекція</option>
+                            <option value="emergency">Аварійна ситуація</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Опис проблеми:</label>
+                        <textarea id="serviceDescription" class="form-control" rows="3" placeholder="Детально опишіть проблему або запит..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Пріоритет:</label>
+                        <select id="servicePriority" class="form-control">
+                            <option value="low">Низький</option>
+                            <option value="medium">Середній</option>
+                            <option value="high">Високий</option>
+                            <option value="urgent">Термінова</option>
+                        </select>
+                    </div>
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Відправити запит',
+            cancelButtonText: 'Скасувати',
+            width: '600px',
+            preConfirm: () => {
+                const serviceType = document.getElementById('serviceType').value;
+                const description = document.getElementById('serviceDescription').value;
+                const priority = document.getElementById('servicePriority').value;
+                
+                if (!description || description.trim().length < 10) {
+                    Swal.showValidationMessage('Будь ласка, опишіть проблему детальніше (мінімум 10 символів)');
+                    return false;
+                }
+                
+                return { serviceType, description, priority };
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                this.submitServiceRequest(liftId, result.value);
+            }
+        });
     }
 
-    viewHistory(liftId) {
-        window.location.href = `history.html?liftId=${liftId}`;
+    async submitServiceRequest(liftId, data) {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/requests', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    liftId: liftId,
+                    type: data.serviceType,
+                    description: data.description,
+                    priority: data.priority,
+                    status: 'pending'
+                })
+            });
+
+            if (response.ok) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Успіх!',
+                    text: 'Ваш запит успішно відправлено. Ми зв\'яжемося з вами найближчим часом.',
+                    confirmButtonText: 'OK'
+                });
+            } else {
+                throw new Error('Помилка відправки запиту');
+            }
+        } catch (error) {
+            console.error('Error submitting service request:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Помилка',
+                text: 'Не вдалося відправити запит. Спробуйте пізніше.',
+                confirmButtonText: 'OK'
+            });
+        }
+    }
+
+    async viewHistory(liftId) {
+        const lift = this.lifts.find(l => (l.id === liftId || l._id === liftId));
+        if (!lift) {
+            console.error('Lift not found for history:', liftId);
+            Swal.fire({
+                icon: 'error',
+                title: 'Помилка',
+                text: 'Ліфт не знайдено',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/api/lifts/${liftId}/history`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            let historyHtml = '';
+            
+            if (response.ok) {
+                const history = await response.json();
+                if (history.data && history.data.length > 0) {
+                    historyHtml = `
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Дата</th>
+                                        <th>Тип</th>
+                                        <th>Опис</th>
+                                        <th>Технік</th>
+                                        <th>Статус</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${history.data.map(entry => `
+                                        <tr>
+                                            <td>${this.formatDate(entry.date)}</td>
+                                            <td><span class="badge badge-info">${entry.type}</span></td>
+                                            <td>${entry.description || '-'}</td>
+                                            <td>${entry.technician || '-'}</td>
+                                            <td><span class="badge badge-${entry.status === 'completed' ? 'success' : 'warning'}">${entry.status}</span></td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                } else {
+                    historyHtml = '<p class="text-center text-muted">Історія обслуговування відсутня</p>';
+                }
+            } else {
+                // Fallback to lift's maintenance history
+                if (lift.maintenanceHistory && lift.maintenanceHistory.length > 0) {
+                    historyHtml = `
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Дата</th>
+                                        <th>Тип робіт</th>
+                                        <th>Технік</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${lift.maintenanceHistory.map(entry => `
+                                        <tr>
+                                            <td>${this.formatDate(entry.date)}</td>
+                                            <td>${entry.type}</td>
+                                            <td>${entry.technician}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                } else {
+                    historyHtml = '<p class="text-center text-muted">Історія обслуговування відсутня</p>';
+                }
+            }
+
+            Swal.fire({
+                title: `Історія: ${lift.model || lift.name || 'Ліфт'}`,
+                html: historyHtml,
+                width: '800px',
+                confirmButtonText: 'Закрити'
+            });
+        } catch (error) {
+            console.error('Error loading history:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Помилка',
+                text: 'Не вдалося завантажити історію',
+                confirmButtonText: 'OK'
+            });
+        }
     }
 
     showNotification(message, type = 'success') {

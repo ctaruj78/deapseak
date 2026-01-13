@@ -1,0 +1,1525 @@
+
+╔═══════════════════════════════════════════════════════════════╗
+║                      👨‍💼 АДМІН ПАНЕЛЬ                          ║
+╚═══════════════════════════════════════════════════════════════╝
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: admin-dashboard.html
+📁 Панель: admin
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 1
+
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 1
+📊 ВСЬОГО: 1
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: ai-assistant-full.html
+📁 Панель: admin
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 1
+
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 1
+📊 ВСЬОГО: 1
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: ai-diagnostics-full.html
+📁 Панель: admin
+═══════════════════════════════════════════════════════════════
+⚠️  Посилань не знайдено
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: analytics-dashboard.html
+📁 Панель: admin
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 13
+
+  ✅ OK: /pages/admin/admin-dashboard.html
+  ✅ OK: /pages/admin/invoice-template.html
+  ✅ OK: /pages/admin/lifts.html
+  ✅ OK: /pages/admin/maps.html
+  ✅ OK: /pages/admin/notifications.html
+  ✅ OK: /pages/admin/qr-analytics.html
+  ✅ OK: /pages/admin/qr-history.html
+  ✅ OK: /pages/admin/qr-management.html
+  ✅ OK: /pages/admin/requests.html
+  ✅ OK: /pages/admin/settings.html
+  ✅ OK: /pages/admin/unified-analytics.html
+  ✅ OK: /pages/admin/users.html
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 13
+📊 ВСЬОГО: 13
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: analytics.html
+📁 Панель: admin
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 17
+
+  ✅ OK: /pages/admin/admin-dashboard.html
+  ✅ OK: /pages/admin/email-template.html
+  ✅ OK: /pages/admin/invoice-template.html
+  ✅ OK: /pages/admin/lifts.html
+  ✅ OK: /pages/admin/maps.html
+  ✅ OK: /pages/admin/notifications.html
+  ✅ OK: /pages/admin/orcamentos-list.html
+  ✅ OK: /pages/admin/predictive-maintenance.html
+  ✅ OK: /pages/admin/qr-analytics.html
+  ✅ OK: /pages/admin/qr-history.html
+  ✅ OK: /pages/admin/qr-management.html
+  ✅ OK: /pages/admin/reports.html
+  ✅ OK: /pages/admin/requests.html
+  ✅ OK: /pages/admin/settings.html
+  ✅ OK: /pages/admin/unified-analytics.html
+  ✅ OK: /pages/admin/users.html
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 17
+📊 ВСЬОГО: 17
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: audit-log.html
+📁 Панель: admin
+═══════════════════════════════════════════════════════════════
+⚠️  Посилань не знайдено
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: email-template.html
+📁 Панель: admin
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 13
+
+  ✅ OK: /pages/admin/admin-dashboard.html
+  ✅ OK: /pages/admin/invoice-template.html
+  ✅ OK: /pages/admin/lifts.html
+  ✅ OK: /pages/admin/maps.html
+  ✅ OK: /pages/admin/notifications.html
+  ✅ OK: /pages/admin/qr-analytics.html
+  ✅ OK: /pages/admin/qr-history.html
+  ✅ OK: /pages/admin/qr-management.html
+  ✅ OK: /pages/admin/requests.html
+  ✅ OK: /pages/admin/settings.html
+  ✅ OK: /pages/admin/unified-analytics.html
+  ✅ OK: /pages/admin/users.html
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 13
+📊 ВСЬОГО: 13
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: import-checklists.html
+📁 Панель: admin
+═══════════════════════════════════════════════════════════════
+⚠️  Посилань не знайдено
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: inspection-template.html
+📁 Панель: admin
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 1
+
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 1
+📊 ВСЬОГО: 1
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: invoice-template.html
+📁 Панель: admin
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 13
+
+  ✅ OK: /pages/admin/admin-dashboard.html
+  ✅ OK: /pages/admin/invoice-template.html
+  ✅ OK: /pages/admin/lifts.html
+  ✅ OK: /pages/admin/maps.html
+  ✅ OK: /pages/admin/notifications.html
+  ✅ OK: /pages/admin/qr-analytics.html
+  ✅ OK: /pages/admin/qr-history.html
+  ✅ OK: /pages/admin/qr-management.html
+  ✅ OK: /pages/admin/requests.html
+  ✅ OK: /pages/admin/settings.html
+  ✅ OK: /pages/admin/unified-analytics.html
+  ✅ OK: /pages/admin/users.html
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 13
+📊 ВСЬОГО: 13
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: lifts.html
+📁 Панель: admin
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 17
+
+  ✅ OK: /pages/admin/admin-dashboard.html
+  ✅ OK: /pages/admin/email-template.html
+  ✅ OK: /pages/admin/invoice-template.html
+  ✅ OK: /pages/admin/lifts.html
+  ✅ OK: /pages/admin/maps.html
+  ✅ OK: /pages/admin/notifications.html
+  ✅ OK: /pages/admin/orcamentos-list.html
+  ✅ OK: /pages/admin/predictive-maintenance.html
+  ✅ OK: /pages/admin/qr-analytics.html
+  ✅ OK: /pages/admin/qr-history.html
+  ✅ OK: /pages/admin/qr-management.html
+  ✅ OK: /pages/admin/reports.html
+  ✅ OK: /pages/admin/requests.html
+  ✅ OK: /pages/admin/settings.html
+  ✅ OK: /pages/admin/unified-analytics.html
+  ✅ OK: /pages/admin/users.html
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 17
+📊 ВСЬОГО: 17
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: login.html
+📁 Панель: admin
+═══════════════════════════════════════════════════════════════
+⚠️  Посилань не знайдено
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: maps-simple.html
+📁 Панель: admin
+═══════════════════════════════════════════════════════════════
+⚠️  Посилань не знайдено
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: maps.html
+📁 Панель: admin
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 17
+
+  ✅ OK: /pages/admin/admin-dashboard.html
+  ✅ OK: /pages/admin/email-template.html
+  ✅ OK: /pages/admin/invoice-template.html
+  ✅ OK: /pages/admin/lifts.html
+  ✅ OK: /pages/admin/maps.html
+  ✅ OK: /pages/admin/notifications.html
+  ✅ OK: /pages/admin/orcamentos-list.html
+  ✅ OK: /pages/admin/predictive-maintenance.html
+  ✅ OK: /pages/admin/qr-analytics.html
+  ✅ OK: /pages/admin/qr-history.html
+  ✅ OK: /pages/admin/qr-management.html
+  ✅ OK: /pages/admin/reports.html
+  ✅ OK: /pages/admin/requests.html
+  ✅ OK: /pages/admin/settings.html
+  ✅ OK: /pages/admin/unified-analytics.html
+  ✅ OK: /pages/admin/users.html
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 17
+📊 ВСЬОГО: 17
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: notifications.html
+📁 Панель: admin
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 17
+
+  ✅ OK: /pages/admin/admin-dashboard.html
+  ✅ OK: /pages/admin/email-template.html
+  ✅ OK: /pages/admin/invoice-template.html
+  ✅ OK: /pages/admin/lifts.html
+  ✅ OK: /pages/admin/maps.html
+  ✅ OK: /pages/admin/notifications.html
+  ✅ OK: /pages/admin/orcamentos-list.html
+  ✅ OK: /pages/admin/predictive-maintenance.html
+  ✅ OK: /pages/admin/qr-analytics.html
+  ✅ OK: /pages/admin/qr-history.html
+  ✅ OK: /pages/admin/qr-management.html
+  ✅ OK: /pages/admin/reports.html
+  ✅ OK: /pages/admin/requests.html
+  ✅ OK: /pages/admin/settings.html
+  ✅ OK: /pages/admin/unified-analytics.html
+  ✅ OK: /pages/admin/users.html
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 17
+📊 ВСЬОГО: 17
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: orcamentos-list.html
+📁 Панель: admin
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 17
+
+  ✅ OK: /pages/admin/admin-dashboard.html
+  ✅ OK: /pages/admin/email-template.html
+  ✅ OK: /pages/admin/invoice-template.html
+  ✅ OK: /pages/admin/lifts.html
+  ✅ OK: /pages/admin/maps.html
+  ✅ OK: /pages/admin/notifications.html
+  ✅ OK: /pages/admin/orcamentos-list.html
+  ✅ OK: /pages/admin/predictive-maintenance.html
+  ✅ OK: /pages/admin/qr-analytics.html
+  ✅ OK: /pages/admin/qr-history.html
+  ✅ OK: /pages/admin/qr-management.html
+  ✅ OK: /pages/admin/reports.html
+  ✅ OK: /pages/admin/requests.html
+  ✅ OK: /pages/admin/settings.html
+  ✅ OK: /pages/admin/unified-analytics.html
+  ✅ OK: /pages/admin/users.html
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 17
+📊 ВСЬОГО: 17
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: predictive-maintenance.html
+📁 Панель: admin
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 17
+
+  ✅ OK: /pages/admin/admin-dashboard.html
+  ✅ OK: /pages/admin/email-template.html
+  ✅ OK: /pages/admin/invoice-template.html
+  ✅ OK: /pages/admin/lifts.html
+  ✅ OK: /pages/admin/maps.html
+  ✅ OK: /pages/admin/notifications.html
+  ✅ OK: /pages/admin/orcamentos-list.html
+  ✅ OK: /pages/admin/predictive-maintenance.html
+  ✅ OK: /pages/admin/qr-analytics.html
+  ✅ OK: /pages/admin/qr-history.html
+  ✅ OK: /pages/admin/qr-management.html
+  ✅ OK: /pages/admin/reports.html
+  ✅ OK: /pages/admin/requests.html
+  ✅ OK: /pages/admin/settings.html
+  ✅ OK: /pages/admin/unified-analytics.html
+  ✅ OK: /pages/admin/users.html
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 17
+📊 ВСЬОГО: 17
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: profile.html
+📁 Панель: admin
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 17
+
+  ✅ OK: /pages/admin/admin-dashboard.html
+  ✅ OK: /pages/admin/email-template.html
+  ✅ OK: /pages/admin/invoice-template.html
+  ✅ OK: /pages/admin/lifts.html
+  ✅ OK: /pages/admin/maps.html
+  ✅ OK: /pages/admin/notifications.html
+  ✅ OK: /pages/admin/orcamentos-list.html
+  ✅ OK: /pages/admin/predictive-maintenance.html
+  ✅ OK: /pages/admin/qr-analytics.html
+  ✅ OK: /pages/admin/qr-history.html
+  ✅ OK: /pages/admin/qr-management.html
+  ✅ OK: /pages/admin/reports.html
+  ✅ OK: /pages/admin/requests.html
+  ✅ OK: /pages/admin/settings.html
+  ✅ OK: /pages/admin/unified-analytics.html
+  ✅ OK: /pages/admin/users.html
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 17
+📊 ВСЬОГО: 17
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: qr-analytics.html
+📁 Панель: admin
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 17
+
+  ✅ OK: /pages/admin/admin-dashboard.html
+  ✅ OK: /pages/admin/email-template.html
+  ✅ OK: /pages/admin/invoice-template.html
+  ✅ OK: /pages/admin/lifts.html
+  ✅ OK: /pages/admin/maps.html
+  ✅ OK: /pages/admin/notifications.html
+  ✅ OK: /pages/admin/orcamentos-list.html
+  ✅ OK: /pages/admin/predictive-maintenance.html
+  ✅ OK: /pages/admin/qr-analytics.html
+  ✅ OK: /pages/admin/qr-history.html
+  ✅ OK: /pages/admin/qr-management.html
+  ✅ OK: /pages/admin/reports.html
+  ✅ OK: /pages/admin/requests.html
+  ✅ OK: /pages/admin/settings.html
+  ✅ OK: /pages/admin/unified-analytics.html
+  ✅ OK: /pages/admin/users.html
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 17
+📊 ВСЬОГО: 17
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: qr-batch.html
+📁 Панель: admin
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 13
+
+  ✅ OK: /pages/admin/admin-dashboard.html
+  ✅ OK: /pages/admin/invoice-template.html
+  ✅ OK: /pages/admin/lifts.html
+  ✅ OK: /pages/admin/maps.html
+  ✅ OK: /pages/admin/notifications.html
+  ✅ OK: /pages/admin/qr-analytics.html
+  ✅ OK: /pages/admin/qr-history.html
+  ✅ OK: /pages/admin/qr-management.html
+  ✅ OK: /pages/admin/requests.html
+  ✅ OK: /pages/admin/settings.html
+  ✅ OK: /pages/admin/unified-analytics.html
+  ✅ OK: /pages/admin/users.html
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 13
+📊 ВСЬОГО: 13
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: qr-generator.html
+📁 Панель: admin
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 13
+
+  ✅ OK: /pages/admin/admin-dashboard.html
+  ✅ OK: /pages/admin/invoice-template.html
+  ✅ OK: /pages/admin/lifts.html
+  ✅ OK: /pages/admin/maps.html
+  ✅ OK: /pages/admin/notifications.html
+  ✅ OK: /pages/admin/qr-analytics.html
+  ✅ OK: /pages/admin/qr-history.html
+  ✅ OK: /pages/admin/qr-management.html
+  ✅ OK: /pages/admin/requests.html
+  ✅ OK: /pages/admin/settings.html
+  ✅ OK: /pages/admin/unified-analytics.html
+  ✅ OK: /pages/admin/users.html
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 13
+📊 ВСЬОГО: 13
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: qr-history.html
+📁 Панель: admin
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 17
+
+  ✅ OK: /pages/admin/admin-dashboard.html
+  ✅ OK: /pages/admin/email-template.html
+  ✅ OK: /pages/admin/invoice-template.html
+  ✅ OK: /pages/admin/lifts.html
+  ✅ OK: /pages/admin/maps.html
+  ✅ OK: /pages/admin/notifications.html
+  ✅ OK: /pages/admin/orcamentos-list.html
+  ✅ OK: /pages/admin/predictive-maintenance.html
+  ✅ OK: /pages/admin/qr-analytics.html
+  ✅ OK: /pages/admin/qr-history.html
+  ✅ OK: /pages/admin/qr-management.html
+  ✅ OK: /pages/admin/reports.html
+  ✅ OK: /pages/admin/requests.html
+  ✅ OK: /pages/admin/settings.html
+  ✅ OK: /pages/admin/unified-analytics.html
+  ✅ OK: /pages/admin/users.html
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 17
+📊 ВСЬОГО: 17
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: qr-management.html
+📁 Панель: admin
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 17
+
+  ✅ OK: /pages/admin/admin-dashboard.html
+  ✅ OK: /pages/admin/email-template.html
+  ✅ OK: /pages/admin/invoice-template.html
+  ✅ OK: /pages/admin/lifts.html
+  ✅ OK: /pages/admin/maps.html
+  ✅ OK: /pages/admin/notifications.html
+  ✅ OK: /pages/admin/orcamentos-list.html
+  ✅ OK: /pages/admin/predictive-maintenance.html
+  ✅ OK: /pages/admin/qr-analytics.html
+  ✅ OK: /pages/admin/qr-history.html
+  ✅ OK: /pages/admin/qr-management.html
+  ✅ OK: /pages/admin/reports.html
+  ✅ OK: /pages/admin/requests.html
+  ✅ OK: /pages/admin/settings.html
+  ✅ OK: /pages/admin/unified-analytics.html
+  ✅ OK: /pages/admin/users.html
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 17
+📊 ВСЬОГО: 17
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: report-template.html
+📁 Панель: admin
+═══════════════════════════════════════════════════════════════
+⚠️  Посилань не знайдено
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: reports.html
+📁 Панель: admin
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 17
+
+  ✅ OK: /pages/admin/admin-dashboard.html
+  ✅ OK: /pages/admin/email-template.html
+  ✅ OK: /pages/admin/invoice-template.html
+  ✅ OK: /pages/admin/lifts.html
+  ✅ OK: /pages/admin/maps.html
+  ✅ OK: /pages/admin/notifications.html
+  ✅ OK: /pages/admin/orcamentos-list.html
+  ✅ OK: /pages/admin/predictive-maintenance.html
+  ✅ OK: /pages/admin/qr-analytics.html
+  ✅ OK: /pages/admin/qr-history.html
+  ✅ OK: /pages/admin/qr-management.html
+  ✅ OK: /pages/admin/reports.html
+  ✅ OK: /pages/admin/requests.html
+  ✅ OK: /pages/admin/settings.html
+  ✅ OK: /pages/admin/unified-analytics.html
+  ✅ OK: /pages/admin/users.html
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 17
+📊 ВСЬОГО: 17
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: requests.html
+📁 Панель: admin
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 17
+
+  ✅ OK: /pages/admin/admin-dashboard.html
+  ✅ OK: /pages/admin/email-template.html
+  ✅ OK: /pages/admin/invoice-template.html
+  ✅ OK: /pages/admin/lifts.html
+  ✅ OK: /pages/admin/maps.html
+  ✅ OK: /pages/admin/notifications.html
+  ✅ OK: /pages/admin/orcamentos-list.html
+  ✅ OK: /pages/admin/predictive-maintenance.html
+  ✅ OK: /pages/admin/qr-analytics.html
+  ✅ OK: /pages/admin/qr-history.html
+  ✅ OK: /pages/admin/qr-management.html
+  ✅ OK: /pages/admin/reports.html
+  ✅ OK: /pages/admin/requests.html
+  ✅ OK: /pages/admin/settings.html
+  ✅ OK: /pages/admin/unified-analytics.html
+  ✅ OK: /pages/admin/users.html
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 17
+📊 ВСЬОГО: 17
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: role-manager.html
+📁 Панель: admin
+═══════════════════════════════════════════════════════════════
+⚠️  Посилань не знайдено
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: settings.html
+📁 Панель: admin
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 17
+
+  ✅ OK: /pages/admin/admin-dashboard.html
+  ✅ OK: /pages/admin/email-template.html
+  ✅ OK: /pages/admin/invoice-template.html
+  ✅ OK: /pages/admin/lifts.html
+  ✅ OK: /pages/admin/maps.html
+  ✅ OK: /pages/admin/notifications.html
+  ✅ OK: /pages/admin/orcamentos-list.html
+  ✅ OK: /pages/admin/predictive-maintenance.html
+  ✅ OK: /pages/admin/qr-analytics.html
+  ✅ OK: /pages/admin/qr-history.html
+  ✅ OK: /pages/admin/qr-management.html
+  ✅ OK: /pages/admin/reports.html
+  ✅ OK: /pages/admin/requests.html
+  ✅ OK: /pages/admin/settings.html
+  ✅ OK: /pages/admin/unified-analytics.html
+  ✅ OK: /pages/admin/users.html
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 17
+📊 ВСЬОГО: 17
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: simple-nav-test.html
+📁 Панель: admin
+═══════════════════════════════════════════════════════════════
+⚠️  Посилань не знайдено
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: support.html
+📁 Панель: admin
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 1
+
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 1
+📊 ВСЬОГО: 1
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: test-navigation.html
+📁 Панель: admin
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 1
+
+  ✅ OK: /pages/admin/predictive-maintenance.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 1
+📊 ВСЬОГО: 1
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: unified-analytics.html
+📁 Панель: admin
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 17
+
+  ✅ OK: /pages/admin/admin-dashboard.html
+  ✅ OK: /pages/admin/email-template.html
+  ✅ OK: /pages/admin/invoice-template.html
+  ✅ OK: /pages/admin/lifts.html
+  ✅ OK: /pages/admin/maps.html
+  ✅ OK: /pages/admin/notifications.html
+  ✅ OK: /pages/admin/orcamentos-list.html
+  ✅ OK: /pages/admin/predictive-maintenance.html
+  ✅ OK: /pages/admin/qr-analytics.html
+  ✅ OK: /pages/admin/qr-history.html
+  ✅ OK: /pages/admin/qr-management.html
+  ✅ OK: /pages/admin/reports.html
+  ✅ OK: /pages/admin/requests.html
+  ✅ OK: /pages/admin/settings.html
+  ✅ OK: /pages/admin/unified-analytics.html
+  ✅ OK: /pages/admin/users.html
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 17
+📊 ВСЬОГО: 17
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: users.html
+📁 Панель: admin
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 17
+
+  ✅ OK: /pages/admin/admin-dashboard.html
+  ✅ OK: /pages/admin/email-template.html
+  ✅ OK: /pages/admin/invoice-template.html
+  ✅ OK: /pages/admin/lifts.html
+  ✅ OK: /pages/admin/maps.html
+  ✅ OK: /pages/admin/notifications.html
+  ✅ OK: /pages/admin/orcamentos-list.html
+  ✅ OK: /pages/admin/predictive-maintenance.html
+  ✅ OK: /pages/admin/qr-analytics.html
+  ✅ OK: /pages/admin/qr-history.html
+  ✅ OK: /pages/admin/qr-management.html
+  ✅ OK: /pages/admin/reports.html
+  ✅ OK: /pages/admin/requests.html
+  ✅ OK: /pages/admin/settings.html
+  ✅ OK: /pages/admin/unified-analytics.html
+  ✅ OK: /pages/admin/users.html
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 17
+📊 ВСЬОГО: 17
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+╔═══════════════════════════════════════════════════════════════╗
+║                      👤 КЛІЄНТСЬКА ПАНЕЛЬ                      ║
+╚═══════════════════════════════════════════════════════════════╝
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: ai-predictions.html
+📁 Панель: client
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 12
+
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+  ✅ OK: /pages/client/ai-predictions.html
+  ✅ OK: /pages/client/dashboard.html
+  ✅ OK: /pages/client/documentation.html
+  ✅ OK: /pages/client/history.html
+  ✅ OK: /pages/client/invoices.html
+  ✅ OK: /pages/client/my-lifts.html
+  ✅ OK: /pages/client/notifications.html
+  ✅ OK: /pages/client/profile.html
+  ✅ OK: /pages/client/requests.html
+  ✅ OK: /pages/client/settings.html
+  ✅ OK: /pages/client/support.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 12
+📊 ВСЬОГО: 12
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: dashboard.html
+📁 Панель: client
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 12
+
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+  ✅ OK: /pages/client/ai-predictions.html
+  ✅ OK: /pages/client/dashboard.html
+  ✅ OK: /pages/client/documentation.html
+  ✅ OK: /pages/client/history.html
+  ✅ OK: /pages/client/invoices.html
+  ✅ OK: /pages/client/my-lifts.html
+  ✅ OK: /pages/client/notifications.html
+  ✅ OK: /pages/client/profile.html
+  ✅ OK: /pages/client/requests.html
+  ✅ OK: /pages/client/settings.html
+  ✅ OK: /pages/client/support.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 12
+📊 ВСЬОГО: 12
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: documentation.html
+📁 Панель: client
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 12
+
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+  ✅ OK: /pages/client/ai-predictions.html
+  ✅ OK: /pages/client/dashboard.html
+  ✅ OK: /pages/client/documentation.html
+  ✅ OK: /pages/client/history.html
+  ✅ OK: /pages/client/invoices.html
+  ✅ OK: /pages/client/my-lifts.html
+  ✅ OK: /pages/client/notifications.html
+  ✅ OK: /pages/client/profile.html
+  ✅ OK: /pages/client/requests.html
+  ✅ OK: /pages/client/settings.html
+  ✅ OK: /pages/client/support.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 12
+📊 ВСЬОГО: 12
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: history.html
+📁 Панель: client
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 12
+
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+  ✅ OK: /pages/client/ai-predictions.html
+  ✅ OK: /pages/client/dashboard.html
+  ✅ OK: /pages/client/documentation.html
+  ✅ OK: /pages/client/history.html
+  ✅ OK: /pages/client/invoices.html
+  ✅ OK: /pages/client/my-lifts.html
+  ✅ OK: /pages/client/notifications.html
+  ✅ OK: /pages/client/profile.html
+  ✅ OK: /pages/client/requests.html
+  ✅ OK: /pages/client/settings.html
+  ✅ OK: /pages/client/support.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 12
+📊 ВСЬОГО: 12
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: invoices.html
+📁 Панель: client
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 12
+
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+  ✅ OK: /pages/client/ai-predictions.html
+  ✅ OK: /pages/client/dashboard.html
+  ✅ OK: /pages/client/documentation.html
+  ✅ OK: /pages/client/history.html
+  ✅ OK: /pages/client/invoices.html
+  ✅ OK: /pages/client/my-lifts.html
+  ✅ OK: /pages/client/notifications.html
+  ✅ OK: /pages/client/profile.html
+  ✅ OK: /pages/client/requests.html
+  ✅ OK: /pages/client/settings.html
+  ✅ OK: /pages/client/support.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 12
+📊 ВСЬОГО: 12
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: my-lifts.html
+📁 Панель: client
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 13
+
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+  ✅ OK: /pages/client/ai-predictions.html
+  ✅ OK: /pages/client/dashboard.html
+  ✅ OK: /pages/client/documentation.html
+  ✅ OK: /pages/client/history.html
+  ✅ OK: /pages/client/invoices.html
+  ✅ OK: /pages/client/manifest.json
+  ✅ OK: /pages/client/my-lifts.html
+  ✅ OK: /pages/client/notifications.html
+  ✅ OK: /pages/client/profile.html
+  ✅ OK: /pages/client/requests.html
+  ✅ OK: /pages/client/settings.html
+  ✅ OK: /pages/client/support.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 13
+📊 ВСЬОГО: 13
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: notifications.html
+📁 Панель: client
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 12
+
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+  ✅ OK: /pages/client/ai-predictions.html
+  ✅ OK: /pages/client/dashboard.html
+  ✅ OK: /pages/client/documentation.html
+  ✅ OK: /pages/client/history.html
+  ✅ OK: /pages/client/invoices.html
+  ✅ OK: /pages/client/my-lifts.html
+  ✅ OK: /pages/client/notifications.html
+  ✅ OK: /pages/client/profile.html
+  ✅ OK: /pages/client/requests.html
+  ✅ OK: /pages/client/settings.html
+  ✅ OK: /pages/client/support.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 12
+📊 ВСЬОГО: 12
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: profile.html
+📁 Панель: client
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 12
+
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+  ✅ OK: /pages/client/ai-predictions.html
+  ✅ OK: /pages/client/dashboard.html
+  ✅ OK: /pages/client/documentation.html
+  ✅ OK: /pages/client/history.html
+  ✅ OK: /pages/client/invoices.html
+  ✅ OK: /pages/client/my-lifts.html
+  ✅ OK: /pages/client/notifications.html
+  ✅ OK: /pages/client/profile.html
+  ✅ OK: /pages/client/requests.html
+  ✅ OK: /pages/client/settings.html
+  ✅ OK: /pages/client/support.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 12
+📊 ВСЬОГО: 12
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: requests.html
+📁 Панель: client
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 12
+
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+  ✅ OK: /pages/client/ai-predictions.html
+  ✅ OK: /pages/client/dashboard.html
+  ✅ OK: /pages/client/documentation.html
+  ✅ OK: /pages/client/history.html
+  ✅ OK: /pages/client/invoices.html
+  ✅ OK: /pages/client/my-lifts.html
+  ✅ OK: /pages/client/notifications.html
+  ✅ OK: /pages/client/profile.html
+  ✅ OK: /pages/client/requests.html
+  ✅ OK: /pages/client/settings.html
+  ✅ OK: /pages/client/support.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 12
+📊 ВСЬОГО: 12
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: settings.html
+📁 Панель: client
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 12
+
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+  ✅ OK: /pages/client/ai-predictions.html
+  ✅ OK: /pages/client/dashboard.html
+  ✅ OK: /pages/client/documentation.html
+  ✅ OK: /pages/client/history.html
+  ✅ OK: /pages/client/invoices.html
+  ✅ OK: /pages/client/my-lifts.html
+  ✅ OK: /pages/client/notifications.html
+  ✅ OK: /pages/client/profile.html
+  ✅ OK: /pages/client/requests.html
+  ✅ OK: /pages/client/settings.html
+  ✅ OK: /pages/client/support.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 12
+📊 ВСЬОГО: 12
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: support.html
+📁 Панель: client
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 12
+
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+  ✅ OK: /pages/client/ai-predictions.html
+  ✅ OK: /pages/client/dashboard.html
+  ✅ OK: /pages/client/documentation.html
+  ✅ OK: /pages/client/history.html
+  ✅ OK: /pages/client/invoices.html
+  ✅ OK: /pages/client/my-lifts.html
+  ✅ OK: /pages/client/notifications.html
+  ✅ OK: /pages/client/profile.html
+  ✅ OK: /pages/client/requests.html
+  ✅ OK: /pages/client/settings.html
+  ✅ OK: /pages/client/support.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 12
+📊 ВСЬОГО: 12
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+╔═══════════════════════════════════════════════════════════════╗
+║                    📞 ДИСПЕТЧЕРСЬКА ПАНЕЛЬ                    ║
+╚═══════════════════════════════════════════════════════════════╝
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: assignments.html
+📁 Панель: dispatcher
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 9
+
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+  ✅ OK: /pages/dispatcher/assignments.html
+  ✅ OK: /pages/dispatcher/clients.html
+  ✅ OK: /pages/dispatcher/dashboard.html
+  ✅ OK: /pages/dispatcher/monitoring.html
+  ✅ OK: /pages/dispatcher/qr-management.html
+  ✅ OK: /pages/dispatcher/reports.html
+  ✅ OK: /pages/dispatcher/settings.html
+  ✅ OK: /pages/dispatcher/technicians.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 9
+📊 ВСЬОГО: 9
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: calendar.html
+📁 Панель: dispatcher
+═══════════════════════════════════════════════════════════════
+⚠️  Посилань не знайдено
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: clients.html
+📁 Панель: dispatcher
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 9
+
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+  ✅ OK: /pages/dispatcher/assignments.html
+  ✅ OK: /pages/dispatcher/clients.html
+  ✅ OK: /pages/dispatcher/dashboard.html
+  ✅ OK: /pages/dispatcher/monitoring.html
+  ✅ OK: /pages/dispatcher/qr-management.html
+  ✅ OK: /pages/dispatcher/reports.html
+  ✅ OK: /pages/dispatcher/settings.html
+  ✅ OK: /pages/dispatcher/technicians.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 9
+📊 ВСЬОГО: 9
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: dashboard.html
+📁 Панель: dispatcher
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 9
+
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+  ✅ OK: /pages/dispatcher/assignments.html
+  ✅ OK: /pages/dispatcher/clients.html
+  ✅ OK: /pages/dispatcher/dashboard.html
+  ✅ OK: /pages/dispatcher/monitoring.html
+  ✅ OK: /pages/dispatcher/qr-management.html
+  ✅ OK: /pages/dispatcher/reports.html
+  ✅ OK: /pages/dispatcher/settings.html
+  ✅ OK: /pages/dispatcher/technicians.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 9
+📊 ВСЬОГО: 9
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: monitoring.html
+📁 Панель: dispatcher
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 9
+
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+  ✅ OK: /pages/dispatcher/assignments.html
+  ✅ OK: /pages/dispatcher/clients.html
+  ✅ OK: /pages/dispatcher/dashboard.html
+  ✅ OK: /pages/dispatcher/monitoring.html
+  ✅ OK: /pages/dispatcher/qr-management.html
+  ✅ OK: /pages/dispatcher/reports.html
+  ✅ OK: /pages/dispatcher/settings.html
+  ✅ OK: /pages/dispatcher/technicians.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 9
+📊 ВСЬОГО: 9
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: notifications.html
+📁 Панель: dispatcher
+═══════════════════════════════════════════════════════════════
+⚠️  Посилань не знайдено
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: profile.html
+📁 Панель: dispatcher
+═══════════════════════════════════════════════════════════════
+⚠️  Посилань не знайдено
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: qr-management.html
+📁 Панель: dispatcher
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 9
+
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+  ✅ OK: /pages/dispatcher/assignments.html
+  ✅ OK: /pages/dispatcher/clients.html
+  ✅ OK: /pages/dispatcher/dashboard.html
+  ✅ OK: /pages/dispatcher/monitoring.html
+  ✅ OK: /pages/dispatcher/qr-management.html
+  ✅ OK: /pages/dispatcher/reports.html
+  ✅ OK: /pages/dispatcher/settings.html
+  ✅ OK: /pages/dispatcher/technicians.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 9
+📊 ВСЬОГО: 9
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: reports.html
+📁 Панель: dispatcher
+═══════════════════════════════════════════════════════════════
+⚠️  Посилань не знайдено
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: settings.html
+📁 Панель: dispatcher
+═══════════════════════════════════════════════════════════════
+⚠️  Посилань не знайдено
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: support.html
+📁 Панель: dispatcher
+═══════════════════════════════════════════════════════════════
+⚠️  Посилань не знайдено
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: technicians.html
+📁 Панель: dispatcher
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 9
+
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+  ✅ OK: /pages/dispatcher/assignments.html
+  ✅ OK: /pages/dispatcher/clients.html
+  ✅ OK: /pages/dispatcher/dashboard.html
+  ✅ OK: /pages/dispatcher/monitoring.html
+  ✅ OK: /pages/dispatcher/qr-management.html
+  ✅ OK: /pages/dispatcher/reports.html
+  ✅ OK: /pages/dispatcher/settings.html
+  ✅ OK: /pages/dispatcher/technicians.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 9
+📊 ВСЬОГО: 9
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+╔═══════════════════════════════════════════════════════════════╗
+║                      🔧 ТЕХНІЧНА ПАНЕЛЬ                        ║
+╚═══════════════════════════════════════════════════════════════╝
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: ar-helper.html
+📁 Панель: tech
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 15
+
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+  ✅ OK: /pages/tech/ar-helper.html
+  ✅ OK: /pages/tech/checklists.html
+  ✅ OK: /pages/tech/dashboard.html
+  ✅ OK: /pages/tech/inspections.html
+  ✅ OK: /pages/tech/knowledge-base.html
+  ✅ OK: /pages/tech/manuals.html
+  ✅ OK: /pages/tech/manutencao.html
+  ✅ OK: /pages/tech/qr-scanner.html
+  ✅ OK: /pages/tech/reports.html
+  ✅ OK: /pages/tech/schedule.html
+  ✅ OK: /pages/tech/support.html
+  ✅ OK: /pages/tech/tasks.html
+  ✅ OK: /pages/tech/tools.html
+  ✅ OK: /pages/tech/videos.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 15
+📊 ВСЬОГО: 15
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: checklists.html
+📁 Панель: tech
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 15
+
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+  ✅ OK: /pages/tech/ar-helper.html
+  ✅ OK: /pages/tech/checklists.html
+  ✅ OK: /pages/tech/dashboard.html
+  ✅ OK: /pages/tech/inspections.html
+  ✅ OK: /pages/tech/knowledge-base.html
+  ✅ OK: /pages/tech/manuals.html
+  ✅ OK: /pages/tech/manutencao.html
+  ✅ OK: /pages/tech/qr-scanner.html
+  ✅ OK: /pages/tech/reports.html
+  ✅ OK: /pages/tech/schedule.html
+  ✅ OK: /pages/tech/support.html
+  ✅ OK: /pages/tech/tasks.html
+  ✅ OK: /pages/tech/tools.html
+  ✅ OK: /pages/tech/videos.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 15
+📊 ВСЬОГО: 15
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: dashboard.html
+📁 Панель: tech
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 15
+
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+  ✅ OK: /pages/tech/ar-helper.html
+  ✅ OK: /pages/tech/checklists.html
+  ✅ OK: /pages/tech/dashboard.html
+  ✅ OK: /pages/tech/inspections.html
+  ✅ OK: /pages/tech/knowledge-base.html
+  ✅ OK: /pages/tech/manuals.html
+  ✅ OK: /pages/tech/manutencao.html
+  ✅ OK: /pages/tech/qr-scanner.html
+  ✅ OK: /pages/tech/reports.html
+  ✅ OK: /pages/tech/schedule.html
+  ✅ OK: /pages/tech/support.html
+  ✅ OK: /pages/tech/tasks.html
+  ✅ OK: /pages/tech/tools.html
+  ✅ OK: /pages/tech/videos.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 15
+📊 ВСЬОГО: 15
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: inspections.html
+📁 Панель: tech
+═══════════════════════════════════════════════════════════════
+⚠️  Посилань не знайдено
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: knowledge-base.html
+📁 Панель: tech
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 15
+
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+  ✅ OK: /pages/tech/ar-helper.html
+  ✅ OK: /pages/tech/checklists.html
+  ✅ OK: /pages/tech/dashboard.html
+  ✅ OK: /pages/tech/inspections.html
+  ✅ OK: /pages/tech/knowledge-base.html
+  ✅ OK: /pages/tech/manuals.html
+  ✅ OK: /pages/tech/manutencao.html
+  ✅ OK: /pages/tech/qr-scanner.html
+  ✅ OK: /pages/tech/reports.html
+  ✅ OK: /pages/tech/schedule.html
+  ✅ OK: /pages/tech/support.html
+  ✅ OK: /pages/tech/tasks.html
+  ✅ OK: /pages/tech/tools.html
+  ✅ OK: /pages/tech/videos.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 15
+📊 ВСЬОГО: 15
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: manuals.html
+📁 Панель: tech
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 15
+
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+  ✅ OK: /pages/tech/ar-helper.html
+  ✅ OK: /pages/tech/checklists.html
+  ✅ OK: /pages/tech/dashboard.html
+  ✅ OK: /pages/tech/inspections.html
+  ✅ OK: /pages/tech/knowledge-base.html
+  ✅ OK: /pages/tech/manuals.html
+  ✅ OK: /pages/tech/manutencao.html
+  ✅ OK: /pages/tech/qr-scanner.html
+  ✅ OK: /pages/tech/reports.html
+  ✅ OK: /pages/tech/schedule.html
+  ✅ OK: /pages/tech/support.html
+  ✅ OK: /pages/tech/tasks.html
+  ✅ OK: /pages/tech/tools.html
+  ✅ OK: /pages/tech/videos.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 15
+📊 ВСЬОГО: 15
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: manutencao.html
+📁 Панель: tech
+═══════════════════════════════════════════════════════════════
+⚠️  Посилань не знайдено
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: notifications.html
+📁 Панель: tech
+═══════════════════════════════════════════════════════════════
+⚠️  Посилань не знайдено
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: profile.html
+📁 Панель: tech
+═══════════════════════════════════════════════════════════════
+⚠️  Посилань не знайдено
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: qr-scanner.html
+📁 Панель: tech
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 15
+
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+  ✅ OK: /pages/tech/ar-helper.html
+  ✅ OK: /pages/tech/checklists.html
+  ✅ OK: /pages/tech/dashboard.html
+  ✅ OK: /pages/tech/inspections.html
+  ✅ OK: /pages/tech/knowledge-base.html
+  ✅ OK: /pages/tech/manuals.html
+  ✅ OK: /pages/tech/manutencao.html
+  ✅ OK: /pages/tech/qr-scanner.html
+  ✅ OK: /pages/tech/reports.html
+  ✅ OK: /pages/tech/schedule.html
+  ✅ OK: /pages/tech/support.html
+  ✅ OK: /pages/tech/tasks.html
+  ✅ OK: /pages/tech/tools.html
+  ✅ OK: /pages/tech/videos.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 15
+📊 ВСЬОГО: 15
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: reports.html
+📁 Панель: tech
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 15
+
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+  ✅ OK: /pages/tech/ar-helper.html
+  ✅ OK: /pages/tech/checklists.html
+  ✅ OK: /pages/tech/dashboard.html
+  ✅ OK: /pages/tech/inspections.html
+  ✅ OK: /pages/tech/knowledge-base.html
+  ✅ OK: /pages/tech/manuals.html
+  ✅ OK: /pages/tech/manutencao.html
+  ✅ OK: /pages/tech/qr-scanner.html
+  ✅ OK: /pages/tech/reports.html
+  ✅ OK: /pages/tech/schedule.html
+  ✅ OK: /pages/tech/support.html
+  ✅ OK: /pages/tech/tasks.html
+  ✅ OK: /pages/tech/tools.html
+  ✅ OK: /pages/tech/videos.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 15
+📊 ВСЬОГО: 15
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: schedule.html
+📁 Панель: tech
+═══════════════════════════════════════════════════════════════
+⚠️  Посилань не знайдено
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: support.html
+📁 Панель: tech
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 15
+
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+  ✅ OK: /pages/tech/ar-helper.html
+  ✅ OK: /pages/tech/checklists.html
+  ✅ OK: /pages/tech/dashboard.html
+  ✅ OK: /pages/tech/inspections.html
+  ✅ OK: /pages/tech/knowledge-base.html
+  ✅ OK: /pages/tech/manuals.html
+  ✅ OK: /pages/tech/manutencao.html
+  ✅ OK: /pages/tech/qr-scanner.html
+  ✅ OK: /pages/tech/reports.html
+  ✅ OK: /pages/tech/schedule.html
+  ✅ OK: /pages/tech/support.html
+  ✅ OK: /pages/tech/tasks.html
+  ✅ OK: /pages/tech/tools.html
+  ✅ OK: /pages/tech/videos.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 15
+📊 ВСЬОГО: 15
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: task-map.html
+📁 Панель: tech
+═══════════════════════════════════════════════════════════════
+⚠️  Посилань не знайдено
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: tasks.html
+📁 Панель: tech
+═══════════════════════════════════════════════════════════════
+⚠️  Посилань не знайдено
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: tools.html
+📁 Панель: tech
+═══════════════════════════════════════════════════════════════
+⚠️  Посилань не знайдено
+
+═══════════════════════════════════════════════════════════════
+📄 Файл: videos.html
+📁 Панель: tech
+═══════════════════════════════════════════════════════════════
+
+📊 Знайдено посилань: 15
+
+  ✅ OK: /pages/ai-assistant/ai-assistant.html
+  ✅ OK: /pages/tech/ar-helper.html
+  ✅ OK: /pages/tech/checklists.html
+  ✅ OK: /pages/tech/dashboard.html
+  ✅ OK: /pages/tech/inspections.html
+  ✅ OK: /pages/tech/knowledge-base.html
+  ✅ OK: /pages/tech/manuals.html
+  ✅ OK: /pages/tech/manutencao.html
+  ✅ OK: /pages/tech/qr-scanner.html
+  ✅ OK: /pages/tech/reports.html
+  ✅ OK: /pages/tech/schedule.html
+  ✅ OK: /pages/tech/support.html
+  ✅ OK: /pages/tech/tasks.html
+  ✅ OK: /pages/tech/tools.html
+  ✅ OK: /pages/tech/videos.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ ПРОБЛЕМНІ: 0
+✅ КОРЕКТНІ: 15
+📊 ВСЬОГО: 15
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+╔═══════════════════════════════════════════════════════════════╗
+║                      🤖 AI АСИСТЕНТ                            ║
+╚═══════════════════════════════════════════════════════════════╝
+[0;36m📄 /workspaces/deapseak/pages/ai-assistant/ai-assistant.html (спільна зона)[0m
+
+═══════════════════════════════════════════════════════════════
+                       📊 ФІНАЛЬНИЙ ЗВІТ
+═══════════════════════════════════════════════════════════════
+
+📁 Перевірено файлів: 74
+✅ Коректних посилань: 0
+❌ Проблемних посилань: 0
+
+🎉 ПЕРЕМОГА! Всі посилання коректні!
+═══════════════════════════════════════════════════════════════

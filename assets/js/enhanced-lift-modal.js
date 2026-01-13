@@ -98,7 +98,7 @@ class EnhancedLiftModal {
             }
 
             // Ініціалізуємо карту
-            this.map = L.map('enhancedLiftMap').setView([50.4501, 30.5234], 10); // Київ по дефолту
+            this.map = L.map('enhancedLiftMap').setView([38.7223, -9.1393], 12); // Lisboa по дефолту
             
             // Додаємо тайли OpenStreetMap
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -208,7 +208,7 @@ class EnhancedLiftModal {
         }
         
         // Визначаємо країну та код країни за форматом поштового коду
-        let country = 'Ukraine';
+        let country = 'Portugal';
         let countryCode = 'ua';
         
         if (postcode) {
@@ -229,8 +229,8 @@ class EnhancedLiftModal {
             if (this.detectedCountry === 'Portugal') {
                 country = 'Portugal';
                 countryCode = 'pt';
-            } else if (this.detectedCountry === 'Ukraine') {
-                country = 'Ukraine';
+            } else if (this.detectedCountry === 'Portugal') {
+                country = 'Portugal';
                 countryCode = 'ua';
             }
         }
@@ -447,7 +447,7 @@ class EnhancedLiftModal {
                 
                 // Визначаємо країну за форматом для покращення геокодування
                 if (ukrainianRegex.test(data.postcode)) {
-                    this.detectedCountry = 'Ukraine';
+                    this.detectedCountry = 'Portugal';
                 } else if (portugueseRegex.test(data.postcode)) {
                     this.detectedCountry = 'Portugal';
                 } else {
@@ -553,8 +553,19 @@ class EnhancedLiftModal {
             let liftObject;
             if (isEdit) {
                 // Оновлення існуючого ліфта
-                result = await apiCall(`/api/lifts/${liftId}`, 'PUT', apiData);
-                liftObject = result.data?.lift || result.data;
+                console.log(`🔄 Updating lift ${liftId} via API...`);
+                const response = await AuthManager.fetchWithAuth(`/api/lifts/${liftId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(apiData)
+                });
+                
+                if (!response || !response.ok) {
+                    throw new Error(`API error: ${response?.status || 'Network error'}`);
+                }
+                
+                const responseData = await response.json();
+                result = { success: true, data: responseData };
+                liftObject = responseData.data || responseData.lift || responseData;
             } else {
                 // Створення нового ліфта
                 if (typeof window.saveLiftToAPI === 'function') {

@@ -1,0 +1,214 @@
+<!-- ═══════════════════════════════════════════════════════════════
+     ЕТАЛОННИЙ ADMIN SIDEBAR
+     Version: 1.0 (2026-01-13)
+     Використовується в AI асистенті для адмінів
+═══════════════════════════════════════════════════════════════ -->
+<aside class="main-sidebar sidebar-dark-primary elevation-4">
+    <!-- Brand Logo -->
+    <a href="/pages/admin/admin-dashboard.html" class="brand-link">
+        <i class="fas fa-elevator brand-image img-circle elevation-3"></i>
+        <span class="brand-text font-weight-light">FestLift Admin</span>
+    </a>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <!-- Sidebar user panel -->
+        <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+            <div class="image">
+                <i class="fas fa-user-shield fa-2x text-white"></i>
+            </div>
+            <div class="info">
+                <span class="d-block text-white">Адміністратор</span>
+                <small class="text-success">Admin Panel</small>
+            </div>
+        </div>
+
+        <!-- Sidebar Menu -->
+        <nav class="mt-2">
+            <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                <!-- Dashboard -->
+                <li class="nav-item">
+                    <a href="/pages/admin/admin-dashboard.html" class="nav-link">
+                        <i class="nav-icon fas fa-tachometer-alt"></i>
+                        <p>Dashboard</p>
+                    </a>
+                </li>
+
+                <!-- QR System -->
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-qrcode"></i>
+                        <p>
+                            QR Sistema
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/pages/admin/qr-management.html" class="nav-link">
+                                <i class="fas fa-cog nav-icon"></i>
+                                <p>Gestão QR</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/admin/qr-analytics.html" class="nav-link">
+                                <i class="fas fa-chart-line nav-icon"></i>
+                                <p>Análise QR</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/admin/qr-history.html" class="nav-link">
+                                <i class="fas fa-history nav-icon"></i>
+                                <p>Histórico</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Lifts -->
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-elevator"></i>
+                        <p>
+                            Elevadores
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/pages/admin/lifts.html" class="nav-link">
+                                <i class="fas fa-list nav-icon"></i>
+                                <p>Lista Elevadores</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/admin/requests.html" class="nav-link">
+                                <i class="fas fa-clipboard-list nav-icon"></i>
+                                <p>Pedidos</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/admin/maps.html" class="nav-link">
+                                <i class="fas fa-map-marked-alt nav-icon"></i>
+                                <p>Mapa</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Users -->
+                <li class="nav-item">
+                    <a href="/pages/admin/users.html" class="nav-link">
+                        <i class="nav-icon fas fa-users"></i>
+                        <p>Utilizadores</p>
+                    </a>
+                </li>
+
+                <!-- Documents -->
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-file-alt"></i>
+                        <p>
+                            Documentos
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/pages/admin/invoice-template.html" class="nav-link">
+                                <i class="fas fa-file-invoice nav-icon"></i>
+                                <p>Criar Orçamento</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/admin/orcamentos-list.html" class="nav-link">
+                                <i class="fas fa-list nav-icon"></i>
+                                <p>Lista Orçamentos</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/admin/email-template.html" class="nav-link">
+                                <i class="fas fa-envelope nav-icon"></i>
+                                <p>Templates Email</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Analytics -->
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-chart-line"></i>
+                        <p>
+                            Análise
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/pages/admin/unified-analytics.html" class="nav-link">
+                                <i class="fas fa-chart-area nav-icon"></i>
+                                <p>Analytics</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/admin/predictive-maintenance.html" class="nav-link">
+                                <i class="fas fa-brain nav-icon"></i>
+                                <p>Manutenção Preditiva</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/admin/reports.html" class="nav-link">
+                                <i class="fas fa-chart-bar nav-icon"></i>
+                                <p>Relatórios</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- AI Assistant -->
+                <li class="nav-item">
+                    <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link">
+                        <i class="nav-icon fas fa-magic"></i>
+                        <p>Assistente AI</p>
+                    </a>
+                </li>
+
+                <!-- Support -->
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-headset"></i>
+                        <p>
+                            Suporte
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/pages/admin/notifications.html" class="nav-link">
+                                <i class="fas fa-bell nav-icon"></i>
+                                <p>Notificações</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Settings -->
+                <li class="nav-item">
+                    <a href="/pages/admin/settings.html" class="nav-link">
+                        <i class="nav-icon fas fa-cogs"></i>
+                        <p>Configurações</p>
+                    </a>
+                </li>
+
+                <!-- Logout -->
+                <li class="nav-item">
+                    <a href="#" class="nav-link" onclick="logout()">
+                        <i class="nav-icon fas fa-sign-out-alt"></i>
+                        <p>Sair</p>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</aside>

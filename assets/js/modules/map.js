@@ -2,7 +2,7 @@ class MapManager {
     constructor(containerId, options = {}) {
         this.containerId = containerId;
         this.options = {
-            center: [50.4501, 30.5234], // Київ за замовчуванням
+            center: [38.7223, -9.1393], // Lisboa за замовчуванням
             zoom: 13,
             ...options
         };

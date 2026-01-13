@@ -334,6 +334,7 @@
                         
                         // Зберігаємо токен у всіх форматах для сумісності
                         localStorage.setItem('token', token);           // Головний токен
+                        localStorage.setItem('authToken', token);       // Для lifts-manager.js
                         localStorage.setItem('lm_token', token);        // Старий формат
                         localStorage.setItem('deapseak_token', token);  // V2 формат
                         localStorage.setItem('liftmanager_jwt', token); // AuthManager формат

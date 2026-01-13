@@ -1,12 +1,13 @@
 /**
  * Universal WebSocket Manager для всіх ролей користувачів
  * Підтримує admin, dispatcher, client, tech ролі
+ * Використовує Socket.IO для real-time комунікації
  */
 class UniversalWebSocketManager {
     constructor(userRole, userId) {
         this.userRole = userRole;
         this.userId = userId;
-        this.ws = null;
+        this.socket = null;
         this.reconnectAttempts = 0;
         this.maxReconnectAttempts = 5;
         this.reconnectDelay = 2000;
@@ -39,34 +40,65 @@ class UniversalWebSocketManager {
     }
 
     /**
-     * Підключення до WebSocket сервера
+     * Підключення до WebSocket сервера через Socket.IO
      */
     async connect() {
         try {
-            const wsUrl = 'ws://localhost:3002';
+            // Перевірка наявності Socket.IO
+            if (typeof io === 'undefined') {
+                console.error('[WebSocket] Socket.IO client не завантажено!');
+                return;
+            }
+
+            const wsUrl = window.location.protocol === 'https:' 
+                ? `${window.location.protocol}//${window.location.host}` 
+                : 'http://localhost:5000';
+            
             console.log(`[WebSocket] Підключення для ролі: ${this.userRole} до ${wsUrl}`);
             
-            this.ws = new WebSocket(wsUrl);
+            // Створюємо Socket.IO з'єднання
+            this.socket = io(wsUrl, {
+                transports: ['websocket', 'polling'],
+                reconnection: true,
+                reconnectionAttempts: this.maxReconnectAttempts,
+                reconnectionDelay: this.reconnectDelay
+            });
             
-            this.ws.onopen = (event) => {
-                console.log('[WebSocket] Підключено успішно');
+            // Обробка подій Socket.IO
+            this.socket.on('connect', () => {
+                console.log('[WebSocket] Підключено успішно, Socket ID:', this.socket.id);
                 this.reconnectAttempts = 0;
-                this.handleOpen(event);
-            };
+                this.handleOpen();
+            });
             
-            this.ws.onmessage = (event) => {
-                this.handleMessage(event);
-            };
+            this.socket.on('authenticated', (data) => {
+                if (data.success) {
+                    console.log('[WebSocket] Автентифіковано:', data.user);
+                    this.trigger('connected', { userRole: this.userRole });
+                } else {
+                    console.error('[WebSocket] Помилка автентифікації:', data.error);
+                }
+            });
             
-            this.ws.onclose = (event) => {
-                console.log('[WebSocket] З\'єднання закрито:', event.code, event.reason);
-                this.handleClose(event);
-            };
+            this.socket.on('disconnect', (reason) => {
+                console.log('[WebSocket] Відключено:', reason);
+                this.handleClose(reason);
+            });
             
-            this.ws.onerror = (error) => {
+            this.socket.on('error', (error) => {
                 console.error('[WebSocket] Помилка:', error);
                 this.handleError(error);
-            };
+            });
+
+            // Підписка на події ролі
+            const config = this.roleConfig[this.userRole];
+            if (config && config.events) {
+                config.events.forEach(eventName => {
+                    this.socket.on(eventName, (data) => {
+                        this.trigger(eventName, data);
+                    });
+                });
+            }
             
         } catch (error) {
             console.error('[WebSocket] Помилка підключення:', error);
@@ -77,80 +109,34 @@ class UniversalWebSocketManager {
     /**
      * Обробка відкриття з'єднання
      */
-    handleOpen(event) {
+    handleOpen() {
+        // Автентифікація через JWT
+        const token = localStorage.getItem('token');
+        if (token) {
+            this.socket.emit('authenticate', token);
+        }
+
         const config = this.roleConfig[this.userRole];
         if (config) {
             // Приєднання до кімнати за роллю
-            this.send({
-                type: 'join_room',
+            this.socket.emit('join_room', {
                 room: config.room,
                 userId: this.userId,
                 userRole: this.userRole
             });
-        }
-        
-        // Повідомляємо про успішне підключення
-        this.trigger('connected', { userRole: this.userRole });
-    }
-
-    /**
-     * Обробка повідомлень
-     */
-    handleMessage(event) {
-        try {
-            const data = JSON.parse(event.data);
-            console.log('[WebSocket] Отримано повідомлення:', data);
-            
-            // Спеціальна обробка для різних типів повідомлень
-            switch (data.type) {
-                case 'connection_id':
-                    this.connectionId = data.connectionId;
-                    console.log('[WebSocket] Connection ID:', this.connectionId);
-                    break;
-                    
-                case 'room_joined':
-                    console.log(`[WebSocket] Приєднано до кімнати: ${data.room}`);
-                    this.trigger('room_joined', data);
-                    break;
-                    
-                case 'lift_update':
-                    this.trigger('lift_update', data.payload);
-                    break;
-                    
-                case 'request_update':
-                    this.trigger('request_update', data.payload);
-                    break;
-                    
-                case 'assignment_update':
-                    this.trigger('assignment_update', data.payload);
-                    break;
-                    
-                case 'system_alert':
-                    this.trigger('system_alert', data.payload);
-                    break;
-                    
-                case 'heartbeat':
-                    this.send({ type: 'heartbeat_response' });
-                    break;
-                    
-                default:
-                    this.trigger('message', data);
-            }
-        } catch (error) {
-            console.error('[WebSocket] Помилка парсингу повідомлення:', error);
         }
     }
 
     /**
      * Обробка закриття з'єднання
      */
-    handleClose(event) {
+    handleClose(reason) {
         this.connectionId = null;
-        this.trigger('disconnected', { code: event.code, reason: event.reason });
+        this.trigger('disconnected', { reason });
         
-        // Автоматичне перепідключення
-        if (event.code !== 1000) { // Не нормальне закриття
-            this.scheduleReconnect();
+        // Автоматичне перепідключення (Socket.IO робить це автоматично)
+        if (reason !== 'io client disconnect') {
+            console.log('[WebSocket] Спроба автоматичного перепідключення...');
         }
     }
 
@@ -181,12 +167,12 @@ class UniversalWebSocketManager {
     }
 
     /**
-     * Відправка повідомлення
+     * Відправка повідомлення через Socket.IO
      */
-    send(data) {
-        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-            this.ws.send(JSON.stringify(data));
-            console.log('[WebSocket] Відправлено:', data);
+    send(eventName, data) {
+        if (this.socket && this.socket.connected) {
+            this.socket.emit(eventName, data);
+            console.log(`[WebSocket] Відправлено ${eventName}:`, data);
         } else {
             console.warn('[WebSocket] Неможливо відправити повідомлення - з\'єднання не активне');
         }
@@ -233,9 +219,9 @@ class UniversalWebSocketManager {
      * Закриття з'єднання
      */
     disconnect() {
-        if (this.ws) {
-            this.ws.close(1000, 'Закрито користувачем');
-            this.ws = null;
+        if (this.socket) {
+            this.socket.disconnect();
+            this.socket = null;
         }
     }
 
@@ -243,7 +229,7 @@ class UniversalWebSocketManager {
      * Перевірка стану з'єднання
      */
     isConnected() {
-        return this.ws && this.ws.readyState === WebSocket.OPEN;
+        return this.socket && this.socket.connected;
     }
 
     /**

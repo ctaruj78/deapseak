@@ -1007,9 +1007,35 @@ app.get('/api/lifts', authenticateToken, async (req, res) => {
         
         console.log(`✅ Знайдено ліфтів: ${lifts.length}`);
         
+        // 🔄 Підтягуємо дані клієнтів для кожного ліфта
+        const liftsWithClients = await Promise.all(lifts.map(async (lift) => {
+            if (lift.client) {
+                try {
+                    const client = await db.collection('users').findOne({
+                        _id: new ObjectId(lift.client)
+                    });
+                    return {
+                        ...lift,
+                        client: client ? {
+                            _id: client._id,
+                            email: client.email,
+                            username: client.username,
+                            firstName: client.firstName,
+                            lastName: client.lastName,
+                            phone: client.phone
+                        } : null
+                    };
+                } catch (err) {
+                    console.error(`⚠️ Не вдалося знайти клієнта ${lift.client}:`, err.message);
+                    return lift;
+                }
+            }
+            return lift;
+        }));
+        
         res.json({
             success: true,
-            data: lifts
+            data: liftsWithClients
         });
     } catch (error) {
         console.error('❌ Помилка отримання ліфтів:', error);
@@ -1029,6 +1055,38 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
             return res.status(403).json({
                 success: false,
                 message: 'Тільки адміністратор або диспетчер можуть створювати ліфти'
+            });
+        }
+        
+        // ✅ ВАЛІДАЦІЯ ОБОВ'ЯЗКОВИХ ПОЛІВ
+        const validationErrors = [];
+        
+        // Перевірка municipalNumber
+        if (!req.body.municipalNumber || req.body.municipalNumber.trim() === '') {
+            validationErrors.push('Муніципальний номер обов\'язковий');
+        }
+        
+        // Перевірка capacity (має бути додатним числом)
+        if (req.body.capacity !== undefined) {
+            const capacity = Number(req.body.capacity);
+            if (isNaN(capacity) || capacity <= 0) {
+                validationErrors.push('Вантажопідйомність має бути додатним числом');
+            }
+        }
+        
+        // Перевірка speed (має бути додатним числом)
+        if (req.body.speed !== undefined) {
+            const speed = Number(req.body.speed);
+            if (isNaN(speed) || speed <= 0) {
+                validationErrors.push('Швидкість має бути додатним числом');
+            }
+        }
+        
+        if (validationErrors.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Помилка валідації',
+                errors: validationErrors
             });
         }
         
@@ -1073,9 +1131,16 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
         
         // Якщо окреме поле не заповнене - шукаємо в адресі
         if (!postalCodeToCheck && req.body.address) {
-            const postalCodeMatch = req.body.address.match(/(\d{4})-?\d{3}/);
-            if (postalCodeMatch) {
-                postalCodeToCheck = postalCodeMatch[1]; // Тільки перші 4 цифри
+            // Якщо address - об'єкт, беремо postcode
+            if (typeof req.body.address === 'object' && req.body.address.postcode) {
+                postalCodeToCheck = req.body.address.postcode;
+            } 
+            // Якщо address - строка, шукаємо поштовий код в строці
+            else if (typeof req.body.address === 'string') {
+                const postalCodeMatch = req.body.address.match(/(\d{4})-?\d{3}/);
+                if (postalCodeMatch) {
+                    postalCodeToCheck = postalCodeMatch[1]; // Тільки перші 4 цифри
+                }
             }
         }
         
@@ -1143,25 +1208,69 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
             delete liftData.postalCode;
         }
         
-        const newLift = {
-            ...liftData,
-            qrCode: qrCode, // ✅ QR код генерується автоматично
-            location: locationData, // Використовуємо геокодовані координати або ручні
-            municipality: municipalityData, // 🏛️ Дані муніципалітету
-            createdAt: new Date().toISOString(),
-            createdBy: req.user.username,
-            updatedAt: new Date().toISOString()
-        };
+        // 🔍 ПЕРЕВІРКА: чи існує ліфт з таким municipalNumber?
+        const { ObjectId } = require('mongodb');
         
-        const result = await db.collection('lifts').insertOne(newLift);
+        // Шукаємо існуючий ліфт за municipalNumber
+        const existingLift = await db.collection('lifts').findOne({ 
+            municipalNumber: liftData.municipalNumber 
+        });
+        
+        let result;
+        let message;
+        
+        if (existingLift) {
+            // ♻️ ОНОВЛЕННЯ існуючого ліфта
+            console.log('♻️ Оновлення існуючого ліфта:', existingLift._id);
+            
+            const updateData = {
+                ...liftData,
+                qrCode: existingLift.qrCode || qrCode, // Зберігаємо старий QR або створюємо новий
+                location: locationData,
+                municipality: municipalityData,
+                createdAt: existingLift.createdAt, // Зберігаємо оригінальну дату створення
+                createdBy: existingLift.createdBy, // Зберігаємо оригінального автора
+                updatedAt: new Date().toISOString(),
+                updatedBy: req.user.username
+            };
+            
+            await db.collection('lifts').updateOne(
+                { _id: existingLift._id },
+                { $set: updateData }
+            );
+            
+            message = 'Ліфт оновлено успішно';
+            result = {
+                _id: existingLift._id,
+                ...updateData
+            };
+        } else {
+            // ➕ СТВОРЕННЯ нового ліфта
+            console.log('➕ Створення нового ліфта з municipalNumber:', liftData.municipalNumber);
+            
+            const newLift = {
+                ...liftData,
+                qrCode: qrCode, // ✅ QR код генерується автоматично
+                location: locationData, // Використовуємо геокодовані координати або ручні
+                municipality: municipalityData, // 🏛️ Дані муніципалітету
+                createdAt: new Date().toISOString(),
+                createdBy: req.user.username,
+                updatedAt: new Date().toISOString()
+            };
+            
+            const insertResult = await db.collection('lifts').insertOne(newLift);
+            
+            message = 'Ліфт створено успішно';
+            result = {
+                _id: insertResult.insertedId,
+                ...newLift
+            };
+        }
         
         res.json({
             success: true,
-            message: 'Ліфт створено успішно',
-            data: {
-                _id: result.insertedId,
-                ...newLift
-            }
+            message: message,
+            data: result
         });
     } catch (error) {
         console.error('❌ Помилка створення ліфта:', error);
@@ -1186,8 +1295,30 @@ app.get('/api/lifts/:id', authenticateToken, async (req, res) => {
             });
         }
         
+        // 🔄 Підтягуємо дані клієнта
+        let liftWithClient = { ...lift };
+        if (lift.client) {
+            try {
+                const client = await db.collection('users').findOne({
+                    _id: new ObjectId(lift.client)
+                });
+                if (client) {
+                    liftWithClient.client = {
+                        _id: client._id,
+                        email: client.email,
+                        username: client.username,
+                        firstName: client.firstName,
+                        lastName: client.lastName,
+                        phone: client.phone
+                    };
+                }
+            } catch (err) {
+                console.error(`⚠️ Не вдалося знайти клієнта ${lift.client}:`, err.message);
+            }
+        }
+        
         // 🔐 ПЕРЕВІРКА ПРАВ ДОСТУПУ
-        if (req.user.role === 'client' && lift.clientId !== req.user.userId) {
+        if (req.user.role === 'client' && lift.client !== req.user.id && lift.client !== req.user.userId) {
             console.warn(`⚠️ Клієнт ${req.user.username} намагається отримати чужий ліфт ${liftId}`);
             return res.status(403).json({
                 success: false,
@@ -1197,9 +1328,10 @@ app.get('/api/lifts/:id', authenticateToken, async (req, res) => {
         
         if (req.user.role === 'technician') {
             // Перевіряємо чи є у техніка активний запит на цей ліфт
+            const techId = req.user.id || req.user.userId;
             const hasAccess = await db.collection('requests').findOne({
                 liftId: liftId.toString(),
-                technician: req.user.userId,
+                technician: techId,
                 status: { $in: ['pending', 'in_progress', 'assigned'] }
             });
             
@@ -1214,7 +1346,7 @@ app.get('/api/lifts/:id', authenticateToken, async (req, res) => {
         
         res.json({
             success: true,
-            data: lift  // 🔧 Консистентна структура відповіді (data замість lift)
+            data: liftWithClient  // 🔧 Консистентна структура відповіді (data замість lift)
         });
     } catch (error) {
         console.error('❌ Помилка отримання ліфта:', error);
@@ -1299,9 +1431,13 @@ app.put('/api/lifts/:id', authenticateToken, async (req, res) => {
             });
         }
         
+        // Отримуємо оновлений документ для відповіді
+        const updatedLift = await db.collection('lifts').findOne({ _id: liftId });
+        
         res.json({
             success: true,
-            message: 'Ліфт оновлено успішно'
+            message: 'Ліфт оновлено успішно',
+            data: updatedLift
         });
     } catch (error) {
         console.error('❌ Помилка оновлення ліфта:', error);
@@ -5484,11 +5620,62 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Запуск сервера
-app.listen(PORT, '0.0.0.0', () => {
+// Запуск сервера з Socket.IO
+const http = require('http');
+const socketIo = require('socket.io');
+
+const server = http.createServer(app);
+const io = socketIo(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
+
+// WebSocket обробка
+io.on('connection', (socket) => {
+    console.log('👤 WebSocket клієнт підключився:', socket.id);
+    
+    // Аутентифікація через JWT
+    socket.on('authenticate', (token) => {
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'deapseak-secret-key-2024');
+            socket.userData = decoded;
+            socket.join(`role_${decoded.role}`); // Приєднати до кімнати за роллю
+            socket.join(`user_${decoded.id}`);   // Приєднати до персональної кімнати
+            console.log(`✅ WebSocket автентифіковано: ${decoded.email} (${decoded.role})`);
+            socket.emit('authenticated', { success: true, user: decoded });
+        } catch (error) {
+            console.error('❌ WebSocket auth failed:', error.message);
+            socket.emit('authenticated', { success: false, error: 'Invalid token' });
+        }
+    });
+    
+    // Real-time оновлення
+    socket.on('lift_updated', (data) => {
+        io.to('role_admin').emit('lift_updated', data);
+        io.to('role_dispatcher').emit('lift_updated', data);
+    });
+    
+    socket.on('request_created', (data) => {
+        io.to('role_admin').emit('new_request', data);
+        io.to('role_dispatcher').emit('new_request', data);
+    });
+    
+    socket.on('request_assigned', (data) => {
+        io.to(`user_${data.technicianId}`).emit('new_assignment', data);
+    });
+    
+    socket.on('disconnect', () => {
+        console.log('👋 WebSocket клієнт відключився:', socket.id);
+    });
+});
+
+server.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Unified сервер запущено на http://0.0.0.0:${PORT}`);
     console.log(`📁 Статичні файли: ${__dirname}`);
     console.log(`🔐 API endpoints: /api/*`);
+    console.log(`💬 WebSocket server: ws://0.0.0.0:${PORT}`);
 });
 
-module.exports = app;
+module.exports = { app, server, io };

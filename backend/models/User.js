@@ -91,7 +91,7 @@ const userSchema = new mongoose.Schema({
             itemsPerPage: { type: Number, default: 20 },
             dateFormat: { type: String, default: 'DD.MM.YYYY' },
             timeFormat: { type: String, default: '24h' },
-            timezone: { type: String, default: 'Europe/Kiev' }
+            timezone: { type: String, default: 'Europe/Lisbon' }
         },
         updatedAt: { type: Date, default: Date.now }
     },

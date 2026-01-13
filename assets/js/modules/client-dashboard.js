@@ -272,6 +272,11 @@ class ClientDashboard {
     }
 
     initCharts() {
+        // Знищити попередній графік якщо існує
+        if (this.liftsChart) {
+            this.liftsChart.destroy();
+        }
+
         // Ініціалізація діаграми стану ліфтів
         const ctx = document.getElementById('liftsChart').getContext('2d');
         this.liftsChart = new Chart(ctx, {

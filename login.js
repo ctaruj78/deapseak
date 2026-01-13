@@ -3,10 +3,10 @@ function getApiUrl() {
     const hostname = window.location.hostname;
     if (hostname.includes('app.github.dev')) {
         // GitHub Codespaces
-        return window.location.origin.replace('-8080.app.github.dev', '-3001.app.github.dev');
+        return window.location.origin;
     } else {
         // Local development
-        return 'http://localhost:3002';
+        return 'http://localhost:5000';
     }
 }
 

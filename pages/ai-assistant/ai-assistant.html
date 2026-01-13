@@ -257,11 +257,16 @@
         </nav>
 
         <!-- Main Sidebar Container -->
+        <!-- ═══════════════════════════════════════════════════════════════
+             МІНІМАЛЬНИЙ SIDEBAR ДЛЯ AI АСИСТЕНТА
+             AI асистент - спільна зона для всіх ролей
+             Тільки кнопка "Назад" без посилань на панелі
+        ═══════════════════════════════════════════════════════════════ -->
         <aside class="main-sidebar sidebar-dark-primary elevation-4">
             <!-- Brand Logo -->
-            <a href="/pages/admin/admin-dashboard.html" class="brand-link">
-                <i class="brand-image fas fa-elevator"></i>
-                <span class="brand-text font-weight-light">LiftMaster Pro</span>
+            <a href="javascript:history.back()" class="brand-link">
+                <i class="brand-image fas fa-arrow-left"></i>
+                <span class="brand-text font-weight-light">← Назад</span>
             </a>
 
             <!-- Sidebar -->
@@ -269,156 +274,26 @@
                 <!-- Sidebar user panel -->
                 <div class="user-panel mt-3 pb-3 mb-3 d-flex">
                     <div class="image">
-                        <i class="fas fa-user-circle fa-2x text-white"></i>
+                        <i class="fas fa-magic fa-2x text-primary"></i>
                     </div>
                     <div class="info">
-                        <a href="/pages/admin/profile.html" class="d-block">Адміністратор</a>
+                        <span class="d-block text-white">AI Асистент</span>
+                        <small class="text-muted">Спільна зона</small>
                     </div>
                 </div>
 
                 <!-- Sidebar Menu -->
                 <nav class="mt-2">
-                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-                        <!-- Dashboard -->
+                    <ul class="nav nav-pills nav-sidebar flex-column" role="menu">
+                        <!-- Назад до панелі -->
                         <li class="nav-item">
-                            <a href="/pages/admin/admin-dashboard.html" class="nav-link">
-                                <i class="nav-icon fas fa-tachometer-alt"></i>
-                                <p>Дашборд</p>
-                            </a>
-                        </li>
-                        
-                        <!-- QR System Menu -->
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="nav-icon fas fa-qrcode"></i>
-                                <p>
-                                    QR Система
-                                    <i class="right fas fa-angle-left"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <a href="/pages/admin/qr-management.html" class="nav-link">
-                                        <i class="fas fa-cog nav-icon"></i>
-                                        <p>Керування QR-кодами</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="/pages/admin/qr-analytics.html" class="nav-link">
-                                        <i class="fas fa-chart-line nav-icon"></i>
-                                        <p>Аналітика QR-кодів</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="/pages/admin/qr-history.html" class="nav-link">
-                                        <i class="fas fa-history nav-icon"></i>
-                                        <p>Історія сканувань</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        <!-- Lifts Menu -->
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="nav-icon fas fa-elevator"></i>
-                                <p>
-                                    Ліфти
-                                    <i class="right fas fa-angle-left"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <a href="/pages/admin/lifts.html" class="nav-link">
-                                        <i class="fas fa-list nav-icon"></i>
-                                        <p>Управління ліфтами</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="/pages/admin/requests.html" class="nav-link">
-                                        <i class="fas fa-clipboard-list nav-icon"></i>
-                                        <p>Заявки на обслуговування</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="/pages/admin/maps.html" class="nav-link">
-                                        <i class="fas fa-map-marked-alt nav-icon"></i>
-                                        <p>Мапа ліфтів</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        <!-- Users -->
-                        <li class="nav-item">
-                            <a href="/pages/admin/users.html" class="nav-link">
-                                <i class="nav-icon fas fa-users"></i>
-                                <p>Користувачі</p>
+                            <a href="javascript:history.back()" class="nav-link">
+                                <i class="nav-icon fas fa-arrow-left"></i>
+                                <p>Повернутись назад</p>
                             </a>
                         </li>
 
-                        <!-- Documents Menu -->
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="nav-icon fas fa-file-alt"></i>
-                                <p>
-                                    Документи
-                                    <i class="right fas fa-angle-left"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <a href="/pages/admin/invoice-template.html" class="nav-link">
-                                        <i class="fas fa-file-invoice nav-icon"></i>
-                                        <p>Orçamentos (Створити)</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="/pages/admin/orcamentos-list.html" class="nav-link">
-                                        <i class="fas fa-list nav-icon"></i>
-                                        <p>Orçamentos (Список)</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="/pages/admin/reports.html" class="nav-link">
-                                        <i class="fas fa-chart-bar nav-icon"></i>
-                                        <p>Звіти</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="/pages/admin/email-template.html" class="nav-link">
-                                        <i class="fas fa-envelope nav-icon"></i>
-                                        <p>Email шаблони</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        <!-- Analytics Menu -->
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="nav-icon fas fa-chart-line"></i>
-                                <p>
-                                    Аналітика
-                                    <i class="right fas fa-angle-left"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <a href="/pages/admin/unified-analytics.html" class="nav-link">
-                                        <i class="fas fa-chart-area nav-icon"></i>
-                                        <p>Unified Analytics</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="/pages/admin/predictive-maintenance.html" class="nav-link">
-                                        <i class="fas fa-brain nav-icon"></i>
-                                        <p>Predictive Maintenance</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
+                        <!-- Поточна сторінка -->
                         <li class="nav-item">
                             <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link active">
                                 <i class="nav-icon fas fa-magic"></i>
@@ -426,33 +301,40 @@
                             </a>
                         </li>
 
-                        <!-- Support Menu -->
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="nav-icon fas fa-headset"></i>
-                                <p>
-                                    Підтримка
-                                    <i class="right fas fa-angle-left"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <a href="/pages/admin/notifications.html" class="nav-link">
-                                        <i class="fas fa-bell nav-icon"></i>
-                                        <p>Сповіщення</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
+                        <li class="nav-header">ФУНКЦІЇ</li>
 
-                        <!-- Settings -->
+                        <!-- Функції AI -->
                         <li class="nav-item">
-                            <a href="/pages/admin/settings.html" class="nav-link">
-                                <i class="nav-icon fas fa-cog"></i>
-                                <p>Налаштування</p>
+                            <a href="#chat" class="nav-link" data-toggle="pill">
+                                <i class="nav-icon fas fa-comments"></i>
+                                <p>Чат з AI</p>
                             </a>
                         </li>
 
+                        <li class="nav-item">
+                            <a href="#legal" class="nav-link" data-toggle="pill">
+                                <i class="nav-icon fas fa-balance-scale"></i>
+                                <p>Юридичні питання</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="#regulations" class="nav-link" data-toggle="pill">
+                                <i class="nav-icon fas fa-book"></i>
+                                <p>Норми PT</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="#analysis" class="nav-link" data-toggle="pill">
+                                <i class="nav-icon fas fa-clipboard-check"></i>
+                                <p>Аналіз звіту</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-header">СИСТЕМА</li>
+
+                        <!-- Вийти -->
                         <li class="nav-item">
                             <a href="#" class="nav-link" onclick="logout()">
                                 <i class="nav-icon fas fa-sign-out-alt"></i>
@@ -482,7 +364,7 @@
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="/pages/admin/admin-dashboard.html">Головна</a></li>
+                                <li class="breadcrumb-item"><a href="javascript:history.back()">Назад</a></li>
                                 <li class="breadcrumb-item active">AI Асистент</li>
                             </ol>
                         </div>
@@ -1996,6 +1878,96 @@
             div.textContent = text;
             return div.innerHTML;
         }
+
+        // ═══════════════════════════════════════════════════════════════
+        //  ДИНАМІЧНИЙ SIDEBAR ЗА РОЛЛЮ
+        // ═══════════════════════════════════════════════════════════════
+        
+        async function loadDynamicSidebar() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    console.warn('⚠️ Токен не знайдено, використовую базовий sidebar');
+                    return;
+                }
+
+                // Декодувати JWT для визначення ролі
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const userRole = payload.role;
+                
+                console.log(`🎨 Завантаження sidebar для ролі: ${userRole}`);
+
+                let sidebarPath = '';
+                
+                // Визначити шлях до sidebar компонента
+                switch(userRole) {
+                    case 'client':
+                        sidebarPath = '../../components/client-sidebar-template.html';
+                        break;
+                    case 'admin':
+                        sidebarPath = '../../components/admin-sidebar-template.html';
+                        break;
+                    case 'dispatcher':
+                        sidebarPath = '../../components/dispatcher-sidebar-template.html';
+                        break;
+                    case 'tech':
+                    case 'technician':
+                        sidebarPath = '../../components/tech-sidebar-template.html';
+                        break;
+                    default:
+                        console.warn(`⚠️ Невідома роль: ${userRole}, залишаю базовий sidebar`);
+                        return;
+                }
+
+                // Завантажити sidebar компонент
+                const response = await fetch(sidebarPath);
+                if (!response.ok) {
+                    console.error(`❌ Не вдалося завантажити sidebar: ${response.status}`);
+                    return;
+                }
+
+                const sidebarHTML = await response.text();
+                
+                // Замінити поточний sidebar
+                const currentSidebar = document.querySelector('.main-sidebar');
+                if (currentSidebar) {
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = sidebarHTML;
+                    const newSidebar = tempDiv.querySelector('.main-sidebar');
+                    
+                    if (newSidebar) {
+                        // Виділити активним пункт "AI Асистент"
+                        const aiLinks = newSidebar.querySelectorAll('a[href*="ai-assistant"]');
+                        aiLinks.forEach(link => {
+                            link.classList.add('active');
+                        });
+                        
+                        currentSidebar.replaceWith(newSidebar);
+                        console.log(`✅ Sidebar ${userRole} завантажено успішно`);
+                        
+                        // Виконати скрипти з sidebar (якщо є)
+                        const scripts = tempDiv.querySelectorAll('script');
+                        scripts.forEach(script => {
+                            const newScript = document.createElement('script');
+                            if (script.src) {
+                                newScript.src = script.src;
+                            } else {
+                                newScript.textContent = script.textContent;
+                            }
+                            document.body.appendChild(newScript);
+                        });
+                    }
+                }
+                
+            } catch (error) {
+                console.error('❌ Помилка завантаження динамічного sidebar:', error);
+            }
+        }
+
+        // Завантажити динамічний sidebar при завантаженні сторінки
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDynamicSidebar();
+        });
     </script>
 </body>
 </html>
