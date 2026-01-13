@@ -966,13 +966,24 @@ app.get('/api/lifts', authenticateToken, async (req, res) => {
         // 🔐 ФІЛЬТРАЦІЯ ПО РОЛЯХ
         if (req.user.role === 'client') {
             // Клієнт бачить тільки свої ліфти (де він власник)
-            query.client = req.user.userId;
-            console.log(`👤 Клієнт ${req.user.username} запитує свої ліфти (client: ${req.user.userId})`);
+            // ⚠️ ВАЖЛИВО: client може бути string або ObjectId
+            // В токені зберігається поле 'id', а не 'userId'
+            const clientId = req.user.id || req.user.userId;
+            if (!clientId) {
+                console.error('❌ userId відсутній в токені:', req.user);
+                return res.status(400).json({
+                    success: false,
+                    message: 'Некоректний токен користувача'
+                });
+            }
+            query.client = clientId.toString();
+            console.log(`👤 Клієнт ${req.user.username} запитує свої ліфти (client: ${clientId})`);
         } else if (req.user.role === 'technician') {
             // Технік бачить ліфти з призначених йому запитів
+            const techId = req.user.id || req.user.userId;
             const requests = await db.collection('requests')
                 .find({ 
-                    technician: req.user.userId,
+                    technician: techId,
                     status: { $in: ['pending', 'in_progress', 'assigned'] }
                 })
                 .toArray();
