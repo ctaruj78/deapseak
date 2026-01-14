@@ -6256,20 +6256,30 @@
                     console.log('🔍 Keys of munResult.data:', Object.keys(munResult.data || {}));
                     
                     if (munResult.success && munResult.data) {
-                        // API повертає подвійну обгортку: {success: true, data: {success: true, data: {...}}}
-                        // Треба витягнути munResult.data.data
                         let mun;
                         
-                        if (munResult.data.data) {
-                            // Подвійна обгортка - витягуємо внутрішній data
+                        // Перевірка 1: munResult.data.data (подвійна обгортка від apiCall)
+                        if (munResult.data.data && typeof munResult.data.data === 'object') {
                             mun = munResult.data.data;
-                            console.log('✅ Витягнуто з munResult.data.data');
-                        } else if (munResult.data.name) {
-                            // Пряма структура без обгортки
+                            console.log('✅ Витягнуто з munResult.data.data (подвійна обгортка)');
+                        } 
+                        // Перевірка 2: munResult.data.name (пряма структура муніципалітету)
+                        else if (munResult.data.name) {
                             mun = munResult.data;
-                            console.log('✅ Використано munResult.data напряму');
-                        } else {
+                            console.log('✅ Використано munResult.data напряму (має name)');
+                        }
+                        // Перевірка 3: munResult.data має postal_codes (структура municipality)
+                        else if (munResult.data.postal_codes) {
+                            mun = munResult.data;
+                            console.log('✅ Використано munResult.data напряму (має postal_codes)');
+                        }
+                        // Перевірка 4: munResult.data.success === false (помилка від API)
+                        else if (munResult.data.success === false) {
+                            throw new Error(munResult.data.message || 'Município não encontrado');
+                        }
+                        else {
                             console.error('❌ Не знайдено даних муніципалітету в відповіді');
+                            console.error('❌ munResult.data:', JSON.stringify(munResult.data, null, 2));
                             throw new Error('Структура відповіді API не розпізнана');
                         }
                         

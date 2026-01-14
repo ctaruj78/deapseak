@@ -3,145 +3,281 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notificação - Fim de Manutenção</title>
+    <title>Notificação - Fim de Serviço</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 700px;
+            line-height: 1.8;
+            color: #2c3e50;
+            max-width: 750px;
             margin: 0 auto;
-            padding: 20px;
-            background-color: #f4f4f4;
+            padding: 0;
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
         }
-        .email-container {
+        .email-wrapper {
             background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 40px 20px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             overflow: hidden;
         }
         .header {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
             color: white;
-            padding: 30px;
+            padding: 50px 40px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: shimmer 8s infinite linear;
+        }
+        @keyframes shimmer {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .header-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            display: block;
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
         }
         .header h1 {
             margin: 0;
-            font-size: 28px;
-            font-weight: 600;
+            font-size: 36px;
+            font-weight: 700;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 1;
         }
         .header p {
-            margin: 10px 0 0 0;
-            font-size: 16px;
-            opacity: 0.9;
+            margin: 15px 0 0 0;
+            font-size: 18px;
+            opacity: 0.95;
+            font-weight: 300;
+            position: relative;
+            z-index: 1;
         }
         .content {
-            padding: 30px;
+            padding: 50px 40px;
+            background: linear-gradient(to bottom, #ffffff 0%, #f8f9fa 100%);
         }
         .greeting {
-            font-size: 18px;
+            font-size: 20px;
             color: #2c3e50;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+        .intro-text {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #555;
+            margin-bottom: 30px;
+        }
+        .alert-box {
+            background: linear-gradient(135deg, #fff3cd 0%, #fff9e6 100%);
+            border: 3px solid #ffc107;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 30px 0;
+            box-shadow: 0 6px 20px rgba(255, 193, 7, 0.2);
+            text-align: center;
+        }
+        .alert-box strong {
+            color: #856404;
+            font-size: 22px;
+            display: block;
+            margin-bottom: 15px;
+        }
+        .alert-box p {
+            margin: 8px 0;
+            font-size: 16px;
+            color: #856404;
+            font-weight: 600;
         }
         .info-box {
-            background-color: #f8f9fa;
-            border-left: 4px solid #38ef7d;
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 4px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border-left: 6px solid #e74c3c;
+            padding: 30px;
+            margin: 30px 0;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            position: relative;
+            overflow: hidden;
+        }
+        .info-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, rgba(231, 76, 60, 0.1) 0%, transparent 70%);
         }
         .info-box h3 {
-            margin: 0 0 15px 0;
-            color: #11998e;
-            font-size: 18px;
+            margin: 0 0 25px 0;
+            color: #e74c3c;
+            font-size: 22px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+        }
+        .info-box h3::before {
+            content: attr(data-icon);
+            font-size: 28px;
+            margin-right: 12px;
         }
         .info-row {
             display: flex;
-            padding: 8px 0;
-            border-bottom: 1px solid #e9ecef;
+            padding: 14px 0;
+            border-bottom: 2px solid #e9ecef;
+            transition: background-color 0.3s;
+        }
+        .info-row:hover {
+            background-color: rgba(231, 76, 60, 0.05);
+            border-radius: 6px;
+            padding-left: 10px;
+            margin-left: -10px;
         }
         .info-row:last-child {
             border-bottom: none;
         }
         .info-label {
-            font-weight: 600;
+            font-weight: 700;
             color: #495057;
-            min-width: 180px;
+            min-width: 200px;
+            font-size: 15px;
         }
         .info-value {
             color: #212529;
+            font-size: 15px;
+            font-weight: 500;
         }
-        .success-box {
-            background-color: #d4edda;
-            border: 2px solid #28a745;
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 8px;
-            text-align: center;
+        .highlight-box {
+            background: linear-gradient(135deg, #ffe5e5 0%, #fff0f0 100%);
+            border: 3px solid #e74c3c;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 30px 0;
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.2);
         }
-        .success-box h3 {
-            color: #155724;
-            margin: 0 0 10px 0;
-            font-size: 20px;
+        .highlight-box strong {
+            color: #c0392b;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
         }
-        .success-box p {
-            color: #155724;
-            margin: 5px 0;
-            font-size: 16px;
+        .highlight-box strong::before {
+            content: '⚠️';
+            font-size: 24px;
+            margin-right: 10px;
         }
         .footer {
-            background-color: #f8f9fa;
-            padding: 20px 30px;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 40px;
             text-align: center;
-            font-size: 14px;
-            color: #6c757d;
-            border-top: 1px solid #e9ecef;
+        }
+        .company-logo {
+            font-size: 32px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
         .company-info {
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #dee2e6;
+            line-height: 2;
+            font-size: 15px;
         }
         .company-info strong {
-            color: #495057;
+            color: #ecf0f1;
+            font-size: 18px;
+        }
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 25px 0;
+        }
+        .contact-item {
+            background-color: rgba(255,255,255,0.1);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .emergency-banner {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-weight: 700;
+            font-size: 16px;
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+        }
+        .disclaimer {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px solid rgba(255,255,255,0.2);
+            font-size: 13px;
+            color: #bdc3c7;
+            line-height: 1.6;
         }
         @media only screen and (max-width: 600px) {
-            body {
-                padding: 10px;
+            .email-wrapper {
+                margin: 20px 10px;
             }
             .content {
-                padding: 20px;
+                padding: 30px 20px;
+            }
+            .header {
+                padding: 40px 20px;
             }
             .info-row {
                 flex-direction: column;
             }
             .info-label {
-                margin-bottom: 5px;
+                margin-bottom: 8px;
+            }
+            .contact-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
-    <div class="email-container">
+    <div class="email-wrapper">
         <div class="header">
-            <h1>✅ Manutenção Concluída</h1>
-            <p>Elevador Retomou Serviço Normal</p>
+            <span class="header-icon">🛑</span>
+            <h1>Fim de Serviço</h1>
+            <p>Comunicação Oficial de Cessação de Manutenção</p>
         </div>
         
         <div class="content">
             <p class="greeting">Exmos. Senhores da Câmara Municipal de {{municipalityName}},</p>
             
-            <p>Informamos que a manutenção do elevador abaixo identificado foi <strong>concluída com sucesso</strong>, e o equipamento retomou o serviço normal.</p>
+            <p class="intro-text">Ao abrigo da legislação portuguesa em vigor, nomeadamente o <strong>Decreto-Lei n.º 320/2002</strong>, vimos por este meio comunicar formalmente a <strong>cessação dos serviços de manutenção</strong> do elevador abaixo identificado, anteriormente sob responsabilidade da <strong>FESTLIFT, LDA</strong>.</p>
             
-            <div class="success-box">
-                <h3>✅ Equipamento Operacional</h3>
-                <p><strong>Data de Conclusão:</strong> {{maintenanceEndDate}}</p>
-                <p><strong>Estado Atual:</strong> Em Serviço Normal</p>
+            <div class="alert-box">
+                <strong>⚠️ Cessação de Serviço</strong>
+                <p>📅 Data de Fim: <strong>{{serviceStartDate}}</strong></p>
+                <p>🔴 Estado: <strong>Sem Manutenção FESTLIFT</strong></p>
             </div>
             
             <div class="info-box">
-                <h3>📋 Identificação do Elevador</h3>
+                <h3 data-icon="🛗">Dados do Equipamento</h3>
                 <div class="info-row">
                     <div class="info-label">Número Municipal:</div>
                     <div class="info-value">{{municipalNumber}}</div>
@@ -155,49 +291,73 @@
                     <div class="info-value">{{liftAddress}}</div>
                 </div>
                 <div class="info-row">
-                    <div class="info-label">Data de Conclusão:</div>
-                    <div class="info-value">{{maintenanceEndDate}}</div>
+                    <div class="info-label">Código Postal:</div>
+                    <div class="info-value">{{postalCode}}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Data de Fim de Serviço:</div>
+                    <div class="info-value">{{serviceStartDate}}</div>
                 </div>
             </div>
             
             <div class="info-box">
-                <h3>🔧 Resumo da Intervenção</h3>
+                <h3 data-icon="👤">Dados do Proprietário</h3>
                 <div class="info-row">
-                    <div class="info-label">Tipo de Manutenção:</div>
-                    <div class="info-value">{{maintenanceType}}</div>
+                    <div class="info-label">Nome/Empresa:</div>
+                    <div class="info-value">{{clientName}}</div>
                 </div>
                 <div class="info-row">
-                    <div class="info-label">Duração:</div>
-                    <div class="info-value">{{maintenanceDuration}}</div>
+                    <div class="info-label">Contacto:</div>
+                    <div class="info-value">{{clientPhone}}</div>
                 </div>
                 <div class="info-row">
-                    <div class="info-label">Trabalhos Realizados:</div>
-                    <div class="info-value">{{workPerformed}}</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Técnico Responsável:</div>
-                    <div class="info-value">{{technicianName}}</div>
+                    <div class="info-label">Email:</div>
+                    <div class="info-value">{{clientEmail}}</div>
                 </div>
             </div>
             
-            <p>Foram efetuados todos os testes de segurança exigidos e o equipamento encontra-se em perfeitas condições de funcionamento, cumprindo todos os requisitos legais.</p>
+            <div class="highlight-box">
+                <strong>Motivo da Cessação</strong>
+                <p style="margin: 10px 0 0 0; color: #c0392b; font-size: 15px; line-height: 1.8;">
+                    {{notes}}
+                </p>
+            </div>
             
-            <p>A próxima manutenção preventiva está agendada para <strong>{{nextMaintenanceDate}}</strong>.</p>
+            <p style="font-size: 16px; line-height: 1.8; color: #555;">A partir desta data, a <strong>FESTLIFT, LDA</strong> não será mais responsável pela manutenção periódica, inspeções técnicas ou assistência de emergência deste equipamento. Toda a documentação técnica foi devidamente arquivada conforme exigido pela legislação vigente.</p>
             
-            <p>Caso necessitem de qualquer esclarecimento adicional, estamos inteiramente ao vosso dispor.</p>
+            <p style="font-size: 16px; line-height: 1.8; color: #555;">Informamos que o proprietário do equipamento foi notificado da necessidade de contratar uma nova empresa de manutenção certificada para garantir a continuidade dos serviços obrigatórios de conservação e segurança.</p>
             
-            <p style="margin-top: 30px;">Com os melhores cumprimentos,</p>
+            <p style="font-size: 16px; line-height: 1.8; color: #555;">Para qualquer esclarecimento adicional sobre o histórico de manutenção ou documentação técnica arquivada, a FESTLIFT, LDA encontra-se ao vosso dispor através dos contactos indicados no rodapé deste email.</p>
+            
+            <p style="margin-top: 40px; font-size: 17px; font-weight: 600; color: #2c3e50;">Com os melhores cumprimentos,</p>
+            <p style="font-size: 16px; color: #e74c3c; font-weight: 600;">Equipa FESTLIFT, LDA</p>
         </div>
         
         <div class="footer">
+            <div class="company-logo">🛗 FESTLIFT</div>
             <div class="company-info">
                 <strong>FESTLIFT, LDA</strong><br>
-                Elevadores e Serviços<br>
-                📍 Av. do Parque 84B, Rio de Mouro, Lisboa 2635-609<br>
-                📞 +351 214 190 863 | 📱 +351 926 380 243/244<br>
-                📧 info@festlift.pt | 🏢 NIF: 515924741<br>
-                🚨 Emergências 24/7: +351 926 380 243
+                Manutenção e Assistência Técnica de Elevadores
             </div>
+            
+            <div class="contact-grid">
+                <div class="contact-item">📍 Av. do Parque 84B<br>Rio de Mouro, Lisboa<br>2635-609</div>
+                <div class="contact-item">📧 info@festlift.pt<br>🌐 www.festlift.pt<br>🏢 NIF: 515924741</div>
+                <div class="contact-item">📞 Escritório<br>+351 214 190 863</div>
+                <div class="contact-item">📱 Assistência Técnica<br>+351 926 380 243/244</div>
+            </div>
+            
+            <div class="emergency-banner">
+                🚨 Linha de Emergência 24/7: +351 926 380 243
+            </div>
+            
+            <div class="disclaimer">
+                Esta comunicação oficial foi gerada automaticamente pelo sistema de gestão de elevadores da FESTLIFT, LDA. Todas as informações são verificadas e certificadas pela nossa equipa técnica. Para esclarecimentos adicionais, por favor contacte-nos através dos canais indicados acima.
+            </div>
+        </div>
+    </div>
+</body>
+</html>
             <p style="margin-top: 15px; font-size: 12px; color: #868e96;">
                 Este email é gerado automaticamente pelo sistema de gestão de elevadores.<br>
                 Emergências 24/7: +351 926 380 243

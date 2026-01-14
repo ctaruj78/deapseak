@@ -7,128 +7,250 @@
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 700px;
+            line-height: 1.8;
+            color: #2c3e50;
+            max-width: 750px;
             margin: 0 auto;
-            padding: 20px;
-            background-color: #f4f4f4;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
-        .email-container {
+        .email-wrapper {
             background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 40px 20px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             overflow: hidden;
         }
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 30px;
+            padding: 50px 40px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: shimmer 8s infinite linear;
+        }
+        @keyframes shimmer {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .header-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            display: block;
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
         }
         .header h1 {
             margin: 0;
-            font-size: 28px;
-            font-weight: 600;
+            font-size: 36px;
+            font-weight: 700;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 1;
         }
         .header p {
-            margin: 10px 0 0 0;
-            font-size: 16px;
-            opacity: 0.9;
+            margin: 15px 0 0 0;
+            font-size: 18px;
+            opacity: 0.95;
+            font-weight: 300;
+            position: relative;
+            z-index: 1;
         }
         .content {
-            padding: 30px;
+            padding: 50px 40px;
+            background: linear-gradient(to bottom, #ffffff 0%, #f8f9fa 100%);
         }
         .greeting {
-            font-size: 18px;
+            font-size: 20px;
             color: #2c3e50;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+        .intro-text {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #555;
+            margin-bottom: 30px;
         }
         .info-box {
-            background-color: #f8f9fa;
-            border-left: 4px solid #667eea;
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 4px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border-left: 6px solid #667eea;
+            padding: 30px;
+            margin: 30px 0;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            position: relative;
+            overflow: hidden;
+        }
+        .info-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
         }
         .info-box h3 {
-            margin: 0 0 15px 0;
+            margin: 0 0 25px 0;
             color: #667eea;
-            font-size: 18px;
+            font-size: 22px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+        }
+        .info-box h3::before {
+            content: attr(data-icon);
+            font-size: 28px;
+            margin-right: 12px;
         }
         .info-row {
             display: flex;
-            padding: 8px 0;
-            border-bottom: 1px solid #e9ecef;
+            padding: 14px 0;
+            border-bottom: 2px solid #e9ecef;
+            transition: background-color 0.3s;
+        }
+        .info-row:hover {
+            background-color: rgba(102, 126, 234, 0.05);
+            border-radius: 6px;
+            padding-left: 10px;
+            margin-left: -10px;
         }
         .info-row:last-child {
             border-bottom: none;
         }
         .info-label {
-            font-weight: 600;
+            font-weight: 700;
             color: #495057;
-            min-width: 180px;
+            min-width: 200px;
+            font-size: 15px;
         }
         .info-value {
             color: #212529;
+            font-size: 15px;
+            font-weight: 500;
+        }
+        .highlight-box {
+            background: linear-gradient(135deg, #fff3cd 0%, #fff9e6 100%);
+            border: 3px solid #ffc107;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 30px 0;
+            box-shadow: 0 6px 20px rgba(255, 193, 7, 0.2);
+        }
+        .highlight-box strong {
+            color: #856404;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .highlight-box strong::before {
+            content: '⚖️';
+            font-size: 24px;
+            margin-right: 10px;
         }
         .footer {
-            background-color: #f8f9fa;
-            padding: 20px 30px;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 40px;
             text-align: center;
-            font-size: 14px;
-            color: #6c757d;
-            border-top: 1px solid #e9ecef;
+        }
+        .company-logo {
+            font-size: 32px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
         .company-info {
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #dee2e6;
+            line-height: 2;
+            font-size: 15px;
         }
         .company-info strong {
-            color: #495057;
+            color: #ecf0f1;
+            font-size: 18px;
         }
-        .legal-note {
-            background-color: #fff3cd;
-            border-left: 4px solid #ffc107;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 4px;
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 25px 0;
+        }
+        .contact-item {
+            background-color: rgba(255,255,255,0.1);
+            padding: 12px;
+            border-radius: 8px;
             font-size: 14px;
         }
-        .legal-note strong {
-            color: #856404;
+        .emergency-banner {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-weight: 700;
+            font-size: 16px;
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+        }
+        .disclaimer {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px solid rgba(255,255,255,0.2);
+            font-size: 13px;
+            color: #bdc3c7;
+            line-height: 1.6;
         }
         @media only screen and (max-width: 600px) {
-            body {
-                padding: 10px;
+            .email-wrapper {
+                margin: 20px 10px;
             }
             .content {
-                padding: 20px;
+                padding: 30px 20px;
+            }
+            .header {
+                padding: 40px 20px;
             }
             .info-row {
                 flex-direction: column;
             }
             .info-label {
-                margin-bottom: 5px;
+                margin-bottom: 8px;
+            }
+            .contact-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
-    <div class="email-container">
+    <div class="email-wrapper">
         <div class="header">
-            <h1>🏢 Novo Elevador Registado</h1>
-            <p>Notificação de Registo de Equipamento</p>
+            <span class="header-icon">🏛️</span>
+            <h1>Novo Elevador Registado</h1>
+            <p>Comunicação Oficial de Registo de Equipamento</p>
         </div>
         
         <div class="content">
             <p class="greeting">Exmos. Senhores da Câmara Municipal de {{municipalityName}},</p>
             
-            <p>Ao abrigo da legislação portuguesa em vigor, nomeadamente o <strong>Decreto-Lei n.º 320/2002</strong> e legislação complementar, vimos por este meio notificar a instalação e registo de um novo elevador na área territorial sob vossa jurisdição.</p>
+            <p class="intro-text">Ao abrigo da legislação portuguesa em vigor, nomeadamente o <strong>Decreto-Lei n.º 320/2002</strong> e legislação complementar, vimos por este meio comunicar formalmente o registo de um novo elevador sob responsabilidade da <strong>FESTLIFT, LDA</strong> na área territorial sob vossa jurisdição.</p>
             
             <div class="info-box">
-                <h3>📋 Dados do Elevador</h3>
+                <h3 data-icon="🛗">Dados do Equipamento</h3>
                 <div class="info-row">
                     <div class="info-label">Número Municipal:</div>
                     <div class="info-value">{{municipalNumber}}</div>
@@ -152,7 +274,7 @@
             </div>
             
             <div class="info-box">
-                <h3>🏢 Dados do Cliente</h3>
+                <h3 data-icon="👤">Dados do Proprietário</h3>
                 <div class="info-row">
                     <div class="info-label">Nome/Empresa:</div>
                     <div class="info-value">{{clientName}}</div>
@@ -167,31 +289,42 @@
                 </div>
             </div>
             
-            <div class="legal-note">
-                <strong>⚖️ Enquadramento Legal:</strong><br>
-                Esta notificação é enviada em conformidade com o artigo 8.º do Decreto-Lei n.º 320/2002, de 28 de dezembro, que estabelece as regras de segurança dos elevadores e respetivos componentes de segurança.
+            <div class="highlight-box">
+                <strong>Enquadramento Legal</strong>
+                <p style="margin: 10px 0 0 0; color: #856404; font-size: 15px; line-height: 1.8;">
+                    Esta comunicação é realizada em conformidade com o <strong>Artigo 8.º do Decreto-Lei n.º 320/2002</strong>, de 28 de dezembro, que estabelece as regras de segurança para elevadores e seus componentes. A FESTLIFT, LDA compromete-se a cumprir rigorosamente toda a legislação aplicável, incluindo inspeções periódicas e manutenção preventiva.
+                </p>
             </div>
             
-            <p>O equipamento encontra-se devidamente registado e sob manutenção periódica pela nossa empresa, garantindo o cumprimento de todos os requisitos de segurança exigidos pela legislação portuguesa.</p>
+            <p style="font-size: 16px; line-height: 1.8; color: #555;">O equipamento encontra-se <strong>devidamente certificado</strong> e sob regime de manutenção periódica obrigatória, garantindo a conformidade com todos os requisitos técnicos e de segurança estabelecidos pela legislação portuguesa em vigor.</p>
             
-            <p>Para qualquer esclarecimento adicional, estamos inteiramente ao vosso dispor através dos contactos abaixo indicados.</p>
+            <p style="font-size: 16px; line-height: 1.8; color: #555;">Para qualquer esclarecimento adicional ou solicitação de documentação complementar, a FESTLIFT, LDA encontra-se inteiramente ao vosso dispor através dos contactos indicados no rodapé deste email.</p>
             
-            <p style="margin-top: 30px;">Com os melhores cumprimentos,</p>
+            <p style="margin-top: 40px; font-size: 17px; font-weight: 600; color: #2c3e50;">Com os melhores cumprimentos,</p>
+            <p style="font-size: 16px; color: #667eea; font-weight: 600;">Equipa FESTLIFT, LDA</p>
         </div>
         
         <div class="footer">
+            <div class="company-logo">🛗 FESTLIFT</div>
             <div class="company-info">
                 <strong>FESTLIFT, LDA</strong><br>
-                Elevadores e Serviços<br>
-                📍 Av. do Parque 84B, Rio de Mouro, Lisboa 2635-609<br>
-                📞 +351 214 190 863 | 📱 +351 926 380 243/244<br>
-                📧 info@festlift.pt | 🏢 NIF: 515924741<br>
-                🚨 Emergências 24/7: +351 926 380 243
+                Manutenção e Assistência Técnica de Elevadores
             </div>
-            <p style="margin-top: 15px; font-size: 12px; color: #868e96;">
-                Este email é gerado automaticamente pelo sistema de gestão de elevadores.<br>
-                Em caso de dúvidas, contacte-nos através dos meios indicados acima.
-            </p>
+            
+            <div class="contact-grid">
+                <div class="contact-item">📍 Av. do Parque 84B<br>Rio de Mouro, Lisboa<br>2635-609</div>
+                <div class="contact-item">📧 info@festlift.pt<br>🌐 www.festlift.pt<br>🏢 NIF: 515924741</div>
+                <div class="contact-item">📞 Escritório<br>+351 214 190 863</div>
+                <div class="contact-item">📱 Assistência Técnica<br>+351 926 380 243/244</div>
+            </div>
+            
+            <div class="emergency-banner">
+                🚨 Linha de Emergência 24/7: +351 926 380 243
+            </div>
+            
+            <div class="disclaimer">
+                Esta comunicação oficial foi gerada automaticamente pelo sistema de gestão de elevadores da FESTLIFT, LDA. Todas as informações são verificadas e certificadas pela nossa equipa técnica. Para esclarecimentos adicionais, por favor contacte-nos através dos canais indicados acima.
+            </div>
         </div>
     </div>
 </body>
