@@ -788,11 +788,13 @@
 <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
 <script src="../../plugins/adminlte/adminlte.min.js"></script>
 
+<!-- Sidebar initialization script -->
+<script src="../../assets/js/sidebar-init.js"></script>
+
     <!-- Load sidebar dynamically -->
     <script>
-        $(document).ready(function() {
-            $(".main-sidebar").load("includes/sidebar.html");
-        });
+        // Load sidebar with proper initialization
+        loadSidebarWithInit("includes/sidebar.html");
     </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 

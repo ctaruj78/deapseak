@@ -544,6 +544,9 @@
     <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
     <!-- AdminLTE -->
     <script src="../../plugins/adminlte/adminlte.min.js"></script>
+
+    <!-- Sidebar initialization script -->
+    <script src="../../assets/js/sidebar-init.js"></script>
     <!-- jsPDF для генерації PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
@@ -551,7 +554,7 @@
     <!-- Load sidebar dynamically -->
     <script>
         $(document).ready(function() {
-            $(".main-sidebar").load("includes/sidebar.html");
+            loadSidebarWithInit("includes/sidebar.html");
         });
     </script>
 

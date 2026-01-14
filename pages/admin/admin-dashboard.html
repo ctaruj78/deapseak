@@ -506,11 +506,13 @@
     <!-- AdminLTE -->
     <script src="../../plugins/adminlte/adminlte.min.js"></script>
 
+    <!-- Sidebar initialization script -->
+    <script src="../../assets/js/sidebar-init.js"></script>
+
     <!-- Load sidebar dynamically -->
     <script>
-        $(document).ready(function() {
-            $(".main-sidebar").load("includes/sidebar.html");
-        });
+        // Load sidebar with proper initialization
+        loadSidebarWithInit("includes/sidebar.html");
     </script>
     
     <!-- 🌍 Система багатомовності -->

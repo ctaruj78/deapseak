@@ -1040,11 +1040,13 @@
     <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/adminlte@3.2/dist/js/adminlte.min.js"></script>
 
+    <!-- Sidebar initialization script -->
+    <script src="../../assets/js/sidebar-init.js"></script>
+
     <!-- Load sidebar dynamically -->
     <script>
-        $(document).ready(function() {
-            $(".main-sidebar").load("includes/sidebar.html");
-        });
+        // Load sidebar with proper initialization
+        loadSidebarWithInit("includes/sidebar.html");
     </script>
     
     <!-- QR Code Library -->
