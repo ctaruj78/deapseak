@@ -13,6 +13,7 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { MongoClient } = require('mongodb');
+const mongoose = require('mongoose');
 const multer = require('multer');
 const fs = require('fs').promises;
 const https = require('https');
@@ -146,6 +147,16 @@ async function connectMongo() {
 
 // Підключаємося при старті
 connectMongo();
+
+// Mongoose підключення (для backend/routes що використовують Mongoose моделі)
+mongoose.connect(MONGODB_URI + '/' + DB_NAME, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+}).then(() => {
+    console.log('✅ Mongoose connected:', MONGODB_URI + '/' + DB_NAME);
+}).catch(err => {
+    console.error('❌ Mongoose connection error:', err);
+});
 
 // JWT secret
 const JWT_SECRET = process.env.JWT_SECRET || 'deapseak_secret_key_2024';
@@ -4229,10 +4240,16 @@ app.get('/api/ai/regulations/:id', authenticateToken, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// 📊 ORÇAMENTOS API - Збереження та управління кошторисами
+// 📊 ORÇAMENTOS API - Використовуємо backend/routes/orcamentos.js
 // ═══════════════════════════════════════════════════════════
+const orcamentosRoutes = require('./backend/routes/orcamentos');
+app.use('/api/orcamentos', orcamentosRoutes);
 
-// GET /api/orcamentos - Список всіх орçаментів
+// ═══════════════════════════════════════════════════════════
+// 📊 ORÇAMENTOS API (LEGACY) - Старі endpoints для сумісності
+// ═══════════════════════════════════════════════════════════
+/*
+// LEGACY - ці endpoints закоментовані, використовується backend/routes/orcamentos.js
 app.get('/api/orcamentos', authenticateToken, async (req, res) => {
     try {
         const { status, page = 1, limit = 20, search } = req.query;
@@ -4457,6 +4474,8 @@ app.delete('/api/orcamentos/:id', authenticateToken, async (req, res) => {
         });
     }
 });
+*/
+// Кінець LEGACY orcamentos endpoints
 
 // ═══════════════════════════════════════════════════════════
 // 📧 EMAIL ENDPOINTS - Brevo SMTP Integration
@@ -4911,16 +4930,20 @@ app.post('/api/email/send-orcamento', authenticateToken, async (req, res) => {
             });
         }
 
-        const nodemailer = require('nodemailer');
-        const transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST,
-            port: parseInt(process.env.SMTP_PORT),
-            secure: process.env.SMTP_SECURE === 'true',
-            auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASS
-            }
-        });
+        // ✅ Usar Brevo API замість SMTP
+        if (!process.env.BREVO_API_KEY) {
+            return res.status(500).json({
+                success: false,
+                error: 'BREVO_API_KEY não configurado'
+            });
+        }
+
+        const brevo = require('@getbrevo/brevo');
+        const apiInstance = new brevo.TransactionalEmailsApi();
+        apiInstance.setApiKey(
+            brevo.TransactionalEmailsApiApiKeys.apiKey,
+            process.env.BREVO_API_KEY
+        );
 
         // Gerar HTML do orçamento
         let servicosHTML = '<table style="width: 100%; border-collapse: collapse;"><tr><th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Descrição</th><th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Quantidade</th><th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Preço Unit.</th><th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Total</th></tr>';
@@ -5062,7 +5085,17 @@ app.post('/api/email/send-orcamento', authenticateToken, async (req, res) => {
             `
         };
 
-        await transporter.sendMail(mailOptions);
+        // Відправити через Brevo API
+        const sendSmtpEmail = new brevo.SendSmtpEmail();
+        sendSmtpEmail.sender = { 
+            name: "FestLift", 
+            email: process.env.EMAIL_FROM || "info@festlift.pt"
+        };
+        sendSmtpEmail.to = [{ email: clientEmail }];
+        sendSmtpEmail.subject = mailOptions.subject;
+        sendSmtpEmail.htmlContent = mailOptions.html;
+
+        await apiInstance.sendTransacEmail(sendSmtpEmail);
         
         // Atualizar orçamento com tracking
         await db.collection('orcamentos').updateOne(
@@ -5484,8 +5517,9 @@ app.post('/api/email/send-template', authenticateToken, async (req, res) => {
     }
 });
 
-// POST /api/orcamentos/:id/enviar - АЛЬТЕРНАТИВНИЙ endpoint для відправки orçamento
-// (дублюється з backend/routes/orcamentos.js для сумісності)
+// POST /api/orcamentos/:id/enviar - ВИДАЛЕНО, використовується backend/routes/orcamentos.js
+// Цей endpoint дублював функціонал і використовував старий код
+/*
 app.post('/api/orcamentos/:id/enviar', authenticateToken, async (req, res) => {
     try {
         const { ObjectId } = require('mongodb');
@@ -5531,6 +5565,7 @@ app.post('/api/orcamentos/:id/enviar', authenticateToken, async (req, res) => {
         });
     }
 });
+*/
 
 // ═══════════════════════════════════════════════════════════
 // 🔄 REGULATIONS AUTO-UPDATE API

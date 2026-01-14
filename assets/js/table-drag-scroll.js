@@ -92,6 +92,11 @@
         container.addEventListener('mousemove', (e) => {
             if (!isDown) return;
             
+            // Не блокуємо події на інтерактивних елементах
+            if (shouldExcludeElement(e.target)) {
+                return;
+            }
+            
             e.preventDefault();
             
             const x = e.pageX - container.offsetLeft;

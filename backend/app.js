@@ -9,6 +9,7 @@ const liftRoutes = require('./routes/liftRoutes');
 const requestRoutes = require('./routes/requestRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 const emailRoutes = require('./routes/emailRoutes');
+const orcamentosRoutes = require('./routes/orcamentos');
 const websocketService = require('./services/websocketService');
 
 const app = express();
@@ -81,6 +82,7 @@ app.use('/api/lifts', liftRoutes);
 app.use('/api/requests', requestRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api', emailRoutes);
+app.use('/api/orcamentos', orcamentosRoutes);
 
 app.get('/', (req, res) => {
     res.json({

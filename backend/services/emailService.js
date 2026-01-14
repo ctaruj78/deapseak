@@ -1,33 +1,70 @@
-const nodemailer = require('nodemailer');
+const brevo = require('@getbrevo/brevo');
 
 class EmailService {
     constructor() {
-        // 📧 Brevo SMTP Configuration (FestLift Professional Email)
+        // 📧 Brevo API v3 Configuration (FestLift Professional Email)
         // 300 emails/day FREE, 99%+ deliverability, tracking included
-        this.transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST,  // smtp-relay.brevo.com
-            port: parseInt(process.env.SMTP_PORT),  // 587 (TLS)
-            secure: process.env.SMTP_SECURE === 'true',  // false for TLS
-            auth: {
-                user: process.env.SMTP_USER,  // 8b688f001@smtp-brevo.com
-                pass: process.env.SMTP_PASS   // SMTP Key (xsmtpsib-...)
-            }
-        });
+        if (!process.env.BREVO_API_KEY) {
+            console.warn('⚠️  BREVO_API_KEY não configurado - emails não serão enviados');
+            this.apiInstance = null;
+            this.from = { email: 'noreply@deapseak.com', name: 'DeapSeaK System' };
+            return;
+        }
+
+        this.apiInstance = new brevo.TransactionalEmailsApi();
+        this.apiInstance.setApiKey(
+            brevo.TransactionalEmailsApiApiKeys.apiKey,
+            process.env.BREVO_API_KEY
+        );
         
         // Professional sender identity
-        this.from = process.env.EMAIL_FROM || 'DeapSeaK System <noreply@deapseak.com>';
+        const fromMatch = (process.env.EMAIL_FROM || 'DeapSeaK System <noreply@deapseak.com>').match(/^(.+?)\s*<(.+?)>$/);
+        if (fromMatch) {
+            this.from = { name: fromMatch[1].trim(), email: fromMatch[2].trim() };
+        } else {
+            this.from = { email: process.env.EMAIL_FROM || 'noreply@deapseak.com', name: 'DeapSeaK System' };
+        }
         
-        console.log('✅ Email Service initialized with Brevo SMTP');
+        console.log('✅ Email Service initialized with Brevo API v3');
+    }
+
+    // Helper method to send email via Brevo API
+    async _sendEmail(to, subject, htmlContent) {
+        if (!this.apiInstance) {
+            console.warn('⚠️  Email não enviado - BREVO_API_KEY não configurado');
+            return;
+        }
+
+        const sendSmtpEmail = new brevo.SendSmtpEmail();
+        sendSmtpEmail.sender = this.from;
+        
+        // Обробка різних форматів to
+        if (typeof to === 'string') {
+            sendSmtpEmail.to = [{ email: to }];
+        } else if (Array.isArray(to)) {
+            sendSmtpEmail.to = to;
+        } else {
+            sendSmtpEmail.to = [to];
+        }
+        
+        sendSmtpEmail.subject = subject;
+        sendSmtpEmail.htmlContent = htmlContent;
+
+        await this.apiInstance.sendTransacEmail(sendSmtpEmail);
     }
 
     // Відправити email про нову заявку
     async sendNewRequestNotification(request, client) {
+        if (!this.apiInstance) {
+            console.warn('⚠️  Email não enviado - BREVO_API_KEY não configurado');
+            return;
+        }
+
         try {
-            const mailOptions = {
-                from: this.from,
-                to: client.email,
-                subject: `✅ Нова заявка #${request._id} створена`,
-                html: `
+            await this._sendEmail(
+                [{ email: client.email, name: `${client.firstName} ${client.lastName}` }],
+                `✅ Нова заявка #${request._id} створена`,
+                `
                     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                         <h2 style="color: #28a745;">Заявка успішно створена</h2>
                         <p>Шановний ${client.firstName} ${client.lastName}!</p>
@@ -50,9 +87,7 @@ class EmailService {
                         </p>
                     </div>
                 `
-            };
-
-            await this.transporter.sendMail(mailOptions);
+            );
             console.log(`✅ Email sent to ${client.email} about new request #${request._id}`);
         } catch (error) {
             console.error('❌ Error sending email:', error);
@@ -89,7 +124,7 @@ class EmailService {
                 `
             };
 
-            await this.transporter.sendMail(mailOptions);
+            await this._sendEmail(mailOptions.to, mailOptions.subject, mailOptions.html);
             console.log(`✅ Email sent to ${client.email} about technician assignment`);
 
             // Також відправити техніку
@@ -133,7 +168,7 @@ class EmailService {
                 `
             };
 
-            await this.transporter.sendMail(mailOptions);
+            await this._sendEmail(mailOptions.to, mailOptions.subject, mailOptions.html);
             console.log(`✅ Email sent to ${technician.email} about new task`);
         } catch (error) {
             console.error('❌ Error sending email:', error);
@@ -164,7 +199,7 @@ class EmailService {
                 `
             };
 
-            await this.transporter.sendMail(mailOptions);
+            await this._sendEmail(mailOptions.to, mailOptions.subject, mailOptions.html);
             console.log(`✅ Email sent to ${client.email} about status change`);
         } catch (error) {
             console.error('❌ Error sending email:', error);
@@ -204,7 +239,7 @@ class EmailService {
                 `
             };
 
-            await this.transporter.sendMail(mailOptions);
+            await this._sendEmail(mailOptions.to, mailOptions.subject, mailOptions.html);
             console.log(`✅ Email sent to ${client.email} about completed request`);
         } catch (error) {
             console.error('❌ Error sending email:', error);
@@ -255,7 +290,7 @@ class EmailService {
                 `
             };
 
-            await this.transporter.sendMail(mailOptions);
+            await this._sendEmail(mailOptions.to, mailOptions.subject, mailOptions.html);
             console.log(`✅ Password reset email sent to ${email}`);
         } catch (error) {
             console.error('❌ Error sending password reset email:', error);
@@ -306,7 +341,7 @@ class EmailService {
                 html: '<h1>Email service is working!</h1><p>This is a test email from your DeapSeaK system.</p>'
             };
 
-            const info = await this.transporter.sendMail(mailOptions);
+            const info = await this._sendEmail(mailOptions.to, mailOptions.subject, mailOptions.html);
             console.log('✅ Test email sent:', info.messageId);
             return true;
         } catch (error) {

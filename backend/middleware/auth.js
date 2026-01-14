@@ -5,7 +5,7 @@
 const jwt = require('jsonwebtoken');
 const { AppError } = require('./errorHandler');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'deapseak-super-secret-key-2024';
+const JWT_SECRET = process.env.JWT_SECRET || 'deapseak_secret_key_2024';
 
 // Перевірка JWT токена (підтримує Authorization header АБО query parameter)
 const authenticate = (req, res, next) => {

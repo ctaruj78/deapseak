@@ -358,7 +358,8 @@
     <script src="../../assets/js/config.js"></script>
 
     <script>
-        const API_BASE_URL = window.API_BASE_URL || 'http://localhost:5000';
+        // API_BASE_URL має бути порожнім для relative URLs (працює в GitHub Codespaces)
+        const API_BASE_URL = window.API_BASE_URL || '';
 
         // Carregar orçamentos
         async function carregarOrcamentos(filtros = {}) {
@@ -399,9 +400,13 @@
                     throw new Error('Erro ao carregar orçamentos');
                 }
 
-                const orcamentos = await response.json();
+                const result = await response.json();
+                console.log('📋 Resultado da API:', result);
+                
+                // API повертає {success: true, data: [...], pagination: {...}}
+                const orcamentos = result.success ? result.data : (result.data || result);
 
-                if (orcamentos.length === 0) {
+                if (!orcamentos || orcamentos.length === 0) {
                     emptyState.style.display = 'block';
                 } else {
                     orcamentos.forEach(orcamento => {
@@ -428,8 +433,10 @@
             }[orcamento.status] || 'Desconhecido';
 
             const data = new Date(orcamento.data).toLocaleDateString('pt-PT');
-            const validadeAte = new Date(orcamento.validadeAte).toLocaleDateString('pt-PT');
-            const total = orcamento.totalGeral || 0;
+            const validadeAte = orcamento.validadeAte 
+                ? new Date(orcamento.validadeAte).toLocaleDateString('pt-PT') 
+                : 'N/A';
+            const total = orcamento.total || 0;
 
             return `
                 <div class="col-md-4 col-sm-6 mb-4">
