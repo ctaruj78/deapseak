@@ -1880,93 +1880,14 @@
         }
 
         // ═══════════════════════════════════════════════════════════════
-        //  ДИНАМІЧНИЙ SIDEBAR ЗА РОЛЛЮ
+        //  AI ASSISTANT - МІНІМАЛЬНИЙ SIDEBAR (Спільна зона для всіх ролей)
         // ═══════════════════════════════════════════════════════════════
         
-        async function loadDynamicSidebar() {
-            try {
-                const token = localStorage.getItem('token');
-                if (!token) {
-                    console.warn('⚠️ Токен не знайдено, використовую базовий sidebar');
-                    return;
-                }
-
-                // Декодувати JWT для визначення ролі
-                const payload = JSON.parse(atob(token.split('.')[1]));
-                const userRole = payload.role;
-                
-                console.log(`🎨 Завантаження sidebar для ролі: ${userRole}`);
-
-                let sidebarPath = '';
-                
-                // Визначити шлях до sidebar компонента
-                switch(userRole) {
-                    case 'client':
-                        sidebarPath = '../../components/client-sidebar-template.html';
-                        break;
-                    case 'admin':
-                        sidebarPath = '../../components/admin-sidebar-template.html';
-                        break;
-                    case 'dispatcher':
-                        sidebarPath = '../../components/dispatcher-sidebar-template.html';
-                        break;
-                    case 'tech':
-                    case 'technician':
-                        sidebarPath = '../../components/tech-sidebar-template.html';
-                        break;
-                    default:
-                        console.warn(`⚠️ Невідома роль: ${userRole}, залишаю базовий sidebar`);
-                        return;
-                }
-
-                // Завантажити sidebar компонент
-                const response = await fetch(sidebarPath);
-                if (!response.ok) {
-                    console.error(`❌ Не вдалося завантажити sidebar: ${response.status}`);
-                    return;
-                }
-
-                const sidebarHTML = await response.text();
-                
-                // Замінити поточний sidebar
-                const currentSidebar = document.querySelector('.main-sidebar');
-                if (currentSidebar) {
-                    const tempDiv = document.createElement('div');
-                    tempDiv.innerHTML = sidebarHTML;
-                    const newSidebar = tempDiv.querySelector('.main-sidebar');
-                    
-                    if (newSidebar) {
-                        // Виділити активним пункт "AI Асистент"
-                        const aiLinks = newSidebar.querySelectorAll('a[href*="ai-assistant"]');
-                        aiLinks.forEach(link => {
-                            link.classList.add('active');
-                        });
-                        
-                        currentSidebar.replaceWith(newSidebar);
-                        console.log(`✅ Sidebar ${userRole} завантажено успішно`);
-                        
-                        // Виконати скрипти з sidebar (якщо є)
-                        const scripts = tempDiv.querySelectorAll('script');
-                        scripts.forEach(script => {
-                            const newScript = document.createElement('script');
-                            if (script.src) {
-                                newScript.src = script.src;
-                            } else {
-                                newScript.textContent = script.textContent;
-                            }
-                            document.body.appendChild(newScript);
-                        });
-                    }
-                }
-                
-            } catch (error) {
-                console.error('❌ Помилка завантаження динамічного sidebar:', error);
-            }
-        }
-
-        // Завантажити динамічний sidebar при завантаженні сторінки
+        // Мінімальний sidebar вже в HTML (рядки 265-352)
+        // Не потрібно динамічно завантажувати - це спільна зона!
+        
         document.addEventListener('DOMContentLoaded', () => {
-            loadDynamicSidebar();
+            console.log('✅ AI Assistant - мінімальний sidebar готовий (спільна зона)');
         });
     </script>
 </body>
