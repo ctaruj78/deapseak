@@ -525,7 +525,7 @@
                     <div class="lift-info">
                         <div class="info-item">
                             <i class="fas fa-map-marker-alt"></i>
-                            <span>${lift.address || 'Адреса не вказана'}</span>
+                            <span>${typeof lift.address === 'object' ? (lift.address.full || lift.address.street || JSON.stringify(lift.address)) : (lift.address || 'Адреса не вказана')}</span>
                         </div>
                         ${lift.municipality ? `
                         <div class="info-item">
@@ -593,9 +593,14 @@
             const municipality = document.getElementById('municipalityFilter').value;
 
             let filtered = allLifts.filter(lift => {
+                // Handle address object or string
+                const addressStr = typeof lift.address === 'object' 
+                    ? (lift.address.full || lift.address.street || '') 
+                    : (lift.address || '');
+                
                 const matchSearch = !search || 
                     (lift.municipalNumber && lift.municipalNumber.toLowerCase().includes(search)) ||
-                    (lift.address && lift.address.toLowerCase().includes(search));
+                    (addressStr && addressStr.toLowerCase().includes(search));
                 
                 const matchStatus = !status || lift.status === status;
                 const matchMunicipality = !municipality || lift.municipality === municipality;
@@ -620,7 +625,8 @@
             document.getElementById('modalTitle').textContent = 'Додати ліфт';
             document.getElementById('liftForm').reset();
             document.getElementById('liftId').value = '';
-            $('#liftModal').modal('show');
+            const modal = new bootstrap.Modal(document.getElementById('liftModal'));
+            modal.show();
         }
 
         // Редагувати ліфт
@@ -632,7 +638,13 @@
             document.getElementById('liftId').value = currentLift._id;
             document.getElementById('municipalNumber').value = currentLift.municipalNumber || '';
             document.getElementById('status').value = currentLift.status || 'active';
-            document.getElementById('address').value = currentLift.address || '';
+            
+            // Handle address - може бути string або object
+            const address = typeof currentLift.address === 'object' 
+                ? (currentLift.address.full || currentLift.address.street || '') 
+                : (currentLift.address || '');
+            document.getElementById('address').value = address;
+            
             document.getElementById('city').value = currentLift.city || '';
             document.getElementById('postalCode').value = currentLift.postalCode || '';
             document.getElementById('municipality').value = currentLift.municipality || '';
@@ -640,7 +652,8 @@
             document.getElementById('speed').value = currentLift.speed || '';
             document.getElementById('notes').value = currentLift.notes || '';
 
-            $('#liftModal').modal('show');
+            const modal = new bootstrap.Modal(document.getElementById('liftModal'));
+            modal.show();
         }
 
         // Зберегти ліфт
@@ -685,7 +698,8 @@
                     throw new Error(error.message || 'Помилка збереження');
                 }
 
-                $('#liftModal').modal('hide');
+                const modal = bootstrap.Modal.getInstance(document.getElementById('liftModal'));
+                if (modal) modal.hide();
                 showSuccess(liftId ? 'Ліфт оновлено' : 'Ліфт додано');
                 loadLifts();
 
