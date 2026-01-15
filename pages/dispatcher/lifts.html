@@ -392,7 +392,7 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="closeModal()">
                         <i class="fas fa-times"></i> Скасувати
                     </button>
                     <button type="button" class="btn btn-primary" onclick="saveLift()">
@@ -405,7 +405,7 @@
 
     <!-- Scripts -->
     <script src="../../plugins/jquery/jquery.min.js"></script>
-    <script src="../../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="../../assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="../../plugins/adminlte/adminlte.min.js"></script>
     <script src="../../assets/js/auth.js"></script>
 
@@ -422,11 +422,11 @@
                 return;
             }
 
-            // Перевірка наявності jQuery modal plugin
+            // Перевірка наявності jQuery modal plugin (для діагностики)
             if (typeof $.fn.modal === 'undefined') {
-                console.error('❌ Bootstrap modal plugin не завантажений!');
-                showError('Помилка завантаження компонентів. Спробуйте оновити сторінку.');
-                return;
+                console.warn('⚠️ Bootstrap modal plugin не завантажений, використовується fallback');
+            } else {
+                console.log('✅ Bootstrap modal plugin готовий');
             }
 
             loadLifts();
@@ -632,8 +632,36 @@
             document.getElementById('modalTitle').textContent = 'Додати ліфт';
             document.getElementById('liftForm').reset();
             document.getElementById('liftId').value = '';
-            // Use jQuery API which is guaranteed to work
-            $('#liftModal').modal('show');
+            
+            // Try jQuery modal API
+            if (typeof $.fn.modal !== 'undefined') {
+                $('#liftModal').modal('show');
+            } else {
+                // Fallback: показати модальне вікно напряму
+                console.warn('⚠️ jQuery modal недоступний, використовуємо fallback');
+                document.getElementById('liftModal').style.display = 'block';
+                document.getElementById('liftModal').classList.add('show');
+                document.body.classList.add('modal-open');
+                // Додати backdrop
+                const backdrop = document.createElement('div');
+                backdrop.className = 'modal-backdrop fade show';
+                backdrop.id = 'modalBackdrop';
+                document.body.appendChild(backdrop);
+            }
+        }
+
+        // Закрити модальне вікно
+        function closeModal() {
+            if (typeof $.fn.modal !== 'undefined') {
+                $('#liftModal').modal('hide');
+            } else {
+                // Fallback
+                document.getElementById('liftModal').style.display = 'none';
+                document.getElementById('liftModal').classList.remove('show');
+                document.body.classList.remove('modal-open');
+                const backdrop = document.getElementById('modalBackdrop');
+                if (backdrop) backdrop.remove();
+            }
         }
 
         // Редагувати ліфт
@@ -659,8 +687,20 @@
             document.getElementById('speed').value = currentLift.speed || '';
             document.getElementById('notes').value = currentLift.notes || '';
 
-            // Use jQuery API which is guaranteed to work
-            $('#liftModal').modal('show');
+            // Try jQuery modal API
+            if (typeof $.fn.modal !== 'undefined') {
+                $('#liftModal').modal('show');
+            } else {
+                // Fallback
+                console.warn('⚠️ jQuery modal недоступний, використовуємо fallback');
+                document.getElementById('liftModal').style.display = 'block';
+                document.getElementById('liftModal').classList.add('show');
+                document.body.classList.add('modal-open');
+                const backdrop = document.createElement('div');
+                backdrop.className = 'modal-backdrop fade show';
+                backdrop.id = 'modalBackdrop';
+                document.body.appendChild(backdrop);
+            }
         }
 
         // Зберегти ліфт
@@ -705,8 +745,18 @@
                     throw new Error(error.message || 'Помилка збереження');
                 }
 
-                // Use jQuery API to hide modal
-                $('#liftModal').modal('hide');
+                // Try jQuery modal API to hide
+                if (typeof $.fn.modal !== 'undefined') {
+                    $('#liftModal').modal('hide');
+                } else {
+                    // Fallback
+                    document.getElementById('liftModal').style.display = 'none';
+                    document.getElementById('liftModal').classList.remove('show');
+                    document.body.classList.remove('modal-open');
+                    const backdrop = document.getElementById('modalBackdrop');
+                    if (backdrop) backdrop.remove();
+                }
+                
                 showSuccess(liftId ? 'Ліфт оновлено' : 'Ліфт додано');
                 loadLifts();
 
