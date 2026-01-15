@@ -4,6 +4,12 @@ class ClientManager {
         this.filteredClients = [];
         this.requests = [];
         this.currentClient = null;
+        
+        // Визначаємо роль користувача
+        const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+        this.userRole = userData.role || 'dispatcher';
+        console.log('👤 Роль користувача:', this.userRole);
+        
         this.init();
     }
 
@@ -16,22 +22,68 @@ class ClientManager {
     // Завантаження клієнтів
     async loadClients() {
         try {
-            const response = await fetch('/api/clients', {
+            console.log('🔄 Завантаження клієнтів з API...');
+            const response = await fetch('/api/users?role=client', {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                 }
             });
             
             if (response.ok) {
-                this.clients = await response.json();
+                const result = await response.json();
+                console.log('📥 Отримано дані від API:', result);
+                
+                // API повертає {success: true, data: [...]}
+                const users = result.success ? (result.data || []) : [];
+                console.log('👥 Знайдено користувачів:', users.length);
+                
+                // Конвертуємо користувачів у формат клієнтів
+                this.clients = users.map((user, index) => {
+                    // Генеруємо аватар з першої літери імені
+                    const avatar = user.firstName ? user.firstName.charAt(0).toUpperCase() : 'K';
+                    
+                    // Визначаємо тип клієнта
+                    const type = user.clientType || user.companyName ? 'business' : 'individual';
+                    
+                    // Формуємо повне ім'я
+                    const fullName = user.companyName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Без імені';
+                    
+                    return {
+                        id: user._id,
+                        _id: user._id,
+                        name: fullName,
+                        firstName: user.firstName || '',
+                        lastName: user.lastName || '',
+                        companyName: user.companyName || '',
+                        type: type,
+                        email: user.email || 'Не вказано',
+                        phone: user.phone || 'Не вказано',
+                        status: user.status || 'active',
+                        priority: user.priority || 'medium',
+                        address: user.address || 'Не вказано',
+                        contactPerson: user.contactPerson || fullName,
+                        contactPosition: user.contactPosition || 'Клієнт',
+                        contractInfo: user.contractInfo || `Договір від ${new Date(user.createdAt || Date.now()).toLocaleDateString('uk-UA')}`,
+                        notes: user.notes || '',
+                        rating: user.rating || 4.0,
+                        totalRequests: user.requestsCount || 0,
+                        activeRequests: user.activeRequests || 0,
+                        requestsCount: user.requestsCount || 0,
+                        avatar: avatar,
+                        createdAt: user.createdAt || new Date().toISOString()
+                    };
+                });
+                
+                console.log('✅ Клієнтів оброблено:', this.clients.length);
                 this.filteredClients = [...this.clients];
                 this.renderClients();
                 this.updateStats();
             } else {
+                console.warn('⚠️ API повернув помилку, використовуємо demo дані');
                 this.loadDemoClients();
             }
         } catch (error) {
-            console.error('Помилка завантаження клієнтів:', error);
+            console.error('❌ Помилка завантаження клієнтів:', error);
             this.loadDemoClients();
         }
     }
@@ -139,16 +191,33 @@ class ClientManager {
     // Завантаження заявок клієнтів
     async loadClientRequests() {
         try {
-            const response = await fetch('/api/client-requests', {
+            const response = await fetch('/api/requests', {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                 }
             });
             
             if (response.ok) {
-                this.requests = await response.json();
+                const result = await response.json();
+                // API повертає {success: true, data: {requests: [...]}}
+                const apiRequests = result.success && result.data ? 
+                    (result.data.requests || result.data || []) : [];
+                
+                this.requests = apiRequests.map(req => ({
+                    id: req._id,
+                    clientId: req.client?._id || req.clientId,
+                    clientName: req.client ? 
+                        `${req.client.firstName} ${req.client.lastName}` : 
+                        'Невідомо',
+                    title: req.title || req.description?.substring(0, 50) || 'Без назви',
+                    priority: req.priority || 'medium',
+                    status: req.status || 'new',
+                    date: new Date(req.createdAt).toLocaleString('uk-UA')
+                }));
+                
                 this.renderRecentRequests();
             } else {
+                console.warn('⚠️ API повернув помилку, використовуємо demo дані');
                 this.loadDemoRequests();
             }
         } catch (error) {
@@ -305,18 +374,20 @@ class ClientManager {
             </div>
             
             <div class="action-buttons mt-3">
-                <button class="btn btn-sm btn-primary" onclick="clientManager.viewClient(${client.id})">
-                    <i class="fas fa-eye"></i>
+                <button class="btn btn-sm btn-primary" onclick="clientManager.viewClient('${client.id || client._id}')">
+                    <i class="fas fa-eye"></i> Переглянути
                 </button>
-                <button class="btn btn-sm btn-info" onclick="clientManager.messageClient(${client.id})">
-                    <i class="fas fa-envelope"></i>
+                <button class="btn btn-sm btn-info" onclick="clientManager.sendEmail('${client.id || client._id}')">
+                    <i class="fas fa-envelope"></i> Email
                 </button>
-                <button class="btn btn-sm btn-warning" onclick="clientManager.editClient(${client.id})">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn btn-sm btn-danger" onclick="clientManager.deleteClient(${client.id})">
-                    <i class="fas fa-trash"></i>
-                </button>
+                ${this.userRole === 'admin' || this.userRole === 'dispatcher' ? `
+                <button class="btn btn-sm btn-warning" onclick="clientManager.editClient('${client.id || client._id}')">
+                    <i class="fas fa-edit"></i> Редагувати
+                </button>` : ''}
+                ${this.userRole === 'admin' ? `
+                <button class="btn btn-sm btn-danger" onclick="clientManager.deleteClient('${client.id || client._id}')">
+                    <i class="fas fa-trash"></i> Видалити
+                </button>` : ''}
             </div>
         `;
         
@@ -378,12 +449,20 @@ class ClientManager {
                 </td>
                 <td>
                     <div class="btn-group btn-group-sm">
-                        <button class="btn btn-info" onclick="clientManager.viewClient(${client.id})">
+                        <button class="btn btn-info" onclick="clientManager.viewClient('${client.id || client._id}')" title="Переглянути">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="btn btn-warning" onclick="clientManager.editClient(${client.id})">
-                            <i class="fas fa-edit"></i>
+                        <button class="btn btn-success" onclick="clientManager.sendEmail('${client.id || client._id}')" title="Email">
+                            <i class="fas fa-envelope"></i>
                         </button>
+                        ${this.userRole === 'admin' || this.userRole === 'dispatcher' ? `
+                        <button class="btn btn-warning" onclick="clientManager.editClient('${client.id || client._id}')" title="Редагувати">
+                            <i class="fas fa-edit"></i>
+                        </button>` : ''}
+                        ${this.userRole === 'admin' ? `
+                        <button class="btn btn-danger" onclick="clientManager.deleteClient('${client.id || client._id}')" title="Видалити">
+                            <i class="fas fa-trash"></i>
+                        </button>` : ''}
                     </div>
                 </td>
             `;
@@ -467,9 +546,23 @@ class ClientManager {
 
     // Перегляд деталей клієнта
     viewClient(clientId) {
-        const client = this.clients.find(c => c.id === clientId);
-        if (!client) return;
+        console.log('🔍 Переглядаємо клієнта:', clientId);
         
+        // Шукаємо клієнта за id або _id
+        const client = this.clients.find(c => 
+            c.id === clientId || 
+            c._id === clientId || 
+            c.id == clientId || 
+            c._id == clientId
+        );
+        
+        if (!client) {
+            console.error('❌ Клієнта не знайдено:', clientId);
+            alert('Клієнта не знайдено');
+            return;
+        }
+        
+        console.log('✅ Знайдено клієнта:', client);
         this.currentClient = client;
         
         const modalContent = `
@@ -575,9 +668,29 @@ class ClientManager {
 
     // Редагування клієнта
     editClient(clientId) {
-        const client = this.clients.find(c => c.id === clientId);
-        if (!client) return;
+        console.log('✏️ Редагуємо клієнта:', clientId);
         
+        // ✅ Диспетчер може редагувати клієнтів (практично для роботи)
+        if (this.userRole !== 'admin' && this.userRole !== 'dispatcher') {
+            alert('❌ Доступ заборонено! Тільки адміністратори та диспетчери можуть редагувати клієнтів.');
+            return;
+        }
+        
+        // Шукаємо клієнта за id або _id
+        const client = this.clients.find(c => 
+            c.id === clientId || 
+            c._id === clientId || 
+            c.id == clientId || 
+            c._id == clientId
+        );
+        
+        if (!client) {
+            console.error('❌ Клієнта не знайдено:', clientId);
+            alert('Клієнта не знайдено');
+            return;
+        }
+        
+        console.log('✅ Знайдено клієнта для редагування:', client);
         this.currentClient = client;
         
         const titleEl = document.getElementById('clientModalTitle');
@@ -688,6 +801,12 @@ class ClientManager {
 
     // Видалення клієнта
     async deleteClient(clientId) {
+        // 🔒 Перевірка ролі користувача
+        if (this.userRole === 'dispatcher') {
+            alert('❌ Доступ заборонено! Тільки адміністратори можуть видаляти клієнтів.');
+            return;
+        }
+        
         if (!confirm('Ви впевнені, що хочете видалити цього клієнта?')) return;
         
         try {
@@ -745,6 +864,114 @@ class ClientManager {
         });
         
         this.renderClients();
+    }
+
+    // Відправка email клієнту
+    sendEmail(clientId) {
+        console.log('📧 Відправляємо email клієнту:', clientId);
+        
+        // Шукаємо клієнта за id або _id
+        const client = this.clients.find(c => 
+            c.id === clientId || 
+            c._id === clientId || 
+            c.id == clientId || 
+            c._id == clientId
+        );
+        
+        if (!client) {
+            console.error('❌ Клієнта не знайдено:', clientId);
+            alert('Клієнта не знайдено');
+            return;
+        }
+        
+        console.log('✅ Знайдено клієнта для email:', client);
+        
+        // Створюємо mailto link
+        const subject = encodeURIComponent('FestLift - Повідомлення');
+        const body = encodeURIComponent(`Шановний ${client.name},\n\n`);
+        const mailtoLink = `mailto:${client.email}?subject=${subject}&body=${body}`;
+        
+        // Відкриваємо поштовий клієнт
+        window.location.href = mailtoLink;
+        
+        // Альтернативний варіант - показати модальне вікно для написання повідомлення
+        // this.showEmailModal(client);
+    }
+
+    // Показати модальне вікно для написання email
+    showEmailModal(client) {
+        const modalContent = `
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-envelope mr-2"></i>
+                    Відправити Email - ${client.name}
+                </h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="emailForm">
+                    <div class="form-group">
+                        <label>Кому:</label>
+                        <input type="email" class="form-control" value="${client.email}" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Тема:</label>
+                        <input type="text" class="form-control" id="emailSubject" placeholder="Введіть тему...">
+                    </div>
+                    <div class="form-group">
+                        <label>Повідомлення:</label>
+                        <textarea class="form-control" id="emailBody" rows="8" placeholder="Введіть текст повідомлення..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                <button type="button" class="btn btn-primary" onclick="clientManager.sendClientEmail('${client.email}')">
+                    <i class="fas fa-paper-plane mr-2"></i>Відправити
+                </button>
+            </div>
+        `;
+        
+        this.showCustomModal(modalContent);
+    }
+
+    // Відправка email через API
+    async sendClientEmail(email) {
+        const subject = document.getElementById('emailSubject')?.value;
+        const body = document.getElementById('emailBody')?.value;
+        
+        if (!subject || !body) {
+            alert('Заповніть тему та текст повідомлення');
+            return;
+        }
+        
+        try {
+            const response = await fetch('/api/send-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                },
+                body: JSON.stringify({
+                    to: email,
+                    subject: subject,
+                    body: body
+                })
+            });
+            
+            if (response.ok) {
+                alert('Email успішно відправлено!');
+                $('#customModal').modal('hide');
+            } else {
+                const error = await response.json();
+                alert('Помилка відправки email: ' + (error.message || 'Невідома помилка'));
+            }
+        } catch (error) {
+            console.error('Помилка відправки email:', error);
+            alert('Помилка відправки email: ' + error.message);
+        }
     }
 
     // Пошук клієнтів

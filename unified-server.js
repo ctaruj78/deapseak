@@ -1823,14 +1823,43 @@ app.get('/api/users/profile', authenticateToken, async (req, res) => {
 
 // GET /api/users - отримання користувачів (тільки admin)
 app.get('/api/users', authenticateToken, async (req, res) => {
-    // Перевірка ролі admin
-    if (req.user.role !== 'admin') {
-        return res.status(403).json({
-            success: false,
-            message: 'Доступ заборонено. Тільки адміністратори можуть переглядати список користувачів.'
-        });
-    }
     try {
+        // Диспетчери можуть бачити клієнтів і техніків
+        if (req.user.role === 'dispatcher') {
+            const allowedRoles = ['client', 'technician'];
+            
+            // Якщо запитують конкретну роль - перевіряємо чи вона дозволена
+            if (req.query.role && !allowedRoles.includes(req.query.role)) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Доступ заборонено. Диспетчери можуть переглядати тільки клієнтів та техніків.'
+                });
+            }
+            
+            // Якщо role вказано - повертаємо тільки цю роль, інакше - всі дозволені
+            const filter = req.query.role 
+                ? { role: req.query.role }
+                : { role: { $in: allowedRoles } };
+            
+            const users = await db.collection('users').find(
+                filter,
+                { projection: { password: 0 } }
+            ).toArray();
+            
+            return res.json({
+                success: true,
+                data: users
+            });
+        }
+        
+        // Адміністратори можуть бачити всіх
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Доступ заборонено. Тільки адміністратори можуть переглядати список користувачів.'
+            });
+        }
+        
         const users = await db.collection('users').find({}, {
             projection: { password: 0 } // Не віддаємо паролі
         }).toArray();
@@ -1860,6 +1889,20 @@ app.post('/api/users', authenticateToken, async (req, res) => {
                 success: false,
                 error: 'Заповніть всі обов\'язкові поля'
             });
+        }
+
+        // 🔒 ОБМЕЖЕННЯ ДЛЯ ДИСПЕТЧЕРА: може створювати тільки клієнтів та техніків
+        if (req.user.role === 'dispatcher') {
+            const allowedRoles = ['client', 'technician'];
+            
+            if (!allowedRoles.includes(role)) {
+                return res.status(403).json({
+                    success: false,
+                    error: `Доступ заборонено! Диспетчери можуть створювати тільки клієнтів та техніків. Спроба створити роль: ${role}`
+                });
+            }
+            
+            console.log(`👮 Диспетчер ${req.user.email} створює користувача з роллю: ${role}`);
         }
 
         // Перевірка чи email вже існує
@@ -1916,6 +1959,20 @@ app.put('/api/users/:id', authenticateToken, async (req, res) => {
         const userId = new ObjectId(req.params.id);
         const { email, password, firstName, lastName, role, status } = req.body;
 
+        // 🔒 ОБМЕЖЕННЯ ДЛЯ ДИСПЕТЧЕРА: не може змінювати роль на admin або dispatcher
+        if (req.user.role === 'dispatcher' && role) {
+            const allowedRoles = ['client', 'technician'];
+            
+            if (!allowedRoles.includes(role)) {
+                return res.status(403).json({
+                    success: false,
+                    error: `Доступ заборонено! Диспетчери можуть редагувати тільки клієнтів та техніків. Спроба встановити роль: ${role}`
+                });
+            }
+            
+            console.log(`👮 Диспетчер ${req.user.email} редагує користувача, роль: ${role}`);
+        }
+
         const updateData = {
             updatedAt: new Date()
         };
@@ -1971,6 +2028,29 @@ app.delete('/api/users/:id', authenticateToken, async (req, res) => {
                 success: false,
                 message: 'Ви не можете видалити свій власний акаунт'
             });
+        }
+        
+        // 🔒 ОБМЕЖЕННЯ ДЛЯ ДИСПЕТЧЕРА: не може видаляти адмінів та диспетчерів
+        if (req.user.role === 'dispatcher') {
+            // Спочатку знаходимо користувача, якого хочуть видалити
+            const userToDelete = await db.collection('users').findOne({ _id: userId });
+            
+            if (!userToDelete) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Користувача не знайдено'
+                });
+            }
+            
+            // Перевіряємо роль користувача, якого хочуть видалити
+            if (userToDelete.role === 'admin' || userToDelete.role === 'dispatcher') {
+                return res.status(403).json({
+                    success: false,
+                    message: `Доступ заборонено! Диспетчери не можуть видаляти адміністраторів та інших диспетчерів. Роль користувача: ${userToDelete.role}`
+                });
+            }
+            
+            console.log(`👮 Диспетчер ${req.user.email} видаляє користувача з роллю: ${userToDelete.role}`);
         }
         
         const result = await db.collection('users').deleteOne({ _id: userId });

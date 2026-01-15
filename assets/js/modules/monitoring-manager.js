@@ -110,9 +110,26 @@ class MonitoringManager {
      * Отримати техніків за замовчуванням (demo)
      */
     getDefaultTechnicians() {
+        // Використовуємо реальні облікові записи техніків з системи
         return [
-            { _id: '1', firstName: 'Técnico', lastName: 'Um', email: 'tech1@festlift.pt', status: 'online' },
-            { _id: '2', firstName: 'Técnico', lastName: 'Dois', email: 'tech2@festlift.pt', status: 'offline' }
+            { 
+                _id: 'tech1_default', 
+                firstName: 'João', 
+                lastName: 'Silva', 
+                email: 'tech1@festlift.pt', 
+                status: 'online',
+                phone: '+351 912 345 678',
+                specialty: 'Manutenção Preventiva'
+            },
+            { 
+                _id: 'tech2_default', 
+                firstName: 'Maria', 
+                lastName: 'Santos', 
+                email: 'tech2@festlift.pt', 
+                status: 'offline',
+                phone: '+351 912 345 679',
+                specialty: 'Reparação de Emergência'
+            }
         ];
     }
 

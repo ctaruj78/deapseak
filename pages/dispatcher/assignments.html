@@ -263,100 +263,105 @@
             </ul>
         </nav>
 
-        <!-- Бічна панель -->
+        <!-- Main Sidebar Container -->
         <aside class="main-sidebar sidebar-dark-primary elevation-4">
-            <a href="dashboard.html" class="brand-link text-center">
+            <!-- Brand Logo -->
+            <a href="dashboard.html" class="brand-link">
+                <i class="brand-image fas fa-headset"></i>
                 <span class="brand-text font-weight-light">Диспетчер</span>
             </a>
-            
+
+            <!-- Sidebar -->
             <div class="sidebar">
-                <div class="user-panel mt-3 pb-3 mb-3 d-flex">
-                    <div class="image">
-                        <img src="../../assets/img/avatars/dispatcher.png" class="img-circle elevation-2" alt="Dispatcher">
-                        <span class="status-indicator online"></span>
-                    </div>
-                    <div class="info">
-                        <a href="#" class="d-block" id="dispatcherName">Диспетчер</a>
-                        <small class="text-warning"><i class="fas fa-circle mr-1"></i> Online</small>
-                    </div>
-                </div>
-                
-                <!-- CANONICAL DISPATCHER SIDEBAR - Copy this to all dispatcher pages -->
-<nav class="mt-2">
-    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-        <!-- Dashboard -->
-        <li class="nav-item">
-            <a href="/pages/dispatcher/dashboard.html" class="nav-link">
-                <i class="nav-icon fas fa-tachometer-alt"></i>
-                <p>Дашборд</p>
-            </a>
-        </li>
-
-        <!-- Monitoring -->
-        <li class="nav-item">
-            <a href="/pages/dispatcher/monitoring.html" class="nav-link">
-                <i class="nav-icon fas fa-eye"></i>
-                <p>Моніторинг</p>
-            </a>
-        </li>
-
-        <!-- Assignments -->
-        <li class="nav-item">
-            <a href="/pages/dispatcher/assignments.html" class="nav-link active">
-                <i class="nav-icon fas fa-tasks"></i>
-                <p>Призначення</p>
-            </a>
-        </li>
-
-        <!-- Technicians -->
-        <li class="nav-item">
-            <a href="/pages/dispatcher/technicians.html" class="nav-link">
-                <i class="nav-icon fas fa-user-hard-hat"></i>
-                <p>Технічники</p>
-            </a>
-        </li>
-
-        <!-- Clients -->
-        <li class="nav-item">
-            <a href="/pages/dispatcher/clients.html" class="nav-link">
-                <i class="nav-icon fas fa-users"></i>
-                <p>Клієнти</p>
-            </a>
-        </li>
-
-        <!-- QR Management -->
-        <li class="nav-item">
-            <a href="/pages/dispatcher/qr-management.html" class="nav-link">
-                <i class="nav-icon fas fa-qrcode"></i>
-                <p>QR Система</p>
-            </a>
-        </li>
-
-        <!-- Reports -->
-        <li class="nav-item">
-            <a href="/pages/dispatcher/reports.html" class="nav-link">
-                <i class="nav-icon fas fa-chart-bar"></i>
-                <p>Звіти</p>
-            </a>
-        </li>
-
-        <li class="nav-item">
-            <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link">
-                <i class="nav-icon fas fa-magic"></i>
-                <p>AI Асистент</p>
-                <span class="badge badge-success right">Новинка</span>
-            </a>
-        </li>
-
-        <!-- Settings -->
-        <li class="nav-item">
-            <a href="/pages/dispatcher/settings.html" class="nav-link">
-                <i class="nav-icon fas fa-cogs"></i>
-                <p>Configurações</p>
-            </a>
-        </li>
-    </ul>
-</nav>
+                <!-- Sidebar Menu -->
+                <nav class="mt-2">
+                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                        <li class="nav-item">
+                            <a href="dashboard.html" class="nav-link">
+                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                                <p>Головна панель</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="monitoring.html" class="nav-link">
+                                <i class="nav-icon fas fa-desktop"></i>
+                                <p>Моніторинг</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="assignments.html" class="nav-link active">
+                                <i class="nav-icon fas fa-tasks"></i>
+                                <p>Призначення завдань</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="clients.html" class="nav-link">
+                                <i class="nav-icon fas fa-users"></i>
+                                <p>Клієнти</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="technicians.html" class="nav-link">
+                                <i class="nav-icon fas fa-user-hard-hat"></i>
+                                <p>Техніки</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="qr-management.html" class="nav-link">
+                                <i class="nav-icon fas fa-qrcode"></i>
+                                <p>QR-коди</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="calendar.html" class="nav-link">
+                                <i class="nav-icon fas fa-calendar-alt"></i>
+                                <p>Календар</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="reports.html" class="nav-link">
+                                <i class="nav-icon fas fa-chart-bar"></i>
+                                <p>Звіти</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="../ai-assistant/ai-assistant.html" class="nav-link">
+                                <i class="nav-icon fas fa-robot"></i>
+                                <p>AI Асистент</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="notifications.html" class="nav-link">
+                                <i class="nav-icon fas fa-bell"></i>
+                                <p>Сповіщення</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="support.html" class="nav-link">
+                                <i class="nav-icon fas fa-life-ring"></i>
+                                <p>Підтримка</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="settings.html" class="nav-link">
+                                <i class="nav-icon fas fa-cog"></i>
+                                <p>Налаштування</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="profile.html" class="nav-link">
+                                <i class="nav-icon fas fa-user"></i>
+                                <p>Профіль</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="../../pages/auth/login.html" class="nav-link" onclick="logout()">
+                                <i class="nav-icon fas fa-sign-out-alt"></i>
+                                <p>Вийти</p>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
             </div>
         </aside>
 
@@ -595,6 +600,314 @@
         </div>
     </div>
 
+    <!-- Модальне вікно перегляду деталей призначення -->
+    <div class="modal fade" id="viewAssignmentModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content" style="border-radius: 15px; overflow: hidden; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+                <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+                    <div>
+                        <h4 class="modal-title mb-0">
+                            <i class="fas fa-clipboard-list mr-2"></i>
+                            Деталі запиту <span id="modalRequestNumber" class="font-weight-bold"></span>
+                        </h4>
+                        <small id="modalRequestDate" class="text-white-50"></small>
+                    </div>
+                    <button type="button" class="close text-white" data-dismiss="modal">
+                        <span style="text-shadow: none; opacity: 1;">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body p-0">
+                    <!-- Статус та пріоритет -->
+                    <div class="p-4" style="background: linear-gradient(to right, #f8f9fa, #ffffff);">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-info-circle fa-2x text-primary mr-3"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Статус</small>
+                                        <span id="modalStatus" class="badge badge-info"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-flag fa-2x text-warning mr-3"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Пріоритет</small>
+                                        <span id="modalPriority" class="badge badge-warning"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-user-cog fa-2x text-success mr-3"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Технік</small>
+                                        <strong id="modalTechnician">Не призначено</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabs навігація -->
+                    <ul class="nav nav-tabs px-4" style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                        <li class="nav-item">
+                            <a class="nav-link active" data-toggle="tab" href="#tabDetails">
+                                <i class="fas fa-info-circle mr-1"></i> Опис проблеми
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-toggle="tab" href="#tabLocation">
+                                <i class="fas fa-map-marker-alt mr-1"></i> Локація
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-toggle="tab" href="#tabClient">
+                                <i class="fas fa-user mr-1"></i> Клієнт
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-toggle="tab" href="#tabHistory">
+                                <i class="fas fa-history mr-1"></i> Історія
+                            </a>
+                        </li>
+                    </ul>
+
+                    <!-- Tab контент -->
+                    <div class="tab-content p-4">
+                        <!-- Опис проблеми -->
+                        <div class="tab-pane fade show active" id="tabDetails">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title text-primary">
+                                        <i class="fas fa-wrench mr-2"></i>Опис проблеми
+                                    </h5>
+                                    <p id="modalDescription" class="card-text" style="font-size: 1.1rem; line-height: 1.8;"></p>
+                                    
+                                    <div class="mt-4" id="modalNotesSection">
+                                        <h6 class="text-muted">
+                                            <i class="fas fa-sticky-note mr-2"></i>Додаткові примітки
+                                        </h6>
+                                        <p id="modalNotes" class="text-secondary"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Локація -->
+                        <div class="tab-pane fade" id="tabLocation">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title text-success">
+                                        <i class="fas fa-building mr-2"></i>Інформація про ліфт
+                                    </h5>
+                                    <div class="row mt-3">
+                                        <div class="col-md-12">
+                                            <div class="info-box bg-light mb-3">
+                                                <i class="fas fa-map-marker-alt text-danger"></i>
+                                                <div class="flex-grow-1">
+                                                    <small class="text-muted d-block">Адреса</small>
+                                                    <strong id="modalAddress"></strong>
+                                                </div>
+                                                <button class="btn btn-sm btn-primary ml-2" onclick="assignmentManager.openInMaps()">
+                                                    <i class="fas fa-map mr-1"></i>Карта
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="info-box bg-light">
+                                                <i class="fas fa-hashtag text-info"></i>
+                                                <div>
+                                                    <small class="text-muted d-block">ID Ліфта</small>
+                                                    <code id="modalLiftId"></code>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="info-box bg-light">
+                                                <i class="fas fa-route text-warning"></i>
+                                                <div>
+                                                    <small class="text-muted d-block">Координати</small>
+                                                    <code id="modalCoordinates">—</code>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Карта -->
+                                    <div class="mt-4">
+                                        <h6 class="text-muted mb-3">
+                                            <i class="fas fa-map mr-2"></i>Карта локації
+                                        </h6>
+                                        <div id="assignmentMap" style="width: 100%; height: 300px; border-radius: 10px; overflow: hidden; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
+                                            <iframe id="mapIframe" width="100%" height="100%" frameborder="0" style="border:0" allowfullscreen></iframe>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Найближчі техніки -->
+                                    <div class="mt-4">
+                                        <h6 class="text-muted mb-3">
+                                            <i class="fas fa-users-cog mr-2"></i>Найближчі техніки
+                                        </h6>
+                                        <div id="nearestTechnicians" class="row">
+                                            <!-- Техніки будуть додані динамічно -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Клієнт -->
+                        <div class="tab-pane fade" id="tabClient">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title text-info">
+                                        <i class="fas fa-user-circle mr-2"></i>Контактна інформація
+                                    </h5>
+                                    <div class="row mt-3">
+                                        <div class="col-md-4">
+                                            <div class="text-center p-3">
+                                                <i class="fas fa-user-circle fa-4x text-primary mb-3"></i>
+                                                <h6 id="modalClientName" class="font-weight-bold"></h6>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <div class="info-box bg-light mb-3">
+                                                <i class="fas fa-envelope text-primary"></i>
+                                                <div>
+                                                    <small class="text-muted d-block">Email</small>
+                                                    <a id="modalClientEmail" href=""></a>
+                                                </div>
+                                            </div>
+                                            <div class="info-box bg-light">
+                                                <i class="fas fa-phone text-success"></i>
+                                                <div>
+                                                    <small class="text-muted d-block">Телефон</small>
+                                                    <a id="modalClientPhone" href=""></a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Історія -->
+                        <div class="tab-pane fade" id="tabHistory">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title text-warning">
+                                        <i class="fas fa-clock mr-2"></i>Хронологія подій
+                                    </h5>
+                                    <div id="modalTimeline" class="timeline mt-4">
+                                        <!-- Timeline items will be added here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="background: #f8f9fa; border-top: 2px solid #dee2e6;">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times mr-2"></i>Закрити
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="assignmentManager.editAssignment()">
+                        <i class="fas fa-edit mr-2"></i>Редагувати
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="assignmentManager.reassignFromModal()">
+                        <i class="fas fa-user-check mr-2"></i>Перепризначити
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .info-box {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        .info-box:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .info-box i {
+            font-size: 24px;
+            margin-right: 15px;
+        }
+        .info-box .flex-grow-1 {
+            flex: 1;
+        }
+        .nav-tabs .nav-link {
+            color: #6c757d;
+            border: none;
+            padding: 12px 20px;
+            transition: all 0.3s;
+        }
+        .nav-tabs .nav-link:hover {
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+        .nav-tabs .nav-link.active {
+            color: #667eea;
+            background: white;
+            border-bottom: 3px solid #667eea;
+            font-weight: 600;
+        }
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(to bottom, #667eea, #764ba2);
+        }
+        .timeline-item {
+            position: relative;
+            padding: 15px;
+            margin-bottom: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        .timeline-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -33px;
+            top: 20px;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #667eea;
+            border: 3px solid white;
+            box-shadow: 0 0 0 3px #667eea;
+        }
+        .tech-card {
+            border: 2px solid transparent !important;
+        }
+        .tech-card:hover {
+            border-color: #667eea !important;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3) !important;
+        }
+        #assignmentMap {
+            border: 2px solid #e9ecef;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+    </style>
+
     <!-- Модальне вікно масового призначення -->
     <div class="modal fade" id="bulkAssignmentModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-xl" role="document">
@@ -710,6 +1023,8 @@
             
             // Призначити заявку технічному фахівцю
             async assignRequest(requestId, technicianId) {
+                console.log('📋 Призначаємо запит:', { requestId, technicianId });
+                
                 try {
                     const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/assign`, {
                         method: 'POST',
@@ -724,6 +1039,7 @@
                         throw new Error(error.message || 'Помилка призначення');
                     }
                     
+                    console.log('✅ Запит успішно призначено');
                     await this.loadAssignments();
                     
                     if (typeof toastr !== 'undefined') {
@@ -733,10 +1049,8 @@
                     }
                     
                 } catch (error) {
-                    console.error('Помилка призначення:', error);
+                    console.error('❌ Помилка призначення:', error);
                     alert('Не вдалося призначити заявку: ' + error.message);
-                }
-            }
                 }
             }
             
@@ -771,21 +1085,84 @@
                         // API v2 повертає: { success: true, data: { requests: [...] } }
                         const apiRequests = result.data.requests || result.data;
                         
+                        console.log('📊 Завантажено запитів:', apiRequests.length);
+                        if (apiRequests.length > 0) {
+                            console.log('🔍 Приклад запиту:', apiRequests[0]);
+                        }
+                        
                         // Конвертуємо формат API в формат UI
-                        const assignments = apiRequests.map(req => ({
-                            id: req._id,
-                            liftId: req.lift?.municipalNumber || req.lift?._id || 'Невідомо',
-                            liftAddress: req.lift?.address ? 
-                                `${req.lift.address.street}, ${req.lift.address.city}` : 
-                                'Адреса невідома',
-                            description: req.description,
-                            priority: req.priority || 'medium',
-                            status: req.status || 'new',
-                            createdAt: req.createdAt,
-                            assignedTo: req.assignedTo?._id,
-                            assignedToName: req.assignedTo ? 
-                                `${req.assignedTo.firstName} ${req.assignedTo.lastName}` : null
-                        }));
+                        const assignments = apiRequests.map(req => {
+                            // Витягуємо дані ліфта
+                            let liftAddress = 'Адреса невідома';
+                            let liftId = 'Невідомо';
+                            
+                            // Перевіряємо різні варіанти структури даних
+                            const liftData = req.lift || req.liftId || req.elevator;
+                            
+                            if (liftData) {
+                                // Якщо lift це ObjectId string, а не об'єкт
+                                if (typeof liftData === 'string') {
+                                    liftId = liftData;
+                                    // Спробуємо взяти адресу з інших полів
+                                    if (req.liftAddress) liftAddress = req.liftAddress;
+                                    else if (req.address) liftAddress = req.address;
+                                } else {
+                                    // Lift це об'єкт з даними
+                                    // Пріоритет: address об'єкт > addressLine > municipalNumber
+                                    if (liftData.address) {
+                                        if (typeof liftData.address === 'string') {
+                                            liftAddress = liftData.address;
+                                        } else if (liftData.address.street && liftData.address.city) {
+                                            liftAddress = `${liftData.address.street}, ${liftData.address.city}`;
+                                        } else if (liftData.address.street) {
+                                            liftAddress = liftData.address.street;
+                                        }
+                                    } else if (liftData.addressLine) {
+                                        liftAddress = liftData.addressLine;
+                                    } else if (liftData.location) {
+                                        liftAddress = liftData.location;
+                                    }
+                                    
+                                    liftId = liftData.municipalNumber || liftData.name || liftData._id || 'Невідомо';
+                                }
+                            }
+                            
+                            // Витягуємо дані техніка
+                            let assignedToName = 'Не призначено';
+                            const techData = req.assignedTo || req.technician || req.assignedTechnician;
+                            
+                            if (techData) {
+                                // Якщо assignedTo це ObjectId string, а не об'єкт
+                                if (typeof techData === 'string') {
+                                    assignedToName = 'Технік (ID: ' + techData.substring(0, 8) + '...)';
+                                } else {
+                                    const firstName = techData.firstName || '';
+                                    const lastName = techData.lastName || '';
+                                    const fullName = `${firstName} ${lastName}`.trim();
+                                    assignedToName = fullName || techData.name || 'Технік';
+                                }
+                            }
+                            
+                            return {
+                                _id: req._id,
+                                id: req._id,
+                                liftId: liftId,
+                                liftAddress: liftAddress,
+                                description: req.description || req.title || req.issue || 'Без опису',
+                                priority: req.priority || 'medium',
+                                status: req.status || 'new',
+                                createdAt: req.createdAt || req.date,
+                                deadline: req.deadline || req.dueDate,
+                                assignedTo: (techData && typeof techData === 'object') ? techData._id : techData,
+                                assignedToName: assignedToName,
+                                client: req.client || req.requester,
+                                // Зберігаємо оригінальний об'єкт для дебагу
+                                _original: req
+                            };
+                        });
+                        
+                        // ✅ ВАЖЛИВО: Зберігаємо assignments для використання в viewAssignment()
+                        this.assignments = assignments;
                         
                         this.displayAssignments(assignments);
                         this.updateStats(assignments);
@@ -851,7 +1228,7 @@
                             </div>
                             
                             <div class="assignment-actions">
-                                <button class="btn btn-sm btn-info" onclick="dispatcherManager.viewAssignment('${assignmentId}')">
+                                <button class="btn btn-sm btn-info" onclick="event.preventDefault(); dispatcherManager.viewAssignment('${assignmentId}'); return false;">
                                     <i class="fas fa-eye"></i> Переглянути
                                 </button>
                                 <div class="dropdown">
@@ -861,7 +1238,7 @@
                                     <div class="dropdown-menu">
                                         ${this.technicians.filter(t => t.active).map(tech => {
                                             const techId = window.safeId ? window.safeId(tech) : ((tech._id && tech._id.toString) ? tech._id.toString() : (tech._id || tech.id || ''));
-                                            return `<a class="dropdown-item" href="#" onclick="dispatcherManager.assignRequest('${assignmentId}', '${techId}')">
+                                            return `<a class="dropdown-item" href="#" onclick="event.preventDefault(); dispatcherManager.assignRequest('${assignmentId}', '${techId}'); return false;">
                                                 ${tech.name}
                                             </a>`;
                                         }).join('')}
@@ -909,12 +1286,420 @@
             }
             
             viewAssignment(requestId) {
-                const request = this.integration.getRequest(requestId);
-                if (request) {
-                    // Логіка для відображення деталей заявки в модальному вікні
-                    // Тут можна додати модальне вікно для перегляду деталей
-                    console.log('Viewing assignment:', request);
+                console.log('🔍 Переглядаємо запит:', requestId);
+                
+                // Знайти запит в завантажених даних
+                const assignment = this.assignments.find(a => a.id === requestId);
+                
+                if (!assignment) {
+                    console.warn('⚠️ Запит не знайдено:', requestId);
+                    alert(`Запит #${requestId} не знайдено`);
+                    return;
                 }
+                
+                console.log('✅ Знайдено запит:', assignment);
+                
+                // Заповнити модальне вікно даними
+                $('#modalRequestNumber').text('#' + requestId);
+                $('#modalRequestDate').text(new Date(assignment.createdAt).toLocaleString('uk-UA'));
+                
+                // Статус з кольорами
+                const statusColors = {
+                    'new': 'info',
+                    'assigned': 'primary', 
+                    'in_progress': 'warning',
+                    'completed': 'success',
+                    'cancelled': 'danger'
+                };
+                const statusTexts = {
+                    'new': 'Нова',
+                    'assigned': 'Призначено',
+                    'in_progress': 'В роботі',
+                    'completed': 'Завершено',
+                    'cancelled': 'Скасовано'
+                };
+                $('#modalStatus')
+                    .removeClass('badge-info badge-primary badge-warning badge-success badge-danger')
+                    .addClass('badge-' + (statusColors[assignment.status] || 'secondary'))
+                    .text(statusTexts[assignment.status] || assignment.status);
+                
+                // Пріоритет з кольорами
+                const priorityColors = {
+                    'high': 'danger',
+                    'medium': 'warning',
+                    'low': 'success'
+                };
+                const priorityTexts = {
+                    'high': 'Високий',
+                    'medium': 'Середній',
+                    'low': 'Низький'
+                };
+                $('#modalPriority')
+                    .removeClass('badge-danger badge-warning badge-success')
+                    .addClass('badge-' + (priorityColors[assignment.priority] || 'secondary'))
+                    .text(priorityTexts[assignment.priority] || assignment.priority);
+                
+                // Технік
+                $('#modalTechnician').text(assignment.assignedToName || 'Не призначено');
+                
+                // Опис
+                $('#modalDescription').text(assignment.description || 'Опис відсутній');
+                
+                // Примітки
+                if (assignment.notes) {
+                    $('#modalNotesSection').show();
+                    $('#modalNotes').text(assignment.notes);
+                } else {
+                    $('#modalNotesSection').hide();
+                }
+                
+                // Адреса
+                $('#modalAddress').text(assignment.liftAddress || 'Адреса невідома');
+                $('#modalLiftId').text(assignment.liftId || 'ID невідомий');
+                
+                // Клієнт
+                if (assignment.client) {
+                    $('#modalClientName').text(assignment.client.name || 'Ім\'я невідоме');
+                    const clientEmail = assignment.client.email || '';
+                    $('#modalClientEmail')
+                        .text(clientEmail)
+                        .attr('href', 'mailto:' + clientEmail);
+                    const clientPhone = assignment.client.phone || '';
+                    $('#modalClientPhone')
+                        .text(clientPhone)
+                        .attr('href', 'tel:' + clientPhone);
+                } else {
+                    $('#modalClientName').text('Інформація відсутня');
+                    $('#modalClientEmail').text('—').attr('href', '#');
+                    $('#modalClientPhone').text('—').attr('href', '#');
+                }
+                
+                // Історія (timeline)
+                const timeline = $('#modalTimeline');
+                timeline.empty();
+                
+                const events = [
+                    {
+                        icon: 'fas fa-plus-circle',
+                        color: 'primary',
+                        title: 'Запит створено',
+                        date: assignment.createdAt,
+                        description: 'Клієнт подав запит на обслуговування'
+                    }
+                ];
+                
+                if (assignment.assignedAt) {
+                    events.push({
+                        icon: 'fas fa-user-check',
+                        color: 'success',
+                        title: 'Призначено техніка',
+                        date: assignment.assignedAt,
+                        description: `Призначено: ${assignment.assignedToName}`
+                    });
+                }
+                
+                if (assignment.startedAt) {
+                    events.push({
+                        icon: 'fas fa-play-circle',
+                        color: 'warning',
+                        title: 'Розпочато роботу',
+                        date: assignment.startedAt,
+                        description: 'Технік розпочав виконання'
+                    });
+                }
+                
+                if (assignment.completedAt) {
+                    events.push({
+                        icon: 'fas fa-check-circle',
+                        color: 'success',
+                        title: 'Завершено',
+                        date: assignment.completedAt,
+                        description: 'Роботу успішно завершено'
+                    });
+                }
+                
+                events.forEach(event => {
+                    const date = new Date(event.date);
+                    timeline.append(`
+                        <div class="timeline-item">
+                            <i class="${event.icon} text-${event.color}" style="position: absolute; left: -40px; top: 18px; font-size: 20px;"></i>
+                            <div>
+                                <h6 class="mb-1">${event.title}</h6>
+                                <small class="text-muted d-block mb-2">
+                                    <i class="far fa-clock mr-1"></i>${date.toLocaleString('uk-UA')}
+                                </small>
+                                <p class="mb-0 text-secondary">${event.description}</p>
+                            </div>
+                        </div>
+                    `);
+                });
+                
+                // Зберегти ID та дані для можливості редагування
+                this.currentViewingId = requestId;
+                this.currentViewingAssignment = assignment;
+                
+                // Завантажити карту
+                this.loadMap(assignment.liftAddress);
+                
+                // Завантажити найближчих техніків
+                this.loadNearestTechnicians(assignment.liftAddress);
+                
+                // Показати модальне вікно
+                $('#viewAssignmentModal').modal('show');
+            }
+            
+            // Відкрити адресу в Google Maps
+            openInMaps() {
+                if (!this.currentViewingAssignment) return;
+                
+                const address = this.currentViewingAssignment.liftAddress;
+                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+                window.open(mapsUrl, '_blank');
+            }
+            
+            // Завантажити карту
+            loadMap(address) {
+                if (!address || address === 'Адреса невідома') {
+                    $('#mapIframe').hide();
+                    $('#assignmentMap').html('<div class="text-center text-muted"><i class="fas fa-map-marked-alt fa-3x mb-2"></i><br>Адреса не вказана</div>');
+                    return;
+                }
+                
+                // Використовуємо Google Maps Embed API
+                const encodedAddress = encodeURIComponent(address);
+                const mapUrl = `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodedAddress}&zoom=15`;
+                
+                $('#mapIframe')
+                    .attr('src', mapUrl)
+                    .show();
+                
+                // Оновлюємо координати (демо)
+                $('#modalCoordinates').text(`${address.substring(0, 30)}...`);
+            }
+            
+            // Завантажити найближчих техніків
+            async loadNearestTechnicians(address) {
+                const container = $('#nearestTechnicians');
+                container.html('<div class="col-12 text-center"><i class="fas fa-spinner fa-spin"></i> Завантаження...</div>');
+                
+                try {
+                    // Отримуємо список всіх техніків
+                    const techs = this.technicians || [];
+                    
+                    if (techs.length === 0) {
+                        container.html('<div class="col-12 text-center text-muted">Немає доступних техніків</div>');
+                        return;
+                    }
+                    
+                    // В реальному застосунку тут була б геолокація
+                    // Поки що сортуємо за доступністю
+                    const sortedTechs = techs
+                        .filter(t => t.active)
+                        .slice(0, 3); // Показуємо топ 3
+                    
+                    container.empty();
+                    
+                    sortedTechs.forEach((tech, index) => {
+                        const distance = ((index + 1) * 1.5).toFixed(1); // Демо відстань
+                        const eta = (index + 1) * 15; // Демо час прибуття
+                        
+                        const techCard = `
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100 border-0 shadow-sm tech-card" style="cursor: pointer; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                                    <div class="card-body text-center">
+                                        <div class="mb-2">
+                                            <i class="fas fa-user-circle fa-3x text-primary"></i>
+                                        </div>
+                                        <h6 class="font-weight-bold mb-1">${tech.name}</h6>
+                                        <small class="text-muted d-block mb-2">${tech.specialty || 'Технік'}</small>
+                                        
+                                        <div class="d-flex justify-content-around mb-3">
+                                            <div>
+                                                <i class="fas fa-road text-info"></i>
+                                                <small class="d-block">${distance} км</small>
+                                            </div>
+                                            <div>
+                                                <i class="fas fa-clock text-warning"></i>
+                                                <small class="d-block">${eta} хв</small>
+                                            </div>
+                                        </div>
+                                        
+                                        <button class="btn btn-sm btn-primary btn-block" onclick="assignmentManager.quickAssign('${tech._id || tech.id}'); event.stopPropagation();">
+                                            <i class="fas fa-user-check mr-1"></i>Призначити
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        container.append(techCard);
+                    });
+                    
+                    if (sortedTechs.length === 0) {
+                        container.html('<div class="col-12 text-center text-muted">Немає доступних техніків поблизу</div>');
+                    }
+                    
+                } catch (error) {
+                    console.error('Помилка завантаження техніків:', error);
+                    container.html('<div class="col-12 text-center text-danger">Помилка завантаження</div>');
+                }
+            }
+            
+            // Швидке призначення техніка
+            async quickAssign(technicianId) {
+                if (!this.currentViewingId) {
+                    alert('Помилка: ID запиту не знайдено');
+                    return;
+                }
+                
+                console.log('⚡ Швидке призначення:', { requestId: this.currentViewingId, technicianId });
+                
+                if (confirm('Призначити цього техніка на запит?')) {
+                    await this.assignRequest(this.currentViewingId, technicianId);
+                    
+                    // Закрити модальне вікно після призначення
+                    setTimeout(() => {
+                        $('#viewAssignmentModal').modal('hide');
+                    }, 1500);
+                }
+            }
+            
+            // Редагувати призначення
+            editAssignment() {
+                console.log('✏️ Редагуємо призначення:', this.currentViewingId);
+                
+                if (!this.currentViewingId || !this.currentViewingAssignment) {
+                    alert('Помилка: дані запиту не знайдено');
+                    return;
+                }
+                
+                // Закрити модальне вікно перегляду
+                $('#viewAssignmentModal').modal('hide');
+                
+                // Відкрити форму редагування (можна створити окреме модальне вікно)
+                const assignment = this.currentViewingAssignment;
+                
+                const newDescription = prompt('Новий опис проблеми:', assignment.description);
+                if (newDescription && newDescription !== assignment.description) {
+                    this.updateAssignmentDescription(this.currentViewingId, newDescription);
+                }
+            }
+            
+            // Оновити опис призначення
+            async updateAssignmentDescription(requestId, newDescription) {
+                try {
+                    const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}`, {
+                        method: 'PATCH',
+                        body: JSON.stringify({ description: newDescription })
+                    });
+                    
+                    if (response && response.ok) {
+                        alert('Опис успішно оновлено!');
+                        await this.loadAssignments();
+                    } else {
+                        throw new Error('Помилка оновлення');
+                    }
+                } catch (error) {
+                    console.error('Помилка оновлення опису:', error);
+                    alert('Не вдалося оновити опис: ' + error.message);
+                }
+            }
+            
+            // Перепризначити техніка з модального вікна
+            async reassignFromModal() {
+                console.log('🔄 Перепризначення техніка для запиту:', this.currentViewingId);
+                
+                if (!this.currentViewingId) {
+                    alert('Помилка: ID запиту не знайдено');
+                    return;
+                }
+                
+                // Закрити модальне вікно перегляду
+                $('#viewAssignmentModal').modal('hide');
+                
+                // Показати модальне вікно вибору техніка
+                await this.showTechnicianSelectModal();
+            }
+            
+            // Показати модальне вікно вибору техніка
+            async showTechnicianSelectModal() {
+                const techs = this.technicians || [];
+                
+                if (techs.length === 0) {
+                    alert('Немає доступних техніків');
+                    return;
+                }
+                
+                let techOptions = '<option value="">Оберіть техніка...</option>';
+                techs.forEach(tech => {
+                    const status = tech.active ? '✓ Доступний' : '✗ Недоступний';
+                    techOptions += `<option value="${tech._id || tech.id}" ${!tech.active ? 'disabled' : ''}>${tech.name} (${status})</option>`;
+                });
+                
+                const modalContent = `
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">
+                            <i class="fas fa-user-check mr-2"></i>Вибір техніка
+                        </h5>
+                        <button type="button" class="close text-white" data-dismiss="modal">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="technicianSelect">Оберіть техніка для призначення:</label>
+                            <select id="technicianSelect" class="form-control form-control-lg">
+                                ${techOptions}
+                            </select>
+                        </div>
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            Оберіть доступного техніка зі списку
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                            <i class="fas fa-times mr-2"></i>Скасувати
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="assignmentManager.confirmReassign()">
+                            <i class="fas fa-check mr-2"></i>Призначити
+                        </button>
+                    </div>
+                `;
+                
+                // Створити або оновити модальне вікно
+                let modal = $('#reassignModal');
+                if (modal.length === 0) {
+                    $('body').append(`
+                        <div class="modal fade" id="reassignModal" tabindex="-1" role="dialog">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content" id="reassignModalContent"></div>
+                            </div>
+                        </div>
+                    `);
+                    modal = $('#reassignModal');
+                }
+                
+                $('#reassignModalContent').html(modalContent);
+                modal.modal('show');
+            }
+            
+            // Підтвердити перепризначення
+            async confirmReassign() {
+                const techId = $('#technicianSelect').val();
+                
+                if (!techId) {
+                    alert('Оберіть техніка');
+                    return;
+                }
+                
+                console.log('✅ Підтверджуємо перепризначення:', { requestId: this.currentViewingId, techId });
+                
+                // Закрити модальне вікно вибору
+                $('#reassignModal').modal('hide');
+                
+                // Призначити техніка
+                await this.assignRequest(this.currentViewingId, techId);
             }
             
             async approveRequest(requestId) {
@@ -1246,6 +2031,96 @@
                     } catch (error) {
                         console.error('Помилка оновлення статусу:', error);
                         throw error;
+                    }
+                },
+                
+                // 🆕 ДОДАНІ МЕТОДИ ДЛЯ МОДАЛЬНОГО ВІКНА
+                
+                // Редагувати призначення
+                editAssignment: function() {
+                    console.log('✏️ Редагуємо призначення через assignmentManager');
+                    
+                    if (window.dispatcherManager) {
+                        window.dispatcherManager.editAssignment();
+                    } else {
+                        alert('Помилка: менеджер не ініціалізовано');
+                    }
+                },
+                
+                // Перепризначити з модального вікна
+                reassignFromModal: async function() {
+                    console.log('🔄 Перепризначення через assignmentManager');
+                    
+                    if (window.dispatcherManager) {
+                        await window.dispatcherManager.reassignFromModal();
+                    } else {
+                        alert('Помилка: менеджер не ініціалізовано');
+                    }
+                },
+                
+                // Підтвердити перепризначення
+                confirmReassign: async function() {
+                    console.log('✅ Підтвердження перепризначення через assignmentManager');
+                    
+                    if (window.dispatcherManager) {
+                        await window.dispatcherManager.confirmReassign();
+                    } else {
+                        alert('Помилка: менеджер не ініціалізовано');
+                    }
+                },
+                
+                // Відкрити в Google Maps
+                openInMaps: function() {
+                    console.log('🗺️ Відкриття карти через assignmentManager');
+                    
+                    if (window.dispatcherManager) {
+                        window.dispatcherManager.openInMaps();
+                    } else {
+                        alert('Помилка: менеджер не ініціалізовано');
+                    }
+                },
+                
+                // Швидке призначення
+                quickAssign: async function(technicianId) {
+                    console.log('⚡ Швидке призначення через assignmentManager:', technicianId);
+                    
+                    if (window.dispatcherManager) {
+                        await window.dispatcherManager.quickAssign(technicianId);
+                    } else {
+                        alert('Помилка: менеджер не ініціалізовано');
+                    }
+                },
+                
+                // Переглянути призначення
+                viewAssignment: function(requestId) {
+                    console.log('👁️ Перегляд призначення через assignmentManager:', requestId);
+                    
+                    if (window.dispatcherManager) {
+                        window.dispatcherManager.viewAssignment(requestId);
+                    } else {
+                        alert('Помилка: менеджер не ініціалізовано');
+                    }
+                },
+                
+                // Призначити запит
+                assignRequest: async function(requestId, technicianId) {
+                    console.log('👨‍🔧 Призначення запиту через assignmentManager:', { requestId, technicianId });
+                    
+                    if (window.dispatcherManager) {
+                        await window.dispatcherManager.assignRequest(requestId, technicianId);
+                    } else {
+                        alert('Помилка: менеджер не ініціалізовано');
+                    }
+                },
+                
+                // Завантажити призначення
+                loadAssignments: async function() {
+                    console.log('🔄 Завантаження призначень через assignmentManager');
+                    
+                    if (window.dispatcherManager) {
+                        await window.dispatcherManager.loadAssignments();
+                    } else {
+                        alert('Помилка: менеджер не ініціалізовано');
                     }
                 }
             };

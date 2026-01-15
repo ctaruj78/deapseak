@@ -1,0 +1,175 @@
+<!-- Main Sidebar Container -->
+<aside class="main-sidebar sidebar-dark-primary elevation-4">
+    <!-- Brand Logo -->
+    <a href="dashboard.html" class="brand-link">
+        <i class="brand-image fas fa-headset"></i>
+        <span class="brand-text font-weight-light">Диспетчер</span>
+    </a>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <!-- User Panel -->
+        <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+            <div class="image">
+                <i class="fas fa-user-circle fa-2x text-white"></i>
+            </div>
+            <div class="info">
+                <a href="profile.html" class="d-block" id="sidebarUserName">Диспетчер</a>
+                <small class="text-muted"><i class="fas fa-circle text-success"></i> Online</small>
+            </div>
+        </div>
+
+        <!-- Sidebar Menu -->
+        <nav class="mt-2">
+            <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                <!-- Dashboard -->
+                <li class="nav-item">
+                    <a href="dashboard.html" class="nav-link">
+                        <i class="nav-icon fas fa-tachometer-alt"></i>
+                        <p>Головна панель</p>
+                    </a>
+                </li>
+
+                <!-- Monitoring -->
+                <li class="nav-item">
+                    <a href="monitoring.html" class="nav-link">
+                        <i class="nav-icon fas fa-desktop"></i>
+                        <p>Моніторинг</p>
+                    </a>
+                </li>
+
+                <!-- Assignments -->
+                <li class="nav-item">
+                    <a href="assignments.html" class="nav-link">
+                        <i class="nav-icon fas fa-tasks"></i>
+                        <p>Призначення завдань</p>
+                    </a>
+                </li>
+
+                <!-- Clients -->
+                <li class="nav-item">
+                    <a href="clients.html" class="nav-link">
+                        <i class="nav-icon fas fa-users"></i>
+                        <p>Клієнти</p>
+                    </a>
+                </li>
+
+                <!-- Technicians -->
+                <li class="nav-item">
+                    <a href="technicians.html" class="nav-link">
+                        <i class="nav-icon fas fa-user-hard-hat"></i>
+                        <p>Техніки</p>
+                    </a>
+                </li>
+
+                <!-- QR Management -->
+                <li class="nav-item">
+                    <a href="qr-management.html" class="nav-link">
+                        <i class="nav-icon fas fa-qrcode"></i>
+                        <p>QR-коди</p>
+                    </a>
+                </li>
+
+                <!-- Calendar -->
+                <li class="nav-item">
+                    <a href="calendar.html" class="nav-link">
+                        <i class="nav-icon fas fa-calendar-alt"></i>
+                        <p>Календар</p>
+                    </a>
+                </li>
+
+                <!-- Reports -->
+                <li class="nav-item">
+                    <a href="reports.html" class="nav-link">
+                        <i class="nav-icon fas fa-chart-bar"></i>
+                        <p>Звіти</p>
+                    </a>
+                </li>
+
+                <!-- AI Assistant -->
+                <li class="nav-item">
+                    <a href="../ai-assistant/ai-assistant.html" class="nav-link">
+                        <i class="nav-icon fas fa-robot"></i>
+                        <p>AI Асистент</p>
+                    </a>
+                </li>
+
+                <!-- Notifications -->
+                <li class="nav-item">
+                    <a href="notifications.html" class="nav-link">
+                        <i class="nav-icon fas fa-bell"></i>
+                        <p>Сповіщення</p>
+                    </a>
+                </li>
+
+                <!-- Support -->
+                <li class="nav-item">
+                    <a href="support.html" class="nav-link">
+                        <i class="nav-icon fas fa-life-ring"></i>
+                        <p>Підтримка</p>
+                    </a>
+                </li>
+
+                <!-- Settings -->
+                <li class="nav-item">
+                    <a href="settings.html" class="nav-link">
+                        <i class="nav-icon fas fa-cog"></i>
+                        <p>Налаштування</p>
+                    </a>
+                </li>
+
+                <!-- Profile -->
+                <li class="nav-item">
+                    <a href="profile.html" class="nav-link">
+                        <i class="nav-icon fas fa-user"></i>
+                        <p>Профіль</p>
+                    </a>
+                </li>
+
+                <!-- Logout -->
+                <li class="nav-item">
+                    <a href="../../pages/auth/login.html" class="nav-link" onclick="logout()">
+                        <i class="nav-icon fas fa-sign-out-alt"></i>
+                        <p>Вийти</p>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</aside>
+
+<script>
+// Встановлення активного пункту меню
+document.addEventListener('DOMContentLoaded', function() {
+    const currentPage = window.location.pathname.split('/').pop();
+    const navLinks = document.querySelectorAll('.nav-sidebar .nav-link');
+    
+    navLinks.forEach(link => {
+        const href = link.getAttribute('href');
+        if (href && href.includes(currentPage)) {
+            link.classList.add('active');
+            
+            // Якщо це submenu - відкрити parent
+            const parentItem = link.closest('.nav-treeview')?.closest('.nav-item');
+            if (parentItem) {
+                parentItem.classList.add('menu-open');
+                parentItem.querySelector('.nav-link')?.classList.add('active');
+            }
+        }
+    });
+
+    // Завантаження імені користувача
+    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    const userNameEl = document.getElementById('sidebarUserName');
+    if (userNameEl && userData.firstName) {
+        userNameEl.textContent = `${userData.firstName} ${userData.lastName || ''}`.trim();
+    }
+});
+
+// Функція logout
+function logout() {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userData');
+    window.location.href = '../../pages/auth/login.html';
+}
+</script>
