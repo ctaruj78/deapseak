@@ -112,4 +112,13 @@
         getSettings: getStoredSettings
     };
     
+    // 🔍 Завантажуємо діагностичний модуль (тільки в dev режимі)
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.includes('codespaces')) {
+        const debugScript = document.createElement('script');
+        debugScript.src = '/assets/js/debug-user-role.js';
+        debugScript.async = true;
+        document.head.appendChild(debugScript);
+        console.log('🔍 Debug user role module loaded. Use: debugUserRole()');
+    }
+    
 })();
