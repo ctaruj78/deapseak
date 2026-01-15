@@ -422,6 +422,13 @@
                 return;
             }
 
+            // Перевірка наявності jQuery modal plugin
+            if (typeof $.fn.modal === 'undefined') {
+                console.error('❌ Bootstrap modal plugin не завантажений!');
+                showError('Помилка завантаження компонентів. Спробуйте оновити сторінку.');
+                return;
+            }
+
             loadLifts();
             setupEventListeners();
         });
@@ -625,8 +632,8 @@
             document.getElementById('modalTitle').textContent = 'Додати ліфт';
             document.getElementById('liftForm').reset();
             document.getElementById('liftId').value = '';
-            const modal = new bootstrap.Modal(document.getElementById('liftModal'));
-            modal.show();
+            // Use jQuery API which is guaranteed to work
+            $('#liftModal').modal('show');
         }
 
         // Редагувати ліфт
@@ -652,8 +659,8 @@
             document.getElementById('speed').value = currentLift.speed || '';
             document.getElementById('notes').value = currentLift.notes || '';
 
-            const modal = new bootstrap.Modal(document.getElementById('liftModal'));
-            modal.show();
+            // Use jQuery API which is guaranteed to work
+            $('#liftModal').modal('show');
         }
 
         // Зберегти ліфт
@@ -698,8 +705,8 @@
                     throw new Error(error.message || 'Помилка збереження');
                 }
 
-                const modal = bootstrap.Modal.getInstance(document.getElementById('liftModal'));
-                if (modal) modal.hide();
+                // Use jQuery API to hide modal
+                $('#liftModal').modal('hide');
                 showSuccess(liftId ? 'Ліфт оновлено' : 'Ліфт додано');
                 loadLifts();
 
