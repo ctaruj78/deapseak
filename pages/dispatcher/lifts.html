@@ -430,26 +430,59 @@
         async function loadLifts() {
             try {
                 const token = localStorage.getItem('authToken');
+                console.log('🔄 Завантаження ліфтів...');
+                console.log('🔑 Token:', token ? 'Присутній' : 'Відсутній');
+                
                 const response = await fetch(`${API_URL}/api/lifts`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
                 });
 
+                console.log('📡 Response status:', response.status);
+                console.log('📡 Response content-type:', response.headers.get('content-type'));
+
                 if (!response.ok) {
-                    throw new Error('Помилка завантаження ліфтів');
+                    const errorText = await response.text();
+                    console.error('❌ Помилка відповіді:', errorText);
+                    throw new Error(`Помилка ${response.status}: ${errorText.substring(0, 100)}`);
+                }
+
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    console.error('❌ Отримано не JSON:', text.substring(0, 200));
+                    throw new Error('Сервер повернув неправильний формат даних');
                 }
 
                 const data = await response.json();
-                allLifts = data.lifts || [];
+                console.log('✅ Отримано дані:', data);
+                
+                allLifts = data.data || data.lifts || [];
+                console.log('📊 Кількість ліфтів:', allLifts.length);
                 
                 updateStatistics();
                 populateMunicipalityFilter();
                 displayLifts(allLifts);
                 
             } catch (error) {
-                console.error('Помилка:', error);
-                showError('Не вдалося завантажити ліфти');
+                console.error('❌ Помилка:', error);
+                showError('Не вдалося завантажити ліфти: ' + error.message);
+                
+                // Показати помилку в контейнері
+                const container = document.getElementById('liftsContainer');
+                container.innerHTML = `
+                    <div class="alert alert-danger" role="alert">
+                        <h4 class="alert-heading"><i class="fas fa-exclamation-triangle"></i> Помилка завантаження</h4>
+                        <p>${error.message}</p>
+                        <hr>
+                        <p class="mb-0">
+                            <button class="btn btn-danger" onclick="loadLifts()">
+                                <i class="fas fa-redo"></i> Спробувати знову
+                            </button>
+                        </p>
+                    </div>
+                `;
             }
         }
 
