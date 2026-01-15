@@ -67,7 +67,7 @@ const { User, Lift, Request } = require('./backend/models');
 // Створення користувача
 const user = await User.create({
     username: 'tech1',
-    email: 'tech@deapseak.com',
+    email: 'tech1@festlift.pt',
     password: 'password123', // Автоматично хешується
     firstName: 'Олександр',
     lastName: 'Петренко',

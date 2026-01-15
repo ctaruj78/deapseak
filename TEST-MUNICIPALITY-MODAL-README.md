@@ -48,7 +48,7 @@ node test-municipality-modal.js
 # Логін + запуск тестів
 TOKEN=$(curl -s -X POST http://localhost:5000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@deapseak.com","password":"admin123"}' \
+  -d '{"email":"info@festlift.pt","password":"admin123"}' \
   | grep -o '"token":"[^"]*"' | cut -d'"' -f4) \
   && echo "$TOKEN" > ~/.deapseak-token \
   && node test-municipality-modal.js

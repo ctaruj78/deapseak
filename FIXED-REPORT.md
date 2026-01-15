@@ -116,7 +116,7 @@ window.location.href = '../admin/admin-dashboard.html';
 ```bash
 POST /api/auth/login
 {
-  "email": "admin@deapseak.com",
+  "email": "info@festlift.pt",
   "password": "admin123"
 }
 
@@ -178,19 +178,19 @@ pkill -f 'node unified-server' && pkill mongod
 
 ```javascript
 Admin:
-  📧 admin@deapseak.com
+  📧 info@festlift.pt
   🔑 admin123
   
 Dispatcher:
-  📧 dispatcher@deapseak.com
+  📧 dispatcher@festlift.pt
   🔑 dispatcher123
 
 Technician:
-  📧 tech@deapseak.com
+  📧 tech1@festlift.pt
   🔑 tech123
 
 Client:
-  📧 client@deapseak.com
+  📧 client@festlift.pt
   🔑 client123
 ```
 

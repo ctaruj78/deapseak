@@ -88,7 +88,7 @@ default:
    ```
 
 3. **Увійти як admin:**
-   - Email: `admin@deapseak.com`
+   - Email: `info@festlift.pt`
    - Пароль: `admin123`
 
 4. **Очікуваний результат:**

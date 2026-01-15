@@ -763,12 +763,16 @@
     <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
     <script src="../../plugins/adminlte/adminlte.min.js"></script>
 
-    <!-- Dispatcher Dashboard JS -->
-    <script src="../../assets/js/modules/dispatcher-dashboard.js"></script>
+    <!-- ⚠️ СТАРИЙ СКРИПТ З DEMO ДАНИМИ - ТИМЧАСОВО ВІДКЛЮЧЕНО -->
+    <!-- <script src="../../assets/js/modules/dispatcher-dashboard.js"></script> -->
+    
+    <!-- ✅ НОВИЙ СКРИПТ З РЕАЛЬНИМИ ДАНИМИ З API -->
+    <script src="../../assets/js/modules/dispatcher-dashboard-real.js"></script>
 
     <script>
         function logout() {
             if (confirm('Ви впевнені, що хочете вийти з системи?')) {
+                localStorage.removeItem('token');
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('userData');
                 window.location.replace('/pages/auth/login.html');
@@ -795,6 +799,10 @@
         }
 
         $(document).ready(function() {
+            console.log('📊 Dispatcher Dashboard - ініціалізація...');
+            
+            // Ініціалізація AdminLTE
+            $('[data-widget="pushmenu"]').PushMenu();
             
             // Ініціалізація AdminLTE
             $('[data-widget="pushmenu"]').PushMenu();
@@ -816,29 +824,26 @@
             }, 30000);
 
             // Завантаження даних диспетчера з AuthManager
-            const userData = AuthManager.getUserData() || {};
+            const userData = AuthManager.getCurrentUser() || {};
             if (userData.firstName) {
                 $('#dispatcherName').text(`${userData.firstName} ${userData.lastName || ''}`);
             }
 
-            // Ініціалізація панелі диспетчера
-            if (typeof $ !== 'undefined') {
-                // Перевірка наявності необхідних елементів
-                if ($('#requestsTableBody').length && $('#techList').length) {
-                    window.dispatcherDashboard = new DispatcherDashboard();
-                } else {
-                    console.error('Required DOM elements not found');
-                }
+            // ✅ ІНІЦІАЛІЗАЦІЯ НОВОЇ ПАНЕЛІ З РЕАЛЬНИМИ ДАНИМИ
+            console.log('🚀 Ініціалізація DispatcherDashboardReal...');
+            if (typeof DispatcherDashboardReal !== 'undefined') {
+                window.dispatcherDashboard = new DispatcherDashboardReal();
+                console.log('✅ DispatcherDashboardReal створено');
             } else {
-                console.error('jQuery not loaded');
+                console.error('❌ DispatcherDashboardReal не завантажено!');
             }
             
-            // Filtroація подій
+            // Фільтрація подій
             $('[data-type]').on('click', function() {
                 const type = $(this).data('type');
                 $('[data-type]').removeClass('active');
                 $(this).addClass('active');
-                if (window.dispatcherDashboard) {
+                if (window.dispatcherDashboard && window.dispatcherDashboard.filterActivities) {
                     window.dispatcherDashboard.filterActivities(type);
                 }
             });

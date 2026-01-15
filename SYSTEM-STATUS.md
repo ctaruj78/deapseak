@@ -50,7 +50,7 @@
 ### API Тест
 ```bash
 POST /api/auth/login
-Body: {"email":"admin@deapseak.com","password":"admin123"}
+Body: {"email":"info@festlift.pt","password":"admin123"}
 Response: {"success":true,"token":"...","user":{...}}
 ✅ Працює
 ```
@@ -74,19 +74,19 @@ Response: {"success":true,"token":"...","user":{...}}
 
 ```javascript
 Admin:
-  email: admin@deapseak.com
+  email: info@festlift.pt
   password: admin123
   
 Dispatcher:
-  email: dispatcher@deapseak.com
+  email: dispatcher@festlift.pt
   password: dispatcher123
 
 Tech:
-  email: tech@deapseak.com
+  email: tech1@festlift.pt
   password: tech123
 
 Client:
-  email: client@deapseak.com
+  email: client@festlift.pt
   password: client123
 ```
 

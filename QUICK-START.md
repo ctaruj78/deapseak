@@ -242,10 +242,12 @@ mongodb/logs/
 
 | Роль | Email | Пароль |
 |------|-------|--------|
-| Адмін | admin@deapseak.com | admin123 |
-| Диспетчер | dispatcher@deapseak.com | dispatcher123 |
-| Технік | tech@deapseak.com | tech123 |
-| Клієнт | client@deapseak.com | client123 |
+| Адмін | info@festlift.pt | admin123 |
+| Диспетчер | dispatcher@festlift.pt | dispatcher123 |
+| Диспетчер 2 | info2@festlift.pt | dispatcher123 |
+| Технік 1 | tech1@festlift.pt | tech123 |
+| Технік 2 | tech2@festlift.pt | tech123 |
+| Клієнт | client@festlift.pt | client123 |
 
 ---
 

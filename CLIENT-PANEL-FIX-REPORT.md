@@ -8,7 +8,7 @@
 
 ## 📋 Симптоми проблеми
 
-Користувач **client@deapseak.com** (пароль: client123) зайшов в систему та побачив:
+Користувач **client@festlift.pt** (пароль: client123) зайшов в систему та побачив:
 
 1. ❌ **Dashboard** - всі показники по нулям
 2. ❌ **My Lifts** (http://127.0.0.1:5000/pages/client/my-lifts.html) - немає ліфтів
@@ -246,7 +246,7 @@ Authorization: Bearer xxx
 
 ### Для користувачів:
 1. Перезайдіть в систему: http://localhost:5000
-2. Логін: `client@deapseak.com`
+2. Логін: `client@festlift.pt`
 3. Пароль: `client123`
 4. Перейдіть на Dashboard або My Lifts
 5. ✅ Побачите свої 5 ліфтів!

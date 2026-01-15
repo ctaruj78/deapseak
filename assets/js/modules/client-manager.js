@@ -235,8 +235,11 @@ class ClientManager {
             grid.appendChild(col);
         });
         
-        document.getElementById('shownClients').textContent = this.filteredClients.length;
-        document.getElementById('totalClientsCount').textContent = this.clients.length;
+        const shownClientsEl = document.getElementById('shownClients');
+        const totalClientsCountEl = document.getElementById('totalClientsCount');
+        
+        if (shownClientsEl) shownClientsEl.textContent = this.filteredClients.length;
+        if (totalClientsCountEl) totalClientsCountEl.textContent = this.clients.length;
     }
 
     // Створення картки клієнта
@@ -556,10 +559,18 @@ class ClientManager {
 
     // Показати модальне вікно додавання клієнта
     showAddClientModal() {
-        document.getElementById('clientModalTitle').textContent = 'Додати клієнта';
-        document.getElementById('clientForm').reset();
-        document.getElementById('clientId').value = '';
-        $('#clientModal').modal('show');
+        const titleEl = document.getElementById('clientModalTitle');
+        const formEl = document.getElementById('clientForm');
+        const idEl = document.getElementById('clientId');
+        
+        if (titleEl) titleEl.textContent = 'Додати клієнта';
+        if (formEl) formEl.reset();
+        if (idEl) idEl.value = '';
+        
+        // Перевірка чи jQuery та Bootstrap модаль доступні
+        if (typeof $ !== 'undefined' && $('#clientModal').length) {
+            $('#clientModal').modal('show');
+        }
     }
 
     // Редагування клієнта
@@ -569,21 +580,37 @@ class ClientManager {
         
         this.currentClient = client;
         
-        document.getElementById('clientModalTitle').textContent = 'Редагувати клієнта';
-        document.getElementById('clientId').value = client.id;
-        document.getElementById('clientName').value = client.name;
-        document.getElementById('clientType').value = client.type;
-        document.getElementById('clientEmail').value = client.email;
-        document.getElementById('clientPhone').value = client.phone;
-        document.getElementById('clientPriority').value = client.priority;
-        document.getElementById('clientStatus').value = client.status;
-        document.getElementById('clientAddress').value = client.address || '';
-        document.getElementById('contactPerson').value = client.contactPerson || '';
-        document.getElementById('contactPosition').value = client.contactPosition || '';
-        document.getElementById('contractInfo').value = client.contractInfo || '';
-        document.getElementById('clientNotes').value = client.notes || '';
+        const titleEl = document.getElementById('clientModalTitle');
+        const idEl = document.getElementById('clientId');
+        const nameEl = document.getElementById('clientName');
+        const typeEl = document.getElementById('clientType');
+        const emailEl = document.getElementById('clientEmail');
+        const phoneEl = document.getElementById('clientPhone');
+        const priorityEl = document.getElementById('clientPriority');
+        const statusEl = document.getElementById('clientStatus');
+        const addressEl = document.getElementById('clientAddress');
+        const contactPersonEl = document.getElementById('contactPerson');
+        const contactPositionEl = document.getElementById('contactPosition');
+        const contractInfoEl = document.getElementById('contractInfo');
+        const notesEl = document.getElementById('clientNotes');
         
-        $('#clientModal').modal('show');
+        if (titleEl) titleEl.textContent = 'Редагувати клієнта';
+        if (idEl) idEl.value = client.id;
+        if (nameEl) nameEl.value = client.name;
+        if (typeEl) typeEl.value = client.type;
+        if (emailEl) emailEl.value = client.email;
+        if (phoneEl) phoneEl.value = client.phone;
+        if (priorityEl) priorityEl.value = client.priority;
+        if (statusEl) statusEl.value = client.status;
+        if (addressEl) addressEl.value = client.address || '';
+        if (contactPersonEl) contactPersonEl.value = client.contactPerson || '';
+        if (contactPositionEl) contactPositionEl.value = client.contactPosition || '';
+        if (contractInfoEl) contractInfoEl.value = client.contractInfo || '';
+        if (notesEl) notesEl.value = client.notes || '';
+        
+        if (typeof $ !== 'undefined' && $('#clientModal').length) {
+            $('#clientModal').modal('show');
+        }
     }
 
     // Збереження клієнта
@@ -765,18 +792,23 @@ class ClientManager {
     updateStats() {
         const totalClients = this.clients.length;
         const activeClients = this.clients.filter(c => c.status === 'active').length;
-        const totalRequests = this.clients.reduce((sum, client) => sum + client.totalRequests, 0);
+        const totalRequests = this.clients.reduce((sum, client) => sum + (client.requestsCount || 0), 0);
         const avgRating = totalClients > 0 
             ? (this.clients.reduce((sum, client) => sum + client.rating, 0) / totalClients).toFixed(1)
             : '0.0';
         
-        document.getElementById('totalClients').textContent = totalClients;
-        document.getElementById('activeClients').textContent = activeClients;
-        document.getElementById('totalRequests').textContent = totalRequests;
-        document.getElementById('avgRating').textContent = avgRating;
+        // Безпечне оновлення DOM елементів (можуть не існувати на всіх сторінках)
+        const totalClientsEl = document.getElementById('totalClients');
+        const activeClientsEl = document.getElementById('activeClients');
+        const totalRequestsEl = document.getElementById('totalRequests');
+        const avgRatingEl = document.getElementById('avgRating');
+        const clientsBadgeEl = document.getElementById('clientsBadge');
         
-        // Оновлення бейджа
-        document.getElementById('clientsBadge').textContent = totalClients;
+        if (totalClientsEl) totalClientsEl.textContent = totalClients;
+        if (activeClientsEl) activeClientsEl.textContent = activeClients;
+        if (totalRequestsEl) totalRequestsEl.textContent = totalRequests;
+        if (avgRatingEl) avgRatingEl.textContent = avgRating;
+        if (clientsBadgeEl) clientsBadgeEl.textContent = totalClients;
     }
 
     // Налаштування реальних оновлень
@@ -784,8 +816,10 @@ class ClientManager {
         setInterval(() => {
             // Оновлення часу останнього оновлення
             const now = new Date();
-            document.getElementById('lastUpdate').textContent = 
-                `Оновлено: ${now.toLocaleTimeString('uk-UA')}`;
+            const lastUpdateEl = document.getElementById('lastUpdate');
+            if (lastUpdateEl) {
+                lastUpdateEl.textContent = `Оновлено: ${now.toLocaleTimeString('uk-UA')}`;
+            }
         }, 30000);
     }
 

@@ -95,7 +95,7 @@ netstat -tlnp | grep -E "(3001|3002)"
 
 - **API**: http://localhost:3001
 - **WebSocket**: ws://localhost:3002
-- **Адмін**: admin@deapseak.com / admin123
+- **Адмін**: info@festlift.pt / admin123
 
 ## Тестування
 
@@ -155,5 +155,5 @@ pm2 startup
 
 ## Підтримка
 
-- Email: support@deapseak.com
+- Email: info@festlift.pt
 - GitHub Issues: https://github.com/your-username/deapseak/issues

@@ -91,7 +91,7 @@ npm run cleanup
 npm run auto-start
 
 # Відкрийте: http://localhost:5000
-# Залогіньтесь: admin@deapseak.com / admin123
+# Залогіньтесь: info@festlift.pt / admin123
 
 # Протестуйте:
 # - Створення ліфта

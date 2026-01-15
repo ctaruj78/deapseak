@@ -112,7 +112,7 @@ HTTP/1.1 200 OK  ✅
   AI Асистент:  http://localhost:5000/pages/ai-demo.html
 
 👥 Demo акаунти:
-  Admin:        admin@deapseak.com / admin123
+  Admin:        info@festlift.pt / admin123
   ...
 ```
 

@@ -245,7 +245,7 @@ pgrep -f "node unified-server"
 # Швидкий тест
 curl http://localhost:5000/api/auth/login -X POST \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@deapseak.com","password":"admin123"}'
+  -d '{"email":"info@festlift.pt","password":"admin123"}'
 ```
 
 ---
@@ -254,19 +254,19 @@ curl http://localhost:5000/api/auth/login -X POST \
 
 ```
 Admin:
-  📧 admin@deapseak.com
+  📧 info@festlift.pt
   🔑 admin123
 
 Technician:
-  📧 tech@deapseak.com
+  📧 tech1@festlift.pt
   🔑 tech123
 
 Dispatcher:
-  📧 dispatcher@deapseak.com
+  📧 dispatcher@festlift.pt
   🔑 dispatcher123
 
 Client:
-  📧 client@deapseak.com
+  📧 client@festlift.pt
   🔑 client123
 ```
 

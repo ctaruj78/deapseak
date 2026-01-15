@@ -58,7 +58,7 @@ deapseak/
 ### 📊 Перші кроки після запуску
 
 1. **Увійдіть** як адміністратор:
-   - Email: `admin@deapseak.com`
+   - Email: `info@festlift.pt`
    - Пароль: `admin123`
 
 2. **Додайте ліфти** через меню "Ліфти" → "Додати ліфт":
@@ -153,10 +153,10 @@ ps aux | grep -E "node|mongod"          # Переглянути процеси
 
 | Роль | Email | Пароль |
 |------|-------|--------|
-| 👨‍💼 Адмін | admin@deapseak.com | admin123 |
-| 📞 Диспетчер | dispatcher@deapseak.com | dispatcher123 |
-| 🔧 Технік | tech@deapseak.com | tech123 |
-| 👤 Клієнт | client@deapseak.com | client123 |
+| 👨‍💼 Адмін | info@festlift.pt | admin123 |
+| 📞 Диспетчер | dispatcher@festlift.pt | dispatcher123 |
+| 🔧 Технік | tech1@festlift.pt | tech123 |
+| 👤 Клієнт | client@festlift.pt | client123 |
 
 ---
 

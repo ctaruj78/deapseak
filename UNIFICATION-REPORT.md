@@ -40,7 +40,7 @@
 
 ### 4. Email адреси:
 - ❌ `support@liftmaster.com` → ✅ `suporte@festlift.pt`
-- ❌ `info@deapseak.com` → ✅ `info@festlift.pt`
+- ❌ `info@festlift.pt` → ✅ `info@festlift.pt`
 
 ### 5. Домени:
 - ❌ `liftmaster.com` → ✅ `festlift.pt`

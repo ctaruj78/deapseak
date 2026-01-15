@@ -148,10 +148,10 @@ tail -f logs/*.log  # Всі логи
 - MongoDB: `mongodb://localhost:27017`
 
 ### Demo акаунти:
-- Admin: `admin@deapseak.com` / `admin123`
-- Dispatcher: `dispatcher@deapseak.com` / `dispatcher123`
-- Tech: `tech@deapseak.com` / `tech123`
-- Client: `client@deapseak.com` / `client123`
+- Admin: `info@festlift.pt` / `admin123`
+- Dispatcher: `dispatcher@festlift.pt` / `dispatcher123`
+- Tech: `tech1@festlift.pt` / `tech123`
+- Client: `client@festlift.pt` / `client123`
 
 ---
 

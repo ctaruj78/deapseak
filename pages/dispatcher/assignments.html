@@ -663,7 +663,13 @@
             constructor() {
                 this.integration = serviceIntegration;
                 this.currentUser = this.getCurrentUser();
-                this.technicians = this.getTechnicians();
+                this.technicians = [];
+                this.init();
+            }
+            
+            async init() {
+                this.technicians = await this.getTechnicians();
+                await this.loadAssignments();
             }
             
             getCurrentUser() {
@@ -671,12 +677,29 @@
                        { id: 'disp_001', firstName: 'Марія', lastName: 'Коваленко', role: 'dispatcher' };
             }
             
-            getTechnicians() {
-                // Симуляція списку технічних фахівців
+            async getTechnicians() {
+                try {
+                    const response = await AuthManager.fetchWithAuth('/api/users?role=technician');
+                    if (response && response.ok) {
+                        const result = await response.json();
+                        const techs = result.success ? (result.data || []) : [];
+                        return techs.map(t => ({
+                            id: t._id,
+                            _id: t._id,
+                            name: `${t.firstName} ${t.lastName}`,
+                            firstName: t.firstName,
+                            lastName: t.lastName,
+                            active: t.status !== 'inactive'
+                        }));
+                    }
+                } catch (error) {
+                    console.warn('⚠️ Не вдалося завантажити техніків з API');
+                }
+                
+                // Fallback на demo дані
                 return [
-                    { id: 'tech_001', name: 'Олександр Іваненко', active: true },
-                    { id: 'tech_002', name: 'Петро Петренко', active: true },
-                    { id: 'tech_003', name: 'Анна Сидоренко', active: false }
+                    { id: 'tech_001', _id: 'tech_001', name: 'Técnico Um', firstName: 'Técnico', lastName: 'Um', active: true },
+                    { id: 'tech_002', _id: 'tech_002', name: 'Técnico Dois', firstName: 'Técnico', lastName: 'Dois', active: true }
                 ];
             }
             
@@ -686,18 +709,34 @@
             }
             
             // Призначити заявку технічному фахівцю
-            assignRequest(requestId, technicianId) {
-                const request = this.integration.getRequest(requestId);
-                if (request) {
-                    request.assignedTo = technicianId;
-                    request.status = 'assigned';
-                    request.assignedAt = new Date().toISOString();
-                    request.assignedBy = this.currentUser.id;
+            async assignRequest(requestId, technicianId) {
+                try {
+                    const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/assign`, {
+                        method: 'POST',
+                        body: JSON.stringify({ 
+                            technicianId: technicianId,
+                            assignedBy: this.currentUser.id
+                        })
+                    });
                     
-                    this.integration.updateRequest(requestId, request);
-                    this.loadAssignments();
+                    if (!response || !response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.message || 'Помилка призначення');
+                    }
                     
-                    toastr.success('Заявку успішно призначено!');
+                    await this.loadAssignments();
+                    
+                    if (typeof toastr !== 'undefined') {
+                        toastr.success('Заявку успішно призначено!');
+                    } else {
+                        alert('Заявку успішно призначено!');
+                    }
+                    
+                } catch (error) {
+                    console.error('Помилка призначення:', error);
+                    alert('Не вдалося призначити заявку: ' + error.message);
+                }
+            }
                 }
             }
             
@@ -786,7 +825,7 @@
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <small class="text-muted">Ліфт:</small>
-                                    <p class="mb-1">${assignment.liftId || 'Загальне'}</p>
+                                    <p class="mb-1">${assignment.liftAddress || assignment.liftId || 'Невідомо'}</p>
                                 </div>
                                 <div class="col-md-6">
                                     <small class="text-muted">Статус:</small>
@@ -838,20 +877,35 @@
                     `;
                     container.appendChild(card);
                 });
+                
+                // Оновлення лічильника
+                const shownEl = document.getElementById('shownCount');
+                const totalEl = document.getElementById('totalCount');
+                if (shownEl) shownEl.textContent = assignments.length;
+                if (totalEl) totalEl.textContent = assignments.length;
             }
             
             updateStats(assignments) {
                 const stats = {
                     total: assignments.length,
-                    unassigned: assignments.filter(a => !a.assignedTo).length,
-                    inProgress: assignments.filter(a => a.status === 'in_progress').length,
-                    urgent: assignments.filter(a => a.priority === 'high').length
+                    active: assignments.filter(a => a.status === 'in_progress' || a.status === 'assigned').length,
+                    completed: assignments.filter(a => a.status === 'completed').length,
+                    overdue: assignments.filter(a => {
+                        if (!a.deadline) return false;
+                        return new Date(a.deadline) < new Date() && a.status !== 'completed';
+                    }).length
                 };
                 
-                document.getElementById('totalAssignments').textContent = stats.total;
-                document.getElementById('unassignedCount').textContent = stats.unassigned;
-                document.getElementById('inProgressCount').textContent = stats.inProgress;
-                document.getElementById('urgentCount').textContent = stats.urgent;
+                // Безпечне оновлення DOM елементів
+                const totalEl = document.getElementById('totalAssignments');
+                const activeEl = document.getElementById('activeAssignments');
+                const completedEl = document.getElementById('completedAssignments');
+                const overdueEl = document.getElementById('overdueAssignments');
+                
+                if (totalEl) totalEl.textContent = stats.total;
+                if (activeEl) activeEl.textContent = stats.active;
+                if (completedEl) completedEl.textContent = stats.completed;
+                if (overdueEl) overdueEl.textContent = stats.overdue;
             }
             
             viewAssignment(requestId) {
@@ -1196,8 +1250,8 @@
                 }
             };
             
-            // Завантажити призначення
-            dispatcherManager.loadAssignments();
+            // Ініціалізація вже відбувається в constructor через init()
+            // dispatcherManager.loadAssignments(); // ❌ ВИДАЛЕНО - дублювання
         });
     </script>
 </body>

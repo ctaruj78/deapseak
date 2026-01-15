@@ -6607,5 +6607,178 @@
     });
     
     </script>
+    
+    <!-- PDF.js Library для парсингу PDF звітів -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    
+    <!-- Inspection Report Parser -->
+    <script src="../../assets/js/modules/inspection-report-parser.js"></script>
+    
+    <!-- Інтеграція парсера з формою звітів інспекції -->
+    <script>
+    $(document).ready(function() {
+        console.log('🔧 Налаштування інтеграції парсера PDF звітів...');
+        
+        // Обробник завантаження PDF файлу
+        const pdfInput = document.getElementById('inspectionReportPDF');
+        if (pdfInput && window.inspectionReportParser) {
+            
+            // Видаляємо старий обробник
+            const newPdfInput = pdfInput.cloneNode(true);
+            pdfInput.parentNode.replaceChild(newPdfInput, pdfInput);
+            
+            // Додаємо новий обробник з парсингом
+            newPdfInput.addEventListener('change', async function(e) {
+                const file = e.target.files[0];
+                
+                if (!file) {
+                    return;
+                }
+                
+                if (file.type !== 'application/pdf') {
+                    alert('❌ Будь ласка, оберіть тільки PDF файли');
+                    e.target.value = '';
+                    return;
+                }
+                
+                console.log('📄 PDF файл вибрано:', file.name);
+                currentInspectionPDFFile = file;
+                
+                // Показуємо прев'ю файлу
+                document.getElementById('pdfReportFileName').textContent = file.name;
+                document.getElementById('pdfReportPreviewContainer').style.display = 'block';
+                
+                // Показуємо індикатор завантаження
+                const loadingHtml = `
+                    <div class="alert alert-info mt-3" id="pdfParsingStatus">
+                        <i class="fas fa-spinner fa-spin mr-2"></i>
+                        Аналізуємо PDF звіт...
+                    </div>
+                `;
+                $('#pdfReportPreviewContainer').append(loadingHtml);
+                
+                try {
+                    // Парсимо PDF
+                    console.log('🔍 Початок парсингу PDF...');
+                    const parsedData = await window.inspectionReportParser.parseInspectionReport(file);
+                    
+                    console.log('✅ PDF успішно проаналізовано:', parsedData);
+                    
+                    // Показуємо результати аналізу
+                    $('#pdfParsingStatus').removeClass('alert-info').addClass('alert-success').html(`
+                        <i class="fas fa-check-circle mr-2"></i>
+                        <strong>Звіт проаналізовано!</strong><br>
+                        <small>
+                            Знайдено клауз: <strong>${parsedData.clauseStats.total}</strong>
+                            ${parsedData.clauseStats.C1 > 0 ? ` | C1: <span class="badge badge-danger">${parsedData.clauseStats.C1}</span>` : ''}
+                            ${parsedData.clauseStats.C2 > 0 ? ` | C2: <span class="badge badge-warning">${parsedData.clauseStats.C2}</span>` : ''}
+                            ${parsedData.clauseStats.C3 > 0 ? ` | C3: <span class="badge badge-info">${parsedData.clauseStats.C3}</span>` : ''}
+                        </small>
+                    `);
+                    
+                    // Автоматично заповнюємо поля форми
+                    if (parsedData.liftInfo) {
+                        // Дата інспекції
+                        if (parsedData.liftInfo.inspectionDate) {
+                            const dateStr = parsedData.liftInfo.inspectionDate.replace(/\//g, '-');
+                            const [year, month, day] = dateStr.split('-');
+                            $('#inspectionDate').val(`${year}-${month}-${day}`);
+                        }
+                        
+                        // Компанія обслуговування
+                        if (parsedData.liftInfo.maintenanceCompany) {
+                            console.log('📝 Компанія обслуговування:', parsedData.liftInfo.maintenanceCompany);
+                        }
+                    }
+                    
+                    // Визначаємо статус на основі клауз
+                    if (parsedData.inspectionResult) {
+                        let status = 'passed';
+                        if (parsedData.inspectionResult.hasImmobilization) {
+                            status = 'failed';
+                        } else if (parsedData.inspectionResult.requiresReinspection) {
+                            status = 'failed';
+                        } else if (parsedData.clauseStats.C2 > 0 || parsedData.clauseStats.C3 > 0) {
+                            status = 'conditional';
+                        }
+                        
+                        $('#inspectionStatus').val(status);
+                        console.log('✅ Статус встановлено:', status);
+                    }
+                    
+                    // Додаємо інформацію про клаузи в коментарі
+                    if (parsedData.clauses && parsedData.clauses.length > 0) {
+                        let clausesText = '\n\n=== ВИЯВЛЕНІ КЛАУЗИ ===\n';
+                        parsedData.clauses.forEach((clause, index) => {
+                            clausesText += `\n${index + 1}. ${clause.type} - Artº.${clause.article}\n   ${clause.description}\n`;
+                        });
+                        
+                        const currentComments = $('#inspectionComments').val() || '';
+                        $('#inspectionComments').val(currentComments + clausesText);
+                        
+                        console.log(`✅ Додано ${parsedData.clauses.length} клауз до коментарів`);
+                    }
+                    
+                    // Показуємо детальну інформацію про клаузи
+                    if (parsedData.clauses && parsedData.clauses.length > 0) {
+                        const clausesHtml = window.inspectionReportParser.formatClausesForDisplay(parsedData.clauses);
+                        
+                        const detailsHtml = `
+                            <div class="card mt-3" id="clausesDetails">
+                                <div class="card-header bg-info">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                                        Виявлені клаузи (${parsedData.clauseStats.total})
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    ${clausesHtml}
+                                    ${parsedData.inspectionResult.requiresReinspection ? 
+                                        '<div class="alert alert-warning mt-3"><i class="fas fa-clock mr-2"></i><strong>Увага!</strong> Потрібна реінспекція протягом 30 днів</div>' : 
+                                        ''
+                                    }
+                                </div>
+                            </div>
+                        `;
+                        
+                        $('#pdfParsingStatus').after(detailsHtml);
+                    }
+                    
+                    // Зберігаємо розпарсені дані для подальшого використання
+                    window.currentParsedInspectionData = parsedData;
+                    
+                    // Показуємо повідомлення про успіх
+                    if (typeof toastr !== 'undefined') {
+                        toastr.success(
+                            `Звіт проаналізовано! Знайдено ${parsedData.clauseStats.total} клауз.`,
+                            'Аналіз завершено'
+                        );
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ Помилка парсингу PDF:', error);
+                    
+                    $('#pdfParsingStatus').removeClass('alert-info').addClass('alert-danger').html(`
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        <strong>Помилка аналізу PDF</strong><br>
+                        <small>${error.message}</small><br>
+                        <small class="text-muted">Дані потрібно буде ввести вручну</small>
+                    `);
+                    
+                    if (typeof toastr !== 'undefined') {
+                        toastr.warning(
+                            'Не вдалося автоматично проаналізувати PDF. Введіть дані вручну.',
+                            'Увага'
+                        );
+                    }
+                }
+            });
+            
+            console.log('✅ Інтеграція парсера PDF налаштована');
+        } else {
+            console.warn('⚠️ Парсер PDF або поле вводу не знайдені');
+        }
+    });
+    </script>
 </body>
 </html>

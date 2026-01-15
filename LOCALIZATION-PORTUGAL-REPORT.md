@@ -26,7 +26,7 @@
 - "Хрещатик 1" → "Praça do Comércio 1"
 
 ### 4. Email домени:
-- `@deapseak.com` → `@festlift.pt`
+- `@festlift.pt` → `@festlift.pt`
 - `@liftmaster.com` → `@festlift.pt`
 
 ### 5. Країна:

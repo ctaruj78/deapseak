@@ -1493,13 +1493,18 @@
                     const violationTitle = v.articleInfo?.title || v.title || `Artigo ${v.article}`;
                     const violationId = `${v.classification}-${v.article}-${Date.now()}`;
                     
+                    // Форматування відображення артикулу
+                    const articleDisplay = v.article === 'NOTA' ? 
+                        '<span class="badge badge-secondary">NOTA</span>' : 
+                        `<strong>Artigo ${v.article}</strong>`;
+                    
                     html += `
                         <div class="violation-card ${severityClass}">
                             <div class="row">
                                 <div class="col-md-12">
                                     <h6>
                                         <span class="badge badge-${badgeClass}">${v.classification}</span>
-                                        <strong>Artigo ${v.article}</strong> - ${violationTitle}
+                                        ${articleDisplay} - ${violationTitle}
                                     </h6>
                                     
                                     ${v.articleInfo?.description ? `

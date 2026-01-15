@@ -215,7 +215,7 @@ http://localhost:5000
 
 ### Крок 4: Увійти з demo акаунтом
 ```
-Email: admin@deapseak.com
+Email: info@festlift.pt
 Password: admin123
 ```
 

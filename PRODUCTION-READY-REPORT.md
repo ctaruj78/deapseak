@@ -56,7 +56,7 @@ catch (error) {
 - Різні назви компанії: LiftMaster Pro, DeapSeaK, Lift Management
 - Різні версії: v2.0, v2.0.0, v1.x
 - Різні роки: 2024, 2025
-- Різні email домени: @deapseak.com, @liftmaster.com
+- Різні email домени: @festlift.pt, @liftmaster.com
 
 **Створено скрипт:** `unify-versions-footers.sh`
 
@@ -73,8 +73,8 @@ catch (error) {
 | **Рік** | |
 | 2024, 2025 | 2026 |
 | **Email** | |
-| info@deapseak.com | info@festlift.pt |
-| admin@deapseak.com | info@festlift.pt |
+| info@festlift.pt | info@festlift.pt |
+| info@festlift.pt | info@festlift.pt |
 | support@liftmaster.com | suporte@festlift.pt |
 | **Домен** | |
 | deapseak.com | festlift.pt |

@@ -116,7 +116,7 @@
 
 1. **Увійти як клієнт:**
    ```
-   Email: client@deapseak.com
+   Email: client@festlift.pt
    Пароль: client123
    ```
 

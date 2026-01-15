@@ -430,38 +430,77 @@ function createViolation(classification, articleNum, description, format) {
     let finalArticleNum = articleNum;
     let isNota = false;
     
+    console.log(`  🔧 createViolation: class=${classification}, article="${articleNum}" (type=${typeof articleNum}), desc="${description.substring(0, 50)}..."`);
+    
     // Перевірка чи це NOTA (без конкретного артикулу)
-    if (!articleNum || articleNum === '0' || articleNum === null) {
+    if (!articleNum || articleNum === '0' || articleNum === null || articleNum === undefined) {
         // Шукаємо в описі номер артикулу
         const articleInDesc = description.match(/Art\.?(?:igo)?\.?º?\s*(\d+[a-z]?\.?\d*\.?\d*)/i);
         if (articleInDesc) {
             finalArticleNum = articleInDesc[1];
+            console.log(`    ✅ Found article in description: ${finalArticleNum}`);
         } else {
             // Це NOTA або загальне зауваження
             finalArticleNum = 'NOTA';
             isNota = true;
+            console.log(`    ⚠️ No article found - marking as NOTA`);
         }
+    } else {
+        console.log(`    ✅ Article provided: ${finalArticleNum}`);
+    }
+    
+    // Нормалізуємо номер артикулу (видаляємо зайві крапки)
+    if (finalArticleNum !== 'NOTA' && typeof finalArticleNum === 'string') {
+        finalArticleNum = finalArticleNum.replace(/\.$/, '');
+        console.log(`    🔄 Normalized article: ${finalArticleNum}`);
     }
     
     // Отримуємо інформацію про артикул
-    const article = regulationArticles[finalArticleNum] || {
-        title: isNota ? 'NOTA - Observação Geral' : `Artigo ${finalArticleNum}`,
-        explanation: isNota ? 
-            'Observação ou recomendação técnica que não se enquadra num artigo específico' : 
-            'Informação detalhada não disponível - consultar regulamento',
-        why: isNota ? 
-            'Melhorar segurança geral e prevenir problemas futuros' : 
-            'Cumprir com regulamento de segurança de elevadores',
-        solution: isNota ? 
-            'Avaliar recomendação e implementar se aplicável' : 
-            'Consultar técnico especializado para verificar conformidade',
-        urgency: isNota ? 
-            'Avaliar caso a caso' : 
-            'Consultar classificação',
-        risks: isNota ?
-            '⚠️ NOTAS são avisos técnicos importantes. Mesmo sem artigo específico, podem indicar problemas reais que merecem atenção.' :
-            '⚠️ Artigo não catalogado - consultar regulamento oficial para detalhes completos.'
-    };
+    let article = regulationArticles[finalArticleNum];
+    
+    // Якщо не знайдено і це підпункт (наприклад 45.1), спробуємо основний артикул
+    if (!article && finalArticleNum !== 'NOTA' && typeof finalArticleNum === 'string' && finalArticleNum.includes('.')) {
+        const mainArticle = finalArticleNum.split('.')[0];
+        console.log(`    🔍 Subarticle ${finalArticleNum} not found, trying main article ${mainArticle}`);
+        article = regulationArticles[mainArticle];
+        if (article) {
+            console.log(`    ✅ Found main article ${mainArticle} in database`);
+            // Зберігаємо оригінальний підпункт у finalArticleNum для відображення
+            article = {
+                ...article,
+                title: article.title.replace(mainArticle, finalArticleNum),
+                explanation: `Subartigo ${finalArticleNum}: ${article.explanation}`
+            };
+        }
+    }
+    
+    // Якщо все ще не знайдено, створюємо за замовчуванням
+    if (!article) {
+        article = {
+            title: isNota ? 'NOTA - Observação Geral' : `Artigo ${finalArticleNum}`,
+            explanation: isNota ? 
+                'Observação ou recomendação técnica que não se enquadra num artigo específico' : 
+                'Informação detalhada não disponível - consultar regulamento',
+            why: isNota ? 
+                'Melhorar segurança geral e prevenir problemas futuros' : 
+                'Cumprir com regulamento de segurança de elevadores',
+            solution: isNota ? 
+                'Avaliar recomendação e implementar se aplicável' : 
+                'Consultar técnico especializado para verificar conformidade',
+            urgency: isNota ? 
+                'Avaliar caso a caso' : 
+                'Consultar classificação',
+            risks: isNota ?
+                '⚠️ NOTAS são avisos técnicos importantes. Mesmo sem artigo específico, podem indicar problemas reais que merecem atenção.' :
+                '⚠️ Artigo não catalogado - consultar regulamento oficial para detalhes completos.'
+        };
+        console.log(`    ⚠️ Article ${finalArticleNum} not in database - using default info`);
+    }
+    
+    console.log(`    📚 Article info found: ${article.title || 'Unknown'}`);
+    if (!regulationArticles[finalArticleNum] && !isNota) {
+        console.log(`    ⚠️ WARNING: Article ${finalArticleNum} not found in database!`);
+    }
     
     return {
         classification: classification,

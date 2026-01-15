@@ -224,7 +224,7 @@ location.reload();
 
 1. **Увійдіть в систему перед виїздом на об'єкт**
    ```
-   login.html → admin@deapseak.com / admin123
+   login.html → info@festlift.pt / admin123
    ```
 
 2. **Перевіряйте токен перед важливою роботою**

@@ -63,19 +63,34 @@ class MonitoringManager {
                 'Content-Type': 'application/json'
             };
 
-            const [liftsRes, assignmentsRes, techsRes, alertsRes, metricsRes] = await Promise.all([
-                fetch(`${this.apiUrl}/lifts`, { headers }),
-                fetch(`${this.apiUrl}/assignments?status=in-progress`, { headers }),
-                fetch(`${this.apiUrl}/users?role=tech`, { headers }),
-                fetch(`${this.apiUrl}/monitoring/alerts`, { headers }),
-                fetch(`${this.apiUrl}/monitoring/metrics`, { headers })
-            ]);
+            // Завантаження ліфтів
+            const liftsRes = await fetch(`${this.apiUrl}/lifts`, { headers });
+            if (liftsRes.ok) {
+                const liftsData = await liftsRes.json();
+                this.lifts = Array.isArray(liftsData) ? liftsData : (liftsData.data || []);
+            } else {
+                this.lifts = [];
+            }
 
-            if (liftsRes.ok) this.lifts = await liftsRes.json();
-            if (assignmentsRes.ok) this.assignments = await assignmentsRes.json();
-            if (techsRes.ok) this.technicians = await techsRes.json();
-            if (alertsRes.ok) this.alerts = await alertsRes.json();
-            if (metricsRes.ok) this.systemMetrics = await metricsRes.json();
+            // Завантаження техніків (403 для non-admin = demo дані)
+            try {
+                const techsRes = await fetch(`${this.apiUrl}/users?role=tech`, { headers });
+                if (techsRes.ok) {
+                    const techData = await techsRes.json();
+                    this.technicians = Array.isArray(techData) ? techData : (techData.data || []);
+                } else if (techsRes.status === 403) {
+                    // Fallback для non-admin користувачів
+                    this.technicians = this.getDefaultTechnicians();
+                }
+            } catch (err) {
+                console.warn('⚠️ Не вдалося завантажити техніків:', err);
+                this.technicians = this.getDefaultTechnicians();
+            }
+
+            // Assignments, alerts, metrics - fallback на пусті масиви (endpoints не реалізовані)
+            this.assignments = [];
+            this.alerts = [];
+            this.systemMetrics = {};
 
             // Зберігання для офлайн режиму
             this.saveToLocalStorage();
@@ -89,6 +104,16 @@ class MonitoringManager {
             console.warn('⚠️ Помилка завантаження даних:', error);
             return false;
         }
+    }
+
+    /**
+     * Отримати техніків за замовчуванням (demo)
+     */
+    getDefaultTechnicians() {
+        return [
+            { _id: '1', firstName: 'Técnico', lastName: 'Um', email: 'tech1@festlift.pt', status: 'online' },
+            { _id: '2', firstName: 'Técnico', lastName: 'Dois', email: 'tech2@festlift.pt', status: 'offline' }
+        ];
     }
 
     /**
@@ -510,7 +535,7 @@ class MonitoringManager {
      */
     simulateRealtimeUpdates() {
         setInterval(() => {
-            if (!this.isInitialized) return;
+            if (!this.isInitialized || !Array.isArray(this.lifts)) return;
             
             // Оновлення даних ліфтів
             this.lifts.forEach(lift => {

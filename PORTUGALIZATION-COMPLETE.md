@@ -177,7 +177,7 @@ tail -f logs/unified-server.log
 
 ### Sidebar показує 0 ліфтів?
 
-Перевірте що ви залогінені як **client@festlift.pt**, а не client@deapseak.com!
+Перевірте що ви залогінені як **client@festlift.pt**, а не client@festlift.pt!
 
 ```javascript
 // Відкрийте консоль (F12) та виконайте:

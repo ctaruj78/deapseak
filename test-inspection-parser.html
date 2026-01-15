@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест парсера звітів інспекції</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-input {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 12px;
+            min-height: 300px;
+            white-space: pre-wrap;
+        }
+        .result-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: #e7f3ff;
+            border-radius: 5px;
+        }
+        .clause-item {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid;
+        }
+        .clause-c1 { border-left-color: #dc3545; }
+        .clause-c2 { border-left-color: #ffc107; }
+        .clause-c3 { border-left-color: #17a2b8; }
+        .stats-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            margin: 5px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 class="mb-4">
+            <i class="fas fa-vial mr-2"></i>
+            Тест парсера звітів інспекції
+        </h1>
+        
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle mr-2"></i>
+            <strong>Тест на прикладі з RELATÓRIO DE INSPEÇÃO</strong><br>
+            Вставте текст з PDF звіту нижче або використайте тестовий приклад.<br>
+            <small class="text-muted">
+                <strong>Важливо:</strong> Парсер автоматично видаляє секцію "OBRIGAÇÕES DO PROPRIETÁRIO" 
+                (пояснення про типи клауз), щоб не плутати її з реальними порушеннями.
+            </small>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <h4>Вхідний текст (з PDF)</h4>
+                <textarea id="testInput" class="form-control test-input" placeholder="Вставте текст звіту тут...">RELATÓRIO DE INSPEÇÃO DE INSTALAÇÕES Ascensor
+
+BUREAU VERITAS RINAVE
+Entidade Inspectora Reconhecida pela DGEG
+
+IDENTIFICAÇÃO DA INSTALAÇÃO
+Localização da instalação  RUA MARIO VIEGAS, 122, .
+Código Postal  2755-057
+Localidade  Alcabideche
+Concelho  Cascais.
+Proprietário ADMINISTRAÇÃO DO EDIFÍCIO
+Marca ou Fabricante Fortis
+Empresa de Manutenção FESTLIFT
+
+TIPO DE EDIFÍCIO   TIPO DE INSPEÇÃO
+Habitação Inspecção Periódica
+
+NOTA DE CLAUSULAS
+Tipo Deficiência detectada
+C2 Artº.46.º 2 – O dispositivo contra entalamentos instalado na cabina, encontra-se inoperacional.
+
+RESULTADO DA INSPECÇÃO
+Reprovada C2-Regularizar no prazo de 30 dias
+
+Data da Inspecção 2025/02/26
+Inspector  Delmar Sambalanda</textarea>
+                
+                <button id="btnTest" class="btn btn-primary btn-lg btn-block mt-3">
+                    <i class="fas fa-play mr-2"></i>
+                    Тестувати витягування клауз
+                </button>
+                
+                <button id="btnTestAdvanced" class="btn btn-secondary btn-block mt-2">
+                    <i class="fas fa-cogs mr-2"></i>
+                    Тест з багатьма клаузами
+                </button>
+                
+                <button id="btnTestWithObligations" class="btn btn-warning btn-block mt-2">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    Тест з секцією OBRIGAÇÕES (реальний звіт)
+                </button>
+            </div>
+            
+            <div class="col-md-6">
+                <h4>Результати</h4>
+                <div id="results" class="result-section">
+                    <p class="text-muted">Натисніть кнопку "Тестувати" щоб побачити результати</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <h4>Логи консолі</h4>
+            <div id="console" style="background: #1e1e1e; color: #00ff00; padding: 15px; border-radius: 5px; font-family: monospace; font-size: 12px; max-height: 300px; overflow-y: auto;"></div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Inspection Report Parser -->
+    <script src="../../assets/js/modules/inspection-report-parser.js"></script>
+    
+    <script>
+        // Перехоплення console.log
+        const originalLog = console.log;
+        const consoleDiv = document.getElementById('console');
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const message = args.map(arg => {
+                if (typeof arg === 'object') {
+                    return JSON.stringify(arg, null, 2);
+                }
+                return String(arg);
+            }).join(' ');
+            
+            const line = document.createElement('div');
+            line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            consoleDiv.appendChild(line);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        };
+        
+        $(document).ready(function() {
+            console.log('🚀 Тест парсера ініціалізовано');
+            
+            const parser = window.inspectionReportParser;
+            
+            if (!parser) {
+                alert('❌ Парсер не завантажено!');
+                return;
+            }
+            
+            // Тест витягування клауз
+            $('#btnTest').click(function() {
+                const text = $('#testInput').val();
+                
+                console.log('=== ПОЧАТОК ТЕСТУ ===');
+                console.log('Довжина тексту:', text.length);
+                
+                try {
+                    // Витягуємо клаузи
+                    const clauses = parser.extractClausesFromText(text);
+                    
+                    // Витягуємо інформацію про ліфт
+                    const liftInfo = parser.extractLiftInfo(text);
+                    
+                    // Визначаємо результат
+                    const result = parser.determineInspectionResult(text, clauses);
+                    
+                    console.log('✅ ТЕСТ ЗАВЕРШЕНО');
+                    console.log('Знайдено клауз:', clauses.length);
+                    
+                    // Відображаємо результати
+                    displayResults(clauses, liftInfo, result);
+                    
+                } catch (error) {
+                    console.error('❌ Помилка тесту:', error);
+                    $('#results').html(`
+                        <div class="alert alert-danger">
+                            <strong>Помилка:</strong> ${error.message}
+                        </div>
+                    `);
+                }
+            });
+            
+            // Тест з багатьма клаузами
+            $('#btnTestAdvanced').click(function() {
+                const advancedText = `NOTA DE CLAUSULAS
+Tipo Deficiência detectada
+C2 Artº.46.º 2 – O dispositivo contra entalamentos instalado na cabina, encontra-se inoperacional.
+C3 Artº.12.º 1 – Ausência de iluminação de emergência na cabina.
+C1 Artº.8.º 3 – Sistema de travagem principal com falha crítica.
+C2 Artº.25.º 4 – Porta de acesso ao poço sem dispositivo de bloqueio adequado.
+C3 Artº.30.º 2 – Sinalização no interior da cabina não conforme.
+
+RESULTADO DA INSPECÇÃO
+Reprovada com Imobilização`;
+                
+                $('#testInput').val(advancedText);
+                $('#btnTest').click();
+            });
+            
+            // Тест з повним звітом (включаючи секцію OBRIGAÇÕES)
+            $('#btnTestWithObligations').click(function() {
+                const fullReportText = `NOTA DE CLAUSULAS
+Tipo Deficiência detectada
+C2 Artº.46.º 2 – O dispositivo contra entalamentos instalado na cabina, encontra-se inoperacional.
+
+RESULTADO DA INSPECÇÃO- Este Relatório de Inspecção reflecte as constatações do inspector no momento da inspeção, realizada no âmbito do Decreto-Lei nº 320/2002, de 28/12.
+Reprovada C2-Regularizar no prazo de 30 dias
+
+OBRIGAÇÕES DO PROPRIETÁRIO
+O Proprietário da instalação é responsável pela utilização, conservação e manutenção da mesma, de acordo com as condições de segurança regulamentares.
+
+EM RELAÇÃO AO NÍVEL DAS DEFICIÊNCIAS INDICADAS NO RELATÓRIO
+Elevador Aprovado: Não foram detetadas deficiências na instalação, no decorrer da inspeção.
+Elevador Aprovado com cláusulas C3: foram detetadas cláusulas tipo C3, correspondem a situações que não apresentam um risco directo para a segurança de pessoas e bens.
+Elevador Aprovado com cláusulas C2*: foram detectadas cláusulas tipo C2*, correspondem a situações de médio risco para a segurança de pessoas e bens. Estas cláusulas não obrigam à imobilização das instalações.
+Elevador Reprovado: foram detetadas cláusulas tipo C2, correspondem a situações de médio risco para a segurança de pessoas e bens. Estas cláusulas dão lugar a uma reinspecção.
+Elevador Reprovado com Imobilização: foram detetadas cláusulas tipo C1, correspondem a situações de elevado risco para a segurança de pessoas e bens.`;
+                
+                $('#testInput').val(fullReportText);
+                $('#btnTest').click();
+            });
+            
+            function displayResults(clauses, liftInfo, result) {
+                let html = '';
+                
+                // Статистика
+                const stats = {
+                    total: clauses.length,
+                    C1: clauses.filter(c => c.type === 'C1').length,
+                    C2: clauses.filter(c => c.type === 'C2').length,
+                    C3: clauses.filter(c => c.type === 'C3').length
+                };
+                
+                html += `
+                    <div class="mb-3">
+                        <h5>📊 Статистика</h5>
+                        <span class="stats-badge bg-primary text-white">
+                            Всього: ${stats.total}
+                        </span>
+                        ${stats.C1 > 0 ? `<span class="stats-badge bg-danger text-white">C1: ${stats.C1}</span>` : ''}
+                        ${stats.C2 > 0 ? `<span class="stats-badge bg-warning text-dark">C2: ${stats.C2}</span>` : ''}
+                        ${stats.C3 > 0 ? `<span class="stats-badge bg-info text-white">C3: ${stats.C3}</span>` : ''}
+                    </div>
+                `;
+                
+                // Результат інспекції
+                html += `
+                    <div class="mb-3">
+                        <h5>🎯 Результат інспекції</h5>
+                        <div class="alert ${result.hasImmobilization ? 'alert-danger' : result.requiresReinspection ? 'alert-warning' : 'alert-success'}">
+                            <strong>${result.statusText}</strong>
+                            ${result.reinspectionDeadline ? `<br><small>Термін: ${result.reinspectionDeadline}</small>` : ''}
+                        </div>
+                    </div>
+                `;
+                
+                // Інформація про ліфт
+                if (liftInfo && liftInfo.location) {
+                    html += `
+                        <div class="mb-3">
+                            <h5>🏢 Інформація про ліфт</h5>
+                            <ul class="list-unstyled small">
+                                ${liftInfo.location ? `<li><strong>Локація:</strong> ${liftInfo.location}</li>` : ''}
+                                ${liftInfo.maintenanceCompany ? `<li><strong>Компанія:</strong> ${liftInfo.maintenanceCompany}</li>` : ''}
+                                ${liftInfo.inspectionDate ? `<li><strong>Дата:</strong> ${liftInfo.inspectionDate}</li>` : ''}
+                            </ul>
+                        </div>
+                    `;
+                }
+                
+                // Клаузи
+                if (clauses.length > 0) {
+                    html += '<h5>📋 Виявлені клаузи</h5>';
+                    clauses.forEach((clause, index) => {
+                        html += `
+                            <div class="clause-item clause-${clause.type.toLowerCase()}">
+                                <div class="d-flex">
+                                    <span class="badge badge-${clause.type === 'C1' ? 'danger' : clause.type === 'C2' ? 'warning' : 'info'} mr-2">
+                                        ${clause.type}
+                                    </span>
+                                    <div>
+                                        <strong>Artº. ${clause.article}</strong>
+                                        <p class="mb-0 mt-1">${clause.description}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    html += '<div class="alert alert-warning">⚠️ Клаузи не знайдено</div>';
+                }
+                
+                $('#results').html(html);
+            }
+        });
+    </script>
+</body>
+</html>
