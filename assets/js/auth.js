@@ -14,16 +14,19 @@ class AuthManager {
     static login(token, user) {
         localStorage.setItem(this.TOKEN_KEY, token);
         localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+        localStorage.setItem('userData', JSON.stringify(user)); // Для dispatcher/admin панелей
         
         document.cookie = `auth_token=${token}; path=/; max-age=86400`;
         
         console.log('✅ Користувач увійшов в систему:', user);
+        console.log('✅ userData збережено для перевірки доступу');
         return true;
     }
 
     static logout() {
         localStorage.removeItem(this.TOKEN_KEY);
         localStorage.removeItem(this.USER_KEY);
+        localStorage.removeItem('userData');  // Очищаємо userData
         localStorage.removeItem('lm_session');
         localStorage.removeItem('lm_user');
         

@@ -341,10 +341,12 @@
                         
                         // Зберігаємо користувача
                         localStorage.setItem('user', JSON.stringify(user));           // Головний
+                        localStorage.setItem('userData', JSON.stringify(user));       // Для dispatcher/admin панелей
                         localStorage.setItem('lm_session', JSON.stringify(user));     // Старий формат
                         localStorage.setItem('liftmanager_user', JSON.stringify(user)); // AuthManager формат
                         
                         console.log('✅ Токен збережено в localStorage');
+                        console.log('✅ userData збережено:', user.role, user.email);
                         
                         showMessage('Успішний вхід! Перенаправлення...', 'success');
                         
