@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Диспетчер - Управління Ліфтами</title>
+    
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    
+    <!-- Додаткові стилі -->
+    <style>
+        .lift-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .lift-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+        
+        .lift-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .lift-status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .lift-status.active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .lift-status.inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .lift-status.maintenance {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .lift-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: center;
+        }
+        
+        .info-item i {
+            color: #007bff;
+            margin-right: 8px;
+            width: 20px;
+        }
+        
+        .filters {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed" data-required-role="dispatcher">
+    <!-- Access check -->
+    <script src="../../assets/js/dispatcher-access-check.js"></script>
+    
+    <div class="wrapper">
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+            <!-- Left navbar links -->
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button">
+                        <i class="fas fa-bars"></i>
+                    </a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="dashboard.html" class="nav-link">Головна</a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="monitoring.html" class="nav-link">Моніторинг</a>
+                </li>
+            </ul>
+
+            <!-- Right navbar links -->
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <button class="btn btn-sm btn-outline-danger" onclick="AuthManager.logout()">
+                        <i class="fas fa-sign-out-alt"></i> Вийти
+                    </button>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Sidebar Container -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <!-- Brand Logo -->
+            <a href="dashboard.html" class="brand-link">
+                <span class="brand-text font-weight-light">Диспетчер</span>
+            </a>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Sidebar Menu -->
+                <nav class="mt-2">
+                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+                        <li class="nav-item">
+                            <a href="dashboard.html" class="nav-link">
+                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                                <p>Головна панель</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="monitoring.html" class="nav-link">
+                                <i class="nav-icon fas fa-desktop"></i>
+                                <p>Моніторинг</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="assignments.html" class="nav-link">
+                                <i class="nav-icon fas fa-tasks"></i>
+                                <p>Призначення завдань</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="clients.html" class="nav-link">
+                                <i class="nav-icon fas fa-users"></i>
+                                <p>Клієнти</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="technicians.html" class="nav-link">
+                                <i class="nav-icon fas fa-user-hard-hat"></i>
+                                <p>Техніки</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="lifts.html" class="nav-link active">
+                                <i class="nav-icon fas fa-elevator"></i>
+                                <p>Ліфти</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="qr-management.html" class="nav-link">
+                                <i class="nav-icon fas fa-qrcode"></i>
+                                <p>QR-коди</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="calendar.html" class="nav-link">
+                                <i class="nav-icon fas fa-calendar-alt"></i>
+                                <p>Календар</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="reports.html" class="nav-link">
+                                <i class="nav-icon fas fa-chart-bar"></i>
+                                <p>Звіти</p>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <!-- Content Header -->
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">
+                                <i class="fas fa-elevator"></i> Управління Ліфтами
+                            </h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <button class="btn btn-primary float-right" onclick="openAddLiftModal()">
+                                <i class="fas fa-plus"></i> Додати ліфт
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+                    
+                    <!-- Statistics Cards -->
+                    <div class="row mb-3">
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-info">
+                                <div class="inner">
+                                    <h3 id="totalLifts">0</h3>
+                                    <p>Всього ліфтів</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-elevator"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-success">
+                                <div class="inner">
+                                    <h3 id="activeLifts">0</h3>
+                                    <p>Активні</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-warning">
+                                <div class="inner">
+                                    <h3 id="maintenanceLifts">0</h3>
+                                    <p>На обслуговуванні</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-tools"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-danger">
+                                <div class="inner">
+                                    <h3 id="inactiveLifts">0</h3>
+                                    <p>Неактивні</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="filters">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <input type="text" id="searchInput" class="form-control" placeholder="🔍 Пошук за назвою або адресою...">
+                            </div>
+                            <div class="col-md-3">
+                                <select id="statusFilter" class="form-control">
+                                    <option value="">Всі статуси</option>
+                                    <option value="active">Активні</option>
+                                    <option value="inactive">Неактивні</option>
+                                    <option value="maintenance">На обслуговуванні</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select id="municipalityFilter" class="form-control">
+                                    <option value="">Всі муніципалітети</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-secondary btn-block" onclick="resetFilters()">
+                                    <i class="fas fa-redo"></i> Скинути
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lifts List -->
+                    <div id="liftsContainer">
+                        <div class="text-center py-5">
+                            <i class="fas fa-spinner fa-spin fa-3x text-primary"></i>
+                            <p class="mt-3">Завантаження ліфтів...</p>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer class="main-footer">
+            <strong>&copy; 2024 DeapSeaK Lift Management System.</strong>
+            <div class="float-right d-none d-sm-inline-block">
+                <b>Version</b> 2.0
+            </div>
+        </footer>
+    </div>
+
+    <!-- Add/Edit Lift Modal -->
+    <div class="modal fade" id="liftModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary">
+                    <h5 class="modal-title">
+                        <i class="fas fa-elevator"></i> <span id="modalTitle">Додати ліфт</span>
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="liftForm">
+                        <input type="hidden" id="liftId">
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Муніципальний номер <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="municipalNumber" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Статус</label>
+                                    <select class="form-control" id="status">
+                                        <option value="active">Активний</option>
+                                        <option value="inactive">Неактивний</option>
+                                        <option value="maintenance">На обслуговуванні</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Адреса <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="address" required>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Місто</label>
+                                    <input type="text" class="form-control" id="city">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Поштовий індекс</label>
+                                    <input type="text" class="form-control" id="postalCode">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Муніципалітет</label>
+                                    <input type="text" class="form-control" id="municipality">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Вантажопідйомність (кг)</label>
+                                    <input type="number" class="form-control" id="capacity" min="1">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Швидкість (м/с)</label>
+                                    <input type="number" class="form-control" id="speed" step="0.1" min="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Примітки</label>
+                            <textarea class="form-control" id="notes" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times"></i> Скасувати
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="saveLift()">
+                        <i class="fas fa-save"></i> Зберегти
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../../plugins/jquery/jquery.min.js"></script>
+    <script src="../../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="../../plugins/adminlte/adminlte.min.js"></script>
+    <script src="../../assets/js/auth.js"></script>
+
+    <script>
+        const API_URL = window.location.origin;
+        let allLifts = [];
+        let currentLift = null;
+
+        // Ініціалізація при завантаженні
+        document.addEventListener('DOMContentLoaded', function() {
+            // Перевірка авторизації
+            if (!AuthManager.isAuthenticated()) {
+                window.location.href = '/pages/auth/login.html';
+                return;
+            }
+
+            loadLifts();
+            setupEventListeners();
+        });
+
+        // Завантаження ліфтів
+        async function loadLifts() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_URL}/api/lifts`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Помилка завантаження ліфтів');
+                }
+
+                const data = await response.json();
+                allLifts = data.lifts || [];
+                
+                updateStatistics();
+                populateMunicipalityFilter();
+                displayLifts(allLifts);
+                
+            } catch (error) {
+                console.error('Помилка:', error);
+                showError('Не вдалося завантажити ліфти');
+            }
+        }
+
+        // Відображення ліфтів
+        function displayLifts(lifts) {
+            const container = document.getElementById('liftsContainer');
+            
+            if (lifts.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-inbox fa-3x text-muted"></i>
+                        <p class="mt-3 text-muted">Ліфтів не знайдено</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = lifts.map(lift => `
+                <div class="lift-card">
+                    <div class="lift-header">
+                        <div>
+                            <h4 class="mb-1">
+                                <i class="fas fa-elevator text-primary"></i>
+                                ${lift.municipalNumber || 'Без номера'}
+                            </h4>
+                            <span class="lift-status ${lift.status || 'active'}">
+                                ${getStatusText(lift.status)}
+                            </span>
+                        </div>
+                        <div>
+                            <button class="btn btn-sm btn-info" onclick="editLift('${lift._id}')" title="Редагувати">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-success" onclick="viewQRCode('${lift._id}')" title="QR-код">
+                                <i class="fas fa-qrcode"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="lift-info">
+                        <div class="info-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>${lift.address || 'Адреса не вказана'}</span>
+                        </div>
+                        ${lift.municipality ? `
+                        <div class="info-item">
+                            <i class="fas fa-city"></i>
+                            <span>${lift.municipality}</span>
+                        </div>
+                        ` : ''}
+                        ${lift.capacity ? `
+                        <div class="info-item">
+                            <i class="fas fa-weight"></i>
+                            <span>${lift.capacity} кг</span>
+                        </div>
+                        ` : ''}
+                        ${lift.speed ? `
+                        <div class="info-item">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>${lift.speed} м/с</span>
+                        </div>
+                        ` : ''}
+                    </div>
+                    
+                    ${lift.notes ? `
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            <i class="fas fa-sticky-note"></i> ${lift.notes}
+                        </small>
+                    </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        // Оновлення статистики
+        function updateStatistics() {
+            document.getElementById('totalLifts').textContent = allLifts.length;
+            document.getElementById('activeLifts').textContent = allLifts.filter(l => l.status === 'active').length;
+            document.getElementById('maintenanceLifts').textContent = allLifts.filter(l => l.status === 'maintenance').length;
+            document.getElementById('inactiveLifts').textContent = allLifts.filter(l => l.status === 'inactive').length;
+        }
+
+        // Заповнення фільтра муніципалітетів
+        function populateMunicipalityFilter() {
+            const municipalities = [...new Set(allLifts.map(l => l.municipality).filter(Boolean))];
+            const select = document.getElementById('municipalityFilter');
+            
+            municipalities.forEach(m => {
+                const option = document.createElement('option');
+                option.value = m;
+                option.textContent = m;
+                select.appendChild(option);
+            });
+        }
+
+        // Налаштування слухачів подій
+        function setupEventListeners() {
+            document.getElementById('searchInput').addEventListener('input', applyFilters);
+            document.getElementById('statusFilter').addEventListener('change', applyFilters);
+            document.getElementById('municipalityFilter').addEventListener('change', applyFilters);
+        }
+
+        // Застосування фільтрів
+        function applyFilters() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const status = document.getElementById('statusFilter').value;
+            const municipality = document.getElementById('municipalityFilter').value;
+
+            let filtered = allLifts.filter(lift => {
+                const matchSearch = !search || 
+                    (lift.municipalNumber && lift.municipalNumber.toLowerCase().includes(search)) ||
+                    (lift.address && lift.address.toLowerCase().includes(search));
+                
+                const matchStatus = !status || lift.status === status;
+                const matchMunicipality = !municipality || lift.municipality === municipality;
+
+                return matchSearch && matchStatus && matchMunicipality;
+            });
+
+            displayLifts(filtered);
+        }
+
+        // Скидання фільтрів
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('municipalityFilter').value = '';
+            displayLifts(allLifts);
+        }
+
+        // Відкрити модальне вікно додавання
+        function openAddLiftModal() {
+            currentLift = null;
+            document.getElementById('modalTitle').textContent = 'Додати ліфт';
+            document.getElementById('liftForm').reset();
+            document.getElementById('liftId').value = '';
+            $('#liftModal').modal('show');
+        }
+
+        // Редагувати ліфт
+        function editLift(liftId) {
+            currentLift = allLifts.find(l => l._id === liftId);
+            if (!currentLift) return;
+
+            document.getElementById('modalTitle').textContent = 'Редагувати ліфт';
+            document.getElementById('liftId').value = currentLift._id;
+            document.getElementById('municipalNumber').value = currentLift.municipalNumber || '';
+            document.getElementById('status').value = currentLift.status || 'active';
+            document.getElementById('address').value = currentLift.address || '';
+            document.getElementById('city').value = currentLift.city || '';
+            document.getElementById('postalCode').value = currentLift.postalCode || '';
+            document.getElementById('municipality').value = currentLift.municipality || '';
+            document.getElementById('capacity').value = currentLift.capacity || '';
+            document.getElementById('speed').value = currentLift.speed || '';
+            document.getElementById('notes').value = currentLift.notes || '';
+
+            $('#liftModal').modal('show');
+        }
+
+        // Зберегти ліфт
+        async function saveLift() {
+            const liftId = document.getElementById('liftId').value;
+            const municipalNumber = document.getElementById('municipalNumber').value.trim();
+            const address = document.getElementById('address').value.trim();
+
+            if (!municipalNumber || !address) {
+                showError('Заповніть обов\'язкові поля: Муніципальний номер та Адреса');
+                return;
+            }
+
+            const liftData = {
+                municipalNumber,
+                status: document.getElementById('status').value,
+                address,
+                city: document.getElementById('city').value.trim(),
+                postalCode: document.getElementById('postalCode').value.trim(),
+                municipality: document.getElementById('municipality').value.trim(),
+                capacity: parseInt(document.getElementById('capacity').value) || undefined,
+                speed: parseFloat(document.getElementById('speed').value) || undefined,
+                notes: document.getElementById('notes').value.trim()
+            };
+
+            try {
+                const token = localStorage.getItem('authToken');
+                const url = liftId ? `${API_URL}/api/lifts/${liftId}` : `${API_URL}/api/lifts`;
+                const method = liftId ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(liftData)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Помилка збереження');
+                }
+
+                $('#liftModal').modal('hide');
+                showSuccess(liftId ? 'Ліфт оновлено' : 'Ліфт додано');
+                loadLifts();
+
+            } catch (error) {
+                console.error('Помилка:', error);
+                showError(error.message || 'Не вдалося зберегти ліфт');
+            }
+        }
+
+        // Переглянути QR-код
+        function viewQRCode(liftId) {
+            const lift = allLifts.find(l => l._id === liftId);
+            if (lift && lift.qrCode) {
+                window.open(lift.qrCode, '_blank');
+            } else {
+                showError('QR-код не знайдено');
+            }
+        }
+
+        // Отримати текст статусу
+        function getStatusText(status) {
+            const statuses = {
+                'active': 'Активний',
+                'inactive': 'Неактивний',
+                'maintenance': 'На обслуговуванні'
+            };
+            return statuses[status] || 'Активний';
+        }
+
+        // Показати помилку
+        function showError(message) {
+            alert('❌ ' + message);
+        }
+
+        // Показати успіх
+        function showSuccess(message) {
+            alert('✅ ' + message);
+        }
+    </script>
+</body>
+</html>
