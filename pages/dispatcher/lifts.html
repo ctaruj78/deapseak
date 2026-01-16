@@ -334,6 +334,14 @@
                     <!-- Map View (hidden by default) -->
                     <div id="mapView" style="display: none;"></div>
 
+                    <!-- Active Filter Indicator -->
+                    <div id="activeFilterBanner" style="display: none;" class="alert alert-info alert-dismissible fade show">
+                        <strong><i class="fas fa-filter"></i> Активний фільтр:</strong> <span id="filterDescription"></span>
+                        <button type="button" class="close" onclick="clearClientFilter()">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+
                     <!-- Lifts List -->
                     <div id="liftsContainer">
                         <div class="text-center py-5">
@@ -585,7 +593,32 @@
 
             loadLifts();
             setupEventListeners();
+            
+            // Перевірити чи є параметр highlight в URL
+            checkForHighlight();
         });
+        
+        // Перевірка параметра highlight для автоматичного відкриття ліфта
+        function checkForHighlight() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const highlightId = urlParams.get('highlight');
+            
+            if (highlightId) {
+                console.log('🎯 Виявлено highlight параметр:', highlightId);
+                // Почекати поки ліфти завантажаться, потім відкрити модальне вікно
+                setTimeout(() => {
+                    const lift = allLifts.find(l => l._id === highlightId);
+                    if (lift) {
+                        console.log('✅ Знайдено ліфт, відкриваємо:', lift.municipalNumber);
+                        editLift(highlightId);
+                        // Очистити URL параметр
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    } else {
+                        console.warn('⚠️ Ліфт не знайдено:', highlightId);
+                    }
+                }, 1000);
+            }
+        }
 
         // Завантаження ліфтів
         async function loadLifts() {
@@ -594,7 +627,17 @@
                 console.log('🔄 Завантаження ліфтів...');
                 console.log('🔑 Token:', token ? 'Присутній' : 'Відсутній');
                 
-                const response = await fetch(`${API_URL}/api/lifts`, {
+                // Перевірити чи є параметр clientId в URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const clientId = urlParams.get('clientId');
+                let apiUrl = `${API_URL}/api/lifts`;
+                
+                if (clientId) {
+                    apiUrl += `?clientId=${clientId}`;
+                    console.log('🔍 Фільтр по clientId:', clientId);
+                }
+                
+                const response = await fetch(apiUrl, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -621,6 +664,11 @@
                 
                 allLifts = data.data || data.lifts || [];
                 console.log('📊 Кількість ліфтів:', allLifts.length);
+                
+                // Показати банер фільтра якщо активний
+                if (clientId) {
+                    showClientFilterBanner(clientId);
+                }
                 
                 updateStatistics();
                 updateNotificationCounter();
@@ -649,6 +697,38 @@
                     </div>
                 `;
             }
+        }
+
+        // ============================================
+        // 🔍 ФІЛЬТРАЦІЯ ТА НАВІГАЦІЯ
+        // ============================================
+        
+        // Показати банер фільтра по клієнту
+        async function showClientFilterBanner(clientId) {
+            try {
+                // Отримати дані клієнта
+                const response = await fetch(`${API_URL}/api/users/${clientId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    const client = result.data || result;
+                    const clientName = client.companyName || `${client.firstName || ''} ${client.lastName || ''}`.trim() || client.email;
+                    
+                    document.getElementById('filterDescription').textContent = `Ліфти клієнта "${clientName}"`;
+                    document.getElementById('activeFilterBanner').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Помилка завантаження даних клієнта:', error);
+            }
+        }
+        
+        // Очистити фільтр клієнта
+        function clearClientFilter() {
+            window.location.href = window.location.pathname;
         }
 
         // ============================================
