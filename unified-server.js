@@ -1082,8 +1082,12 @@ app.get('/api/lifts', authenticateToken, async (req, res) => {
             
             // Додати фільтр по clientId якщо переданий
             if (req.query.clientId) {
-                query.client = req.query.clientId.toString();
-                console.log(`🔍 Фільтр по clientId: ${req.query.clientId}`);
+                const clientId = req.query.clientId.toString();
+                query.$or = [
+                    { client: clientId },
+                    { 'client._id': clientId }
+                ];
+                console.log(`🔍 Фільтр по clientId: ${clientId}`);
             }
         }
         
@@ -2183,14 +2187,20 @@ app.get('/api/users', authenticateToken, async (req, res) => {
                 const liftsCollection = db.collection('lifts');
                 
                 for (let user of users) {
-                    // Підрахувати ліфти клієнта
+                    // Підрахувати ліфти клієнта - перевіряємо всі можливі формати
+                    const userId = user._id.toString();
                     const liftCount = await liftsCollection.countDocuments({
                         $or: [
-                            { client: user._id.toString() },
-                            { 'client._id': user._id.toString() }
+                            { client: userId },
+                            { client: user._id },
+                            { 'client._id': userId },
+                            { 'client._id': user._id },
+                            { clientEmail: user.email },
+                            { clientPhone: user.phone }
                         ]
                     });
                     user.liftsCount = liftCount;
+                    console.log(`📊 Клієнт ${user.email}: ${liftCount} ліфтів`);
                 }
             }
             

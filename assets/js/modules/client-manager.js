@@ -382,16 +382,16 @@ class ClientManager {
                 <button class="btn btn-sm btn-primary" onclick="clientManager.viewClient('${client.id || client._id}')">
                     <i class="fas fa-eye"></i> Переглянути
                 </button>
-                <button class="btn btn-sm btn-info" onclick="clientManager.sendEmail('${client.id || client._id}')">
-                    <i class="fas fa-envelope"></i> Email
+                ${client.liftsCount > 0 ? `
+                <button class="btn btn-sm btn-success" onclick="clientManager.viewAllClientLifts('${client._id || client.id}')">
+                    <i class="fas fa-elevator"></i> Ліфти (${client.liftsCount})
+                </button>` : ''}
+                <button class="btn btn-sm btn-info" onclick="window.location.href='tel:${client.phone}'">
+                    <i class="fas fa-phone"></i>
                 </button>
                 ${this.userRole === 'admin' || this.userRole === 'dispatcher' ? `
                 <button class="btn btn-sm btn-warning" onclick="clientManager.editClient('${client.id || client._id}')">
-                    <i class="fas fa-edit"></i> Редагувати
-                </button>` : ''}
-                ${this.userRole === 'admin' ? `
-                <button class="btn btn-sm btn-danger" onclick="clientManager.deleteClient('${client.id || client._id}')">
-                    <i class="fas fa-trash"></i> Видалити
+                    <i class="fas fa-edit"></i>
                 </button>` : ''}
             </div>
         `;
@@ -587,9 +587,18 @@ class ClientManager {
                         </div>
                         
                         <h6>Контактна інформація:</h6>
-                        <p><i class="fas fa-envelope mr-2"></i> ${client.email}</p>
-                        <p><i class="fas fa-phone mr-2"></i> ${client.phone}</p>
-                        <p><i class="fas fa-map-marker-alt mr-2"></i> ${client.address}</p>
+                        <p><i class="fas fa-envelope mr-2 text-primary"></i> <a href="mailto:${client.email}">${client.email}</a></p>
+                        <p><i class="fas fa-phone mr-2 text-success"></i> <a href="tel:${client.phone}">${client.phone}</a></p>
+                        <p><i class="fas fa-map-marker-alt mr-2 text-danger"></i> ${client.address}</p>
+                        
+                        <div class="mt-3">
+                            <button class="btn btn-sm btn-success" onclick="window.location.href='tel:${client.phone}'">
+                                <i class="fas fa-phone-alt"></i> Зателефонувати
+                            </button>
+                            <button class="btn btn-sm btn-primary" onclick="window.location.href='mailto:${client.email}'">
+                                <i class="fas fa-envelope"></i> Email
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="col-md-6">
@@ -707,18 +716,24 @@ class ClientManager {
             container.innerHTML = `
                 <div class="list-group">
                     ${liftsToShow.map(lift => `
-                        <div class="list-group-item">
+                        <a href="/pages/dispatcher/lifts.html?highlight=${lift._id}" class="list-group-item list-group-item-action" style="cursor: pointer;">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <strong><i class="fas fa-elevator text-primary"></i> ${lift.municipalNumber || 'Без номера'}</strong>
                                     <br>
-                                    <small class="text-muted">${typeof lift.address === 'object' ? (lift.address.street || lift.address.full) : lift.address}</small>
+                                    <small class="text-muted">
+                                        <i class="fas fa-map-marker-alt"></i> ${typeof lift.address === 'object' ? (lift.address.street || lift.address.full) : lift.address}
+                                    </small>
+                                    ${lift.capacity ? `<br><small class="text-muted"><i class="fas fa-weight"></i> ${lift.capacity} кг</small>` : ''}
                                 </div>
-                                <span class="badge badge-${lift.status === 'active' ? 'success' : lift.status === 'maintenance' ? 'warning' : 'secondary'}">
-                                    ${lift.status === 'active' ? 'Активний' : lift.status === 'maintenance' ? 'На обслуговуванні' : 'Неактивний'}
-                                </span>
+                                <div class="text-right">
+                                    <span class="badge badge-${lift.status === 'active' ? 'success' : lift.status === 'maintenance' ? 'warning' : 'secondary'}">
+                                        ${lift.status === 'active' ? 'Активний' : lift.status === 'maintenance' ? 'На обслуговуванні' : 'Неактивний'}
+                                    </span>
+                                    ${lift.nextInspectionDate ? `<br><small class="text-muted"><i class="fas fa-calendar"></i> ${new Date(lift.nextInspectionDate).toLocaleDateString('uk-UA')}</small>` : ''}
+                                </div>
                             </div>
-                        </div>
+                        </a>
                     `).join('')}
                 </div>
                 ${lifts.length > 5 ? `<small class="text-muted">Показано 5 з ${lifts.length} ліфтів</small>` : ''}
