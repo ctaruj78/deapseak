@@ -70,7 +70,8 @@ class ClientManager {
                         activeRequests: user.activeRequests || 0,
                         requestsCount: user.requestsCount || 0,
                         avatar: avatar,
-                        createdAt: user.createdAt || new Date().toISOString()
+                        createdAt: user.createdAt || new Date().toISOString(),
+                        liftsCount: user.liftsCount || 0 // Кількість ліфтів клієнта
                     };
                 });
                 
@@ -359,11 +360,15 @@ class ClientManager {
             </div>
             
             <div class="row text-center mb-3">
-                <div class="col-6">
+                <div class="col-4">
+                    <div class="text-success font-weight-bold">${client.liftsCount || 0}</div>
+                    <small class="text-muted">Ліфтів</small>
+                </div>
+                <div class="col-4">
                     <div class="text-primary font-weight-bold">${client.totalRequests}</div>
                     <small class="text-muted">Заявок</small>
                 </div>
-                <div class="col-6">
+                <div class="col-4">
                     <div class="text-warning font-weight-bold">${client.rating}</div>
                     <small class="text-muted">Рейтинг</small>
                 </div>
@@ -632,6 +637,22 @@ class ClientManager {
                     </div>
                 </div>
                 
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h6>Ліфти клієнта: <span class="badge badge-success">${client.liftsCount || 0}</span></h6>
+                        <div id="clientLiftsContainer">
+                            <div class="text-center py-3">
+                                <i class="fas fa-spinner fa-spin"></i> Завантаження ліфтів...
+                            </div>
+                        </div>
+                        ${client.liftsCount > 0 ? `
+                            <button class="btn btn-sm btn-primary mt-2" onclick="clientManager.viewAllClientLifts('${client._id || client.id}')">
+                                <i class="fas fa-elevator"></i> Переглянути всі ліфти
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+                
                 ${client.notes ? `
                 <div class="row mt-3">
                     <div class="col-12">
@@ -648,6 +669,73 @@ class ClientManager {
         `;
         
         this.showCustomModal(modalContent);
+        
+        // Завантажити ліфти клієнта після відкриття модалки
+        setTimeout(() => this.loadClientLifts(client._id || client.id), 100);
+    }
+    
+    // Завантаження ліфтів клієнта
+    async loadClientLifts(clientId) {
+        const container = document.getElementById('clientLiftsContainer');
+        if (!container) return;
+        
+        try {
+            const response = await fetch(`/api/lifts?clientId=${clientId}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error('Помилка завантаження ліфтів');
+            }
+            
+            const result = await response.json();
+            const lifts = result.data || result.lifts || [];
+            
+            if (lifts.length === 0) {
+                container.innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> У цього клієнта ще немає ліфтів
+                    </div>
+                `;
+                return;
+            }
+            
+            // Показати перші 5 ліфтів
+            const liftsToShow = lifts.slice(0, 5);
+            container.innerHTML = `
+                <div class="list-group">
+                    ${liftsToShow.map(lift => `
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong><i class="fas fa-elevator text-primary"></i> ${lift.municipalNumber || 'Без номера'}</strong>
+                                    <br>
+                                    <small class="text-muted">${typeof lift.address === 'object' ? (lift.address.street || lift.address.full) : lift.address}</small>
+                                </div>
+                                <span class="badge badge-${lift.status === 'active' ? 'success' : lift.status === 'maintenance' ? 'warning' : 'secondary'}">
+                                    ${lift.status === 'active' ? 'Активний' : lift.status === 'maintenance' ? 'На обслуговуванні' : 'Неактивний'}
+                                </span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                ${lifts.length > 5 ? `<small class="text-muted">Показано 5 з ${lifts.length} ліфтів</small>` : ''}
+            `;
+        } catch (error) {
+            console.error('❌ Помилка завантаження ліфтів:', error);
+            container.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i> Помилка завантаження ліфтів
+                </div>
+            `;
+        }
+    }
+    
+    // Перегляд всіх ліфтів клієнта (перехід на сторінку ліфтів з фільтром)
+    viewAllClientLifts(clientId) {
+        window.location.href = `/pages/dispatcher/lifts.html?clientId=${clientId}`;
     }
 
     // Показати модальне вікно додавання клієнта

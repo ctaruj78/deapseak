@@ -1079,6 +1079,12 @@ app.get('/api/lifts', authenticateToken, async (req, res) => {
         } else if (req.user.role === 'admin' || req.user.role === 'dispatcher') {
             // Адмін і диспетчер бачать всі ліфти
             console.log(`👨‍💼 ${req.user.role} ${req.user.username} запитує всі ліфти`);
+            
+            // Додати фільтр по clientId якщо переданий
+            if (req.query.clientId) {
+                query.client = req.query.clientId.toString();
+                console.log(`🔍 Фільтр по clientId: ${req.query.clientId}`);
+            }
         }
         
         const lifts = await db.collection('lifts').find(query).toArray();
@@ -2171,6 +2177,22 @@ app.get('/api/users', authenticateToken, async (req, res) => {
                 filter,
                 { projection: { password: 0 } }
             ).toArray();
+            
+            // Додати підрахунок ліфтів для кожного клієнта
+            if (req.query.role === 'client') {
+                const liftsCollection = db.collection('lifts');
+                
+                for (let user of users) {
+                    // Підрахувати ліфти клієнта
+                    const liftCount = await liftsCollection.countDocuments({
+                        $or: [
+                            { client: user._id.toString() },
+                            { 'client._id': user._id.toString() }
+                        ]
+                    });
+                    user.liftsCount = liftCount;
+                }
+            }
             
             return res.json({
                 success: true,
