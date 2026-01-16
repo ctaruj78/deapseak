@@ -548,6 +548,21 @@
         let map = null;
         let markerCluster = null;
         let currentView = 'list'; // 'list' або 'map'
+        let userRole = 'dispatcher'; // За замовчуванням
+
+        // Отримати роль користувача з токена
+        function getUserRole() {
+            try {
+                const token = localStorage.getItem('authToken');
+                if (token) {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    return payload.role || 'dispatcher';
+                }
+            } catch (error) {
+                console.warn('⚠️ Не вдалося отримати роль з токена:', error);
+            }
+            return 'dispatcher';
+        }
 
         // Ініціалізація при завантаженні
         document.addEventListener('DOMContentLoaded', function() {
@@ -556,6 +571,10 @@
                 window.location.href = '/pages/auth/login.html';
                 return;
             }
+
+            // Отримати роль користувача
+            userRole = getUserRole();
+            console.log('👤 Роль користувача:', userRole);
 
             // Перевірка наявності jQuery modal plugin (для діагностики)
             if (typeof $.fn.modal === 'undefined') {
