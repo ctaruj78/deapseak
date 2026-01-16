@@ -1367,7 +1367,7 @@
                 const response = await fetch(`/api/lifts/${currentDocumentLiftId}/documents`, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     },
                     body: formData
                 });
@@ -1394,9 +1394,11 @@
 
         async function loadDocuments(liftId) {
             try {
+                console.log('📄 Завантаження документів для ліфта:', liftId);
+                
                 const response = await fetch(`/api/lifts/${liftId}/documents`, {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     }
                 });
 
@@ -1405,10 +1407,13 @@
                 }
 
                 const documents = await response.json();
+                console.log('✅ Отримано документів:', documents.length, documents);
 
                 // Розділити документи за типом
                 const contracts = documents.filter(doc => doc.type === 'contract');
                 const inspections = documents.filter(doc => doc.type === 'inspection');
+                
+                console.log('📑 Контрактів:', contracts.length, 'Звітів:', inspections.length);
 
                 // Відобразити контракти
                 renderDocumentList('contractsList', contracts);
@@ -1508,7 +1513,7 @@
                 const response = await fetch(`/api/lifts/${currentDocumentLiftId}/documents/${docId}`, {
                     method: 'DELETE',
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     }
                 });
 

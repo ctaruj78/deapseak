@@ -1822,12 +1822,15 @@ app.get('/api/lifts/:id/documents', authenticateToken, async (req, res) => {
         const { ObjectId } = require('mongodb');
         const liftId = new ObjectId(req.params.id);
         
+        console.log('📄 Запит документів для ліфта:', liftId);
+        
         const lift = await db.collection('lifts').findOne(
             { _id: liftId },
             { projection: { documents: 1 } }
         );
         
         if (!lift) {
+            console.error('❌ Ліфт не знайдено:', liftId);
             return res.status(404).json({
                 success: false,
                 message: 'Ліфт не знайдено'
@@ -1835,6 +1838,7 @@ app.get('/api/lifts/:id/documents', authenticateToken, async (req, res) => {
         }
         
         const documents = lift.documents || [];
+        console.log(`✅ Знайдено ${documents.length} документів для ліфта ${liftId}`);
         
         res.json(documents);
     } catch (error) {
