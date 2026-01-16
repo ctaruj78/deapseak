@@ -1614,6 +1614,243 @@ app.delete('/api/lifts/:id', authenticateToken, async (req, res) => {
 });
 
 // ========================================
+// 📄 LIFT DOCUMENTS MANAGEMENT
+// ========================================
+
+// Multer конфігурація для документів ліфтів
+const liftDocStorage = multer.diskStorage({
+    destination: async (req, file, cb) => {
+        const liftId = req.params.id;
+        const uploadDir = path.join(__dirname, 'uploads', 'lifts', liftId);
+        
+        try {
+            await fs.mkdir(uploadDir, { recursive: true });
+            cb(null, uploadDir);
+        } catch (error) {
+            console.error('❌ Error creating upload directory:', error);
+            cb(error, null);
+        }
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const ext = path.extname(file.originalname);
+        const nameWithoutExt = path.basename(file.originalname, ext);
+        cb(null, `${nameWithoutExt}-${uniqueSuffix}${ext}`);
+    }
+});
+
+const uploadLiftDoc = multer({
+    storage: liftDocStorage,
+    limits: {
+        fileSize: 10 * 1024 * 1024 // 10MB
+    },
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = [
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'image/jpeg',
+            'image/png'
+        ];
+        
+        if (allowedTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Недопустимий тип файлу. Дозволені: PDF, DOC, DOCX, JPG, PNG'));
+        }
+    }
+});
+
+// POST /api/lifts/:id/documents - завантаження документа
+app.post('/api/lifts/:id/documents', authenticateToken, uploadLiftDoc.single('document'), async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const liftId = new ObjectId(req.params.id);
+        const documentType = req.body.type; // 'contract' або 'inspection'
+        
+        console.log('📄 Uploading document for lift:', liftId);
+        console.log('📝 Type:', documentType);
+        console.log('👤 User:', req.user.username);
+        
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: 'Файл не завантажено'
+            });
+        }
+        
+        if (!['contract', 'inspection'].includes(documentType)) {
+            // Видалити завантажений файл
+            await fs.unlink(req.file.path);
+            return res.status(400).json({
+                success: false,
+                message: 'Недійсний тип документа'
+            });
+        }
+        
+        // Створити запис документа
+        const document = {
+            _id: new ObjectId(),
+            type: documentType,
+            filename: req.file.originalname,
+            storedFilename: req.file.filename,
+            path: `/uploads/lifts/${req.params.id}/${req.file.filename}`,
+            mimetype: req.file.mimetype,
+            size: req.file.size,
+            uploadedBy: {
+                _id: req.user._id,
+                username: req.user.username,
+                name: req.user.name || req.user.username
+            },
+            uploadedAt: new Date().toISOString()
+        };
+        
+        // Додати документ до БД
+        const result = await db.collection('lifts').updateOne(
+            { _id: liftId },
+            { 
+                $push: { documents: document },
+                $set: { updatedAt: new Date().toISOString() }
+            }
+        );
+        
+        if (result.matchedCount === 0) {
+            // Видалити завантажений файл якщо ліфт не знайдено
+            await fs.unlink(req.file.path);
+            return res.status(404).json({
+                success: false,
+                message: 'Ліфт не знайдено'
+            });
+        }
+        
+        console.log('✅ Document uploaded:', req.file.originalname);
+        
+        res.json({
+            success: true,
+            message: 'Документ успішно завантажено',
+            document: document
+        });
+    } catch (error) {
+        console.error('❌ Error uploading document:', error);
+        
+        // Спробувати видалити файл у разі помилки
+        if (req.file && req.file.path) {
+            try {
+                await fs.unlink(req.file.path);
+            } catch (unlinkError) {
+                console.error('❌ Error deleting file:', unlinkError);
+            }
+        }
+        
+        res.status(500).json({
+            success: false,
+            message: 'Помилка завантаження документа'
+        });
+    }
+});
+
+// GET /api/lifts/:id/documents - отримання всіх документів ліфта
+app.get('/api/lifts/:id/documents', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const liftId = new ObjectId(req.params.id);
+        
+        const lift = await db.collection('lifts').findOne(
+            { _id: liftId },
+            { projection: { documents: 1 } }
+        );
+        
+        if (!lift) {
+            return res.status(404).json({
+                success: false,
+                message: 'Ліфт не знайдено'
+            });
+        }
+        
+        const documents = lift.documents || [];
+        
+        res.json(documents);
+    } catch (error) {
+        console.error('❌ Error fetching documents:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка завантаження документів'
+        });
+    }
+});
+
+// DELETE /api/lifts/:liftId/documents/:docId - видалення документа (тільки admin)
+app.delete('/api/lifts/:liftId/documents/:docId', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const liftId = new ObjectId(req.params.liftId);
+        const docId = new ObjectId(req.params.docId);
+        
+        // 🔐 ПЕРЕВІРКА ПРАВ - тільки admin може видаляти
+        if (req.user.role !== 'admin') {
+            console.warn(`⚠️ ${req.user.role} ${req.user.username} намагається видалити документ`);
+            return res.status(403).json({
+                success: false,
+                message: 'Тільки адміністратор може видаляти документи'
+            });
+        }
+        
+        // Знайти документ
+        const lift = await db.collection('lifts').findOne(
+            { _id: liftId },
+            { projection: { documents: 1 } }
+        );
+        
+        if (!lift) {
+            return res.status(404).json({
+                success: false,
+                message: 'Ліфт не знайдено'
+            });
+        }
+        
+        const document = lift.documents?.find(doc => doc._id.equals(docId));
+        
+        if (!document) {
+            return res.status(404).json({
+                success: false,
+                message: 'Документ не знайдено'
+            });
+        }
+        
+        // Видалити файл з файлової системи
+        const filePath = path.join(__dirname, 'uploads', 'lifts', req.params.liftId, document.storedFilename);
+        try {
+            await fs.unlink(filePath);
+            console.log('🗑️ File deleted:', filePath);
+        } catch (error) {
+            console.warn('⚠️ Could not delete file:', error.message);
+        }
+        
+        // Видалити документ з БД
+        const result = await db.collection('lifts').updateOne(
+            { _id: liftId },
+            { 
+                $pull: { documents: { _id: docId } },
+                $set: { updatedAt: new Date().toISOString() }
+            }
+        );
+        
+        console.log('✅ Document deleted by admin:', req.user.username);
+        
+        res.json({
+            success: true,
+            message: 'Документ видалено успішно'
+        });
+    } catch (error) {
+        console.error('❌ Error deleting document:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка видалення документа'
+        });
+    }
+});
+
+// ========================================
 // 🏛️ MUNICIPALITY API ENDPOINTS
 // ========================================
 

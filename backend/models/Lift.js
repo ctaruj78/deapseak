@@ -21,6 +21,10 @@ const liftSchema = new mongoose.Schema({
             required: true
         }
     },
+    coordinates: {
+        lat: Number,
+        lng: Number
+    },
     client: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
@@ -69,6 +73,25 @@ const liftSchema = new mongoose.Schema({
         description: String,
         uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
         uploadedAt: { type: Date, default: Date.now }
+    }],
+    documents: [{
+        type: { 
+            type: String, 
+            enum: ['contract', 'inspection'], 
+            required: true 
+        },
+        filename: { type: String, required: true },
+        storedFilename: { type: String, required: true },
+        path: { type: String, required: true },
+        mimetype: String,
+        size: Number,
+        uploadedBy: {
+            _id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+            username: String,
+            name: String
+        },
+        uploadedAt: { type: Date, default: Date.now },
+        notes: String
     }],
     maintenanceContract: {
         contractFile: String, // PDF файл контракту
