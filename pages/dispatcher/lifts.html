@@ -1113,6 +1113,18 @@
             alert('✅ ' + message);
         }
 
+        // Універсальна функція для показу повідомлень
+        function showAlert(message, type = 'info') {
+            const icons = {
+                'success': '✅',
+                'danger': '❌',
+                'warning': '⚠️',
+                'info': 'ℹ️'
+            };
+            const icon = icons[type] || 'ℹ️';
+            alert(`${icon} ${message}`);
+        }
+
         // ============================================
         // ФУНКЦІЇ ДЛЯ КАРТИ
         // ============================================
