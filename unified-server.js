@@ -2125,6 +2125,24 @@ app.get('/api/users/profile', authenticateToken, async (req, res) => {
     }
 });
 
+// GET /api/users/technicians - список техніків (для призначення)
+app.get('/api/users/technicians', authenticateToken, async (req, res) => {
+    try {
+        const technicians = await db.collection('users').find(
+            { role: 'technician' },
+            { projection: { password: 0 } }
+        ).toArray();
+        
+        res.json(technicians);
+    } catch (error) {
+        console.error('❌ Помилка завантаження техніків:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка завантаження техніків'
+        });
+    }
+});
+
 // GET /api/users - отримання користувачів (тільки admin)
 app.get('/api/users', authenticateToken, async (req, res) => {
     try {
@@ -2454,6 +2472,41 @@ app.get('/api/requests/stats', authenticateToken, async (req, res) => {
             success: false,
             message: 'Помилка отримання статистики'
         });
+    }
+});
+
+// GET /api/requests/count-by-lift - кількість активних запитів по ліфтах
+app.get('/api/requests/count-by-lift', authenticateToken, async (req, res) => {
+    try {
+        const requestsCollection = db.collection('requests');
+        
+        // Підрахувати активні запити (pending, assigned, in_progress) по ліфтах
+        const counts = await requestsCollection.aggregate([
+            {
+                $match: {
+                    status: { $in: ['pending', 'assigned', 'in_progress'] }
+                }
+            },
+            {
+                $group: {
+                    _id: '$lift',
+                    count: { $sum: 1 }
+                }
+            }
+        ]).toArray();
+        
+        // Перетворити в об'єкт { liftId: count }
+        const result = {};
+        counts.forEach(item => {
+            if (item._id) {
+                result[item._id.toString()] = item.count;
+            }
+        });
+        
+        res.json(result);
+    } catch (error) {
+        console.error('❌ Помилка підрахунку запитів:', error);
+        res.status(500).json({});
     }
 });
 

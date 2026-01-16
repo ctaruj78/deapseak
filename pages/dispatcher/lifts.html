@@ -608,6 +608,9 @@
                 populateMunicipalityFilter();
                 displayLifts(allLifts);
                 
+                // Завантажити кількість активних запитів (асинхронно)
+                loadActiveRequestsCount();
+                
             } catch (error) {
                 console.error('❌ Помилка:', error);
                 showError('Не вдалося завантажити ліфти: ' + error.message);
@@ -772,6 +775,45 @@
                     </div>
                     
                     ${notificationBadges}
+                    
+                    <!-- Integration Info -->
+                    <div class="mt-2 mb-2">
+                        ${lift.technician ? `
+                            <span class="badge badge-info mr-1">
+                                <i class="fas fa-user-cog"></i> Технік: ${lift.technician.name || lift.technician.username || 'Призначено'}
+                            </span>
+                        ` : ''}
+                        ${lift.client ? `
+                            <span class="badge badge-secondary mr-1">
+                                <i class="fas fa-user"></i> ${lift.clientName || lift.client.name || 'Клієнт'}
+                            </span>
+                        ` : ''}
+                        ${lift.activeRequests && lift.activeRequests > 0 ? `
+                            <span class="badge badge-danger mr-1">
+                                <i class="fas fa-exclamation-circle"></i> ${lift.activeRequests} активних запитів
+                            </span>
+                        ` : ''}
+                    </div>
+                    
+                    <!-- Quick Actions -->
+                    <div class="mt-2 mb-2">
+                        <button class="btn btn-xs btn-primary mr-1" onclick="createRequestForLift('${lift._id}')" title="Створити запит">
+                            <i class="fas fa-plus"></i> Запит
+                        </button>
+                        <button class="btn btn-xs btn-info mr-1" onclick="viewLiftRequests('${lift._id}')" title="Історія запитів">
+                            <i class="fas fa-history"></i> Історія
+                        </button>
+                        ${!lift.technician ? `
+                            <button class="btn btn-xs btn-success" onclick="assignTechnician('${lift._id}')" title="Призначити техніка">
+                                <i class="fas fa-user-plus"></i> Технік
+                            </button>
+                        ` : ''}
+                        ${lift.clientPhone ? `
+                            <a href="tel:${lift.clientPhone}" class="btn btn-xs btn-secondary" title="Зателефонувати">
+                                <i class="fas fa-phone"></i>
+                            </a>
+                        ` : ''}
+                    </div>
                     
                     <div class="lift-info">
                         <div class="info-item">
@@ -1449,6 +1491,124 @@
             } catch (error) {
                 console.error('Помилка видалення документа:', error);
                 showAlert(error.message || 'Помилка видалення документа', 'danger');
+            }
+        }
+
+        // ============================================
+        // 🔗 ІНТЕГРАЦІЯ З ЗАПИТАМИ ТА ТЕХНІКАМИ
+        // ============================================
+
+        async function createRequestForLift(liftId) {
+            const lift = allLifts.find(l => l._id === liftId);
+            if (!lift) return;
+            
+            // Перенаправлення на сторінку створення запиту з pre-filled даними
+            localStorage.setItem('prefilledRequest', JSON.stringify({
+                liftId: lift._id,
+                liftNumber: lift.municipalNumber,
+                address: typeof lift.address === 'object' ? lift.address.full || lift.address.street : lift.address
+            }));
+            
+            window.location.href = '/pages/dispatcher/requests.html?action=create&liftId=' + liftId;
+        }
+
+        async function viewLiftRequests(liftId) {
+            const lift = allLifts.find(l => l._id === liftId);
+            if (!lift) return;
+            
+            // Перенаправлення на сторінку запитів з фільтром по ліфту
+            window.location.href = '/pages/dispatcher/requests.html?liftId=' + liftId;
+        }
+
+        async function assignTechnician(liftId) {
+            const lift = allLifts.find(l => l._id === liftId);
+            if (!lift) return;
+            
+            try {
+                // Завантажити список техніків
+                const response = await fetch(`${API_URL}/api/users/technicians`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Помилка завантаження техніків');
+                }
+                
+                const technicians = await response.json();
+                
+                if (technicians.length === 0) {
+                    showAlert('Немає доступних техніків', 'warning');
+                    return;
+                }
+                
+                // Показати діалог вибору
+                const technicianSelect = technicians.map((tech, index) => 
+                    `${index + 1}. ${tech.name || tech.username} (${tech.email})`
+                ).join('\n');
+                
+                const selection = prompt(
+                    `Виберіть техніка для ліфта ${lift.municipalNumber}:\n\n${technicianSelect}\n\nВведіть номер:`
+                );
+                
+                if (!selection) return;
+                
+                const techIndex = parseInt(selection) - 1;
+                if (techIndex < 0 || techIndex >= technicians.length) {
+                    showAlert('Невірний вибір', 'danger');
+                    return;
+                }
+                
+                const selectedTech = technicians[techIndex];
+                
+                // Призначити техніка
+                const assignResponse = await fetch(`${API_URL}/api/lifts/${liftId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    },
+                    body: JSON.stringify({
+                        technician: selectedTech._id
+                    })
+                });
+                
+                if (!assignResponse.ok) {
+                    throw new Error('Помилка призначення техніка');
+                }
+                
+                showAlert(`Технік ${selectedTech.name || selectedTech.username} успішно призначений`, 'success');
+                await loadLifts(); // Перезавантажити список
+                
+            } catch (error) {
+                console.error('Помилка призначення техніка:', error);
+                showAlert(error.message || 'Помилка призначення техніка', 'danger');
+            }
+        }
+
+        // Завантажити кількість активних запитів для кожного ліфта
+        async function loadActiveRequestsCount() {
+            try {
+                const response = await fetch(`${API_URL}/api/requests/count-by-lift`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const requestCounts = await response.json();
+                    
+                    // Додати кількість запитів до кожного ліфта
+                    allLifts.forEach(lift => {
+                        const count = requestCounts[lift._id] || 0;
+                        lift.activeRequests = count;
+                    });
+                    
+                    displayLifts(allLifts);
+                }
+            } catch (error) {
+                console.warn('Не вдалося завантажити кількість запитів:', error);
             }
         }
     </script>
