@@ -969,6 +969,73 @@ app.get('/api/lifts/stats', authenticateToken, async (req, res) => {
     }
 });
 
+// GET /api/lifts/notifications - отримання статистики сповіщень
+app.get('/api/lifts/notifications', authenticateToken, async (req, res) => {
+    try {
+        const liftsCollection = db.collection('lifts');
+        const today = new Date();
+        const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+        const sevenDaysFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+        const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+        
+        // Ліфти з простроченою інспекцією
+        const overdueInspections = await liftsCollection.countDocuments({
+            nextInspectionDate: { $lt: today }
+        });
+        
+        // Ліфти з інспекцією в найближчі 7 днів
+        const urgentInspections = await liftsCollection.countDocuments({
+            nextInspectionDate: { 
+                $gte: today,
+                $lte: sevenDaysFromNow
+            }
+        });
+        
+        // Ліфти з інспекцією в найближчі 30 днів
+        const upcomingInspections = await liftsCollection.countDocuments({
+            nextInspectionDate: { 
+                $gte: today,
+                $lte: thirtyDaysFromNow
+            }
+        });
+        
+        // Ліфти неактивні > 7 днів
+        const longInactive = await liftsCollection.countDocuments({
+            status: 'inactive',
+            updatedAt: { $lt: sevenDaysAgo }
+        });
+        
+        // Ліфти без контрактів
+        const withoutContracts = await liftsCollection.countDocuments({
+            $or: [
+                { documents: { $exists: false } },
+                { 'documents.type': { $ne: 'contract' } }
+            ]
+        });
+        
+        // Загальна кількість сповіщень
+        const totalNotifications = overdueInspections + urgentInspections + longInactive;
+        
+        res.json({
+            success: true,
+            data: {
+                total: totalNotifications,
+                overdueInspections,
+                urgentInspections,
+                upcomingInspections,
+                longInactive,
+                withoutContracts
+            }
+        });
+    } catch (error) {
+        console.error('❌ Помилка отримання сповіщень:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка отримання сповіщень'
+        });
+    }
+});
+
 app.get('/api/lifts', authenticateToken, async (req, res) => {
     try {
         const { ObjectId } = require('mongodb');

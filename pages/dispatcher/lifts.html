@@ -431,6 +431,21 @@
                             </div>
                         </div>
 
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Остання інспекція</label>
+                                    <input type="date" class="form-control" id="lastInspectionDate">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Наступна інспекція</label>
+                                    <input type="date" class="form-control" id="nextInspectionDate">
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="form-group">
                             <label>Примітки</label>
                             <textarea class="form-control" id="notes" rows="3"></textarea>
@@ -589,6 +604,7 @@
                 console.log('📊 Кількість ліфтів:', allLifts.length);
                 
                 updateStatistics();
+                updateNotificationCounter();
                 populateMunicipalityFilter();
                 displayLifts(allLifts);
                 
@@ -613,6 +629,96 @@
             }
         }
 
+        // ============================================
+        // 🔔 СИСТЕМА СПОВІЩЕНЬ ТА НАГАДУВАНЬ
+        // ============================================
+
+        function checkLiftNotifications(lift) {
+            const notifications = [];
+            const today = new Date();
+            const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+            
+            // Перевірка наближення інспекції
+            if (lift.nextInspectionDate) {
+                const inspectionDate = new Date(lift.nextInspectionDate);
+                const daysUntil = Math.ceil((inspectionDate - today) / (1000 * 60 * 60 * 24));
+                
+                if (daysUntil < 0) {
+                    notifications.push({
+                        type: 'danger',
+                        icon: 'fas fa-exclamation-triangle',
+                        message: `Інспекція прострочена на ${Math.abs(daysUntil)} днів!`
+                    });
+                } else if (daysUntil <= 7) {
+                    notifications.push({
+                        type: 'danger',
+                        icon: 'fas fa-calendar-times',
+                        message: `Інспекція через ${daysUntil} днів`
+                    });
+                } else if (daysUntil <= 30) {
+                    notifications.push({
+                        type: 'warning',
+                        icon: 'fas fa-calendar-alt',
+                        message: `Інспекція через ${daysUntil} днів`
+                    });
+                }
+            }
+            
+            // Перевірка довгої неактивності
+            if (lift.status === 'inactive' && lift.updatedAt) {
+                const lastUpdate = new Date(lift.updatedAt);
+                const daysInactive = Math.floor((today - lastUpdate) / (1000 * 60 * 60 * 24));
+                
+                if (daysInactive > 7) {
+                    notifications.push({
+                        type: 'warning',
+                        icon: 'fas fa-power-off',
+                        message: `Неактивний ${daysInactive} днів`
+                    });
+                }
+            }
+            
+            // Перевірка відсутності контракту
+            if (!lift.documents || lift.documents.filter(d => d.type === 'contract').length === 0) {
+                notifications.push({
+                    type: 'info',
+                    icon: 'fas fa-file-contract',
+                    message: 'Немає контракту'
+                });
+            }
+            
+            // Перевірка відсутності звітів інспекції
+            if (!lift.documents || lift.documents.filter(d => d.type === 'inspection').length === 0) {
+                if (!lift.lastInspectionDate) {
+                    notifications.push({
+                        type: 'info',
+                        icon: 'fas fa-clipboard-check',
+                        message: 'Немає звітів інспекції'
+                    });
+                }
+            }
+            
+            return notifications;
+        }
+
+        // Оновлення лічильника сповіщень на Dashboard
+        function updateNotificationCounter() {
+            let totalNotifications = 0;
+            
+            allLifts.forEach(lift => {
+                const notifications = checkLiftNotifications(lift);
+                totalNotifications += notifications.length;
+            });
+            
+            // Оновити іконку в header (якщо є)
+            const notifBadge = document.querySelector('.navbar .badge-warning');
+            if (notifBadge) {
+                notifBadge.textContent = totalNotifications;
+            }
+            
+            return totalNotifications;
+        }
+
         // Відображення ліфтів
         function displayLifts(lifts) {
             const container = document.getElementById('liftsContainer');
@@ -627,13 +733,26 @@
                 return;
             }
 
-            container.innerHTML = lifts.map(lift => `
-                <div class="lift-card">
+            container.innerHTML = lifts.map(lift => {
+                const notifications = checkLiftNotifications(lift);
+                const notificationBadges = notifications.length > 0 ? `
+                    <div class="mt-2">
+                        ${notifications.map(notif => `
+                            <span class="badge badge-${notif.type} mr-1">
+                                <i class="${notif.icon}"></i> ${notif.message}
+                            </span>
+                        `).join('')}
+                    </div>
+                ` : '';
+                
+                return `
+                <div class="lift-card ${notifications.some(n => n.type === 'danger') ? 'border-danger' : ''}">
                     <div class="lift-header">
                         <div>
                             <h4 class="mb-1">
                                 <i class="fas fa-elevator text-primary"></i>
                                 ${lift.municipalNumber || 'Без номера'}
+                                ${notifications.length > 0 ? `<span class="badge badge-danger ml-2">${notifications.length}</span>` : ''}
                             </h4>
                             <span class="lift-status ${lift.status || 'active'}">
                                 ${getStatusText(lift.status)}
@@ -651,6 +770,8 @@
                             </button>
                         </div>
                     </div>
+                    
+                    ${notificationBadges}
                     
                     <div class="lift-info">
                         <div class="info-item">
@@ -675,6 +796,12 @@
                             <span>${lift.speed} м/с</span>
                         </div>
                         ` : ''}
+                        ${lift.nextInspectionDate ? `
+                        <div class="info-item">
+                            <i class="fas fa-calendar-check"></i>
+                            <span>Наступна інспекція: ${new Date(lift.nextInspectionDate).toLocaleDateString('uk-UA')}</span>
+                        </div>
+                        ` : ''}
                     </div>
                     
                     ${lift.notes ? `
@@ -685,7 +812,8 @@
                     </div>
                     ` : ''}
                 </div>
-            `).join('');
+            `;
+            }).join('');
         }
 
         // Оновлення статистики
@@ -808,6 +936,15 @@
             document.getElementById('municipality').value = currentLift.municipality || '';
             document.getElementById('capacity').value = currentLift.capacity || '';
             document.getElementById('speed').value = currentLift.speed || '';
+            
+            // Дати інспекції
+            document.getElementById('lastInspectionDate').value = currentLift.lastInspectionDate 
+                ? new Date(currentLift.lastInspectionDate).toISOString().split('T')[0] 
+                : '';
+            document.getElementById('nextInspectionDate').value = currentLift.nextInspectionDate 
+                ? new Date(currentLift.nextInspectionDate).toISOString().split('T')[0] 
+                : '';
+            
             document.getElementById('notes').value = currentLift.notes || '';
 
             // Try jQuery modal API
@@ -846,6 +983,8 @@
                 municipality: document.getElementById('municipality').value.trim(),
                 capacity: parseInt(document.getElementById('capacity').value) || undefined,
                 speed: parseFloat(document.getElementById('speed').value) || undefined,
+                lastInspectionDate: document.getElementById('lastInspectionDate').value || undefined,
+                nextInspectionDate: document.getElementById('nextInspectionDate').value || undefined,
                 notes: document.getElementById('notes').value.trim()
             };
 
