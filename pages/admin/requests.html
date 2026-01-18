@@ -11,7 +11,7 @@
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="/plugins/datatables/css/dataTables.bootstrap4.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 
     <style>
@@ -808,8 +808,8 @@
 <!-- MongoDB ObjectId Converter -->
 <script src="../../assets/js/id-converter.js"></script>
 
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js"></script>
+<script src="/plugins/datatables/js/jquery.dataTables.min.js"></script>
+<script src="/plugins/datatables/js/dataTables.bootstrap4.min.js"></script>
 
 <script>
 /**
@@ -1308,7 +1308,7 @@ class ServiceRequestManager {
     initDataTable() {
         $('#requestsTable').DataTable({
             language: {
-                url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/uk.json'
+                url: '/plugins/datatables/i18n/uk.json'
             },
             order: [[7, 'desc']], // Сортувати за датою створення
             pageLength: 25,

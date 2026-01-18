@@ -1,11 +1,11 @@
 {
-  "date": "2026-01-18T23:15:43.176Z",
+  "date": "2026-01-18T23:34:26.395Z",
   "summary": {
     "totalPages": 7,
     "successPages": 6,
     "errorPages": 1,
-    "avgLoadTime": 5339,
-    "maxLoadTime": 30053,
+    "avgLoadTime": 5366,
+    "maxLoadTime": 30081,
     "totalButtons": 339,
     "totalErrors": 3,
     "score": 85.71428571428571
@@ -15,7 +15,7 @@
       "role": "admin",
       "name": "Admin Dashboard",
       "path": "/pages/admin/admin-dashboard.html",
-      "loadTime": 351,
+      "loadTime": 309,
       "hasNav": true,
       "hasSidebar": true,
       "hasContent": true,
@@ -28,7 +28,7 @@
       "role": "admin",
       "name": "Користувачі",
       "path": "/pages/admin/users.html",
-      "loadTime": 287,
+      "loadTime": 381,
       "hasNav": true,
       "hasSidebar": true,
       "hasContent": true,
@@ -41,7 +41,7 @@
       "role": "admin",
       "name": "Ліфти",
       "path": "/pages/admin/lifts.html",
-      "loadTime": 517,
+      "loadTime": 752,
       "hasNav": true,
       "hasSidebar": true,
       "hasContent": true,
@@ -54,7 +54,7 @@
       "role": "admin",
       "name": "Створення Orçamento",
       "path": "/pages/admin/invoice-template.html",
-      "loadTime": 305,
+      "loadTime": 275,
       "hasNav": true,
       "hasSidebar": true,
       "hasContent": true,
@@ -67,7 +67,7 @@
       "role": "admin",
       "name": "Список Orçamentos",
       "path": "/pages/admin/orcamentos-list.html",
-      "loadTime": 316,
+      "loadTime": 212,
       "hasNav": true,
       "hasSidebar": true,
       "hasContent": true,
@@ -80,7 +80,7 @@
       "role": "admin",
       "name": "Email Templates",
       "path": "/pages/admin/email-template.html",
-      "loadTime": 203,
+      "loadTime": 188,
       "hasNav": true,
       "hasSidebar": true,
       "hasContent": true,
@@ -93,7 +93,7 @@
       "role": "admin",
       "name": "Карта ліфтів",
       "path": "/pages/admin/maps.html",
-      "loadTime": 30053,
+      "loadTime": 30081,
       "status": "error",
       "error": "Navigation timeout of 30000 ms exceeded"
     }
@@ -323,7 +323,7 @@
   "performance": [
     {
       "action": "Login admin",
-      "time": 1007
+      "time": 793
     }
   ]
 }
