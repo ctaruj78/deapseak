@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orçamento - Administração</title>
+    
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    
+    <style>
+        .invoice-preview {
+            border: 1px solid #ddd;
+            padding: 30px;
+            background: white;
+            font-family: Arial, sans-serif;
+        }
+        .invoice-header {
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+        .invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .invoice-table th,
+        .invoice-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .invoice-table th {
+            background-color: #f2f2f2;
+        }
+        .invoice-total {
+            text-align: right;
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        @media print {
+            .no-print { display: none !important; }
+        }
+    </style>
+    <link rel="stylesheet" href="/assets/css/table-drag-scroll.css">
+</head>
+<body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper">
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light no-print">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="dashboard.html" class="nav-link">Головна</a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="invoice-template.html" class="nav-link active">Рахунки</a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="../auth/login.html" role="button">
+                        <i class="fas fa-sign-out-alt"></i> Вийти
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Sidebar Container -->
+<div id="sidebar-placeholder"></div>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <!-- Content Header -->
+            <div class="content-header no-print">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">Orçamentos</h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="dashboard.html">Início</a></li>
+                                <li class="breadcrumb-item active">Orçamentos</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+                    <!-- Invoice Form -->
+                    <div class="row no-print">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Criar Orçamento</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-primary btn-sm" onclick="saveOrcamento()">
+                                            <i class="fas fa-save"></i> Guardar Orçamento
+                                        </button>
+                                        <button type="button" class="btn btn-success btn-sm" onclick="generateInvoice()">
+                                            <i class="fas fa-plus"></i> Novo número
+                                        </button>
+                                        <button type="button" class="btn btn-info btn-sm" onclick="loadTemplate()">
+                                            <i class="fas fa-file-import"></i> Modelo
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <form id="invoiceForm">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="clientName">Cliente</label>
+                                                    <input type="text" class="form-control" id="clientName" placeholder="Nome da empresa ou pessoa" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="clientAddress">Morada do Cliente</label>
+                                                    <textarea class="form-control" id="clientAddress" rows="3" placeholder="Morada completa do cliente"></textarea>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="clientEmail">Email</label>
+                                                    <input type="email" class="form-control" id="clientEmail" placeholder="cliente@exemplo.pt" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="invoiceNumber">Número do Orçamento</label>
+                                                    <input type="text" class="form-control" id="invoiceNumber" placeholder="ORC-2024-001" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="invoiceDate">Data do Orçamento</label>
+                                                    <input type="date" class="form-control" id="invoiceDate" required>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Services Table -->
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <h5>Serviços/Produtos</h5>
+                                                <div class="table-responsive">
+                                                    <table class="table table-bordered" id="servicesTable">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Descrição</th>
+                                                                <th>Quantidade</th>
+                                                                <th>Preço Unit.</th>
+                                                                <th>Total</th>
+                                                                <th>Ações</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td><input type="text" class="form-control" placeholder="Manutenção técnica de elevador"></td>
+                                                                <td><input type="number" class="form-control qty" value="1" min="1"></td>
+                                                                <td><input type="number" class="form-control price" placeholder="100.00" step="0.01"></td>
+                                                                <td class="total">0.00</td>
+                                                                <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                <button type="button" class="btn btn-info btn-sm" onclick="addServiceRow()">
+                                                    <i class="fas fa-plus"></i> Adicionar serviço
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="row mt-3">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="notes">Notas</label>
+                                                    <textarea class="form-control" id="notes" rows="3" placeholder="Informação adicional ou condições"></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label>Resumo</label>
+                                                    <div class="card">
+                                                        <div class="card-body">
+                                                            <div class="d-flex justify-content-between">
+                                                                <span>Subtotal:</span>
+                                                                <span id="subtotal">0.00 €</span>
+                                                            </div>
+                                                            <div class="d-flex justify-content-between">
+                                                                <span>IVA (23%):</span>
+                                                                <span id="tax">0.00 €</span>
+                                                            </div>
+                                                            <hr>
+                                                            <div class="d-flex justify-content-between font-weight-bold">
+                                                                <span>Total:</span>
+                                                                <span id="grandTotal">0.00 €</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Invoice Preview -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header no-print">
+                                    <h3 class="card-title">Pré-visualização do Orçamento</h3>
+                                    <div class="card-tools">
+                                        <button class="btn btn-primary btn-sm" onclick="printInvoice()">
+                                            <i class="fas fa-print"></i> Imprimir
+                                        </button>
+                                        <button class="btn btn-success btn-sm" onclick="downloadPDF()">
+                                            <i class="fas fa-download"></i> PDF
+                                        </button>
+                                        <button class="btn btn-info btn-sm" onclick="sendEmail()">
+                                            <i class="fas fa-envelope"></i> Email
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="invoice-preview" id="invoicePreview">
+                                        <div class="invoice-header">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <!-- Логотип FestLift -->
+                                                    <div class="mb-3">
+                                                        <img src="/assets/img/festlift-logo.png" 
+                                                             alt="FESTLIFT, LDA" 
+                                                             style="max-height: 80px; max-width: 250px;"
+                                                             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                                        <h2 style="color: #007bff; font-weight: bold; display: none;">FESTLIFT, LDA</h2>
+                                                    </div>
+                                                    <p style="line-height: 1.8;">
+                                                        <strong>Av. do Parque 84B</strong><br>
+                                                        Rio de Mouro, Lisboa 2635-609<br>
+                                                        <i class="fas fa-phone"></i> +351 214 190 863<br>
+                                                        <i class="fas fa-mobile-alt"></i> +351 926 380 243 / 244<br>
+                                                        <i class="fas fa-envelope"></i> info@festlift.pt<br>
+                                                        <strong>NIF:</strong> 515924741
+                                                    </p>
+                                                </div>
+                                                <div class="col-md-6 text-right">
+                                                    <h3>ORÇAMENTO</h3>
+                                                    <p>
+                                                        <strong>Nº:</strong> <span id="previewInvoiceNumber">ORC-2024-001</span><br>
+                                                        <strong>Data:</strong> <span id="previewInvoiceDate"></span><br>
+                                                        <strong>Validade:</strong> <span class="text-muted">30 dias a partir da data de apresentação</span>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h5>Orçamento para:</h5>
+                                                <div id="previewClientInfo">
+                                                    <strong id="previewClientName">Nome do Cliente</strong><br>
+                                                    <span id="previewClientAddress">Morada do Cliente</span><br>
+                                                    Email: <span id="previewClientEmail">cliente@exemplo.pt</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <table class="invoice-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Nº</th>
+                                                    <th>Descrição</th>
+                                                    <th>Quantidade</th>
+                                                    <th>Preço Unit.</th>
+                                                    <th>Total</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="previewServicesTable">
+                                                <tr>
+                                                    <td>1</td>
+                                                    <td>Manutenção Técnica de Elevador</td>
+                                                    <td>1</td>
+                                                    <td>100,00 €</td>
+                                                    <td>100,00 €</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+
+                                        <div class="row mt-4">
+                                            <div class="col-md-6">
+                                                <h5>Notas:</h5>
+                                                <p id="previewNotes">Este orçamento é válido por 30 dias a partir da data de apresentação.</p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="invoice-total">
+                                                    <div class="d-flex justify-content-between">
+                                                        <span>Subtotal:</span>
+                                                        <span id="previewSubtotal">100,00 €</span>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between">
+                                                        <span>IVA (23%):</span>
+                                                        <span id="previewTax">23,00 €</span>
+                                                    </div>
+                                                    <hr>
+                                                    <div class="d-flex justify-content-between" style="font-size: 20px;">
+                                                        <span><strong>Total do Orçamento:</strong></span>
+                                                        <span><strong id="previewGrandTotal">123,00 €</strong></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Bank Details -->
+                                        <div class="alert alert-info mt-4">
+                                            <h5 class="mb-2"><i class="fas fa-university"></i> Dados Bancários para Pagamento</h5>
+                                            <p class="mb-1"><strong>Banco BPI</strong></p>
+                                            <p class="mb-0" style="font-family: 'Courier New', monospace; font-size: 14px;">
+                                                IBAN: <strong>PT50 0010 0000 5854 8320 0015 4</strong>
+                                            </p>
+                                        </div>
+
+                                        <div class="text-center mt-4">
+                                            <p><small>Obrigado pela sua confiança!</small></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer class="main-footer">
+            <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
+            Sistema de gestão de elevadores v2.1.0.
+            <div class="float-right d-none d-sm-inline-block">
+                <b>Versão</b> 2.1.0
+            </div>
+        </footer>
+    </div>
+
+    <!-- jQuery -->
+    <script src="../../plugins/jquery/jquery.min.js"></script>
+    <!-- Bootstrap -->
+    <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+    <!-- AdminLTE -->
+    <script src="../../plugins/adminlte/adminlte.min.js"></script>
+
+    <!-- Sidebar initialization script -->
+    <script src="../../assets/js/sidebar-init.js"></script>
+    <!-- jsPDF для генерації PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- Load sidebar dynamically -->
+    <script>
+        $(document).ready(function() {
+            loadSidebarWithInit("includes/sidebar.html");
+        });
+    </script>
+
+    <script>
+        // Invoice management
+        const invoiceManager = {
+            init() {
+                // Set current date
+                const today = new Date().toISOString().split('T')[0];
+                $('#invoiceDate').val(today);
+
+                // Generate invoice number
+                this.generateInvoiceNumber();
+
+                // Bind events
+                this.bindEvents();
+
+                // Update preview
+                this.updatePreview();
+            },
+
+            bindEvents() {
+                // Update totals on input change
+                $(document).on('input', '.qty, .price', () => this.calculateTotals());
+                
+                // Update preview on form change
+                $('#invoiceForm input, #invoiceForm textarea').on('input', () => this.updatePreview());
+            },
+
+            generateInvoiceNumber() {
+                const year = new Date().getFullYear();
+                const month = String(new Date().getMonth() + 1).padStart(2, '0');
+                const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+                const number = `ORC-${year}-${month}-${random}`;
+                $('#invoiceNumber').val(number);
+            },
+
+            addServiceRow() {
+                const newRow = `
+                    <tr>
+                        <td><input type="text" class="form-control" placeholder="Descrição do serviço"></td>
+                        <td><input type="number" class="form-control qty" value="1" min="1"></td>
+                        <td><input type="number" class="form-control price" placeholder="0.00" step="0.01"></td>
+                        <td class="total">0.00</td>
+                        <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
+                    </tr>
+                `;
+                $('#servicesTable tbody').append(newRow);
+            },
+
+            removeRow(button) {
+                $(button).closest('tr').remove();
+                this.calculateTotals();
+                this.updatePreview();
+            },
+
+            calculateTotals() {
+                let subtotal = 0;
+
+                $('#servicesTable tbody tr').each(function() {
+                    const qty = parseFloat($(this).find('.qty').val()) || 0;
+                    const price = parseFloat($(this).find('.price').val()) || 0;
+                    const total = qty * price;
+                    
+                    $(this).find('.total').text(total.toFixed(2));
+                    subtotal += total;
+                });
+
+                const tax = subtotal * 0.23; // 23% IVA
+                const grandTotal = subtotal + tax;
+
+                $('#subtotal').text(subtotal.toFixed(2) + ' €');
+                $('#tax').text(tax.toFixed(2) + ' €');
+                $('#grandTotal').text(grandTotal.toFixed(2) + ' €');
+
+                // Update preview
+                invoiceManager.updatePreview();
+            },
+
+            updatePreview() {
+                // Update preview with current form data
+                $('#previewInvoiceNumber').text($('#invoiceNumber').val());
+                $('#previewInvoiceDate').text($('#invoiceDate').val());
+                $('#previewClientName').text($('#clientName').val() || 'Nome do Cliente');
+                $('#previewClientAddress').html($('#clientAddress').val().replace(/\n/g, '<br>') || 'Morada do Cliente');
+                $('#previewClientEmail').text($('#clientEmail').val() || 'cliente@exemplo.pt');
+                $('#previewNotes').text($('#notes').val() || 'Este orçamento é válido por 30 dias a partir da data de apresentação.');
+
+                // Update services table
+                const previewTable = $('#previewServicesTable');
+                previewTable.empty();
+
+                $('#servicesTable tbody tr').each(function(index) {
+                    const description = $(this).find('input[type="text"]').val() || 'Serviço';
+                    const qty = $(this).find('.qty').val() || '0';
+                    const price = parseFloat($(this).find('.price').val()) || 0;
+                    const total = (parseFloat(qty) * price).toFixed(2);
+
+                    const row = `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${description}</td>
+                            <td>${qty}</td>
+                            <td>${price.toFixed(2)} €</td>
+                            <td>${total} €</td>
+                        </tr>
+                    `;
+                    previewTable.append(row);
+                });
+
+                // Update totals in preview
+                $('#previewSubtotal').text($('#subtotal').text());
+                $('#previewTax').text($('#tax').text());
+                $('#previewGrandTotal').text($('#grandTotal').text());
+            },
+
+            printInvoice() {
+                window.print();
+            },
+
+            downloadPDF() {
+                try {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+                    
+                    // ═══════════════════════════════════════════════════════════
+                    // CABEÇALHO FESTLIFT - Dados da Empresa
+                    // ═══════════════════════════════════════════════════════════
+                    
+                    // Título FESTLIFT
+                    doc.setFontSize(24);
+                    doc.setTextColor(0, 102, 204); // Azul FestLift
+                    doc.setFont(undefined, 'bold');
+                    doc.text('FESTLIFT', 20, 20);
+                    
+                    // Dados da Empresa (lado esquerdo)
+                    doc.setFontSize(9);
+                    doc.setTextColor(60, 60, 60);
+                    doc.setFont(undefined, 'normal');
+                    doc.text('FESTLIFT, LDA', 20, 28);
+                    doc.text('Av. do Parque 84B', 20, 33);
+                    doc.text('Rio de Mouro, Lisboa 2635-609', 20, 38);
+                    doc.setFont(undefined, 'bold');
+                    doc.text('NIF: 515 924 741', 20, 43);
+                    doc.setFont(undefined, 'normal');
+                    doc.text('Tel: +351 214 190 863', 20, 48);
+                    doc.text('Móvel: +351 926 380 243 / 244', 20, 53);
+                    doc.text('Email: info@festlift.pt', 20, 58);
+                    
+                    // Tipo de documento (lado direito)
+                    doc.setFontSize(18);
+                    doc.setTextColor(0, 102, 204);
+                    doc.setFont(undefined, 'bold');
+                    doc.text('ORÇAMENTO', 145, 20);
+                    
+                    // Número e Data (lado direito)
+                    doc.setFontSize(10);
+                    doc.setTextColor(0, 0, 0);
+                    doc.setFont(undefined, 'normal');
+                    const orcamentoNum = $('#invoiceNumber').val() || 'ORC-0000-000';
+                    const orcamentoData = $('#invoiceDate').val() || new Date().toISOString().split('T')[0];
+                    
+                    doc.text(`Nº: ${orcamentoNum}`, 145, 30);
+                    doc.text(`Data: ${orcamentoData}`, 145, 36);
+                    
+                    // Linha separadora
+                    doc.setDrawColor(0, 102, 204);
+                    doc.setLineWidth(0.5);
+                    doc.line(20, 65, 190, 65);
+                    
+                    // ═══════════════════════════════════════════════════════════
+                    // DADOS DO CLIENTE
+                    // ═══════════════════════════════════════════════════════════
+                    
+                    doc.setFontSize(12);
+                    doc.setFont(undefined, 'bold');
+                    doc.text('Cliente:', 20, 75);
+                    
+                    doc.setFontSize(10);
+                    doc.setFont(undefined, 'normal');
+                    const clientName = $('#clientName').val() || 'Nome do Cliente';
+                    const clientAddress = $('#clientAddress').val() || 'Morada do Cliente';
+                    const clientEmail = $('#clientEmail').val() || 'cliente@exemplo.pt';
+                    const clientPhone = $('#clientPhone').val() || '';
+                    const clientNIF = $('#clientNIF').val() || '';
+                    
+                    doc.text(clientName, 20, 82);
+                    
+                    let yPos = 88;
+                    const addressLines = clientAddress.split('\n');
+                    addressLines.forEach(line => {
+                        doc.text(line, 20, yPos);
+                        yPos += 5;
+                    });
+                    
+                    if (clientNIF) {
+                        doc.text(`NIF: ${clientNIF}`, 20, yPos);
+                        yPos += 5;
+                    }
+                    if (clientPhone) {
+                        doc.text(`Tel: ${clientPhone}`, 20, yPos);
+                        yPos += 5;
+                    }
+                    doc.text(`Email: ${clientEmail}`, 20, yPos);
+                    yPos += 10;
+                    
+                    // ═══════════════════════════════════════════════════════════
+                    // TABELA DE SERVIÇOS
+                    // ═══════════════════════════════════════════════════════════
+                    
+                    const servicos = [];
+                    $('#servicesTable tbody tr').each(function(index) {
+                        const descricao = $(this).find('input[type="text"]').val() || 'Servico';
+                        const quantidade = $(this).find('.qty').val() || '0';
+                        const preco = parseFloat($(this).find('.price').val()) || 0;
+                        const total = (parseFloat(quantidade) * preco).toFixed(2);
+                        
+                        if (descricao && quantidade && preco) {
+                            servicos.push([
+                                (index + 1).toString(),
+                                descricao,
+                                quantidade,
+                                preco.toFixed(2) + ' €',
+                                total + ' €'
+                            ]);
+                        }
+                    });
+                    
+                    doc.autoTable({
+                        startY: yPos,
+                        head: [['#', 'Descrição', 'Qtd', 'Preço Unit.', 'Total']],
+                        body: servicos,
+                        theme: 'grid',
+                        headStyles: { 
+                            fillColor: [0, 102, 204],
+                            textColor: [255, 255, 255],
+                            fontSize: 10,
+                            fontStyle: 'bold'
+                        },
+                        styles: { fontSize: 9 },
+                        columnStyles: {
+                            0: { cellWidth: 10 },
+                            1: { cellWidth: 90 },
+                            2: { cellWidth: 20, halign: 'center' },
+                            3: { cellWidth: 30, halign: 'right' },
+                            4: { cellWidth: 30, halign: 'right' }
+                        }
+                    });
+                    
+                    // ═══════════════════════════════════════════════════════════
+                    // TOTAIS
+                    // ═══════════════════════════════════════════════════════════
+                    
+                    const finalY = doc.lastAutoTable.finalY + 10;
+                    const subtotal = $('#subtotal').text();
+                    const iva = $('#tax').text();
+                    const total = $('#grandTotal').text();
+                    
+                    doc.setFontSize(10);
+                    doc.setFont(undefined, 'normal');
+                    doc.text('Subtotal:', 130, finalY);
+                    doc.text(subtotal, 185, finalY, { align: 'right' });
+                    
+                    doc.text('IVA (23%):', 130, finalY + 6);
+                    doc.text(iva, 185, finalY + 6, { align: 'right' });
+                    
+                    doc.setFontSize(12);
+                    doc.setFont(undefined, 'bold');
+                    doc.text('Total:', 130, finalY + 15);
+                    doc.text(total, 185, finalY + 15, { align: 'right' });
+                    
+                    // ═══════════════════════════════════════════════════════════
+                    // NOTAS
+                    // ═══════════════════════════════════════════════════════════
+                    
+                    const notes = $('#notes').val();
+                    if (notes) {
+                        doc.setFont(undefined, 'normal');
+                        doc.setFontSize(9);
+                        doc.text('Notas:', 20, finalY + 25);
+                        const splitNotes = doc.splitTextToSize(notes, 170);
+                        doc.text(splitNotes, 20, finalY + 31);
+                    }
+                    
+                    // ═══════════════════════════════════════════════════════════
+                    // DADOS BANCÁRIOS
+                    // ═══════════════════════════════════════════════════════════
+                    
+                    const bankY = (notes ? finalY + 50 : finalY + 30);
+                    doc.setFillColor(230, 240, 255); // Azul claro
+                    doc.rect(20, bankY, 170, 20, 'F');
+                    
+                    doc.setDrawColor(0, 102, 204);
+                    doc.setLineWidth(0.3);
+                    doc.rect(20, bankY, 170, 20);
+                    
+                    // Іконка банку (будівля з колонами)
+                    doc.setFillColor(0, 102, 204);
+                    doc.rect(24, bankY + 7, 8, 6, 'F'); // База будівлі
+                    doc.setFillColor(255, 255, 255);
+                    doc.rect(25.5, bankY + 8, 1, 4, 'F'); // Колона 1
+                    doc.rect(27, bankY + 8, 1, 4, 'F'); // Колона 2
+                    doc.rect(28.5, bankY + 8, 1, 4, 'F'); // Колона 3
+                    doc.rect(30, bankY + 8, 1, 4, 'F'); // Колона 4
+                    doc.setFillColor(0, 102, 204);
+                    doc.rect(24, bankY + 6.5, 8, 0.8, 'F'); // Дах
+                    
+                    doc.setFontSize(10);
+                    doc.setFont(undefined, 'bold');
+                    doc.setTextColor(0, 102, 204);
+                    doc.text('Dados Bancários para Pagamento', 33, bankY + 7);
+                    
+                    doc.setFont(undefined, 'normal');
+                    doc.setFontSize(9);
+                    doc.setTextColor(60, 60, 60);
+                    doc.text('Banco BPI', 33, bankY + 13);
+                    doc.text('IBAN: PT50 0010 0000 5854 8320 0015 4', 33, bankY + 17);
+                    
+                    // ═══════════════════════════════════════════════════════════
+                    // RODAPÉ
+                    // ═══════════════════════════════════════════════════════════
+                    
+                    const footerY = 280;
+                    doc.setFontSize(8);
+                    doc.setTextColor(120, 120, 120);
+                    doc.setFont(undefined, 'italic');
+                    doc.text('FESTLIFT, LDA - Conservação e Manutenção de Elevadores', 105, footerY, { align: 'center' });
+                    doc.text('Av. do Parque 84B • Rio de Mouro, Lisboa 2635-609', 105, footerY + 4, { align: 'center' });
+                    doc.text('Tel: +351 214 190 863 • Móvel: +351 926 380 243/244 • info@festlift.pt', 105, footerY + 8, { align: 'center' });
+                    doc.text('NIF: 515 924 741', 105, footerY + 12, { align: 'center' });
+                    
+                    // Збереження
+                    const fileName = `Orcamento_${orcamentoNum.replace(/\//g, '-')}.pdf`;
+                    doc.save(fileName);
+                    
+                    console.log('✅ PDF gerado com sucesso:', fileName);
+                    alert('✅ PDF gerado com sucesso!');
+                } catch (error) {
+                    console.error('❌ Erro ao gerar PDF:', error);
+                    alert('❌ Erro ao gerar PDF: ' + error.message);
+                }
+            },
+
+            async sendEmail() {
+                console.log('📧 Відправка email...');
+                console.log('   lastSavedOrcamentoId:', window.lastSavedOrcamentoId);
+                console.log('   currentOrcamentoId:', window.currentOrcamentoId);
+                
+                // Перевірка чи орçаменто збережено
+                if (!window.lastSavedOrcamentoId && !window.currentOrcamentoId) {
+                    const save = confirm('Orçamento não foi salvo. Deseja salvar antes de enviar?');
+                    if (save) {
+                        await saveOrcamento();
+                        if (!window.lastSavedOrcamentoId) {
+                            alert('Não foi possível salvar o orçamento');
+                            return;
+                        }
+                    } else {
+                        return;
+                    }
+                }
+                
+                // Використати ID з будь-якого джерела
+                const orcamentoId = window.lastSavedOrcamentoId || window.currentOrcamentoId;
+                console.log('   Використовую ID:', orcamentoId);
+
+                const clientEmail = prompt('Insira o email do cliente:', $('#clientEmail').val());
+                if (!clientEmail) return;
+
+                // Валідація email
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(clientEmail)) {
+                    alert('Email inválido');
+                    return;
+                }
+
+                try {
+                    const token = localStorage.getItem('liftmanager_jwt') || 
+                                 localStorage.getItem('jwt_token') ||
+                                 localStorage.getItem('token') || 
+                                 localStorage.getItem('lm_token');
+                    
+                    console.log('🔑 Sending email with token:', token ? 'EXISTS' : 'NOT FOUND');
+                    console.log('🔑 Token keys in localStorage:', Object.keys(localStorage).filter(k => k.includes('token') || k.includes('jwt')));
+                    
+                    if (!token) {
+                        alert('Autenticação necessária. Faça login novamente.');
+                        window.location.href = '/pages/auth/login.html';
+                        return;
+                    }
+
+                    console.log('📤 Enviando email para:', clientEmail);
+                    console.log('   Orçamento ID:', orcamentoId);
+                    
+                    const response = await fetch(`/api/orcamentos/${orcamentoId}/enviar`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            email: clientEmail
+                        })
+                    });
+
+                    console.log('📨 Response status:', response.status);
+                    console.log('📨 Response ok:', response.ok);
+                    
+                    const result = await response.json();
+                    console.log('📧 Resultado completo:', result);
+
+                    if (response.ok && result.success) {
+                        alert(`✅ ${result.message}`);
+                        console.log('✅ Email enviado com sucesso!');
+                    } else {
+                        const errorMsg = result.message || result.error || 'Erro desconhecido';
+                        alert(`❌ Erro: ${errorMsg}`);
+                        console.error('❌ Erro ao enviar:', errorMsg);
+                    }
+
+                } catch (error) {
+                    console.error('❌ Erro ao enviar email:', error);
+                    alert('Não foi possível enviar o email: ' + error.message);
+                }
+            },
+
+            loadTemplate() {
+                // Load predefined template
+                $('#clientName').val('Empresa Exemplo Lda');
+                $('#clientAddress').val('Rua Exemplo, 123\nLisboa, 1000-001');
+                $('#clientEmail').val('contato@exemplo.pt');
+                $('#notes').val('Este orçamento é válido por 30 dias a partir da data de apresentação.');
+                
+                this.updatePreview();
+            }
+        };
+
+        // Global functions
+        function addServiceRow() {
+            invoiceManager.addServiceRow();
+        }
+
+        function removeRow(button) {
+            invoiceManager.removeRow(button);
+        }
+
+        function printInvoice() {
+            invoiceManager.printInvoice();
+        }
+
+        function downloadPDF() {
+            invoiceManager.downloadPDF();
+        }
+
+        function sendEmail() {
+            invoiceManager.sendEmail();
+        }
+
+        function loadTemplate() {
+            invoiceManager.loadTemplate();
+        }
+
+        function generateInvoice() {
+            invoiceManager.generateInvoiceNumber();
+            invoiceManager.updatePreview();
+        }
+
+        // Função para SALVAR orçamento no MongoDB
+        async function saveOrcamento() {
+            console.log('💾 Iniciando salvamento do orçamento...');
+            
+            const servicos = [];
+            
+            $('#servicesTable tbody tr').each(function() {
+                const descricao = $(this).find('input[type="text"]').val();
+                const quantidade = parseFloat($(this).find('.qty').val()) || 0;
+                const precoUnitario = parseFloat($(this).find('.price').val()) || 0;
+                
+                if (descricao && quantidade > 0 && precoUnitario > 0) {
+                    servicos.push({
+                        descricao,
+                        quantidade,
+                        precoUnitario,
+                        total: quantidade * precoUnitario
+                    });
+                }
+            });
+            
+            console.log('📦 Serviços coletados:', servicos.length);
+            
+            if (servicos.length === 0) {
+                alert('❌ Adicione pelo menos um serviço com quantidade e preço válidos!');
+                return;
+            }
+            
+            const clienteNome = $('#clientName').val();
+            const clienteMorada = $('#clientAddress').val();
+            const clienteEmail = $('#clientEmail').val();
+            
+            console.log('👤 Cliente:', { clienteNome, clienteMorada, clienteEmail });
+            
+            // Validação
+            if (!clienteNome || !clienteEmail || !clienteMorada) {
+                alert('❌ Preencha todos os dados do cliente (Nome, Morada e Email)!');
+                return;
+            }
+            
+            // Validação email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(clienteEmail)) {
+                alert('❌ Email do cliente inválido!');
+                return;
+            }
+            
+            const data = {
+                cliente: {
+                    nome: clienteNome,
+                    morada: clienteMorada,
+                    email: clienteEmail
+                },
+                servicos,
+                subtotal: parseFloat($('#subtotal').text().replace(' €', '')) || 0,
+                iva: parseFloat($('#tax').text().replace(' €', '')) || 0,
+                total: parseFloat($('#grandTotal').text().replace(' €', '')) || 0,
+                notas: $('#notes').val() || 'Este orçamento é válido por 30 dias a partir da data de apresentação.'
+            };
+            
+            // При оновленні додати numero та data з форми
+            if (window.currentOrcamentoId) {
+                data.numero = $('#invoiceNumber').val();
+                data.data = $('#invoiceDate').val();
+            }
+            
+            console.log('📊 Dados completos:', data);
+            
+            try {
+                const token = localStorage.getItem('liftmanager_jwt') || 
+                             localStorage.getItem('jwt_token') ||
+                             localStorage.getItem('token') || 
+                             localStorage.getItem('lm_token');
+                
+                console.log('🔑 Token encontrado:', token ? 'SIM' : 'NÃO');
+                
+                if (!token) {
+                    alert('❌ Sessão expirada. Faça login novamente.');
+                    window.location.href = '../auth/login.html';
+                    return;
+                }
+                
+                // Перевірити чи це оновлення чи створення
+                const isUpdate = window.currentOrcamentoId;
+                const url = isUpdate 
+                    ? `/api/orcamentos/${window.currentOrcamentoId}` 
+                    : '/api/orcamentos';
+                const method = isUpdate ? 'PUT' : 'POST';
+                
+                console.log(`🌐 ${isUpdate ? 'Оновлення' : 'Створення'} орçаменту...`);
+                console.log('   URL:', url);
+                console.log('   Method:', method);
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                console.log('📡 Resposta recebida:', response.status, response.statusText);
+                
+                const result = await response.json();
+                console.log('📋 Resultado:', result);
+                
+                if (response.ok && result.success) {
+                    // Отримати дані орçаменту (може бути в result.data або result.orcamento)
+                    const orcamentoData = result.data || result.orcamento || {};
+                    const orcamentoId = orcamentoData._id || window.currentOrcamentoId;
+                    
+                    // Зберігаємо ID для можливості відправки email
+                    window.lastSavedOrcamentoId = orcamentoId;
+                    window.currentOrcamentoId = orcamentoId;
+                    
+                    console.log('✅ Orçamento salvo com ID:', orcamentoId);
+                    console.log('📝 Número:', orcamentoData.numero || $('#invoiceNumber').val());
+                    
+                    const action = isUpdate ? 'atualizado' : 'salvo';
+                    const numero = orcamentoData.numero || $('#invoiceNumber').val();
+                    const total = orcamentoData.total || parseFloat($('#grandTotal').text().replace(' €', ''));
+                    const clienteNome = orcamentoData.cliente?.nome || $('#clientName').val();
+                    
+                    alert(`✅ Orçamento ${numero} ${action} com sucesso!\n\n` +
+                          `Total: €${total.toFixed(2)}\n` +
+                          `Cliente: ${clienteNome}`);
+                    
+                    // Redirecionar para lista de orçamentos
+                    if (confirm(`✅ Orçamento ${action}!\n\n📋 Deseja ver a lista de orçamentos?`)) {
+                        window.location.href = 'orcamentos-list.html';
+                    } else {
+                        console.log('💡 Orçamento salvo. ID disponível para envio de email.');
+                    }
+                } else {
+                    console.error('❌ Erro do servidor:', result);
+                    alert('❌ Erro ao salvar: ' + (result.message || 'Erro desconhecido'));
+                }
+            } catch (error) {
+                console.error('💥 Erro crítico ao salvar orçamento:', error);
+                alert('❌ Erro ao salvar orçamento:\n\n' + error.message + 
+                      '\n\nVerifique:\n' +
+                      '• Conexão com servidor\n' +
+                      '• Token de autenticação\n' +
+                      '• Console do navegador (F12)');
+            }
+        }
+
+        // Initialize when document is ready
+        $(document).ready(async function() {
+            // Отримати параметри URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const orcamentoId = urlParams.get('id');
+            const viewMode = urlParams.get('view') === 'true';
+            const publicToken = urlParams.get('token');
+            
+            // Якщо є публічний токен - це клієнт переглядає орçаменто
+            if (publicToken && orcamentoId) {
+                console.log('🌍 Публічний перегляд орçаменту:', orcamentoId);
+                await loadOrcamentoPublico(orcamentoId, publicToken);
+                return;
+            }
+            
+            // Перевірка авторизації для адміністраторів
+            const token = localStorage.getItem('liftmanager_jwt') || 
+                         localStorage.getItem('jwt_token') ||
+                         localStorage.getItem('token') || 
+                         localStorage.getItem('lm_token');
+            
+            if (!token) {
+                alert('Sessão expirada. Faça login novamente.');
+                window.location.href = '/pages/auth/login.html';
+                return;
+            }
+            
+            invoiceManager.init();
+            
+            // Перевірити чи є ID орçаменту в URL (для редагування/перегляду)
+            if (orcamentoId) {
+                console.log('📋 Завантаження орçаменту:', orcamentoId, 'Режим перегляду:', viewMode);
+                await loadOrcamento(orcamentoId, viewMode);
+            }
+        });
+        
+        // Завантажити орçаменто (публічний доступ)
+        async function loadOrcamentoPublico(id, token) {
+            try {
+                console.log('🌐 Завантаження з /api/orcamentos/public/' + id);
+                
+                const response = await fetch(`/api/orcamentos/public/${id}?token=${token}`);
+                
+                if (!response.ok) {
+                    throw new Error('Orçamento não encontrado ou token inválido');
+                }
+                
+                const result = await response.json();
+                
+                if (!result.success || !result.data) {
+                    throw new Error('Erro ao carregar orçamento');
+                }
+                
+                const orcamento = result.data;
+                console.log('✅ Orçamento carregado (público):', orcamento);
+                
+                // Заповнити форму (тільки читання)
+                $('#orcamentoNumero').text(orcamento.numero);
+                $('#data').val(new Date(orcamento.data).toISOString().split('T')[0]).prop('disabled', true);
+                $('#clienteNome').val(orcamento.cliente.nome).prop('disabled', true);
+                $('#clienteEmail').val(orcamento.cliente.email).prop('disabled', true);
+                $('#clienteMorada').val(orcamento.cliente.morada || '').prop('disabled', true);
+                $('#clienteTelefone').val(orcamento.cliente.telefone || '').prop('disabled', true);
+                $('#clienteNIF').val(orcamento.cliente.nif || '').prop('disabled', true);
+                $('#notas').val(orcamento.notas || '').prop('disabled', true);
+                
+                // Завантажити сервіси
+                if (orcamento.servicos && orcamento.servicos.length > 0) {
+                    $('#servicosTable tbody').empty();
+                    orcamento.servicos.forEach((servico, index) => {
+                        $('#servicosTable tbody').append(`
+                            <tr data-index="${index}">
+                                <td><input type="text" class="form-control servico-descricao" value="${servico.descricao}" disabled></td>
+                                <td><input type="number" class="form-control servico-quantidade" value="${servico.quantidade}" disabled></td>
+                                <td><input type="number" class="form-control servico-preco" value="${servico.preco}" step="0.01" disabled></td>
+                                <td class="servico-total">€${servico.total.toFixed(2)}</td>
+                                <td></td>
+                            </tr>
+                        `);
+                    });
+                }
+                
+                // Показати тотали
+                $('#subtotal').text(`€${orcamento.subtotal.toFixed(2)}`);
+                $('#ivaValor').text(`€${orcamento.iva.toFixed(2)}`);
+                $('#total').text(`€${orcamento.total.toFixed(2)}`);
+                
+                // Сховати кнопки редагування
+                $('.card-footer').hide();
+                $('#btnSalvar').hide();
+                $('#btnEnviarEmail').hide();
+                
+                // Показати тільки кнопку скачування PDF
+                $('#btnDownloadPDF').show();
+                
+            } catch (error) {
+                console.error('❌ Erro ao carregar orçamento público:', error);
+                alert('❌ Erro ao carregar orçamento:\n\n' + error.message);
+                window.location.href = '/pages/auth/login.html';
+            }
+        }
+        
+        // Завантажити орçаменто за ID
+        async function loadOrcamento(id, viewMode = false) {
+            try {
+                const token = localStorage.getItem('liftmanager_jwt') || 
+                             localStorage.getItem('jwt_token') ||
+                             localStorage.getItem('token') || 
+                             localStorage.getItem('lm_token');
+                
+                console.log('🌐 Завантаження з /api/orcamentos/' + id);
+                
+                const response = await fetch(`/api/orcamentos/${id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Орçаменто не знайдено');
+                }
+                
+                const result = await response.json();
+                const orcamento = result.success ? result.data : result;
+                
+                console.log('✅ Орçаменто завантажено:', orcamento);
+                
+                // Заповнити форму даними
+                $('#clientName').val(orcamento.cliente.nome);
+                $('#clientAddress').val(orcamento.cliente.morada || '');
+                $('#clientEmail').val(orcamento.cliente.email);
+                $('#invoiceNumber').val(orcamento.numero);
+                $('#invoiceDate').val(orcamento.data.split('T')[0]); // Конвертувати ISO date
+                $('#notes').val(orcamento.notas || '');
+                
+                // Очистити таблицю сервісів
+                $('#servicesTable tbody').empty();
+                
+                // Додати сервіси
+                orcamento.servicos.forEach(servico => {
+                    const newRow = `
+                        <tr>
+                            <td><input type="text" class="form-control" value="${servico.descricao}"></td>
+                            <td><input type="number" class="form-control qty" value="${servico.quantidade}" min="1"></td>
+                            <td><input type="number" class="form-control price" value="${servico.precoUnitario}" step="0.01"></td>
+                            <td class="total">${(servico.quantidade * servico.precoUnitario).toFixed(2)}</td>
+                            <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
+                        </tr>
+                    `;
+                    $('#servicesTable tbody').append(newRow);
+                });
+                
+                // Пересчитати підсумки
+                invoiceManager.calculateTotals();
+                invoiceManager.updatePreview();
+                
+                // Якщо режим перегляду - зробити readonly
+                if (viewMode) {
+                    $('input, textarea, button[onclick*="addServiceRow"], button[onclick*="removeRow"]').prop('disabled', true);
+                    $('button[onclick*="saveOrcamento"]').hide();
+                    $('.card-header').prepend('<span class="badge badge-info">Modo de Visualização</span> ');
+                }
+                
+                // Зберегти ID для можливості оновлення та відправки email
+                window.currentOrcamentoId = id;
+                window.lastSavedOrcamentoId = id; // Додати для email функції
+                
+            } catch (error) {
+                console.error('❌ Erro ao carregar orçamento:', error);
+                alert('Erro ao carregar orçamento: ' + error.message);
+            }
+        }
+    </script>
+    <script src="/assets/js/table-drag-scroll.js"></script>
+</body>
+</html>
