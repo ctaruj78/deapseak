@@ -2351,7 +2351,7 @@ app.get('/api/users', authenticateToken, async (req, res) => {
     try {
         // Диспетчери можуть бачити клієнтів і техніків
         if (req.user.role === 'dispatcher') {
-            const allowedRoles = ['client', 'technician'];
+            const allowedRoles = ['client', 'technician', 'tech']; // додано 'tech' для сумісності
             
             // Якщо запитують конкретну роль - перевіряємо чи вона дозволена
             if (req.query.role && !allowedRoles.includes(req.query.role)) {
@@ -2361,10 +2361,16 @@ app.get('/api/users', authenticateToken, async (req, res) => {
                 });
             }
             
+            // Нормалізуємо роль: 'tech' -> 'technician'
+            let requestedRole = req.query.role;
+            if (requestedRole === 'tech') {
+                requestedRole = 'technician';
+            }
+            
             // Якщо role вказано - повертаємо тільки цю роль, інакше - всі дозволені
-            const filter = req.query.role 
-                ? { role: req.query.role }
-                : { role: { $in: allowedRoles } };
+            const filter = requestedRole
+                ? { role: requestedRole }
+                : { role: { $in: ['client', 'technician'] } };
             
             const users = await db.collection('users').find(
                 filter,
@@ -4979,6 +4985,41 @@ app.get('/api/orcamentos/:id', authenticateToken, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Erro ao buscar orçamento',
+            error: error.message
+        });
+    }
+});
+
+// GET /api/orcamentos/next-number - Obter próximo número disponível
+app.get('/api/orcamentos/next-number', authenticateToken, async (req, res) => {
+    try {
+        const ano = new Date().getFullYear();
+        const mes = String(new Date().getMonth() + 1).padStart(2, '0');
+        
+        const ultimoOrcamento = await db.collection('orcamentos')
+            .find({ numero: new RegExp(`^ORC-${ano}-${mes}`) })
+            .sort({ numero: -1 })
+            .limit(1)
+            .toArray();
+        
+        let sequencia = 1;
+        if (ultimoOrcamento.length > 0) {
+            const match = ultimoOrcamento[0].numero.match(/ORC-\d{4}-\d{2}-(\d{3})/);
+            if (match) sequencia = parseInt(match[1]) + 1;
+        }
+        
+        const numero = `ORC-${ano}-${mes}-${String(sequencia).padStart(3, '0')}`;
+        
+        res.json({
+            success: true,
+            numero,
+            proximaSequencia: sequencia
+        });
+    } catch (error) {
+        console.error('❌ Erro ao gerar próximo número:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erro ao gerar próximo número',
             error: error.message
         });
     }

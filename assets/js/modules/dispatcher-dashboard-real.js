@@ -775,42 +775,62 @@ class DispatcherDashboardReal {
     }
     
     /**
-     * 🌐 Налаштування WebSocket для real-time оновлень
+     * 🌐 Налаштування Socket.IO для real-time оновлень
      */
     setupWebSocket() {
         try {
-            const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const wsUrl = `${wsProtocol}//${window.location.host}`;
+            // Підключення до Socket.IO сервера
+            this.socket = io({
+                reconnection: true,
+                reconnectionDelay: 5000,
+                reconnectionAttempts: Infinity
+            });
             
-            this.ws = new WebSocket(wsUrl);
-            
-            this.ws.onopen = () => {
-                console.log('✅ WebSocket підключено');
-            };
-            
-            this.ws.onmessage = (event) => {
-                try {
-                    const data = JSON.parse(event.data);
-                    console.log('📨 WebSocket повідомлення:', data);
-                    
-                    if (data.type === 'request_updated' || data.type === 'request_created') {
-                        this.refreshData();
-                    }
-                } catch (error) {
-                    console.error('❌ Помилка обробки WebSocket:', error);
+            this.socket.on('connect', () => {
+                console.log('✅ Socket.IO підключено');
+                
+                // Аутентифікація - використовуємо правильний ключ токена
+                const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('token');
+                if (token) {
+                    this.socket.emit('authenticate', token);
+                } else {
+                    console.warn('⚠️ Токен не знайдено в localStorage');
                 }
-            };
+            });
             
-            this.ws.onerror = (error) => {
-                console.error('❌ WebSocket помилка:', error);
-            };
+            this.socket.on('authenticated', (data) => {
+                if (data.success) {
+                    console.log('✅ Socket.IO автентифіковано:', data.user.email);
+                } else {
+                    console.error('❌ Socket.IO auth failed:', data.error);
+                }
+            });
             
-            this.ws.onclose = () => {
-                console.log('🔌 WebSocket відключено, спроба перепідключення через 5 сек...');
-                setTimeout(() => this.setupWebSocket(), 5000);
-            };
+            // Real-time оновлення
+            this.socket.on('new_request', (data) => {
+                console.log('📨 Нова заявка:', data);
+                this.refreshData();
+            });
+            
+            this.socket.on('lift_updated', (data) => {
+                console.log('📨 Ліфт оновлено:', data);
+                this.refreshData();
+            });
+            
+            this.socket.on('request_updated', (data) => {
+                console.log('📨 Заявка оновлена:', data);
+                this.refreshData();
+            });
+            
+            this.socket.on('disconnect', () => {
+                console.log('🔌 Socket.IO відключено');
+            });
+            
+            this.socket.on('error', (error) => {
+                console.error('❌ Socket.IO помилка:', error);
+            });
         } catch (error) {
-            console.error('❌ Не вдалося налаштувати WebSocket:', error);
+            console.error('❌ Не вдалося налаштувати Socket.IO:', error);
         }
     }
     
