@@ -489,7 +489,7 @@ document.addEventListener("DOMContentLoaded", function() {
     async function loadQRCodes(filters = {}) {
         try {
             // Показуємо індикатор завантаження
-            qrTable.processing(true);
+            $('#qr-codes-table').addClass('loading');
             
             const qrCodes = await qrUtils.getQRCodes(filters, 1, 1000);
             

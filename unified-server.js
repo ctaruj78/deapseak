@@ -549,6 +549,54 @@ app.post('/api/qr/scan', authenticateToken, async (req, res) => {
     }
 });
 
+// GET QR statistics
+app.get('/api/qr/stats', authenticateToken, async (req, res) => {
+    try {
+        if (!db) {
+            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+        }
+        
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+        
+        // Загальна кількість QR кодів
+        const total = await db.collection('qr_scans').countDocuments({});
+        
+        // Статус QR кодів
+        const active = await db.collection('qr_scans').countDocuments({ status: 'active' });
+        const inactive = await db.collection('qr_scans').countDocuments({ status: 'inactive' });
+        const expired = await db.collection('qr_scans').countDocuments({ status: 'expired' });
+        
+        // Скани за період
+        const scansToday = await db.collection('qr_scans').countDocuments({
+            scannedAt: { $gte: today }
+        });
+        
+        const scansLastMonth = await db.collection('qr_scans').countDocuments({
+            scannedAt: { $gte: lastMonth }
+        });
+        
+        const stats = {
+            total,
+            status: {
+                active,
+                inactive,
+                expired
+            },
+            scans: {
+                today: scansToday,
+                lastMonth: scansLastMonth
+            }
+        };
+        
+        res.json({ success: true, stats });
+    } catch (error) {
+        console.error('❌ Помилка отримання статистики QR:', error);
+        res.status(500).json({ success: false, message: 'Помилка сервера' });
+    }
+});
+
 // ═══════════════════════════════════════════════════════════
 // 📋 INSPECTIONS
 // ═══════════════════════════════════════════════════════════
