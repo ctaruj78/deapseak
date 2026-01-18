@@ -584,12 +584,32 @@
                 $('#invoiceForm input, #invoiceForm textarea').on('input', () => this.updatePreview());
             },
 
-            generateInvoiceNumber() {
-                const year = new Date().getFullYear();
-                const month = String(new Date().getMonth() + 1).padStart(2, '0');
-                const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-                const number = `ORC-${year}-${month}-${random}`;
-                $('#invoiceNumber').val(number);
+            async generateInvoiceNumber() {
+                try {
+                    // Отримати останній номер з API
+                    const response = await fetch('/api/orcamentos/next-number', {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('liftmanager_jwt')}`
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        $('#invoiceNumber').val(data.numero);
+                    } else {
+                        // Fallback: генерувати локально
+                        const year = new Date().getFullYear();
+                        const month = String(new Date().getMonth() + 1).padStart(2, '0');
+                        $('#invoiceNumber').val(`ORC-${year}-${month}-???`);
+                        console.warn('⚠️ Не вдалося отримати номер з API, використовуйте fallback');
+                    }
+                } catch (error) {
+                    console.error('❌ Помилка генерації номера:', error);
+                    // Fallback
+                    const year = new Date().getFullYear();
+                    const month = String(new Date().getMonth() + 1).padStart(2, '0');
+                    $('#invoiceNumber').val(`ORC-${year}-${month}-???`);
+                }
             },
 
             addServiceRow() {
