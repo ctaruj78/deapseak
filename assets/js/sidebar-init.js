@@ -80,7 +80,17 @@ function initSidebarTreeview() {
 function loadSidebarWithInit(sidebarPath = 'includes/sidebar.html') {
     console.log('📂 Loading sidebar from:', sidebarPath);
     
-    $(".main-sidebar").load(sidebarPath, function(response, status, xhr) {
+    // Шукаємо контейнер для сайдбару (або #sidebar-placeholder, або .main-sidebar)
+    const $container = $("#sidebar-placeholder").length ? $("#sidebar-placeholder") : $(".main-sidebar");
+    
+    if ($container.length === 0) {
+        console.error('❌ Sidebar container not found! Need either #sidebar-placeholder or .main-sidebar');
+        return;
+    }
+    
+    console.log('✅ Found sidebar container:', $container.attr('id') || $container.attr('class'));
+    
+    $container.load(sidebarPath, function(response, status, xhr) {
         if (status === "error") {
             console.error('❌ Sidebar load failed:', xhr.status, xhr.statusText);
             return;
