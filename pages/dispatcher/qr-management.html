@@ -433,13 +433,13 @@
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     // Перевірка авторизації
-    if (!isAuthenticated()) {
+    if (!AuthManager.isAuthenticated()) {
         window.location.replace('/pages/auth/login.html');
         return;
     }
     
     // Configurações для користувача
-    const user = getCurrentUser();
+    const user = AuthManager.getCurrentUser();
     if (user && user.role !== 'dispatcher' && user.role !== 'admin') {
         // Якщо не диспетчер або адмін - перенаправляємо
         window.location.replace('/index.html');
