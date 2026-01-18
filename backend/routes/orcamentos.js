@@ -227,6 +227,40 @@ router.get('/', authenticate, async (req, res) => {
     }
 });
 
+// GET /api/orcamentos/next-number - Obter próximo número disponível
+router.get('/next-number', authenticate, async (req, res) => {
+    try {
+        const ano = new Date().getFullYear();
+        const mes = String(new Date().getMonth() + 1).padStart(2, '0');
+        
+        // Buscar último orçamento do mês
+        const ultimoOrcamento = await Orcamento.findOne({
+            numero: new RegExp(`^ORC-${ano}-${mes}`)
+        }).sort({ numero: -1 });
+        
+        let sequencia = 1;
+        if (ultimoOrcamento) {
+            const match = ultimoOrcamento.numero.match(/ORC-\d{4}-\d{2}-(\d{3})/);
+            if (match) sequencia = parseInt(match[1]) + 1;
+        }
+        
+        const numero = `ORC-${ano}-${mes}-${String(sequencia).padStart(3, '0')}`;
+        
+        res.json({
+            success: true,
+            numero,
+            proximaSequencia: sequencia
+        });
+    } catch (error) {
+        console.error('❌ Erro ao gerar próximo número:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erro ao gerar próximo número',
+            error: error.message
+        });
+    }
+});
+
 // GET /api/orcamentos/:id - Detalhe do orçamento
 router.get('/:id', authenticate, async (req, res) => {
     try {

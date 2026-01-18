@@ -4965,32 +4965,7 @@ app.get('/api/orcamentos', authenticateToken, async (req, res) => {
     }
 });
 
-// GET /api/orcamentos/:id - Detalhe do orçamento
-app.get('/api/orcamentos/:id', authenticateToken, async (req, res) => {
-    try {
-        const { ObjectId } = require('mongodb');
-        const orcamento = await db.collection('orcamentos')
-            .findOne({ _id: new ObjectId(req.params.id) });
-        
-        if (!orcamento) {
-            return res.status(404).json({
-                success: false,
-                message: 'Orçamento não encontrado'
-            });
-        }
-        
-        res.json({ success: true, data: orcamento });
-    } catch (error) {
-        console.error('❌ Erro ao buscar orçamento:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erro ao buscar orçamento',
-            error: error.message
-        });
-    }
-});
-
-// GET /api/orcamentos/next-number - Obter próximo número disponível
+// GET /api/orcamentos/next-number - Obter próximo número disponível (ПЕРЕД :id!)
 app.get('/api/orcamentos/next-number', authenticateToken, async (req, res) => {
     try {
         const ano = new Date().getFullYear();
@@ -5020,6 +4995,31 @@ app.get('/api/orcamentos/next-number', authenticateToken, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Erro ao gerar próximo número',
+            error: error.message
+        });
+    }
+});
+
+// GET /api/orcamentos/:id - Detalhe do orçamento
+app.get('/api/orcamentos/:id', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const orcamento = await db.collection('orcamentos')
+            .findOne({ _id: new ObjectId(req.params.id) });
+        
+        if (!orcamento) {
+            return res.status(404).json({
+                success: false,
+                message: 'Orçamento não encontrado'
+            });
+        }
+        
+        res.json({ success: true, data: orcamento });
+    } catch (error) {
+        console.error('❌ Erro ao buscar orçamento:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erro ao buscar orçamento',
             error: error.message
         });
     }
