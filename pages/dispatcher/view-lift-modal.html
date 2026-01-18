@@ -1,0 +1,208 @@
+<!-- View Lift Details Modal (Read-only) -->
+<div class="modal fade" id="viewLiftModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-eye"></i> Перегляд інформації про ліфт
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" onclick="closeViewModal()">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Tabs for different sections -->
+                <ul class="nav nav-tabs mb-3" id="viewLiftTabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="general-tab" data-toggle="tab" href="#general" role="tab">
+                            <i class="fas fa-info-circle"></i> Загальна інформація
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="client-tab" data-toggle="tab" href="#client" role="tab">
+                            <i class="fas fa-user"></i> Клієнт
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="tech-tab" data-toggle="tab" href="#technical" role="tab">
+                            <i class="fas fa-cogs"></i> Технічні дані
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="docs-tab" data-toggle="tab" href="#documents" role="tab">
+                            <i class="fas fa-folder"></i> Документи
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="viewLiftTabContent">
+                    <!-- General Information Tab -->
+                    <div class="tab-pane fade show active" id="general" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="info-group mb-3">
+                                    <label class="text-muted">Муніципальний номер:</label>
+                                    <p class="font-weight-bold" id="viewMunicipalNumber">-</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-group mb-3">
+                                    <label class="text-muted">Статус:</label>
+                                    <p id="viewStatus">-</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-group mb-3">
+                            <label class="text-muted">Адреса:</label>
+                            <p id="viewAddress">-</p>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="info-group mb-3">
+                                    <label class="text-muted">Місто:</label>
+                                    <p id="viewCity">-</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="info-group mb-3">
+                                    <label class="text-muted">Поштовий індекс:</label>
+                                    <p id="viewPostalCode">-</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="info-group mb-3">
+                                    <label class="text-muted">Муніципалітет:</label>
+                                    <p id="viewMunicipality">-</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="viewMap" style="height: 300px; border-radius: 8px;" class="mb-3"></div>
+                    </div>
+
+                    <!-- Client Information Tab -->
+                    <div class="tab-pane fade" id="client" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="info-group mb-3">
+                                    <label class="text-muted">Ім'я клієнта:</label>
+                                    <p id="viewClientName">-</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-group mb-3">
+                                    <label class="text-muted">Email:</label>
+                                    <p id="viewClientEmail">
+                                        <a href="#" id="viewClientEmailLink">-</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="info-group mb-3">
+                                    <label class="text-muted">Телефон:</label>
+                                    <p id="viewClientPhone">
+                                        <a href="#" id="viewClientPhoneLink">-</a>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-group mb-3">
+                                    <label class="text-muted">Контактна особа:</label>
+                                    <p id="viewContactPerson">-</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-group mb-3">
+                            <label class="text-muted"><i class="fas fa-door-open"></i> Код домофону:</label>
+                            <div class="alert alert-info">
+                                <h4 class="font-weight-bold" id="viewAccessCode">-</h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Technical Information Tab -->
+                    <div class="tab-pane fade" id="technical" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="info-group mb-3">
+                                    <label class="text-muted">Вантажопідйомність:</label>
+                                    <p id="viewCapacity">-</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-group mb-3">
+                                    <label class="text-muted">Швидкість:</label>
+                                    <p id="viewSpeed">-</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="info-group mb-3">
+                                    <label class="text-muted">Остання інспекція:</label>
+                                    <p id="viewLastInspection">-</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-group mb-3">
+                                    <label class="text-muted">Наступна інспекція:</label>
+                                    <p id="viewNextInspection">-</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-group mb-3">
+                            <label class="text-muted">Примітки:</label>
+                            <p id="viewNotes" class="border p-3 rounded bg-light">-</p>
+                        </div>
+                    </div>
+
+                    <!-- Documents Tab -->
+                    <div class="tab-pane fade" id="documents" role="tabpanel">
+                        <div id="viewDocumentsList">
+                            <p class="text-center text-muted">Завантаження документів...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-warning" onclick="switchToEdit()">
+                    <i class="fas fa-edit"></i> Редагувати
+                </button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="closeViewModal()">
+                    <i class="fas fa-times"></i> Закрити
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    #viewLiftModal .info-group label {
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+        display: block;
+    }
+    
+    #viewLiftModal .info-group p {
+        font-size: 1rem;
+        margin-bottom: 0;
+        min-height: 1.5rem;
+    }
+    
+    #viewLiftModal .nav-tabs .nav-link {
+        color: #495057;
+    }
+    
+    #viewLiftModal .nav-tabs .nav-link.active {
+        color: #17a2b8;
+        border-bottom: 2px solid #17a2b8;
+    }
+</style>
