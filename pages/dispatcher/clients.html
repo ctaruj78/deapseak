@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Клієнти - Диспетчер</title>
+    <script src="../../assets/js/global-settings.js"></script>
     
     <!-- 🔒 Перевірка доступу -->
     <script src="/assets/js/dispatcher-access-check.js"></script>
@@ -161,114 +162,10 @@
                 </li>
             </ul>
         </nav>
+  <!-- Sidebar Placeholder -->
+  <div id="sidebar-placeholder"></div>
 
         <!-- Main Sidebar Container -->
-        <aside class="main-sidebar sidebar-dark-primary elevation-4">
-            <!-- Brand Logo -->
-            <a href="dashboard.html" class="brand-link">
-                <i class="brand-image fas fa-headset"></i>
-                <span class="brand-text font-weight-light">Диспетчер</span>
-            </a>
-
-            <!-- Sidebar -->
-            <div class="sidebar">
-                <!-- Sidebar Menu -->
-                <nav class="mt-2">
-                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-                        <li class="nav-item">
-                            <a href="dashboard.html" class="nav-link">
-                                <i class="nav-icon fas fa-tachometer-alt"></i>
-                                <p>Головна панель</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="monitoring.html" class="nav-link">
-                                <i class="nav-icon fas fa-desktop"></i>
-                                <p>Моніторинг</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="assignments.html" class="nav-link">
-                                <i class="nav-icon fas fa-tasks"></i>
-                                <p>Призначення завдань</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="clients.html" class="nav-link active">
-                                <i class="nav-icon fas fa-users"></i>
-                                <p>Клієнти</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="technicians.html" class="nav-link">
-                                <i class="nav-icon fas fa-user-hard-hat"></i>
-                                <p>Техніки</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="lifts.html" class="nav-link">
-                                <i class="nav-icon fas fa-elevator"></i>
-                                <p>Ліфти</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="qr-management.html" class="nav-link">
-                                <i class="nav-icon fas fa-qrcode"></i>
-                                <p>QR-коди</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="calendar.html" class="nav-link">
-                                <i class="nav-icon fas fa-calendar-alt"></i>
-                                <p>Календар</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="reports.html" class="nav-link">
-                                <i class="nav-icon fas fa-chart-bar"></i>
-                                <p>Звіти</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="../ai-assistant/ai-assistant.html" class="nav-link">
-                                <i class="nav-icon fas fa-robot"></i>
-                                <p>AI Асистент</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="notifications.html" class="nav-link">
-                                <i class="nav-icon fas fa-bell"></i>
-                                <p>Сповіщення</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="support.html" class="nav-link">
-                                <i class="nav-icon fas fa-life-ring"></i>
-                                <p>Підтримка</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="settings.html" class="nav-link">
-                                <i class="nav-icon fas fa-cog"></i>
-                                <p>Налаштування</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="profile.html" class="nav-link">
-                                <i class="nav-icon fas fa-user"></i>
-                                <p>Профіль</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="../../pages/auth/login.html" class="nav-link" onclick="logout()">
-                                <i class="nav-icon fas fa-sign-out-alt"></i>
-                                <p>Вийти</p>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
-            </div>
-        </aside>
 
         <!-- Content Wrapper -->
         <div class="content-wrapper">
@@ -686,7 +583,67 @@
         });
     </script>
     <script src="/assets/js/table-drag-scroll.js"></script>
+<!-- jQuery -->
+<script src="../../plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap -->
+<script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE -->
+<script src="../../plugins/adminlte/adminlte.min.js"></script>
+
+<!-- Sidebar Init (MUST be before other scripts) -->
+<script src="../../assets/js/sidebar-init.js"></script>
+
+<!-- API Configuration -->
+<script src="../../assets/js/config.js?v=20241116"></script>
+
+<!-- Auth System -->
+<script src="../../assets/js/auth.js?v=20241206"></script>
+
+<!-- DataTables (if needed) -->
+<script src="../../plugins/datatables/jquery.dataTables.min.js"></script>
+<script src="../../plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+
+<!-- SweetAlert2 -->
+<script src="../../plugins/sweetalert2/sweetalert2.min.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        if (typeof loadSidebarWithInit === "function") {
+            loadSidebarWithInit("includes/sidebar.html");
+        }
+    });
+</script>
 </body>
 </html>
     <script src="/assets/js/table-drag-scroll.js"></script>
+<!-- jQuery -->
+<script src="../../plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap -->
+<script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE -->
+<script src="../../plugins/adminlte/adminlte.min.js"></script>
+
+<!-- Sidebar Init (MUST be before other scripts) -->
+<script src="../../assets/js/sidebar-init.js"></script>
+
+<!-- API Configuration -->
+<script src="../../assets/js/config.js?v=20241116"></script>
+
+<!-- Auth System -->
+<script src="../../assets/js/auth.js?v=20241206"></script>
+
+<!-- DataTables (if needed) -->
+<script src="../../plugins/datatables/jquery.dataTables.min.js"></script>
+<script src="../../plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+
+<!-- SweetAlert2 -->
+<script src="../../plugins/sweetalert2/sweetalert2.min.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        if (typeof loadSidebarWithInit === "function") {
+            loadSidebarWithInit("includes/sidebar.html");
+        }
+    });
+</script>
 </body> -->
