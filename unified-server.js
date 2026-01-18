@@ -2431,6 +2431,87 @@ app.get('/api/users', authenticateToken, async (req, res) => {
     }
 });
 
+// GET /api/auth/status - Перевірка статусу автентифікації
+app.get('/api/auth/status', authenticateToken, (req, res) => {
+    res.json({
+        success: true,
+        authenticated: true,
+        user: {
+            id: req.user.userId,
+            email: req.user.email,
+            role: req.user.role,
+            username: req.user.username
+        }
+    });
+});
+
+// GET /api/analytics/dashboard - Dashboard статистика
+app.get('/api/analytics/dashboard', authenticateToken, async (req, res) => {
+    try {
+        const allowedRoles = ['admin', 'dispatcher'];
+        if (!allowedRoles.includes(req.user.role)) {
+            return res.status(403).json({
+                success: false,
+                message: 'Доступ заборонено. Тільки адміністратори та диспетчери можуть переглядати аналітику.'
+            });
+        }
+        
+        const stats = {
+            totalLifts: await db.collection('lifts').countDocuments(),
+            totalRequests: await db.collection('requests').countDocuments(),
+            pendingRequests: await db.collection('requests').countDocuments({ status: 'pending' }),
+            inProgressRequests: await db.collection('requests').countDocuments({ status: 'in_progress' }),
+            completedRequests: await db.collection('requests').countDocuments({ status: 'completed' }),
+            totalUsers: await db.collection('users').countDocuments(),
+            totalTechnicians: await db.collection('users').countDocuments({ role: { $in: ['tech', 'technician'] } }),
+            totalClients: await db.collection('users').countDocuments({ role: 'client' }),
+            totalOrcamentos: await db.collection('orcamentos').countDocuments(),
+            recentRequests: await db.collection('requests').find().sort({ createdAt: -1 }).limit(5).toArray()
+        };
+        
+        res.json({
+            success: true,
+            data: stats
+        });
+    } catch (error) {
+        console.error('❌ Помилка отримання dashboard статистики:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка отримання статистики',
+            error: error.message
+        });
+    }
+});
+
+// GET /api/ai/health - Перевірка AI системи
+app.get('/api/ai/health', authenticateToken, async (req, res) => {
+    try {
+        const hasApiKey = !!process.env.GOOGLE_AI_API_KEY;
+        const hasModel = !!process.env.GOOGLE_AI_MODEL;
+        
+        res.json({
+            success: true,
+            status: hasApiKey ? 'configured' : 'missing_api_key',
+            provider: 'Google Gemini 2.5 Flash',
+            model: process.env.GOOGLE_AI_MODEL || 'gemini-2.0-flash-exp',
+            configured: hasApiKey && hasModel,
+            features: {
+                chat: hasApiKey,
+                pdfAnalysis: hasApiKey,
+                voiceInput: true,
+                voiceOutput: true
+            }
+        });
+    } catch (error) {
+        console.error('❌ Помилка перевірки AI системи:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка перевірки AI системи',
+            error: error.message
+        });
+    }
+});
+
 // POST /api/users - створення користувача
 app.post('/api/users', authenticateToken, async (req, res) => {
     try {
