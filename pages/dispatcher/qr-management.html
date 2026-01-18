@@ -445,13 +445,7 @@ document.addEventListener("DOMContentLoaded", function() {
         return;
     }
     
-    // Відображення інформації про користувача
-    if (user) {
-        document.getElementById('username').textContent = user.firstName + ' ' + user.lastName;
-        if (user.avatar) {
-            document.getElementById('user-avatar').src = user.avatar;
-        }
-    }
+    console.log('✅ Авторизовано як:', user ? user.email : 'невідомо');
 
     // Ініціалізація DataTables
     let qrTable = $('#qr-codes-table').DataTable({
@@ -985,12 +979,6 @@ document.addEventListener("DOMContentLoaded", function() {
     $('#createQRModal').on('hidden.bs.modal', function() {
         clearQRForm();
         $('#qr-modal-title').text('Створити новий QR-код');
-    });
-
-    // Кнопка виходу
-    document.getElementById('logout-button').addEventListener('click', function() {
-        logout();
-        window.location.replace('/pages/auth/login.html');
     });
 
     // Ініціалізація сторінки

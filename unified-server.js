@@ -361,6 +361,147 @@ app.patch('/api/notifications/:id/read', authenticateToken, async (req, res) => 
 // 📊 QR CODE HISTORY
 // ═══════════════════════════════════════════════════════════
 
+// GET all QR codes with filtering and pagination
+app.get('/api/qr/codes', authenticateToken, async (req, res) => {
+    try {
+        if (!db) {
+            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+        }
+        
+        const { page = 1, limit = 20, type, status, createdFrom, createdTo } = req.query;
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+        
+        // Build filter
+        const filter = {};
+        if (type) filter.type = type;
+        if (status) filter.status = status;
+        if (createdFrom || createdTo) {
+            filter.createdAt = {};
+            if (createdFrom) filter.createdAt.$gte = new Date(createdFrom);
+            if (createdTo) filter.createdAt.$lte = new Date(createdTo);
+        }
+        
+        // Get QR codes (використовуємо історію сканувань як основу)
+        const qrCodes = await db.collection('qr_scans')
+            .find(filter)
+            .sort({ scannedAt: -1 })
+            .skip(skip)
+            .limit(parseInt(limit))
+            .toArray();
+        
+        const total = await db.collection('qr_scans').countDocuments(filter);
+        
+        res.json({ 
+            success: true, 
+            data: qrCodes,
+            pagination: {
+                page: parseInt(page),
+                limit: parseInt(limit),
+                total,
+                pages: Math.ceil(total / parseInt(limit))
+            }
+        });
+    } catch (error) {
+        console.error('❌ Помилка отримання QR кодів:', error);
+        res.status(500).json({ success: false, message: 'Помилка сервера' });
+    }
+});
+
+// GET QR code by ID
+app.get('/api/qr/codes/:id', authenticateToken, async (req, res) => {
+    try {
+        if (!db) {
+            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+        }
+        
+        const { ObjectId } = require('mongodb');
+        const qrCode = await db.collection('qr_scans').findOne({ _id: new ObjectId(req.params.id) });
+        
+        if (!qrCode) {
+            return res.status(404).json({ success: false, message: 'QR код не знайдено' });
+        }
+        
+        res.json({ success: true, data: qrCode });
+    } catch (error) {
+        console.error('❌ Помилка отримання QR коду:', error);
+        res.status(500).json({ success: false, message: 'Помилка сервера' });
+    }
+});
+
+// POST create new QR code
+app.post('/api/qr/codes', authenticateToken, async (req, res) => {
+    try {
+        if (!db) {
+            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+        }
+        
+        const qrCodeData = {
+            ...req.body,
+            createdBy: req.user.id,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+        
+        const result = await db.collection('qr_scans').insertOne(qrCodeData);
+        qrCodeData._id = result.insertedId;
+        
+        res.json({ success: true, message: 'QR код створено', data: qrCodeData });
+    } catch (error) {
+        console.error('❌ Помилка створення QR коду:', error);
+        res.status(500).json({ success: false, message: 'Помилка сервера' });
+    }
+});
+
+// PUT update QR code
+app.put('/api/qr/codes/:id', authenticateToken, async (req, res) => {
+    try {
+        if (!db) {
+            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+        }
+        
+        const { ObjectId } = require('mongodb');
+        const updateData = {
+            ...req.body,
+            updatedAt: new Date()
+        };
+        
+        const result = await db.collection('qr_scans').updateOne(
+            { _id: new ObjectId(req.params.id) },
+            { $set: updateData }
+        );
+        
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ success: false, message: 'QR код не знайдено' });
+        }
+        
+        res.json({ success: true, message: 'QR код оновлено' });
+    } catch (error) {
+        console.error('❌ Помилка оновлення QR коду:', error);
+        res.status(500).json({ success: false, message: 'Помилка сервера' });
+    }
+});
+
+// DELETE QR code
+app.delete('/api/qr/codes/:id', authenticateToken, async (req, res) => {
+    try {
+        if (!db) {
+            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+        }
+        
+        const { ObjectId } = require('mongodb');
+        const result = await db.collection('qr_scans').deleteOne({ _id: new ObjectId(req.params.id) });
+        
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ success: false, message: 'QR код не знайдено' });
+        }
+        
+        res.json({ success: true, message: 'QR код видалено' });
+    } catch (error) {
+        console.error('❌ Помилка видалення QR коду:', error);
+        res.status(500).json({ success: false, message: 'Помилка сервера' });
+    }
+});
+
 // GET QR scan history
 app.get('/api/qr/history', authenticateToken, async (req, res) => {
     try {
