@@ -1,0 +1,329 @@
+{
+  "date": "2026-01-18T23:15:43.176Z",
+  "summary": {
+    "totalPages": 7,
+    "successPages": 6,
+    "errorPages": 1,
+    "avgLoadTime": 5339,
+    "maxLoadTime": 30053,
+    "totalButtons": 339,
+    "totalErrors": 3,
+    "score": 85.71428571428571
+  },
+  "pages": [
+    {
+      "role": "admin",
+      "name": "Admin Dashboard",
+      "path": "/pages/admin/admin-dashboard.html",
+      "loadTime": 351,
+      "hasNav": true,
+      "hasSidebar": true,
+      "hasContent": true,
+      "buttonsCount": 1,
+      "formsCount": 1,
+      "modalsCount": 0,
+      "status": "success"
+    },
+    {
+      "role": "admin",
+      "name": "Користувачі",
+      "path": "/pages/admin/users.html",
+      "loadTime": 287,
+      "hasNav": true,
+      "hasSidebar": true,
+      "hasContent": true,
+      "buttonsCount": 32,
+      "formsCount": 1,
+      "modalsCount": 1,
+      "status": "success"
+    },
+    {
+      "role": "admin",
+      "name": "Ліфти",
+      "path": "/pages/admin/lifts.html",
+      "loadTime": 517,
+      "hasNav": true,
+      "hasSidebar": true,
+      "hasContent": true,
+      "buttonsCount": 244,
+      "formsCount": 5,
+      "modalsCount": 10,
+      "status": "success"
+    },
+    {
+      "role": "admin",
+      "name": "Створення Orçamento",
+      "path": "/pages/admin/invoice-template.html",
+      "loadTime": 305,
+      "hasNav": true,
+      "hasSidebar": true,
+      "hasContent": true,
+      "buttonsCount": 8,
+      "formsCount": 1,
+      "modalsCount": 0,
+      "status": "success"
+    },
+    {
+      "role": "admin",
+      "name": "Список Orçamentos",
+      "path": "/pages/admin/orcamentos-list.html",
+      "loadTime": 316,
+      "hasNav": true,
+      "hasSidebar": true,
+      "hasContent": true,
+      "buttonsCount": 38,
+      "formsCount": 0,
+      "modalsCount": 0,
+      "status": "success"
+    },
+    {
+      "role": "admin",
+      "name": "Email Templates",
+      "path": "/pages/admin/email-template.html",
+      "loadTime": 203,
+      "hasNav": true,
+      "hasSidebar": true,
+      "hasContent": true,
+      "buttonsCount": 16,
+      "formsCount": 1,
+      "modalsCount": 1,
+      "status": "success"
+    },
+    {
+      "role": "admin",
+      "name": "Карта ліфтів",
+      "path": "/pages/admin/maps.html",
+      "loadTime": 30053,
+      "status": "error",
+      "error": "Navigation timeout of 30000 ms exceeded"
+    }
+  ],
+  "errors": [
+    {
+      "type": "login_error",
+      "role": "dispatcher",
+      "message": "Navigation timeout of 15000 ms exceeded"
+    },
+    {
+      "type": "login_error",
+      "role": "tech",
+      "message": "Navigation timeout of 15000 ms exceeded"
+    },
+    {
+      "type": "login_error",
+      "role": "client",
+      "message": "Navigation timeout of 15000 ms exceeded"
+    }
+  ],
+  "buttons": [
+    {
+      "role": "admin",
+      "page": "Користувачі",
+      "button": "Adicionar користувача",
+      "status": "error",
+      "error": "buttonHandle.click is not a function"
+    },
+    {
+      "role": "admin",
+      "page": "Ліфти",
+      "button": "Adicionar ліфт",
+      "status": "error",
+      "error": "buttonHandle.click is not a function"
+    },
+    {
+      "role": "admin",
+      "page": "Створення Orçamento",
+      "button": "Guardar Orçamento",
+      "status": "error",
+      "error": "buttonHandle.click is not a function"
+    },
+    {
+      "role": "admin",
+      "page": "Створення Orçamento",
+      "button": "Novo número",
+      "status": "error",
+      "error": "buttonHandle.click is not a function"
+    },
+    {
+      "role": "admin",
+      "page": "Створення Orçamento",
+      "button": "Modelo",
+      "status": "error",
+      "error": "buttonHandle.click is not a function"
+    },
+    {
+      "role": "admin",
+      "page": "Створення Orçamento",
+      "button": "Adicionar serviço",
+      "status": "error",
+      "error": "buttonHandle.click is not a function"
+    },
+    {
+      "role": "admin",
+      "page": "Створення Orçamento",
+      "button": "Imprimir",
+      "status": "error",
+      "error": "buttonHandle.click is not a function"
+    },
+    {
+      "role": "admin",
+      "page": "Створення Orçamento",
+      "button": "PDF",
+      "status": "error",
+      "error": "buttonHandle.click is not a function"
+    },
+    {
+      "role": "admin",
+      "page": "Створення Orçamento",
+      "button": "Email",
+      "status": "error",
+      "error": "buttonHandle.click is not a function"
+    },
+    {
+      "role": "admin",
+      "page": "Список Orçamentos",
+      "button": "Pesquisar",
+      "status": "error",
+      "error": "buttonHandle.click is not a function"
+    },
+    {
+      "role": "admin",
+      "page": "Список Orçamentos",
+      "button": "Limpar",
+      "status": "error",
+      "error": "buttonHandle.click is not a function"
+    },
+    {
+      "role": "admin",
+      "page": "Список Orçamentos",
+      "button": "Ver",
+      "status": "error",
+      "error": "buttonHandle.click is not a function"
+    },
+    {
+      "role": "admin",
+      "page": "Список Orçamentos",
+      "button": "Editar",
+      "status": "error",
+      "error": "buttonHandle.click is not a function"
+    },
+    {
+      "role": "admin",
+      "page": "Список Orçamentos",
+      "button": "Eliminar",
+      "status": "error",
+      "error": "buttonHandle.click is not a function"
+    },
+    {
+      "role": "admin",
+      "page": "Список Orçamentos",
+      "button": "Ver",
+      "status": "error",
+      "error": "buttonHandle.click is not a function"
+    },
+    {
+      "role": "admin",
+      "page": "Список Orçamentos",
+      "button": "Editar",
+      "status": "error",
+      "error": "buttonHandle.click is not a function"
+    },
+    {
+      "role": "admin",
+      "page": "Список Orçamentos",
+      "button": "Eliminar",
+      "status": "error",
+      "error": "buttonHandle.click is not a function"
+    },
+    {
+      "role": "admin",
+      "page": "Список Orçamentos",
+      "button": "Ver",
+      "status": "error",
+      "error": "buttonHandle.click is not a function"
+    },
+    {
+      "role": "admin",
+      "page": "Список Orçamentos",
+      "button": "Editar",
+      "status": "error",
+      "error": "buttonHandle.click is not a function"
+    },
+    {
+      "role": "admin",
+      "page": "Email Templates",
+      "button": "Novo modelo",
+      "status": "error",
+      "error": "buttonHandle.click is not a function"
+    },
+    {
+      "role": "admin",
+      "page": "Email Templates",
+      "button": "Editar",
+      "status": "error",
+      "error": "buttonHandle.click is not a function"
+    },
+    {
+      "role": "admin",
+      "page": "Email Templates",
+      "button": "Pré-visualizar",
+      "status": "error",
+      "error": "buttonHandle.click is not a function"
+    },
+    {
+      "role": "admin",
+      "page": "Email Templates",
+      "button": "Envio de Teste",
+      "status": "error",
+      "error": "buttonHandle.click is not a function"
+    },
+    {
+      "role": "admin",
+      "page": "Email Templates",
+      "button": "Editar",
+      "status": "error",
+      "error": "buttonHandle.click is not a function"
+    },
+    {
+      "role": "admin",
+      "page": "Email Templates",
+      "button": "Pré-visualizar",
+      "status": "error",
+      "error": "buttonHandle.click is not a function"
+    },
+    {
+      "role": "admin",
+      "page": "Email Templates",
+      "button": "Envio de Teste",
+      "status": "error",
+      "error": "buttonHandle.click is not a function"
+    },
+    {
+      "role": "admin",
+      "page": "Email Templates",
+      "button": "Editar",
+      "status": "error",
+      "error": "buttonHandle.click is not a function"
+    },
+    {
+      "role": "admin",
+      "page": "Email Templates",
+      "button": "Pré-visualizar",
+      "status": "error",
+      "error": "buttonHandle.click is not a function"
+    },
+    {
+      "role": "admin",
+      "page": "Email Templates",
+      "button": "Envio de Teste",
+      "status": "error",
+      "error": "buttonHandle.click is not a function"
+    }
+  ],
+  "performance": [
+    {
+      "action": "Login admin",
+      "time": 1007
+    }
+  ]
+}

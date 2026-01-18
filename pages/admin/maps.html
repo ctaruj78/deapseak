@@ -562,7 +562,10 @@
         $(document).ready(async function() {
             // Перевірка авторизації
             if (!AuthManager.isAuthenticated()) {
-                window.location.replace('/pages/auth/login.html');
+                // ✅ Перевірка чи сторінка активна перед redirect
+                if (document.body && !document.hidden) {
+                    window.location.replace('/pages/auth/login.html');
+                }
                 return;
             }
 

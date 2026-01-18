@@ -655,7 +655,10 @@
                     
                     if (!token) {
                         this.showNotification('Autorização necessária', 'error');
-                        window.location.href = '/pages/auth/login.html';
+                        // ✅ Перевірка чи сторінка активна
+                        if (document.body && !document.hidden) {
+                            window.location.href = '/pages/auth/login.html';
+                        }
                         return;
                     }
 

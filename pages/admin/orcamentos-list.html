@@ -378,8 +378,12 @@
                              localStorage.getItem('lm_token');
 
                 if (!token) {
-                    alert('Não autorizado. Faça login novamente.');
-                    window.location.href = '../auth/login.html';
+                    console.warn('⚠️ Токен не знайдено, redirect на login');
+                    // Перевірка чи сторінка активна перед redirect
+                    if (document.body && !document.hidden) {
+                        alert('Não autorizado. Faça login novamente.');
+                        window.location.href = '../auth/login.html';
+                    }
                     return;
                 }
 

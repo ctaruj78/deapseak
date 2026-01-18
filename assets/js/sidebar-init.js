@@ -85,23 +85,36 @@ function loadSidebarWithInit(sidebarPath = 'includes/sidebar.html') {
     
     if ($container.length === 0) {
         console.error('❌ Sidebar container not found! Need either #sidebar-placeholder or .main-sidebar');
-        return;
+        return Promise.resolve(); // Завершуємо без помилки
     }
     
     console.log('✅ Found sidebar container:', $container.attr('id') || $container.attr('class'));
     
-    $container.load(sidebarPath, function(response, status, xhr) {
-        if (status === "error") {
-            console.error('❌ Sidebar load failed:', xhr.status, xhr.statusText);
-            return;
-        }
+    return new Promise((resolve, reject) => {
+        // Timeout для запобігання зависанню
+        const timeoutId = setTimeout(() => {
+            console.warn('⚠️ Sidebar load timeout after 5s, continuing anyway...');
+            resolve(); // Продовжуємо навіть при timeout
+        }, 5000);
         
-        console.log('✅ Sidebar HTML loaded');
-        
-        // Initialize treeview after sidebar is loaded
-        setTimeout(function() {
-            initSidebarTreeview();
-        }, 100);
+        $container.load(sidebarPath, function(response, status, xhr) {
+            clearTimeout(timeoutId);
+            
+            if (status === "error") {
+                console.error('❌ Sidebar load failed:', xhr.status, xhr.statusText);
+                // Не блокуємо завантаження сторінки через помилку sidebar
+                resolve();
+                return;
+            }
+            
+            console.log('✅ Sidebar HTML loaded');
+            
+            // Initialize treeview after sidebar is loaded
+            setTimeout(function() {
+                initSidebarTreeview();
+                resolve();
+            }, 100);
+        });
     });
 }
 
