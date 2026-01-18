@@ -4102,7 +4102,16 @@
                 // ✅ ВИПРАВЛЕННЯ: Зберігаємо повний список в глобальну змінну
                 if (Array.isArray(lifts)) {
                     window.allLiftsData = lifts;
-                    displayLiftsInTable(lifts);
+                    
+                    // Скидаємо на першу сторінку при завантаженні
+                    currentPage = 1;
+                    
+                    // Показуємо ліфти з пагінацією
+                    const startIdx = (currentPage - 1) * LIFTS_PER_PAGE;
+                    const endIdx = startIdx + LIFTS_PER_PAGE;
+                    const paginatedLifts = lifts.slice(startIdx, endIdx);
+                    displayLiftsInTable(paginatedLifts, lifts.length);
+                    
                     return lifts;
                 } else {
                     console.error('❌ API повернув не масив:', lifts);
@@ -4112,13 +4121,27 @@
                 console.error('❌ Помилка завантаження ліфтів:', result.error || 'Unknown error');
                 // Fallback до localStorage якщо API недоступний
                 const localLifts = JSON.parse(localStorage.getItem('lifts') || '[]');
-                displayLiftsInTable(localLifts);
+                window.allLiftsData = localLifts;
+                currentPage = 1;
+                
+                const startIdx = (currentPage - 1) * LIFTS_PER_PAGE;
+                const endIdx = startIdx + LIFTS_PER_PAGE;
+                const paginatedLifts = localLifts.slice(startIdx, endIdx);
+                displayLiftsInTable(paginatedLifts, localLifts.length);
+                
                 return localLifts;
             }
         } catch (error) {
             console.error('❌ Exception при завантаженні ліфтів:', error);
             const localLifts = JSON.parse(localStorage.getItem('lifts') || '[]');
-            displayLiftsInTable(localLifts);
+            window.allLiftsData = localLifts;
+            currentPage = 1;
+            
+            const startIdx = (currentPage - 1) * LIFTS_PER_PAGE;
+            const endIdx = startIdx + LIFTS_PER_PAGE;
+            const paginatedLifts = localLifts.slice(startIdx, endIdx);
+            displayLiftsInTable(paginatedLifts, localLifts.length);
+            
             return localLifts;
         }
     }
@@ -4149,9 +4172,121 @@
         }
     }
     
+    // 📄 Пагінація
+    let currentPage = 1;
+    const LIFTS_PER_PAGE = 20; // Показувати по 20 ліфтів на сторінці
+    
+    // Функція для оновлення пагінації
+    function updatePagination(totalLifts, currentLifts) {
+        const totalPages = Math.ceil(totalLifts / LIFTS_PER_PAGE);
+        const paginationEl = document.getElementById('pagination');
+        const showingCountEl = document.getElementById('showingCount');
+        const totalCountEl = document.getElementById('totalCount');
+        
+        if (!paginationEl || !showingCountEl || !totalCountEl) return;
+        
+        // Оновлюємо інфо
+        showingCountEl.textContent = currentLifts;
+        totalCountEl.textContent = totalLifts;
+        
+        // Якщо одна сторінка або менше
+        if (totalPages <= 1) {
+            paginationEl.innerHTML = '';
+            return;
+        }
+        
+        // Створюємо кнопки пагінації
+        let html = '';
+        
+        // Попередня сторінка
+        html += `
+            <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="changePage(${currentPage - 1}); return false;">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            </li>
+        `;
+        
+        // Номери сторінок (показуємо max 7 кнопок)
+        let startPage = Math.max(1, currentPage - 3);
+        let endPage = Math.min(totalPages, currentPage + 3);
+        
+        if (currentPage <= 3) {
+            endPage = Math.min(7, totalPages);
+        }
+        if (currentPage >= totalPages - 2) {
+            startPage = Math.max(1, totalPages - 6);
+        }
+        
+        // Перша сторінка якщо не в діапазоні
+        if (startPage > 1) {
+            html += `
+                <li class="page-item">
+                    <a class="page-link" href="#" onclick="changePage(1); return false;">1</a>
+                </li>
+            `;
+            if (startPage > 2) {
+                html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            }
+        }
+        
+        // Сторінки в діапазоні
+        for (let i = startPage; i <= endPage; i++) {
+            html += `
+                <li class="page-item ${i === currentPage ? 'active' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${i}); return false;">${i}</a>
+                </li>
+            `;
+        }
+        
+        // Остання сторінка якщо не в діапазоні
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            }
+            html += `
+                <li class="page-item">
+                    <a class="page-link" href="#" onclick="changePage(${totalPages}); return false;">${totalPages}</a>
+                </li>
+            `;
+        }
+        
+        // Наступна сторінка
+        html += `
+            <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="changePage(${currentPage + 1}); return false;">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+        `;
+        
+        paginationEl.innerHTML = html;
+    }
+    
+    // Функція зміни сторінки
+    window.changePage = function(page) {
+        const totalPages = Math.ceil((window.allLiftsData?.length || 0) / LIFTS_PER_PAGE);
+        
+        if (page < 1 || page > totalPages) return;
+        
+        currentPage = page;
+        console.log('📄 Перехід на сторінку:', page);
+        
+        // Перезастосувати фільтри з новою сторінкою
+        if (typeof applyAllFilters === 'function') {
+            applyAllFilters();
+        } else {
+            // Якщо функція ще не завантажена, викликаємо displayLiftsInTable напряму
+            const startIdx = (currentPage - 1) * LIFTS_PER_PAGE;
+            const endIdx = startIdx + LIFTS_PER_PAGE;
+            const paginatedLifts = (window.allLiftsData || []).slice(startIdx, endIdx);
+            displayLiftsInTable(paginatedLifts, window.allLiftsData?.length || 0);
+        }
+    };
+    
     // 🏛️ Показати modal з підтвердженням відправки повідомлення муніципалітету
     // Функція відображення ліфтів в таблиці
-    function displayLiftsInTable(lifts) {
+    function displayLiftsInTable(lifts, totalCount = null) {
         console.log('📋 Відображення ліфтів в таблиці:', lifts.length);
         
         // ⚠️ НЕ перезаписуємо window.allLiftsData - це має бути тільки повний список!
@@ -4271,6 +4406,10 @@
         });
         
         console.log('✅ Відображено ліфтів в таблиці:', lifts.length);
+        
+        // Оновлюємо пагінацію
+        const total = totalCount !== null ? totalCount : lifts.length;
+        updatePagination(total, lifts.length);
         
         // Оновлюємо статистику
         updateLiftsStatistics(lifts);
@@ -5937,67 +6076,10 @@
     document.addEventListener('DOMContentLoaded', function() {
         console.log('📊 Ініціалізація обробників експорту...');
         
-        // ✅ ДОДАНО: Обробник пошуку ліфтів
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) {
-            searchInput.addEventListener('input', function(e) {
-                const query = e.target.value.toLowerCase().trim();
-                console.log('🔍 Pesquisar ліфтів:', query);
-                
-                if (!window.allLiftsData || window.allLiftsData.length === 0) {
-                    console.warn('⚠️ Дані ліфтів ще не завантажені');
-                    return;
-                }
-                
-                if (!query) {
-                    // Показати всі ліфти
-                    displayLiftsInTable(window.allLiftsData);
-                    return;
-                }
-                
-                // Filtroуємо ліфти
-                const filtered = window.allLiftsData.filter(lift => {
-                    const municipalNumber = (lift.municipalNumber || '').toLowerCase();
-                    const manufacturer = (lift.manufacturer || '').toLowerCase();
-                    const model = (lift.model || '').toLowerCase();
-                    const type = (lift.type || '').toLowerCase();
-                    const id = ((lift._id || lift.id) || '').toString().toLowerCase();
-                    
-                    // Адреса з об'єкта
-                    let addressStr = '';
-                    if (typeof lift.address === 'object' && lift.address) {
-                        addressStr = `${lift.address.street || ''} ${lift.address.city || ''}`.toLowerCase();
-                    } else if (typeof lift.address === 'string') {
-                        addressStr = lift.address.toLowerCase();
-                    }
-                    
-                    // Клієнт
-                    let clientStr = '';
-                    if (typeof lift.client === 'object' && lift.client) {
-                        clientStr = `${lift.client.firstName || ''} ${lift.client.lastName || ''} ${lift.client.email || ''}`.toLowerCase();
-                    } else if (lift.clientName) {
-                        clientStr = lift.clientName.toLowerCase();
-                    }
-                    
-                    return municipalNumber.includes(query) ||
-                           manufacturer.includes(query) ||
-                           model.includes(query) ||
-                           type.includes(query) ||
-                           id.includes(query) ||
-                           addressStr.includes(query) ||
-                           clientStr.includes(query);
-                });
-                
-                console.log(`✅ Знайдено ліфтів: ${filtered.length} з ${window.allLiftsData.length}`);
-                displayLiftsInTable(filtered);
-            });
-        } else {
-            console.warn('⚠️ Поле searchInput не знайдено');
-        }
-        
         // ✅ ДОДАНО: Обробники фільтрів по статусу та типу
         const statusFilter = document.getElementById('statusFilter');
         const typeFilter = document.getElementById('typeFilter');
+        const searchInput = document.getElementById('searchInput');
         
         // Функція застосування всіх фільтрів
         function applyAllFilters() {
@@ -6076,7 +6158,14 @@
             }
             
             console.log(`✅ Результат фільтрації: ${filtered.length} з ${window.allLiftsData.length}`);
-            displayLiftsInTable(filtered);
+            
+            // ✅ ДОДАНО: Пагінація - показуємо лише ліфти поточної сторінки
+            const startIdx = (currentPage - 1) * LIFTS_PER_PAGE;
+            const endIdx = startIdx + LIFTS_PER_PAGE;
+            const paginatedLifts = filtered.slice(startIdx, endIdx);
+            
+            // Передаємо відфільтровані ліфти для поточної сторінки та загальну кількість
+            displayLiftsInTable(paginatedLifts, filtered.length);
             
             // ✅ ВИПРАВЛЕННЯ: Статистичні картки завжди показують ПОВНУ статистику
             // Тільки таблиця показує відфільтровані дані
@@ -6084,14 +6173,22 @@
         }
         
         if (statusFilter) {
-            statusFilter.addEventListener('change', applyAllFilters);
+            statusFilter.addEventListener('change', function() {
+                // Скидаємо на першу сторінку при зміні фільтру
+                currentPage = 1;
+                applyAllFilters();
+            });
             console.log('✅ Обробник фільтру статусу додано');
         } else {
             console.warn('⚠️ Filtro statusFilter не знайдено');
         }
         
         if (typeFilter) {
-            typeFilter.addEventListener('change', applyAllFilters);
+            typeFilter.addEventListener('change', function() {
+                // Скидаємо на першу сторінку при зміні фільтру
+                currentPage = 1;
+                applyAllFilters();
+            });
             console.log('✅ Обробник фільтру типу додано');
         } else {
             console.warn('⚠️ Filtro typeFilter не знайдено');
@@ -6103,7 +6200,11 @@
             const newSearchInput = searchInput.cloneNode(true);
             searchInput.parentNode.replaceChild(newSearchInput, searchInput);
             
-            newSearchInput.addEventListener('input', applyAllFilters);
+            newSearchInput.addEventListener('input', function() {
+                // Скидаємо на першу сторінку при зміні пошуку
+                currentPage = 1;
+                applyAllFilters();
+            });
             console.log('✅ Обробник пошуку оновлено для роботи з фільтрами');
         }
         
