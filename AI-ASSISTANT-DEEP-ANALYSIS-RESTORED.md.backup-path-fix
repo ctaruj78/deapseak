@@ -33,10 +33,10 @@ Instalar resguardos certificados em todas as rodas e partes móveis
 ```
 
 **3. Оновлені файли (5 версій AI Assistant):**
-- ✅ `/pages/ai-assistant/ai-assistant.html` - Admin версія
-- ✅ `/pages/ai-assistant/ai-assistant.html` - Технік версія  
-- ✅ `/pages/ai-assistant/ai-assistant.html` - Клієнт версія
-- ✅ `/pages/ai-assistant/ai-assistant.html` - Диспетчер версія
+- ✅ `/pages/admin/ai-assistant-full.html` - Admin версія
+- ✅ `/pages/tech/ai-assistant.html` - Технік версія  
+- ✅ `/pages/client/ai-assistant.html` - Клієнт версія
+- ✅ `/pages/dispatcher/ai-assistant.html` - Диспетчер версія
 
 **4. Backend вже був готовий:**
 - ✅ `/services/pdf-parser.js` - містить `createViolation()` з `detailedExplanation`
@@ -169,9 +169,9 @@ ${v.detailedExplanation ? `
 ```
 
 **Відкрийте AI Assistant:**
-- Admin: http://localhost:5000/pages/ai-assistant/ai-assistant.html
-- Tech: http://localhost:5000/pages/ai-assistant/ai-assistant.html
-- Client: http://localhost:5000/pages/ai-assistant/ai-assistant.html
+- Admin: http://localhost:5000/pages/admin/ai-assistant-full.html
+- Tech: http://localhost:5000/pages/tech/ai-assistant.html
+- Client: http://localhost:5000/pages/client/ai-assistant.html
 
 **Завантажте тестовий PDF або введіть текст:**
 ```

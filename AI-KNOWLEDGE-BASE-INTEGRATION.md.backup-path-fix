@@ -193,7 +193,7 @@ curl -X POST http://localhost:5000/api/ai/law-question \
 ## 🎯 Наступні кроки
 
 1. ✅ Інтеграція з unified-server.js - **ЗАВЕРШЕНО**
-2. ⏸️ Інтеграція з frontend AI assistant (pages/ai-assistant/ai-assistant.html)
+2. ⏸️ Інтеграція з frontend AI assistant (pages/admin/ai-assistant-full.html)
 3. ⏸️ Додати кнопку "Consultar Legislação" в UI
 4. ⏸️ Оновити README.md з новими можливостями AI
 

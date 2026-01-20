@@ -169,10 +169,10 @@ node generate-knowledge-base.js
 
 **Замінено старі версії:**
 - ❌ `pages/ai-assistant/ai-assistant.html` (95KB, без AdminLTE) → Deprecated
-- ❌ `pages/ai-assistant/ai-assistant.html` → Deprecated  
-- ❌ `pages/ai-assistant/ai-assistant.html` → Deprecated
-- ❌ `pages/ai-assistant/ai-assistant.html` → Deprecated
-- ❌ `pages/ai-assistant/ai-assistant.html` → Deprecated
+- ❌ `pages/admin/ai-assistant-full.html` → Deprecated  
+- ❌ `pages/client/ai-assistant.html` → Deprecated
+- ❌ `pages/tech/ai-assistant.html` → Deprecated
+- ❌ `pages/dispatcher/ai-assistant.html` → Deprecated
 
 **Оновлено:**
 - ✅ 26 HTML файлів з посиланнями

@@ -3,27 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Клієнт - Рахунки</title>
+    <title>Клієнт - Історія обслуговування</title>
     
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
     
+    <!-- Chart.js ЛОКАЛЬНИЙ -->
+    <script src="../../plugins/chart.js/chart.umd.min.js"></script>
+    
     <!-- Додаткові стилі -->
     <style>
-        .invoice-card {
+        .history-card {
             transition: all 0.3s ease;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             margin-bottom: 20px;
         }
         
-        .invoice-card:hover {
+        .history-card:hover {
             transform: translateY(-3px);
             box-shadow: 0 8px 25px rgba(0,0,0,0.15);
         }
         
-        .summary-card {
+        .stat-card {
             background: white;
             border-radius: 12px;
             padding: 20px;
@@ -33,102 +36,146 @@
             height: 100%;
         }
         
-        .summary-card:hover {
+        .stat-card:hover {
             transform: translateY(-3px);
             box-shadow: 0 8px 25px rgba(0,0,0,0.15);
         }
         
-        .summary-icon {
+        .stat-icon {
             font-size: 2.5rem;
             margin-bottom: 15px;
             display: block;
         }
         
-        .method-card {
-            background: white;
-            border-radius: 12px;
-            padding: 25px;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            width: 2px;
             height: 100%;
+            background: #007bff;
+            transform: translateX(-50%);
         }
         
-        .method-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        .timeline-item {
+            display: flex;
+            justify-content: flex-end;
+            padding-right: 30px;
+            position: relative;
+            margin-bottom: 40px;
+            width: 50%;
         }
         
-        .method-icon {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-            display: block;
+        .timeline-item:nth-child(even) {
+            align-self: flex-end;
+            justify-content: flex-start;
+            padding-left: 30px;
+            padding-right: 0;
+            left: 50%;
         }
         
-        .invoice-table {
+        .timeline-content {
             background: white;
             border-radius: 12px;
-            overflow: hidden;
+            padding: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            position: relative;
         }
         
-        .invoice-table th {
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        .timeline-content::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            right: -10px;
+            width: 0;
+            height: 0;
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+            border-left: 10px solid white;
+        }
+        
+        .timeline-item:nth-child(even) .timeline-content::after {
+            right: auto;
+            left: -10px;
+            border-left: none;
+            border-right: 10px solid white;
+        }
+        
+        .timeline-date {
+            background: #007bff;
             color: white;
-            font-weight: 600;
-            padding: 15px;
-        }
-        
-        .invoice-table td {
-            padding: 15px;
-            vertical-align: middle;
-        }
-        
-        .status-badge {
-            padding: 8px 16px;
+            padding: 8px 15px;
             border-radius: 20px;
-            font-weight: 600;
-            font-size: 0.85rem;
+            position: absolute;
+            top: 10px;
+            right: -70px;
+            font-weight: bold;
         }
         
-        .status-paid {
+        .timeline-item:nth-child(even) .timeline-date {
+            right: auto;
+            left: -70px;
+        }
+        
+        .timeline-icon {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .status-completed {
             background: linear-gradient(135deg, #28a745, #20c997);
             color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            font-size: 0.85rem;
         }
         
         .status-pending {
             background: linear-gradient(135deg, #ffc107, #fd7e14);
             color: #212529;
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            font-size: 0.85rem;
         }
         
-        .status-overdue {
-            background: linear-gradient(135deg, #dc3545, #e83e8c);
+        .status-in-progress {
+            background: linear-gradient(135deg, #17a2b8, #6f42c1);
             color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            font-size: 0.85rem;
         }
         
-        .btn-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 3px;
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            height: 100%;
         }
         
-        .pagination {
+        .export-options {
             display: flex;
-            justify-content: center;
-            align-items: center;
             gap: 15px;
-            margin-top: 20px;
+            flex-wrap: wrap;
         }
         
         .export-btn {
-            transition: all 0.3s ease;
-            border-radius: 12px;
+            flex: 1;
+            min-width: 150px;
             padding: 15px;
             text-align: center;
+            border-radius: 12px;
+            transition: all 0.3s ease;
         }
         
         .export-btn:hover {
@@ -136,52 +183,40 @@
             box-shadow: 0 8px 25px rgba(0,0,0,0.15);
         }
         
-        .invoice-details-modal .modal-content {
-            border-radius: 15px;
-            overflow: hidden;
-        }
-        
-        .invoice-details-modal .modal-header {
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            color: white;
-        }
-        
-        .payment-option {
-            border: 2px solid #e9ecef;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        
-        .payment-option:hover {
-            border-color: #007bff;
-            transform: translateY(-2px);
-        }
-        
-        .payment-option.selected {
-            border-color: #007bff;
-            background-color: #f8f9ff;
-        }
-        
         @media (max-width: 768px) {
-            .summary-icon, .method-icon {
-                font-size: 2rem;
+            .timeline::before {
+                left: 30px;
             }
             
-            .invoice-table {
-                font-size: 0.9rem;
+            .timeline-item {
+                width: 100%;
+                padding-left: 70px;
+                padding-right: 0;
             }
             
-            .btn-icon {
-                width: 35px;
-                height: 35px;
-                margin: 2px;
+            .timeline-item:nth-child(even) {
+                left: 0;
+                padding-left: 70px;
+            }
+            
+            .timeline-date {
+                left: 10px;
+                right: auto;
+            }
+            
+            .timeline-item:nth-child(even) .timeline-date {
+                left: 10px;
+            }
+            
+            .timeline-content::after {
+                display: none;
+            }
+            
+            .export-options {
+                flex-direction: column;
             }
         }
     </style>
-    <link rel="stylesheet" href="/assets/css/table-drag-scroll.css">
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
     <div class="wrapper">
@@ -201,7 +236,7 @@
                     <a href="/pages/client/my-lifts.html" class="nav-link">Мої ліфти</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="/pages/client/invoices.html" class="nav-link active">Рахунки</a>
+                    <a href="/pages/client/history.html" class="nav-link active">Історія</a>
                 </li>
             </ul>
 
@@ -487,18 +522,19 @@
 }
 </style>
 
+
         <!-- Content Wrapper -->
         <div class="content-wrapper">
             <section class="content-header">
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1>Мої рахунки</h1>
+                            <h1>Історія обслуговування</h1>
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
                                 <li class="breadcrumb-item"><a href="/pages/client/dashboard.html">Головна</a></li>
-                                <li class="breadcrumb-item active">Рахунки</li>
+                                <li class="breadcrumb-item active">Історія</li>
                             </ol>
                         </div>
                     </div>
@@ -508,95 +544,55 @@
             <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
-                    <!-- Статистика -->
-                    <div class="row">
-                        <div class="col-lg-3 col-md-6">
-                            <div class="summary-card">
-                                <div class="summary-icon">💰</div>
-                                <div class="summary-info">
-                                    <h3 id="totalAmount">₴0.00</h3>
-                                    <p>Загальна сума</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-3 col-md-6">
-                            <div class="summary-card">
-                                <div class="summary-icon">✅</div>
-                                <div class="summary-info">
-                                    <h3 id="paidAmount">₴0.00</h3>
-                                    <p>Оплачено</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-3 col-md-6">
-                            <div class="summary-card">
-                                <div class="summary-icon">⏳</div>
-                                <div class="summary-info">
-                                    <h3 id="pendingAmount">₴0.00</h3>
-                                    <p>В очікуванні</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-3 col-md-6">
-                            <div class="summary-card">
-                                <div class="summary-icon">⚠️</div>
-                                <div class="summary-info">
-                                    <h3 id="overdueAmount">₴0.00</h3>
-                                    <p>Прострочено</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Filtroи -->
-                    <div class="row mt-4">
+                    <div class="row">
                         <div class="col-12">
-                            <div class="card invoice-card">
+                            <div class="card history-card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-filter mr-2"></i>Filtroи рахунків</h3>
+                                    <h3 class="card-title"><i class="fas fa-filter mr-2"></i>Filtroи історії</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label>Статус:</label>
-                                                <select id="statusFilter" class="form-control">
-                                                    <option value="all">Всі статуси</option>
-                                                    <option value="paid">Оплачено</option>
-                                                    <option value="pending">В очікуванні</option>
-                                                    <option value="overdue">Прострочено</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="form-group">
                                                 <label>Період:</label>
                                                 <select id="periodFilter" class="form-control">
-                                                    <option value="current">Поточний місяць</option>
-                                                    <option value="last">Минулий місяць</option>
-                                                    <option value="quarter">Цей квартал</option>
-                                                    <option value="year">Цей рік</option>
-                                                    <option value="all">Весь період</option>
+                                                    <option value="30">Останні 30 днів</option>
+                                                    <option value="90">Останні 3 місяці</option>
+                                                    <option value="365">Останній рік</option>
+                                                    <option value="all">Вся історія</option>
                                                 </select>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label>Сортування:</label>
-                                                <select id="sortFilter" class="form-control">
-                                                    <option value="date-desc">Дата (новіші)</option>
-                                                    <option value="date-asc">Дата (старіші)</option>
-                                                    <option value="amount-desc">Сума (більші)</option>
-                                                    <option value="amount-asc">Сума (менші)</option>
+                                                <label>Тип події:</label>
+                                                <select id="eventTypeFilter" class="form-control">
+                                                    <option value="all">Всі події</option>
+                                                    <option value="maintenance">Технічне обслуговування</option>
+                                                    <option value="repair">Ремонт</option>
+                                                    <option value="inspection">Інспекція</option>
+                                                    <option value="emergency">Аварійне обслуговування</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label>Ліфт:</label>
+                                                <select id="liftFilter" class="form-control">
+                                                    <option value="all">Всі ліфти</option>
+                                                    <option value="lift1">Otis Gen2 - Rua Центральна, 12</option>
+                                                    <option value="lift2">Schindler 3300 - пр. Перемоги, 45</option>
+                                                    <option value="lift3">KONE MonoSpace - Rua Шевченка, 78</option>
                                                 </select>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group" style="margin-top: 32px;">
-                                                <button class="btn btn-primary" onclick="invoiceManager.applyFilters()">
+                                                <button class="btn btn-primary" onclick="historyManager.applyFilters()">
                                                     <i class="fas fa-filter"></i> Застосувати
                                                 </button>
-                                                <button class="btn btn-default" onclick="invoiceManager.resetFilters()">
+                                                <button class="btn btn-default" onclick="historyManager.resetFilters()">
                                                     <i class="fas fa-sync"></i> Скинути
                                                 </button>
                                             </div>
@@ -607,97 +603,128 @@
                         </div>
                     </div>
 
-                    <!-- Список рахунків -->
+                    <!-- Статистика -->
+                    <div class="row">
+                        <div class="col-lg-3 col-md-6">
+                            <div class="stat-card">
+                                <div class="stat-icon">📋</div>
+                                <div class="stat-info">
+                                    <h3 id="totalEvents">0</h3>
+                                    <p>Всього подій</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="stat-card">
+                                <div class="stat-icon">🔧</div>
+                                <div class="stat-info">
+                                    <h3 id="maintenanceCount">0</h3>
+                                    <p>Технічних обслуговувань</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="stat-card">
+                                <div class="stat-icon">⏱️</div>
+                                <div class="stat-info">
+                                    <h3 id="avgResponseTime">0</h3>
+                                    <p>Середній час реакції</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="stat-card">
+                                <div class="stat-icon">⭐</div>
+                                <div class="stat-info">
+                                    <h3 id="avgRating">0</h3>
+                                    <p>Середня оцінка</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Таймлайн -->
                     <div class="row mt-4">
                         <div class="col-12">
-                            <div class="card invoice-card">
+                            <div class="card history-card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-list mr-2"></i>Список рахунків</h3>
+                                    <h3 class="card-title"><i class="fas fa-stream mr-2"></i>Хронологія подій</h3>
                                     <div class="card-tools">
-                                        <div class="btn-group">
-                                            <button class="btn btn-success" onclick="invoiceManager.exportInvoices()">
-                                                <i class="fas fa-download"></i> Exportar
-                                            </button>
-                                            <button class="btn btn-info" onclick="invoiceManager.printInvoices()">
-                                                <i class="fas fa-print"></i> Друк
-                                            </button>
-                                        </div>
+                                        <span class="badge badge-primary" id="timelineCount">0</span>
                                     </div>
                                 </div>
-                                <div class="card-body p-0">
-                                    <div class="table-responsive">
-                                        <table class="table table-hover invoice-table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Номер рахунку</th>
-                                                    <th>Дата</th>
-                                                    <th>Опис</th>
-                                                    <th>Сума</th>
-                                                    <th>Статус</th>
-                                                    <th>Термін оплати</th>
-                                                    <th>Дії</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="invoicesTableBody">
-                                                <!-- Рахунки будуть завантажені тут -->
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                                <div class="card-footer">
-                                    <div class="pagination">
-                                        <button class="btn btn-sm btn-default" onclick="invoiceManager.previousPage()">
-                                            <i class="fas fa-chevron-left"></i> Попередня
-                                        </button>
-                                        <span class="mx-3">Сторінка <span id="currentPage">1</span> з <span id="totalPages">1</span></span>
-                                        <button class="btn btn-sm btn-default" onclick="invoiceManager.nextPage()">
-                                            Наступна <i class="fas fa-chevron-right"></i>
-                                        </button>
+                                <div class="card-body">
+                                    <div class="timeline" id="timeline">
+                                        <!-- Події будуть завантажені тут -->
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Способи оплати -->
+                    <!-- Детальна статистика -->
                     <div class="row mt-4">
                         <div class="col-12">
-                            <div class="card invoice-card">
+                            <div class="card history-card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-credit-card mr-2"></i>Способи оплати</h3>
+                                    <h3 class="card-title"><i class="fas fa-chart-bar mr-2"></i>Детальна статистика</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
-                                        <div class="col-md-4 mb-4">
-                                            <div class="method-card">
-                                                <div class="method-icon">💳</div>
-                                                <h4>Кредитна картка</h4>
-                                                <p>Оплата онлайн через захищений шлюз</p>
-                                                <button class="btn btn-primary" onclick="invoiceManager.setupCardPayment()">
-                                                    <i class="fas fa-cog"></i> Налаштувати
-                                                </button>
+                                        <div class="col-md-6 mb-4">
+                                            <div class="chart-container">
+                                                <h5>Розподіл по типах подій</h5>
+                                                <canvas id="eventTypeChart" height="250"></canvas>
                                             </div>
                                         </div>
-                                        <div class="col-md-4 mb-4">
-                                            <div class="method-card">
-                                                <div class="method-icon">🏦</div>
-                                                <h4>Банківський переказ</h4>
-                                                <p>Оплата за реквізитами рахунку</p>
-                                                <button class="btn btn-primary" onclick="invoiceManager.showBankDetails()">
-                                                    <i class="fas fa-eye"></i> Переглянути
-                                                </button>
+                                        <div class="col-md-6 mb-4">
+                                            <div class="chart-container">
+                                                <h5>Частота обслуговування</h5>
+                                                <canvas id="frequencyChart" height="250"></canvas>
                                             </div>
                                         </div>
-                                        <div class="col-md-4 mb-4">
-                                            <div class="method-card">
-                                                <div class="method-icon">📱</div>
-                                                <h4>Google Pay/Apple Pay</h4>
-                                                <p>Швидка оплата через мобільний додаток</p>
-                                                <button class="btn btn-primary" onclick="invoiceManager.setupMobilePayment()">
-                                                    <i class="fas fa-link"></i> Підключити
-                                                </button>
+                                        <div class="col-md-6 mb-4">
+                                            <div class="chart-container">
+                                                <h5>Оцінки якості</h5>
+                                                <canvas id="ratingsChart" height="250"></canvas>
                                             </div>
                                         </div>
+                                        <div class="col-md-6 mb-4">
+                                            <div class="chart-container">
+                                                <h5>Витрати на обслуговування</h5>
+                                                <canvas id="costsChart" height="250"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Exportar -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card history-card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-download mr-2"></i>Exportar історії</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="export-options">
+                                        <button class="btn btn-primary export-btn" onclick="historyManager.exportToPDF()">
+                                            <i class="fas fa-file-pdf fa-2x mb-2"></i>
+                                            <h5>Exportar в PDF</h5>
+                                            <small>Guardar у форматі PDF</small>
+                                        </button>
+                                        <button class="btn btn-success export-btn" onclick="historyManager.exportToExcel()">
+                                            <i class="fas fa-file-excel fa-2x mb-2"></i>
+                                            <h5>Exportar в Excel</h5>
+                                            <small>Guardar у форматі Excel</small>
+                                        </button>
+                                        <button class="btn btn-info export-btn" onclick="historyManager.printHistory()">
+                                            <i class="fas fa-print fa-2x mb-2"></i>
+                                            <h5>Друк</h5>
+                                            <small>Роздрукувати історію</small>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -717,60 +744,15 @@
         </footer>
     </div>
 
-    <!-- Модальне вікно перегляду рахунку -->
-    <div class="modal fade invoice-details-modal" id="invoiceModal" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Деталі рахунку</h5>
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span>&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body" id="invoiceModalContent">
-                    <!-- Вміст рахунку буде завантажено тут -->
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
-                    <button type="button" class="btn btn-info" onclick="invoiceManager.downloadInvoice(currentInvoiceId)">
-                        <i class="fas fa-download"></i> Завантажити PDF
-                    </button>
-                    <button type="button" class="btn btn-success" onclick="invoiceManager.payInvoice(currentInvoiceId)" id="payInvoiceBtn">
-                        <i class="fas fa-credit-card"></i> Оплатити
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Модальне вікно оплати -->
-    <div class="modal fade" id="paymentModal" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Оплата рахунку</h5>
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span>&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body" id="paymentModalContent">
-                    <!-- Вміст оплати буде завантажено тут -->
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Scripts -->
     <script src="../../plugins/jquery/jquery.min.js"></script>
     <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
     <script src="../../plugins/adminlte/adminlte.min.js"></script>
 
-    <!-- Invoice Manager JS -->
-    <script src="../../assets/js/modules/invoice-manager.js"></script>
+    <!-- History Manager JS -->
+    <script src="../../assets/js/modules/history-manager.js"></script>
 
     <script>
-        let currentInvoiceId = null;
-        
         function logout() {
             if (confirm('Ви впевнені, що хочете вийти з системи?')) {
                 localStorage.removeItem('authToken');
@@ -805,13 +787,46 @@
                 $('#clientName').text(`${userData.firstName} ${userData.lastName || ''}`);
             }
 
-            // Ініціалізація менеджера рахунків
-            window.invoiceManager = new InvoiceManager();
+            // Ініціалізація менеджера історії
+            window.historyManager = new HistoryManager();
         });
     </script>
-    <script src="/assets/js/table-drag-scroll.js"></script>
 </body>
-
+    <div id="ai-assistant-fab" style="position:fixed;bottom:32px;right:32px;z-index:9999;">
+        <button class="ai-fab-btn" title="AI Асистент" style="background:#3a86ff;color:#fff;border:none;border-radius:50%;width:56px;height:56px;box-shadow:0 2px 8px rgba(0,0,0,0.2);font-size:28px;cursor:pointer;">
+            <i class="fas fa-magic"></i>
+        </button>
+    </div>
+    <div id="ai-assistant-modal" style="display:none;position:fixed;bottom:100px;right:32px;z-index:10000;max-width:350px;width:100%;">
+        <div class="ai-chat-container">
+            <div class="ai-chat-header">
+                <h4>AI Асистент</h4>
+                <button class="ai-chat-close"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="ai-chat-messages">
+                <div class="ai-message ai-message-assistant">
+                    <div class="ai-message-content">
+                        <div class="ai-message-text">Привіт! Я ваш AI асистент. Чим можу допомогти?</div>
+                        <div class="ai-message-time">Зараз</div>
+                    </div>
+                </div>
+            </div>
+            <div class="ai-chat-input">
+                <textarea class="ai-message-input" placeholder="Напишіть повідомлення..."></textarea>
+                <div class="ai-chat-actions">
+                    <button class="ai-send-message"><i class="fas fa-paper-plane"></i> Надіслати</button>
+                    <button class="ai-voice-toggle"><i class="fas fa-microphone"></i> Голос</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script>
+        // Відкриття/закриття модального вікна
+        const fabBtn = document.getElementById('ai-assistant-fab');
+        const modal = document.getElementById('ai-assistant-modal');
+        fabBtn.onclick = () => { modal.style.display = 'block'; };
+        document.querySelector('.ai-chat-close').onclick = () => { modal.style.display = 'none'; };
+    </script>
 </html>
-    <script src="/assets/js/table-drag-scroll.js"></script>
 </body> -->

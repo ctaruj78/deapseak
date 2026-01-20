@@ -121,11 +121,11 @@ ${v.articleInfo?.description ? `
 - ✅ Додано відображення тексту клаузи
 - ✅ Додано CSS стилі для border-left
 
-### 2. `/pages/ai-assistant/ai-assistant.html`
+### 2. `/pages/client/ai-assistant.html`
 - ✅ Додано відображення тексту клаузи
 - ✅ Додано CSS стилі для border-left
 
-### 3. `/pages/ai-assistant/ai-assistant.html`
+### 3. `/pages/tech/ai-assistant.html`
 - ✅ Додано відображення тексту клаузи
 - ✅ Додано CSS стилі для border-left
 

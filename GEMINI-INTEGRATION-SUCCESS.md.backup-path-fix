@@ -201,10 +201,10 @@ node test-regulations-api.js
 ### Для користувачів:
 
 1. **Відкрити AI Асистент:**
-   - Admin: `/pages/ai-assistant/ai-assistant.html`
-   - Tech: `/pages/ai-assistant/ai-assistant.html`
-   - Client: `/pages/ai-assistant/ai-assistant.html`
-   - Dispatcher: `/pages/ai-assistant/ai-assistant.html`
+   - Admin: `/pages/admin/ai-assistant-full.html`
+   - Tech: `/pages/tech/ai-assistant.html`
+   - Client: `/pages/client/ai-assistant.html`
+   - Dispatcher: `/pages/dispatcher/ai-assistant.html`
 
 2. **Побачити Google Gemini брендинг:**
    - Заголовок: "AI Асистент DeapSeaK"

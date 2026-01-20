@@ -11,10 +11,10 @@
 - ❌ 7 різних файлів AI Assistant
 - ❌ Стара версія без AdminLTE: `pages/ai-assistant/ai-assistant.html` (95KB)
 - ❌ Різні версії для ролей:
-  - `pages/ai-assistant/ai-assistant.html` (70KB)
-  - `pages/ai-assistant/ai-assistant.html` (74KB)
-  - `pages/ai-assistant/ai-assistant.html` (74KB)
-  - `pages/ai-assistant/ai-assistant.html` (74KB)
+  - `pages/admin/ai-assistant-full.html` (70KB)
+  - `pages/client/ai-assistant.html` (74KB)
+  - `pages/tech/ai-assistant.html` (74KB)
+  - `pages/dispatcher/ai-assistant.html` (74KB)
 - ❌ Всі мали `data-required-role="admin"` навіть для клієнтів
 - ❌ Роутинг вів на стару сторінку: `pages/ai-assistant/ai-assistant.html`
 
@@ -40,7 +40,7 @@
 
 ```bash
 # Скопійовано найновішу версію
-cp pages/ai-assistant/ai-assistant.html pages/ai-assistant-universal.html
+cp pages/client/ai-assistant.html pages/ai-assistant-universal.html
 ```
 
 **Модифікації:**
@@ -189,10 +189,10 @@ CRM Menu → AI Assistant → Завантажується ai-assistant-universa
 rm pages/ai-assistant/ai-assistant.html
 
 # Версії для окремих ролей (deprecated)
-rm pages/ai-assistant/ai-assistant.html
-rm pages/ai-assistant/ai-assistant.html
-rm pages/ai-assistant/ai-assistant.html
-rm pages/ai-assistant/ai-assistant.html
+rm pages/admin/ai-assistant-full.html
+rm pages/client/ai-assistant.html
+rm pages/tech/ai-assistant.html
+rm pages/dispatcher/ai-assistant.html
 ```
 
 **ВАЖЛИВО:** Спочатку протестуйте universal версію!

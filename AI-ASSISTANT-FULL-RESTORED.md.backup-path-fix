@@ -9,7 +9,7 @@
 ## 🎯 ЩО ВІДНОВЛЕНО
 
 ### 1. **Повна версія з усіма функціями**
-- ✅ Скопійовано з `pages/ai-assistant/ai-assistant.html`
+- ✅ Скопійовано з `pages/admin/ai-assistant-full.html`
 - ✅ 1184 рядки коду (замість 931 в старій версії)
 - ✅ Інтеграція з Claude API через backend
 

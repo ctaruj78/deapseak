@@ -16,9 +16,9 @@
 
 **Ці сторінки є в меню, але файлів немає:**
 
-1. `/pages/ai-assistant/ai-assistant.html`
-2. `/pages/ai-assistant/ai-assistant.html`  
-3. `/pages/ai-assistant/ai-assistant.html`
+1. `/pages/client/ai-assistant.html`
+2. `/pages/tech/ai-assistant.html`  
+3. `/pages/dispatcher/ai-assistant.html`
 
 **Вплив:** Користувачі натискають у меню → 404 помилка!
 
@@ -26,9 +26,9 @@
 ```bash
 # Варіант 1: Видалити з меню
 # Варіант 2: Створити файли
-cp pages/ai-assistant/ai-assistant.html pages/ai-assistant/ai-assistant.html
-cp pages/ai-assistant/ai-assistant.html pages/ai-assistant/ai-assistant.html
-cp pages/ai-assistant/ai-assistant.html pages/ai-assistant/ai-assistant.html
+cp pages/admin/ai-assistant-full.html pages/client/ai-assistant.html
+cp pages/admin/ai-assistant-full.html pages/tech/ai-assistant.html
+cp pages/admin/ai-assistant-full.html pages/dispatcher/ai-assistant.html
 ```
 
 ---

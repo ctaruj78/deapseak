@@ -266,10 +266,10 @@ grep -r "TODO\|FIXME\|HACK" pages/ assets/ --include="*.html" --include="*.js"
 **✅ ПРАВИЛЬНО (тепер):**
 ```
 AI Асистент доступний через меню:
-├── Admin → AI Асистент → /pages/ai-assistant/ai-assistant.html
-├── Dispatcher → AI Асистент → /pages/ai-assistant/ai-assistant.html
-├── Tech → AI Асистент → /pages/ai-assistant/ai-assistant.html
-└── Client → AI Асістент → /pages/ai-assistant/ai-assistant.html
+├── Admin → AI Асистент → /pages/admin/ai-assistant-full.html
+├── Dispatcher → AI Асистент → /pages/dispatcher/ai-assistant.html
+├── Tech → AI Асистент → /pages/tech/ai-assistant.html
+└── Client → AI Асістент → /pages/client/ai-assistant.html
 
 Окремі сторінки з повним функціоналом:
 - Chat

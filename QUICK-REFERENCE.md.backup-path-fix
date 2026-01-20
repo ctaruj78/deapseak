@@ -111,8 +111,8 @@ node test-pdf-analysis.js
 - **Codespaces:** https://YOUR-CODESPACE-5000.app.github.dev
 
 ### 4. AI Assistant
-- **Admin:** `/pages/ai-assistant/ai-assistant.html`
-- **Tech:** `/pages/ai-assistant/ai-assistant.html`
+- **Admin:** `/pages/admin/ai-assistant-full.html`
+- **Tech:** `/pages/tech/ai-assistant.html`
 
 ---
 

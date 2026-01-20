@@ -62,7 +62,7 @@ This report analyzes sidebar navigation menus across 59 HTML files in 4 role-bas
 
 2. **AI Асистент**
    - 14x: `/pages/ai-assistant-universal.html` (absolute)
-   - 1x: `/pages/ai-assistant/ai-assistant.html` (absolute)
+   - 1x: `/pages/admin/ai-assistant-full.html` (absolute)
 
 3. **Аналітика**
    - 9x: `unified-analytics.html` (relative)
@@ -745,7 +745,7 @@ This report analyzes sidebar navigation menus across 59 HTML files in 4 role-bas
 
 **Admin Role:**
 - Mix of relative (`admin-dashboard.html`) and absolute (`/pages/admin/admin-dashboard.html`) paths
-- Two different AI Assistant paths: `/pages/ai-assistant-universal.html` vs `/pages/ai-assistant/ai-assistant.html`
+- Two different AI Assistant paths: `/pages/ai-assistant-universal.html` vs `/pages/admin/ai-assistant-full.html`
 - Analytics accessed via two different pages: `unified-analytics.html` vs `analytics.html`
 
 **Tech Role:**

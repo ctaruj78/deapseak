@@ -35,18 +35,18 @@
 
 #### 🔴 Застарілі версії (для ролей):
 
-**5. `pages/ai-assistant/ai-assistant.html`** (1465 рядків)
+**5. `pages/client/ai-assistant.html`** (1465 рядків)
 - Заголовок: "AI Асистент - Клієнт"
 - Проблема: Застаріла версія БЕЗ нових фіч
 - Посилання: З `pages/client/dashboard.html` → `/pages/ai-assistant-universal.html`
 - **Дія:** ❌ **ВИДАЛИТИ** (замінюється универсальним)
 
-**6. `pages/ai-assistant/ai-assistant.html`** (1465 рядків)
+**6. `pages/tech/ai-assistant.html`** (1465 рядків)
 - Заголовок: "AI Асистент - Технік"
 - Посилання: З `pages/tech/dashboard.html`
 - **Дія:** ❌ **ВИДАЛИТИ** (замінюється универсальним)
 
-**7. `pages/ai-assistant/ai-assistant.html`** (1465 рядків)
+**7. `pages/dispatcher/ai-assistant.html`** (1465 рядків)
 - Заголовок: "AI Асистент - Диспетчер"
 - Посилання: З `pages/dispatcher/dashboard.html`
 - **Дія:** ❌ **ВИДАЛИТИ** (замінюється универсальним)
@@ -65,7 +65,7 @@
 - Проблема: Менше функцій ніж головна
 - **Дія:** ❌ **ВИДАЛИТИ** (застаріла)
 
-**10. `pages/ai-assistant/ai-assistant.html`** (1389 рядків)
+**10. `pages/admin/ai-assistant-full.html`** (1389 рядків)
 - Заголовок: "AI Асистент - LiftMaster Pro"
 - Призначення: Нібито "повна" версія для адміна
 - Проблема: Менше рядків ніж головна (2185)
@@ -119,8 +119,8 @@ grep -r "href=.*ai-assistant" pages/**/dashboard.html
 
 **Результат:**
 - ✅ Client → `/pages/ai-assistant-universal.html` (ЗАСТАРІЛА)
-- ✅ Tech → `/pages/ai-assistant/ai-assistant.html` (ЗАСТАРІЛА)
-- ✅ Dispatcher → `/pages/ai-assistant/ai-assistant.html` (ЗАСТАРІЛА)
+- ✅ Tech → `/pages/tech/ai-assistant.html` (ЗАСТАРІЛА)
+- ✅ Dispatcher → `/pages/dispatcher/ai-assistant.html` (ЗАСТАРІЛА)
 - ❌ Admin → НЕМАЄ посилання
 
 ### Крок 2: Оновити всі посилання
@@ -133,10 +133,10 @@ grep -r "href=.*ai-assistant" pages/**/dashboard.html
 ```bash
 rm pages/ai-assistant.html
 rm pages/ai-assistant-universal.html
-rm pages/ai-assistant/ai-assistant.html
-rm pages/ai-assistant/ai-assistant.html
-rm pages/ai-assistant/ai-assistant.html
-rm pages/ai-assistant/ai-assistant.html
+rm pages/admin/ai-assistant-full.html
+rm pages/client/ai-assistant.html
+rm pages/tech/ai-assistant.html
+rm pages/dispatcher/ai-assistant.html
 ```
 
 ### Крок 4: Перевірити допоміжні сторінки
