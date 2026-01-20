@@ -682,6 +682,14 @@
             console.log('🗺️ Ініціалізація мапи...');
             console.log('📍 Кількість ліфтів для відображення:', lifts.length);
             
+            // ⏱️ Timeout для ініціалізації карти (5 секунд)
+            const mapTimeout = setTimeout(() => {
+                if (!map || !map._loaded) {
+                    console.warn('⚠️ Карта не завантажилась за 5 секунд, показую заглушку');
+                    $('#liftsMap').html('<div class="alert alert-info m-3"><i class="fas fa-map-marked-alt"></i> Карта тимчасово недоступна. Спробуйте оновити сторінку.</div>');
+                }
+            }, 5000);
+            
             // Initialize map centered on Lisboa, Portugal (default)
             map = L.map('liftsMap').setView([38.7223, -9.1393], 11);
 
@@ -690,6 +698,12 @@
                 attribution: '© OpenStreetMap contributors',
                 maxZoom: 19
             }).addTo(map);
+            
+            // ✅ Прибираємо timeout після успішного завантаження
+            map.on('load', () => {
+                clearTimeout(mapTimeout);
+                console.log('✅ Карта успішно завантажена');
+            });
 
             // Add lift markers
             if (lifts.length === 0) {

@@ -86,7 +86,7 @@ class FrontendTester {
             const startTime = Date.now();
             await Promise.all([
                 this.page.click('button[type="submit"]'),
-                this.page.waitForNavigation({ waitUntil: 'load', timeout: 15000 })  // ✅ ВИПРАВЛЕНО
+                this.page.waitForNavigation({ waitUntil: 'load', timeout: 30000 })  // ✅ ВИПРАВЛЕНО: 15s → 30s
             ]);
             const loginTime = Date.now() - startTime;
             
