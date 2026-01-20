@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
     <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="../../plugins/leaflet/leaflet.css" />
 
     <style>
         #liftsMap {
@@ -544,10 +544,10 @@
     <script src="../../assets/js/i18n.js"></script>
     <script src="../../assets/js/init-i18n.js"></script>
     <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="../../plugins/leaflet/leaflet.js"></script>
     <!-- Leaflet Routing Machine -->
-    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+    <link rel="stylesheet" href="../../plugins/leaflet/leaflet-routing-machine.css" />
+    <script src="../../plugins/leaflet/leaflet-routing-machine.js"></script>
     <!-- Auth Manager -->
     <script src="../../assets/js/auth.js"></script>
     <script src="../../assets/js/config.js"></script>
@@ -659,8 +659,8 @@
                         // Adicionar маркер поточної позиції
                         L.marker([userLocation.lat, userLocation.lng], {
                             icon: L.icon({
-                                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-                                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                                iconUrl: '../../plugins/leaflet/images/marker-icon-2x.png',
+                                shadowUrl: '../../plugins/leaflet/images/marker-shadow.png',
                                 iconSize: [25, 41],
                                 iconAnchor: [12, 41],
                                 popupAnchor: [1, -34],
@@ -691,13 +691,25 @@
             }, 5000);
             
             // Initialize map centered on Lisboa, Portugal (default)
-            map = L.map('liftsMap').setView([38.7223, -9.1393], 11);
+            map = L.map('liftsMap', {
+                preferCanvas: true, // Швидше рендеринг
+                fadeAnimation: false, // Вимкнути анімацію для швидшого завантаження
+                zoomAnimation: false
+            }).setView([38.7223, -9.1393], 11);
 
-            // Add OpenStreetMap tiles
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            // Add OpenStreetMap tiles з коротким timeout
+            const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors',
-                maxZoom: 19
-            }).addTo(map);
+                maxZoom: 19,
+                errorTileUrl: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', // 1x1 transparent для помилок
+                timeout: 5000 // Швидкий timeout для tiles
+            });
+            
+            tileLayer.on('tileerror', function() {
+                console.warn('⚠️ Tile loading error (offline mode)');
+            });
+            
+            tileLayer.addTo(map);
             
             // ✅ Прибираємо timeout після успішного завантаження
             map.on('load', () => {

@@ -103,10 +103,15 @@ class FrontendTester {
             // Натиснути кнопку login
             const startTime = Date.now();
             console.log(`   ⏳ Очікування навігації після логіну...`);
-            await Promise.all([
-                this.page.click('button[type="submit"]'),
-                this.page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 60000 })  // ✅ ЗМІНЕНО: 'networkidle2' → 'domcontentloaded'
-            ]);
+            
+            await this.page.click('button[type="submit"]');
+            
+            // ✅ ВИПРАВЛЕНО: Чекаємо зміни URL замість navigation (швидше)
+            await this.page.waitForFunction(
+                () => !window.location.href.includes('login.html'),
+                { timeout: 15000 }
+            );
+            
             const loginTime = Date.now() - startTime;
             console.log(`   ⏱️  Навігація зайняла: ${loginTime}ms`);
             

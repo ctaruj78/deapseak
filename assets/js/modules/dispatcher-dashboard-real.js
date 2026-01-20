@@ -779,11 +779,12 @@ class DispatcherDashboardReal {
      */
     setupWebSocket() {
         try {
-            // Підключення до Socket.IO сервера
+            // Підключення до Socket.IO сервера з timeout
             this.socket = io({
                 reconnection: true,
                 reconnectionDelay: 5000,
-                reconnectionAttempts: Infinity
+                reconnectionAttempts: 3, // ✅ ВИПРАВЛЕНО: було Infinity
+                timeout: 10000 // ✅ ДОДАНО: timeout для connection
             });
             
             this.socket.on('connect', () => {
