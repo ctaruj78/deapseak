@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Журнал безпеки</title>
+    <link rel="stylesheet" href="../../assets/css/adminlte.min.css">
+    <link rel="stylesheet" href="../../assets/css/bootstrap.min.css">
+    <script src="../../plugins/jquery/jquery.min.js"></script>
+    <script src="../../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="../../assets/js/modules/role-manager.js"></script>
+</head>
+<body class="hold-transition sidebar-mini">
+    <div class="wrapper">
+        <section class="content-header">
+            <div class="container-fluid">
+                <h1>Журнал безпеки (Audit Log)</h1>
+            </div>
+        </section>
+        <section class="content">
+            <div class="container-fluid">
+                <div class="card">
+                    <div class="card-header">
+                        <button class="btn btn-info" id="exportAuditBtn">Exportarувати журнал</button>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-bordered" id="auditTable">
+                            <thead>
+                                <tr>
+                                    <th>Дата/час</th>
+                                    <th>Користувач</th>
+                                    <th>Роль</th>
+                                    <th>Операція</th>
+                                    <th>Деталі</th>
+                                    <th>IP</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Динамічно -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+    $(document).ready(function() {
+        function renderAuditTable() {
+            const auditLog = JSON.parse(localStorage.getItem('audit_log') || '[]');
+            const tbody = $('#auditTable tbody');
+            tbody.empty();
+            auditLog.slice().reverse().forEach(entry => {
+                tbody.append(`
+                    <tr>
+                        <td>${entry.timestamp}</td>
+                        <td>${entry.user}</td>
+                        <td>${entry.role}</td>
+                        <td>${entry.operation}</td>
+                        <td>${entry.details || ''}</td>
+                        <td>${entry.ip}</td>
+                    </tr>
+                `);
+            });
+        }
+        renderAuditTable();
+        $('#exportAuditBtn').click(function() {
+            const auditLog = localStorage.getItem('audit_log') || '[]';
+            const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(auditLog);
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', 'audit-log.json');
+            linkElement.click();
+        });
+    });
+    </script>
+</body>
+</html>

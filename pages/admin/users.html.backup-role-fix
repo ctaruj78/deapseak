@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Global Settings -->
+    <script src="../../assets/js/global-settings.js"></script>
+    <link rel="stylesheet" href="../../assets/css/theme-dark.css">
+    <title>Управління користувачами - FestLift</title>
+    
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    
+    <style>
+        /* Кастомні стилі для адмін-панелі */
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .role-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .role-admin { background-color: #dc3545; color: white; }
+        .role-technician { background-color: #fd7e14; color: white; }
+        .role-tech { background-color: #fd7e14; color: white; }
+        .role-dispatcher { background-color: #20c997; color: white; }
+        .role-client { background-color: #6f42c1; color: white; }
+        
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .status-active { background-color: #28a745; color: white; }
+        .status-inactive { background-color: #6c757d; color: white; }
+        
+        .action-buttons .btn {
+            margin-right: 0.25rem;
+        }
+        
+        /* Стилі для модального вікна */
+        #userModal .modal-dialog {
+            max-width: 600px;
+        }
+        
+        #userModal .tab-content {
+            padding: 1rem 0;
+        }
+        
+        /* Стилі для таблиці */
+        .table-responsive {
+            overflow-x: auto;
+        }
+        
+        /* Стилі для карток статистики */
+        .info-box {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .info-box:hover {
+            transform: translateY(-2px);
+        }
+        
+        /* Кастомні стилі для форми */
+        .form-section {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .form-section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #007bff;
+        }
+    </style>
+    <link rel="stylesheet" href="/assets/css/table-drag-scroll.css">
+</head>
+<body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper">
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+            <!-- Left navbar links -->
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button">
+                        <i class="fas fa-bars"></i>
+                    </a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="admin-dashboard.html" class="nav-link">Головна</a>
+                </li>
+            </ul>
+
+            <!-- Right navbar links -->
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="../auth/login.html" role="button">
+                        <i class="fas fa-sign-out-alt"></i> Вийти
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Sidebar Container -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <!-- Brand Logo -->
+            <a href="admin-dashboard.html" class="brand-link">
+                <i class="fas fa-elevator brand-image img-circle elevation-3"></i>
+                <span class="brand-text font-weight-light">FestLift</span>
+            </a>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Sidebar user panel -->
+                <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                    <div class="image">
+                        <img src="/assets/img/user-avatar.png" onerror="this.src='/assets/img/logo.png'" class="img-circle elevation-2" alt="User Image">
+                    </div>
+                    <div class="info">
+                        <a href="profile.html" class="d-block">Іван Петренко</a>
+                        <small class="text-success">Адміністратор</small>
+                    </div>
+                </div>
+
+                <!-- Sidebar Menu -->
+                <!-- CANONICAL ADMIN SIDEBAR - Copy this to all admin pages -->
+<nav class="mt-2">
+    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+        <!-- Dashboard -->
+        <li class="nav-item">
+            <a href="/pages/admin/admin-dashboard.html" class="nav-link">
+                <i class="nav-icon fas fa-tachometer-alt"></i>
+                <p>Дашборд</p>
+            </a>
+        </li>
+
+        <!-- QR System -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-qrcode"></i>
+                <p>
+                    QR Система
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/admin/qr-management.html" class="nav-link">
+                        <i class="fas fa-cog nav-icon"></i>
+                        <p>Gestão QR-кодами</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/qr-analytics.html" class="nav-link">
+                        <i class="fas fa-chart-line nav-icon"></i>
+                        <p>Análise QR-кодів</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/qr-history.html" class="nav-link">
+                        <i class="fas fa-history nav-icon"></i>
+                        <p>Історія сканувань</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Lifts -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-elevator"></i>
+                <p>
+                    Elevadores
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/admin/lifts.html" class="nav-link">
+                        <i class="fas fa-list nav-icon"></i>
+                        <p>Управління ліфтами</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/requests.html" class="nav-link">
+                        <i class="fas fa-clipboard-list nav-icon"></i>
+                        <p>Заявки</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/maps.html" class="nav-link">
+                        <i class="fas fa-map-marked-alt nav-icon"></i>
+                        <p>Мапа ліфтів</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Users -->
+        <li class="nav-item">
+            <a href="/pages/admin/users.html" class="nav-link active">
+                <i class="nav-icon fas fa-users"></i>
+                <p>Utilizadores</p>
+            </a>
+        </li>
+
+        <!-- Documents -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-file-alt"></i>
+                <p>
+                    Документи
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/admin/invoice-template.html" class="nav-link">
+                        <i class="fas fa-file-invoice nav-icon"></i>
+                        <p>Orçamentos (Створити)</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/orcamentos-list.html" class="nav-link">
+                        <i class="fas fa-list nav-icon"></i>
+                        <p>Orçamentos (Список)</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/email-template.html" class="nav-link">
+                        <i class="fas fa-envelope nav-icon"></i>
+                        <p>Email шаблони</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Analytics -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-chart-line"></i>
+                <p>
+                    Análise
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/admin/unified-analytics.html" class="nav-link">
+                        <i class="fas fa-chart-area nav-icon"></i>
+                        <p>Unified Analytics</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/predictive-maintenance.html" class="nav-link">
+                        <i class="fas fa-brain nav-icon"></i>
+                        <p>Predictive Maintenance</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/admin/reports.html" class="nav-link">
+                        <i class="fas fa-chart-bar nav-icon"></i>
+                        <p>Звіти</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <li class="nav-item">
+            <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link">
+                <i class="nav-icon fas fa-magic"></i>
+                <p>AI Асистент</p>
+            </a>
+        </li>
+
+        <!-- Support -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-headset"></i>
+                <p>
+                    Suporte
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/admin/notifications.html" class="nav-link">
+                        <i class="fas fa-bell nav-icon"></i>
+                        <p>Сповіщення</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Settings -->
+        <li class="nav-item">
+            <a href="/pages/admin/settings.html" class="nav-link">
+                <i class="nav-icon fas fa-cogs"></i>
+                <p>Configurações</p>
+            </a>
+        </li>
+    </ul>
+</nav>
+            </div>
+        </aside>
+
+        <!-- Content Wrapper. Contains page content -->
+        <div class="content-wrapper">
+            <!-- Content Header (Page header) -->
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">Управління користувачами</h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="pages/admin/admin-dashboard.html">Головна</a></li>
+                                <li class="breadcrumb-item active">Utilizadores</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+                    <!-- Статистика -->
+                    <div class="row">
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-info">
+                                <div class="inner">
+                                    <h3 id="totalUsers">0</h3>
+                                    <p>Всього користувачів</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <a href="#" class="small-box-footer" onclick="userManager.filterByRole('all'); return false;">Детальніше <i class="fas fa-arrow-circle-right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-success">
+                                <div class="inner">
+                                    <h3 id="activeUsers">0</h3>
+                                    <p>Активних користувачів</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-user-check"></i>
+                                </div>
+                                <a href="#" class="small-box-footer" onclick="userManager.filterByStatus('active'); return false;">Детальніше <i class="fas fa-arrow-circle-right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-warning">
+                                <div class="inner">
+                                    <h3 id="technicianUsers">0</h3>
+                                    <p>Техніків</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-tools"></i>
+                                </div>
+                                <a href="#" class="small-box-footer" onclick="userManager.filterByRole('tech'); return false;">Детальніше <i class="fas fa-arrow-circle-right"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-danger">
+                                <div class="inner">
+                                    <h3 id="adminUsers">0</h3>
+                                    <p>Адміністраторів</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-user-shield"></i>
+                                </div>
+                                <a href="#" class="small-box-footer" onclick="userManager.filterByRole('admin'); return false;">Детальніше <i class="fas fa-arrow-circle-right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Панель дій -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Gestão користувачами</h3>
+                                    <div class="card-tools">
+                                        <button class="btn btn-primary" data-toggle="modal" data-target="#userModal">
+                                            <i class="fas fa-plus"></i> Adicionar користувача
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <div class="input-group">
+                                                <input type="text" id="searchInput" class="form-control" placeholder="Pesquisar користувачів...">
+                                                <div class="input-group-append">
+                                                    <button class="btn btn-default">
+                                                        <i class="fas fa-search"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <select id="roleFilter" class="form-control">
+                                                <option value="all">Всі ролі</option>
+                                                <option value="admin">Адміністратори</option>
+                                                <option value="technician">Техніки</option>
+                                                <option value="client">Клієнти</option>
+                                                <option value="dispatcher">Диспетчери</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <select id="statusFilter" class="form-control">
+                                                <option value="all">Всі статуси</option>
+                                                <option value="active">Активні</option>
+                                                <option value="inactive">Неактивні</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="table-responsive">
+                                        <table id="usersTable" class="table table-bordered table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Ім'я</th>
+                                                    <th>Email</th>
+                                                    <th>Роль</th>
+                                                    <th>Статус</th>
+                                                    <th>Дата реєстрації</th>
+                                                    <th>Дії</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <!-- Дані будуть додані через JavaScript -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="card-footer clearfix">
+                                    <div id="pagination" class="pagination-container"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Main Footer -->
+        <footer class="main-footer">
+            <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
+            Sistema de gestão de elevadores v2.1.0.
+            <div class="float-right d-none d-sm-inline-block">
+                <b>Versão</b> 2.1.0
+            </div>
+        </footer>
+    </div>
+
+    <!-- Модальне вікно для додавання/редагування користувача -->
+    <div class="modal fade" id="userModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Adicionar користувача</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="userForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="userId">
+                        
+                        <div class="form-section">
+                            <h6 class="form-section-title">Основна інформація</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="userFirstName">Ім'я *</label>
+                                        <input type="text" id="userFirstName" class="form-control" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="userLastName">Прізвище *</label>
+                                        <input type="text" id="userLastName" class="form-control" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="userEmail">Email *</label>
+                                <input type="email" id="userEmail" class="form-control" required>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h6 class="form-section-title">Роль та статус</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="userRole">Роль *</label>
+                                        <select id="userRole" class="form-control" required>
+                                            <option value="">Оберіть роль...</option>
+                                            <option value="client">Клієнт</option>
+                                            <option value="technician">Технік</option>
+                                            <option value="dispatcher">Диспетчер</option>
+                                            <option value="admin">Адміністратор</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="userStatus">Статус *</label>
+                                        <select id="userStatus" class="form-control" required>
+                                            <option value="active">Ativo</option>
+                                            <option value="inactive">Inativo</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h6 class="form-section-title">Безпека</h6>
+                            <div class="form-group">
+                                <label for="userPassword">
+                                    Пароль 
+                                    <small class="text-muted">(залиште порожнім для автоматичної генерації)</small>
+                                </label>
+                                <div class="input-group">
+                                    <input type="text" id="userPassword" class="form-control" placeholder="Буде згенеровано автоматично...">
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-outline-secondary" id="generatePasswordBtn" title="Згенерувати новий пароль">
+                                            <i class="fas fa-sync-alt"></i> Генерувати
+                                        </button>
+                                        <button type="button" class="btn btn-outline-info" id="togglePasswordBtn" title="Показати/Сховати пароль">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-success" id="copyPasswordBtn" title="Копіювати пароль" disabled>
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <small class="form-text text-muted">
+                                    <i class="fas fa-info-circle"></i> Згенерований пароль буде сильним (10+ символів, A-Z, a-z, 0-9, спецсимволи)
+                                </small>
+                                <div id="generatedPasswordAlert" class="alert alert-success mt-2" style="display: none;">
+                                    <i class="fas fa-check-circle"></i> <strong>Пароль згенеровано!</strong> Обов'язково скопіюйте його для передачі користувачу.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../../plugins/jquery/jquery.min.js"></script>
+    <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+        <!-- AdminLTE App -->
+    <script src="../../plugins/adminlte/adminlte.min.js"></script>
+
+    <!-- Sidebar initialization script -->
+    <script src="../../assets/js/sidebar-init.js"></script>
+
+    <!-- Load sidebar dynamically -->
+    <script>
+        // Load sidebar with proper initialization
+        loadSidebarWithInit("includes/sidebar.html");
+    </script>
+    
+    <!-- jQuery Notify -->
+    <script src="/plugins/bootstrap-notify/js/bootstrap-notify.min.js"></script>
+    
+    <!-- Auth Manager -->
+    <script src="../../assets/js/auth.js?v=20241203"></script>
+    
+    <!-- MongoDB ObjectId Converter -->
+    <script src="../../assets/js/id-converter.js"></script>
+    
+    <!-- 🌍 Система багатомовності -->
+    <script src="../../assets/js/i18n.js"></script>
+    <script src="../../assets/js/init-i18n.js"></script>
+
+    <!-- User Management Script -->
+    <script>
+        class UserManager {
+            constructor() {
+                this.currentPage = 1;
+                this.itemsPerPage = 10;
+                this.allUsers = [];
+                this.filteredUsers = [];
+                this.init();
+            }
+
+            init() {
+                this.loadUsers();
+                this.setupEventListeners();
+                this.setupSearch();
+                this.setupFilters();
+                this.setupPasswordGenerator();
+            }
+
+            setupPasswordGenerator() {
+                // Генерація пароля
+                $('#generatePasswordBtn').on('click', () => {
+                    const password = this.generateSecurePassword();
+                    $('#userPassword').val(password);
+                    $('#copyPasswordBtn').prop('disabled', false);
+                    $('#generatedPasswordAlert').fadeIn();
+                    
+                    // Автоматично показати пароль
+                    $('#userPassword').attr('type', 'text');
+                    $('#togglePasswordBtn i').removeClass('fa-eye').addClass('fa-eye-slash');
+                });
+
+                // Показати/сховати пароль
+                $('#togglePasswordBtn').on('click', () => {
+                    const input = $('#userPassword');
+                    const icon = $('#togglePasswordBtn i');
+                    
+                    if (input.attr('type') === 'password') {
+                        input.attr('type', 'text');
+                        icon.removeClass('fa-eye').addClass('fa-eye-slash');
+                    } else {
+                        input.attr('type', 'password');
+                        icon.removeClass('fa-eye-slash').addClass('fa-eye');
+                    }
+                });
+
+                // Копіювати пароль
+                $('#copyPasswordBtn').on('click', () => {
+                    const password = $('#userPassword').val();
+                    if (password) {
+                        navigator.clipboard.writeText(password).then(() => {
+                            this.showNotification('Пароль скопійовано в буфер обміну!', 'info');
+                            
+                            // Змінити іконку на галочку
+                            const btn = $('#copyPasswordBtn');
+                            const originalHTML = btn.html();
+                            btn.html('<i class="fas fa-check"></i>');
+                            
+                            setTimeout(() => {
+                                btn.html(originalHTML);
+                            }, 2000);
+                        }).catch(() => {
+                            this.showNotification('Помилка копіювання. Скопіюйте вручну.', 'warning');
+                        });
+                    }
+                });
+
+                // Увімкнути кнопку копіювання при введенні пароля
+                $('#userPassword').on('input', function() {
+                    $('#copyPasswordBtn').prop('disabled', $(this).val().length === 0);
+                });
+
+                // При відкритті модального вікна для нового користувача - згенерувати пароль автоматично
+                $('#userModal').on('show.bs.modal', function(e) {
+                    const userId = $('#userId').val();
+                    if (!userId) {
+                        // Новий користувач - автоматично генерувати пароль
+                        setTimeout(() => {
+                            $('#generatePasswordBtn').click();
+                        }, 300);
+                    }
+                });
+
+                // Приховати alert при закритті модального вікна
+                $('#userModal').on('hidden.bs.modal', function() {
+                    $('#generatedPasswordAlert').hide();
+                });
+            }
+
+            generateSecurePassword(length = 12) {
+                // Символи для генерації (виключені неоднозначні: 0, O, I, l, 1)
+                const uppercase = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+                const lowercase = 'abcdefghjkmnpqrstuvwxyz';
+                const numbers = '23456789';
+                const special = '!@#$%&*';
+                
+                const allChars = uppercase + lowercase + numbers + special;
+                
+                let password = '';
+                
+                // Забезпечуємо мінімум по одному символу кожного типу
+                password += uppercase[Math.floor(Math.random() * uppercase.length)];
+                password += lowercase[Math.floor(Math.random() * lowercase.length)];
+                password += numbers[Math.floor(Math.random() * numbers.length)];
+                password += special[Math.floor(Math.random() * special.length)];
+                
+                // Заповнюємо решту довжини
+                for (let i = password.length; i < length; i++) {
+                    password += allChars[Math.floor(Math.random() * allChars.length)];
+                }
+                
+                // Перемішуємо символи
+                return password.split('').sort(() => Math.random() - 0.5).join('');
+            }
+
+            async loadUsers() {
+                try {
+                    console.log('🔄 Завантаження користувачів з API...');
+                    const response = await AuthManager.fetchWithAuth('/api/users');
+                    
+                    if (!response.ok) {
+                        throw new Error('Помилка завантаження користувачів');
+                    }
+
+                    const data = await response.json();
+                    this.allUsers = Array.isArray(data) ? data : (data.data || data.users || []);
+                    
+                    // Зберігаємо оригінальні індекси для стабільного displayId
+                    this.allUsers.forEach((user, index) => {
+                        user._originalIndex = index + 1; // USER-001, USER-002, ...
+                    });
+                    
+                    console.log('✅ Завантажено користувачів:', this.allUsers.length, this.allUsers);
+                    
+                } catch (error) {
+                    console.error('❌ Помилка завантаження користувачів:', error);
+                    alert('Не вдалося завантажити користувачів. Перевірте підключення до сервера.');
+                    this.allUsers = [];
+                }
+                
+                this.filteredUsers = [...this.allUsers];
+                this.renderUsersTable();
+                this.renderPagination();
+                this.updateStats();
+            }
+
+            async saveUsers() {
+                // Видалено - тепер зберігання через API при створенні/редагуванні
+                console.log('ℹ️ Utilizadores зберігаються через API endpoints');
+            }
+
+            setupEventListeners() {
+                // Додавання користувача
+                $('#userModal').on('show.bs.modal', (e) => {
+                    const button = $(e.relatedTarget);
+                    const userId = button.data('user-id');
+                    
+                    if (userId) {
+                        $('#modalTitle').text('Editar користувача');
+                        this.editUser(userId);
+                    } else {
+                        $('#modalTitle').text('Adicionar користувача');
+                        this.resetForm();
+                    }
+                });
+
+                // Збереження форми
+                $('#userForm').on('submit', (e) => {
+                    e.preventDefault();
+                    this.saveUser();
+                });
+
+                // Закриття модального вікна
+                $('#userModal .close, #userModal .btn-secondary').on('click', () => {
+                    $('#userModal').modal('hide');
+                });
+            }
+
+            setupSearch() {
+                $('#searchInput').on('input', (e) => {
+                    this.searchUsers(e.target.value);
+                });
+            }
+
+            setupFilters() {
+                $('#roleFilter, #statusFilter').on('change', () => {
+                    this.applyFilters();
+                });
+            }
+
+            renderUsersTable() {
+                const tbody = $('#usersTable tbody');
+                tbody.empty();
+
+                const start = (this.currentPage - 1) * this.itemsPerPage;
+                const end = start + this.itemsPerPage;
+                const paginatedUsers = this.filteredUsers.slice(start, end);
+
+                if (paginatedUsers.length === 0) {
+                    tbody.html(`
+                        <tr>
+                            <td colspan="7" class="text-center py-4">
+                                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                                <h5>Utilizadoresв не знайдено</h5>
+                                <p class="text-muted">Спробуйте змінити фільтри або додати нового користувача</p>
+                                <button class="btn btn-primary" data-toggle="modal" data-target="#userModal">
+                                    <i class="fas fa-plus"></i> Adicionar користувача
+                                </button>
+                            </td>
+                        </tr>
+                    `);
+                    return;
+                }
+
+                paginatedUsers.forEach((user, index) => {
+                    // ✅ ВИПРАВЛЕННЯ: Конвертуємо ObjectId в string
+                    const userId = (user._id && user._id.toString) ? user._id.toString() : (user._id || user.id || '');
+                    
+                    if (!userId) {
+                        console.error('❌ Користувач без ID:', user);
+                        return; // Пропускаємо користувачів без ID
+                    }
+                    
+                    // ✅ Використовуємо оригінальний індекс (стабільний displayId)
+                    const displayId = `USER-${String(user._originalIndex || (start + index + 1)).padStart(3, '0')}`;
+                    
+                    // Формуємо ім'я з fallback
+                    const displayName = (user.firstName && user.lastName) 
+                        ? `${user.firstName} ${user.lastName}` 
+                        : user.email.split('@')[0];
+                    
+                    const row = `
+                        <tr>
+                            <td>${displayId}</td>
+                            <td>${displayName}</td>
+                            <td>${user.email}</td>
+                            <td><span class="role-badge role-${user.role}">${this.getRoleLabel(user.role)}</span></td>
+                            <td><span class="status-badge status-${user.status || 'active'}">${this.getStatusLabel(user.status || 'active')}</span></td>
+                            <td>${this.formatDate(user.createdAt)}</td>
+                            <td class="action-buttons">
+                                <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#userModal" data-user-id="${userId}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm ${user.status === 'active' ? 'btn-warning' : 'btn-success'}" onclick="userManager.toggleUserStatus('${userId}')">
+                                    <i class="fas ${user.status === 'active' ? 'fa-ban' : 'fa-check'}"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="userManager.deleteUser('${userId}')" title="Eliminar користувача">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.append(row);
+                });
+            }
+
+            renderPagination() {
+                const pagination = $('#pagination');
+                pagination.empty();
+
+                const totalPages = Math.ceil(this.filteredUsers.length / this.itemsPerPage);
+                
+                if (totalPages <= 1) {
+                    pagination.html(`
+                        <div class="pagination-info">
+                            Показано ${this.filteredUsers.length} з ${this.filteredUsers.length} користувачів
+                        </div>
+                    `);
+                    return;
+                }
+
+                let html = `
+                    <div class="pagination-info">
+                        Показано ${Math.min(this.itemsPerPage, this.filteredUsers.length)} з ${this.filteredUsers.length} користувачів
+                    </div>
+                    <ul class="pagination pagination-sm m-0 ml-auto">
+                `;
+
+                // Попередня сторінка
+                html += `
+                    <li class="page-item ${this.currentPage === 1 ? 'disabled' : ''}">
+                        <a class="page-link" href="#" data-page="${this.currentPage - 1}">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                `;
+
+                // Сторінки
+                for (let i = 1; i <= totalPages; i++) {
+                    html += `
+                        <li class="page-item ${this.currentPage === i ? 'active' : ''}">
+                            <a class="page-link" href="#" data-page="${i}">${i}</a>
+                        </li>
+                    `;
+                }
+
+                // Наступна сторінка
+                html += `
+                    <li class="page-item ${this.currentPage === totalPages ? 'disabled' : ''}">
+                        <a class="page-link" href="#" data-page="${this.currentPage + 1}">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                `;
+
+                html += '</ul>';
+                pagination.html(html);
+
+                // Обробник кліків по пагінації
+                pagination.find('.page-link').on('click', (e) => {
+                    e.preventDefault();
+                    const page = parseInt($(e.target).closest('.page-link').data('page'));
+                    if (page >= 1 && page <= totalPages) {
+                        this.currentPage = page;
+                        this.renderUsersTable();
+                    }
+                });
+            }
+
+            updateStats() {
+                $('#totalUsers').text(this.allUsers.length);
+                $('#activeUsers').text(this.allUsers.filter(u => u.status === 'active').length);
+                $('#technicianUsers').text(this.allUsers.filter(u => u.role === 'technician' || u.role === 'tech').length);
+                $('#adminUsers').text(this.allUsers.filter(u => u.role === 'admin').length);
+            }
+
+            searchUsers(query) {
+                if (!query.trim()) {
+                    this.filteredUsers = [...this.allUsers];
+                } else {
+                    query = query.toLowerCase();
+                    
+                    // Перевіряємо чи це чистий пошук по числу (002, 003, 1)
+                    const isNumericOnly = /^\d+$/.test(query.trim());
+                    
+                    this.filteredUsers = this.allUsers.filter((user, index) => {
+                        const firstName = (user.firstName || '').toLowerCase();
+                        const lastName = (user.lastName || '').toLowerCase();
+                        const email = (user.email || '').toLowerCase();
+                        const username = (user.username || '').toLowerCase();
+                        const id = ((user._id || user.id) || '').toString().toLowerCase();
+                        const role = (user.role || '').toLowerCase();
+                        
+                        // ✅ Використовуємо збережений оригінальний індекс
+                        const userNumber = String(user._originalIndex || (index + 1)).padStart(3, '0');
+                        const displayId = `user-${userNumber}`.toLowerCase();
+                        
+                        // Якщо це ТІЛЬКИ число (002), шукаємо точне співпадіння
+                        if (isNumericOnly) {
+                            const searchNumber = query.padStart(3, '0');
+                            return userNumber === searchNumber;
+                        }
+                        
+                        // Інакше - пошук по всіх полях
+                        return firstName.includes(query) ||
+                               lastName.includes(query) ||
+                               email.includes(query) ||
+                               username.includes(query) ||
+                               id.includes(query) ||
+                               role.includes(query) ||
+                               displayId.includes(query);
+                    });
+                }
+
+                this.currentPage = 1;
+                this.renderUsersTable();
+                this.renderPagination();
+            }
+
+            applyFilters() {
+                const roleFilter = $('#roleFilter').val();
+                const statusFilter = $('#statusFilter').val();
+
+                this.filteredUsers = this.allUsers.filter(user => {
+                    let roleMatch = roleFilter === 'all';
+                    if (!roleMatch) {
+                        // Suporte обох варіантів: tech та technician
+                        if (roleFilter === 'technician') {
+                            roleMatch = user.role === 'technician' || user.role === 'tech';
+                        } else {
+                            roleMatch = user.role === roleFilter;
+                        }
+                    }
+                    const statusMatch = statusFilter === 'all' || user.status === statusFilter;
+                    return roleMatch && statusMatch;
+                });
+
+                this.currentPage = 1;
+                this.renderUsersTable();
+                this.renderPagination();
+            }
+
+            filterByRole(role) {
+                if (role === 'all') {
+                    $('#roleFilter').val('all');
+                } else if (role === 'tech') {
+                    $('#roleFilter').val('technician');
+                } else {
+                    $('#roleFilter').val(role);
+                }
+                $('#statusFilter').val('all');
+                this.applyFilters();
+                
+                // Прокручуємо до таблиці
+                $('html, body').animate({
+                    scrollTop: $('#usersTable').offset().top - 100
+                }, 500);
+            }
+
+            filterByStatus(status) {
+                $('#roleFilter').val('all');
+                $('#statusFilter').val(status);
+                this.applyFilters();
+                
+                // Прокручуємо до таблиці
+                $('html, body').animate({
+                    scrollTop: $('#usersTable').offset().top - 100
+                }, 500);
+            }
+
+            editUser(id) {
+                const user = this.allUsers.find(u => u._id === id || u.id === id);
+                if (user) {
+                    $('#userId').val(user._id || user.id);
+                    $('#userFirstName').val(user.firstName);
+                    $('#userLastName').val(user.lastName);
+                    $('#userEmail').val(user.email);
+                    $('#userRole').val(user.role);
+                    $('#userStatus').val(user.status);
+                    $('#userPassword').val('')
+                        .attr('type', 'password')
+                        .attr('placeholder', 'Залиште порожнім для збереження поточного пароля');
+                    $('#copyPasswordBtn').prop('disabled', true);
+                    $('#generatedPasswordAlert').hide();
+                    $('#togglePasswordBtn i').removeClass('fa-eye-slash').addClass('fa-eye');
+                }
+            }
+
+            resetForm() {
+                $('#userForm')[0].reset();
+                $('#userId').val('');
+                
+                // Автоматично генерувати пароль для нового користувача
+                const newPassword = this.generateSecurePassword();
+                $('#userPassword').val(newPassword)
+                    .attr('type', 'text');
+                $('#copyPasswordBtn').prop('disabled', false);
+                $('#generatedPasswordAlert').show().html(
+                    '<i class="fas fa-check-circle"></i> Пароль згенеровано автоматично! Обов\'язково скопіюйте його перед збереженням.'
+                );
+            }
+
+            async saveUser() {
+                try {
+                    const userId = $('#userId').val();
+                    const userData = {
+                        firstName: $('#userFirstName').val(),
+                        lastName: $('#userLastName').val(),
+                        email: $('#userEmail').val(),
+                        role: $('#userRole').val(),
+                        status: $('#userStatus').val()
+                    };
+
+                    const password = $('#userPassword').val();
+                    let passwordToSend = null; // Пароль для показу в модальному вікні
+                    
+                    if (password) {
+                        userData.password = password;
+                        // Guardar пароль для показу (тільки якщо він був згенерований)
+                        if (!userId) {
+                            passwordToSend = password;
+                        }
+                    }
+
+                    let response;
+                    let result;
+                    
+                    if (!userId) {
+                        console.log('➕ Створення нового користувача:', userData.email);
+                        
+                        // Якщо пароль не введено - сервер згенерує автоматично
+                        if (!password) {
+                            console.log('🔐 Пароль не вказано - сервер згенерує автоматично');
+                        } else {
+                            console.log('🔑 Використовується клієнтський пароль:', password);
+                        }
+                        
+                        response = await AuthManager.fetchWithAuth('/api/users', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(userData)
+                        });
+                        
+                        if (!response.ok) {
+                            const error = await response.json();
+                            throw new Error(error.error || 'Помилка створення користувача');
+                        }
+                        
+                        result = await response.json();
+                        
+                        // Показати модальне вікно з паролем
+                        if (result.data && result.data.temporaryPassword) {
+                            // Сервер згенерував пароль
+                            const generatedPassword = result.data.temporaryPassword;
+                            console.log('🔑 Сервер згенерував пароль:', generatedPassword);
+                            
+                            // СПОЧАТКУ закрити форму створення
+                            $('#userModal').modal('hide');
+                            
+                            // Почекати поки закриється, ПОТІМ показати пароль
+                            $('#userModal').on('hidden.bs.modal', () => {
+                                this.showGeneratedPasswordModal(userData.email, generatedPassword);
+                                $('#userModal').off('hidden.bs.modal'); // Відключити обробник
+                            });
+                        } else if (passwordToSend) {
+                            // Клієнт згенерував пароль - також показати модальне вікно
+                            console.log('🔑 Показ клієнтського пароля:', passwordToSend);
+                            
+                            // СПОЧАТКУ закрити форму створення
+                            $('#userModal').modal('hide');
+                            
+                            // Почекати поки закриється, ПОТІМ показати пароль
+                            $('#userModal').on('hidden.bs.modal', () => {
+                                this.showGeneratedPasswordModal(userData.email, passwordToSend);
+                                $('#userModal').off('hidden.bs.modal'); // Відключити обробник
+                            });
+                        } else {
+                            // Якщо не треба показувати пароль - закрити як зазвичай
+                            $('#userModal').modal('hide');
+                        }
+                    } else {
+                        console.log('✏️ Оновлення користувача:', userId);
+                        response = await AuthManager.fetchWithAuth(`/api/users/${userId}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(userData)
+                        });
+                        
+                        if (!response.ok) {
+                            const error = await response.json();
+                            throw new Error(error.error || 'Помилка оновлення користувача');
+                        }
+                        
+                        // Для оновлення - закрити модальне вікно
+                        $('#userModal').modal('hide');
+                    }
+
+                    this.showNotification('Користувача успішно збережено', 'success');
+                    
+                    await this.loadUsers();
+                    
+                } catch (error) {
+                    console.error('❌ Помилка збереження користувача:', error);
+                    this.showNotification(error.message || 'Не вдалося зберегти користувача', 'danger');
+                }
+            }
+
+            async toggleUserStatus(id) {
+                try {
+                    const user = this.allUsers.find(u => u._id === id);
+                    if (!user) {
+                        throw new Error('Користувача не знайдено');
+                    }
+
+                    const newStatus = user.status === 'active' ? 'inactive' : 'active';
+                    
+                    const response = await AuthManager.fetchWithAuth(`/api/users/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status: newStatus })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Помилка зміни статусу');
+                    }
+
+                    this.showNotification(`Статус користувача змінено на ${this.getStatusLabel(newStatus)}`, 'success');
+                    await this.loadUsers();
+                    
+                } catch (error) {
+                    console.error('❌ Помилка зміни статусу:', error);
+                    this.showNotification('Не вдалося змінити статус користувача', 'danger');
+                }
+            }
+
+            async deleteUser(id) {
+                const user = this.allUsers.find(u => u._id === id);
+                if (!user) {
+                    this.showNotification('Користувача не знайдено', 'danger');
+                    return;
+                }
+
+                const confirmMsg = `Ви впевнені, що хочете ВИДАЛИТИ користувача ${user.firstName} ${user.lastName}?\n\nЦю дію НЕ можна скасувати!`;
+                if (!confirm(confirmMsg)) {
+                    return;
+                }
+
+                try {
+                    const response = await AuthManager.fetchWithAuth(`/api/users/${id}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Помилка видалення користувача');
+                    }
+
+                    this.showNotification('Користувача успішно видалено', 'success');
+                    await this.loadUsers();
+                    
+                } catch (error) {
+                    console.error('❌ Помилка видалення:', error);
+                    this.showNotification('Не вдалося видалити користувача', 'danger');
+                }
+            }
+
+            getRoleLabel(role) {
+                const roles = {
+                    'admin': 'Адміністратор',
+                    'technician': 'Технік',
+                    'tech': 'Технік',
+                    'client': 'Клієнт',
+                    'dispatcher': 'Диспетчер'
+                };
+                return roles[role] || role;
+            }
+
+            getStatusLabel(status) {
+                const statuses = {
+                    'active': 'Ativo',
+                    'inactive': 'Inativo'
+                };
+                return statuses[status] || 'Ativo';
+            }
+
+            formatDate(dateString) {
+                if (!dateString) return '-';
+                return new Date(dateString).toLocaleDateString('uk-UA');
+            }
+
+            generateId() {
+                return 'USR-' + Date.now();
+            }
+
+            hashPassword(password) {
+                // Просте хешування (в реальному додатку використовуйте більш безпечні методи)
+                return btoa(encodeURIComponent(password));
+            }
+
+            showNotification(message, type = 'success') {
+                // Створення сповіщення у стилі AdminLTE
+                $.notify({
+                    icon: type === 'success' ? 'fas fa-check' : 'fas fa-exclamation-triangle',
+                    message: message
+                }, {
+                    type: type,
+                    placement: {
+                        from: 'top',
+                        align: 'right'
+                    },
+                    animate: {
+                        enter: 'animated fadeInRight',
+                        exit: 'animated fadeOutRight'
+                    }
+                });
+            }
+
+            showGeneratedPasswordModal(email, password) {
+                // Створити модальне вікно для показу згенерованого пароля
+                const modalHTML = `
+                    <div class="modal fade" id="generatedPasswordModal" tabindex="-1" role="dialog">
+                        <div class="modal-dialog modal-dialog-centered" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header bg-success">
+                                    <h5 class="modal-title text-white">
+                                        <i class="fas fa-key"></i> Користувача створено!
+                                    </h5>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        <strong>ВАЖЛИВО!</strong> Збережіть цей пароль зараз. Ви більше не зможете його побачити.
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label><i class="fas fa-user"></i> Email користувача:</label>
+                                        <input type="text" class="form-control" value="${email}" readonly>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label><i class="fas fa-lock"></i> Згенерований пароль:</label>
+                                        <div class="input-group">
+                                            <input type="text" id="displayPassword" class="form-control font-weight-bold" value="${password}" readonly>
+                                            <div class="input-group-append">
+                                                <button type="button" class="btn btn-success" id="copyDisplayPassword">
+                                                    <i class="fas fa-copy"></i> Копіювати
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle"></i>
+                                        Ви можете надіслати ці дані користувачу автоматично через email, або скопіювати і надіслати вручну.
+                                    </div>
+                                    
+                                    <div id="emailStatusAlert" style="display: none;"></div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-info" id="sendPasswordEmail">
+                                        <i class="fas fa-envelope"></i> Надіслати на Email
+                                    </button>
+                                    <button type="button" class="btn btn-primary" data-dismiss="modal">
+                                        <i class="fas fa-check"></i> Зрозуміло
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Eliminar старе модальне вікно якщо є
+                $('#generatedPasswordModal').remove();
+                
+                // Adicionar нове
+                $('body').append(modalHTML);
+                
+                // Показати
+                $('#generatedPasswordModal').modal('show');
+                
+                // Обробник копіювання
+                $('#copyDisplayPassword').on('click', function() {
+                    const btn = $(this);
+                    navigator.clipboard.writeText(password).then(() => {
+                        const originalHTML = btn.html();
+                        btn.html('<i class="fas fa-check"></i> Скопійовано!');
+                        setTimeout(() => {
+                            btn.html(originalHTML);
+                        }, 2000);
+                    });
+                });
+                
+                // Обробник надсилання email
+                $('#sendPasswordEmail').on('click', async function() {
+                    const btn = $(this);
+                    const originalHTML = btn.html();
+                    
+                    btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Надсилання...');
+                    
+                    try {
+                        await userManager.sendPasswordEmail(email, password);
+                        
+                        $('#emailStatusAlert')
+                            .removeClass('alert-danger')
+                            .addClass('alert alert-success')
+                            .html('<i class="fas fa-check-circle"></i> <strong>Успішно!</strong> Email з інструкціями надіслано на ' + email)
+                            .fadeIn();
+                        
+                        btn.html('<i class="fas fa-check"></i> Надіслано!');
+                        
+                        setTimeout(() => {
+                            btn.prop('disabled', false).html(originalHTML);
+                        }, 3000);
+                    } catch (error) {
+                        $('#emailStatusAlert')
+                            .removeClass('alert-success')
+                            .addClass('alert alert-danger')
+                            .html('<i class="fas fa-exclamation-triangle"></i> <strong>Помилка!</strong> ' + error.message)
+                            .fadeIn();
+                        
+                        btn.prop('disabled', false).html(originalHTML);
+                    }
+                });
+                
+                // Eliminar модальне вікно після закриття
+                $('#generatedPasswordModal').on('hidden.bs.modal', function() {
+                    $(this).remove();
+                });
+            }
+
+            async sendPasswordEmail(email, password) {
+                try {
+                    // Отримати посилання на додаток (поточний домен)
+                    const appUrl = window.location.origin + '/pages/auth/login.html';
+                    
+                    // Дані для email
+                    const emailData = {
+                        to: email,
+                        subject: 'Ваш доступ до FestLift',
+                        html: `
+                            <!DOCTYPE html>
+                            <html>
+                            <head>
+                                <meta charset="UTF-8">
+                                <style>
+                                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                                    .header { background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+                                    .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px; }
+                                    .credentials { background: white; padding: 20px; border-left: 4px solid #007bff; margin: 20px 0; }
+                                    .password { font-size: 24px; font-weight: bold; color: #007bff; letter-spacing: 2px; }
+                                    .button { display: inline-block; padding: 15px 30px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+                                    .footer { text-align: center; color: #6c757d; font-size: 12px; margin-top: 30px; }
+                                    .warning { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; }
+                                </style>
+                            </head>
+                            <body>
+                                <div class="container">
+                                    <div class="header">
+                                        <h1>🔑 Ласкаво просимо до FestLift!</h1>
+                                        <p>Sistema de gestão ліфтами від FestLift</p>
+                                    </div>
+                                    <div class="content">
+                                        <h2>Вітаємо!</h2>
+                                        <p>Для вас створено обліковий запис в системі <strong>FestLift</strong>.</p>
+                                        
+                                        <div class="credentials">
+                                            <h3>📧 Ваші дані для входу:</h3>
+                                            <p><strong>Email:</strong> ${email}</p>
+                                            <p><strong>Тимчасовий пароль:</strong></p>
+                                            <p class="password">${password}</p>
+                                        </div>
+                                        
+                                        <div class="warning">
+                                            <strong>⚠️ ВАЖЛИВО:</strong> Після першого входу обов'язково змініть пароль на власний!
+                                        </div>
+                                        
+                                        <h3>📝 Інструкція для входу:</h3>
+                                        <ol>
+                                            <li>Перейдіть за посиланням нижче</li>
+                                            <li>Введіть ваш email: <strong>${email}</strong></li>
+                                            <li>Введіть тимчасовий пароль (скопіюйте вище)</li>
+                                            <li>Після входу перейдіть в налаштування та змініть пароль</li>
+                                        </ol>
+                                        
+                                        <div style="text-align: center;">
+                                            <a href="${appUrl}" class="button">🚀 Увійти до системи</a>
+                                        </div>
+                                        
+                                        <p><small>Або скопіюйте посилання: <a href="${appUrl}">${appUrl}</a></small></p>
+                                        
+                                        <div class="footer">
+                                            <p>📞 Технічна підтримка: <strong>+351 961 777 666</strong></p>
+                                            <p>📧 Email: <a href="mailto:suporte@festlift.pt">suporte@festlift.pt</a></p>
+                                            <p>&copy; 2024-2026 FestLift Portugal. Внутрішня розробка для клієнтів.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </body>
+                            </html>
+                        `
+                    };
+                    
+                    // Надіслати через API
+                    console.log('📧 Відправка email на:', email);
+                    console.log('📦 Дані:', { to: emailData.to, subject: emailData.subject });
+                    
+                    const response = await AuthManager.fetchWithAuth('/api/send-email', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(emailData)
+                    });
+                    
+                    console.log('📡 Статус відповіді:', response.status);
+                    
+                    // Спробувати прочитати як текст спочатку
+                    const responseText = await response.text();
+                    console.log('📄 Відповідь:', responseText.substring(0, 300));
+                    
+                    if (!response.ok) {
+                        let errorMessage = 'Помилка надсилання email';
+                        try {
+                            const error = JSON.parse(responseText);
+                            errorMessage = error.error || error.message || errorMessage;
+                        } catch (e) {
+                            console.error('Не вдалося розпарсити JSON:', e);
+                            errorMessage = 'Помилка сервера: ' + responseText.substring(0, 100);
+                        }
+                        throw new Error(errorMessage);
+                    }
+                    
+                    const result = JSON.parse(responseText);
+                    console.log('✅ Email успішно надіслано:', result);
+                    return true;
+                    
+                } catch (error) {
+                    console.error('❌ Помилка:', error);
+                    throw error;
+                }
+            }
+        }
+
+        // Ініціалізація менеджера користувачів
+        $(document).ready(function() {
+            window.userManager = new UserManager();
+        });
+    </script>
+    <script src="/assets/js/table-drag-scroll.js"></script>
+</body>
+</html>

@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Técnico - Manutenção Mensal</title>
+    
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    
+    <style>
+        .inspection-checklist {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .checklist-item {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        .checklist-item:last-child {
+            border-bottom: none;
+        }
+        .status-indicator {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        .status-ok { background-color: #28a745; }
+        .status-warning { background-color: #ffc107; }
+        .status-error { background-color: #dc3545; }
+        .status-na { background-color: #6c757d; }
+        
+        .inspection-photo {
+            max-width: 200px;
+            max-height: 150px;
+            object-fit: cover;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        @media print {
+            .no-print { display: none !important; }
+            .inspection-checklist { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper">
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light no-print">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="dashboard.html" class="nav-link">Início</a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="manutencao.html" class="nav-link active">Manutenção</a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="tasks.html" class="nav-link">Tarefas</a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="../auth/login.html" role="button">
+                        <i class="fas fa-sign-out-alt"></i> Війти
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Sidebar Container -->
+                <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <!-- Brand Logo -->
+            <a href="dashboard.html" class="brand-link">
+                <i class="brand-image fas fa-tools"></i>
+                <span class="brand-text font-weight-light">Технік</span>
+            </a>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- CANONICAL TECH SIDEBAR - Copy this to all tech pages -->
+<nav class="mt-2">
+    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+        <!-- Dashboard -->
+        <li class="nav-item">
+            <a href="/pages/tech/dashboard.html" class="nav-link">
+                <i class="nav-icon fas fa-tachometer-alt"></i>
+                <p>Дашборд</p>
+            </a>
+        </li>
+
+        <!-- Tasks -->
+        <li class="nav-item">
+            <a href="/pages/tech/tasks.html" class="nav-link">
+                <i class="nav-icon fas fa-clipboard-list"></i>
+                <p>Мої завдання</p>
+            </a>
+        </li>
+
+        <!-- Schedule -->
+        <li class="nav-item">
+            <a href="/pages/tech/schedule.html" class="nav-link">
+                <i class="nav-icon fas fa-calendar-alt"></i>
+                <p>Розклад</p>
+            </a>
+        </li>
+
+        <!-- Maintenance -->
+        <li class="nav-item">
+            <a href="/pages/tech/manutencao.html" class="nav-link">
+                <i class="nav-icon fas fa-wrench"></i>
+                <p>Manutenção</p>
+            </a>
+        </li>
+
+        <!-- Inspections -->
+        <li class="nav-item">
+            <a href="/pages/tech/inspections.html" class="nav-link">
+                <i class="nav-icon fas fa-clipboard-check"></i>
+                <p>Інспекції</p>
+            </a>
+        </li>
+
+        <!-- Reports -->
+        <li class="nav-item">
+            <a href="/pages/tech/reports.html" class="nav-link">
+                <i class="nav-icon fas fa-file-alt"></i>
+                <p>Звіти робіт</p>
+            </a>
+        </li>
+
+        <!-- Tools & Resources -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-toolbox"></i>
+                <p>
+                    Інструменти
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/tech/qr-scanner.html" class="nav-link">
+                        <i class="fas fa-qrcode nav-icon"></i>
+                        <p>QR Сканер</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/tech/ar-helper.html" class="nav-link">
+                        <i class="fas fa-cube nav-icon"></i>
+                        <p>AR Helper</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/tech/tools.html" class="nav-link">
+                        <i class="fas fa-tools nav-icon"></i>
+                        <p>Калькулятори</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Knowledge Base -->
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-book"></i>
+                <p>
+                    База знань
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="/pages/tech/knowledge-base.html" class="nav-link">
+                        <i class="fas fa-bookmark nav-icon"></i>
+                        <p>Довідник</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/tech/manuals.html" class="nav-link">
+                        <i class="fas fa-book-open nav-icon"></i>
+                        <p>Інструкції</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/tech/checklists.html" class="nav-link">
+                        <i class="fas fa-tasks nav-icon"></i>
+                        <p>Чеклісти</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/pages/tech/videos.html" class="nav-link">
+                        <i class="fas fa-video nav-icon"></i>
+                        <p>Відео</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <li class="nav-item">
+            <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link">
+                <i class="nav-icon fas fa-magic"></i>
+                <p>AI Асистент</p>
+                <span class="badge badge-success right">Новинка</span>
+            </a>
+        </li>
+
+        <!-- Support -->
+        <li class="nav-item">
+            <a href="/pages/tech/support.html" class="nav-link">
+                <i class="nav-icon fas fa-headset"></i>
+                <p>Suporte</p>
+            </a>
+        </li>
+    </ul>
+</nav>
+            </div>
+        </aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <!-- Content Header -->
+            <div class="content-header no-print">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">Manutenção Mensal</h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="dashboard.html">Início</a></li>
+                                <li class="breadcrumb-item active">Manutenção</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+                    <!-- Inspection Form -->
+                    <div class="row no-print">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Relatório de Manutenção Mensal</h3>
+                                    <div class="card-tools">
+                                        <button class="btn btn-success btn-sm" onclick="saveInspection()">
+                                            <i class="fas fa-save"></i> Guardar
+                                        </button>
+                                        <button class="btn btn-info btn-sm" onclick="loadTemplate()">
+                                            <i class="fas fa-file-import"></i> Carregar modelo
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <form id="inspectionForm">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="inspectionNumber">Nº da Manutenção</label>
+                                                    <input type="text" class="form-control" id="inspectionNumber" placeholder="MANU-2025-001" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="inspectionDate">Data da Manutenção</label>
+                                                    <input type="date" class="form-control" id="inspectionDate" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="inspector">Técnico Responsável</label>
+                                                    <input type="text" class="form-control" id="inspector" placeholder="Nome completo do técnico" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="liftLocation">Localização do Ascensor</label>
+                                                    <input type="text" class="form-control" id="liftLocation" placeholder="Morada, edifício, entrada" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="liftModel">Modelo do Ascensor</label>
+                                                    <input type="text" class="form-control" id="liftModel" placeholder="Fabricante e modelo">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="liftSerial">Número de Série</label>
+                                                    <input type="text" class="form-control" id="liftSerial" placeholder="Número de série do ascensor">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Inspection Checklist -->
+                    <div class="row no-print">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Lista de Verificação - Manutenção Mensal</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div id="inspectionChecklist">
+                                        <!-- Safety Systems -->
+                                        <div class="inspection-checklist">
+                                            <h5><i class="fas fa-shield-alt text-danger"></i> Sistemas de Segurança</h5>
+                                            <div class="checklist-item" data-item="para-quedas">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span>Limitador de velocidade e pára-quedas</span>
+                                                    <div>
+                                                        <select class="form-control form-control-sm d-inline-block w-auto checklist-status">
+                                                            <option value="">-- Selecionar --</option>
+                                                            <option value="ok">✓ OK</option>
+                                                            <option value="warning">⚠ Aviso</option>
+                                                            <option value="error">✗ Crítico</option>
+                                                            <option value="na">N/A</option>
+                                                        </select>
+                                                        <input type="text" class="form-control form-control-sm d-inline-block ml-2 checklist-comment" style="width: 200px;" placeholder="Observações">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="checklist-item" data-item="emergency-brake">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span>Travão de emergência</span>
+                                                    <div>
+                                                        <select class="form-control form-control-sm d-inline-block w-auto checklist-status">
+                                                            <option value="">-- Selecionar --</option>
+                                                            <option value="ok">✓ OK</option>
+                                                            <option value="warning">⚠ Aviso</option>
+                                                            <option value="error">✗ Crítico</option>
+                                                            <option value="na">N/A</option>
+                                                        </select>
+                                                        <input type="text" class="form-control form-control-sm d-inline-block ml-2 checklist-comment" style="width: 200px;" placeholder="Observações">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="checklist-item" data-item="alarme">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span>Sistema de alarme e comunicação</span>
+                                                    <div>
+                                                        <select class="form-control form-control-sm d-inline-block w-auto checklist-status">
+                                                            <option value="">-- Selecionar --</option>
+                                                            <option value="ok">✓ OK</option>
+                                                            <option value="warning">⚠ Aviso</option>
+                                                            <option value="error">✗ Crítico</option>
+                                                            <option value="na">N/A</option>
+                                                        </select>
+                                                        <input type="text" class="form-control form-control-sm d-inline-block ml-2 checklist-comment" style="width: 200px;" placeholder="Observações">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="checklist-item" data-item="fechaduras">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span>Fechaduras de portas de patamar</span>
+                                                    <div>
+                                                        <select class="form-control form-control-sm d-inline-block w-auto checklist-status">
+                                                            <option value="">-- Selecionar --</option>
+                                                            <option value="ok">✓ OK</option>
+                                                            <option value="warning">⚠ Aviso</option>
+                                                            <option value="error">✗ Crítico</option>
+                                                            <option value="na">N/A</option>
+                                                        </select>
+                                                        <input type="text" class="form-control form-control-sm d-inline-block ml-2 checklist-comment" style="width: 200px;" placeholder="Observações">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="checklist-item" data-item="contactos-porta">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span>Contactos de segurança das portas</span>
+                                                    <div>
+                                                        <select class="form-control form-control-sm d-inline-block w-auto checklist-status">
+                                                            <option value="">-- Selecionar --</option>
+                                                            <option value="ok">✓ OK</option>
+                                                            <option value="warning">⚠ Aviso</option>
+                                                            <option value="error">✗ Crítico</option>
+                                                            <option value="na">N/A</option>
+                                                        </select>
+                                                        <input type="text" class="form-control form-control-sm d-inline-block ml-2 checklist-comment" style="width: 200px;" placeholder="Observações">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="checklist-item" data-item="fotocelas">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span>Fotocélulas de proteção</span>
+                                                    <div>
+                                                        <select class="form-control form-control-sm d-inline-block w-auto checklist-status">
+                                                            <option value="">-- Selecionar --</option>
+                                                            <option value="ok">✓ OK</option>
+                                                            <option value="warning">⚠ Aviso</option>
+                                                            <option value="error">✗ Crítico</option>
+                                                            <option value="na">N/A</option>
+                                                        </select>
+                                                        <input type="text" class="form-control form-control-sm d-inline-block ml-2 checklist-comment" style="width: 200px;" placeholder="Observações">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Mechanical Systems -->
+                                        <div class="inspection-checklist">
+                                            <h5><i class="fas fa-cogs text-primary"></i> Sistemas Mecânicos</h5>
+                                            <div class="checklist-item" data-item="cabos">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span>Estado dos cabos de tração</span>
+                                                    <div>
+                                                        <select class="form-control form-control-sm d-inline-block w-auto checklist-status">
+                                                            <option value="">-- Selecionar --</option>
+                                                            <option value="ok">✓ OK</option>
+                                                            <option value="warning">⚠ Aviso</option>
+                                                            <option value="error">✗ Crítico</option>
+                                                            <option value="na">N/A</option>
+                                                        </select>
+                                                        <input type="text" class="form-control form-control-sm d-inline-block ml-2 checklist-comment" style="width: 200px;" placeholder="Observações">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="checklist-item" data-item="polia">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span>Polia de tração e desgaste</span>
+                                                    <div>
+                                                        <select class="form-control form-control-sm d-inline-block w-auto checklist-status">
+                                                            <option value="">-- Selecionar --</option>
+                                                            <option value="ok">✓ OK</option>
+                                                            <option value="warning">⚠ Aviso</option>
+                                                            <option value="error">✗ Crítico</option>
+                                                            <option value="na">N/A</option>
+                                                        </select>
+                                                        <input type="text" class="form-control form-control-sm d-inline-block ml-2 checklist-comment" style="width: 200px;" placeholder="Observações">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="checklist-item" data-item="motor">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span>Motor e redutor</span>
+                                                    <div>
+                                                        <select class="form-control form-control-sm d-inline-block w-auto checklist-status">
+                                                            <option value="">-- Selecionar --</option>
+                                                            <option value="ok">✓ OK</option>
+                                                            <option value="warning">⚠ Aviso</option>
+                                                            <option value="error">✗ Crítico</option>
+                                                            <option value="na">N/A</option>
+                                                        </select>
+                                                        <input type="text" class="form-control form-control-sm d-inline-block ml-2 checklist-comment" style="width: 200px;" placeholder="Observações">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="checklist-item" data-item="guias">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span>Guias e sapatas de guiamento</span>
+                                                    <div>
+                                                        <select class="form-control form-control-sm d-inline-block w-auto checklist-status">
+                                                            <option value="">-- Selecionar --</option>
+                                                            <option value="ok">✓ OK</option>
+                                                            <option value="warning">⚠ Aviso</option>
+                                                            <option value="error">✗ Crítico</option>
+                                                            <option value="na">N/A</option>
+                                                        </select>
+                                                        <input type="text" class="form-control form-control-sm d-inline-block ml-2 checklist-comment" style="width: 200px;" placeholder="Observações">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="checklist-item" data-item="portas-cabina">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span>Operador de portas da cabina</span>
+                                                    <div>
+                                                        <select class="form-control form-control-sm d-inline-block w-auto checklist-status">
+                                                            <option value="">-- Selecionar --</option>
+                                                            <option value="ok">✓ OK</option>
+                                                            <option value="warning">⚠ Aviso</option>
+                                                            <option value="error">✗ Crítico</option>
+                                                            <option value="na">N/A</option>
+                                                        </select>
+                                                        <input type="text" class="form-control form-control-sm d-inline-block ml-2 checklist-comment" style="width: 200px;" placeholder="Observações">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="checklist-item" data-item="amortecedores">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span>Amortecedores do poço</span>
+                                                    <div>
+                                                        <select class="form-control form-control-sm d-inline-block w-auto checklist-status">
+                                                            <option value="">-- Selecionar --</option>
+                                                            <option value="ok">✓ OK</option>
+                                                            <option value="warning">⚠ Aviso</option>
+                                                            <option value="error">✗ Crítico</option>
+                                                            <option value="na">N/A</option>
+                                                        </select>
+                                                        <input type="text" class="form-control form-control-sm d-inline-block ml-2 checklist-comment" style="width: 200px;" placeholder="Observações">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="checklist-item" data-item="contrapeso">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span>Contrapeso e fixações</span>
+                                                    <div>
+                                                        <select class="form-control form-control-sm d-inline-block w-auto checklist-status">
+                                                            <option value="">-- Selecionar --</option>
+                                                            <option value="ok">✓ OK</option>
+                                                            <option value="warning">⚠ Aviso</option>
+                                                            <option value="error">✗ Crítico</option>
+                                                            <option value="na">N/A</option>
+                                                        </select>
+                                                        <input type="text" class="form-control form-control-sm d-inline-block ml-2 checklist-comment" style="width: 200px;" placeholder="Observações">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Electrical Systems -->
+                                        <div class="inspection-checklist">
+                                            <h5><i class="fas fa-bolt text-warning"></i> Sistemas Elétricos</h5>
+                                            <div class="checklist-item" data-item="quadro">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span>Quadro elétrico de comando</span>
+                                                    <div>
+                                                        <select class="form-control form-control-sm d-inline-block w-auto checklist-status">
+                                                            <option value="">-- Selecionar --</option>
+                                                            <option value="ok">✓ OK</option>
+                                                            <option value="warning">⚠ Aviso</option>
+                                                            <option value="error">✗ Crítico</option>
+                                                            <option value="na">N/A</option>
+                                                        </select>
+                                                        <input type="text" class="form-control form-control-sm d-inline-block ml-2 checklist-comment" style="width: 200px;" placeholder="Observações">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="checklist-item" data-item="variador">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span>Variador de frequência</span>
+                                                    <div>
+                                                        <select class="form-control form-control-sm d-inline-block w-auto checklist-status">
+                                                            <option value="">-- Selecionar --</option>
+                                                            <option value="ok">✓ OK</option>
+                                                            <option value="warning">⚠ Aviso</option>
+                                                            <option value="error">✗ Crítico</option>
+                                                            <option value="na">N/A</option>
+                                                        </select>
+                                                        <input type="text" class="form-control form-control-sm d-inline-block ml-2 checklist-comment" style="width: 200px;" placeholder="Observações">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="checklist-item" data-item="iluminacao">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span>Iluminação da cabina e casa das máquinas</span>
+                                                    <div>
+                                                        <select class="form-control form-control-sm d-inline-block w-auto checklist-status">
+                                                            <option value="">-- Selecionar --</option>
+                                                            <option value="ok">✓ OK</option>
+                                                            <option value="warning">⚠ Aviso</option>
+                                                            <option value="error">✗ Crítico</option>
+                                                            <option value="na">N/A</option>
+                                                        </select>
+                                                        <input type="text" class="form-control form-control-sm d-inline-block ml-2 checklist-comment" style="width: 200px;" placeholder="Observações">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="checklist-item" data-item="emergencia-luz">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span>Iluminação de emergência</span>
+                                                    <div>
+                                                        <select class="form-control form-control-sm d-inline-block w-auto checklist-status">
+                                                            <option value="">-- Selecionar --</option>
+                                                            <option value="ok">✓ OK</option>
+                                                            <option value="warning">⚠ Aviso</option>
+                                                            <option value="error">✗ Crítico</option>
+                                                            <option value="na">N/A</option>
+                                                        </select>
+                                                        <input type="text" class="form-control form-control-sm d-inline-block ml-2 checklist-comment" style="width: 200px;" placeholder="Observações">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="checklist-item" data-item="botoneiras">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span>Botoneiras de cabina e patamares</span>
+                                                    <div>
+                                                        <select class="form-control form-control-sm d-inline-block w-auto checklist-status">
+                                                            <option value="">-- Selecionar --</option>
+                                                            <option value="ok">✓ OK</option>
+                                                            <option value="warning">⚠ Aviso</option>
+                                                            <option value="error">✗ Crítico</option>
+                                                            <option value="na">N/A</option>
+                                                        </select>
+                                                        <input type="text" class="form-control form-control-sm d-inline-block ml-2 checklist-comment" style="width: 200px;" placeholder="Observações">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="checklist-item" data-item="indicadores">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span>Indicadores de posição</span>
+                                                    <div>
+                                                        <select class="form-control form-control-sm d-inline-block w-auto checklist-status">
+                                                            <option value="">-- Selecionar --</option>
+                                                            <option value="ok">✓ OK</option>
+                                                            <option value="warning">⚠ Aviso</option>
+                                                            <option value="error">✗ Crítico</option>
+                                                            <option value="na">N/A</option>
+                                                        </select>
+                                                        <input type="text" class="form-control form-control-sm d-inline-block ml-2 checklist-comment" style="width: 200px;" placeholder="Observações">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Lubrication -->
+                                        <div class="inspection-checklist">
+                                            <h5><i class="fas fa-oil-can text-success"></i> Lubrificação</h5>
+                                            <div class="checklist-item" data-item="lub-guias">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span>Lubrificação de guias</span>
+                                                    <div>
+                                                        <select class="form-control form-control-sm d-inline-block w-auto checklist-status">
+                                                            <option value="">-- Selecionar --</option>
+                                                            <option value="ok">✓ OK</option>
+                                                            <option value="warning">⚠ Aviso</option>
+                                                            <option value="error">✗ Crítico</option>
+                                                            <option value="na">N/A</option>
+                                                        </select>
+                                                        <input type="text" class="form-control form-control-sm d-inline-block ml-2 checklist-comment" style="width: 200px;" placeholder="Observações">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="checklist-item" data-item="lub-portas">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span>Lubrificação do operador de portas</span>
+                                                    <div>
+                                                        <select class="form-control form-control-sm d-inline-block w-auto checklist-status">
+                                                            <option value="">-- Selecionar --</option>
+                                                            <option value="ok">✓ OK</option>
+                                                            <option value="warning">⚠ Aviso</option>
+                                                            <option value="error">✗ Crítico</option>
+                                                            <option value="na">N/A</option>
+                                                        </select>
+                                                        <input type="text" class="form-control form-control-sm d-inline-block ml-2 checklist-comment" style="width: 200px;" placeholder="Observações">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="checklist-item" data-item="lub-redutor">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span>Nível de óleo do redutor</span>
+                                                    <div>
+                                                        <select class="form-control form-control-sm d-inline-block w-auto checklist-status">
+                                                            <option value="">-- Selecionar --</option>
+                                                            <option value="ok">✓ OK</option>
+                                                            <option value="warning">⚠ Aviso</option>
+                                                            <option value="error">✗ Crítico</option>
+                                                            <option value="na">N/A</option>
+                                                        </select>
+                                                        <input type="text" class="form-control form-control-sm d-inline-block ml-2 checklist-comment" style="width: 200px;" placeholder="Observações">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Cleaning and General -->
+                                        <div class="inspection-checklist">
+                                            <h5><i class="fas fa-broom text-secondary"></i> Limpeza e Geral</h5>
+                                            <div class="checklist-item" data-item="limp-cabina">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span>Limpeza da cabina</span>
+                                                    <div>
+                                                        <select class="form-control form-control-sm d-inline-block w-auto checklist-status">
+                                                            <option value="">-- Selecionar --</option>
+                                                            <option value="ok">✓ OK</option>
+                                                            <option value="warning">⚠ Aviso</option>
+                                                            <option value="error">✗ Crítico</option>
+                                                            <option value="na">N/A</option>
+                                                        </select>
+                                                        <input type="text" class="form-control form-control-sm d-inline-block ml-2 checklist-comment" style="width: 200px;" placeholder="Observações">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="checklist-item" data-item="limp-poco">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span>Limpeza do poço</span>
+                                                    <div>
+                                                        <select class="form-control form-control-sm d-inline-block w-auto checklist-status">
+                                                            <option value="">-- Selecionar --</option>
+                                                            <option value="ok">✓ OK</option>
+                                                            <option value="warning">⚠ Aviso</option>
+                                                            <option value="error">✗ Crítico</option>
+                                                            <option value="na">N/A</option>
+                                                        </select>
+                                                        <input type="text" class="form-control form-control-sm d-inline-block ml-2 checklist-comment" style="width: 200px;" placeholder="Observações">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="checklist-item" data-item="limp-maquinas">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span>Limpeza da casa das máquinas</span>
+                                                    <div>
+                                                        <select class="form-control form-control-sm d-inline-block w-auto checklist-status">
+                                                            <option value="">-- Selecionar --</option>
+                                                            <option value="ok">✓ OK</option>
+                                                            <option value="warning">⚠ Aviso</option>
+                                                            <option value="error">✗ Crítico</option>
+                                                            <option value="na">N/A</option>
+                                                        </select>
+                                                        <input type="text" class="form-control form-control-sm d-inline-block ml-2 checklist-comment" style="width: 200px;" placeholder="Observações">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="checklist-item" data-item="sinalizacao">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span>Sinalização de segurança</span>
+                                                    <div>
+                                                        <select class="form-control form-control-sm d-inline-block w-auto checklist-status">
+                                                            <option value="">-- Selecionar --</option>
+                                                            <option value="ok">✓ OK</option>
+                                                            <option value="warning">⚠ Aviso</option>
+                                                            <option value="error">✗ Crítico</option>
+                                                            <option value="na">N/A</option>
+                                                        </select>
+                                                        <input type="text" class="form-control form-control-sm d-inline-block ml-2 checklist-comment" style="width: 200px;" placeholder="Observações">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Documentation -->
+                                        <div class="inspection-checklist">
+                                            <h5><i class="fas fa-file-alt text-info"></i> Documentação</h5>
+                                            <div class="checklist-item" data-item="livro-revisoes">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span>Livro de revisões atualizado</span>
+                                                    <div>
+                                                        <select class="form-control form-control-sm d-inline-block w-auto checklist-status">
+                                                            <option value="">-- Selecionar --</option>
+                                                            <option value="ok">✓ OK</option>
+                                                            <option value="warning">⚠ Aviso</option>
+                                                            <option value="error">✗ Crítico</option>
+                                                            <option value="na">N/A</option>
+                                                        </select>
+                                                        <input type="text" class="form-control form-control-sm d-inline-block ml-2 checklist-comment" style="width: 200px;" placeholder="Observações">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="checklist-item" data-item="certificados">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span>Certificados de conformidade válidos</span>
+                                                    <div>
+                                                        <select class="form-control form-control-sm d-inline-block w-auto checklist-status">
+                                                            <option value="">-- Selecionar --</option>
+                                                            <option value="ok">✓ OK</option>
+                                                            <option value="warning">⚠ Aviso</option>
+                                                            <option value="error">✗ Crítico</option>
+                                                            <option value="na">N/A</option>
+                                                        </select>
+                                                        <input type="text" class="form-control form-control-sm d-inline-block ml-2 checklist-comment" style="width: 200px;" placeholder="Observações">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Photos Section -->
+                                    <div class="mt-4">
+                                        <h5><i class="fas fa-camera"></i> Documentação Fotográfica</h5>
+                                        <div class="form-group">
+                                            <input type="file" class="form-control-file" id="inspectionPhotos" multiple accept="image/*">
+                                            <small class="form-text text-muted">Adicione fotos para documentar a manutenção</small>
+                                        </div>
+                                        <div id="photoPreview" class="mt-3"></div>
+                                    </div>
+
+                                    <!-- General Comments -->
+                                    <div class="mt-4">
+                                        <h5><i class="fas fa-comments"></i> Observações Gerais</h5>
+                                        <textarea class="form-control" id="generalComments" rows="4" placeholder="Observações gerais, recomendações, informações adicionais..."></textarea>
+                                    </div>
+
+                                    <!-- Recommendations -->
+                                    <div class="mt-4">
+                                        <h5><i class="fas fa-exclamation-triangle text-warning"></i> Recomendações</h5>
+                                        <textarea class="form-control" id="recommendations" rows="3" placeholder="Recomendações para correção de problemas identificados..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Inspection Report Preview -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header no-print">
+                                    <h3 class="card-title">Pré-visualização do Relatório</h3>
+                                    <div class="card-tools">
+                                        <button class="btn btn-primary btn-sm" onclick="printReport()">
+                                            <i class="fas fa-print"></i> Imprimir
+                                        </button>
+                                        <button class="btn btn-success btn-sm" onclick="downloadPDF()">
+                                            <i class="fas fa-download"></i> PDF
+                                        </button>
+                                        <button class="btn btn-info btn-sm" onclick="sendReport()">
+                                            <i class="fas fa-envelope"></i> Enviar
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div id="inspectionReport">
+                                        <!-- Report header -->
+                                        <div class="text-center mb-4">
+                                            <h2>RELATÓRIO DE MANUTENÇÃO MENSAL</h2>
+                                            <p><strong>FestLift - Serviço de Manutenção de Ascensores</strong></p>
+                                        </div>
+
+                                        <!-- Report info -->
+                                        <div class="row mb-4">
+                                            <div class="col-md-6">
+                                                <table class="table table-sm">
+                                                    <tr><td><strong>Nº da Manutenção:</strong></td><td id="reportInspectionNumber">MANU-2025-001</td></tr>
+                                                    <tr><td><strong>Data da Manutenção:</strong></td><td id="reportInspectionDate"></td></tr>
+                                                    <tr><td><strong>Técnico Responsável:</strong></td><td id="reportInspector"></td></tr>
+                                                </table>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <table class="table table-sm">
+                                                    <tr><td><strong>Localização:</strong></td><td id="reportLiftLocation"></td></tr>
+                                                    <tr><td><strong>Modelo do Ascensor:</strong></td><td id="reportLiftModel"></td></tr>
+                                                    <tr><td><strong>Número de Série:</strong></td><td id="reportLiftSerial"></td></tr>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                        <!-- Checklist results -->
+                                        <div class="mb-4">
+                                            <h4>Resultados da Manutenção</h4>
+                                            <div id="reportChecklist">
+                                                <!-- Dynamic content will be inserted here -->
+                                            </div>
+                                        </div>
+
+                                        <!-- Photos -->
+                                        <div class="mb-4">
+                                            <h4>Documentação Fotográfica</h4>
+                                            <div id="reportPhotos">
+                                                <!-- Photos will be inserted here -->
+                                            </div>
+                                        </div>
+
+                                        <!-- Comments and recommendations -->
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h5>Observações Gerais</h5>
+                                                <p id="reportGeneralComments">Sem observações</p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h5>Recomendações</h5>
+                                                <p id="reportRecommendations">Sem recomendações</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer class="main-footer">
+            <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
+            Sistema de gestão de elevadores v2.1.0.
+            <div class="float-right d-none d-sm-inline-block">
+                <b>Versão</b> 2.1.0
+            </div>
+        </footer>
+    </div>
+
+    <!-- jQuery -->
+    <script src="../../plugins/jquery/jquery.min.js"></script>
+    <!-- Bootstrap -->
+    <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+    <!-- AdminLTE -->
+    <script src="../../plugins/adminlte/adminlte.min.js"></script>
+
+    <!-- Load sidebar dynamically -->
+    <script>
+        $(document).ready(function() {
+            $(".main-sidebar").load("includes/sidebar.html");
+        });
+    </script>
+
+    <script>
+        // Inspection management
+        const inspectionManager = {
+            init() {
+                // Set current date
+                const today = new Date().toISOString().split('T')[0];
+                $('#inspectionDate').val(today);
+
+                // Generate inspection number
+                this.generateInspectionNumber();
+
+                // Bind events
+                this.bindEvents();
+
+                // Update report preview
+                this.updateReportPreview();
+            },
+
+            bindEvents() {
+                const self = this;
+                
+                // Update report on form change
+                $('#inspectionForm input, #inspectionForm textarea').on('input change', function() {
+                    self.updateReportPreview();
+                });
+                
+                // Update on checklist changes (selects and inputs) - using checklist-status class
+                $(document).on('change', '.checklist-status', function() {
+                    console.log('Status changed:', $(this).val());
+                    self.updateReportPreview();
+                });
+                
+                $(document).on('input change', '.checklist-comment', function() {
+                    console.log('Comment changed:', $(this).val());
+                    self.updateReportPreview();
+                });
+                
+                $('#generalComments, #recommendations').on('input change', function() {
+                    self.updateReportPreview();
+                });
+                
+                // Handle photo uploads
+                $('#inspectionPhotos').on('change', function(e) {
+                    self.handlePhotoUpload(e);
+                });
+            },
+
+            generateInspectionNumber() {
+                const year = new Date().getFullYear();
+                const month = String(new Date().getMonth() + 1).padStart(2, '0');
+                const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+                const number = `INSP-${year}-${month}-${random}`;
+                $('#inspectionNumber').val(number);
+            },
+
+            updateReportPreview() {
+                // Update basic info
+                $('#reportInspectionNumber').text($('#inspectionNumber').val());
+                $('#reportInspectionDate').text($('#inspectionDate').val());
+                $('#reportInspector').text($('#inspector').val());
+                $('#reportLiftLocation').text($('#liftLocation').val());
+                $('#reportLiftModel').text($('#liftModel').val());
+                $('#reportLiftSerial').text($('#liftSerial').val());
+                $('#reportGeneralComments').text($('#generalComments').val() || 'Sem observações');
+                $('#reportRecommendations').text($('#recommendations').val() || 'Sem recomendações');
+
+                // Update checklist results
+                this.updateChecklistReport();
+            },
+
+            updateChecklistReport() {
+                console.log('updateChecklistReport called');
+                const reportChecklist = $('#reportChecklist');
+                reportChecklist.empty();
+
+                $('.inspection-checklist').each(function() {
+                    const sectionTitle = $(this).find('h5').text();
+                    let sectionItems = '';
+                    let hasItems = false;
+
+                    $(this).find('.checklist-item').each(function() {
+                        const itemName = $(this).find('span').first().text();
+                        const status = $(this).find('select.checklist-status').val();
+                        const comment = $(this).find('input.checklist-comment').val();
+                        
+                        console.log('Item:', itemName, 'Status:', status, 'Comment:', comment);
+                        
+                        // Показуємо тільки якщо є статус АБО коментар
+                        if (!status && !comment) {
+                            return; // skip empty items
+                        }
+                        
+                        hasItems = true;
+                        let statusIcon = '';
+                        let statusClass = '';
+                        
+                        switch(status) {
+                            case 'ok':
+                                statusIcon = '✓';
+                                statusClass = 'text-success';
+                                break;
+                            case 'warning':
+                                statusIcon = '⚠';
+                                statusClass = 'text-warning';
+                                break;
+                            case 'error':
+                                statusIcon = '✗';
+                                statusClass = 'text-danger';
+                                break;
+                            case 'na':
+                                statusIcon = 'N/A';
+                                statusClass = 'text-muted';
+                                break;
+                            default:
+                                statusIcon = '--';
+                                statusClass = 'text-secondary';
+                        }
+
+                        sectionItems += `<li><span class="${statusClass}"><strong>${statusIcon}</strong></span> ${itemName}`;
+                        if (comment) {
+                            sectionItems += ` - <em>${comment}</em>`;
+                        }
+                        sectionItems += '</li>';
+                    });
+
+                    // Додаємо секцію тільки якщо є хоч один пункт
+                    if (hasItems) {
+                        reportChecklist.append(`<h6>${sectionTitle}</h6><ul>${sectionItems}</ul>`);
+                    }
+                });
+                
+                // Якщо немає жодного пункту, показуємо повідомлення
+                if (reportChecklist.children().length === 0) {
+                    reportChecklist.html('<p class="text-muted"><em>Nenhum item verificado ainda</em></p>');
+                }
+            },
+
+            handlePhotoUpload(e) {
+                const files = e.target.files;
+                const photoPreview = $('#photoPreview');
+                const reportPhotos = $('#reportPhotos');
+                
+                photoPreview.empty();
+                reportPhotos.empty();
+
+                Array.from(files).forEach((file, index) => {
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const img = `<img src="${e.target.result}" class="inspection-photo" alt="Foto de manutenção ${index + 1}">`;
+                            photoPreview.append(img);
+                            reportPhotos.append(img);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            },
+
+            saveInspection() {
+                const inspectionData = {
+                    number: $('#inspectionNumber').val(),
+                    date: $('#inspectionDate').val(),
+                    inspector: $('#inspector').val(),
+                    liftLocation: $('#liftLocation').val(),
+                    liftModel: $('#liftModel').val(),
+                    liftSerial: $('#liftSerial').val(),
+                    checklist: this.getChecklistData(),
+                    generalComments: $('#generalComments').val(),
+                    recommendations: $('#recommendations').val(),
+                    timestamp: new Date().toISOString()
+                };
+
+                // Save to localStorage (in production, this would be sent to server)
+                const saved = JSON.parse(localStorage.getItem('inspections') || '[]');
+                saved.push(inspectionData);
+                localStorage.setItem('inspections', JSON.stringify(saved));
+
+                alert('Manutenção guardada com sucesso!');
+            },
+
+            getChecklistData() {
+                const checklist = {};
+                $('.checklist-item').each(function() {
+                    const itemId = $(this).data('item');
+                    const status = $(this).find('select').val();
+                    const comment = $(this).find('input[type="text"]').val();
+                    checklist[itemId] = { status, comment };
+                });
+                return checklist;
+            },
+
+            loadTemplate() {
+                // Load a predefined inspection template
+                $('#inspector').val('João Silva');
+                $('#liftLocation').val('Rua Principal, 123, Entrada A');
+                $('#liftModel').val('OTIS Gen2');
+                $('#liftSerial').val('OT123456789');
+                $('#generalComments').val('Realizada manutenção periódica conforme normas de segurança.');
+                $('#recommendations').val('Recomenda-se a substituição de componentes desgastados no prazo de 30 dias.');
+                
+                this.updateReportPreview();
+            },
+
+            printReport() {
+                window.print();
+            },
+
+            async downloadPDF() {
+                try {
+                    // Отримуємо HTML прев'ю звіту
+                    const reportContent = document.querySelector('#reportPreview .card-body').cloneNode(true);
+                    
+                    // Створюємо тимчасовий контейнер
+                    const printWindow = window.open('', '', 'height=600,width=800');
+                    printWindow.document.write('<html><head><title>Relatório de Manutenção</title>');
+                    printWindow.document.write('<link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">');
+                    printWindow.document.write('<link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">');
+                    printWindow.document.write('<style>body { padding: 20px; } @media print { .no-print { display: none; } }</style>');
+                    printWindow.document.write('</head><body>');
+                    printWindow.document.write(reportContent.innerHTML);
+                    printWindow.document.write('</body></html>');
+                    printWindow.document.close();
+                    
+                    // Зачекаємо поки стилі завантажаться
+                    setTimeout(() => {
+                        printWindow.print();
+                        printWindow.close();
+                    }, 500);
+                    
+                } catch (error) {
+                    console.error('Erro ao gerar PDF:', error);
+                    alert('Erro ao gerar PDF. Por favor, use o botão Imprimir.');
+                }
+            },
+
+            async sendReport() {
+                const email = prompt('Digite o email para enviar o relatório:');
+                if (!email) return;
+                
+                // Валідація email
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    alert('Email inválido. Por favor, tente novamente.');
+                    return;
+                }
+                
+                try {
+                    // Збираємо дані звіту
+                    const reportData = {
+                        inspectionNumber: $('#inspectionNumber').val(),
+                        inspectionDate: $('#inspectionDate').val(),
+                        inspector: $('#inspector').val(),
+                        liftLocation: $('#liftLocation').val(),
+                        liftModel: $('#liftModel').val(),
+                        liftSerial: $('#liftSerial').val(),
+                        checklist: this.getChecklistData(),
+                        generalComments: $('#generalComments').val(),
+                        recommendations: $('#recommendations').val(),
+                        recipientEmail: email
+                    };
+                    
+                    // Відправляємо на сервер
+                    const response = await fetch('/api/inspections/send-report', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        },
+                        body: JSON.stringify(reportData)
+                    });
+                    
+                    if (response.ok) {
+                        alert(`✅ Relatório enviado com sucesso para ${email}`);
+                    } else {
+                        const error = await response.json();
+                        alert(`❌ Erro ao enviar: ${error.message || 'Erro desconhecido'}`);
+                    }
+                } catch (error) {
+                    console.error('Erro ao enviar relatório:', error);
+                    alert('❌ Erro ao enviar relatório. Verifique a conexão com o servidor.');
+                }
+            }
+        };
+
+        // Global functions
+        function saveInspection() {
+            inspectionManager.saveInspection();
+        }
+
+        function loadTemplate() {
+            inspectionManager.loadTemplate();
+        }
+
+        function printReport() {
+            inspectionManager.printReport();
+        }
+
+        function downloadPDF() {
+            inspectionManager.downloadPDF();
+        }
+
+        function sendReport() {
+            inspectionManager.sendReport();
+        }
+
+        // Initialize when document is ready
+        $(document).ready(function() {
+            inspectionManager.init();
+        });
+    </script>
+</body>
+</html>
