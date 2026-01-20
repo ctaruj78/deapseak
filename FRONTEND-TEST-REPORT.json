@@ -1,25 +1,25 @@
 {
-  "date": "2026-01-18T23:34:26.395Z",
+  "date": "2026-01-20T10:03:19.255Z",
   "summary": {
     "totalPages": 7,
-    "successPages": 6,
-    "errorPages": 1,
-    "avgLoadTime": 5366,
-    "maxLoadTime": 30081,
-    "totalButtons": 339,
-    "totalErrors": 3,
-    "score": 85.71428571428571
+    "successPages": 4,
+    "errorPages": 3,
+    "avgLoadTime": 61002,
+    "maxLoadTime": 182357,
+    "totalButtons": 20,
+    "totalErrors": 4,
+    "score": 57.14285714285714
   },
   "pages": [
     {
       "role": "admin",
       "name": "Admin Dashboard",
       "path": "/pages/admin/admin-dashboard.html",
-      "loadTime": 309,
+      "loadTime": 367,
       "hasNav": true,
-      "hasSidebar": true,
+      "hasSidebar": false,
       "hasContent": true,
-      "buttonsCount": 1,
+      "buttonsCount": 2,
       "formsCount": 1,
       "modalsCount": 0,
       "status": "success"
@@ -28,59 +28,44 @@
       "role": "admin",
       "name": "Користувачі",
       "path": "/pages/admin/users.html",
-      "loadTime": 381,
-      "hasNav": true,
-      "hasSidebar": true,
-      "hasContent": true,
-      "buttonsCount": 32,
-      "formsCount": 1,
-      "modalsCount": 1,
-      "status": "success"
+      "loadTime": 30065,
+      "status": "error",
+      "error": "Navigation timeout of 30000 ms exceeded"
     },
     {
       "role": "admin",
       "name": "Ліфти",
       "path": "/pages/admin/lifts.html",
-      "loadTime": 752,
-      "hasNav": true,
-      "hasSidebar": true,
-      "hasContent": true,
-      "buttonsCount": 244,
-      "formsCount": 5,
-      "modalsCount": 10,
+      "loadTime": 495,
+      "hasNav": false,
+      "hasSidebar": false,
+      "hasContent": false,
+      "buttonsCount": 1,
+      "formsCount": 1,
+      "modalsCount": 0,
       "status": "success"
     },
     {
       "role": "admin",
       "name": "Створення Orçamento",
       "path": "/pages/admin/invoice-template.html",
-      "loadTime": 275,
-      "hasNav": true,
-      "hasSidebar": true,
-      "hasContent": true,
-      "buttonsCount": 8,
-      "formsCount": 1,
-      "modalsCount": 0,
-      "status": "success"
+      "loadTime": 182357,
+      "status": "error",
+      "error": "Page.captureScreenshot timed out. Increase the 'protocolTimeout' setting in launch/connect calls for a higher timeout if needed."
     },
     {
       "role": "admin",
       "name": "Список Orçamentos",
       "path": "/pages/admin/orcamentos-list.html",
-      "loadTime": 212,
-      "hasNav": true,
-      "hasSidebar": true,
-      "hasContent": true,
-      "buttonsCount": 38,
-      "formsCount": 0,
-      "modalsCount": 0,
-      "status": "success"
+      "loadTime": 30070,
+      "status": "error",
+      "error": "Navigation timeout of 30000 ms exceeded"
     },
     {
       "role": "admin",
       "name": "Email Templates",
       "path": "/pages/admin/email-template.html",
-      "loadTime": 188,
+      "loadTime": 207,
       "hasNav": true,
       "hasSidebar": true,
       "hasContent": true,
@@ -93,159 +78,43 @@
       "role": "admin",
       "name": "Карта ліфтів",
       "path": "/pages/admin/maps.html",
-      "loadTime": 30081,
-      "status": "error",
-      "error": "Navigation timeout of 30000 ms exceeded"
+      "loadTime": 445,
+      "hasNav": false,
+      "hasSidebar": false,
+      "hasContent": false,
+      "buttonsCount": 1,
+      "formsCount": 1,
+      "modalsCount": 0,
+      "status": "success"
     }
   ],
   "errors": [
     {
+      "type": "page_error",
+      "message": "Cannot read properties of undefined (reading 'fn')",
+      "stack": "TypeError: Cannot read properties of undefined (reading 'fn')\n    at <anonymous> (http://localhost:5000/plugins/adminlte/adminlte.min.js:6:410)\n    at <anonymous> (http://localhost:5000/plugins/adminlte/adminlte.min.js:6:167)\n    at <anonymous> (http://localhost:5000/plugins/adminlte/adminlte.min.js:6:245)"
+    },
+    {
       "type": "login_error",
       "role": "dispatcher",
-      "message": "Navigation timeout of 15000 ms exceeded"
+      "message": "Navigation timeout of 60000 ms exceeded"
     },
     {
       "type": "login_error",
       "role": "tech",
-      "message": "Navigation timeout of 15000 ms exceeded"
+      "message": "Navigating frame was detached"
     },
     {
       "type": "login_error",
       "role": "client",
-      "message": "Navigation timeout of 15000 ms exceeded"
+      "message": "Protocol error (Page.addScriptToEvaluateOnNewDocument): Session closed. Most likely the page has been closed."
     }
   ],
   "buttons": [
     {
       "role": "admin",
-      "page": "Користувачі",
-      "button": "Adicionar користувача",
-      "status": "error",
-      "error": "buttonHandle.click is not a function"
-    },
-    {
-      "role": "admin",
       "page": "Ліфти",
-      "button": "Adicionar ліфт",
-      "status": "error",
-      "error": "buttonHandle.click is not a function"
-    },
-    {
-      "role": "admin",
-      "page": "Створення Orçamento",
-      "button": "Guardar Orçamento",
-      "status": "error",
-      "error": "buttonHandle.click is not a function"
-    },
-    {
-      "role": "admin",
-      "page": "Створення Orçamento",
-      "button": "Novo número",
-      "status": "error",
-      "error": "buttonHandle.click is not a function"
-    },
-    {
-      "role": "admin",
-      "page": "Створення Orçamento",
-      "button": "Modelo",
-      "status": "error",
-      "error": "buttonHandle.click is not a function"
-    },
-    {
-      "role": "admin",
-      "page": "Створення Orçamento",
-      "button": "Adicionar serviço",
-      "status": "error",
-      "error": "buttonHandle.click is not a function"
-    },
-    {
-      "role": "admin",
-      "page": "Створення Orçamento",
-      "button": "Imprimir",
-      "status": "error",
-      "error": "buttonHandle.click is not a function"
-    },
-    {
-      "role": "admin",
-      "page": "Створення Orçamento",
-      "button": "PDF",
-      "status": "error",
-      "error": "buttonHandle.click is not a function"
-    },
-    {
-      "role": "admin",
-      "page": "Створення Orçamento",
-      "button": "Email",
-      "status": "error",
-      "error": "buttonHandle.click is not a function"
-    },
-    {
-      "role": "admin",
-      "page": "Список Orçamentos",
-      "button": "Pesquisar",
-      "status": "error",
-      "error": "buttonHandle.click is not a function"
-    },
-    {
-      "role": "admin",
-      "page": "Список Orçamentos",
-      "button": "Limpar",
-      "status": "error",
-      "error": "buttonHandle.click is not a function"
-    },
-    {
-      "role": "admin",
-      "page": "Список Orçamentos",
-      "button": "Ver",
-      "status": "error",
-      "error": "buttonHandle.click is not a function"
-    },
-    {
-      "role": "admin",
-      "page": "Список Orçamentos",
-      "button": "Editar",
-      "status": "error",
-      "error": "buttonHandle.click is not a function"
-    },
-    {
-      "role": "admin",
-      "page": "Список Orçamentos",
-      "button": "Eliminar",
-      "status": "error",
-      "error": "buttonHandle.click is not a function"
-    },
-    {
-      "role": "admin",
-      "page": "Список Orçamentos",
-      "button": "Ver",
-      "status": "error",
-      "error": "buttonHandle.click is not a function"
-    },
-    {
-      "role": "admin",
-      "page": "Список Orçamentos",
-      "button": "Editar",
-      "status": "error",
-      "error": "buttonHandle.click is not a function"
-    },
-    {
-      "role": "admin",
-      "page": "Список Orçamentos",
-      "button": "Eliminar",
-      "status": "error",
-      "error": "buttonHandle.click is not a function"
-    },
-    {
-      "role": "admin",
-      "page": "Список Orçamentos",
-      "button": "Ver",
-      "status": "error",
-      "error": "buttonHandle.click is not a function"
-    },
-    {
-      "role": "admin",
-      "page": "Список Orçamentos",
-      "button": "Editar",
+      "button": "Увійти",
       "status": "error",
       "error": "buttonHandle.click is not a function"
     },
@@ -318,12 +187,19 @@
       "button": "Envio de Teste",
       "status": "error",
       "error": "buttonHandle.click is not a function"
+    },
+    {
+      "role": "admin",
+      "page": "Карта ліфтів",
+      "button": "Увійти",
+      "status": "error",
+      "error": "buttonHandle.click is not a function"
     }
   ],
   "performance": [
     {
       "action": "Login admin",
-      "time": 793
+      "time": 815
     }
   ]
 }

@@ -50,16 +50,25 @@ class FrontendTester {
         
         // Перехоплювати console.error та JavaScript помилки
         this.page.on('console', msg => {
-            if (msg.type() === 'error') {
+            const type = msg.type();
+            const text = msg.text();
+            
+            // 🔍 ЛОГ ВСІХ CONSOLE ПОВІДОМЛЕНЬ (для debugging)
+            if (type === 'error' || type === 'warn' || text.includes('завантаж') || text.includes('редірект')) {
+                console.log(`      [Browser ${type}]:`, text);
+            }
+            
+            if (type === 'error') {
                 this.results.errors.push({
                     type: 'console_error',
-                    text: msg.text(),
+                    text: text,
                     location: msg.location()
                 });
             }
         });
         
         this.page.on('pageerror', error => {
+            console.log(`      [Page Error]:`, error.message);
             this.results.errors.push({
                 type: 'page_error',
                 message: error.message,
@@ -73,10 +82,19 @@ class FrontendTester {
         console.log(`🔐 Логін як ${role}: ${user.email}`);
         
         try {
-            await this.page.goto(`${BASE_URL}/pages/auth/login.html`, { waitUntil: 'load', timeout: 10000 });
+            // Переходимо на login page
+            await this.page.goto(`${BASE_URL}/pages/auth/login.html`, { waitUntil: 'domcontentloaded', timeout: 10000 });
             
             // Скріншот login page
             await this.page.screenshot({ path: `${SCREENSHOT_DIR}/${role}-01-login.png` });
+            
+            // Очищуємо поля (може бути autofill)
+            await this.page.evaluate(() => {
+                const emailField = document.querySelector('#email');
+                const passField = document.querySelector('#password');
+                if (emailField) emailField.value = '';
+                if (passField) passField.value = '';
+            });
             
             // Заповнити форму
             await this.page.type('#email', user.email);
@@ -84,11 +102,13 @@ class FrontendTester {
             
             // Натиснути кнопку login
             const startTime = Date.now();
+            console.log(`   ⏳ Очікування навігації після логіну...`);
             await Promise.all([
                 this.page.click('button[type="submit"]'),
-                this.page.waitForNavigation({ waitUntil: 'load', timeout: 30000 })  // ✅ ВИПРАВЛЕНО: 15s → 30s
+                this.page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 60000 })  // ✅ ЗМІНЕНО: 'networkidle2' → 'domcontentloaded'
             ]);
             const loginTime = Date.now() - startTime;
+            console.log(`   ⏱️  Навігація зайняла: ${loginTime}ms`);
             
             // ⏳ Чекаємо завершення JavaScript після логіну
             await new Promise(resolve => setTimeout(resolve, 2000));
