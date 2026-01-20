@@ -16,24 +16,53 @@ class ScheduleManager {
 
     async loadEvents() {
         try {
-            // Спроба отримати дані з API
-            const response = await fetch('/api/schedule/events', {
+            // 🔥 ПІДКЛЮЧЕНО ДО РЕАЛЬНОГО API /api/requests (розклад = заплановані завдання)
+            const token = localStorage.getItem('authToken') || localStorage.getItem('token') || localStorage.getItem('liftmanager_jwt');
+            
+            const apiUrl = window.location.hostname.includes('app.github.dev') 
+                ? `https://${window.location.hostname.replace('5173-', '3000-')}/api/requests?status=pending,assigned,scheduled`
+                : '/api/requests?status=pending,assigned,scheduled';
+            
+            const response = await fetch(apiUrl, {
+                method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 }
             });
             
             if (response.ok) {
-                this.events = await response.json();
+                const data = await response.json();
+                // API повертає завдання, конвертуємо їх в події розкладу
+                const requests = Array.isArray(data) ? data : (data.data || data.requests || []);
+                
+                // Конвертація requests → calendar events
+                this.events = requests.map(req => ({
+                    id: req._id || req.id,
+                    title: `${req.type}: ${req.description || req.title || 'Без назви'}`,
+                    type: req.type || 'task',
+                    start: new Date(req.scheduledDate || req.createdAt),
+                    end: new Date(req.deadline || req.scheduledDate || req.createdAt),
+                    lift: `${req.lift?.model || 'Ліфт'} - ${req.lift?.location || 'Адреса'}`,
+                    priority: req.priority || 'medium',
+                    status: req.status || 'scheduled',
+                    description: req.description || '',
+                    technician: req.assignedTo?.firstName ? `${req.assignedTo.firstName} ${req.assignedTo.lastName}` : 'Не призначено'
+                }));
+                
+                console.log('✅ Розклад завантажений з API:', this.events.length);
                 localStorage.setItem('scheduleEvents', JSON.stringify(this.events));
             } else {
-                throw new Error('API недоступне');
+                console.warn('⚠️ API /api/requests returned non-OK status:', response.status);
+                throw new Error(`API status: ${response.status}`);
             }
         } catch (error) {
-            console.warn('Використання локальних даних:', error);
+            console.error('❌ Помилка завантаження розкладу з API:', error);
+            // Fallback: спроба завантажити з localStorage
             this.events = JSON.parse(localStorage.getItem('scheduleEvents')) || [];
             
             if (this.events.length === 0) {
+                console.warn('⚠️ Використовуються демо-дані (API недоступне)');
                 this.events = this.createSampleEvents();
                 localStorage.setItem('scheduleEvents', JSON.stringify(this.events));
             }

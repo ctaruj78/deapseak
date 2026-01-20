@@ -241,7 +241,7 @@
                 }, 5000);
             }
             
-            // Обробка форми входу - ТІЛЬКИ ОДИН РАЗ
+            // Обробка форми входу - ВИПРАВЛЕНО: без видалення обробника
             let isSubmitting = false;
             
             const handleLogin = async (e) => {
@@ -249,20 +249,16 @@
                 e.stopPropagation();
                 e.stopImmediatePropagation();
                 
-                // Подвійна перевірка - глобальна та на формі
+                // Подвійна перевірка - якщо вже обробляємо, ІГНОРУЄМО
                 if (isSubmitting || loginForm.dataset.processing === 'true') {
-                    console.log('⏸️ Форма вже обробляється, БЛОКУЄМО повторний submit');
+                    console.log('⏸️ Форма вже обробляється, ІГНОРУЄМО повторний submit');
                     return false;
                 }
                 
-                // Встановлюємо обидва прапорці
+                // Встановлюємо прапорець
                 isSubmitting = true;
                 loginForm.dataset.processing = 'true';
                 console.log('🔒 Форму ЗАБЛОКОВАНО для обробки');
-                
-                // Видаляємо обробник події щоб запобігти повторному виклику
-                loginForm.removeEventListener('submit', handleLogin);
-                console.log('🗑️ Submit обробник ВИДАЛЕНО');
                 
                 const submitButton = loginForm.querySelector('button[type="submit"]');
                 const originalButtonText = submitButton.innerHTML;
@@ -282,8 +278,6 @@
                     loginForm.dataset.processing = 'false';
                     submitButton.disabled = false;
                     submitButton.innerHTML = originalButtonText;
-                    // Повертаємо обробник
-                    loginForm.addEventListener('submit', handleLogin);
                     return false;
                 }
                 
@@ -374,8 +368,6 @@
                         loginForm.dataset.processing = 'false';
                         submitButton.disabled = false;
                         submitButton.innerHTML = originalButtonText;
-                        // Повертаємо обробник для повторної спроби
-                        loginForm.addEventListener('submit', handleLogin);
                     }
                 } catch (error) {
                     // Помилка - розблоковуємо форму
@@ -385,8 +377,6 @@
                     loginForm.dataset.processing = 'false';
                     submitButton.disabled = false;
                     submitButton.innerHTML = originalButtonText;
-                    // Повертаємо обробник для повторної спроби
-                    loginForm.addEventListener('submit', handleLogin);
                 }
                 
                 return false;

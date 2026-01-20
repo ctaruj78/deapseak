@@ -20,24 +20,38 @@ class TaskManager {
 
     async loadTasks() {
         try {
-            // Спроба отримати дані з API
-            const response = await fetch('../api/tasks', {
+            // 🔥 ПІДКЛЮЧЕНО ДО РЕАЛЬНОГО API /api/requests
+            const token = localStorage.getItem('authToken') || localStorage.getItem('token') || localStorage.getItem('liftmanager_jwt');
+            
+            const apiUrl = window.location.hostname.includes('app.github.dev') 
+                ? `https://${window.location.hostname.replace('5173-', '3000-')}/api/requests`
+                : '/api/requests';
+            
+            const response = await fetch(apiUrl, {
+                method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 }
             });
             
             if (response.ok) {
-                this.tasks = await response.json();
+                const data = await response.json();
+                // API може повертати {data: [...]} або просто [...]
+                this.tasks = Array.isArray(data) ? data : (data.data || data.requests || []);
+                console.log('✅ Завдання завантажені з API:', this.tasks.length);
                 localStorage.setItem('tasks', JSON.stringify(this.tasks));
             } else {
-                throw new Error('API недоступне');
+                console.warn('⚠️ API /api/requests returned non-OK status:', response.status);
+                throw new Error(`API status: ${response.status}`);
             }
         } catch (error) {
-            console.warn('Використання локальних даних:', error);
+            console.error('❌ Помилка завантаження завдань з API:', error);
+            // Fallback: спроба завантажити з localStorage
             this.tasks = JSON.parse(localStorage.getItem('tasks')) || [];
             
             if (this.tasks.length === 0) {
+                console.warn('⚠️ Використовуються демо-дані (API недоступне)');
                 this.tasks = this.createSampleTasks();
                 localStorage.setItem('tasks', JSON.stringify(this.tasks));
             }

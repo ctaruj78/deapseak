@@ -20,24 +20,55 @@ class InspectionManager {
 
     async loadInspections() {
         try {
-            // Спроба отримати дані з API
-            const response = await fetch('/api/inspections', {
+            // 🔥 ПІДКЛЮЧЕНО ДО РЕАЛЬНОГО API /api/requests з типом inspection
+            const token = localStorage.getItem('authToken') || localStorage.getItem('token') || localStorage.getItem('liftmanager_jwt');
+            
+            const apiUrl = window.location.hostname.includes('app.github.dev') 
+                ? `https://${window.location.hostname.replace('5173-', '3000-')}/api/requests?type=inspection,maintenance`
+                : '/api/requests?type=inspection,maintenance';
+            
+            const response = await fetch(apiUrl, {
+                method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 }
             });
             
             if (response.ok) {
-                this.inspections = await response.json();
+                const data = await response.json();
+                // API повертає requests, конвертуємо їх в інспекції
+                const requests = Array.isArray(data) ? data : (data.data || data.requests || []);
+                
+                // Конвертація requests → inspections
+                this.inspections = requests.map(req => ({
+                    id: req._id || req.id,
+                    type: req.type || 'inspection',
+                    title: req.description || req.title || 'Інспекція',
+                    liftId: req.lift?._id || req.lift?.id,
+                    lift: `${req.lift?.model || 'Ліфт'} - ${req.lift?.location || 'Адреса'}`,
+                    priority: req.priority || 'medium',
+                    status: req.status || 'planned',
+                    scheduledDate: req.scheduledDate || req.createdAt,
+                    completedDate: req.completedAt,
+                    technician: req.assignedTo?.firstName ? `${req.assignedTo.firstName} ${req.assignedTo.lastName}` : 'Не призначено',
+                    notes: req.notes || req.description || '',
+                    progress: req.progress || 0
+                }));
+                
+                console.log('✅ Інспекції завантажені з API:', this.inspections.length);
                 localStorage.setItem('inspections', JSON.stringify(this.inspections));
             } else {
-                throw new Error('API недоступне');
+                console.warn('⚠️ API /api/requests returned non-OK status:', response.status);
+                throw new Error(`API status: ${response.status}`);
             }
         } catch (error) {
-            console.warn('Використання локальних даних:', error);
+            console.error('❌ Помилка завантаження інспекцій з API:', error);
+            // Fallback: спроба завантажити з localStorage
             this.inspections = JSON.parse(localStorage.getItem('inspections')) || [];
             
             if (this.inspections.length === 0) {
+                console.warn('⚠️ Використовуються демо-дані (API недоступне)');
                 this.inspections = this.createSampleInspections();
                 localStorage.setItem('inspections', JSON.stringify(this.inspections));
             }
