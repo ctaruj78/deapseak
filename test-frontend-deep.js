@@ -85,6 +85,18 @@ class FrontendTester {
             // Переходимо на login page
             await this.page.goto(`${BASE_URL}/pages/auth/login.html`, { waitUntil: 'domcontentloaded', timeout: 10000 });
             
+            // Вийти з попередньої сесії (якщо є)
+            await this.page.evaluate(() => {
+                if (typeof AuthManager !== 'undefined' && AuthManager.logout) {
+                    AuthManager.logout();
+                }
+                localStorage.clear();
+                sessionStorage.clear();
+            });
+            
+            // Перезавантажити після logout
+            await this.page.reload({ waitUntil: 'domcontentloaded' });
+            
             // Скріншот login page
             await this.page.screenshot({ path: `${SCREENSHOT_DIR}/${role}-01-login.png` });
             
@@ -106,14 +118,18 @@ class FrontendTester {
             
             await this.page.click('button[type="submit"]');
             
-            // ✅ ВИПРАВЛЕНО: Чекаємо зміни URL замість navigation (швидше)
-            await this.page.waitForFunction(
-                () => !window.location.href.includes('login.html'),
-                { timeout: 15000 }
-            );
+            // ✅ ВИПРАВЛЕНО: Чекаємо завантаження dashboard (6s достатньо)
+            await new Promise(resolve => setTimeout(resolve, 6000));
             
             const loginTime = Date.now() - startTime;
-            console.log(`   ⏱️  Навігація зайняла: ${loginTime}ms`);
+            console.log(`   ⏱️  Логін зайняв: ${loginTime}ms`);
+            
+            // Перевіряємо що редирект відбувся
+            const currentUrl = this.page.url();
+            if (currentUrl.includes('login.html')) {
+                throw new Error(`Редирект не відбувся, залишились на login.html`);
+            }
+            console.log(`   ✅ Редирект на: ${currentUrl.split('/').pop()}`);
             
             // ⏳ Чекаємо завершення JavaScript після логіну
             await new Promise(resolve => setTimeout(resolve, 2000));

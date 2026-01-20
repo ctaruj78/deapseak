@@ -31,9 +31,21 @@ const ROLES = [
             
             // Відкрити логін
             await page.goto(`${BASE_URL}/pages/auth/login.html`, {
-                waitUntil: 'domcontentloaded',
+                waitUntil: 'networkidle2',
                 timeout: 10000
             });
+            
+            // Вийти з попередньої сесії (якщо є)
+            await page.evaluate(() => {
+                if (typeof AuthManager !== 'undefined' && AuthManager.logout) {
+                    AuthManager.logout();
+                }
+                localStorage.clear();
+                sessionStorage.clear();
+            });
+            
+            // Перезавантажити сторінку після logout
+            await page.reload({ waitUntil: 'networkidle2' });
             
             // Ввести дані
             await page.type('#email', role.email);
@@ -43,11 +55,8 @@ const ROLES = [
             const startTime = Date.now();
             await page.click('button[type="submit"]');
             
-            // Чекати зміни URL
-            await page.waitForFunction(
-                () => !window.location.href.includes('login.html'),
-                { timeout: 15000 }
-            );
+            // Чекати 10 секунд на обробку логіну та редирект
+            await new Promise(resolve => setTimeout(resolve, 10000));
             
             const loginTime = Date.now() - startTime;
             const finalUrl = page.url();
@@ -70,6 +79,8 @@ const ROLES = [
             });
         } finally {
             await page.close();
+            // Затримка між тестами для уникнення конфліктів
+            await new Promise(resolve => setTimeout(resolve, 1000));
         }
     }
     

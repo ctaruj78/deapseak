@@ -1,11 +1,11 @@
 {
-  "date": "2026-01-20T15:24:16.664Z",
+  "date": "2026-01-20T16:16:14.938Z",
   "summary": {
     "totalPages": 7,
     "successPages": 6,
     "errorPages": 1,
-    "avgLoadTime": 5318,
-    "maxLoadTime": 30061,
+    "avgLoadTime": 5328,
+    "maxLoadTime": 30057,
     "totalButtons": 339,
     "totalErrors": 3,
     "score": 85.71428571428571
@@ -28,7 +28,7 @@
       "role": "admin",
       "name": "Користувачі",
       "path": "/pages/admin/users.html",
-      "loadTime": 271,
+      "loadTime": 253,
       "hasNav": true,
       "hasSidebar": true,
       "hasContent": true,
@@ -41,7 +41,7 @@
       "role": "admin",
       "name": "Ліфти",
       "path": "/pages/admin/lifts.html",
-      "loadTime": 591,
+      "loadTime": 611,
       "hasNav": true,
       "hasSidebar": true,
       "hasContent": true,
@@ -54,7 +54,7 @@
       "role": "admin",
       "name": "Створення Orçamento",
       "path": "/pages/admin/invoice-template.html",
-      "loadTime": 279,
+      "loadTime": 308,
       "hasNav": true,
       "hasSidebar": true,
       "hasContent": true,
@@ -67,7 +67,7 @@
       "role": "admin",
       "name": "Список Orçamentos",
       "path": "/pages/admin/orcamentos-list.html",
-      "loadTime": 201,
+      "loadTime": 249,
       "hasNav": true,
       "hasSidebar": true,
       "hasContent": true,
@@ -80,7 +80,7 @@
       "role": "admin",
       "name": "Email Templates",
       "path": "/pages/admin/email-template.html",
-      "loadTime": 196,
+      "loadTime": 180,
       "hasNav": true,
       "hasSidebar": true,
       "hasContent": true,
@@ -93,7 +93,7 @@
       "role": "admin",
       "name": "Карта ліфтів",
       "path": "/pages/admin/maps.html",
-      "loadTime": 30061,
+      "loadTime": 30057,
       "status": "error",
       "error": "Navigation timeout of 30000 ms exceeded"
     }
@@ -102,17 +102,17 @@
     {
       "type": "login_error",
       "role": "dispatcher",
-      "message": "Navigation timeout of 60000 ms exceeded"
+      "message": "Protocol error (Runtime.callFunctionOn): Target closed"
     },
     {
       "type": "login_error",
       "role": "tech",
-      "message": "Navigation timeout of 60000 ms exceeded"
+      "message": "Attempted to use detached Frame 'A7B15701B0595AA8944B8E6C56D521D5'."
     },
     {
       "type": "login_error",
       "role": "client",
-      "message": "Navigation timeout of 60000 ms exceeded"
+      "message": "Attempted to use detached Frame 'A7B15701B0595AA8944B8E6C56D521D5'."
     }
   ],
   "buttons": [
@@ -323,7 +323,7 @@
   "performance": [
     {
       "action": "Login admin",
-      "time": 780
+      "time": 10042
     }
   ]
 }
