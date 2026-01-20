@@ -2421,25 +2421,7 @@
         });
     </script>
 
-    <link rel="stylesheet" href="/assets/css/ai-assistant.css">
-    <div id="ai-assistant-fab" style="position:fixed;bottom:32px;right:32px;z-index:9999;">
-      <button class="ai-fab-btn" title="AI Асистент" style="background:#3a86ff;color:#fff;border:none;border-radius:50%;width:56px;height:56px;box-shadow:0 2px 8px rgba(0,0,0,0.2);font-size:28px;cursor:pointer;">
-        <i class="fas fa-magic"></i>
-      </button>
     </div>
-    <div id="ai-assistant-modal" style="display:none;position:fixed;bottom:100px;right:32px;z-index:10000;max-width:350px;width:100%;">
-      <div class="ai-chat-container">
-        <div class="ai-chat-header">
-          <h4>AI Асистент</h4>
-          <button class="ai-chat-close"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="ai-chat-messages">
-          <div class="ai-message ai-message-assistant">
-            <div class="ai-message-content">
-              <div class="ai-message-text">Привіт! Я ваш AI асистент. Чим можу допомогти з управлінням ліфтами?</div>
-              <div class="ai-message-time">Зараз</div>
-            </div>
-          </div>
         </div>
         <div class="ai-chat-input">
           <textarea class="ai-message-input" placeholder="Напишіть повідомлення..."></textarea>
@@ -2450,15 +2432,6 @@
         </div>
       </div>
     </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-    <script>
-    // Відкриття/закриття модального вікна
-    const fabBtn = document.getElementById('ai-assistant-fab');
-    const modal = document.getElementById('ai-assistant-modal');
-    fabBtn.onclick = () => { modal.style.display = 'block'; };
-    document.querySelector('.ai-chat-close').onclick = () => { modal.style.display = 'none'; };
-    </script>
-    
     <script>
     // Функція для відкриття модального вікна ліфта (тільки з картою)
     // Глобальна функція для відкриття модального вікна ліфта

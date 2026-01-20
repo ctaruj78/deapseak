@@ -9,7 +9,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title data-i18n-title="lift_management">Адмін панель - Управління ліфтами</title>
+    <title data-i18n-title="lift_management">Панель диспетчера - Управління ліфтами</title>
     
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
@@ -34,6 +34,22 @@
         .status-active { background-color: #d4edda; color: #155724; }
         .status-maintenance { background-color: #fff3cd; color: #856404; }
         .status-inactive { background-color: #f8d7da; color: #721c24; }
+        
+        /* Стилі для ліфтів що очікують видалення */
+        .pending-deletion {
+            opacity: 0.7;
+            border: 2px dashed #ffc107 !important;
+            background-color: #fff3cd !important;
+        }
+        
+        .pending-deletion .badge-warning {
+            animation: pulse-warning 2s infinite;
+        }
+        
+        @keyframes pulse-warning {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
         
         .btn-action {
             margin: 0 2px;
@@ -475,6 +491,7 @@
     <link rel="stylesheet" href="/assets/css/table-drag-scroll.css">
 </head>
 <body class="hold-transition sidebar-mini layout-fixed" data-required-role="admin">
+<!-- DISPATCHER VERSION - Full admin features with role-based access -->
     <div class="wrapper">
         <!-- Навігаційна панель -->
         <nav class="main-header navbar navbar-expand navbar-white navbar-light">
@@ -497,11 +514,11 @@
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1 data-i18n="lift_management">Управління ліфтами</h1>
+                            <h1 data-i18n="lift_management">Управління ліфтами (Dispatcher)</h1>
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="admin-dashboard.html">Головна</a></li>
+                                <li class="breadcrumb-item"><a href="dispatcher-dashboard.html">Головна</a></li>
                                 <li class="breadcrumb-item active">Elevadores</li>
                             </ol>
                         </div>
@@ -1945,6 +1962,20 @@
             }
         };
         
+        // 👤 Функція для отримання ролі користувача з JWT токена
+        function getUserRole() {
+            try {
+                const token = localStorage.getItem('authToken');
+                if (!token) return null;
+                
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                return payload.role || null;
+            } catch (error) {
+                console.error('❌ Помилка парсингу токена:', error);
+                return null;
+            }
+        }
+        
         // Глобальна змінна для збереження PDF файлу
         let currentPDFFile = null;
 
@@ -2390,7 +2421,25 @@
         });
     </script>
 
+    <link rel="stylesheet" href="/assets/css/ai-assistant.css">
+    <div id="ai-assistant-fab" style="position:fixed;bottom:32px;right:32px;z-index:9999;">
+      <button class="ai-fab-btn" title="AI Асистент" style="background:#3a86ff;color:#fff;border:none;border-radius:50%;width:56px;height:56px;box-shadow:0 2px 8px rgba(0,0,0,0.2);font-size:28px;cursor:pointer;">
+        <i class="fas fa-magic"></i>
+      </button>
     </div>
+    <div id="ai-assistant-modal" style="display:none;position:fixed;bottom:100px;right:32px;z-index:10000;max-width:350px;width:100%;">
+      <div class="ai-chat-container">
+        <div class="ai-chat-header">
+          <h4>AI Асистент</h4>
+          <button class="ai-chat-close"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="ai-chat-messages">
+          <div class="ai-message ai-message-assistant">
+            <div class="ai-message-content">
+              <div class="ai-message-text">Привіт! Я ваш AI асистент. Чим можу допомогти з управлінням ліфтами?</div>
+              <div class="ai-message-time">Зараз</div>
+            </div>
+          </div>
         </div>
         <div class="ai-chat-input">
           <textarea class="ai-message-input" placeholder="Напишіть повідомлення..."></textarea>
@@ -2401,6 +2450,15 @@
         </div>
       </div>
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script>
+    // Відкриття/закриття модального вікна
+    const fabBtn = document.getElementById('ai-assistant-fab');
+    const modal = document.getElementById('ai-assistant-modal');
+    fabBtn.onclick = () => { modal.style.display = 'block'; };
+    document.querySelector('.ai-chat-close').onclick = () => { modal.style.display = 'none'; };
+    </script>
+    
     <script>
     // Функція для відкриття модального вікна ліфта (тільки з картою)
     // Глобальна функція для відкриття модального вікна ліфта
@@ -3854,7 +3912,16 @@
                 // ✅ ВИПРАВЛЕННЯ: Зберігаємо повний список в глобальну змінну
                 if (Array.isArray(lifts)) {
                     window.allLiftsData = lifts;
-                    displayLiftsInTable(lifts);
+                    
+                    // Скидаємо на першу сторінку при завантаженні
+                    currentPage = 1;
+                    
+                    // Показуємо ліфти з пагінацією
+                    const startIdx = (currentPage - 1) * LIFTS_PER_PAGE;
+                    const endIdx = startIdx + LIFTS_PER_PAGE;
+                    const paginatedLifts = lifts.slice(startIdx, endIdx);
+                    displayLiftsInTable(paginatedLifts, lifts.length);
+                    
                     return lifts;
                 } else {
                     console.error('❌ API повернув не масив:', lifts);
@@ -3864,13 +3931,27 @@
                 console.error('❌ Помилка завантаження ліфтів:', result.error || 'Unknown error');
                 // Fallback до localStorage якщо API недоступний
                 const localLifts = JSON.parse(localStorage.getItem('lifts') || '[]');
-                displayLiftsInTable(localLifts);
+                window.allLiftsData = localLifts;
+                currentPage = 1;
+                
+                const startIdx = (currentPage - 1) * LIFTS_PER_PAGE;
+                const endIdx = startIdx + LIFTS_PER_PAGE;
+                const paginatedLifts = localLifts.slice(startIdx, endIdx);
+                displayLiftsInTable(paginatedLifts, localLifts.length);
+                
                 return localLifts;
             }
         } catch (error) {
             console.error('❌ Exception при завантаженні ліфтів:', error);
             const localLifts = JSON.parse(localStorage.getItem('lifts') || '[]');
-            displayLiftsInTable(localLifts);
+            window.allLiftsData = localLifts;
+            currentPage = 1;
+            
+            const startIdx = (currentPage - 1) * LIFTS_PER_PAGE;
+            const endIdx = startIdx + LIFTS_PER_PAGE;
+            const paginatedLifts = localLifts.slice(startIdx, endIdx);
+            displayLiftsInTable(paginatedLifts, localLifts.length);
+            
             return localLifts;
         }
     }
@@ -3901,9 +3982,121 @@
         }
     }
     
+    // 📄 Пагінація
+    let currentPage = 1;
+    const LIFTS_PER_PAGE = 20; // Показувати по 20 ліфтів на сторінці
+    
+    // Функція для оновлення пагінації
+    function updatePagination(totalLifts, currentLifts) {
+        const totalPages = Math.ceil(totalLifts / LIFTS_PER_PAGE);
+        const paginationEl = document.getElementById('pagination');
+        const showingCountEl = document.getElementById('showingCount');
+        const totalCountEl = document.getElementById('totalCount');
+        
+        if (!paginationEl || !showingCountEl || !totalCountEl) return;
+        
+        // Оновлюємо інфо
+        showingCountEl.textContent = currentLifts;
+        totalCountEl.textContent = totalLifts;
+        
+        // Якщо одна сторінка або менше
+        if (totalPages <= 1) {
+            paginationEl.innerHTML = '';
+            return;
+        }
+        
+        // Створюємо кнопки пагінації
+        let html = '';
+        
+        // Попередня сторінка
+        html += `
+            <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="changePage(${currentPage - 1}); return false;">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            </li>
+        `;
+        
+        // Номери сторінок (показуємо max 7 кнопок)
+        let startPage = Math.max(1, currentPage - 3);
+        let endPage = Math.min(totalPages, currentPage + 3);
+        
+        if (currentPage <= 3) {
+            endPage = Math.min(7, totalPages);
+        }
+        if (currentPage >= totalPages - 2) {
+            startPage = Math.max(1, totalPages - 6);
+        }
+        
+        // Перша сторінка якщо не в діапазоні
+        if (startPage > 1) {
+            html += `
+                <li class="page-item">
+                    <a class="page-link" href="#" onclick="changePage(1); return false;">1</a>
+                </li>
+            `;
+            if (startPage > 2) {
+                html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            }
+        }
+        
+        // Сторінки в діапазоні
+        for (let i = startPage; i <= endPage; i++) {
+            html += `
+                <li class="page-item ${i === currentPage ? 'active' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${i}); return false;">${i}</a>
+                </li>
+            `;
+        }
+        
+        // Остання сторінка якщо не в діапазоні
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            }
+            html += `
+                <li class="page-item">
+                    <a class="page-link" href="#" onclick="changePage(${totalPages}); return false;">${totalPages}</a>
+                </li>
+            `;
+        }
+        
+        // Наступна сторінка
+        html += `
+            <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="changePage(${currentPage + 1}); return false;">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+        `;
+        
+        paginationEl.innerHTML = html;
+    }
+    
+    // Функція зміни сторінки
+    window.changePage = function(page) {
+        const totalPages = Math.ceil((window.allLiftsData?.length || 0) / LIFTS_PER_PAGE);
+        
+        if (page < 1 || page > totalPages) return;
+        
+        currentPage = page;
+        console.log('📄 Перехід на сторінку:', page);
+        
+        // Перезастосувати фільтри з новою сторінкою
+        if (typeof applyAllFilters === 'function') {
+            applyAllFilters();
+        } else {
+            // Якщо функція ще не завантажена, викликаємо displayLiftsInTable напряму
+            const startIdx = (currentPage - 1) * LIFTS_PER_PAGE;
+            const endIdx = startIdx + LIFTS_PER_PAGE;
+            const paginatedLifts = (window.allLiftsData || []).slice(startIdx, endIdx);
+            displayLiftsInTable(paginatedLifts, window.allLiftsData?.length || 0);
+        }
+    };
+    
     // 🏛️ Показати modal з підтвердженням відправки повідомлення муніципалітету
     // Функція відображення ліфтів в таблиці
-    function displayLiftsInTable(lifts) {
+    function displayLiftsInTable(lifts, totalCount = null) {
         console.log('📋 Відображення ліфтів в таблиці:', lifts.length);
         
         // ⚠️ НЕ перезаписуємо window.allLiftsData - це має бути тільки повний список!
@@ -4023,6 +4216,10 @@
         });
         
         console.log('✅ Відображено ліфтів в таблиці:', lifts.length);
+        
+        // Оновлюємо пагінацію
+        const total = totalCount !== null ? totalCount : lifts.length;
+        updatePagination(total, lifts.length);
         
         // Оновлюємо статистику
         updateLiftsStatistics(lifts);
@@ -4790,6 +4987,7 @@
                 '</style>',
                 '</head>',
                 '<body>',
+<!-- DISPATCHER VERSION - Full admin features with role-based access -->
                 '<h2>QR код ліфта</h2>',
                 '<div class="info">',
                 '<div><strong>Муніципальний №:</strong> ' + municipalNumber + '</div>',
@@ -4849,6 +5047,38 @@
     async function deleteLift(liftId) {
         console.log('🗑️ Видалення ліфта:', liftId);
         
+        const userRole = getUserRole();
+        console.log('👤 Роль користувача:', userRole);
+        
+        // Dispatcher може тільки запитати видалення (модерація)
+        if (userRole === 'dispatcher') {
+            if (!confirm('Ви хочете відправити запит на видалення цього ліфта? Адміністратор повинен підтвердити.')) {
+                return;
+            }
+            
+            try {
+                // Відправити запит на модерацію
+                const result = await apiCall(`/api/lifts/${liftId}/request-deletion`, 'POST');
+                
+                if (result.success) {
+                    alert('✅ Запит на видалення відправлено! Адміністратор отримав сповіщення.');
+                    // Можна додати візуальне позначення що ліфт на видалення
+                    const liftCard = document.querySelector(`[data-lift-id="${liftId}"]`);
+                    if (liftCard) {
+                        liftCard.classList.add('pending-deletion');
+                        liftCard.innerHTML += '<span class="badge badge-warning">Очікує видалення</span>';
+                    }
+                } else {
+                    alert('❌ Помилка відправки запиту: ' + (result.message || 'Спробуйте пізніше'));
+                }
+            } catch (error) {
+                console.error('❌ Помилка:', error);
+                alert('❌ Не вдалося відправити запит на видалення');
+            }
+            return;
+        }
+        
+        // Admin може видаляти одразу
         if (!confirm('Ви впевнені, що хочете видалити цей ліфт? Цю дію не можна скасувати.')) {
             return;
         }
@@ -5361,6 +5591,7 @@
                 </style>
             </head>
             <body>
+<!-- DISPATCHER VERSION - Full admin features with role-based access -->
                 <div class="header">
                     <h1>🏢 ЗВІТ ПРО ${type.toUpperCase()}</h1>
                     <div class="status">${statusText}</div>
@@ -5655,67 +5886,10 @@
     document.addEventListener('DOMContentLoaded', function() {
         console.log('📊 Ініціалізація обробників експорту...');
         
-        // ✅ ДОДАНО: Обробник пошуку ліфтів
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) {
-            searchInput.addEventListener('input', function(e) {
-                const query = e.target.value.toLowerCase().trim();
-                console.log('🔍 Pesquisar ліфтів:', query);
-                
-                if (!window.allLiftsData || window.allLiftsData.length === 0) {
-                    console.warn('⚠️ Дані ліфтів ще не завантажені');
-                    return;
-                }
-                
-                if (!query) {
-                    // Показати всі ліфти
-                    displayLiftsInTable(window.allLiftsData);
-                    return;
-                }
-                
-                // Filtroуємо ліфти
-                const filtered = window.allLiftsData.filter(lift => {
-                    const municipalNumber = (lift.municipalNumber || '').toLowerCase();
-                    const manufacturer = (lift.manufacturer || '').toLowerCase();
-                    const model = (lift.model || '').toLowerCase();
-                    const type = (lift.type || '').toLowerCase();
-                    const id = ((lift._id || lift.id) || '').toString().toLowerCase();
-                    
-                    // Адреса з об'єкта
-                    let addressStr = '';
-                    if (typeof lift.address === 'object' && lift.address) {
-                        addressStr = `${lift.address.street || ''} ${lift.address.city || ''}`.toLowerCase();
-                    } else if (typeof lift.address === 'string') {
-                        addressStr = lift.address.toLowerCase();
-                    }
-                    
-                    // Клієнт
-                    let clientStr = '';
-                    if (typeof lift.client === 'object' && lift.client) {
-                        clientStr = `${lift.client.firstName || ''} ${lift.client.lastName || ''} ${lift.client.email || ''}`.toLowerCase();
-                    } else if (lift.clientName) {
-                        clientStr = lift.clientName.toLowerCase();
-                    }
-                    
-                    return municipalNumber.includes(query) ||
-                           manufacturer.includes(query) ||
-                           model.includes(query) ||
-                           type.includes(query) ||
-                           id.includes(query) ||
-                           addressStr.includes(query) ||
-                           clientStr.includes(query);
-                });
-                
-                console.log(`✅ Знайдено ліфтів: ${filtered.length} з ${window.allLiftsData.length}`);
-                displayLiftsInTable(filtered);
-            });
-        } else {
-            console.warn('⚠️ Поле searchInput не знайдено');
-        }
-        
         // ✅ ДОДАНО: Обробники фільтрів по статусу та типу
         const statusFilter = document.getElementById('statusFilter');
         const typeFilter = document.getElementById('typeFilter');
+        const searchInput = document.getElementById('searchInput');
         
         // Функція застосування всіх фільтрів
         function applyAllFilters() {
@@ -5794,7 +5968,14 @@
             }
             
             console.log(`✅ Результат фільтрації: ${filtered.length} з ${window.allLiftsData.length}`);
-            displayLiftsInTable(filtered);
+            
+            // ✅ ДОДАНО: Пагінація - показуємо лише ліфти поточної сторінки
+            const startIdx = (currentPage - 1) * LIFTS_PER_PAGE;
+            const endIdx = startIdx + LIFTS_PER_PAGE;
+            const paginatedLifts = filtered.slice(startIdx, endIdx);
+            
+            // Передаємо відфільтровані ліфти для поточної сторінки та загальну кількість
+            displayLiftsInTable(paginatedLifts, filtered.length);
             
             // ✅ ВИПРАВЛЕННЯ: Статистичні картки завжди показують ПОВНУ статистику
             // Тільки таблиця показує відфільтровані дані
@@ -5802,14 +5983,22 @@
         }
         
         if (statusFilter) {
-            statusFilter.addEventListener('change', applyAllFilters);
+            statusFilter.addEventListener('change', function() {
+                // Скидаємо на першу сторінку при зміні фільтру
+                currentPage = 1;
+                applyAllFilters();
+            });
             console.log('✅ Обробник фільтру статусу додано');
         } else {
             console.warn('⚠️ Filtro statusFilter не знайдено');
         }
         
         if (typeFilter) {
-            typeFilter.addEventListener('change', applyAllFilters);
+            typeFilter.addEventListener('change', function() {
+                // Скидаємо на першу сторінку при зміні фільтру
+                currentPage = 1;
+                applyAllFilters();
+            });
             console.log('✅ Обробник фільтру типу додано');
         } else {
             console.warn('⚠️ Filtro typeFilter не знайдено');
@@ -5821,7 +6010,11 @@
             const newSearchInput = searchInput.cloneNode(true);
             searchInput.parentNode.replaceChild(newSearchInput, searchInput);
             
-            newSearchInput.addEventListener('input', applyAllFilters);
+            newSearchInput.addEventListener('input', function() {
+                // Скидаємо на першу сторінку при зміні пошуку
+                currentPage = 1;
+                applyAllFilters();
+            });
             console.log('✅ Обробник пошуку оновлено для роботи з фільтрами');
         }
         
@@ -6310,6 +6503,7 @@
                         </style>
                     </head>
                     <body>
+<!-- DISPATCHER VERSION - Full admin features with role-based access -->
                         <div class="preview-header">
                             <h2>📧 Preview - Email para Município</h2>
                             <p><strong>Para:</strong> ${municipalityData.email}</p>
