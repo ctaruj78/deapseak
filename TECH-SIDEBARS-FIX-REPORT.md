@@ -2,7 +2,7 @@
 
 **Дата:** 20 січня 2026  
 **Автор:** GitHub Copilot  
-**Commit:** [Буде додано після push]
+**Commit:** `7b275fb6` (pushed to v2_refactor)
 
 ---
 
