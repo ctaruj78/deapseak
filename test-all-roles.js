@@ -27,24 +27,22 @@ const roles = [
         try {
             // 1. Login test
             await page.goto('http://localhost:5000/pages/auth/login.html', { 
-                waitUntil: 'networkidle0', 
-                timeout: 15000 
+                waitUntil: 'domcontentloaded', 
+                timeout: 10000 
             });
             
             await page.type('#email', role.email);
             await page.type('#password', role.pass);
             
             const loginStart = Date.now();
-            await Promise.all([
-                page.click('button[type="submit"]'),
-                page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 10000 })
-            ]);
+            
+            // Простий підхід: click і чекати
+            await page.click('button[type="submit"]');
+            await new Promise(resolve => setTimeout(resolve, 2000)); // Даємо час на redirect + JS load
+            
             const loginTime = Date.now() - loginStart;
             
-            // ⏳ Дати час на JavaScript redirect
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            const dashboardUrl = page.url();
+            const dashboardUrl = await page.evaluate(() => window.location.href);
             const loginSuccess = !dashboardUrl.includes('login.html');
             
             console.log(
