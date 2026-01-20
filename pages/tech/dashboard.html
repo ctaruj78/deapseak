@@ -389,16 +389,21 @@
             }
         }
 
-        // 🔥 ПІДКЛЮЧЕНО ДО РЕАЛЬНОГО API /api/tasks
+        // 🔥 ПІДКЛЮЧЕНО ДО РЕАЛЬНОГО API /api/requests
         async function loadTechAssignments() {
             try {
-                const token = localStorage.getItem('token');
+                const token = localStorage.getItem('authToken') || localStorage.getItem('token') || localStorage.getItem('liftmanager_jwt');
                 if (!token) {
                     console.error('❌ No token found');
                     return [];
                 }
 
-                const response = await fetch('/api/tasks', {
+                const apiUrl = window.location.hostname.includes('app.github.dev') 
+                    ? `https://${window.location.hostname.replace('5173-', '3000-')}/api/requests`
+                    : '/api/requests';
+
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
                     headers: { 
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -407,14 +412,16 @@
                 
                 if (response.ok) {
                     const data = await response.json();
-                    console.log('✅ Tasks loaded from API:', data.length);
-                    return Array.isArray(data) ? data : data.tasks || [];
+                    const tasks = Array.isArray(data) ? data : (data.data || data.requests || []);
+                    console.log('✅ Tasks loaded from API:', tasks.length);
+                    return tasks;
                 }
                 
-                console.warn('⚠️ API /api/tasks returned non-OK status:', response.status);
+                console.warn('⚠️ API /api/requests returned non-OK status:', response.status);
                 return [];
             } catch (error) {
-                console.warn('API недоступний, використовуємо локальні дані');
+                console.error('❌ API error:', error);
+                console.warn('⚠️ Використовуємо локальні дані');
                 return JSON.parse(localStorage.getItem('tech_assignments') || '[]');
             }
         }
