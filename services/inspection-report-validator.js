@@ -53,6 +53,23 @@ class InspectionReportValidator {
                 reason: 'EIIE não pode recusar inspeção por falta de documentos de outras entidades',
                 severity: 'critical',
                 reference: 'Circular IPAC 06/2025'
+            },
+            {
+                pattern: /falta.*documentação.*prevista.*circular.*dgeg/i,
+                code: 'INVALID_DESC_05',
+                description: 'Deficiência baseada em falta de documentação DGEG',
+                reason: 'Verificação de documentos de circulares DGEG não é parte da inspeção periódica',
+                severity: 'error',
+                reference: 'Circular IPAC 06/2025',
+                example: 'GATECI RP04748 - Circular nº 1-2010-DSL-EL'
+            },
+            {
+                pattern: /não.*apresenta.*documentação.*circular/i,
+                code: 'INVALID_DESC_06',
+                description: 'Não conformidade baseada em ausência de documentos de circular',
+                reason: 'Competência de verificação documental não pertence à EIIE',
+                severity: 'error',
+                reference: 'Circular IPAC 06/2025'
             }
         ];
 
@@ -241,6 +258,16 @@ class InspectionReportValidator {
                 action: 'remove',
                 correctedText: null,
                 explanation: 'Recusa de inspeção não permitida. Proceder com inspeção técnica normalmente.'
+            },
+            'INVALID_DESC_05': {
+                action: 'move_to_observations',
+                correctedText: `OBSERVAÇÃO: A instalação não apresenta a documentação prevista na Circular DGEG. Recomenda-se ao proprietário regularizar a situação junto da DGEG.`,
+                explanation: 'Documentação de circulares DGEG não é deficiência técnica - convertido para observação'
+            },
+            'INVALID_DESC_06': {
+                action: 'move_to_observations',
+                correctedText: `OBSERVAÇÃO: Ausência de documentação referente a circular. Recomenda-se regularização junto da entidade competente.`,
+                explanation: 'Verificação documental não é competência da EIIE - convertido para observação'
             }
         };
 
