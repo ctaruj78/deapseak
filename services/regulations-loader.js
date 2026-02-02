@@ -2,7 +2,7 @@
  * Regulations Loader - Завантажувач Португальських Законів
  * ===========================================================
  * 
- * Завантажує всі 12 законів з data/regulations/ для AI асистента
+ * Завантажує всі 14 законів з data/regulations/ для AI асистента
  * 
  * Закони:
  * 1. Decreto 513/70 - Base segurança
@@ -12,11 +12,13 @@
  * 5. Directiva 95/16/CE - Directiva EU
  * 6. Portaria 344/93 - Procedimentos inspeção
  * 7. Despacho 17/2022 - NOVO! C2 prazos: 30 dias → 2 ANOS
- * 8. DL 163/2006 - Certificação técnicos
- * 9. Lei 58/2013 - Segurança equipamentos
- * 10. EN 81-20:2020 - Norma europeia
- * 11. EN 81-50:2020 - Exames e testes
- * 12. Regulamento CE 765/2008 - Acreditação
+ * 8. Despacho 27/2024 - CRÍTICO: Revoga 17/2022!
+ * 9. DL 163/2006 - Certificação técnicos
+ * 10. Lei 58/2013 - Segurança equipamentos
+ * 11. EN 81-20:2020 - Norma europeia
+ * 12. EN 81-50:2020 - Exames e testes
+ * 13. Regulamento CE 765/2008 - Acreditação
+ * 14. Circular IPAC 06/2025 - CRÍTICO: Metodologia inspeções modificações!
  */
 
 const fs = require('fs');
@@ -53,7 +55,8 @@ class RegulationsLoader {
             'lei-58-2013.json',              // 🆕
             'en-81-20-2020.json',            // 🆕
             'en-81-50-2020.json',            // 🆕
-            'regulamento-ce-765-2008.json'   // 🆕
+            'regulamento-ce-765-2008.json',  // 🆕
+            'circular-ipac-06-2025.json'     // 🆕 CRÍTICO: Metodologia inspeções modificações!
         ];
 
         let loadedCount = 0;
@@ -93,7 +96,7 @@ class RegulationsLoader {
         });
 
         this.loaded = true;
-        console.log(`\n📊 Завантажено: ${loadedCount}/12 законів, ${totalArticles} артиклів\n`);
+        console.log(`\n📊 Завантажено: ${loadedCount}/14 законів, ${totalArticles} артиклів\n`);
 
         return this.regulations;
     }
