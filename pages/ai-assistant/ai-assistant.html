@@ -685,6 +685,8 @@
     <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
     <!-- AdminLTE App -->
     <script src="../../plugins/adminlte/adminlte.min.js"></script>
+    <!-- IPAC 06/2025 Validator -->
+    <script src="../../assets/js/ipac-validator.js"></script>
 
     <script>
         // ✅ Initialize AdminLTE Treeview immediately
@@ -1471,8 +1473,28 @@
             
             console.log('🔍 Checking violations:', result.violations?.length);
             
+            // ✅ IPAC 06/2025 Validation
+            let ipacValidator = null;
+            let validationResults = null;
+            
+            if (result.violations && result.violations.length > 0) {
+                ipacValidator = new IPACValidator();
+                validationResults = ipacValidator.validateViolations(result.violations);
+                
+                console.log('📋 IPAC 06/2025 Validation:', validationResults);
+                
+                if (!validationResults.valid) {
+                    console.warn('⚠️ Found', validationResults.invalidViolations, 'invalid descriptors');
+                }
+            }
+            
             if (result.violations && result.violations.length > 0) {
                 console.log('✅ Displaying', result.violations.length, 'violations');
+                
+                // Show IPAC validation summary
+                if (validationResults) {
+                    html += ipacValidator.generateSummaryReport(validationResults);
+                }
                 
                 html += `
                     <div class="d-flex justify-content-between align-items-center mt-3 mb-3">
@@ -1493,6 +1515,9 @@
                     const violationTitle = v.articleInfo?.title || v.title || `Artigo ${v.article}`;
                     const violationId = `${v.classification}-${v.article}-${Date.now()}`;
                     
+                    // ✅ IPAC 06/2025 Validation for this violation
+                    const individualValidation = ipacValidator ? ipacValidator.validateViolation(v) : null;
+                    
                     // Форматування відображення артикулу
                     const articleDisplay = v.article === 'NOTA' ? 
                         '<span class="badge badge-secondary">NOTA</span>' : 
@@ -1506,6 +1531,12 @@
                                         <span class="badge badge-${badgeClass}">${v.classification}</span>
                                         ${articleDisplay} - ${violationTitle}
                                     </h6>
+                                    
+                                    ${individualValidation && !individualValidation.valid ? 
+                                        ipacValidator.generateWarningBadge(individualValidation) : ''}
+                                    
+                                    ${individualValidation && individualValidation.warnings.length > 0 ? 
+                                        ipacValidator.generateWarningAlert(individualValidation) : ''}
                                     
                                     ${v.articleInfo?.description ? `
                                         <div class="alert alert-light border-left-${badgeClass} mb-2">
