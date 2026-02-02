@@ -932,8 +932,43 @@ const upload = multer({
     }
 });
 
-// PDF Parser Service - ПОКРАЩЕНА ВЕРСІЯ
-const pdfParser = require('./services/pdf-parser-enhanced');
+// PDF Parser Service - ПОКРАЩЕНА ВЕРСІЯ (з автоматичним визначенням типу)
+const pdfParserEnhanced = require('./services/pdf-parser-enhanced');
+const { parseBureauVeritasPDF } = require('./services/pdf-parser-bureau-veritas');
+const pdfParse = require('pdf-parse');
+
+// Universal PDF Parser - автоматично визначає тип звіту
+async function parseInspectionReport(filePath) {
+    try {
+        // Читаємо першу сторінку для визначення типу
+        const buffer = await fs.readFile(filePath);
+        const partialPDF = await pdfParse(buffer, { max: 1 });
+        const text = partialPDF.text;
+        
+        // Визначаємо тип звіту
+        if (text.includes('BUREAU VERITAS') || /(?:NB|DT)\d{4}-\d{4}/.test(text)) {
+            console.log('📋 Detected: Bureau Veritas report - using specialized parser');
+            return await parseBureauVeritasPDF(filePath);
+        } else {
+            console.log('📋 Using: Generic enhanced parser');
+            return await pdfParserEnhanced.parsePDF(filePath);
+        }
+    } catch (error) {
+        console.error('❌ Error in universal parser:', error);
+        // Fallback to enhanced parser
+        return await pdfParserEnhanced.parsePDF(filePath);
+    }
+}
+
+// Cleanup helper
+async function cleanupFile(filePath) {
+    try {
+        await fs.unlink(filePath);
+        console.log('🗑️ Cleaned up file:', filePath);
+    } catch (error) {
+        console.error('⚠️ Could not delete file:', error.message);
+    }
+}
 
 // PDF Upload and Analysis endpoint
 app.post('/api/pdf/upload', authenticateToken, upload.single('pdfReport'), async (req, res) => {
@@ -954,24 +989,51 @@ app.post('/api/pdf/upload', authenticateToken, upload.single('pdfReport'), async
         console.log('📏 File size:', req.file.size, 'bytes');
         console.log('📍 File path:', req.file.path);
 
-        // Parse PDF and extract analysis
+        // Parse PDF and extract analysis using universal parser
         console.log('🔍 Starting PDF analysis...');
-        const result = await pdfParser.parsePDF(req.file.path);
+        const result = await parseInspectionReport(req.file.path);
         console.log('📊 Analysis result:', result.success ? 'Success' : 'Failed');
+        
+        if (result.success) {
+            console.log('📋 Report type:', result.reportType || 'Unknown');
+            console.log('📋 Violations found:', result.violations?.length || 0);
+            console.log('📋 Status:', result.conclusion?.status || result.passed ? 'PASSED' : 'FAILED');
+        }
 
         // Clean up the uploaded file
-        await pdfParser.cleanupFile(req.file.path);
+        await cleanupFile(req.file.path);
 
         if (result.success) {
-            console.log('✅ PDF analysis completed:', result.analysis.violations.length, 'violations found');
-            
-            // Додаємо rawText для копіювання
-            const response = {
-                success: true,
-                analysis: result.analysis
+            // Нормалізуємо відповідь для сумісності з frontend
+            const violations = result.violations || result.analysis?.violations || [];
+            const stats = result.stats || result.analysis?.stats || {
+                total: violations.length,
+                critical: violations.filter(v => v.classification === 'C1').length,
+                medium: violations.filter(v => v.classification === 'C2').length,
+                low: violations.filter(v => v.classification === 'C3').length
             };
             
-            // Якщо є витягнутий текст - додаємо його
+            console.log('✅ PDF analysis completed:', violations.length, 'violations found');
+            console.log('   C1:', stats.critical, 'C2:', stats.medium, 'C3:', stats.low);
+            
+            // Уніфікована структура відповіді
+            const response = {
+                success: true,
+                analysis: {
+                    reportType: result.reportType || 'unknown',
+                    metadata: result.metadata || {},
+                    violations: violations,
+                    stats: stats,
+                    conclusion: result.conclusion || {
+                        approved: result.passed || false,
+                        text: result.passed ? 'Aprovado' : 'Reprovado'
+                    },
+                    summary: stats,
+                    passed: result.passed || (stats.critical === 0 && stats.medium === 0)
+                }
+            };
+            
+            // Додаємо витягнутий текст
             if (result.rawText) {
                 response.extractedText = result.rawText;
                 response.pageCount = result.pageCount || 0;
@@ -992,7 +1054,7 @@ app.post('/api/pdf/upload', authenticateToken, upload.single('pdfReport'), async
         
         // Clean up file on error
         if (req.file) {
-            await pdfParser.cleanupFile(req.file.path).catch(() => {});
+            await cleanupFile(req.file.path).catch(() => {});
         }
         
         res.status(500).json({
