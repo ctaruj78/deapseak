@@ -334,8 +334,12 @@
                 // Завантажуємо дані
                 loadTechData();
                 
-                // Ініціалізація WebSocket для техніка
-                initTechWebSocket(session.user);
+                // Ініціалізація WebSocket для техніка (з перевіркою)
+                if (session.user) {
+                    initTechWebSocket(session.user);
+                } else {
+                    console.warn('[Tech Dashboard] User не знайдено в session');
+                }
                 
             } catch (error) {
                 console.error('Session error:', error);
@@ -765,6 +769,11 @@
         function initTechWebSocket(user) {
             if (typeof UniversalWebSocketManager === 'undefined') {
                 console.warn('[Tech Dashboard] UniversalWebSocketManager не знайдено');
+                return;
+            }
+            
+            if (!user) {
+                console.error('[Tech Dashboard] User не передано в initTechWebSocket');
                 return;
             }
             
