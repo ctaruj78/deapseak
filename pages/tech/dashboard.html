@@ -429,16 +429,34 @@
         // Функція завантаження запитів техніка
         async function loadTechRequests() {
             try {
-                const response = await window.authManager.apiRequest('/requests/tech/my');
+                const token = localStorage.getItem('authToken') || localStorage.getItem('token') || localStorage.getItem('liftmanager_jwt');
+                if (!token) {
+                    console.warn('⚠️ Токен не знайдено');
+                    return [];
+                }
+                
+                const apiUrl = window.location.hostname.includes('app.github.dev') 
+                    ? `https://${window.location.hostname.replace('5173-', '3000-')}/api/requests`
+                    : '/api/requests';
+                
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
                 
                 if (response.ok) {
                     const data = await response.json();
-                    return Array.isArray(data) ? data : data.requests || [];
+                    return Array.isArray(data) ? data : (data.data || data.requests || []);
                 }
                 
+                console.warn('⚠️ API повернув статус:', response.status);
                 return [];
             } catch (error) {
-                console.warn('API недоступний, використовуємо локальні дані');
+                console.error('❌ Помилка API:', error);
+                console.warn('⚠️ Використовуємо локальні дані');
                 return JSON.parse(localStorage.getItem('tech_requests') || '[]');
             }
         }
@@ -626,10 +644,23 @@
         // Функція додавання примітки до завдання
         async function addNoteToTask(taskId, note) {
             try {
-                const response = await window.authManager.apiRequest(`/assignments/${taskId}/notes`, {
+                const token = localStorage.getItem('authToken') || localStorage.getItem('token') || localStorage.getItem('liftmanager_jwt');
+                if (!token) {
+                    throw new Error('Токен не знайдено');
+                }
+                
+                const apiUrl = window.location.hostname.includes('app.github.dev') 
+                    ? `https://${window.location.hostname.replace('5173-', '3000-')}/api/requests/${taskId}/comment`
+                    : `/api/requests/${taskId}/comment`;
+                
+                const response = await fetch(apiUrl, {
                     method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify({ 
-                        note: note,
+                        comment: note,
                         timestamp: new Date().toISOString()
                     })
                 });
@@ -661,8 +692,21 @@
         // Функція оновлення статусу завдання
         async function updateTaskStatus(taskId, newStatus) {
             try {
-                const response = await window.authManager.apiRequest(`/assignments/${taskId}/status`, {
-                    method: 'PUT',
+                const token = localStorage.getItem('authToken') || localStorage.getItem('token') || localStorage.getItem('liftmanager_jwt');
+                if (!token) {
+                    throw new Error('Токен не знайдено');
+                }
+                
+                const apiUrl = window.location.hostname.includes('app.github.dev') 
+                    ? `https://${window.location.hostname.replace('5173-', '3000-')}/api/requests/${taskId}/status`
+                    : `/api/requests/${taskId}/status`;
+                
+                const response = await fetch(apiUrl, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify({ status: newStatus })
                 });
 

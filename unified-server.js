@@ -188,130 +188,12 @@ app.get('/api/health', async (req, res) => {
     }
 });
 
-// Логін
-app.post('/api/auth/login', async (req, res) => {
-    try {
-        const { email, username, password } = req.body;
-        
-        console.log('🔐 Запит на логін:', { email, username, passwordLength: password?.length });
-        
-        // Перевірка підключення до DB
-        if (!db) {
-            console.error('❌ DB не підключена');
-            return res.status(503).json({
-                success: false,
-                message: 'База даних недоступна'
-            });
-        }
-        
-        if (!password) {
-            return res.status(400).json({
-                success: false,
-                message: 'Пароль обов\'язковий'
-            });
-        }
-
-        const loginField = email || username;
-        if (!loginField) {
-            return res.status(400).json({
-                success: false,
-                message: 'Email або логін обов\'язковий'
-            });
-        }
-
-        // Пошук користувача
-        const users = db.collection('users');
-        const user = await users.findOne({
-            $or: [
-                { email: loginField },
-                { username: loginField }
-            ]
-        });
-
-        if (!user) {
-            console.log('❌ Користувач не знайдений:', loginField);
-            return res.status(401).json({
-                success: false,
-                message: 'Користувач не знайдений'
-            });
-        }
-
-        // Перевірка паролю
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-        
-        if (!isPasswordValid) {
-            console.log('❌ Неправильний пароль для:', loginField);
-            return res.status(401).json({
-                success: false,
-                message: 'Неправильний пароль'
-            });
-        }
-
-        // Створення токена
-        const token = jwt.sign(
-            { 
-                id: user._id.toString(),
-                username: user.username,
-                role: user.role
-            }, 
-            JWT_SECRET, 
-            { expiresIn: '24h' }
-        );
-
-        console.log('✅ Успішний логін:', user.username, user.role);
-
-        res.json({
-            success: true,
-            message: 'Успішна авторизація',
-            token,
-            user: {
-                id: user._id.toString(),
-                username: user.username,
-                email: user.email,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                role: user.role
-            }
-        });
-
-    } catch (error) {
-        console.error('❌ Помилка логіну:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Внутрішня помилка сервера'
-        });
-    }
-});
-
 // ═══════════════════════════════════════════════════════════
-// 🔐 AUTH - Logout & Refresh Token
+// 🔐 AUTH ENDPOINTS - ВИДАЛЕНО, використовуємо backend/routes/authRoutes.js
 // ═══════════════════════════════════════════════════════════
-
-// Logout
-app.post('/api/auth/logout', authenticateToken, (req, res) => {
-    // JWT не потребує серверного видалення, клієнт просто видаляє токен
-    console.log('👋 Logout:', req.user?.username);
-    res.json({ success: true, message: 'Успішний вихід з системи' });
-});
-
-// Refresh Token
-app.post('/api/auth/refresh', authenticateToken, async (req, res) => {
-    try {
-        const newToken = jwt.sign(
-            { 
-                id: req.user.id,
-                username: req.user.username,
-                role: req.user.role
-            }, 
-            JWT_SECRET, 
-            { expiresIn: '24h' }
-        );
-        res.json({ success: true, token: newToken });
-    } catch (error) {
-        console.error('❌ Помилка refresh token:', error);
-        res.status(500).json({ success: false, message: 'Помилка оновлення токена' });
-    }
-});
+// ПРИМІТКА: Всі auth endpoints (login, register, profile, logout, refresh)
+// тепер обробляються через backend/routes/authRoutes.js
+// Старі inline endpoints видалені для уникнення конфліктів
 
 // ═══════════════════════════════════════════════════════════
 // 🔔 NOTIFICATIONS
@@ -5051,10 +4933,37 @@ app.get('/api/ai/regulations/:id', authenticateToken, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// 📊 ORÇAMENTOS API - Використовуємо backend/routes/orcamentos.js
+// 🔌 BACKEND API ROUTES - Підключення всіх маршрутів
 // ═══════════════════════════════════════════════════════════
+
+// 🔐 Auth Routes (login, register, profile) + User Management
+const authRoutes = require('./backend/routes/authRoutes');
+app.use('/api/auth', authRoutes);
+app.use('/api/users', authRoutes); // authRoutes містить /users endpoints
+
+// 🏢 Lift Routes (CRUD операції з ліфтами)
+const liftRoutes = require('./backend/routes/liftRoutes');
+app.use('/api/lifts', liftRoutes);
+
+// 📋 Request Routes (заявки, завдання, інспекції)
+const requestRoutes = require('./backend/routes/requestRoutes');
+app.use('/api/requests', requestRoutes);
+
+// ⚙️ Settings Routes (налаштування системи)
+const settingsRoutes = require('./backend/routes/settingsRoutes');
+app.use('/api/settings', settingsRoutes);
+
+// 📊 Orçamentos Routes (кошториси, пропозиції)
 const orcamentosRoutes = require('./backend/routes/orcamentos');
 app.use('/api/orcamentos', orcamentosRoutes);
+
+console.log('✅ Backend API routes підключено:');
+console.log('   - /api/auth (login, register, profile)');
+console.log('   - /api/users (через authRoutes)');
+console.log('   - /api/lifts (CRUD ліфтів)');
+console.log('   - /api/requests (завдання, інспекції)');
+console.log('   - /api/settings (налаштування)');
+console.log('   - /api/orcamentos (кошториси)');
 
 // ═══════════════════════════════════════════════════════════
 // 📊 ORÇAMENTOS API (LEGACY) - Старі endpoints для сумісності

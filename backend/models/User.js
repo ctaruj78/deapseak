@@ -51,7 +51,14 @@ const userSchema = new mongoose.Schema({
     phone: {
         type: String,
         trim: true,
-        match: [/^(\+380|380|0)\d{9}$/, 'Невірний формат телефону']
+        validate: {
+            validator: function(v) {
+                // Дозволяємо пусте значення або формати +380, 380, 0, +351, +1 тощо
+                if (!v || v === '') return true;
+                return /^(\+\d{1,4}|0)\d{6,14}$/.test(v);
+            },
+            message: 'Невірний формат телефону'
+        }
     },
     isActive: {
         type: Boolean,
@@ -119,12 +126,12 @@ const userSchema = new mongoose.Schema({
     },
     specialty: {
         type: String,
-        enum: ['hydraulic', 'electric', 'mechanical', 'general'],
+        enum: ['hydraulic', 'electric', 'mechanical', 'general', 'maintenance'], // Додано 'maintenance' для сумісності
         default: 'general'
     },
     status: {
         type: String,
-        enum: ['online', 'offline', 'busy'],
+        enum: ['online', 'offline', 'busy', 'active', 'inactive'], // Додано 'active'/'inactive' для сумісності
         default: 'offline'
     }
 }, {
