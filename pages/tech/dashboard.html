@@ -381,11 +381,25 @@
             } catch (error) {
                 console.error('❌ Помилка завантаження даних техніка:', error);
                 
-                // Fallback до тестових даних
-                $('#activeAssignments').text(Math.floor(Math.random() * 10) + 5);
-                $('#completedToday').text(Math.floor(Math.random() * 5) + 2);
-                $('#urgentAssignments').text(Math.floor(Math.random() * 3) + 1);
-                $('#overdueAssignments').text(Math.floor(Math.random() * 2));
+                // Показуємо нулі якщо API недоступний
+                $('#activeAssignments').text('0');
+                $('#completedToday').text('0');
+                $('#urgentAssignments').text('0');
+                $('#overdueAssignments').text('0');
+                
+                // Показуємо повідомлення про помилку
+                const tasksTable = document.getElementById('todayTasks');
+                if (tasksTable) {
+                    tasksTable.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="text-center text-danger py-4">
+                                <i class="fas fa-exclamation-triangle fa-3x mb-3 d-block"></i>
+                                <p class="mb-0"><strong>Помилка завантаження даних</strong></p>
+                                <small>API недоступний. Спробуйте оновити сторінку.</small>
+                            </td>
+                        </tr>
+                    `;
+                }
             }
         }
 
@@ -421,8 +435,8 @@
                 return [];
             } catch (error) {
                 console.error('❌ API error:', error);
-                console.warn('⚠️ Використовуємо локальні дані');
-                return JSON.parse(localStorage.getItem('tech_assignments') || '[]');
+                // Не використовуємо fake дані - повертаємо порожній масив
+                return [];
             }
         }
 
@@ -452,12 +466,12 @@
                     return Array.isArray(data) ? data : (data.data || data.requests || []);
                 }
                 
-                console.warn('⚠️ API повернув статус:', response.status);
+                console.warn('⚠️  API повернув статус:', response.status);
                 return [];
             } catch (error) {
                 console.error('❌ Помилка API:', error);
-                console.warn('⚠️ Використовуємо локальні дані');
-                return JSON.parse(localStorage.getItem('tech_requests') || '[]');
+                // Не використовуємо fake дані - повертаємо порожній масив
+                return [];
             }
         }
 
@@ -641,6 +655,28 @@
             }
         }
 
+        function showRoute(liftId) {
+            console.log('🗺️ Показати маршрут до ліфта:', liftId);
+            
+            // Відкриваємо Google Maps з маршрутом
+            // Спочатку отримуємо координати ліфта
+            fetch(`/api/lifts/${liftId}`)
+                .then(response => response.json())
+                .then(lift => {
+                    if (lift && lift.location && lift.location.coordinates) {
+                        const [lng, lat] = lift.location.coordinates;
+                        // Відкриваємо Google Maps з маршрутом від поточної позиції
+                        window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, '_blank');
+                    } else {
+                        alert('Координати ліфта не знайдено');
+                    }
+                })
+                .catch(error => {
+                    console.error('Помилка отримання координат:', error);
+                    alert('Не вдалося отримати координати ліфта');
+                });
+        }
+
         // Функція додавання примітки до завдання
         async function addNoteToTask(taskId, note) {
             try {
@@ -733,7 +769,12 @@
             }
             
             try {
-                window.techWebSocket = new UniversalWebSocketManager('tech', user.id || user.username);
+                const userId = user.id || user._id || user.username || user.email;
+                if (!userId) {
+                    console.error('[Tech Dashboard] User ID не знайдено:', user);
+                    return;
+                }
+                window.techWebSocket = new UniversalWebSocketManager('tech', userId);
                 
                 // Підписка на події
                 window.techWebSocket.on('connected', function() {
@@ -836,19 +877,6 @@
             setTimeout(() => {
                 notification.alert('close');
             }, 7000);
-        }
-        
-        /**
-         * Показати маршрут до ліфта
-         */
-        function showRoute(liftId) {
-            if (!liftId) {
-                alert('Помилка: ID ліфта не вказано');
-                return;
-            }
-            
-            // Відкрити task-map.html з ID ліфта
-            window.open(`task-map.html?lift=${liftId}`, '_blank', 'width=1200,height=800');
         }
     </script>
     <script src="/assets/js/table-drag-scroll.js"></script>
