@@ -795,9 +795,21 @@ document.addEventListener("DOMContentLoaded", function() {
                                 </tr>
                             </table>
                             <div class="mt-3">
-                                <a href="../../pages/tech/lift-details.html?id=${lift._id}" class="btn btn-info">
-                                    <i class="fas fa-info-circle"></i> Детальна інформація
-                                </a>
+                                <h6><i class="fas fa-tools"></i> Швидкі дії:</h6>
+                                <div class="btn-group-vertical w-100" role="group">
+                                    <a href="manutencao.html?liftId=${lift._id}&type=maintenance" class="btn btn-success btn-lg mb-2">
+                                        <i class="fas fa-calendar-check"></i> Почати планове обслуговування
+                                    </a>
+                                    <a href="manutencao.html?liftId=${lift._id}&type=repair" class="btn btn-warning btn-lg mb-2">
+                                        <i class="fas fa-wrench"></i> Зареєструвати ремонт
+                                    </a>
+                                    <a href="manutencao.html?liftId=${lift._id}&type=emergency" class="btn btn-danger btn-lg mb-2">
+                                        <i class="fas fa-exclamation-triangle"></i> Аварійний виклик
+                                    </a>
+                                    <a href="../../pages/tech/lift-details.html?id=${lift._id}" class="btn btn-info">
+                                        <i class="fas fa-info-circle"></i> Детальна інформація про ліфт
+                                    </a>
+                                </div>
                             </div>
                         `;
                         break;

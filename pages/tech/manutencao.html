@@ -258,6 +258,9 @@
                                 <div class="card-header">
                                     <h3 class="card-title">Relatório de Manutenção Mensal</h3>
                                     <div class="card-tools">
+                                        <a href="qr-scanner.html" class="btn btn-primary btn-sm mr-2" title="Escanear código QR do elevador">
+                                            <i class="fas fa-qrcode"></i> Escanear QR
+                                        </a>
                                         <button class="btn btn-success btn-sm" onclick="saveInspection()">
                                             <i class="fas fa-save"></i> Guardar
                                         </button>
@@ -267,7 +270,37 @@
                                     </div>
                                 </div>
                                 <div class="card-body">
+                                    <!-- Індикатор завантаження даних ліфта -->
+                                    <div id="liftDataLoading" class="alert alert-info" style="display: none;">
+                                        <i class="fas fa-spinner fa-spin"></i> Завантаження даних ліфта з QR-коду...
+                                    </div>
+                                    
+                                    <!-- Інформація про завантажений ліфт -->
+                                    <div id="liftDataInfo" class="alert alert-success" style="display: none;">
+                                        <h5><i class="fas fa-qrcode"></i> Дані завантажені з QR-коду</h5>
+                                        <div id="liftDataDetails"></div>
+                                    </div>
+                                    
                                     <form id="inspectionForm">
+                                        <!-- Тип візиту -->
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <div class="form-group">
+                                                    <label for="visitType"><i class="fas fa-clipboard-list"></i> Tipo de Visita *</label>
+                                                    <select class="form-control" id="visitType" required>
+                                                        <option value="">-- Selecionar tipo --</option>
+                                                        <option value="maintenance">🗓️ Manutenção Preventiva Mensal</option>
+                                                        <option value="repair">🔧 Reparação</option>
+                                                        <option value="emergency">🚨 Intervenção de Emergência</option>
+                                                        <option value="inspection">📋 Inspeção Técnica</option>
+                                                    </select>
+                                                    <small class="form-text text-muted">
+                                                        <b>Dica:</b> Escaneie o código QR no elevador para preencher automaticamente os dados!
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <div class="form-group">
@@ -891,9 +924,93 @@
     <!-- REMOVED: jQuery .load() який знищував CANONICAL TECH SIDEBAR -->
 
     <script>
+        // 🔥 SMART WORKFLOW: Автозавантаження даних ліфта з QR-коду
+        async function loadLiftDataFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const liftId = urlParams.get('liftId');
+            const visitType = urlParams.get('type');
+            
+            if (!liftId) {
+                console.log('📋 Немає liftId в URL - звичайний режим створення звіту');
+                return;
+            }
+            
+            console.log('🔍 Завантаження даних ліфта:', liftId, 'Тип візиту:', visitType);
+            
+            // Показуємо індикатор завантаження
+            $('#liftDataLoading').show();
+            
+            try {
+                // Отримання токена
+                const token = localStorage.getItem('authToken') || localStorage.getItem('token') || localStorage.getItem('liftmanager_jwt');
+                
+                if (!token) {
+                    throw new Error('Токен не знайдено');
+                }
+                
+                // Визначення API URL (Codespaces or localhost)
+                const apiUrl = window.location.hostname.includes('app.github.dev') 
+                    ? `https://${window.location.hostname.replace('5173-', '3000-')}/api/lifts/${liftId}`
+                    : `/api/lifts/${liftId}`;
+                
+                // Завантаження даних ліфта
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`API returned ${response.status}`);
+                }
+                
+                const lift = await response.json();
+                console.log('✅ Дані ліфта завантажено:', lift);
+                
+                // Заповнення форми даними ліфта
+                $('#liftLocation').val(lift.location || lift.address || '');
+                $('#liftModel').val(lift.model || '');
+                $('#liftSerial').val(lift.municipalNumber || lift.serialNumber || '');
+                
+                // Встановлення типу візиту
+                if (visitType) {
+                    $('#visitType').val(visitType);
+                }
+                
+                // Показуємо інфо про завантажений ліфт
+                $('#liftDataLoading').hide();
+                $('#liftDataInfo').show();
+                $('#liftDataDetails').html(`
+                    <strong>📍 Localização:</strong> ${lift.location || lift.address || 'N/A'}<br>
+                    <strong>🏢 Modelo:</strong> ${lift.model || 'N/A'}<br>
+                    <strong>🔢 Número Municipal:</strong> ${lift.municipalNumber || 'N/A'}<br>
+                    <strong>📊 Status:</strong> <span class="badge badge-${lift.status === 'active' ? 'success' : 'warning'}">${lift.status || 'N/A'}</span><br>
+                    <strong>🔧 Tipo de visita:</strong> <span class="badge badge-${visitType === 'emergency' ? 'danger' : visitType === 'repair' ? 'warning' : 'success'}">${
+                        visitType === 'maintenance' ? '🗓️ Manutenção Preventiva' :
+                        visitType === 'repair' ? '🔧 Reparação' :
+                        visitType === 'emergency' ? '🚨 Emergência' :
+                        visitType === 'inspection' ? '📋 Inspeção' : 'N/A'
+                    }</span>
+                `);
+                
+                // Зберігаємо ID ліфта для подальшого використання
+                window.currentLiftId = liftId;
+                
+            } catch (error) {
+                console.error('❌ Помилка завантаження даних ліфта:', error);
+                $('#liftDataLoading').hide();
+                alert('Não foi possível carregar os dados do elevador. Por favor, preencha manualmente.');
+            }
+        }
+        
         // Inspection management
         const inspectionManager = {
             init() {
+                // 🔥 КРОК 1: Спочатку завантажуємо дані з QR (якщо є)
+                loadLiftDataFromURL();
+                
                 // Set current date
                 const today = new Date().toISOString().split('T')[0];
                 $('#inspectionDate').val(today);
