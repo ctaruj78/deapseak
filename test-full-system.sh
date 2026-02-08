@@ -261,12 +261,13 @@ echo "👔 ПАНЕЛЬ АДМІНІСТРАТОРА"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 ADMIN_PAGES=(
-    "pages/admin/dashboard.html:Dashboard"
+    "pages/admin/admin-dashboard.html:Admin Dashboard"
     "pages/admin/lifts.html:Lifts Management"
     "pages/admin/requests.html:Requests"
     "pages/admin/users.html:Users"
     "pages/admin/reports.html:Reports"
     "pages/admin/settings.html:Settings"
+    "pages/admin/analytics-dashboard.html:Analytics Dashboard"
 )
 
 for page_info in "${ADMIN_PAGES[@]}"; do

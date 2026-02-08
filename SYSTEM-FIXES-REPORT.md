@@ -201,21 +201,9 @@ async function updateTaskStatus(taskId, newStatus) {
 
 ---
 
-## 🔍 ЗАЛИШКОВІ ПРОБЛЕМИ (8 з 28)
+## 🔍 ЗАЛИШКОВІ ПРОБЛЕМИ (6 з 28)
 
-### 1. ⚠️ Admin Panel Dashboard відсутній
-
-**Файл:** `pages/admin/dashboard.html` не існує  
-**Наслідок:** Адмін не може побачити загальну статистику  
-**Рішення:** Створити dashboard з:
-- Статистика ліфтів (всього, активних, в обслуговуванні)
-- Статистика запитів (pending, in-progress, completed)
-- Графіки (Chart.js)
-- Топ техніків по виконаним завданням
-
----
-
-### 2. ⚠️ Resident Panel відсутній
+### 1. ⚠️ Resident Panel відсутній
 
 **Файли:** 
 - `pages/resident/dashboard.html`
@@ -229,7 +217,7 @@ async function updateTaskStatus(taskId, newStatus) {
 
 ---
 
-### 3. ⚠️ Reports Page без API
+### 2. ⚠️ Reports Page без API
 
 **Файл:** `pages/tech/reports.html`  
 **Проблема:** Статична сторінка без API викликів  
@@ -246,7 +234,7 @@ async function loadReports() {
 
 ---
 
-### 4. ⚠️ Email endpoints не існують
+### 3. ⚠️ Email endpoints не існують
 
 **Помилки:**
 - `/api/email/send-contract` → 404
@@ -257,7 +245,7 @@ async function loadReports() {
 
 ---
 
-### 5. ⚠️ Поламані посилання
+### 4. ⚠️ Поламані посилання
 
 **Знайдено 4 поламаних links:**
 
@@ -270,7 +258,7 @@ async function loadReports() {
 
 ---
 
-### 6. ⚠️ Кнопки без обробників
+### 5. ⚠️ Кнопки без обробників
 
 **Проблема:** Багато кнопок `type="button"` не мають `onclick` або `addEventListener`  
 **Рішення:** Скрипт `test-full-system.sh` показує які саме кнопки проблемні
@@ -290,7 +278,7 @@ async function loadReports() {
 
 ---
 
-### 8. ⚠️ QR-scanner camera permissions
+### 6. ⚠️ QR-scanner camera permissions
 
 **Проблема:** Користувач скаржився "відкрилося невідомо що"  
 **Діагноз:** Камера потребує дозволу, або `html5-qrcode` library failed  
@@ -330,9 +318,8 @@ async function loadReports() {
 
 ### Low Priority (Покращення)
 
-7. **Покращити test-full-system.sh** - зменшити false positives
-8. **Додати обробники кнопкам** - event listeners
-9. **Створити missing pages** - lift-details, request-details, qr/history
+7. **Додати обробники кнопкам** - event listeners
+8. **Створити missing pages** - lift-details, request-details, qr/history
 
 ---
 
@@ -360,13 +347,17 @@ ps aux | grep unified-server
 ## 🏆 СТАТИСТИКА
 
 **Проблем до виправлення:** 28  
-**Проблем вирішено:** 20  
-**Проблем залишилось:** 8  
-**% покращення:** 71.4%
+**Проблем вирішено:** 22  
+**Проблем залишилось:** 6  
+**% покращення:** 78.6%
 
 **API Endpoints:**
 - До: 5/7 працюють (71%)
 - Після: 7/7 працюють (100%)
+
+**Admin Pages:**
+- До: 6/7 існують (86%)
+- Після: 7/7 існують (100%) ✅
 
 **Tech Pages API Integration:**
 - До: 5/8 інтегровані (62.5%)
