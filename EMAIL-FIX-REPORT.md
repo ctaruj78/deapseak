@@ -33,11 +33,13 @@
 SMTP_HOST=smtp-relay.brevo.com
 SMTP_PORT=587
 SMTP_SECURE=false
-SMTP_USER=8b688f001@smtp-brevo.com
-SMTP_PASS=xsmtpsib-eff1ed4c64a9493015a7277231ff34f428d3b843a2ae0f87ef2b9cb4225d3286
+SMTP_USER=your-smtp-user@smtp-brevo.com
+SMTP_PASS=your-smtp-api-key-here
 EMAIL_FROM="FestLift" <info@festlift.pt>
-BREVO_API_KEY=xkeysib-eff1ed4c64a9493015a7277231ff34f428d3b843a2ae0f87ef2b9cb4225d3286
+BREVO_API_KEY=your-brevo-api-key-here
 ```
+
+> ⚠️ **ВАЖЛИВО:** Замініть `your-brevo-api-key-here` і `your-smtp-api-key-here` на реальні ключі
 
 ### 2. Покращена обробка помилок SMTP ✅
 

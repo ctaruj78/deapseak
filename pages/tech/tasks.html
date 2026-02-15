@@ -234,6 +234,7 @@
     
     <script src="../../assets/js/service-integration.js"></script>
     <link rel="stylesheet" href="/assets/css/table-drag-scroll.css">
+    <link rel="stylesheet" href="/plugins/sweetalert2/css/sweetalert2.min.css">
 </head>
 <body class="hold-transition sidebar-mini layout-fixed" data-required-role="tech">
     <div class="wrapper">
@@ -538,11 +539,8 @@
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group" style="margin-top: 32px;">
-                                                <button class="btn btn-primary" onclick="taskManager.applyFilters()">
-                                                    <i class="fas fa-filter"></i> Застосувати
-                                                </button>
-                                                <button class="btn btn-default" onclick="taskManager.resetFilters()">
-                                                    <i class="fas fa-sync"></i> Скинути
+                                                <button class="btn btn-primary" onclick="techTaskManager.loadTasks()">
+                                                    <i class="fas fa-sync"></i> Оновити
                                                 </button>
                                             </div>
                                         </div>
@@ -561,19 +559,14 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
-                                        <div class="col-md-4 mb-3">
-                                            <button class="btn btn-primary btn-lg btn-block" onclick="taskManager.startNewTask()">
-                                                <i class="fas fa-plus"></i> Нове завдання
+                                        <div class="col-md-6 mb-3">
+                                            <button class="btn btn-success btn-lg btn-block" onclick="techTaskManager.loadTasks()">
+                                                <i class="fas fa-sync"></i> Оновити завдання
                                             </button>
                                         </div>
-                                        <div class="col-md-4 mb-3">
-                                            <button class="btn btn-success btn-lg btn-block" onclick="taskManager.syncTasks()">
-                                                <i class="fas fa-sync"></i> Синхронізувати
-                                            </button>
-                                        </div>
-                                        <div class="col-md-4 mb-3">
-                                            <button class="btn btn-info btn-lg btn-block" onclick="taskManager.exportTasks()">
-                                                <i class="fas fa-file-export"></i> Exportar
+                                        <div class="col-md-6 mb-3">
+                                            <button class="btn btn-info btn-lg btn-block" onclick="window.print()">
+                                                <i class="fas fa-print"></i> Друк
                                             </button>
                                         </div>
                                     </div>
@@ -590,10 +583,10 @@
                                     <h3 class="card-title"><i class="fas fa-list mr-2"></i>Список завдань</h3>
                                     <div class="card-tools">
                                         <div class="btn-group">
-                                            <button class="btn btn-success" onclick="taskManager.exportTasks()">
-                                                <i class="fas fa-download"></i> Exportar
+                                            <button class="btn btn-success" onclick="techTaskManager.loadTasks()">
+                                                <i class="fas fa-sync"></i> Оновити
                                             </button>
-                                            <button class="btn btn-info" onclick="taskManager.printTasks()">
+                                            <button class="btn btn-info" onclick="window.print()">
                                                 <i class="fas fa-print"></i> Друк
                                             </button>
                                         </div>
@@ -622,13 +615,7 @@
                                 </div>
                                 <div class="card-footer">
                                     <div class="pagination">
-                                        <button class="btn btn-sm btn-default" onclick="taskManager.previousPage()">
-                                            <i class="fas fa-chevron-left"></i> Попередня
-                                        </button>
                                         <span class="mx-3">Сторінка <span id="currentPage">1</span> з <span id="totalPages">1</span></span>
-                                        <button class="btn btn-sm btn-default" onclick="taskManager.nextPage()">
-                                            Наступна <i class="fas fa-chevron-right"></i>
-                                        </button>
                                         <div class="search-box ml-3">
                                             <input type="text" id="searchInput" class="form-control" placeholder="Pesquisar...">
                                             <button class="btn btn-primary">
@@ -755,9 +742,9 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" onclick="taskManager.createTask()">
-                        <i class="fas fa-save"></i> Створити завдання
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                    <button type="button" class="btn btn-primary" onclick="alert('Функція створення завдань доступна через головну панель')">
+                        <i class="fas fa-info"></i> Інформація
                     </button>
                 </div>
             </div>
@@ -765,13 +752,13 @@
     </div>
 
     <!-- Модальне вікно перегляду завдання -->
-    <div class="modal fade" id="viewTaskModal" tabindex="-1" role="dialog">
+    <div class="modal fade" id="viewTaskModal" tabindex="-1" role="dialog" aria-labelledby="viewTaskModalTitle" aria-hidden="true">
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Деталі завдання</h5>
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span>&times;</span>
+                    <h5 class="modal-title" id="viewTaskModalTitle">Деталі завдання</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Закрити">
+                        <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body" id="taskDetailsContent">
@@ -779,13 +766,10 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
-                    <button type="button" class="btn btn-info" onclick="taskManager.downloadTaskReport(currentTaskId)">
-                        <i class="fas fa-download"></i> Звіт
-                    </button>
-                    <button type="button" class="btn btn-success" onclick="taskManager.startTask(currentTaskId)" id="startTaskBtn">
+                    <button type="button" class="btn btn-success" onclick="techTaskManager.startTask(currentTaskId)" id="startTaskBtn">
                         <i class="fas fa-play"></i> Розпочати
                     </button>
-                    <button type="button" class="btn btn-warning" onclick="taskManager.completeTask(currentTaskId)" id="completeTaskBtn">
+                    <button type="button" class="btn btn-warning" onclick="techTaskManager.completeTask(currentTaskId)" id="completeTaskBtn">
                         <i class="fas fa-check"></i> Завершити
                     </button>
                 </div>
@@ -840,25 +824,24 @@
                     const result = await response.json();
                     
                     if (result.success && result.data) {
-                        // API v2 повертає: { success: true, data: { requests: [...] } }
+                        // API v2 повертає: { success: true, data: [...] }
                         const apiRequests = result.data.requests || result.data;
                         
                         // Конвертуємо формат API в формат UI
                         this.tasks = apiRequests.map(req => ({
                             id: req._id,
-                            liftId: req.lift?.municipalNumber || req.lift?._id || 'Невідомо',
-                            liftAddress: req.lift?.address ? 
-                                `${req.lift.address.street}, ${req.lift.address.city}` : 
-                                'Адреса невідома',
-                            type: req.title,
+                            liftId: req.liftMunicipalNumber || req.liftId || 'Невідомо',
+                            liftAddress: req.liftAddress || 'Адреса невідома',
+                            type: req.type || req.title || 'Не вказано',
                             priority: req.priority || 'medium',
                             status: req.status || 'new',
-                            description: req.description,
+                            description: req.description || '',
                             createdAt: req.createdAt,
-                            createdBy: req.client?.firstName + ' ' + req.client?.lastName || 'Невідомо',
-                            assignedTo: req.assignedTo?._id,
-                            deadline: req.scheduledDate,
-                            resolution: req.workDetails?.summary
+                            createdBy: req.createdBy || 'Невідомо',
+                            assignedTo: req.technician,
+                            technicianName: req.technicianName || '',
+                            deadline: req.deadline || req.scheduledAt,
+                            resolution: req.resolution || req.workDetails?.summary || ''
                         }));
                     } else {
                         this.tasks = [];
@@ -878,7 +861,7 @@
                 try {
                     const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/status`, {
                         method: 'PATCH',
-                        body: JSON.stringify({ status: 'in-progress' })
+                        body: JSON.stringify({ status: 'in_progress' })
                     });
                     
                     if (!response || !response.ok) {
@@ -887,6 +870,7 @@
                     }
                     
                     alert('Завдання розпочато!');
+                    $('#viewTaskModal').modal('hide');
                     await this.loadTasks();
                     
                 } catch (error) {
@@ -897,6 +881,14 @@
             
             // Завершити завдання
             async completeTask(requestId) {
+                // Запитуємо опис виконаної роботи
+                const workDescription = prompt('Опишіть виконану роботу:', 'Роботу виконано згідно з регламентом. Всі несправності усунуто.');
+                
+                if (!workDescription || workDescription.trim() === '') {
+                    alert('Опис виконаної роботи обов\'язковий для завершення завдання');
+                    return;
+                }
+                
                 if (!confirm('Ви впевнені, що хочете завершити це завдання?')) {
                     return;
                 }
@@ -905,9 +897,8 @@
                     const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/complete`, {
                         method: 'POST',
                         body: JSON.stringify({
-                            workDetails: {
-                                summary: 'Роботу виконано технічним фахівцем'
-                            }
+                            workDescription: workDescription.trim(),
+                            laborHours: 1 // За замовчуванням 1 година
                         })
                     });
                     
@@ -917,6 +908,7 @@
                     }
                     
                     alert('Завдання успішно завершено!');
+                    $('#viewTaskModal').modal('hide');
                     await this.loadTasks();
                     
                 } catch (error) {
@@ -932,8 +924,8 @@
                 tbody.innerHTML = '';
                 
                 tasks.forEach(task => {
-                    // Convert MongoDB ObjectId to string
-                    const taskId = window.safeId ? window.safeId(task) : ((task._id && task._id.toString) ? task._id.toString() : (task._id || task.id || ''));
+                    // Використовуємо task.id з маппінгу (вже є _id)
+                    const taskId = task.id || task._id;
                     if (!taskId) {
                         console.error('❌ Завдання без ID:', task);
                         return;
@@ -941,7 +933,7 @@
                     
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>#${taskId}</td>
+                        <td>#${taskId.toString().substr(-6)}</td>
                         <td>${task.liftId || 'Загальне'}</td>
                         <td>${task.type || 'Обслуговування'}</td>
                         <td>
@@ -959,7 +951,7 @@
                             <button class="btn btn-sm btn-info btn-icon" onclick="techTaskManager.viewTask('${taskId}')" title="Переглянути">
                                 <i class="fas fa-eye"></i>
                             </button>
-                            ${task.status === 'new' ? `
+                            ${task.status === 'new' || task.status === 'pending' ? `
                                 <button class="btn btn-sm btn-success btn-icon" onclick="techTaskManager.startTask('${taskId}')" title="Розпочати">
                                     <i class="fas fa-play"></i>
                                 </button>
@@ -973,20 +965,32 @@
                     `;
                     tbody.appendChild(row);
                 });
+                
+                // Оновити загальну кількість завдань (якщо елемент існує)
+                const totalTasksCountEl = document.getElementById('totalTasksCount');
+                if (totalTasksCountEl) {
+                    totalTasksCountEl.textContent = tasks.length;
+                }
             }
             
             updateStats(tasks) {
                 const stats = {
                     total: tasks.length,
-                    new: tasks.filter(t => t.status === 'new').length,
+                    pending: tasks.filter(t => t.status === 'new' || t.status === 'pending').length,
                     inProgress: tasks.filter(t => t.status === 'in_progress').length,
                     completed: tasks.filter(t => t.status === 'completed').length
                 };
                 
-                document.getElementById('totalTasks').textContent = stats.total;
-                document.getElementById('newTasks').textContent = stats.new;
-                document.getElementById('inProgressTasks').textContent = stats.inProgress;
-                document.getElementById('completedTasks').textContent = stats.completed;
+                // Безпечне оновлення статистики (перевірка наявності елементів)
+                const totalEl = document.getElementById('totalTasks');
+                const pendingEl = document.getElementById('pendingTasks');
+                const inProgressEl = document.getElementById('inProgressTasks');
+                const completedEl = document.getElementById('completedTasks');
+                
+                if (totalEl) totalEl.textContent = stats.total;
+                if (pendingEl) pendingEl.textContent = stats.pending;
+                if (inProgressEl) inProgressEl.textContent = stats.inProgress;
+                if (completedEl) completedEl.textContent = stats.completed;
             }
             
             viewTask(requestId) {
@@ -1030,8 +1034,8 @@
                 const startBtn = document.getElementById('startTaskBtn');
                 const completeBtn = document.getElementById('completeTaskBtn');
                 
-                if (startBtn) startBtn.style.display = task.status === 'new' || task.status === 'assigned' ? 'inline-block' : 'none';
-                if (completeBtn) completeBtn.style.display = task.status === 'in-progress' ? 'inline-block' : 'none';
+                if (startBtn) startBtn.style.display = (task.status === 'new' || task.status === 'assigned' || task.status === 'pending') ? 'inline-block' : 'none';
+                if (completeBtn) completeBtn.style.display = task.status === 'in_progress' ? 'inline-block' : 'none';
                 
                 $('#viewTaskModal').modal('show');
             }
@@ -1085,10 +1089,16 @@
 
             // Ініціалізація менеджера завдань
             window.techTaskManager = new TechTaskManager();
+            
+            // Придушення помилок від розширень браузера
+            window.addEventListener('error', function(e) {
+                if (e.message && e.message.includes('Extension context')) {
+                    e.preventDefault();
+                }
+            });
         });
     </script>
     <script src="/assets/js/table-drag-scroll.js"></script>
+    <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
 </body>
 </html>
-    <script src="/assets/js/table-drag-scroll.js"></script>
-</body> -->

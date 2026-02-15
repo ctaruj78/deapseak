@@ -12,60 +12,66 @@ const DB_NAME = 'deapseak';
 
 const users = [
     {
-        email: 'admin@deapseak.com',
+        email: 'info@festlift.pt',
         username: 'admin',
         password: 'admin123',
         role: 'admin',
-        fullName: 'Адміністратор Системи',
-        phone: '+351 912 345 678',
+        firstName: 'Адміністратор',
+        lastName: 'Системи',
+        phone: '+351912345678',
         isActive: true
     },
     {
-        email: 'dispatcher@deapseak.com',
+        email: 'dispatcher@festlift.pt',
         username: 'dispatcher',
         password: 'dispatcher123',
         role: 'dispatcher',
-        fullName: 'Диспетчер Головний',
-        phone: '+351 912 345 679',
+        firstName: 'Диспетчер',
+        lastName: 'Головний',
+        phone: '+351912345679',
         isActive: true
     },
     {
-        email: 'tech@deapseak.com',
+        email: 'tech1@festlift.pt',
         username: 'tech',
         password: 'tech123',
-        role: 'tech',
-        fullName: 'Технік Основний',
-        phone: '+351 912 345 680',
-        specialty: 'Загальне обслуговування',
+        role: 'technician',
+        firstName: 'Технік',
+        lastName: 'Основний',
+        phone: '+351912345680',
+        specialty: 'general',
         isActive: true
     },
     {
-        email: 'tech1@deapseak.com',
+        email: 'tech2@festlift.pt',
         username: 'tech1',
         password: 'tech123',
-        role: 'tech',
-        fullName: 'Технік 1',
-        phone: '+351 912 345 681',
-        specialty: 'Електрика',
+        role: 'technician',
+        firstName: 'Технік',
+        lastName: 'Перший',
+        phone: '+351912345681',
+        specialty: 'electric',
         isActive: true
     },
     {
-        email: 'tech2@deapseak.com',
+        email: 'tech3@festlift.pt',
         username: 'tech2',
         password: 'tech123',
-        role: 'tech',
-        fullName: 'Технік 2',
-        phone: '+351 912 345 682',
-        specialty: 'Механіка',
+        role: 'technician',
+        firstName: 'Технік',
+        lastName: 'Другий',
+        phone: '+351912345682',
+        specialty: 'mechanical',
         isActive: true
     },
     {
-        email: 'client@deapseak.com',
+        email: 'client@festlift.pt',
         username: 'client',
         password: 'client123',
         role: 'client',
-        fullName: 'Клієнт Тестовий',
-        phone: '+351 912 345 683',
+        firstName: 'Клієнт',
+        lastName: 'Тестовий',
+        phone: '+351912345683',
         company: 'Test Company Lda',
         isActive: true
     }
@@ -103,16 +109,17 @@ async function createDemoUsers() {
         
         const allUsers = await db.collection('users').find({}).toArray();
         allUsers.forEach(u => {
-            console.log(`  ${u.role.padEnd(12)} | ${u.email.padEnd(30)} | ${u.fullName}`);
+            const fullName = `${u.firstName} ${u.lastName}`;
+            console.log(`  ${u.role.padEnd(12)} | ${u.email.padEnd(30)} | ${fullName}`);
         });
         
         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
         
         console.log('🔑 Credentials для логіну:');
-        console.log('  Admin:      admin@deapseak.com / admin123');
-        console.log('  Dispatcher: dispatcher@deapseak.com / dispatcher123');
-        console.log('  Technician: tech@deapseak.com / tech123');
-        console.log('  Client:     client@deapseak.com / client123\n');
+        console.log('  👨‍💼 Адмін:      info@festlift.pt / admin123');
+        console.log('  📞 Диспетчер:  dispatcher@festlift.pt / dispatcher123');
+        console.log('  🔧 Технік:     tech1@festlift.pt / tech123');
+        console.log('  👤 Клієнт:     client@festlift.pt / client123\n');
         
     } catch (error) {
         console.error('❌ Помилка:', error);

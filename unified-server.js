@@ -4965,6 +4965,11 @@ console.log('   - /api/requests (завдання, інспекції)');
 console.log('   - /api/settings (налаштування)');
 console.log('   - /api/orcamentos (кошториси)');
 
+// 🔧 Global Error Handler - ВАЖЛИВО: має бути ПІСЛЯ всіх роутів
+const { errorHandler } = require('./backend/middleware/errorHandler');
+app.use(errorHandler);
+console.log('✅ Global error handler підключено');
+
 // ═══════════════════════════════════════════════════════════
 // 📊 ORÇAMENTOS API (LEGACY) - Старі endpoints для сумісності
 // ═══════════════════════════════════════════════════════════
@@ -5387,34 +5392,59 @@ app.post('/api/send-email', authenticateToken, async (req, res) => {
         console.log('📋 Subject:', subject);
         console.log('👤 Requested by:', req.user.email);
 
-        // Створюємо transporter для Brevo SMTP
-        const nodemailer = require('nodemailer');
-        const transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
-            port: parseInt(process.env.SMTP_PORT) || 587,
-            secure: false, // TLS
-            auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASS
-            }
-        });
+        // Перевірка чи налаштовано Brevo API
+        if (!process.env.BREVO_API_KEY) {
+            console.warn('⚠️ BREVO_API_KEY не налаштовано');
+            return res.status(503).json({
+                success: false,
+                error: 'Email service не налаштовано. Зверніться до адміністратора.'
+            });
+        }
 
-        const mailOptions = {
-            from: process.env.SMTP_FROM || '"LiftMaster Pro" <info@festlift.pt>',
-            to,
-            subject,
-            html
-        };
+        // Використовуємо Brevo API замість SMTP (надійніше)
+        try {
+            await emailService.sendEmail(to, subject, html);
+            
+            console.log('✅ Email successfully sent via Brevo API to:', to);
 
-        const result = await transporter.sendMail(mailOptions);
-        
-        console.log('✅ Email successfully sent:', result.messageId);
+            return res.json({
+                success: true,
+                message: 'Email успішно надіслано'
+            });
+        } catch (apiError) {
+            console.error('❌ Brevo API error:', apiError);
+            
+            // Якщо Brevo API не спрацював, спробуємо з nodemailer SMTP як fallback
+            console.log('🔄 Спроба відправки через SMTP fallback...');
+            
+            const nodemailer = require('nodemailer');
+            const transporter = nodemailer.createTransport({
+                host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
+                port: parseInt(process.env.SMTP_PORT) || 587,
+                secure: false, // TLS
+                auth: {
+                    user: process.env.SMTP_USER,
+                    pass: process.env.SMTP_PASS
+                }
+            });
 
-        return res.json({
-            success: true,
-            message: 'Email успішно надіслано',
-            messageId: result.messageId
-        });
+            const mailOptions = {
+                from: process.env.EMAIL_FROM || '"LiftMaster Pro" <info@festlift.pt>',
+                to,
+                subject,
+                html
+            };
+
+            const result = await transporter.sendMail(mailOptions);
+            
+            console.log('✅ Email sent via SMTP fallback:', result.messageId);
+
+            return res.json({
+                success: true,
+                message: 'Email успішно надіслано (SMTP)',
+                messageId: result.messageId
+            });
+        }
 
     } catch (error) {
         console.error('❌ Email sending error:', error);
@@ -6393,6 +6423,11 @@ app.get('/api/regulations/last-check', authenticateToken, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
+
+// Явний маршрут для головної сторінки (фікс для Codespaces proxy)
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 // Статичні файли - ОСТАННІ, щоб не перекривали API
 app.use(express.static(path.join(__dirname), {

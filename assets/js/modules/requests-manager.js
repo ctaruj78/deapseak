@@ -795,12 +795,19 @@ class RequestsManager {
     }
 
     showNotification(message, type = 'info') {
-        // Використання toast-сповіщень AdminLTE
-        $.notify(message, {
-            className: type,
-            position: 'bottom right',
-            autoHideDelay: 3000
-        });
+        if (typeof Swal !== 'undefined') {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'bottom-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+            const iconMap = { success: 'success', error: 'error', warning: 'warning', info: 'info' };
+            Toast.fire({ icon: iconMap[type] || 'info', title: message });
+        } else {
+            alert(message);
+        }
     }
 }
 

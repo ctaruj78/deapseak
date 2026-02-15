@@ -10,8 +10,8 @@
   <!-- Font Awesome -->
   <link rel="stylesheet" href="../../plugins/fontawesome-free/css/all.min.css">
   <!-- Theme style -->
-  <link rel="stylesheet" href="../../plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
-  <link rel="stylesheet" href="../../assets/css/adminlte.min.css">
+  <link rel="stylesheet" href="/plugins/sweetalert2/css/sweetalert2.min.css">
+  <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
   <style>
     #qr-reader {
       width: 100%;
@@ -455,31 +455,33 @@
 <!-- Bootstrap 4 -->
 <script src="../../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
 <!-- AdminLTE App -->
-<script src="../../assets/js/adminlte.min.js"></script>
+<script src="../../plugins/adminlte/adminlte.min.js"></script>
 <!-- QR Code Libraries -->
-<script src="../../plugins/qrcode/qrcode.min.js"></script>
+<script src="../../assets/plugins/qrcode/qrcode.min.js"></script>
 <script src="https://unpkg.com/html5-qrcode@2.2.1/html5-qrcode.min.js"></script>
 <!-- SweetAlert2 -->
-<script src="../../plugins/sweetalert2/sweetalert2.min.js"></script>
+<script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
 <!-- BS-Custom-Input -->
-<script src="../../plugins/bs-custom-file-input/bs-custom-file-input.min.js"></script>
+<script src="../../assets/plugins/bs-custom-file-input/bs-custom-file-input.min.js"></script>
 <!-- Utility scripts -->
 <script src="../../assets/js/auth.js"></script>
 <script src="../../assets/js/qr-utils.js"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    // Ініціалізація bs-custom-file-input
-    bsCustomFileInput.init();
+    // Ініціалізація bs-custom-file-input (якщо доступний)
+    if (typeof bsCustomFileInput !== 'undefined') {
+        bsCustomFileInput.init();
+    }
     
     // Перевірка авторизації
-    if (!isAuthenticated()) {
+    if (!AuthManager.isAuthenticated()) {
         window.location.replace('/pages/auth/login.html');
         return;
     }
     
     // Configurações для користувача
-    const user = getCurrentUser();
+    const user = AuthManager.getCurrentUser();
     if (user && user.role !== 'technician' && user.role !== 'admin' && user.role !== 'dispatcher') {
         // Якщо не технік, адмін або диспетчер - перенаправляємо
         window.location.replace('/index.html');
@@ -952,7 +954,7 @@ document.addEventListener("DOMContentLoaded", function() {
         
         try {
             // Отримуємо ID поточного користувача
-            const user = getCurrentUser();
+            const user = AuthManager.getCurrentUser();
             const username = user ? user.username : null;
             
             // Отримуємо останні 5 сканувань поточного користувача
@@ -1071,9 +1073,7 @@ document.addEventListener("DOMContentLoaded", function() {
     async function loadStatistics() {
         try {
             // Отримуємо ID поточного користувача
-            const user = getCurrentUser();
-            const username = user ? user.username : null;
-            
+            const user = AuthManager.getCurrentUser();
             if (!username) return;
             
             // Отримуємо сьогоднішню дату

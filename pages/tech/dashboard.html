@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    <!-- Socket.IO Client -->
+    <script src="/socket.io/socket.io.js"></script>
     <!-- Universal WebSocket Manager -->
     <script src="/assets/js/universal-websocket.js"></script>
     
@@ -308,43 +310,34 @@
 
     <script>
         $(document).ready(function() {
-            // Перевірка авторизації
-            const sessionData = localStorage.getItem('lm_session');
-            if (!sessionData) {
+            // Перевірка авторизації через AuthManager
+            if (!AuthManager.isAuthenticated()) {
                 window.location.replace('/pages/auth/login.html');
                 return;
             }
 
-            try {
-                const session = JSON.parse(sessionData);
-                const now = new Date();
-                
-                if (new Date(session.expiresAt) <= now) {
-                    localStorage.removeItem('lm_session');
-                    window.location.replace('/pages/auth/login.html');
-                    return;
-                }
+            const currentUser = AuthManager.getCurrentUser();
+            
+            if (!currentUser) {
+                console.error('[Tech Dashboard] Не вдалося отримати дані користувача');
+                AuthManager.logout();
+                return;
+            }
 
-                if (session.user && (session.user.role !== 'tech' && session.user.role !== 'technician')) {
-                    alert('Доступ заборонено. Необхідні права техніка.');
-                    window.location.replace('/pages/auth/login.html');
-                    return;
-                }
-
-                // Завантажуємо дані
-                loadTechData();
-                
-                // Ініціалізація WebSocket для техніка (з перевіркою)
-                if (session.user) {
-                    initTechWebSocket(session.user);
-                } else {
-                    console.warn('[Tech Dashboard] User не знайдено в session');
-                }
-                
-            } catch (error) {
-                console.error('Session error:', error);
-                localStorage.removeItem('lm_session');
+            if (currentUser.role !== 'tech' && currentUser.role !== 'technician') {
+                alert('Доступ заборонено. Необхідні права техніка.');
                 window.location.replace('/pages/auth/login.html');
+                return;
+            }
+
+            console.log('[Tech Dashboard] Авторизовано як:', currentUser.username, currentUser.role);
+
+            // Завантажуємо дані
+            loadTechData();
+            
+            // Ініціалізація WebSocket для техніка
+            if (currentUser) {
+                initTechWebSocket(currentUser);
             }
         });
 
@@ -410,36 +403,19 @@
         // 🔥 ПІДКЛЮЧЕНО ДО РЕАЛЬНОГО API /api/requests
         async function loadTechAssignments() {
             try {
-                const token = localStorage.getItem('authToken') || localStorage.getItem('token') || localStorage.getItem('liftmanager_jwt');
-                if (!token) {
-                    console.error('❌ No token found');
+                const response = await AuthManager.fetchWithAuth('/api/requests');
+                
+                if (!response || !response.ok) {
+                    console.warn('⚠️ API /api/requests returned non-OK status:', response?.status);
                     return [];
                 }
-
-                const apiUrl = window.location.hostname.includes('app.github.dev') 
-                    ? `https://${window.location.hostname.replace('5173-', '3000-')}/api/requests`
-                    : '/api/requests';
-
-                const response = await fetch(apiUrl, {
-                    method: 'GET',
-                    headers: { 
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
                 
-                if (response.ok) {
-                    const data = await response.json();
-                    const tasks = Array.isArray(data) ? data : (data.data || data.requests || []);
-                    console.log('✅ Tasks loaded from API:', tasks.length);
-                    return tasks;
-                }
-                
-                console.warn('⚠️ API /api/requests returned non-OK status:', response.status);
-                return [];
+                const data = await response.json();
+                const tasks = Array.isArray(data) ? data : (data.data || data.requests || []);
+                console.log('✅ Tasks loaded from API:', tasks.length);
+                return tasks;
             } catch (error) {
                 console.error('❌ API error:', error);
-                // Не використовуємо fake дані - повертаємо порожній масив
                 return [];
             }
         }
@@ -447,34 +423,17 @@
         // Функція завантаження запитів техніка
         async function loadTechRequests() {
             try {
-                const token = localStorage.getItem('authToken') || localStorage.getItem('token') || localStorage.getItem('liftmanager_jwt');
-                if (!token) {
-                    console.warn('⚠️ Токен не знайдено');
+                const response = await AuthManager.fetchWithAuth('/api/requests');
+                
+                if (!response || !response.ok) {
+                    console.warn('⚠️  API повернув статус:', response?.status);
                     return [];
                 }
                 
-                const apiUrl = window.location.hostname.includes('app.github.dev') 
-                    ? `https://${window.location.hostname.replace('5173-', '3000-')}/api/requests`
-                    : '/api/requests';
-                
-                const response = await fetch(apiUrl, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    return Array.isArray(data) ? data : (data.data || data.requests || []);
-                }
-                
-                console.warn('⚠️  API повернув статус:', response.status);
-                return [];
+                const data = await response.json();
+                return Array.isArray(data) ? data : (data.data || data.requests || []);
             } catch (error) {
                 console.error('❌ Помилка API:', error);
-                // Не використовуємо fake дані - повертаємо порожній масив
                 return [];
             }
         }
@@ -684,28 +643,15 @@
         // Функція додавання примітки до завдання
         async function addNoteToTask(taskId, note) {
             try {
-                const token = localStorage.getItem('authToken') || localStorage.getItem('token') || localStorage.getItem('liftmanager_jwt');
-                if (!token) {
-                    throw new Error('Токен не знайдено');
-                }
-                
-                const apiUrl = window.location.hostname.includes('app.github.dev') 
-                    ? `https://${window.location.hostname.replace('5173-', '3000-')}/api/requests/${taskId}/comment`
-                    : `/api/requests/${taskId}/comment`;
-                
-                const response = await fetch(apiUrl, {
+                const response = await AuthManager.fetchWithAuth(`/api/requests/${taskId}/comment`, {
                     method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
                     body: JSON.stringify({ 
                         comment: note,
                         timestamp: new Date().toISOString()
                     })
                 });
 
-                if (response.ok) {
+                if (response && response.ok) {
                     console.log('✅ Примітка додана');
                     alert('Примітка успішно додана');
                 } else {
@@ -732,25 +678,12 @@
         // Функція оновлення статусу завдання
         async function updateTaskStatus(taskId, newStatus) {
             try {
-                const token = localStorage.getItem('authToken') || localStorage.getItem('token') || localStorage.getItem('liftmanager_jwt');
-                if (!token) {
-                    throw new Error('Токен не знайдено');
-                }
-                
-                const apiUrl = window.location.hostname.includes('app.github.dev') 
-                    ? `https://${window.location.hostname.replace('5173-', '3000-')}/api/requests/${taskId}/status`
-                    : `/api/requests/${taskId}/status`;
-                
-                const response = await fetch(apiUrl, {
+                const response = await AuthManager.fetchWithAuth(`/api/requests/${taskId}/status`, {
                     method: 'PATCH',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
                     body: JSON.stringify({ status: newStatus })
                 });
 
-                if (response.ok) {
+                if (response && response.ok) {
                     console.log('✅ Статус завдання оновлено');
                     // Перезавантажити дані
                     loadTechData();

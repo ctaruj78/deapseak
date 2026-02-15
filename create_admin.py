@@ -10,7 +10,7 @@ db = client["deapseak"]
 
 # Перевірити чи існує адмін
 admin_exists = db.users.find_one({"$or": [
-    {"email": "admin@deapseak.com"},
+    {"email": "info@festlift.pt"},
     {"username": "admin"}
 ]})
 
@@ -22,7 +22,7 @@ if not admin_exists:
     # Створити адмін користувача
     admin_user = {
         "username": "admin",
-        "email": "admin@deapseak.com",
+        "email": "info@festlift.pt",
         "password": hashed.decode('utf-8'),
         "role": "admin", 
         "fullName": "Системний Адміністратор",

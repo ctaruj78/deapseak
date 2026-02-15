@@ -28,7 +28,10 @@
         
         // Якщо body ще не існує - чекаємо
         if (!body) {
-            console.warn('⚠️ Body not ready, deferring theme application');
+            // Тихо відкладаємо без попередження
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => applyTheme(theme), { once: true });
+            }
             return;
         }
         

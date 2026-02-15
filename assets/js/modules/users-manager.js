@@ -598,7 +598,21 @@ class UserManager {
     }
 
     showNotification(message, type = 'info', duration = 3000) {
-        // Використання вбудованих сповіщень AdminLTE
+        if (typeof Swal !== 'undefined') {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'bottom-end',
+                showConfirmButton: false,
+                timer: duration,
+                timerProgressBar: true
+            });
+            const iconMap = { success: 'success', error: 'error', warning: 'warning', info: 'info' };
+            Toast.fire({ icon: iconMap[type] || 'info', title: message });
+        } else {
+            alert(message);
+        }
+        /*
+        // Стара версія з AdminLTE
         $.notify({
             icon: type === 'success' ? 'fas fa-check' : 
                   type === 'error' ? 'fas fa-exclamation-triangle' : 
@@ -622,6 +636,7 @@ class UserManager {
                       '<span data-notify="message">{2}</span>' +
                       '</div>'
         });
+        */
     }
 }
 

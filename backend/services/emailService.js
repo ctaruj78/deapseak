@@ -53,6 +53,11 @@ class EmailService {
         await this.apiInstance.sendTransacEmail(sendSmtpEmail);
     }
 
+    // Публічний метод для відправки email (для API endpoints)
+    async sendEmail(to, subject, htmlContent) {
+        return await this._sendEmail(to, subject, htmlContent);
+    }
+
     // Відправити email про нову заявку
     async sendNewRequestNotification(request, client) {
         if (!this.apiInstance) {

@@ -610,6 +610,20 @@ class ReportsSystem {
     }
 
     showNotification(message, type = 'info') {
+        if (typeof Swal !== 'undefined') {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'bottom-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+            const iconMap = { success: 'success', error: 'error', warning: 'warning', info: 'info' };
+            Toast.fire({ icon: iconMap[type] || 'info', title: message });
+        } else {
+            alert(message);
+        }
+        /* Стара версія з AdminLTE
         $.notify({
             icon: type === 'success' ? 'fas fa-check' : 
                   type === 'error' ? 'fas fa-exclamation-triangle' : 
@@ -633,6 +647,7 @@ class ReportsSystem {
                       '<span data-notify="message">{2}</span>' +
                       '</div>'
         });
+        */
     }
 
     formatDateForInput(date) {

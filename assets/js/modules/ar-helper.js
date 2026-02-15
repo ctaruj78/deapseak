@@ -57,7 +57,8 @@ class ARHelper {
         setInterval(() => this.broadcastStatus(), 30000); // Кожні 30 секунд
 
         // Синхронізація аннотацій
-        this.syncAnnotations();
+        // TODO: Реалізувати метод syncAnnotations()
+        // this.syncAnnotations();
     }
 
     loadUserInfo() {

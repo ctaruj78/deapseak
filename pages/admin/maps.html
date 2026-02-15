@@ -542,7 +542,6 @@
     
     <!-- 🌍 Система багатомовності -->
     <script src="../../assets/js/i18n.js"></script>
-    <script src="../../assets/js/init-i18n.js"></script>
     <!-- Leaflet JS -->
     <script src="../../plugins/leaflet/leaflet.js"></script>
     <!-- Leaflet Routing Machine -->
@@ -783,7 +782,7 @@
                     <p><strong>📊 Статус:</strong> <span class="lift-status ${statusClass}">${statusText}</span></p>
                     <p><strong>🔧 Останнє ТО:</strong> ${lastService}</p>
                     <div class="text-center mt-2">
-                        <button class="btn btn-sm btn-success" onclick="createRouteToLift('${lift.id}')">
+                        <button id="route-btn-${lift.id}" class="btn btn-sm btn-success" onclick="createRouteToLift('${lift.id}')">
                             <i class="fas fa-route"></i> Прокласти маршрут
                         </button>
                         <a href="lifts.html" class="btn btn-sm btn-primary">
@@ -794,13 +793,46 @@
             `;
         }
 
+        // Захист від подвійного виклику
+        let lastRouteCallTimestamp = 0;
+        let processingRoute = false;
+        
+        // Функція розблокування кнопки маршруту
+        function unlockRouteButton(liftId) {
+            processingRoute = false;
+            const btn = document.getElementById(`route-btn-${liftId}`);
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-route"></i> Прокласти маршрут';
+            }
+        }
+        
         // Глобальна функція для кнопки "Прокласти маршрут" в popup
         window.createRouteToLift = function(liftId) {
+            const now = Date.now();
+            
+            // ЗАХИСТ: Блокуємо якщо минуло менше 1 секунди з останнього виклику
+            if ((now - lastRouteCallTimestamp) < 1000 || processingRoute) {
+                console.log('⏸️ БЛОКУВАННЯ: Повторний виклик занадто швидко (подвійний клік)');
+                return;
+            }
+            
+            lastRouteCallTimestamp = now;
+            processingRoute = true;
+            
+            // Блокуємо кнопку
+            const btn = document.getElementById(`route-btn-${liftId}`);
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Будується...';
+            }
+            
             console.log('🗺️ Прокладання маршруту до ліфта:', liftId);
             
             const lift = lifts.find(l => l.id === liftId);
             if (!lift) {
                 console.error('❌ Ліфт не знайдено:', liftId);
+                unlockRouteButton(liftId);
                 return;
             }
 
@@ -808,6 +840,7 @@
             if (!userLocation) {
                 alert('Не вдалося визначити вашу поточну локацію. Дозвольте доступ до геолокації в браузері.');
                 map.setView([lift.lat, lift.lng], 16);
+                unlockRouteButton(liftId);
                 return;
             }
 
@@ -838,6 +871,9 @@
                 const routes = e.routes;
                 const summary = routes[0].summary;
                 console.log('✅ Маршрут знайдено:', (summary.totalDistance/1000).toFixed(2), 'км');
+                
+                // Розблоковуємо кнопку після успішної побудови
+                unlockRouteButton(liftId);
                 
                 // Додати кнопку закриття
                 setTimeout(() => {

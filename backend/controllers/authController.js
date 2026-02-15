@@ -95,15 +95,17 @@ exports.register = async (req, res, next) => {
  */
 exports.login = async (req, res, next) => {
     try {
-        const { login, password } = req.body; // login може бути email або username
+        // Підтримуємо як 'login' (старий формат), так і 'email' (новий формат)
+        const { login, email, password } = req.body;
+        const loginValue = login || email; // Використовуємо login або email
 
-        if (!login || !password) {
+        if (!loginValue || !password) {
             throw new AppError('Будь ласка, надайте email/username та пароль', 400);
         }
 
         // Пошук користувача (email або username)
         const user = await User.findOne({
-            $or: [{ email: login }, { username: login }]
+            $or: [{ email: loginValue }, { username: loginValue }]
         }).select('+password'); // Явно включаємо пароль
 
         if (!user) {

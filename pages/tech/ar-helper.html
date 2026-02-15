@@ -707,9 +707,9 @@
     <script src="/plugins/select2/js/select2.min.js"></script>
 
     <!-- AR Helper JS -->
-    <script src="../../assets/js/modules/ar-helper.js"></script>
+    <script src="../../assets/js/modules/ar-helper.js?v=20260209"></script>
     <script src="../../assets/js/modules/voice-ar.js"></script>
-    <script src="../../assets/js/modules/ar-checklist.js"></script>
+    <script src="../../assets/js/modules/ar-checklist.js?v=20260209"></script>
     <script src="../../assets/js/modules/photo-video-capture.js"></script>
     <script src="../../assets/js/modules/push-notifications.js"></script>
     <script src="../../assets/js/modules/messenger.js"></script>
@@ -752,9 +752,8 @@
                 $('#startAR, #startARBtn').on('click', function() {
                     alert('AR функціонал недоступний. Перевірте завантаження ARHelper.js');
                 });
-            } else {
-                window.arHelper = new ARHelper();
             }
+            // ПРИМІТКА: window.arHelper створюється в ar-helper.js модулі
 
             // Темна тема
             $('#darkModeToggle').on('click', function() {
@@ -762,17 +761,20 @@
                 $(this).find('i').toggleClass('fa-moon fa-sun');
             });
 
-            // Голосове керування
-            let voiceAR;
-            if (typeof ARHelper !== 'undefined') {
-                voiceAR = new VoiceAR(window.arHelper || new ARHelper());
-                voiceAR.init();
-                const voiceBtn = document.createElement('button');
-                voiceBtn.className = 'btn btn-warning mb-2';
-                voiceBtn.innerHTML = '<i class="fas fa-microphone"></i> Голосове керування';
-                voiceBtn.onclick = () => voiceAR.start();
-                document.querySelector('.ar-control-panel')?.appendChild(voiceBtn);
-            }
+            // Голосове керування - ініціалізація з затримкою щоб ARHelper встиг завантажитися
+            setTimeout(function() {
+                if (typeof VoiceAR !== 'undefined' && window.arHelper) {
+                    const voiceAR = new VoiceAR(window.arHelper);
+                    voiceAR.init();
+                    const voiceBtn = document.createElement('button');
+                    voiceBtn.className = 'btn btn-warning mb-2';
+                    voiceBtn.innerHTML = '<i class="fas fa-microphone"></i> Голосове керування';
+                    voiceBtn.onclick = () => voiceAR.start();
+                    document.querySelector('.ar-control-panel')?.appendChild(voiceBtn);
+                } else {
+                    console.warn('⚠️ VoiceAR або ARHelper не завантажено');
+                }
+            }, 200);
 
             // Ініціалізація push-нотифікацій
             window.pushNotifications.init();

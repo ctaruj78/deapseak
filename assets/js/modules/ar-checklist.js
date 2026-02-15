@@ -41,4 +41,17 @@ class ARChecklist {
   }
 }
 
-window.arChecklist = new ARChecklist(window.arHelper || new ARHelper());
+// Ініціалізація ARChecklist після завантаження ARHelper
+function initARChecklist() {
+    if (window.arHelper) {
+        window.arChecklist = new ARChecklist(window.arHelper);
+        console.log('✅ ARChecklist ініціалізовано');
+    } else {
+        console.warn('⚠️ ARHelper ще не завантажено, спроба через 500ms...');
+        setTimeout(initARChecklist, 500);
+    }
+}
+
+$(document).ready(function() {
+    setTimeout(initARChecklist, 100); // Невелика затримка щоб ARHelper встиг завантажитися
+});

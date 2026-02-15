@@ -111,7 +111,7 @@ class UniversalWebSocketManager {
      */
     handleOpen() {
         // Автентифікація через JWT
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('liftmanager_jwt');
         if (token) {
             this.socket.emit('authenticate', token);
         }

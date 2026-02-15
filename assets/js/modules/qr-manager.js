@@ -305,7 +305,14 @@ const qrManager = (function() {
         $('#viewQRModalTitle').text(`QR Код: ${qr.code}`);
         $('#qrCodeText').text(qr.code);
 
-        // Generate QR Code
+        // Перевірка наявності QRCode бібліотеки
+        if (typeof QRCode === 'undefined') {
+            console.error('❌ QRCode library not loaded');
+            $('#qrCodeCanvas').html('<div class="alert alert-warning">QR код бібліотека завантажується...</div>');
+            return;
+        }
+
+        // Generate QR Code - qrcodejs@1.0.0 API
         $('#qrCodeCanvas').empty();
         new QRCode(document.getElementById('qrCodeCanvas'), {
             text: qr.code,

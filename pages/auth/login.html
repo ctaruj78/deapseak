@@ -9,7 +9,7 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="/plugins/bootstrap/bootstrap.min.css">
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/plugins/fontawesome/css/all.min.css">
     <link rel="stylesheet" href="../../assets/css/main.css">
     <link rel="stylesheet" href="../../assets/css/auth.css">
 </head>
@@ -70,7 +70,7 @@
     </div>
     <!-- Scripts -->
     <!-- jQuery (Must be first!) -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/plugins/jquery/jquery.min.js"></script>
     <!-- Config -->
     <script src="../../assets/js/config.js"></script>
     <!-- Bootstrap -->
@@ -82,8 +82,27 @@
     <script src="../../assets/js/auth.js"></script>
     
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        // НЕГАЙНА ініціалізація (без чекання DOMContentLoaded)
+        function initLoginForm() {
             const loginForm = document.getElementById('login-form');
+            
+            // Захист від подвійної ініціалізації
+            if (window.__loginFormInitialized) {
+                console.log('⚠️ Форма вже ініціалізована, пропускаємо');
+                return;
+            }
+            
+            // Якщо форма ще не готова - чекаємо
+            if (!loginForm) {
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', initLoginForm, { once: true });
+                }
+                return;
+            }
+            
+            // Позначаємо що форма ініціалізована
+            window.__loginFormInitialized = true;
+            console.log('🔧 Ініціалізація форми логіну...');
             
             // Автозаповнення з URL параметрів (для швидкого тестування)
             const urlParams = new URLSearchParams(window.location.search);
@@ -241,24 +260,33 @@
                 }, 5000);
             }
             
-            // Обробка форми входу - ВИПРАВЛЕНО: без видалення обробника
+            // Обробка форми входу - ОСТАТОЧНЕ ВИПРАВЛЕННЯ подвійного кліку
             let isSubmitting = false;
+            let submitTimestamp = 0;
             
             const handleLogin = async (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 e.stopImmediatePropagation();
                 
-                // Подвійна перевірка - якщо вже обробляємо, ІГНОРУЄМО
-                if (isSubmitting || loginForm.dataset.processing === 'true') {
-                    console.log('⏸️ Форма вже обробляється, ІГНОРУЄМО повторний submit');
+                const now = Date.now();
+                
+                // ПОТРІЙНИЙ захист від подвійного кліку:
+                // 1. Перевірка прапорця
+                // 2. Перевірка data-атрибута
+                // 3. Перевірка часу останнього submit (менше 1 секунди = ігнор)
+                if (isSubmitting || 
+                    loginForm.dataset.processing === 'true' || 
+                    (now - submitTimestamp) < 1000) {
+                    console.log('⏸️ БЛОКУВАННЯ: Форма вже обробляється або повторний клік занадто швидко');
                     return false;
                 }
                 
-                // Встановлюємо прапорець
+                // Встановлюємо всі прапорці
                 isSubmitting = true;
+                submitTimestamp = now;
                 loginForm.dataset.processing = 'true';
-                console.log('🔒 Форму ЗАБЛОКОВАНО для обробки');
+                console.log('🔒 Форму ЗАБЛОКОВАНО для обробки [' + new Date().toISOString() + ']');
                 
                 const submitButton = loginForm.querySelector('button[type="submit"]');
                 const originalButtonText = submitButton.innerHTML;
@@ -382,10 +410,29 @@
                 return false;
             };
             
-            // Прикріплюємо обробник
-            loginForm.addEventListener('submit', handleLogin);
-            console.log('✅ Login form handler attached');
-        });
+            // Прикріплюємо обробник (ОДИН РАЗ!)
+            loginForm.removeEventListener('submit', handleLogin); // Видаляємо попередній якщо був
+            loginForm.addEventListener('submit', handleLogin, { once: false }); // once: false але з ручним контролем
+            
+            // ДОДАТКОВИЙ захист: Блокуємо кнопку submit при кліку
+            const submitButton = loginForm.querySelector('button[type="submit"]');
+            if (submitButton) {
+                submitButton.addEventListener('click', function(e) {
+                    if (isSubmitting || loginForm.dataset.processing === 'true') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
+                        console.log('🚫 Клік заблоковано - форма вже обробляється');
+                        return false;
+                    }
+                });
+            }
+            
+            console.log('✅ Login form handler attached with double-click protection');
+        }
+        
+        // Викликаємо ініціалізацію одразу
+        initLoginForm();
     </script>
 </body>
 </html>
