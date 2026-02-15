@@ -19,7 +19,11 @@ async function gerarPDFOrcamento(orcamento) {
             
             // Cabeçalho
             doc.fontSize(24).font('Helvetica-Bold').text('FESTLIFT, LDA', { align: 'center' });
-            doc.fontSize(10).font('Helvetica').text('Manutenção de Elevadores', { align: 'center' });
+            doc.fontSize(10).font('Helvetica');
+            doc.text('Manutenção e Reparação de Elevadores', { align: 'center' });
+            doc.text('Av. do Parque 84B, Rio de Mouro, Lisboa 2635-609', { align: 'center' });
+            doc.text('Tel: +351 214 190 863 | Móvel: +351 926 380 243/244', { align: 'center' });
+            doc.text('Email: info@festlift.pt | NIF: 515924741', { align: 'center' });
             doc.moveDown();
             
             // Linha separadora
@@ -122,8 +126,9 @@ async function gerarPDFOrcamento(orcamento) {
             // Rodapé
             doc.fontSize(8).font('Helvetica');
             const footerY = 750;
-            doc.text('FESTLIFT, LDA', 50, footerY, { align: 'center', width: 500 });
-            doc.text('NIF: 123456789 | Email: info@festlift.pt | Tel: +351 XXX XXX XXX', 50, footerY + 12, { align: 'center', width: 500 });
+            doc.text('FESTLIFT, LDA - Manutenção de Elevadores', 50, footerY, { align: 'center', width: 500 });
+            doc.text('NIF: 515924741 | Email: info@festlift.pt | Tel: +351 214 190 863 | Móvel: +351 926 380 243/244', 50, footerY + 12, { align: 'center', width: 500 });
+            doc.text('Av. do Parque 84B, Rio de Mouro, Lisboa 2635-609', 50, footerY + 24, { align: 'center', width: 500 });
             
             doc.end();
         } catch (error) {

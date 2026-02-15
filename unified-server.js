@@ -5322,7 +5322,8 @@ app.post('/api/contact', async (req, res) => {
             </div>
             <div class="footer">
                 <p>Este email foi enviado automaticamente através do formulário de contacto do website.</p>
-                <p><strong>FestLift Portugal</strong> | info@festlift.pt | +351 961 777 666</p>
+                <p><strong>FESTLIFT, LDA</strong> | info@festlift.pt | Tel: +351 214 190 863 | Móvel: +351 926 380 243/244</p>
+                <p>Av. do Parque 84B, Rio de Mouro, Lisboa 2635-609 | NIF: 515924741</p>
             </div>
         </div>
     </div>

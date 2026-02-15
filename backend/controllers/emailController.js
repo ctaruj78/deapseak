@@ -190,9 +190,11 @@ exports.sendPasswordEmail = async (req, res, next) => {
                         </div>
                         
                         <div class="footer">
-                            <p>📞 Технічна підтримка: <strong>+351 961 777 666</strong></p>
-                            <p>📧 Email: <a href="mailto:suporte@festlift.pt">suporte@festlift.pt</a></p>
-                            <p>&copy; 2024-2026 FestLift Portugal. Внутрішня розробка для клієнтів.</p>
+                            <p><strong>FESTLIFT, LDA - Manutenção de Elevadores</strong></p>
+                            <p>📞 Tel: <strong>+351 214 190 863</strong> | Móvel: <strong>+351 926 380 243/244</strong></p>
+                            <p>📧 Email: <a href="mailto:info@festlift.pt">info@festlift.pt</a></p>
+                            <p>📍 Av. do Parque 84B, Rio de Mouro, Lisboa 2635-609</p>
+                            <p>&copy; 2024-2026 FestLift Portugal. NIF: 515924741</p>
                         </div>
                     </div>
                 </div>
