@@ -129,14 +129,22 @@ class InspectionReportParser {
         }
 
         // ПОКРАЩЕНИЙ REGEX: Витягуємо клаузи типу C1, C2, C3 з артикулом та описом
-        // Формат: "C2 Artº.46.º 2 – O dispositivo contra entalamentos..."
+        // Формат Bureau Veritas: "C2 Artº.46.º 2 – O dispositivo contra entalamentos..."
+        // Формат IEP: "C2 | DL. 513/70 (Artº 64º-1) - Não existe..."
         // ВАЖЛИВО: Артикул ПОВИНЕН бути числом, а не словом типо "NOTA"
-        const clausePattern = /\b(C[123])\s+(?:Art[ºo.]+\s*)?(\d+(?:[.,º\s]+\d+)*)\s*[–\-—]\s*(.+?)(?=\n\s*C[123]\s|$)/gis;
+        
+        // Regex для Bureau Veritas формату
+        const clausePatternBV = /\b(C[123])\s+(?:Art[ºo.]+\s*)?(\d+(?:[.,º\s]+\d+)*)\s*[–\-—]\s*(.+?)(?=\n\s*C[123]\s|$)/gis;
+        
+        // Regex для IEP формату: "C2 | DL. 513/70 (Artº 64º-1) - ..."
+        // ПОКРАЩЕНИЙ: [\s\S]+? для захоплення багаторядкових описів
+        const clausePatternIEP = /(C[123])\s*\|[^(]*\(\s*Artº?\s*([\d]+[\dº.,\s-]*)\s*\)\s*[-–—]\s*([\s\S]+?)(?=\s*C[123]\s*\||Notas:|RESULTADO|$)/gi;
 
         let match;
         let clauseCount = 0;
 
-        while ((match = clausePattern.exec(clauseSection)) !== null) {
+        // Спочатку пробуємо Bureau Veritas формат
+        while ((match = clausePatternBV.exec(clauseSection)) !== null) {
             const clauseType = match[1].toUpperCase(); // C1, C2, або C3
             const articleNumber = match[2].trim();
             let description = match[3].trim();
@@ -149,12 +157,21 @@ class InspectionReportParser {
                 continue;
             }
             
+            // 1a. КРИТИЧНО: Виключаємо артикул "NOTA" явно
+            if (articleNumber.toUpperCase().includes('NOTA')) {
+                console.log(`⚠️ Пропускаємо: артикул містить "NOTA" - це не порушення`);
+                continue;
+            }
+            
             // 2. Перевіряємо чи опис не містить метатекст про типи клауз
             const metaTextPatterns = [
                 /foram\s+detetadas?\s+cl[áa]usulas?\s+tipo/i,
                 /correspondem\s+a\s+situa[çc][õo]es/i,
                 /obrigam\s+[àa]\s+imobiliza[çc][ãa]o/i,
-                /d[ãa]o\s+lugar\s+a\s+uma\s+reinspec[çc][ãa]o/i
+                /d[ãa]o\s+lugar\s+a\s+uma\s+reinspec[çc][ãa]o/i,
+                /cumprir\s+no\s+prazo\s+m[áa]ximo/i,
+                /de\s+acordo\s+com\s+o\s+Decreto/i,
+                /Instala[çc][õo]es\s+de\s+eleva[çc][ãa]o/i
             ];
             
             const isMetaText = metaTextPatterns.some(pattern => pattern.test(description));
@@ -170,10 +187,19 @@ class InspectionReportParser {
             }
 
             // Очищуємо опис від зайвих пробілів та переносів
-            const cleanDescription = description
+            let cleanDescription = description
                 .replace(/\s+/g, ' ')
                 .replace(/\n+/g, ' ')
                 .trim();
+            
+            // 4. КРИТИЧНО: Перевіряємо чи опис не починається з цифри та тире
+            // Це означає що підрозділ артикула потрапив в опис через перенос рядка
+            // Приклад: "2 – O acesso à casa..." - це частина "Artº.22.º 2 – ..."
+            if (/^\d+\s*[–\-—]\s*/.test(cleanDescription)) {
+                console.log(`⚠️ Пропускаємо: опис починається з підрозділу "${cleanDescription.substring(0, 30)}..."`);
+                console.log(`   Можливо це дублікат артикула ${articleNumber} з підрозділом`);
+                continue;
+            }
             
             // Перевіряємо чи опис не пустий після очищення
             if (cleanDescription.length < 10) {
@@ -190,11 +216,67 @@ class InspectionReportParser {
                 fullText: `${clauseType} Artº.${articleNumber} – ${cleanDescription}`
             });
 
-            console.log(`✅ Клауза #${clauseCount}: ${clauseType} Artº.${articleNumber}`);
+            console.log(`✅ Клауза BV #${clauseCount}: ${clauseType} Artº.${articleNumber}`);
             console.log(`   Опис: ${cleanDescription.substring(0, 60)}...`);
         }
 
-        // ДОДАТКОВИЙ МЕТОД: Якщо перший не спрацював, шукаємо в табличному форматі
+        // ДОДАТКОВИЙ МЕТОД 1: Пробуємо IEP формат
+        console.log('🔄 Пробуємо IEP формат витягування...');
+        while ((match = clausePatternIEP.exec(clauseSection)) !== null) {
+            const clauseType = match[1].toUpperCase();
+            const articleNumber = match[2].trim();
+            let description = match[3].trim();
+
+            // Застосовуємо ті самі фільтри
+            if (!/^\d+/.test(articleNumber)) {
+                console.log(`⚠️ IEP: Пропускаємо: артикул "${articleNumber}" не є числом`);
+                continue;
+            }
+
+            const metaTextPatterns = [
+                /foram\s+detetadas?\s+cl[áa]usulas?\s+tipo/i,
+                /correspondem\s+a\s+situa[çc][õo]es/i,
+                /cumprir\s+no\s+prazo\s+m[áa]ximo/i,
+                /de\s+acordo\s+com\s+o\s+Decreto/i
+            ];
+
+            if (metaTextPatterns.some(pattern => pattern.test(description))) {
+                console.log(`⚠️ IEP: Пропускаємо метатекст`);
+                continue;
+            }
+
+            let cleanDescription = description
+                .replace(/\s+/g, ' ')
+                .replace(/\n+/g, ' ')
+                .trim();
+
+            // Додаткова очистка для IEP: видаляємо текст в дужках на початку
+            cleanDescription = cleanDescription.replace(/^\([^)]*\)\s*/, '');
+
+            if (/^\d+\s*[–\-—]\s*/.test(cleanDescription)) {
+                console.log(`⚠️ IEP: Пропускаємо: опис починається з підрозділу`);
+                continue;
+            }
+
+            if (cleanDescription.length < 10) {
+                console.log(`⚠️ IEP: Пропускаємо: опис занадто короткий`);
+                continue;
+            }
+
+            clauseCount++;
+
+            clauses.push({
+                type: clauseType,
+                article: articleNumber,
+                description: cleanDescription,
+                fullText: `${clauseType} | DL (Artº.${articleNumber}) – ${cleanDescription}`
+            });
+
+            console.log(`✅ Клауза IEP #${clauseCount}: ${clauseType} Artº.${articleNumber}`);
+            console.log(`   Опис: ${cleanDescription.substring(0, 60)}...`);
+        }
+
+        // ДОДАТКОВИЙ МЕТОД 2: Якщо обидва не спрацювали, шукаємо в табличному форматі
         // Іноді клаузи можуть бути в табличному форматі "Tipo | Deficiência detectada"
         if (clauses.length === 0) {
             console.log('🔄 Пробуємо альтернативний метод витягування (таблиця)...');
@@ -226,16 +308,76 @@ class InspectionReportParser {
 
         console.log(`📊 Загальна кількість знайдених клауз: ${clauses.length}`);
         
+        // ДЕДУПЛІКАЦІЯ: Видаляємо дублікати клауз за комбінацією type + article
+        // Іноді в PDF одна клауза може бути згадана двічі або з різною точністю (22 vs 22.2)
+        const uniqueClauses = [];
+        const seenKeys = new Map(); // Map для збереження повної інформації
+        
+        for (const clause of clauses) {
+            // Нормалізуємо номер артикула: видаляємо зайві символи
+            const normalizedArticle = clause.article.replace(/[°º\s-]/g, '');
+            
+            // Створюємо унікальний ключ: тип + нормалізований артикул
+            const key = `${clause.type}|${normalizedArticle}`;
+            
+            // Перевіряємо чи немає точного дубліката
+            if (seenKeys.has(key)) {
+                console.log(`⚠️ Видалено точний дублікат: ${clause.type} Artº.${clause.article}`);
+                continue;
+            }
+            
+            // Перевіряємо чи немає часткового дубліката (22 vs 22.2)
+            // Шукаємо чи є вже клауза з тим самим типом та схожим артикулом
+            let isDuplicate = false;
+            for (const [existingKey, existingClause] of seenKeys.entries()) {
+                if (existingKey.startsWith(clause.type + '|')) {
+                    const existingArticle = existingKey.split('|')[1];
+                    
+                    // Якщо один артикул є префіксом іншого - це дублікат
+                    // Приклад: 22 є префіксом 22.2 або 22.3
+                    // АБО якщо артикули точно однакові - це точний дублікат
+                    if (normalizedArticle === existingArticle) {
+                        console.log(`⚠️ Видалено точний дублікат по опису: ${clause.type} Artº.${clause.article}`);
+                        isDuplicate = true;
+                        break;
+                    } else if (normalizedArticle.startsWith(existingArticle + '.') || 
+                        existingArticle.startsWith(normalizedArticle + '.')) {
+                        
+                        // Залишаємо більш детальний (довший) артикул
+                        if (normalizedArticle.length > existingArticle.length) {
+                            // Новий артикул детальніший - видаляємо старий
+                            console.log(`🔄 Заміна: ${existingClause.type} Artº.${existingClause.article} → ${clause.type} Artº.${clause.article}`);
+                            seenKeys.delete(existingKey);
+                            const index = uniqueClauses.findIndex(c => c === existingClause);
+                            if (index !== -1) uniqueClauses.splice(index, 1);
+                        } else {
+                            // Старий артикул детальніший - пропускаємо новий
+                            console.log(`⚠️ Видалено менш детальний дублікат: ${clause.type} Artº.${clause.article} (є ${existingClause.article})`);
+                            isDuplicate = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            if (!isDuplicate) {
+                seenKeys.set(key, clause);
+                uniqueClauses.push(clause);
+            }
+        }
+        
+        console.log(`🔧 Після дедуплікації: ${uniqueClauses.length} унікальних клауз (було ${clauses.length})`);
+        
         // Групуємо за типом для статистики
         const stats = {
-            C1: clauses.filter(c => c.type === 'C1').length,
-            C2: clauses.filter(c => c.type === 'C2').length,
-            C3: clauses.filter(c => c.type === 'C3').length
+            C1: uniqueClauses.filter(c => c.type === 'C1').length,
+            C2: uniqueClauses.filter(c => c.type === 'C2').length,
+            C3: uniqueClauses.filter(c => c.type === 'C3').length
         };
         
         console.log('📈 Статистика клауз:', stats);
 
-        return clauses;
+        return uniqueClauses;
     }
 
     /**
