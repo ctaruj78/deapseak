@@ -4,7 +4,7 @@
  */
 class AssignmentManager {
     constructor() {
-        this.apiUrl = 'http://localhost:5000/api';
+        this.apiUrl = '/api';
         this.assignments = [];
         this.technicians = [];
         this.templates = [];
@@ -62,7 +62,7 @@ class AssignmentManager {
             const queryParams = new URLSearchParams(filters).toString();
             
             const [assignmentsRes, techsRes] = await Promise.all([
-                fetch(`${this.apiUrl}/assignments?${queryParams}`, { headers }),
+                fetch(`${this.apiUrl}/requests?${queryParams}`, { headers }),
                 fetch(`${this.apiUrl}/users?role=tech`, { headers })
             ]);
 
@@ -109,19 +109,19 @@ class AssignmentManager {
         this.assignments = [
             {
                 _id: '1',
-                assignmentNumber: 'ASG-2024-001',
-                title: 'Ремонт ліфта №1',
-                description: 'Заміна тросів та перевірка системи безпеки',
+                assignmentNumber: 'REQ-2026-0001',
+                title: 'Reparação do elevador',
+                description: 'Substituição de cabos e verificação do sistema de segurança',
                 status: 'new',
                 priority: 'high',
                 client: {
-                    name: 'ТОВ "Будинвест"',
-                    company: 'ТОВ "Будинвест"',
-                    phone: '+380671234567',
-                    email: 'info@budinvest.ua'
+                    name: 'Condomínio Jardins do Tejo',
+                    company: 'Condomínio Jardins do Tejo',
+                    phone: '+351211 234 567',
+                    email: 'info@condominiotejo.pt'
                 },
                 location: {
-                    address: 'вул. Хрещатик, 1, Київ',
+                    address: 'Rua da Liberdade, 123, Lisboa',
                     building: 'ЖК "Центральний"',
                     floor: '15',
                     liftNumber: 'Ліфт №1'
@@ -141,19 +141,19 @@ class AssignmentManager {
             },
             {
                 _id: '2',
-                assignmentNumber: 'ASG-2024-002',
-                title: 'Профілактичне обслуговування',
-                description: 'Планове ТО згідно з графіком',
+                assignmentNumber: 'REQ-2026-0002',
+                title: 'Manutenção preventiva',
+                description: 'Manutenção periódica de acordo com o calendário',
                 status: 'assigned',
                 priority: 'medium',
                 client: {
-                    name: 'ОСББ "Сонячний"',
-                    company: 'ОСББ "Сонячний"',
-                    phone: '+380501234567',
-                    email: 'osbb.sunny@gmail.com'
+                    name: 'Hotel Beira-Mar',
+                    company: 'Hotel Beira-Mar Lda.',
+                    phone: '+351 961 234 567',
+                    email: 'manut@hotelbeiramar.pt'
                 },
                 location: {
-                    address: 'просп. Перемоги, 55, Київ',
+                    address: 'Av. dos Aliados, 45, Porto',
                     building: 'ЖК "Сонячний"',
                     floor: '12',
                     liftNumber: 'Ліфт №2'
@@ -181,23 +181,23 @@ class AssignmentManager {
         this.technicians = [
             {
                 _id: 'tech1',
-                firstName: 'Олександр',
-                lastName: 'Петренко',
-                phone: '+380671111111',
-                email: 'a.petrenko@deapseak.com',
+                firstName: 'Carlos',
+                lastName: 'Silva',
+                phone: '+351 912 111 111',
+                email: 'c.silva@festlift.pt',
                 role: 'tech',
                 status: 'available',
-                specialization: ['ремонт', 'обслуговування']
+                specialization: ['reparação', 'manutenção']
             },
             {
                 _id: 'tech2',
-                firstName: 'Михайло',
-                lastName: 'Іваненко',
-                phone: '+380672222222',
-                email: 'm.ivanenko@deapseak.com',
+                firstName: 'Miguel',
+                lastName: 'Ferreira',
+                phone: '+351 912 222 222',
+                email: 'm.ferreira@festlift.pt',
                 role: 'tech',
                 status: 'busy',
-                specialization: ['установка', 'модернізація']
+                specialization: ['instalação', 'modernização']
             }
         ];
 

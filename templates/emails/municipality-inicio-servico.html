@@ -170,11 +170,13 @@
             text-align: center;
         }
         .company-logo {
-            font-size: 32px;
-            font-weight: 700;
-            color: #fff;
             margin-bottom: 20px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        .company-logo img {
+            max-height: 60px;
+            max-width: 200px;
+            filter: brightness(0) invert(1);
         }
         .company-info {
             line-height: 2;
@@ -305,7 +307,9 @@
         </div>
         
         <div class="footer">
-            <div class="company-logo">🛗 FESTLIFT</div>
+            <div class="company-logo">
+                <img src="cid:festlift-logo" alt="FESTLIFT, LDA" style="max-height: 60px; max-width: 200px; filter: brightness(0) invert(1);">
+            </div>
             <div class="company-info">
                 <strong>FESTLIFT, LDA</strong><br>
                 Manutenção e Assistência Técnica de Elevadores

@@ -9,6 +9,8 @@
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="../../plugins/sweetalert2/css/sweetalert2.min.css">
     
     <!-- Auth Manager -->
     <script src="../../assets/js/auth.js"></script>
@@ -216,8 +218,85 @@
                 margin-bottom: 15px;
             }
         }
+
+    /* ─── SweetAlert2 custom theme — matches AdminLTE / Bootstrap 4 palette ─── */
+    .swal-dispatch {
+        border-radius: 16px !important;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.2) !important;
+        font-family: "Source Sans Pro","Helvetica Neue",Arial,sans-serif !important;
+    }
+    .swal-dispatch .swal2-title {
+        font-size: 1.2rem !important;
+        font-weight: 700 !important;
+        color: #2d3748 !important;
+    }
+    .swal-dispatch .swal2-html-container {
+        color: #4a5568 !important;
+        font-size: 0.93rem !important;
+        margin-top: 8px !important;
+    }
+    .swal-dispatch .swal2-actions { gap: 10px !important; margin-top: 20px !important; }
+    .swal-dispatch .swal2-styled {
+        border-radius: 8px !important;
+        padding: 9px 22px !important;
+        font-weight: 600 !important;
+        font-size: 0.88rem !important;
+        letter-spacing: 0.3px !important;
+        box-shadow: none !important;
+    }
+    .swal-dispatch .swal2-styled:focus { box-shadow: 0 0 0 3px rgba(102,126,234,0.25) !important; }
+    .swal-dispatch .swal2-validation-message { border-radius: 8px !important; font-size: 0.85rem !important; }
+    /* Form controls inside Swal */
+    .swal-label {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        color: #718096;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin: 0 0 6px;
+    }
+    .swal-select, .swal-textarea {
+        width: 100%;
+        padding: 10px 14px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 14px;
+        color: #2d3748;
+        background: #fff;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        font-family: inherit;
+        -webkit-appearance: none;
+        appearance: none;
+    }
+    .swal-select {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23718096'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 14px center;
+        padding-right: 36px;
+    }
+    .swal-textarea { resize: vertical; min-height: 80px; }
+    .swal-select:focus, .swal-textarea:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102,126,234,0.15);
+    }
+    .swal-field { margin-bottom: 14px; }
+    .swal-field:last-child { margin-bottom: 0; }
+    .swal-section-title {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #667eea;
+        border-bottom: 2px solid #eef0ff;
+        padding-bottom: 8px;
+        margin-bottom: 16px;
+    }
+    .swal-alert-box { border-radius: 10px; padding: 12px 16px; margin-bottom: 14px; font-size: 13px; }
+    .swal-alert-warning { background: #fff8e1; border-left: 4px solid #ffc107; color: #856404; }
+    .swal-alert-info    { background: #e8f4fd; border-left: 4px solid #17a2b8; color: #0c5460; }
     </style>
-    
     <!-- Service Integration -->
     <script src="../../assets/js/service-integration.js"></script>
 </head>
@@ -488,7 +567,7 @@
 
     <!-- Модальне вікно призначення -->
     <div class="modal fade" id="assignmentModal" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Gestão призначенням</h5>
@@ -505,8 +584,8 @@
 
     <!-- Модальне вікно перегляду деталей призначення -->
     <div class="modal fade" id="viewAssignmentModal" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-xl" role="document">
-            <div class="modal-content" style="border-radius: 15px; overflow: hidden; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
+            <div class="modal-content" style="border-radius: 15px; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
                 <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
                     <div>
                         <h4 class="modal-title mb-0">
@@ -956,7 +1035,56 @@
                     alert('Не вдалося призначити заявку: ' + error.message);
                 }
             }
-            
+
+            // Показати діалог вибору техніка та призначити заявку
+            async showAssignDialog(requestId) {
+                const activeTechs = (this.technicians || []).filter(t => t.active);
+                if (activeTechs.length === 0) {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({ icon: 'warning', title: 'Немає техніків', text: 'Немає доступних техніків для призначення.', confirmButtonColor: '#667eea', customClass: { popup: 'swal-dispatch' } });
+                    } else {
+                        alert('Немає доступних техніків для призначення.');
+                    }
+                    return;
+                }
+
+                const options = activeTechs.map(t => {
+                    const techId = (t._id && t._id.toString) ? t._id.toString() : (t._id || t.id || '');
+                    return `<option value="${techId}">${t.name}</option>`;
+                }).join('');
+
+                const { value: technicianId, isConfirmed } = await Swal.fire({
+                    title: 'Призначити техніка',
+                    html: `<div style="text-align:left;padding:4px 0">
+                               <div class="swal-field">
+                                   <label class="swal-label">Виберіть спеціаліста</label>
+                                   <select id="swal-tech-select" class="swal-select">
+                                       <option value="">— Оберіть зі списку —</option>
+                                       ${options}
+                                   </select>
+                               </div>
+                           </div>`,
+                    customClass: { popup: 'swal-dispatch' },
+                    confirmButtonText: 'Призначити',
+                    confirmButtonColor: '#667eea',
+                    cancelButtonText: 'Скасувати',
+                    cancelButtonColor: '#a0aec0',
+                    showCancelButton: true,
+                    focusConfirm: false,
+                    preConfirm: () => {
+                        const val = document.getElementById('swal-tech-select').value;
+                        if (!val) {
+                            Swal.showValidationMessage('Будь ласка, оберіть техніка');
+                        }
+                        return val;
+                    }
+                });
+
+                if (isConfirmed && technicianId) {
+                    await this.assignRequest(requestId, technicianId);
+                }
+            }
+
             // Переназначити заявку
             reassignRequest(requestId, newTechnicianId) {
                 const request = this.integration.getRequest(requestId);
@@ -1037,7 +1165,15 @@
                             if (techData) {
                                 // Якщо assignedTo це ObjectId string, а не об'єкт
                                 if (typeof techData === 'string') {
-                                    assignedToName = 'Технік (ID: ' + techData.substring(0, 8) + '...)';
+                                    // Спробуємо знайти техніка зі списку
+                                    const foundTech = (this.technicians || []).find(t => 
+                                        (t._id && t._id.toString() === techData) || t.id === techData
+                                    );
+                                    if (foundTech) {
+                                        assignedToName = foundTech.name || `${foundTech.firstName || ''} ${foundTech.lastName || ''}`.trim() || 'Технік';
+                                    } else {
+                                        assignedToName = 'Призначено';
+                                    }
                                 } else {
                                     const firstName = techData.firstName || '';
                                     const lastName = techData.lastName || '';
@@ -1093,10 +1229,13 @@
                     
                     const card = document.createElement('div');
                     card.className = `assignment-card ${assignment.priority}-priority`;
+                    // ID для відображення: requestNumber з API або останні 6 символів ObjectId
+                    const displayId = assignment._original?.requestNumber || 
+                        'REQ-' + assignmentId.slice(-6).toUpperCase();
                     card.innerHTML = `
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h5 class="card-title mb-0">#${assignmentId}</h5>
+                                <h5 class="card-title mb-0">${displayId}</h5>
                                 <span class="priority-badge priority-${assignment.priority}">
                                     ${this.getPriorityText(assignment.priority)}
                                 </span>
@@ -1134,19 +1273,9 @@
                                 <button class="btn btn-sm btn-info" onclick="event.preventDefault(); dispatcherManager.viewAssignment('${assignmentId}'); return false;">
                                     <i class="fas fa-eye"></i> Переглянути
                                 </button>
-                                <div class="dropdown">
-                                    <button class="btn btn-sm btn-warning dropdown-toggle" type="button" data-toggle="dropdown">
-                                        <i class="fas fa-user-cog"></i> Призначити
-                                    </button>
-                                    <div class="dropdown-menu">
-                                        ${this.technicians.filter(t => t.active).map(tech => {
-                                            const techId = window.safeId ? window.safeId(tech) : ((tech._id && tech._id.toString) ? tech._id.toString() : (tech._id || tech.id || ''));
-                                            return `<a class="dropdown-item" href="#" onclick="event.preventDefault(); dispatcherManager.assignRequest('${assignmentId}', '${techId}'); return false;">
-                                                ${tech.name}
-                                            </a>`;
-                                        }).join('')}
-                                    </div>
-                                </div>
+                                <button class="btn btn-sm btn-warning" type="button" onclick="event.preventDefault(); dispatcherManager.showAssignDialog('${assignmentId}'); return false;">
+                                    <i class="fas fa-user-cog"></i> Призначити
+                                </button>
                                 ${assignment.status === 'new' ? `
                                     <button class="btn btn-sm btn-success" onclick="dispatcherManager.approveRequest('${assignmentId}')">
                                         <i class="fas fa-check"></i> Підтвердити
@@ -1740,37 +1869,272 @@
                 },
                 
                 // Створити нове призначення
-                createNewAssignment: function() {
-                    alert('Форма створення нового призначення буде тут');
+                createNewAssignment: async function() {
+                    const activeTechs = (dispatcherManager.technicians || []).filter(t => t.active);
+                    const techOptions = activeTechs.map(t => {
+                        const techId = (t._id && t._id.toString) ? t._id.toString() : (t._id || t.id || '');
+                        return `<option value="${techId}">${t.name}</option>`;
+                    }).join('');
+
+                    const { value: formValues, isConfirmed } = await Swal.fire({
+                        title: 'Нове призначення',
+                        width: 520,
+                        html: `<div style="text-align:left;padding:4px 0">
+                                   <div class="swal-section-title">Деталі заявки</div>
+                                   <div class="swal-field">
+                                       <label class="swal-label">Опис проблеми <span style="color:#e53e3e">*</span></label>
+                                       <textarea id="swal-desc" class="swal-textarea" placeholder="Детально опишіть несправність або необхідні роботи..."></textarea>
+                                   </div>
+                                   <div class="swal-field">
+                                       <label class="swal-label">Пріоритет</label>
+                                       <select id="swal-priority" class="swal-select">
+                                           <option value="low">🟢  Низький</option>
+                                           <option value="medium" selected>🟡  Середній</option>
+                                           <option value="high">🟠  Високий</option>
+                                           <option value="critical">🔴  Критичний</option>
+                                       </select>
+                                   </div>
+                                   ${activeTechs.length > 0 ? `<div class="swal-field">
+                                       <label class="swal-label">Призначити техніку (опційно)</label>
+                                       <select id="swal-tech" class="swal-select">
+                                           <option value="">— Не призначати зараз —</option>
+                                           ${techOptions}
+                                       </select>
+                                   </div>` : ''}
+                               </div>`,
+                        customClass: { popup: 'swal-dispatch' },
+                        confirmButtonText: 'Створити заявку',
+                        confirmButtonColor: '#3470dc',
+                        cancelButtonText: 'Скасувати',
+                        cancelButtonColor: '#a0aec0',
+                        showCancelButton: true,
+                        focusConfirm: false,
+                        preConfirm: () => {
+                            const desc = document.getElementById('swal-desc').value.trim();
+                            if (!desc) {
+                                Swal.showValidationMessage('Введіть опис проблеми');
+                                return false;
+                            }
+                            return {
+                                description: desc,
+                                priority: document.getElementById('swal-priority').value,
+                                technicianId: document.getElementById('swal-tech')?.value || ''
+                            };
+                        }
+                    });
+
+                    if (isConfirmed && formValues) {
+                        try {
+                            const response = await AuthManager.fetchWithAuth('/api/requests', {
+                                method: 'POST',
+                                body: JSON.stringify({
+                                    description: formValues.description,
+                                    title: formValues.description.substring(0, 60),
+                                    priority: formValues.priority,
+                                    type: 'maintenance'
+                                })
+                            });
+                            if (!response || !response.ok) throw new Error('Не вдалося створити заявку');
+                            const result = await response.json();
+                            if (formValues.technicianId && result.data?._id) {
+                                await AuthManager.fetchWithAuth(`/api/requests/${result.data._id}/assign`, {
+                                    method: 'POST',
+                                    body: JSON.stringify({ technicianId: formValues.technicianId })
+                                });
+                            }
+                            await dispatcherManager.loadAssignments();
+                            Swal.fire({ icon: 'success', title: 'Готово!', text: 'Нове призначення створено!', confirmButtonColor: '#28a745', customClass: { popup: 'swal-dispatch' } });
+                        } catch (error) {
+                            Swal.fire({ icon: 'error', title: 'Помилка', text: error.message, confirmButtonColor: '#dc3545', customClass: { popup: 'swal-dispatch' } });
+                        }
+                    }
                 },
-                
+
                 // Масове призначення
                 bulkAssign: function() {
-                    alert('Модальне вікно масового призначення');
-                    $('#bulkAssignModal').modal('show');
+                    // Populate technician dropdown
+                    const techSelect = document.getElementById('bulkTechSelect');
+                    if (techSelect) {
+                        techSelect.innerHTML = '<option value="">Оберіть техніка...</option>';
+                        (dispatcherManager.technicians || []).filter(t => t.active).forEach(t => {
+                            const techId = (t._id && t._id.toString) ? t._id.toString() : (t._id || t.id || '');
+                            const opt = document.createElement('option');
+                            opt.value = techId;
+                            opt.textContent = t.name;
+                            techSelect.appendChild(opt);
+                        });
+                    }
+                    // Populate available unassigned requests
+                    const available = document.getElementById('availableRequests');
+                    if (available) {
+                        available.innerHTML = '';
+                        (dispatcherManager.assignments || [])
+                            .filter(a => !a.assignedTo || a.status === 'new')
+                            .forEach(a => {
+                                const item = document.createElement('a');
+                                item.className = 'list-group-item list-group-item-action';
+                                item.href = '#';
+                                item.dataset.id = a._id || a.id;
+                                item.innerHTML = `<strong>${a._original?.requestNumber || (a._id || '').slice(-6)}</strong> — ${(a.description || '').substring(0, 60)}`;
+                                item.addEventListener('click', function(e) {
+                                    e.preventDefault();
+                                    this.classList.toggle('active');
+                                });
+                                available.appendChild(item);
+                            });
+                    }
+                    const selected = document.getElementById('selectedRequests');
+                    if (selected) selected.innerHTML = '<p class="text-muted p-2">Натисніть на заявку щоб вибрати</p>';
+                    $('#bulkAssignmentModal').modal('show');
                 },
-                
+
                 // Перепризначити прострочені
-                reassignOverdue: function() {
-                    if (confirm('Перепризначити всі прострочені заявки?')) {
-                        alert('Прострочені заявки перепризначено');
+                reassignOverdue: async function() {
+                    const overdue = (dispatcherManager.assignments || []).filter(a => {
+                        if (!a.deadline) return false;
+                        return new Date(a.deadline) < new Date() && a.status !== 'completed' && a.status !== 'cancelled';
+                    });
+
+                    if (overdue.length === 0) {
+                        Swal.fire({ icon: 'info', title: 'Немає прострочених', text: 'Всі заявки в нормальному статусі.', confirmButtonColor: '#17a2b8', customClass: { popup: 'swal-dispatch' } });
+                        return;
+                    }
+
+                    const activeTechs = (dispatcherManager.technicians || []).filter(t => t.active);
+                    const techOptions = activeTechs.map(t => {
+                        const techId = (t._id && t._id.toString) ? t._id.toString() : (t._id || t.id || '');
+                        return `<option value="${techId}">${t.name}</option>`;
+                    }).join('');
+
+                    const { value: technicianId, isConfirmed } = await Swal.fire({
+                        title: 'Перепризначення заявок',
+                        html: `<div style="text-align:left;padding:4px 0">
+                                   <div class="swal-alert-box swal-alert-warning">
+                                       <strong>⚠️ Знайдено ${overdue.length} прострочених заявок</strong>
+                                       <div style="margin-top:4px">Всі вони будуть призначені на обраного техніка</div>
+                                   </div>
+                                   <div class="swal-field">
+                                       <label class="swal-label">Призначити технікові</label>
+                                       <select id="swal-reassign-select" class="swal-select">
+                                           <option value="">— Оберіть зі списку —</option>
+                                           ${techOptions}
+                                       </select>
+                                   </div>
+                               </div>`,
+                        customClass: { popup: 'swal-dispatch' },
+                        confirmButtonText: 'Перепризначити всі',
+                        confirmButtonColor: '#f39c12',
+                        cancelButtonText: 'Скасувати',
+                        cancelButtonColor: '#a0aec0',
+                        showCancelButton: true,
+                        focusConfirm: false,
+                        preConfirm: () => {
+                            const val = document.getElementById('swal-reassign-select').value;
+                            if (!val) Swal.showValidationMessage('Будь ласка, оберіть техніка');
+                            return val;
+                        }
+                    });
+
+                    if (isConfirmed && technicianId) {
+                        let count = 0;
+                        for (const req of overdue) {
+                            try {
+                                const r = await AuthManager.fetchWithAuth(`/api/requests/${req._id}/assign`, {
+                                    method: 'POST',
+                                    body: JSON.stringify({ technicianId })
+                                });
+                                if (r && r.ok) count++;
+                            } catch (e) {}
+                        }
+                        await dispatcherManager.loadAssignments();
+                        Swal.fire({ icon: 'success', title: 'Готово!', text: `Перепризначено ${count} із ${overdue.length} заявок.`, confirmButtonColor: '#28a745', customClass: { popup: 'swal-dispatch' } });
                     }
                 },
-                
+
                 // Генерувати звіт
                 generateReport: function() {
-                    alert('Генерація звіту розпочата');
+                    const assignments = dispatcherManager.assignments || [];
+                    const total = assignments.length;
+                    const completed = assignments.filter(a => a.status === 'completed').length;
+                    const inProgress = assignments.filter(a => a.status === 'in_progress').length;
+                    const assigned = assignments.filter(a => a.status === 'assigned').length;
+                    const newReqs = assignments.filter(a => a.status === 'new').length;
+                    const overdue = assignments.filter(a => {
+                        if (!a.deadline) return false;
+                        return new Date(a.deadline) < new Date() && a.status !== 'completed';
+                    }).length;
+                    Swal.fire({
+                        title: '📊 Звіт продуктивності',
+                        width: 540,
+                        html: `<div style="padding:4px 0">
+                                   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+                                       <div style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;border-radius:12px;padding:16px;text-align:center">
+                                           <div style="font-size:2rem;font-weight:700;line-height:1">${total}</div>
+                                           <div style="font-size:11px;opacity:.85;margin-top:5px;text-transform:uppercase;letter-spacing:.5px">Всього заявок</div>
+                                       </div>
+                                       <div style="background:linear-gradient(135deg,#28a745,#20c997);color:white;border-radius:12px;padding:16px;text-align:center">
+                                           <div style="font-size:2rem;font-weight:700;line-height:1">${completed}</div>
+                                           <div style="font-size:11px;opacity:.85;margin-top:5px;text-transform:uppercase;letter-spacing:.5px">Виконано</div>
+                                       </div>
+                                       <div style="background:linear-gradient(135deg,#17a2b8,#138496);color:white;border-radius:12px;padding:16px;text-align:center">
+                                           <div style="font-size:2rem;font-weight:700;line-height:1">${inProgress}</div>
+                                           <div style="font-size:11px;opacity:.85;margin-top:5px;text-transform:uppercase;letter-spacing:.5px">В роботі</div>
+                                       </div>
+                                       <div style="background:linear-gradient(135deg,#ffc107,#fd7e14);color:white;border-radius:12px;padding:16px;text-align:center">
+                                           <div style="font-size:2rem;font-weight:700;line-height:1">${assigned}</div>
+                                           <div style="font-size:11px;opacity:.85;margin-top:5px;text-transform:uppercase;letter-spacing:.5px">Призначено</div>
+                                       </div>
+                                   </div>
+                                   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                                       <div style="background:linear-gradient(135deg,#6c757d,#495057);color:white;border-radius:12px;padding:16px;text-align:center">
+                                           <div style="font-size:2rem;font-weight:700;line-height:1">${newReqs}</div>
+                                           <div style="font-size:11px;opacity:.85;margin-top:5px;text-transform:uppercase;letter-spacing:.5px">Нові заявки</div>
+                                       </div>
+                                       <div style="background:linear-gradient(135deg,#dc3545,#c82333);color:white;border-radius:12px;padding:16px;text-align:center">
+                                           <div style="font-size:2rem;font-weight:700;line-height:1">${overdue}</div>
+                                           <div style="font-size:11px;opacity:.85;margin-top:5px;text-transform:uppercase;letter-spacing:.5px">Прострочено</div>
+                                       </div>
+                                   </div>
+                                   ${total > 0 ? `<div style="margin-top:14px;background:#f8f9fa;border-radius:10px;padding:14px">
+                                       <div style="font-size:11px;color:#6c757d;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Відсоток виконання</div>
+                                       <div style="background:#e9ecef;border-radius:20px;height:10px;overflow:hidden">
+                                           <div style="width:${Math.round(completed/total*100)}%;height:100%;background:linear-gradient(to right,#28a745,#20c997);border-radius:20px"></div>
+                                       </div>
+                                       <div style="font-size:13px;color:#495057;margin-top:6px;text-align:right;font-weight:600">${Math.round(completed/total*100)}% завершено</div>
+                                   </div>` : ''}
+                               </div>`,
+                        customClass: { popup: 'swal-dispatch' },
+                        confirmButtonText: 'Закрити',
+                        confirmButtonColor: '#667eea',
+                    });
                 },
-                
+
                 // Підтвердити масове призначення
-                submitBulkAssignment: function() {
-                    const selectedTech = $('#bulkTechnicianSelect').val();
-                    if (selectedTech) {
-                        alert(`Масове призначення техніку: ${selectedTech}`);
-                        $('#bulkAssignModal').modal('hide');
-                    } else {
-                        alert('Виберіть техніка!');
+                submitBulkAssignment: async function() {
+                    const techId = document.getElementById('bulkTechSelect')?.value;
+                    if (!techId) {
+                        Swal.fire({ icon: 'warning', title: 'Помилка', text: 'Виберіть техніка!', confirmButtonColor: '#f39c12', customClass: { popup: 'swal-dispatch' } });
+                        return;
                     }
+                    const selectedItems = document.querySelectorAll('#availableRequests .list-group-item.active');
+                    if (selectedItems.length === 0) {
+                        Swal.fire({ icon: 'warning', title: 'Помилка', text: 'Виберіть хоча б одну заявку!', confirmButtonColor: '#f39c12', customClass: { popup: 'swal-dispatch' } });
+                        return;
+                    }
+                    let successCount = 0;
+                    for (const item of selectedItems) {
+                        const reqId = item.dataset.id;
+                        try {
+                            const r = await AuthManager.fetchWithAuth(`/api/requests/${reqId}/assign`, {
+                                method: 'POST',
+                                body: JSON.stringify({ technicianId: techId })
+                            });
+                            if (r && r.ok) successCount++;
+                        } catch (e) {}
+                    }
+                    $('#bulkAssignmentModal').modal('hide');
+                    await dispatcherManager.loadAssignments();
+                    Swal.fire({ icon: 'success', title: 'Готово!', text: `Призначено ${successCount} із ${selectedItems.length} заявок.`, confirmButtonColor: '#28a745', customClass: { popup: 'swal-dispatch' } });
                 },
                 
                 // 🎯 ГОЛОВНІ ФУНКЦІЇ ДЛЯ РОБОТИ З ЗАЯВКАМИ
@@ -2053,7 +2417,7 @@
 <script src="../../plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
 
 <!-- SweetAlert2 -->
-<script src="../../plugins/sweetalert2/sweetalert2.min.js"></script>
+<script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {

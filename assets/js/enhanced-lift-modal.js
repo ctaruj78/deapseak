@@ -283,6 +283,26 @@ class EnhancedLiftModal {
             
             console.log('✅ Enhanced validation passed');
             
+            // Перевіряємо що всі ліфти мають муніципальні номери
+            const liftsCount = parseInt($('#enhancedLiftsCountAtAddress').val()) || 1;
+            const missingNumbers = [];
+            for (let i = 2; i <= liftsCount; i++) {
+                const dynInput = document.querySelector(`#eLiftRowsContainer input[data-elift-idx="${i}"]`);
+                const val = dynInput ? dynInput.value.trim() : '';
+                if (!val) missingNumbers.push(i);
+            }
+            if (missingNumbers.length > 0) {
+                this.showMessage(`⚠️ Заповніть муніципальний номер для ліфта ${missingNumbers.join(', ')} — це обов'язкове поле`, 'warning');
+                // Підсвічуємо порожні поля
+                missingNumbers.forEach(i => {
+                    const inp = document.querySelector(`#eLiftRowsContainer input[data-elift-idx="${i}"]`);
+                    if (inp) { inp.classList.add('is-invalid'); inp.focus(); }
+                });
+                const tab1 = document.getElementById('eLiftTab-obj');
+                if (tab1) tab1.click();
+                return;
+            }
+            
             // Зберігаємо ліфт
             this.saveLift(formData);
             
@@ -296,7 +316,13 @@ class EnhancedLiftModal {
         // Збираємо дані з полів з префіксом enhanced
         const data = {
             id: $('#enhancedLiftId').val() || 'lift_' + Date.now(),
-            municipalNumber: $('#enhancedMunicipalNumber').val() || '',
+            municipalNumber: (() => {
+                // Try static field first, then dynamic container (new tab design)
+                const v = $('#enhancedMunicipalNumber').val();
+                if (v) return v;
+                const dyn = document.querySelector('#eLiftRowsContainer input[data-elift-idx="1"]');
+                return (dyn && dyn.value) ? dyn.value : '';
+            })(),
             serialNumber: $('#enhancedSerialNumber').val() || '',
             brand: $('#enhancedLiftBrand').val() || '',
             model: $('#enhancedLiftModel').val() || '',
@@ -350,10 +376,8 @@ class EnhancedLiftModal {
             const validator = new FormValidator('#enhancedLiftForm');
             validator.clearErrors();
             
-            // Обов'язкові поля
+            // Обов'язкові поля (тільки ті що позначені * в новому дизайні)
             validator.required('#enhancedMunicipalNumber', 'Муніципальний номер');
-            validator.required('#enhancedLiftBrand', 'Бренд ліфта');
-            validator.required('#enhancedLiftModel', 'Модель ліфта');
             validator.required('#enhancedLiftAddress', 'Адреса');
             validator.required('#enhancedClientEmail', 'Email клієнта');
             
@@ -375,8 +399,14 @@ class EnhancedLiftModal {
             }
             
             if (!validator.isValid()) {
-                validator.showErrorsSummary();
-                console.error('❌ Validation failed:', validator.getErrors());
+                const errors = validator.getErrors();
+                console.error('❌ Validation failed:', errors);
+                // Show specific user-friendly message
+                const errNames = errors.map(e => e.field || e.message || e).join(', ');
+                this.showMessage('⚠️ Заповніть обов\'язкові поля: ' + errNames, 'warning');
+                // Switch back to Tab 1 (Object) where most required fields are
+                const tab1 = document.getElementById('eLiftTab-obj');
+                if (tab1) tab1.click();
                 return false;
             }
             
@@ -385,7 +415,14 @@ class EnhancedLiftModal {
         }
         
         // Fallback валідація якщо FormValidator не завантажився
-        const required = ['municipalNumber', 'brand', 'model', 'address', 'clientEmail'];
+        // Також перевіряємо municipal number у динамічному контейнері нового дизайну
+        if (!data.municipalNumber || data.municipalNumber.trim() === '') {
+            const dynInput = document.querySelector('#eLiftRowsContainer input[data-elift-idx="1"]');
+            if (dynInput && dynInput.value.trim()) {
+                data.municipalNumber = dynInput.value.trim();
+            }
+        }
+        const required = ['municipalNumber', 'address', 'clientEmail'];
         const missing = [];
         
         for (let field of required) {
@@ -412,10 +449,12 @@ class EnhancedLiftModal {
         }
         
         // Спеціальна обробка для окремих полів
+        const munField = document.getElementById('enhancedMunicipalNumber') ||
+                         document.querySelector('#eLiftRowsContainer input[data-elift-idx="1"]');
         if (!data.municipalNumber || data.municipalNumber.trim() === '') {
-            $('#enhancedMunicipalNumber').addClass('is-invalid');
+            if (munField) munField.classList.add('is-invalid');
         } else {
-            $('#enhancedMunicipalNumber').removeClass('is-invalid');
+            if (munField) munField.classList.remove('is-invalid');
         }
         
         if (!data.address || data.address.trim() === '') {
@@ -459,7 +498,16 @@ class EnhancedLiftModal {
         
         if (missing.length > 0) {
             console.log('❌ Missing required fields:', missing);
-            this.showMessage('Заповніть обов\'язкові поля: ' + missing.join(', '), 'warning');
+            const fieldLabels = {
+                municipalNumber: 'Муніципальний № (Вкладка Об\'єкт)',
+                address: 'Адреса (Вкладка Об\'єкт)',
+                clientEmail: 'Email клієнта (Вкладка Клієнт)'
+            };
+            const labels = missing.map(f => fieldLabels[f] || f);
+            this.showMessage('⚠️ Заповніть обов\'язкові поля: ' + labels.join(' · '), 'warning');
+            // Navigate to Tab 1 so user sees where to fill
+            const tab1 = document.getElementById('eLiftTab-obj');
+            if (tab1) tab1.click();
             return false;
         }
         
@@ -595,7 +643,29 @@ class EnhancedLiftModal {
                 
                 // Скидаємо currentLiftId після успішного збереження
                 this.currentLiftId = null;
-                
+
+                // 🏢 Зберігаємо додаткові ліфти як окремі записи
+                const additionalNumbers = liftData.additionalMunicipalNumbers || [];
+                if (!isEdit && additionalNumbers.length > 0) {
+                    let savedCount = 1;
+                    for (const additionalInfo of additionalNumbers) {
+                        if (!additionalInfo.municipalNumber || !additionalInfo.municipalNumber.trim()) continue;
+                        try {
+                            const additionalApiData = { ...apiData, municipalNumber: additionalInfo.municipalNumber.trim() };
+                            console.log(`🏗️ Зберігаємо ліфт #${additionalInfo.liftNumber}:`, additionalInfo.municipalNumber);
+                            await window.saveLiftToAPI(additionalApiData);
+                            savedCount++;
+                            console.log(`✅ Ліфт #${additionalInfo.liftNumber} збережено`);
+                        } catch (err) {
+                            console.error(`❌ Помилка збереження ліфта #${additionalInfo.liftNumber}:`, err);
+                            this.showMessage(`⚠️ Ліфт №${additionalInfo.municipalNumber} не вдалося зберегти: ${err.message}`, 'warning');
+                        }
+                    }
+                    if (savedCount > 1) {
+                        this.showMessage(`✅ Збережено ${savedCount} ліфти за одною адресою!`, 'success');
+                    }
+                }
+
                 // Оновлюємо таблицю
                 setTimeout(() => {
                     this.refreshTable();
@@ -684,9 +754,20 @@ class EnhancedLiftModal {
         this.currentLiftId = liftData.id || liftData._id;
         console.log('🔧 Set currentLiftId:', this.currentLiftId);
         
+        // Переконуємось що eLiftRowsContainer заповнений (створює #enhancedMunicipalNumber в DOM)
+        if (typeof eLiftUpdateRows === 'function') eLiftUpdateRows(1);
+        
         // Заповнюємо всі поля з префіксом enhanced
         $('#enhancedLiftId').val(this.currentLiftId);
         $('#enhancedMunicipalNumber').val(liftData.municipalNumber || '');
+        // В режимі редагування муніципальний номер — незмінний унікальний ключ реєстру
+        const munInput = document.getElementById('enhancedMunicipalNumber');
+        if (munInput) {
+            munInput.readOnly = true;
+            munInput.style.backgroundColor = '#f5f5f5';
+            munInput.style.cursor = 'not-allowed';
+            munInput.title = 'Муніципальний номер не можна змінити після реєстрації ліфта';
+        }
         $('#enhancedSerialNumber').val(liftData.serial || liftData.serialNumber || '');
         $('#enhancedLiftBrand').val(liftData.brand || '');
         $('#enhancedLiftModel').val(liftData.model || '');
@@ -754,49 +835,14 @@ class EnhancedLiftModal {
     handleLiftsCountChange() {
         const count = parseInt($('#enhancedLiftsCountAtAddress').val()) || 1;
         console.log(`🏢 Lifts count changed to: ${count}`);
-        
-        // Очищуємо контейнер додаткових ліфтів
+
+        // Старий контейнер завжди прихований — нова система eLiftRowsContainer все обробляє
         $('#additionalLiftsFields').empty();
-        
-        // Ховаємо QR контейнер основного ліфта (покажеться при генерації QR)
-        const mainQrPreview = $('#mainQrPreview');
-        if (mainQrPreview.length && mainQrPreview.is(':empty')) {
-            mainQrPreview.addClass('d-none');
-            console.log('✅ Main QR preview container hidden (empty)');
-        }
-        
-        if (count > 1) {
-            // Показуємо контейнер додаткових ліфтів
-            $('#additionalLiftsContainer').removeClass('d-none');
-            
-            // Генеруємо поля для додаткових ліфтів
-            for (let i = 2; i <= count; i++) {
-                const liftRow = `
-                    <div class="row mb-3">
-                        <div class="col-md-8">
-                            <div class="form-group">
-                                <label for="additionalMunicipalNumber${i}">
-                                    <i class="fas fa-elevator text-info"></i> 
-                                    Муніципальний № ліфта ${i} *
-                                </label>
-                                <input type="text" 
-                                       id="additionalMunicipalNumber${i}" 
-                                       name="additionalMunicipalNumber${i}"
-                                       class="form-control" 
-                                       required
-                                       placeholder="Муніципальний номер ліфта ${i}">
-                                <small class="form-text text-muted">
-                                    <i class="fas fa-info-circle"></i> QR-код генерується автоматично
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                $('#additionalLiftsFields').append(liftRow);
-            }
-        } else {
-            // Ховаємо контейнер додаткових ліфтів
-            $('#additionalLiftsContainer').addClass('d-none');
+        $('#additionalLiftsContainer').addClass('d-none');
+
+        // Делегуємо до нової системи динамічних рядків
+        if (typeof window.eLiftUpdateRows === 'function') {
+            window.eLiftUpdateRows(count);
         }
     }
 
@@ -805,7 +851,9 @@ class EnhancedLiftModal {
         const additionalNumbers = [];
         
         for (let i = 2; i <= count; i++) {
-            const number = $(`#additionalMunicipalNumber${i}`).val();
+            // New system: inputs in #eLiftRowsContainer with data-elift-idx
+            const dynInput = document.querySelector(`#eLiftRowsContainer input[data-elift-idx="${i}"]`);
+            const number = dynInput ? dynInput.value : ($(`#additionalMunicipalNumber${i}`).val() || '');
             if (number && number.trim()) {
                 additionalNumbers.push({
                     liftNumber: i,

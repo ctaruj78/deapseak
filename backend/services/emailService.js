@@ -29,7 +29,7 @@ class EmailService {
     }
 
     // Helper method to send email via Brevo API
-    async _sendEmail(to, subject, htmlContent) {
+    async _sendEmail(to, subject, htmlContent, attachments = []) {
         if (!this.apiInstance) {
             console.warn('⚠️  Email não enviado - BREVO_API_KEY não configurado');
             return;
@@ -49,6 +49,11 @@ class EmailService {
         
         sendSmtpEmail.subject = subject;
         sendSmtpEmail.htmlContent = htmlContent;
+
+        // Додаємо attachments якщо є
+        if (attachments && attachments.length > 0) {
+            sendSmtpEmail.attachment = attachments;
+        }
 
         await this.apiInstance.sendTransacEmail(sendSmtpEmail);
     }
@@ -352,6 +357,54 @@ class EmailService {
         } catch (error) {
             console.error('❌ Error sending test email:', error);
             return false;
+        }
+    }
+
+    // 🏛️ Відправити форму до муніципалітету (Início de Serviço / Fim de Serviço)
+    async sendMunicipalityForm(templateType, liftData, municipalityEmail) {
+        try {
+            const fs = require('fs');
+            const path = require('path');
+
+            // Читаємо HTML шаблон
+            const templatePath = path.join(__dirname, '../../templates/emails', `municipality-${templateType}.html`);
+            let htmlContent = fs.readFileSync(templatePath, 'utf8');
+
+            // Замінюємо placeholder'и на реальні дані
+            htmlContent = htmlContent
+                .replace(/{{municipalNumber}}/g, liftData.municipalNumber || 'N/A')
+                .replace(/{{address}}/g, liftData.address || 'N/A')
+                .replace(/{{brand}}/g, liftData.brand || 'N/A')
+                .replace(/{{model}}/g, liftData.model || 'N/A')
+                .replace(/{{year}}/g, liftData.installationYear || 'N/A')
+                .replace(/{{capacity}}/g, liftData.capacity || 'N/A')
+                .replace(/{{municipalityName}}/g, liftData.municipalityName || 'Senhor(a) Presidente')
+                .replace(/{{date}}/g, new Date().toLocaleDateString('pt-PT', { day: '2-digit', month: 'long', year: 'numeric' }));
+
+            // Читаємо логотип FestLift
+            const logoPath = path.join(__dirname, '../../assets/img/festlift-logo.png');
+            const logoContent = fs.readFileSync(logoPath).toString('base64');
+
+            // Підготовка attachments для Brevo з inline Content-ID
+            const attachments = [{
+                name: 'festlift-logo.png',
+                content: logoContent,
+                contentId: 'festlift-logo' // Це дозволяє використовувати cid:festlift-logo в HTML
+            }];
+
+            // Визначаємо subject
+            const subject = templateType === 'inicio-servico' 
+                ? `📝 FESTLIFT - Comunicação de Início de Serviço - Elevador ${liftData.municipalNumber}`
+                : `📝 FESTLIFT - Comunicação de Fim de Serviço - Elevador ${liftData.municipalNumber}`;
+
+            // Відправляємо email
+            await this._sendEmail(municipalityEmail, subject, htmlContent, attachments);
+            
+            console.log(`✅ Municipality form (${templateType}) sent to ${municipalityEmail} for lift ${liftData.municipalNumber}`);
+            return { success: true, message: 'Email enviado com sucesso' };
+        } catch (error) {
+            console.error('❌ Error sending municipality form:', error);
+            throw error;
         }
     }
 }

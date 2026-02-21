@@ -124,7 +124,7 @@ const scanHistory = (function() {
         }
 
         // Initialize Leaflet map
-        const map = L.map('scanMap').setView([50.4501, 30.5234], 11); // Kyiv center
+        const map = L.map('scanMap').setView([38.7167, -9.1395], 11); // Lisboa center
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors'

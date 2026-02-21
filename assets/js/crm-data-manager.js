@@ -153,11 +153,11 @@ class CRMDataManager {
             clients: [
                 {
                     id: 'C001',
-                    name: 'ТОВ "Будівельна компанія "Київ-Буд"',
-                    contactPerson: 'Коваленко Олена Петрівна',
-                    email: 'contact@kyiv-bud.ua',
-                    phone: '+38 (044) 123-45-67',
-                    address: 'м. Київ, вул. Хрещатик, 1',
+                    name: 'Condomínio Jardins do Tejo',
+                    contactPerson: 'Ana Ferreira',
+                    email: 'contact@condominiotejo.pt',
+                    phone: '+351 21 123 4567',
+                    address: 'Lisboa, Rua da Liberdade, 123',
                     contract: 'premium',
                     status: 'active',
                     liftsCount: 1,
@@ -165,11 +165,11 @@ class CRMDataManager {
                 },
                 {
                     id: 'C002',
-                    name: 'ОСББ "Володимирський дім"',
-                    contactPerson: 'Петренко Микола Іванович',
-                    email: 'osbb.volod@gmail.com',
-                    phone: '+38 (044) 234-56-78',
-                    address: 'м. Київ, вул. Володимирська, 15',
+                    name: 'Hotel Beira-Mar Lda.',
+                    contactPerson: 'Carlos Mendes',
+                    email: 'manut@hotelbeiramar.pt',
+                    phone: '+351 96 234 5678',
+                    address: 'Porto, Av. dos Aliados, 45',
                     contract: 'standard',
                     status: 'active',
                     liftsCount: 1,
@@ -225,10 +225,10 @@ class CRMDataManager {
             
             settings: {
                 company: {
-                    name: 'ДіпСік - Ліфтовий Сервіс',
-                    email: 'info@deapseakk.com',
-                    phone: '+38 (044) 123-45-67',
-                    address: 'м. Київ, вул. Технічна, 1'
+                    name: 'FestLift Serviços de Elevadores',
+                    email: 'info@festlift.pt',
+                    phone: '+351 21 123 4567',
+                    address: 'Lisboa, Rua do Carmo, 56'
                 },
                 notifications: {
                     email: true,

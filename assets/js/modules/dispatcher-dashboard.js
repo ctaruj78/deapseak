@@ -152,47 +152,47 @@ class DispatcherDashboard {
         this.requests = [
             {
                 id: 1001,
-                title: "Не працює мережеве з'єднання",
-                client: "ТОВ 'Альфа'",
+                title: "Elevador parado entre pisos",
+                client: "Condomínio Jardins do Tejo",
                 priority: "high",
                 status: "new",
-                date: new Date().toLocaleDateString('uk-UA') + " 10:30",
+                date: new Date().toLocaleDateString('pt-PT') + " 10:30",
                 assignedTo: null,
-                description: "Відсутній доступ до мережі в головному офісі",
-                location: "Київ, вул. Хрещатик, 25"
+                description: "Elevador parou entre o 3.º e 4.º piso com passageiros no interior",
+                location: "Rua da Liberdade, 123, Lisboa"
             },
             {
                 id: 1002,
-                title: "Заміна жорсткого диска",
-                client: "ПП 'Бета'",
+                title: "Substituição de cabo",
+                client: "Hotel Beira-Mar Lda.",
                 priority: "medium",
                 status: "assigned",
-                date: new Date().toLocaleDateString('uk-UA') + " 09:15",
-                assignedTo: "Олександр Петренко",
-                description: "Необхідна заміна жорсткого диска на сервері",
-                location: "Львів, вул. Свободи, 15"
+                date: new Date().toLocaleDateString('pt-PT') + " 09:15",
+                assignedTo: "Carlos Silva",
+                description: "Cabo de tração com desgaste excessivo, substituição urgente",
+                location: "Av. dos Aliados, 45, Porto"
             },
             {
                 id: 1003,
-                title: "Встановлення оновлення ПЗ",
-                client: "ТОВ 'Гамма'",
+                title: "Manutenção preventiva trimestral",
+                client: "Shopping Oeiras Park",
                 priority: "low",
                 status: "in-progress",
-                date: new Date(Date.now() - 86400000).toLocaleDateString('uk-UA') + " 16:45",
-                assignedTo: "Марія Іваненко",
-                description: "Оновлення системи керування базою даних",
-                location: "Одеса, вул. Дерибасівська, 10"
+                date: new Date(Date.now() - 86400000).toLocaleDateString('pt-PT') + " 16:45",
+                assignedTo: "Miguel Ferreira",
+                description: "Manutenção periódica trimestral de todos os sistemas",
+                location: "Av. da República, 22, Setúbal"
             },
             {
                 id: 1004,
-                title: "Налаштування VPN",
-                client: "ТОВ 'Омега'",
+                title: "Porta de piso com avaria",
+                client: "Câmara Municipal de Setúbal",
                 priority: "high",
                 status: "new",
-                date: new Date().toLocaleDateString('uk-UA') + " 11:20",
+                date: new Date().toLocaleDateString('pt-PT') + " 11:20",
                 assignedTo: null,
-                description: "Налаштування віддаленого доступу для співробітників",
-                location: "Харків, вул. Сумська, 30"
+                description: "Porta do 2.º piso não fecha corretamente, risco de segurança",
+                location: "Rua de São Bento, 78, Lisboa"
             },
             {
                 id: 1005,

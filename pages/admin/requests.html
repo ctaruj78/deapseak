@@ -559,7 +559,7 @@
 
 <!-- New Request Modal -->
 <div class="modal fade" id="newRequestModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Нова заявка на обслуговування</h5>
@@ -640,7 +640,7 @@
 
 <!-- View Request Modal -->
 <div class="modal fade" id="viewRequestModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="viewRequestTitle">Деталі заявки</h5>
@@ -899,8 +899,8 @@ class ServiceRequestManager {
                     
                     // Конвертуємо формат API в формат сторінки
                     this.requests = apiRequests.map((req, index) => {
-                        // Генеруємо красивий ID
-                        const displayId = `REQ-${String(index + 1).padStart(3, '0')}`;
+                        // Генеруємо читабельний ID (з requestNumber або порядковий)
+                        const displayId = req.requestNumber || `REQ-${String(index + 1).padStart(4, '0')}`;
                         
                         // Використовуємо збережені дані про ліфт з заявки
                         const liftId = req.liftMunicipalNumber || req.liftId || 'Невідомий';
@@ -973,7 +973,7 @@ class ServiceRequestManager {
             {
                 id: 'REQ-001',
                 liftId: 'L001',
-                liftAddress: 'Rua Хрещатик, 1',
+                liftAddress: 'Rua da Liberdade, 123, Lisboa',
                 type: 'emergency',
                 priority: 'critical',
                 status: 'new',
@@ -996,7 +996,7 @@ class ServiceRequestManager {
             {
                 id: 'REQ-002',
                 liftId: 'L005',
-                liftAddress: 'Rua Володимирська, 15',
+                liftAddress: 'Av. dos Aliados, 45, Porto',
                 type: 'maintenance',
                 priority: 'medium',
                 status: 'assigned',
@@ -1025,7 +1025,7 @@ class ServiceRequestManager {
             {
                 id: 'REQ-003',
                 liftId: 'L012',
-                liftAddress: 'пр-т Перемоги, 42',
+                liftAddress: 'Rua de São Bento, 78, Lisboa',
                 type: 'repair',
                 priority: 'high',
                 status: 'in_progress',
@@ -1060,7 +1060,7 @@ class ServiceRequestManager {
             {
                 id: 'REQ-004',
                 liftId: 'L008',
-                liftAddress: 'Rua Грушевського, 28',
+                liftAddress: 'Av. da República, 22, Setúbal',
                 type: 'inspection',
                 priority: 'medium',
                 status: 'completed',

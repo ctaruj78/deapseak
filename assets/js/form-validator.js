@@ -179,11 +179,14 @@ class FormValidator {
         
         this.errors.push({ field: field.attr('id'), message });
         
-        // Скролимо до першої помилки
+        // Скролимо до першої помилки (тільки якщо елемент видимий — offset() === undefined в прихованих вкладках)
         if (this.errors.length === 1) {
-            $('html, body').animate({
-                scrollTop: field.offset().top - 100
-            }, 300);
+            const fieldOffset = field.offset();
+            if (fieldOffset) {
+                $('html, body').animate({
+                    scrollTop: fieldOffset.top - 100
+                }, 300);
+            }
         }
     }
 

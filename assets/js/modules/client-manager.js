@@ -100,7 +100,7 @@ class ClientManager {
                 phone: "+380441234567",
                 status: "active",
                 priority: "high",
-                address: "Київ, вул. Хрещатик, 25",
+                address: "Lisboa, Rua da Liberdade, 123",
                 contactPerson: "Іваненко Петро",
                 contactPosition: "Директор",
                 contractInfo: "Договір №123 від 12.01.2024",

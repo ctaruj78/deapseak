@@ -163,7 +163,7 @@ function initializeTestData() {
         const testLifts = [
             {
                 id: 1,
-                address: 'вул. Шевченка, 10, Київ',
+                address: 'Rua da Liberdade, 123, Lisboa',
                 serialNumber: 'LFT-001',
                 manufacturer: 'Otis',
                 model: 'Gen2',

@@ -52,7 +52,7 @@ class TechnicianManager {
                 workload: "medium",
                 currentAssignments: 3,
                 avatar: "../../assets/img/avatars/tech1.png",
-                location: "Київ, вул. Хрещатик, 25",
+                location: "Lisboa, Rua da Liberdade, 123",
                 notes: "Досвідчений мережевий інженер"
             },
             {
@@ -491,16 +491,21 @@ class TechnicianManager {
         const activeAssignments = this.technicians.reduce((sum, tech) => sum + tech.currentAssignments, 0);
         const avgCompletion = totalTechs > 0 ? Math.round((availableTechs / totalTechs) * 100) : 0;
         
-        document.getElementById('totalTechs').textContent = totalTechs;
-        document.getElementById('availableTechs').textContent = availableTechs;
-        document.getElementById('activeAssignments').textContent = activeAssignments;
-        document.getElementById('avgCompletion').textContent = `${avgCompletion}%`;
+        const elTotal = document.getElementById('totalTechs');
+        const elAvailable = document.getElementById('availableTechs');
+        const elActive = document.getElementById('activeAssignments');
+        const elAvg = document.getElementById('avgCompletion');
+        if (elTotal) elTotal.textContent = totalTechs;
+        if (elAvailable) elAvailable.textContent = availableTechs;
+        if (elActive) elActive.textContent = activeAssignments;
+        if (elAvg) elAvg.textContent = `${avgCompletion}%`;
     }
 
     // Оновлення бейджів
     updateBadges() {
         const onlineTechs = this.technicians.filter(t => t.status === 'online').length;
-        document.getElementById('techsBadge').textContent = onlineTechs;
+        const badge = document.getElementById('techsBadge');
+        if (badge) badge.textContent = onlineTechs;
     }
 
     // Налаштування реальних оновлень
@@ -524,8 +529,8 @@ class TechnicianManager {
                 
                 // Оновлення часу останнього оновлення
                 const now = new Date();
-                document.getElementById('lastUpdate').textContent = 
-                    `Оновлено: ${now.toLocaleTimeString()}`;
+                const lastUpdate = document.getElementById('lastUpdate');
+                if (lastUpdate) lastUpdate.textContent = `Оновлено: ${now.toLocaleTimeString()}`;
             }
         }, 30000); // Оновлення кожні 30 секунд
     }

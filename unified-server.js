@@ -1786,6 +1786,46 @@ app.post('/api/lifts/:id/inspection-report', authenticateToken, async (req, res)
     }
 });
 
+// POST /api/lifts/send-municipality-form - відправка форми до муніципалітету
+app.post('/api/lifts/send-municipality-form', authenticateToken, async (req, res) => {
+    try {
+        console.log('📧 Sending municipality form:', req.body);
+        
+        const { templateType, liftData, municipalityEmail } = req.body;
+        
+        // Валідація
+        if (!templateType || !liftData || !municipalityEmail) {
+            return res.status(400).json({
+                success: false,
+                message: 'Tipo de formulário, dados do elevador e email são obrigatórios'
+            });
+        }
+
+        // Валідація типу форми
+        if (!['inicio-servico', 'fim-servico'].includes(templateType)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Tipo de formulário inválido. Use: inicio-servico ou fim-servico'
+            });
+        }
+
+        // Відправка через emailService
+        const result = await emailService.sendMunicipalityForm(templateType, liftData, municipalityEmail);
+
+        res.json({
+            success: true,
+            message: `Formulário de ${templateType} enviado com sucesso para ${municipalityEmail}`,
+            data: result
+        });
+    } catch (error) {
+        console.error('❌ Erro ao enviar formulário municipal:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erro ao enviar formulário'
+        });
+    }
+});
+
 // DELETE /api/lifts/:id - видалення ліфта
 app.delete('/api/lifts/:id', authenticateToken, async (req, res) => {
     try {
@@ -2832,8 +2872,14 @@ app.post('/api/requests', authenticateToken, async (req, res) => {
             }
         }
         
+        // Генерація читабельного номеру заявки (REQ-2026-0001)
+        const reqCount = await db.collection('requests').countDocuments();
+        const reqYear = new Date().getFullYear();
+        const requestNumber = `REQ-${reqYear}-${String(reqCount + 1).padStart(4, '0')}`;
+
         const newRequest = {
             ...req.body,
+            requestNumber,
             // Якщо знайшли ліфт - збагачуємо дані
             liftAddress: (() => {
                 if (!liftData?.address) return req.body.liftAddress || 'Адреса невідома';
