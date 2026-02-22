@@ -3269,6 +3269,14 @@ app.post('/api/requests/:id/assign', authenticateToken, async (req, res) => {
 
 app.delete('/api/requests/:id', authenticateToken, async (req, res) => {
     try {
+        // Тільки адмін може видаляти заявки
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Видалення заявок дозволено тільки адміністратору'
+            });
+        }
+
         const { ObjectId } = require('mongodb');
         const requestId = new ObjectId(req.params.id);
         
