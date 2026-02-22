@@ -849,7 +849,7 @@
                         <button class="btn btn-info btn-sm mb-1" onclick="assignTechnician()">
                             <i class="fas fa-user-plus mr-1"></i>Призначити
                         </button>
-                        <button class="btn btn-outline-warning btn-sm mb-1" onclick="serviceManager.extendDeadline(serviceManager.currentRequest?.id || serviceManager.currentRequest?._id)">
+                        <button class="btn btn-outline-warning btn-sm mb-1" onclick="serviceManager.extendDeadlineFromModal()">
                             <i class="fas fa-calendar-plus mr-1"></i>Дедлайн +
                         </button>
                         <button class="btn btn-outline-primary btn-sm mb-1" onclick="serviceManager.editRequest(serviceManager.currentRequest?.id || serviceManager.currentRequest?._id); $('#viewRequestModal').modal('hide')">
@@ -1819,6 +1819,19 @@ class ServiceRequestManager {
             console.error('Помилка оновлення заявки:', error);
             alert('Не вдалося оновити заявку: ' + error.message);
         }
+    }
+
+    extendDeadlineFromModal() {
+        if (!this.currentRequest) return;
+        const savedId = (this.currentRequest._id && this.currentRequest._id.toString)
+            ? this.currentRequest._id.toString()
+            : (this.currentRequest._id || this.currentRequest.id);
+        const self = this;
+        // Закрити Bootstrap modal перш, тоді відкрити Swal (без конфлікту z-index та backdrop)
+        $('#viewRequestModal').one('hidden.bs.modal', function() {
+            self.extendDeadline(savedId);
+        });
+        $('#viewRequestModal').modal('hide');
     }
 
     async extendDeadline(requestId) {

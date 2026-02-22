@@ -1734,8 +1734,12 @@
             async extendDeadlineFromModal() {
                 const aid = this.currentViewingId;
                 if (!aid) return;
-                // extendDeadline живе в assignmentManager (wrapper), не в класі
-                await window.assignmentManager.extendDeadline(aid);
+                // Закрити Bootstrap modal перш, тоді відкрити Swal (без конфлікту z-index та backdrop)
+                const savedId = aid;
+                $('#viewAssignmentModal').one('hidden.bs.modal', async function() {
+                    await window.assignmentManager.extendDeadline(savedId);
+                });
+                $('#viewAssignmentModal').modal('hide');
             }
             
             // Відкрити адресу в Google Maps
