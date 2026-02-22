@@ -56,7 +56,16 @@ class RegulationsLoader {
             'en-81-20-2020.json',            // 🆕
             'en-81-50-2020.json',            // 🆕
             'regulamento-ce-765-2008.json',  // 🆕
-            'circular-ipac-06-2025.json'     // 🆕 CRÍTICO: Metodologia inspeções modificações!
+            'circular-ipac-06-2025.json',    // 🆕 CRÍTICO: Metodologia inspeções modificações!
+            'diretiva-2014-33-ue.json',      // 🆕 Substitui Diretiva 95/16/CE desde abril 2016
+            'portaria-1532-2008.json',       // 🆕 RSCIE — Segurança contra incêndio em edifícios
+            'decreto-lei-50-2005.json',      // 🆕 Segurança máquinas e trabalho em altura
+            'en-81-70-2022.json',            // 🆕 Acessibilidade — pessoas com deficiência
+            'en-81-71-2022.json',            // 🆕 Resistência ao vandalismo
+            'en-81-72-2020.json',            // 🆕 Elevadores de bombeiros
+            'en-81-73-2020.json',            // 🆕 Comportamento em incêndio
+            'en-81-77-2020.json',            // 🆕 Condições sísmicas
+            'en-81-80-2020.json'             // 🆕 Elevadores existentes — melhoria segurança
         ];
 
         let loadedCount = 0;

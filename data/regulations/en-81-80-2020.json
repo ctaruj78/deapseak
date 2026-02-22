@@ -1,0 +1,55 @@
+{
+  "id": "en-81-80-2020",
+  "title": "NP EN 81-80:2020",
+  "description": "Norma Europeia: Regras de segurança para a construção e instalação de elevadores — Elevadores existentes — Parte 80: Regras para a melhoria da segurança dos elevadores de passageiros e de carga-passageiros em serviço.",
+  "date": "2020-01-01",
+  "source": "CEN - Comité Europeu de Normalização | IPQ - Instituto Português da Qualidade",
+  "url": "https://www.ipq.pt",
+  "priority": "HIGH",
+  "scope": "Elevadores de passageiros e mistos existentes instalados antes da entrada em vigor das normas EN 81-20/50 — aplicável a toda a frota histórica",
+  "status": "Em vigor desde 2020 — substitui EN 81-80:2003",
+  "articles": [
+    {
+      "number": "Secção 4",
+      "title": "Avaliação de risco e classificação de deficiências",
+      "text": "A norma define um sistema de avaliação de risco com 3 níveis de prioridade para deficiências identificadas:\n\nCategoria A (Alto risco — ação imediata):\n- Situações com risco direto de morte ou ferimento grave;\n- Exemplos: amortecedores deficientes, cabos com fios partidos, limitadores de velocidade sem intervenção.\n\nCategoria B (Médio risco — correção em 2 anos):\n- Situações com potencial de acidente em condições adversas;\n- Exemplos: iluminação insuficiente, lubrificação inadequada, sinais deteriorados.\n\nCategoria C (Baixo risco — melhoria programada em 5 anos):\n- Melhorias de conforto ou acessibilidade;\n- Exemplos: modernização dos painéis de botões, melhoria da nivelação.",
+      "keywords": ["Categoria A", "Categoria B", "Categoria C", "avaliação risco", "ação imediata", "2 anos", "5 anos"],
+      "highlight": "3 prioridades: A (imediata), B (2 anos), C (5 anos) — avaliação de risco para elevadores existentes"
+    },
+    {
+      "number": "Secção 5.2",
+      "title": "Componentes de segurança a verificar",
+      "text": "Lista de componentes críticos a avaliar em elevadores existentes:\n\n1. Sistema de controlo de descida não controlada (UCMP)\n2. Limitador de velocidade — calibração e funcionamento\n3. Paraquedas — condição e acionamento\n4. Amortecedores — tipo e capacidade\n5. Sistema de deteção de presença nas portas (fotocélula ou barra)\n6. Proteção contra presença acidental de pessoas na caixa\n7. Comunicação de emergência bidirecional\n8. Iluminação de emergência na cabina ≥ 5 lux por ≥ 1 hora\n9. Dispositivo de nivelação com portas abertas (ETSL)\n10. Sistema de deteção de movimento com portas abertas (UCMP)",
+      "keywords": ["UCMP", "limitador velocidade", "paraquedas", "amortecedores", "fotocélula", "comunicação emergência", "5 lux", "ETSL"],
+      "highlight": "10 componentes críticos — UCMP e paraquedas são Categoria A se deficientes"
+    },
+    {
+      "number": "Secção 5.3",
+      "title": "Proteção contra sobrevelocidade e descida não controlada",
+      "text": "Todos os elevadores existentes devem ter:\n- Limitador de velocidade atuando em ambas as direções (subida e descida);\n- UCMP (Uncontrolled Car Movement Protection): dispositivo que deteta e para movimentações não controladas da cabina;\n- O UCMP pode ser integrado no controlo existente ou adicionado em retrofit;\n- Requisito introduzido pela Diretiva 2014/33/UE — prazo de conformidade para elevadores existentes: conforme legislação nacional.\nEm Portugal: aplicação gradual conforme regulamentação do IMPIC.",
+      "keywords": ["UCMP", "sobrevelocidade", "ambas direções", "retrofit", "IMPIC", "Diretiva 2014/33/UE"],
+      "highlight": "UCMP obrigatório — pode ser instalado em retrofit — protege contra movimento não controlado da cabina"
+    },
+    {
+      "number": "Secção 5.4",
+      "title": "Portas e proteção de passageiros",
+      "text": "Verificação e melhoria de portas em elevadores existentes:\n- Detetor de presença na porta obrigatório (fotocélula ou barra de segurança);\n- Força máxima de fecho da porta: 150 N;\n- Energia cinética máxima de fecho: 10 J;\n- Portas de piso em mau estado (jogo excessivo, deformação) — Categoria B;\n- Portas sem detetor de presença — Categoria A;\n- Testes de força de fecho: a cada 6 meses (manutenção preventiva).",
+      "keywords": ["fotocélula", "barra segurança", "150 N", "10 J", "jogo porta", "6 meses"],
+      "highlight": "Portas sem detetor de presença: Categoria A (risco imediato) — força fecho ≤150N, energia ≤10J"
+    },
+    {
+      "number": "Secção 5.5",
+      "title": "Comunicação de emergência",
+      "text": "Todos os elevadores existentes devem ter comunicação de emergência bidirecional:\n- Ligação para serviço de emergência 24h/dia;\n- Funcionamento garantido mesmo em caso de falha de energia (bateria ≥ 1 hora);\n- Teste automático da comunicação (recomendado) ou manual (obrigatório mensalmente);\n- Número de emergência claramente visível na cabina;\n- Intercomum com reconhecimento bidirecional (passageiro ouve confirmação);\n- Prazo de instalação em elevadores sem comunicação de emergência: Categoria A.",
+      "keywords": ["comunicação emergência", "24h", "bateria 1 hora", "teste mensal", "número emergência", "Categoria A"],
+      "highlight": "Elevador sem comunicação de emergência = Categoria A (risco imediato) — bateria: ≥1h OK"
+    },
+    {
+      "number": "Secção 6",
+      "title": "Relatório de avaliação e plano de melhoria",
+      "text": "O processo de melhoria deve incluir:\n1. Avaliação de risco por técnico habilitado;\n2. Relatório com lista de deficiências e categorias (A/B/C);\n3. Plano de ação com prazos para cada categoria;\n4. Intervenções Categoria A: imediatas (elevador pode ser interdito);\n5. Intervenções Categoria B: máximo 2 anos após avaliação;\n6. Intervenções Categoria C: máximo 5 anos, planeadas;\n7. Registo de todas as intervenções no livro de manutenção;\n8. Reavaliação periódica: cada 5 anos ou após incidente.",
+      "keywords": ["relatório avaliação", "técnico habilitado", "plano ação", "interdição", "livro manutenção", "5 anos reavaliação"],
+      "highlight": "Avaliação obrigatória a cada 5 anos — Cat A pode levar a interdição imediata do elevador"
+    }
+  ]
+}

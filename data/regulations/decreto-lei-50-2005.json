@@ -1,0 +1,55 @@
+{
+  "id": "decreto-lei-50-2005",
+  "title": "Decreto-Lei n.º 50/2005",
+  "description": "Transpõe para a ordem jurídica interna a Diretiva n.º 2001/45/CE relativa às prescrições mínimas de segurança e de saúde para a utilização de equipamentos de trabalho pelos trabalhadores, bem como estabelece prescrições de segurança para máquinas e equipamentos de elevação.",
+  "date": "2005-02-25",
+  "source": "Ministério da Segurança Social e do Trabalho de Portugal",
+  "url": "https://dre.pt/pesquisa/-/search/611865",
+  "priority": "MEDIUM",
+  "scope": "Segurança na utilização de equipamentos de trabalho — inclui equipamentos de elevação, trabalho em altura e manutenção técnica",
+  "status": "Em vigor — aplicável a técnicos de manutenção de elevadores (acesso para manutenção)",
+  "articles": [
+    {
+      "number": "Art. 3.º",
+      "title": "Obrigações gerais do empregador",
+      "text": "O empregador é obrigado a:\na) Utilizar equipamentos de trabalho adequados ao trabalho a realizar e existentes no local de trabalho, que não ponham em perigo a segurança ou saúde dos trabalhadores;\nb) Tomar as medidas necessárias para que os equipamentos de trabalho (...) sejam mantidos durante o seu período de utilização por manutenção adequada;\nc) Informar e formar os trabalhadores sobre os riscos dos equipamentos utilizados.",
+      "keywords": ["empregador", "obrigações", "equipamento adequado", "manutenção", "formação", "riscos"],
+      "highlight": "Empregador responsável por equipamentos adequados e manutenção — inclui ferramentas de acesso ao elevador"
+    },
+    {
+      "number": "Art. 4.º",
+      "title": "Verificação de equipamentos",
+      "text": "Os equipamentos de trabalho sujeitos a fenómenos que possam ocasionar deterioração suscetível de causar situações perigosas devem ser submetidos a:\n- Verificações periódicas e, se for caso disso, a ensaios;\n- Verificações excecionais após modificações, acidentes, fenómenos naturais.\nAs verificações devem ser efetuadas por pessoas competentes, com resultados documentados e conservados.",
+      "keywords": ["verificações periódicas", "ensaios", "pessoas competentes", "documentação", "modificações"],
+      "highlight": "Verificações periódicas documentadas por pessoa competente — obrigatório para técnicos"
+    },
+    {
+      "number": "Art. 6.º",
+      "title": "Trabalho em altura — requisitos",
+      "text": "Para trabalho em altura, o empregador deve:\n1.º Dar prioridade a medidas de proteção coletiva;\n2.º Se proteção coletiva não for praticável, usar equipamento de proteção individual (EPI) adequado;\n3.º Garantir que o acesso aos locais elevados é seguro;\n4.º Em tetos e coberturas frágeis: utilizar equipamentos de trabalho para proteção contra quedas.\nEquipamentos de acesso ao poço do elevador devem cumprir estes requisitos.",
+      "keywords": ["trabalho em altura", "proteção coletiva", "EPI", "queda", "poço", "cobertura"],
+      "highlight": "Técnicos que acedem ao poço/teto do elevador devem usar EPI e proteção contra quedas"
+    },
+    {
+      "number": "Anexo II, Ponto 3.1",
+      "title": "Plataformas de trabalho — requisitos",
+      "text": "As plataformas de trabalho, rampas e escadas devem:\n- Ter dimensões adequadas para passagem segura;\n- Ter guarda-corpos de altura mínima 1 m e proteção intermédia a ≥ 0,45 m;\n- Resistir às cargas previstas;\n- Ser construídas de forma a prevenir escorregamentos (pisos antiderrapantes);\n- Ter dispositivos para impedir objetos de cair.",
+      "keywords": ["plataformas", "guarda-corpos", "1 metro", "antiderrapante", "queda de objetos"],
+      "highlight": "Plataformas de trabalho e acesso à casa de máquinas: guarda-corpos obrigatórios ≥ 1 m"
+    },
+    {
+      "number": "Anexo II, Ponto 4.1",
+      "title": "Equipamentos para trabalho em altura",
+      "text": "As escadas portáteis devem:\n- Apoiar-se em superfício estável, firme, com dimensões adequadas e imóvel;\n- Os degraus devem ser horizontais e ter perfil antiderrapante;\n- As escadas de armação devem ter dispositivo anti-abertura;\n- As escadas de acesso devem ultrapassar em ≥ 1 m o patamar de acesso.\nEscadas de acesso à caixa do elevador devem cumprir estes requisitos.",
+      "keywords": ["escadas portáteis", "estabilidade", "antiderrapante", "armação", "1 metro", "patamar"],
+      "highlight": "Escadas de acesso à caixa/poço do elevador: devem ultrapassar o patamar em ≥ 1 m"
+    },
+    {
+      "number": "Art. 9.º",
+      "title": "Informação e formação",
+      "text": "O empregador deve informar e formar os trabalhadores sobre:\na) As condições de utilização dos equipamentos de trabalho;\nb) As situações anormais previsíveis;\nc) As conclusões retiradas da experiência adquirida com a utilização dos equipamentos;\nd) Os riscos para o próprio e outros trabalhadores.\nInformação disponível em forma escrita, quando adequado.",
+      "keywords": ["informação", "formação", "trabalhadores", "riscos", "situações anormais", "escrita"],
+      "highlight": "Técnicos de manutenção de elevadores devem receber formação e informação por escrito sobre riscos"
+    }
+  ]
+}

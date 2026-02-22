@@ -1,0 +1,48 @@
+{
+  "id": "en-81-77-2020",
+  "title": "NP EN 81-77:2020",
+  "description": "Norma Europeia: Regras de segurança para a construção e instalação de elevadores — Utilizações particulares para elevadores de passageiros e de carga-passageiros — Parte 77: Elevadores sujeitos a situações sísmicas.",
+  "date": "2020-01-01",
+  "source": "CEN - Comité Europeu de Normalização | IPQ - Instituto Português da Qualidade",
+  "url": "https://www.ipq.pt",
+  "priority": "MEDIUM",
+  "scope": "Elevadores instalados em zonas sísmicas — Portugal continental e ilhas têm zonas sísmicas relevantes (Eurocódigo 8, Zona 1.1 a 2.3)",
+  "status": "Em vigor desde 2020",
+  "articles": [
+    {
+      "number": "Secção 4",
+      "title": "Categorias sísmicas para elevadores",
+      "text": "A norma define categorias sísmicas baseadas na aceleração pico do solo (PGA):\n- Categoria I: PGA < 0,04g — requisitos mínimos\n- Categoria II: 0,04g ≤ PGA < 0,12g — requisitos intermédios\n- Categoria III: PGA ≥ 0,12g — requisitos elevados\n\nEm Portugal, a maioria do continente está em Categoria II-III. Lisboa e Algarve: Categoria III (zona sísmica 1.1, PGA ~0,27g). Açores: Categoria III.",
+      "keywords": ["PGA", "aceleração sísmica", "categoria I II III", "Lisboa sísmica", "Algarve sísmica", "Açores"],
+      "highlight": "Portugal: Lisboa/Algarve em Categoria III (PGA~0,27g) — requisitos sísmicos elevados obrigatórios"
+    },
+    {
+      "number": "Secção 5.2",
+      "title": "Fixação da caixa e estrutura do elevador",
+      "text": "Para Categorias II e III:\n- Guias do elevador com ligações reforçadas às paredes estruturais;\n- Suportes de guias a intervalos máximos de 2,5 m (normal) ou 2,0 m em Categoria III;\n- Amortecedores de fundo com ancoragem calculada para forças sísmicas;\n- Casa das máquinas: equipamento fixado ao pavimento com ancoragem sísmica;\n- Cálculo estrutural das fixações conforme NP EN 1998 (Eurocódigo 8).",
+      "keywords": ["guias reforçadas", "2,5 m", "2,0 m", "Eurocódigo 8", "NP EN 1998", "ancoragem sísmica"],
+      "highlight": "Cat III: suportes de guias a ≤2,0m, todas as fixações calculadas conforme Eurocódigo 8"
+    },
+    {
+      "number": "Secção 5.3",
+      "title": "Dispositivos de segurança sísmica",
+      "text": "Em Categorias II e III:\n- Relé sísmico (acelerômetro): deteta aceleração sísmica e para o elevador no piso mais próximo;\n- Limiar de ativação do relé sísmico: ≥ 0,10g horizontal;\n- Após ativação: elevador na posição de inspeção — só retoma operação após verificação por técnico;\n- Sistema de deteção de desalinhamento de guias após sismo;\n- Testes do relé sísmico: anual.",
+      "keywords": ["relé sísmico", "acelerômetro", "0,10g", "paragem automática", "verificação técnico", "teste anual"],
+      "highlight": "Relé sísmico obrigatório (Cat II/III): ativa a ≥0,10g → para elevador → só retoma após inspeção"
+    },
+    {
+      "number": "Secção 5.4",
+      "title": "Proteção de componentes durante sismo",
+      "text": "Componentes que devem ser protegidos:\n- Contrapeso com guias mais largas para prevenir descarrilamento;\n- Tensores do cabo de segurança com folga lateral acrescida;\n- Quadro elétrico com fixações anti-vibração;\n- Baterias de emergência assistidas por suportes anti-queda;\n- Molas e amortecedores dimensionados para absorver vibrações sísmicas;\n- Portas de piso com folga suficiente para deformação sísmica da estrutura (≥ 20 mm).",
+      "keywords": ["contrapeso", "guias largas", "tensores", "quadro elétrico", "portas folga 20 mm"],
+      "highlight": "Portas de piso: folga ≥20mm para deformação sísmica — contrapeso com guias reforçadas"
+    },
+    {
+      "number": "Secção 6",
+      "title": "Procedimentos após acontecimento sísmico",
+      "text": "Após qualquer evento sísmico com PGA > 0,04g na localização do elevador:\n1. Verificação obrigatória por técnico qualificado antes de retomar serviço;\n2. Inspeção visual de guias, fixações, cabos e portas;\n3. Teste de funcionamento sem passageiros;\n4. Registo de inspeção pós-sismo no livro de manutenção;\n5. Em caso de dúvida: elevador permanece fora de serviço até peritagem.\nRegistos de inspeção pós-sismo devem ser conservados por 5 anos.",
+      "keywords": ["inspeção pós-sismo", "técnico qualificado", "verificação guias", "livro manutenção", "5 anos"],
+      "highlight": "Após sismo >0,04g: inspeção obrigatória por técnico antes de retomar serviço — registo 5 anos"
+    }
+  ]
+}

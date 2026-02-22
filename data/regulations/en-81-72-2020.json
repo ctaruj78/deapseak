@@ -1,0 +1,55 @@
+{
+  "id": "en-81-72-2020",
+  "title": "NP EN 81-72:2020",
+  "description": "Norma Europeia: Regras de segurança para a construção e instalação de elevadores — Utilizações particulares — Parte 72: Elevadores para bombeiros.",
+  "date": "2020-01-01",
+  "source": "CEN - Comité Europeu de Normalização | IPQ - Instituto Português da Qualidade",
+  "url": "https://www.ipq.pt",
+  "priority": "HIGH",
+  "scope": "Elevadores em edifícios que requerem elevador para bombeiros — geralmente obrigatório em edifícios >28 m (Portugal: conforme Portaria 1532/2008)",
+  "status": "Em vigor desde 2020 — substitui EN 81-72:2003",
+  "articles": [
+    {
+      "number": "Secção 4.1",
+      "title": "Requisitos gerais para elevadores de bombeiros",
+      "text": "Um elevador de bombeiros deve:\n- Ser dotado de modo especial de operação para uso pelos bombeiros;\n- Ser acessível em caso de incêndio a partir do piso de acesso dos bombeiros;\n- Ser protegido contra calor, fumo e água de extinção;\n- Ter alimentação de emergência independente que garante funcionamento mesmo em caso de falha de energia.\nNota: Em Portugal, a Portaria 1532/2008 (RSCIE) impõe elevador de bombeiros em edifícios com altura > 28 m.",
+      "keywords": ["elevador bombeiros", "modo emergência", "alimentação emergência", "28 m", "RSCIE"],
+      "highlight": "Obrigatório em edifícios >28m (Portugal): alimentação emergência + modo bombeiros (Fase 1 e Fase 2)"
+    },
+    {
+      "number": "Secção 5.2",
+      "title": "Dimensões mínimas da cabina",
+      "text": "A cabina do elevador de bombeiros deve ter dimensões interiores mínimas de:\n- Largura: 1100 mm\n- Profundidade: 2100 mm\n- Altura: 2000 mm\n- Capacidade de carga: mínimo 630 kg (equivalente a aprox. 8 pessoas com equipamento)\nEspaço suficiente para uma maca na posição horizontal e dois bombeiros equipados.",
+      "keywords": ["cabina 1100x2100", "630 kg", "maca", "altura 2000 mm"],
+      "highlight": "Cabina mínima: 1100×2100 mm, h≥2000 mm, ≥630 kg — comporta maca + 2 bombeiros"
+    },
+    {
+      "number": "Secção 5.4",
+      "title": "Fase 1 — Controlo externo (Piso de Acesso)",
+      "text": "Fase 1 — Recolha automática:\n- Ativada por alarme de incêndio ou chave bombeiros no piso de referência;\n- Ao ser ativada: elevador ignora todas as chamadas e dirige-se ao piso de referência;\n- Portas abrem no piso de referência e ficam abertas;\n- Painel exterior exibe indicação 'BOMBEIROS' ;\n- Nenhuma outra chamada pode anular o comando de bombeiros.",
+      "keywords": ["Fase 1", "recolha automática", "piso referência", "chave bombeiros", "alarme incêndio"],
+      "highlight": "Fase 1: alarme incêndio → elevador vai imediatamente ao piso de referência e abre portas"
+    },
+    {
+      "number": "Secção 5.5",
+      "title": "Fase 2 — Controlo exclusivo pelos bombeiros",
+      "text": "Fase 2 — Controlo interior:\n- Ativada por chave Fase 2 na cabina;\n- Portas abrem/fecham apenas por ação contínua nos botões dentro da cabina (dead-man);\n- Portas não fecham automaticamente;\n- O elevador não responde a chamadas de piso;\n- Comunicação bidirecional com posto de comando dos bombeiros;\n- Intercom em bom estado de funcionamento mesmo com fumo moderado.",
+      "keywords": ["Fase 2", "dead-man", "botão contínuo", "sem chamadas automáticas", "intercom bombeiros"],
+      "highlight": "Fase 2: bombeiros controlam cabina manualmente — portas fecham só com pressão contínua no botão"
+    },
+    {
+      "number": "Secção 5.6",
+      "title": "Proteção contra calor, fumo e água",
+      "text": "O elevador de bombeiros deve ser protegido contra os efeitos de incêndio:\n- Caixa de elevador com resistência ao fogo EI 120 (2 horas);\n- Hall do elevador com resistência ao fogo REI 30;\n- Equipamento elétrico protegido contra infiltração de água de extinção;\n- Cabos e fiação com classificação de reação ao fogo Cca-s1b,d1,a1 (alta resistência a chamas);\n- Temperatura máxima de operação: 40°C no espaço da máquina.",
+      "keywords": ["EI 120", "REI 30", "Cca-s1b", "temperatura 40°C", "proteção água extinção"],
+      "highlight": "Caixa: EI 120 (2h), cabos Cca-s1b, equip. protegido contra água, operação até 40°C"
+    },
+    {
+      "number": "Secção 5.7",
+      "title": "Alimentação de emergência",
+      "text": "O elevador de bombeiros deve dispor de alimentação de emergência que:\n- Entra em funcionamento em ≤ 15 segundos após falha de energia;\n- Garante pelo menos 2 horas de operação contínua;\n- Capacidade para mover elevador com carga nominal;\n- A fonte de emergência pode ser partilhada com outros sistemas de segurança;\n- Deve ser testada anualmente conforme EN ISO 8528.",
+      "keywords": ["alimentação emergência", "15 segundos", "2 horas", "fonte emergência", "EN ISO 8528"],
+      "highlight": "Emergência: alimentação ativa em ≤15s, garante 2h de operação completa do elevador"
+    }
+  ]
+}

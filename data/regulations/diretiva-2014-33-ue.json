@@ -1,0 +1,69 @@
+{
+  "id": "diretiva-2014-33-ue",
+  "title": "Diretiva 2014/33/UE",
+  "description": "Diretiva do Parlamento Europeu e do Conselho relativa à harmonização das legislações dos Estados-Membros respeitantes aos ascensores e aos componentes de segurança para ascensores. Substitui a Diretiva 95/16/CE.",
+  "date": "2014-02-26",
+  "source": "Parlamento Europeu e Conselho da UE",
+  "url": "https://eur-lex.europa.eu/legal-content/PT/TXT/?uri=CELEX:32014L0033",
+  "priority": "HIGH",
+  "scope": "Substitui a Diretiva 95/16/CE — harmonização UE para ascensores novos colocados no mercado",
+  "status": "Em vigor — transposta para Portugal pelo DL 163/2006 (atualizado)",
+  "articles": [
+    {
+      "number": "Art. 1.º",
+      "title": "Âmbito de aplicação",
+      "text": "A presente diretiva aplica-se aos ascensores instalados permanentemente em edifícios ou construções e aos componentes de segurança para ascensores referidos no Anexo III. Exclui: sistemas de elevação de minas, ascensores de plataforma para espetáculos, ascensores instalados em meios de transporte.",
+      "keywords": ["âmbito", "ascensores permanentes", "componentes de segurança", "exclusões"],
+      "highlight": "Aplica-se a ascensores novos colocados no mercado UE após 20 de abril de 2016"
+    },
+    {
+      "number": "Art. 3.º",
+      "title": "Colocação no mercado e entrada em serviço",
+      "text": "Os Estados-Membros devem tomar todas as medidas adequadas para garantir que os ascensores e os componentes de segurança só possam ser colocados no mercado ou em serviço se, quando instalados, mantidos e utilizados de acordo com os seus objetivos previstos, cumprirem os requisitos essenciais de saúde e segurança estabelecidos no Anexo I.",
+      "keywords": ["colocação no mercado", "entrada em serviço", "requisitos essenciais", "Anexo I"],
+      "highlight": "Todos os elevadores novos devem cumprir requisitos essenciais de saúde e segurança"
+    },
+    {
+      "number": "Art. 7.º",
+      "title": "Declaração UE de Conformidade e marcação CE",
+      "text": "Os fabricantes de componentes de segurança devem elaborar uma declaração UE de conformidade e apor a marcação CE. A marcação CE deve ser aposta de forma visível, legível e indelével no componente de segurança ou na respetiva plaqueta de dados. Os instaladores de ascensores devem elaborar a declaração UE de conformidade do ascensor.",
+      "keywords": ["marcação CE", "declaração de conformidade", "instaladores", "fabricantes"],
+      "highlight": "Marcação CE obrigatória — todos os componentes e ascensores novos"
+    },
+    {
+      "number": "Anexo I, Ponto 1",
+      "title": "Requisitos essenciais — Segurança geral",
+      "text": "O ascensor deve ter características de modo a garantir um funcionamento seguro durante o seu período de utilização previsível. Em especial:\n- Proteção contra quedas livre\n- Paragem de emergência eficaz\n- Dispositivos de proteção contra sobrevelocidade\n- Sistemas de alimentação de emergência de iluminação\n- Comunicação bidirecional com serviço de emergência\n- Resistência a impactos elétricos e mecânicos",
+      "keywords": ["segurança geral", "queda livre", "paragem de emergência", "sobrevelocidade", "iluminação", "comunicação emergência"],
+      "highlight": "Comunicação bidirecional com serviços de emergência OBRIGATÓRIA em todos os elevadores"
+    },
+    {
+      "number": "Anexo I, Ponto 2",
+      "title": "Requisitos — Cabina e carga máxima",
+      "text": "A cabina deve:\n- Ser completamente fechada com paredes, chão e teto sólidos, incluindo portas;\n- Ter dimensões que permitam acesso de cadeira de rodas (se aplicável);\n- Ter iluminação de emergência;\n- Ter dispositivo de comunicação com serviço permanente de vigilância;\n- Ter carga máxima marcada de forma visível.",
+      "keywords": ["cabina fechada", "acessibilidade", "iluminação emergência", "carga máxima", "comunicação"],
+      "highlight": "Cabina deve ter comunicação com serviço de vigilância e iluminação de emergência"
+    },
+    {
+      "number": "Anexo I, Ponto 3",
+      "title": "Requisitos — Comandos e sinalizações",
+      "text": "Os comandos devem ser claramente identificados. O painel de comandos deve:\n- Ter sinais luminosos de posição da cabina;\n- Ter botão de alarme;\n- Ter botão de paragem de emergência acessível a partir da cabina;\n- Em ascensores de uso público, ter sinais e controlos Braille ou relevo quando possível.",
+      "keywords": ["comandos", "sinais luminosos", "alarme", "paragem emergência", "Braille", "acessibilidade"],
+      "highlight": "Botão de alarme e indicação de posição obrigatórios"
+    },
+    {
+      "number": "Art. 10.º",
+      "title": "Avaliação da conformidade",
+      "text": "Os fabricantes devem sujeitar os seus ascensores a um dos procedimentos de avaliação da conformidade: Exame UE de tipo (Módulo B) + Verificação ao acaso (Módulo C2); Exame UE de tipo (Módulo B) + Sistema de garantia de qualidade do produto (Módulo E); Verificação por unidade (Módulo G); Sistema de garantia de qualidade total (Módulo H) com aprovação do sistema de projeto.",
+      "keywords": ["avaliação conformidade", "módulo B", "módulo G", "módulo H", "organismo notificado"],
+      "highlight": "Exige avaliação por organismo notificado (ex: CERTIF, APCER em Portugal)"
+    },
+    {
+      "number": "Art. 32.º",
+      "title": "Substituição da Diretiva 95/16/CE",
+      "text": "A Diretiva 95/16/CE é revogada com efeitos a partir de 20 de abril de 2016. As referências à Diretiva 95/16/CE devem ser entendidas como referências à presente diretiva 2014/33/UE. Os ascensores instalados antes de 20 de abril de 2016 ao abrigo da Diretiva 95/16/CE continuam conformes.",
+      "keywords": ["revogação", "Diretiva 95/16/CE", "2016", "conformes", "transição"],
+      "highlight": "⚠️ Diretiva 95/16/CE REVOGADA desde 20 abril 2016 — substituída por 2014/33/UE"
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "id": "en-81-73-2020",
+  "title": "NP EN 81-73:2020",
+  "description": "Norma Europeia: Regras de segurança para a construção e instalação de elevadores — Utilizações particulares — Parte 73: Comportamento dos elevadores em caso de incêndio.",
+  "date": "2020-01-01",
+  "source": "CEN - Comité Europeu de Normalização | IPQ - Instituto Português da Qualidade",
+  "url": "https://www.ipq.pt",
+  "priority": "HIGH",
+  "scope": "Todos os elevadores de passageiros instalados em edifícios — define o comportamento seguro durante um incêndio",
+  "status": "Em vigor desde 2020 — substitui EN 81-73:2005",
+  "articles": [
+    {
+      "number": "Secção 4",
+      "title": "Modos de operação em caso de incêndio",
+      "text": "A norma define três modos de operação:\n\nModo 0 (Normal): operação normal sem alarme.\n\nModo 1 (Recolha controlada): ativado por alarme de incêndio — o elevador completa a viagem atual e vai ao piso de recolha pré-programado, abre portas e permanece estacionado fora de serviço.\n\nModo 2 (Elevador de bombeiros): controlo exclusivo pelos bombeiros (ver EN 81-72).\n\nNota: O Modo 1 é o mínimo exigido pela presente norma para todos os elevadores de passageiros.",
+      "keywords": ["Modo 0", "Modo 1", "Modo 2", "recolha controlada", "piso recolha", "alarme incêndio"],
+      "highlight": "Modo 1 obrigatório: alarme incêndio → elevador vai ao piso de recolha e pára fora de serviço"
+    },
+    {
+      "number": "Secção 5.2",
+      "title": "Piso de recolha (parking floor)",
+      "text": "O piso de recolha é pré-programado e deve ser:\n- O piso de entrada principal do edifício (geralmente R/C);\n- Ou o piso indicado pelas autoridades de proteção civil;\n- Pode ser programado de forma diferente para diferentes grupos de elevadores no mesmo edifício.\nO elevador não deve ir diretamente para os pisos incendiados — a deteção de incêndio por piso pode redirecionar o piso de recolha para um piso alternativo seguro.",
+      "keywords": ["piso recolha", "R/C", "programação", "proteção civil", "redirecionamento"],
+      "highlight": "Piso de recolha = normalmente R/C — programável por proteção civil — elevador NÃO vai ao piso em chamas"
+    },
+    {
+      "number": "Secção 5.3",
+      "title": "Coordenação com o sistema de alarme de incêndio",
+      "text": "O elevador deve ser conectado ao sistema de alarme de incêndio do edifício:\n- Sinal de incêndio por zona (piso a piso) permite recolha ao piso mais seguro;\n- Sinal geral de incêndio ativa recolha imediata ao piso de recolha padrão;\n- A interface deve ser aprovada pelo instalador do sistema de deteção de incêndio;\n- Cabo de sinalização: circuito supervisionado, resistente a corte e curto-circuito;\n- Tempo de resposta máximo ao sinal de alarme: 3 segundos.",
+      "keywords": ["alarme incêndio", "interface deteção", "3 segundos", "circuito supervisionado", "zona incêndio"],
+      "highlight": "Interface com deteção de incêndio obrigatória — resposta em ≤3s — circuito supervisionado"
+    },
+    {
+      "number": "Secção 5.4",
+      "title": "Comportamento das portas durante recolha",
+      "text": "Durante a recolha em caso de incêndio:\n- As portas NÃO podem abrir em pisos intermédios;\n- Ao chegar ao piso de recolha: portas abrem e permanecem abertas;\n- Se houver obstrução na porta durante a descida: a porta não reabre — o elevador continua até ao piso de recolha;\n- As chamadas de piso são ignoradas;\n- O painel de chamadas exibe 'FORA DE SERVIÇO' ou aviso equivalente.",
+      "keywords": ["portas bloqueadas", "portas abertas no recolha", "fora de serviço", "sem paragens intermédias"],
+      "highlight": "Durante recolha: portas NÃO abrem em pisos intermédios — só abre no piso de recolha final"
+    },
+    {
+      "number": "Secção 5.5",
+      "title": "Resistência de componentes aos efeitos do calor",
+      "text": "Os componentes elétricos do elevador devem suportar condições de incêndio:\n- Temperatura ambiente máxima no quadro elétrico: 40°C em operação normal;\n- Cabos dentro da caixa de elevador: classificação Cca-s1b,d1,a1 ou superior;\n- Detetor de fumo na caixa de elevador (recomendado);\n- Componentes na casa das máquinas: temperatura máxima de operação 40°C;\n- Ventilação da caixa do elevador não deve promover a propagação do incêndio.",
+      "keywords": ["Cca-s1b", "temperatura 40°C", "detetor fumo", "ventilação", "resistência calor"],
+      "highlight": "Cabos em caixa: Cca-s1b — quadro elétrico operacional até 40°C — sem propagação por ventilação"
+    },
+    {
+      "number": "Secção 6",
+      "title": "Sinalização e informação ao público",
+      "text": "Em caso de incêndio:\n- Sinalização luminosa 'NÃO UTILIZAR ELEVADORES EM CASO DE INCÊNDIO' em todos os pisos;\n- A sinalização deve ser ativada automaticamente com o alarme de incêndio;\n- Pictograma normalizado (conforme ISO 7010) exibido permanentemente nas portas de piso;\n- Texto de apoio em pelo menos língua local;\n- Dimensão mínima do sinal: 105×148 mm (A6).",
+      "keywords": ["sinalização incêndio", "ISO 7010", "não usar elevador", "pictograma", "A6"],
+      "highlight": "Sinais de 'Não use o elevador em caso de incêndio' obrigatórios em todos os pisos (A6 mínimo)"
+    }
+  ]
+}

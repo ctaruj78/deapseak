@@ -1,0 +1,48 @@
+{
+  "id": "en-81-71-2022",
+  "title": "NP EN 81-71:2022",
+  "description": "Norma Europeia: Regras de segurança para a construção e instalação de elevadores — Utilizações particulares para elevadores de passageiros e de carga-passageiros — Parte 71: Elevadores resistentes ao vandalismo.",
+  "date": "2022-01-01",
+  "source": "CEN - Comité Europeu de Normalização | IPQ - Instituto Português da Qualidade",
+  "url": "https://www.ipq.pt",
+  "priority": "MEDIUM",
+  "scope": "Elevadores instalados em zonas de risco de vandalismo — edifícios públicos, habitação social, transportes",
+  "status": "Em vigor desde 2022 — substitui EN 81-71:2005+A1:2006",
+  "articles": [
+    {
+      "number": "Secção 4",
+      "title": "Classes de vandalismo",
+      "text": "Classe VL1: Baixo risco de vandalismo\n- Edifícios residenciais privados com controlo de acesso\n- Pressão de impacto: 300 J\n\nClasse VL2: Médio risco de vandalismo\n- Edifícios residenciais semi-públicos, hospitais\n- Pressão de impacto: 700 J\n\nClasse VL3: Alto risco de vandalismo\n- Edifícios públicos, metrô, estações\n- Pressão de impacto: 1500 J",
+      "keywords": ["classe VL1", "classe VL2", "classe VL3", "risco vandalismo", "300 J", "700 J", "1500 J"],
+      "highlight": "3 classes: VL1 (300 J) residencial | VL2 (700 J) semi-público | VL3 (1500 J) público/metrô"
+    },
+    {
+      "number": "Secção 5.2",
+      "title": "Resistência das portas ao vandalismo",
+      "text": "As portas de piso e de cabina devem resistir a impacto:\n- VL1: 300 J (impacto de corpo mole)\n- VL2: 700 J + resistência a arrombamento\n- VL3: 1500 J + resistência a arrombamento + resistência a objetos cortantes\nEstrutura das portas: perfil reforçado, sem partes que possam ser facilmente degradadas.",
+      "keywords": ["resistência impacto", "300 J", "700 J", "1500 J", "arrombamento", "portas reforçadas"],
+      "highlight": "Portas devem ser testadas a impacto conforme classe — VL3 exige painel reforçado com aço"
+    },
+    {
+      "number": "Secção 5.3",
+      "title": "Iluminação anti-vandalismo",
+      "text": "Para VL2 e VL3:\n- Iluminação de emergência com proteção mecânica (coberturas de acrílico/policarbonato reforçado);\n- Caixas de luminária resistentes a impacto;\n- Cabos de iluminação protegidos contra corte;\n- Nível mínimo de iluminação garantido mesmo após tentativa de dano.",
+      "keywords": ["iluminação proteção", "policarbonato reforçado", "cabos protegidos", "VL2", "VL3"],
+      "highlight": "VL2/VL3: iluminação com proteção mecânica e cabos resistentes a corte"
+    },
+    {
+      "number": "Secção 5.4",
+      "title": "Painéis e revestimentos interiores",
+      "text": "Materiais de revestimento interior da cabina para classes VL2 e VL3:\n- Aço inoxidável (mínimo 1,5 mm espessura) para paredes;\n- Vidro laminado de segurança para painéis transparentes;\n- Pavimento com revestimento resistente a arranhões e a líquidos corrosivos;\n- Cantos e arestas arredondados para dificultar alavancagem.",
+      "keywords": ["aço inoxidável", "1,5 mm", "vidro laminado", "pavimento resistente", "cantos arredondados"],
+      "highlight": "VL2/VL3: paredes em aço inox ≥ 1,5 mm, vidro laminado, pavimento resistente"
+    },
+    {
+      "number": "Secção 5.5",
+      "title": "Botões e painéis de controlo resistentes",
+      "text": "Para VL2 e VL3:\n- Botões em aço inoxidável ou liga resistente, sem plásticos expostos;\n- Sinal de alarme integrado na estrutura metálica;\n- Painel de controlo com tampa de aço;\n- Câmara de videovigilância recomendada (não normativa mas fortemente sugerida);\n- Intercomum bidirecional com proteção vandalismo.",
+      "keywords": ["botões aço inox", "painel metálico", "câmara vigilância", "intercomum", "sinal alarme"],
+      "highlight": "VL2/VL3: todos os componentes interiores em aço inoxidável, sem plásticos acessíveis"
+    }
+  ]
+}

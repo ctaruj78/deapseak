@@ -1,0 +1,62 @@
+{
+  "id": "portaria-1532-2008",
+  "title": "Portaria n.º 1532/2008",
+  "description": "Regulamento Técnico de Segurança Contra Incêndio em Edifícios (RSCIE). Define requisitos de comportamento de elevadores em caso de incêndio. Aplicável a todos os edifícios com elevadores em Portugal.",
+  "date": "2008-12-29",
+  "source": "Ministério da Administração Interna",
+  "url": "https://dre.pt/web/guest/pesquisa/-/search/164096",
+  "priority": "HIGH",
+  "scope": "Segurança contra incêndio em edifícios — comportamento e requisitos para elevadores",
+  "status": "Em vigor",
+  "articles": [
+    {
+      "number": "Art. 165.º",
+      "title": "Elevadores de emergência",
+      "text": "Os edifícios com mais de 28 metros de altura devem ter elevadores de emergência. O elevador de emergência deve:\n- Ter cabina com dimensões mínimas de 1,10 m × 2,10 m, com capacidade ≥ 630 kg;\n- Ter alimentação elétrica de emergência garantida por grupo gerador;\n- Ter comunicação com posto de segurança e bombeiros;\n- Ter modo de operação bombeiros ativável por chave;\n- Funcionar com portas fechadas e sem paragens intermédias no modo bombeiros.",
+      "keywords": ["elevador de emergência", "bombeiros", "28 metros", "alimentação emergência", "modo bombeiros"],
+      "highlight": "Edifícios > 28 m: elevador de emergência obrigatório com modo bombeiros"
+    },
+    {
+      "number": "Art. 166.º",
+      "title": "Modo de operação em caso de incêndio",
+      "text": "Em caso de incêndio, os elevadores devem ser recolhidos automaticamente ao piso de referência (nível de saída), com portas abertas e fora de serviço, exceto os elevadores de emergência. O comando de recolha pode ser ativado:\n- Automaticamente pela central de deteção de incêndio;\n- Manualmente por interruptor na central;\n- Por corte de energia nos andares (sistema de prioridade bombeiros).",
+      "keywords": ["recolha", "piso de referência", "deteção de incêndio", "automático", "manual"],
+      "highlight": "⚠️ RECOLHA AUTOMÁTICA ao piso térreo obrigatória quando ativado alarme de incêndio"
+    },
+    {
+      "number": "Art. 167.º",
+      "title": "Poço, caixa e casa de máquinas",
+      "text": "O poço do elevador deve ter resistência ao fogo mínima de:\n- EI 60 em edifícios da 1.ª categoria de risco;\n- EI 90 em edifícios da 2.ª e 3.ª categorias;\n- EI 120 em edifícios da 4.ª categoria.\nAs portas de piso devem ter resistência E 30 C (estanquidade ao fogo 30 min, auto-fechamento). A casa de máquinas deve ser compartimento corta-fogo.",
+      "keywords": ["poço", "resistência ao fogo", "EI 60", "EI 90", "EI 120", "portas corta-fogo", "casa de máquinas"],
+      "highlight": "Poço do elevador deve ter resistência ao fogo conforme categoria de risco do edifício"
+    },
+    {
+      "number": "Art. 168.º",
+      "title": "Iluminação e sinalização de emergência",
+      "text": "A cabina do elevador deve ter iluminação de emergência autónoma com autonomia mínima de 1 hora. Os botões de chamada e painéis de comando devem ser sinalizados com iluminação de fundo. Em caso de falha de energia, a iluminação de emergência deve ativar-se automaticamente em menos de 5 segundos.",
+      "keywords": ["iluminação emergência", "autonomia 1 hora", "sinalização", "falha energia", "5 segundos"],
+      "highlight": "Iluminação de emergência na cabina: autonomia mínima 1 hora, ativa em < 5 seg"
+    },
+    {
+      "number": "Art. 169.º",
+      "title": "Condições de evacuação",
+      "text": "Os elevadores não devem ser utilizados para evacuação de ocupantes, exceto os elevadores de emergência com modo bombeiros. A sinalização deve indicar claramente 'NÃO USAR O ELEVADOR EM CASO DE INCÊNDIO'. Esta sinalização deve estar em cada patamar junto às portas de piso e no interior da cabina.",
+      "keywords": ["evacuação", "sinalização", "não usar elevador", "incêndio", "patamar"],
+      "highlight": "Sinalização 'NÃO USAR ELEVADOR EM INCÊNDIO' obrigatória em cada patamar e na cabina"
+    },
+    {
+      "number": "Art. 170.º",
+      "title": "Alimentação elétrica de emergência",
+      "text": "Os elevadores de emergência e os sistemas de recolha automática devem ser alimentados por:\n- Sistema de Alimentação de Emergência (SAE) com autonomia ≥ 60 min;\n- Grupo gerador com arranque automático em ≤ 15 segundos;\n- UPS para sistemas de controlo e deteção.\nOs cabos elétricos nas vias de evacuação devem ser resistentes ao fogo (tipo CR1-C1).",
+      "keywords": ["alimentação emergência", "SAE", "gerador", "60 minutos", "UPS", "cabos resistentes ao fogo"],
+      "highlight": "Gerador: arranque automático em ≤ 15 seg, autonomia ≥ 60 min"
+    },
+    {
+      "number": "Anexo, Tabela XXIX",
+      "title": "Categorias de risco e requisitos",
+      "text": "Edifícios de habitação:\n- Categoria 1: ≤ 9 m altura\n- Categoria 2: 9-28 m\n- Categoria 3: 28-50 m\n- Categoria 4: > 50 m\n\nEdifícios de serviços (escritórios):\n- Categoria 1: ≤ 9 m, ≤ 100 pessoas\n- Categoria 2: 9-28 m, ≤ 1000 pessoas\n- Categoria 3: 28-50 m, ≤ 5000 pessoas\n- Categoria 4: > 50 m ou > 5000 pessoas",
+      "keywords": ["categorias de risco", "altura", "habitação", "escritórios", "pessoas"],
+      "highlight": "Categoria 4 (> 50 m): máximos requisitos de resistência ao fogo"
+    }
+  ]
+}

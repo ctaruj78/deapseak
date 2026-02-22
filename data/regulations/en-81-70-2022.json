@@ -1,0 +1,55 @@
+{
+  "id": "en-81-70-2022",
+  "title": "NP EN 81-70:2022",
+  "description": "Norma Europeia: Regras de segurança para a construção e instalação de elevadores — Utilizações particulares para elevadores de passageiros e de carga-passageiros — Parte 70: Acessibilidade aos elevadores para pessoas, incluindo pessoas com deficiência.",
+  "date": "2022-01-01",
+  "source": "CEN - Comité Europeu de Normalização | IPQ - Instituto Português da Qualidade",
+  "url": "https://www.ipq.pt/backFiles/NP_EN_81-70_2022.pdf",
+  "priority": "HIGH",
+  "scope": "Acessibilidade aos elevadores — obrigatório para edifícios públicos, habitação acessível e reabilitação",
+  "status": "Em vigor desde 2022 — substitui EN 81-70:2003+A1:2004",
+  "articles": [
+    {
+      "number": "Secção 5.2",
+      "title": "Dimensões mínimas da cabina",
+      "text": "Tipo 1 (elevador padrão acessível):\n- Largura interior mínima: 1000 mm\n- Profundidade interior mínima: 1250 mm\n- Para cadeira de rodas manual\n\nTipo 2 (elevador de grande capacidade):\n- Largura interior mínima: 1100 mm\n- Profundidade interior mínima: 1400 mm\n- Permite viragem de cadeira de rodas\n\nTipo 3 (elevador para maca):\n- Largura interior mínima: 1100 mm\n- Profundidade interior mínima: 2100 mm\n- Para evacuação em maca",
+      "keywords": ["dimensões cabina", "cadeira de rodas", "1000 mm", "1100 mm", "1250 mm", "1400 mm", "maca", "acessibilidade"],
+      "highlight": "Tipo 1: min 1000×1250 mm | Tipo 2: min 1100×1400 mm | Tipo 3 (maca): 1100×2100 mm"
+    },
+    {
+      "number": "Secção 5.3",
+      "title": "Portas e vãos de acesso",
+      "text": "A largura livre mínima de passagem das portas deve ser:\n- 800 mm para Tipo 1 e Tipo 2;\n- 900 mm para Tipo 3 (maca).\nAs portas automáticas devem reabrir automaticamente ao contacto com pessoa ou obstáculo. Tempo de abertura mínimo: 3 a 5 segundos em modo normal.",
+      "keywords": ["porta", "800 mm", "900 mm", "reabertura automática", "tempo abertura", "obstáculo"],
+      "highlight": "Largura mínima da porta: 800 mm (Tipos 1/2), 900 mm (Tipo 3) — reabrir automaticamente"
+    },
+    {
+      "number": "Secção 5.5",
+      "title": "Painel de comandos e botoneiras",
+      "text": "Os botões de comando devem:\n- Ter diâmetro mínimo de 20 mm;\n- Estar instalados entre 900 mm e 1200 mm do chão;\n- Ter identificação em Braille e relevo (altorrelevo);\n- Ter confirmação sonora ao premir;\n- Ter iluminação ao premir;\n- Botão de alarme: amarelo com símbolo de campainha.\nBotoneiras em patamar: entre 900 e 1100 mm do chão.",
+      "keywords": ["botões", "Braille", "altorrelevo", "900 mm", "1200 mm", "confirmação sonora", "alarme amarelo"],
+      "highlight": "Botões com Braille obrigatórios — altura 900-1200 mm — confirmação sonora ao premir"
+    },
+    {
+      "number": "Secção 5.6",
+      "title": "Iluminação e contraste visual",
+      "text": "Iluminação da cabina: mínimo 100 lux ao nível do chão.\nContraste entre botões e painel: relação ≥ 7:1.\nBordos das portas devem contrastar com superfície adjacente.\nPiso da cabina deve ter contraste com as paredes para facilitar orientação visual.\nIluminação no patamar junto à porta: mínimo 50 lux.",
+      "keywords": ["iluminação 100 lux", "contraste 7:1", "bordos portas", "piso cabina", "50 lux patamar"],
+      "highlight": "Iluminação cabina: ≥ 100 lux | Contraste botões/painel ≥ 7:1"
+    },
+    {
+      "number": "Secção 5.7",
+      "title": "Informação sonora e visual",
+      "text": "O sistema de anúncio deve:\n- Anunciar oralmente o andar de chegada;\n- Indicar visualmente o andar em display;\n- Anunciar a direção de movimento (sinalização sonora diferenciada);\n- Ter sinal luminoso de abertura de portas;\n- Para Tipo 2 e 3: anunciar abertura e fecho de portas.",
+      "keywords": ["anúncio oral", "display andar", "direção movimento", "sinal luminoso", "abertura portas"],
+      "highlight": "Anúncio oral do andar OBRIGATÓRIO — sinalização visual e sonora da direção"
+    },
+    {
+      "number": "Secção 5.8",
+      "title": "Patamar e zona de aproximação",
+      "text": "Na frente da porta do elevador deve haver:\n- Espaço de manobra mínimo de 1500 mm × 1500 mm no patamar;\n- Piso deve ser nivelado (tolerância ≤ 10 mm) com o piso da cabina;\n- Sem ressalto entre patamar e cabina;\n- Iluminação mínima de 50 lux.",
+      "keywords": ["patamar", "1500 mm", "zona manobra", "nivelado", "10 mm tolerância", "ressalto"],
+      "highlight": "Patamar: espaço 1500×1500 mm | Nivelamento patamar/cabina: tolerância ≤ 10 mm"
+    }
+  ]
+}
