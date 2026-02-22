@@ -1853,17 +1853,17 @@ class ServiceRequestManager {
         const newDeadline = new Date();
         newDeadline.setDate(newDeadline.getDate() + parseInt(days));
         try {
-            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-            const r = await fetch(`/api/requests/${mongoId}`, {
+            const r = await AuthManager.fetchWithAuth(`/api/requests/${mongoId}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ deadline: newDeadline.toISOString(), scheduledAt: newDeadline.toISOString() })
             });
-            if (r.ok) {
+            if (r && r.ok) {
                 await this.loadRequests();
+                this.renderRequests();
                 toastr.success(`Дедлайн продовжено на ${days} днів — ${newDeadline.toLocaleDateString('uk-UA')}`);
             } else {
-                toastr.error('Не вдалося оновити дедлайн');
+                const err = r ? await r.json().catch(() => ({})) : {};
+                toastr.error('Не вдалося оновити дедлайн: ' + (err.message || r?.status || 'помилка сервера'));
             }
         } catch(e) {
             toastr.error(e.message);
@@ -2308,9 +2308,9 @@ async function completeRequest() {
             body: JSON.stringify({ resolution: workDescription.trim() })
         });
         
-        if (!response?.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Помилка завершення');
+        if (!response || !response.ok) {
+            const errBody = response ? await response.json().catch(() => ({})) : {};
+            throw new Error(errBody.message || (response ? `Помилка ${response.status}` : 'Помилка авторизації'));
         }
         
         alert('Заявку завершено успішно!');

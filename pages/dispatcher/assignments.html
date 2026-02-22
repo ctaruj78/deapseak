@@ -1734,7 +1734,8 @@
             async extendDeadlineFromModal() {
                 const aid = this.currentViewingId;
                 if (!aid) return;
-                await this.extendDeadline(aid);
+                // extendDeadline живе в assignmentManager (wrapper), не в класі
+                await window.assignmentManager.extendDeadline(aid);
             }
             
             // Відкрити адресу в Google Maps
