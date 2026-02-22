@@ -698,219 +698,179 @@
 <!-- ══════════════ HYBRID VIEW REQUEST MODAL ══════════════ -->
 <div class="modal fade" id="viewRequestModal" tabindex="-1">
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
-        <div class="modal-content" style="border-radius:15px;border:none;box-shadow:0 10px 40px rgba(0,0,0,.2)">
+        <div class="modal-content" style="border-radius:12px;border:none;box-shadow:0 10px 40px rgba(0,0,0,.2)">
 
-            <!-- HEADER -->
-            <div class="modal-header" style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;border:none;padding:20px 25px">
+            <!-- COMPACT HEADER -->
+            <div class="modal-header py-3" style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;border:none">
                 <div>
-                    <h5 class="modal-title mb-0">
+                    <div class="d-flex align-items-center flex-wrap">
                         <i class="fas fa-clipboard-list mr-2"></i>
-                        Деталі заявки <span id="vrmNum" class="font-weight-bold"></span>
-                    </h5>
+                        <h5 class="modal-title mb-0 mr-2">Деталі заявки <span id="vrmNum" class="font-weight-bold"></span></h5>
+                        <span id="vrmStatus" class="badge mr-1" style="font-size:.78rem"></span>
+                        <span id="vrmPriority" class="badge" style="font-size:.78rem"></span>
+                    </div>
                     <small id="vrmDate" class="text-white-50"></small>
                 </div>
                 <button type="button" class="close text-white" data-dismiss="modal" style="text-shadow:none;opacity:1"><span>&times;</span></button>
             </div>
 
-            <!-- INFO BAR: status / priority / technician / deadline -->
-            <div class="px-4 py-3" style="background:linear-gradient(to right,#f8f9fa,#fff);border-bottom:1px solid #dee2e6">
-                <div class="row text-center">
-                    <div class="col-6 col-md-3" style="border-right:1px solid #dee2e6">
-                        <small class="text-muted d-block">Статус</small>
-                        <span id="vrmStatus" class="badge mt-1" style="font-size:.82rem;padding:5px 10px"></span>
-                    </div>
-                    <div class="col-6 col-md-3" style="border-right:1px solid #dee2e6">
-                        <small class="text-muted d-block">Пріоритет</small>
-                        <span id="vrmPriority" class="badge mt-1" style="font-size:.82rem;padding:5px 10px"></span>
-                    </div>
-                    <div class="col-6 col-md-3" style="border-right:1px solid #dee2e6">
-                        <small class="text-muted d-block">Технік</small>
-                        <strong id="vrmTech" class="d-block mt-1 text-truncate" style="font-size:.88rem"></strong>
-                    </div>
-                    <div class="col-6 col-md-3">
-                        <small class="text-muted d-block">Заплановано</small>
-                        <strong id="vrmDeadline" class="d-block mt-1" style="font-size:.88rem"></strong>
-                    </div>
-                </div>
-            </div>
+            <!-- SPLIT LAYOUT -->
+            <div class="modal-body p-0 d-flex" style="min-height:460px">
 
-            <!-- TAB NAV -->
-            <ul class="nav nav-tabs px-4" style="background:#f8f9fa;border-bottom:2px solid #dee2e6;flex-wrap:nowrap;overflow-x:auto">
-                <li class="nav-item flex-shrink-0">
-                    <a class="nav-link active" data-toggle="tab" href="#vrmTabDesc"><i class="fas fa-align-left mr-1"></i>Опис</a>
-                </li>
-                <li class="nav-item flex-shrink-0">
-                    <a class="nav-link" data-toggle="tab" href="#vrmTabLoc"><i class="fas fa-map-marker-alt mr-1"></i>Локація</a>
-                </li>
-                <li class="nav-item flex-shrink-0">
-                    <a class="nav-link" data-toggle="tab" href="#vrmTabClient"><i class="fas fa-user mr-1"></i>Клієнт</a>
-                </li>
-                <li class="nav-item flex-shrink-0">
-                    <a class="nav-link" data-toggle="tab" href="#vrmTabComments">
-                        <i class="fas fa-comments mr-1"></i>Коментарі
-                        <span class="badge badge-primary ml-1" id="commentsCount">0</span>
-                    </a>
-                </li>
-                <li class="nav-item flex-shrink-0">
-                    <a class="nav-link" data-toggle="tab" href="#vrmTabHistory"><i class="fas fa-history mr-1"></i>Хронологія</a>
-                </li>
-                <li class="nav-item flex-shrink-0">
-                    <a class="nav-link" data-toggle="tab" href="#vrmTabActions"><i class="fas fa-bolt mr-1"></i>Дії</a>
-                </li>
-            </ul>
+                <!-- ─── LEFT: description (always visible) + mini tabs ─── -->
+                <div class="flex-grow-1 border-right" style="overflow-y:auto">
 
-            <!-- TAB CONTENT -->
-            <div class="tab-content p-4">
-
-                <!-- ① ОПИС -->
-                <div class="tab-pane fade show active" id="vrmTabDesc">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-body">
-                            <h5 class="text-primary mb-3"><i class="fas fa-wrench mr-2"></i>Тип та опис</h5>
-                            <div class="mb-3">
-                                <small class="text-muted text-uppercase font-weight-bold">Тип заявки</small>
-                                <div id="vrmType" class="mt-1 font-weight-bold"></div>
-                            </div>
-                            <div class="mb-3">
-                                <small class="text-muted text-uppercase font-weight-bold">Опис проблеми</small>
-                                <p id="vrmDescription" class="mt-2 p-3" style="font-size:1.05rem;line-height:1.8;background:#f8f9fa;border-radius:8px;white-space:pre-wrap"></p>
-                            </div>
-                            <div id="vrmNotesSection" style="display:none">
-                                <small class="text-muted text-uppercase font-weight-bold">Примітки</small>
-                                <p id="vrmNotes" class="mt-2 p-3 text-secondary" style="background:#fff3cd;border-radius:8px;border-left:4px solid #ffc107"></p>
+                    <!-- Тип + опис завжди видно -->
+                    <div class="p-4 pb-2">
+                        <div class="mb-1">
+                            <small class="text-uppercase text-muted" style="font-size:.68rem;letter-spacing:.08em">Тип заявки</small>
+                            <div id="vrmType" class="font-weight-bold mt-1"></div>
+                        </div>
+                        <hr class="my-2">
+                        <small class="text-uppercase text-muted" style="font-size:.68rem;letter-spacing:.08em">
+                            <i class="fas fa-wrench mr-1"></i>Опис проблеми
+                        </small>
+                        <p id="vrmDescription" class="mt-2 mb-0" style="font-size:1rem;line-height:1.7;white-space:pre-wrap"></p>
+                        <div id="vrmNotesSection" style="display:none" class="mt-2">
+                            <div class="alert alert-warning py-2 px-3 mb-0" style="font-size:.87rem">
+                                <i class="fas fa-sticky-note mr-1"></i><strong>Примітка:</strong>
+                                <span id="vrmNotes"></span>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- ② ЛОКАЦІЯ -->
-                <div class="tab-pane fade" id="vrmTabLoc">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-body">
-                            <h5 class="text-success mb-3"><i class="fas fa-building mr-2"></i>Інформація про ліфт</h5>
-                            <!-- address row -->
-                            <div class="d-flex align-items-center p-3 mb-3" style="background:#f8f9fa;border-radius:10px">
-                                <i class="fas fa-map-marker-alt text-danger fa-lg mr-3"></i>
+                    <!-- Mini tabs for supplementary info -->
+                    <ul class="nav nav-tabs px-4 mt-2" style="border-bottom:2px solid #dee2e6">
+                        <li class="nav-item">
+                            <a class="nav-link active vrm-tab" data-toggle="tab" href="#vrmTabLoc" style="padding:8px 14px;font-size:.82rem">
+                                <i class="fas fa-map-marker-alt mr-1"></i>Локація
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link vrm-tab" data-toggle="tab" href="#vrmTabClient" style="padding:8px 14px;font-size:.82rem">
+                                <i class="fas fa-user mr-1"></i>Клієнт
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link vrm-tab" data-toggle="tab" href="#vrmTabComments" style="padding:8px 14px;font-size:.82rem">
+                                <i class="fas fa-comments mr-1"></i>Коментарі
+                                <span class="badge badge-primary ml-1" id="commentsCount">0</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link vrm-tab" data-toggle="tab" href="#vrmTabHistory" style="padding:8px 14px;font-size:.82rem">
+                                <i class="fas fa-history mr-1"></i>Хронологія
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content px-4 py-3">
+                        <!-- Локація -->
+                        <div class="tab-pane fade show active" id="vrmTabLoc">
+                            <div class="d-flex align-items-start mb-3">
+                                <i class="fas fa-map-marker-alt text-danger mt-1 mr-2"></i>
                                 <div class="flex-grow-1">
                                     <small class="text-muted d-block">Адреса</small>
                                     <strong id="vrmAddress"></strong>
                                 </div>
-                                <button class="btn btn-sm btn-primary ml-3" onclick="window.serviceManager && window.serviceManager.openInMapsAdmin()">
+                                <button class="btn btn-sm btn-outline-primary ml-2" onclick="window.serviceManager && window.serviceManager.openInMapsAdmin()">
                                     <i class="fas fa-map mr-1"></i>Карта
                                 </button>
                             </div>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="d-flex align-items-center p-3" style="background:#f8f9fa;border-radius:10px">
-                                        <i class="fas fa-hashtag text-info fa-lg mr-3"></i>
-                                        <div><small class="text-muted d-block">ID Ліфта</small><code id="vrmLiftId"></code></div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="d-flex align-items-center p-3" style="background:#f8f9fa;border-radius:10px">
-                                        <i class="fas fa-tag text-warning fa-lg mr-3"></i>
-                                        <div><small class="text-muted d-block">Тип заявки</small><span id="vrmTypeTag"></span></div>
-                                    </div>
-                                </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-hashtag text-info mr-2"></i>
+                                <span class="text-muted mr-1">ID ліфта:</span><code id="vrmLiftId"></code>
                             </div>
-                            <div class="mt-4">
-                                <small class="text-muted text-uppercase font-weight-bold"><i class="fas fa-map mr-1"></i>Карта локації</small>
-                                <div id="vrmMapContainer" style="width:100%;height:300px;border-radius:10px;overflow:hidden;background:#f0f0f0;display:flex;align-items:center;justify-content:center;margin-top:10px">
-                                    <div class="text-center text-muted"><i class="fas fa-map-marked-alt fa-3x mb-2"></i><br>Вкажіть адресу</div>
-                                </div>
+                            <div id="vrmMapContainer" style="width:100%;height:220px;border-radius:8px;overflow:hidden;background:#f0f0f0;display:flex;align-items:center;justify-content:center">
+                                <div class="text-center text-muted"><i class="fas fa-map-marked-alt fa-3x mb-2"></i><br>Адреса не вказана</div>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                <!-- ③ КЛІЄНТ -->
-                <div class="tab-pane fade" id="vrmTabClient">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-body">
-                            <h5 class="text-info mb-3"><i class="fas fa-user-circle mr-2"></i>Контактна інформація</h5>
-                            <div class="row">
-                                <div class="col-md-4 text-center py-3">
-                                    <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;margin:0 auto 10px">
-                                        <i class="fas fa-user fa-2x text-white"></i>
-                                    </div>
-                                    <h6 id="vrmClientName" class="font-weight-bold mb-0"></h6>
-                                    <small id="vrmClientRole" class="text-muted"></small>
+                        <!-- Клієнт -->
+                        <div class="tab-pane fade" id="vrmTabClient">
+                            <div class="d-flex align-items-center mb-3">
+                                <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;flex-shrink:0" class="mr-3">
+                                    <i class="fas fa-user text-white"></i>
                                 </div>
-                                <div class="col-md-8">
-                                    <div class="d-flex align-items-center p-3 mb-3" style="background:#f8f9fa;border-radius:10px">
-                                        <i class="fas fa-envelope text-primary fa-lg mr-3"></i>
-                                        <div><small class="text-muted d-block">Email</small><a id="vrmClientEmail" href=""></a></div>
-                                    </div>
-                                    <div class="d-flex align-items-center p-3" style="background:#f8f9fa;border-radius:10px">
-                                        <i class="fas fa-phone text-success fa-lg mr-3"></i>
-                                        <div><small class="text-muted d-block">Телефон</small><a id="vrmClientPhone" href=""></a></div>
-                                    </div>
+                                <div>
+                                    <h6 id="vrmClientName" class="mb-0 font-weight-bold"></h6>
+                                    <small id="vrmClientRole" class="text-muted">Клієнт</small>
                                 </div>
                             </div>
+                            <div class="mb-2"><i class="fas fa-envelope text-primary mr-2"></i><a id="vrmClientEmail" href=""></a></div>
+                            <div><i class="fas fa-phone text-success mr-2"></i><a id="vrmClientPhone" href=""></a></div>
                         </div>
-                    </div>
-                </div>
 
-                <!-- ④ КОМЕНТАРІ -->
-                <div class="tab-pane fade" id="vrmTabComments">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-body">
-                            <h5 class="text-secondary mb-3"><i class="fas fa-comments mr-2"></i>Коментарі</h5>
-                            <div id="commentsList" style="max-height:400px;overflow-y:auto">
-                                <p class="text-muted text-center py-3"><i class="fas fa-inbox fa-2x mb-2 d-block"></i>Коментарів поки немає</p>
+                        <!-- Коментарі -->
+                        <div class="tab-pane fade" id="vrmTabComments">
+                            <div id="commentsList" style="max-height:220px;overflow-y:auto">
+                                <p class="text-muted text-center py-3"><i class="fas fa-inbox fa-2x d-block mb-2"></i>Коментарів поки немає</p>
                             </div>
-                            <div class="mt-3 pt-3 border-top">
-                                <div class="form-group mb-2">
-                                    <textarea class="form-control" id="newCommentText" rows="2" placeholder="Написати коментар..."></textarea>
-                                </div>
-                                <button class="btn btn-primary btn-sm" onclick="addComment()">
-                                    <i class="fas fa-paper-plane mr-1"></i>Відправити
+                            <div class="mt-2 pt-2 border-top d-flex">
+                                <textarea class="form-control form-control-sm flex-grow-1 mr-2" id="newCommentText" rows="2" placeholder="Написати коментар..."></textarea>
+                                <button class="btn btn-primary btn-sm" onclick="addComment()" style="white-space:nowrap">
+                                    <i class="fas fa-paper-plane"></i>
                                 </button>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                <!-- ⑤ ХРОНОЛОГІЯ -->
-                <div class="tab-pane fade" id="vrmTabHistory">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-body">
-                            <h5 class="text-warning mb-3"><i class="fas fa-clock mr-2"></i>Хронологія подій</h5>
+                        <!-- Хронологія -->
+                        <div class="tab-pane fade" id="vrmTabHistory">
                             <div id="requestTimeline" class="vrm-timeline"></div>
                         </div>
-                    </div>
-                </div>
+                    </div><!-- /tab-content -->
 
-                <!-- ⑥ ДІЇ -->
-                <div class="tab-pane fade" id="vrmTabActions">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-body">
-                            <h5 class="text-dark mb-3"><i class="fas fa-bolt mr-2"></i>Швидкі дії</h5>
-                            <div id="quickActionsContainer" class="row g-2"></div>
-                            <div class="mt-3 pt-3 border-top d-flex flex-wrap gap-2">
-                                <button class="btn btn-outline-danger btn-sm" id="vrmPdfBtn">
-                                    <i class="fas fa-file-pdf mr-1"></i>Exportar PDF
-                                </button>
-                                <button class="btn btn-outline-warning btn-sm" onclick="serviceManager.extendDeadline(serviceManager.currentRequest?.id || serviceManager.currentRequest?._id)">
-                                    <i class="fas fa-calendar-plus mr-1"></i>Продовжити дедлайн
-                                </button>
+                </div><!-- /LEFT -->
+
+                <!-- ─── RIGHT: key info + actions always visible ─── -->
+                <div style="width:230px;min-width:230px;background:#f8f9fa;overflow-y:auto;padding:16px">
+
+                    <div class="mb-3">
+                        <small class="text-uppercase text-muted" style="font-size:.67rem;letter-spacing:.06em">Технік</small>
+                        <div class="d-flex align-items-center mt-1">
+                            <div style="width:28px;height:28px;border-radius:50%;background:#28a745;display:flex;align-items:center;justify-content:center;flex-shrink:0" class="mr-2">
+                                <i class="fas fa-user-cog text-white" style="font-size:11px"></i>
                             </div>
+                            <strong id="vrmTech" class="text-truncate" style="font-size:.86rem"></strong>
                         </div>
                     </div>
-                </div>
 
-            </div><!-- /tab-content -->
+                    <div class="mb-3">
+                        <small class="text-uppercase text-muted" style="font-size:.67rem;letter-spacing:.06em">Заплановано</small>
+                        <div class="mt-1"><strong id="vrmDeadline" style="font-size:.9rem">—</strong></div>
+                    </div>
 
-            <div class="modal-footer" style="background:#f8f9fa;border-top:2px solid #dee2e6">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times mr-1"></i>Закрити</button>
-                <button type="button" class="btn btn-outline-primary" onclick="serviceManager.editRequest(serviceManager.currentRequest?.id || serviceManager.currentRequest?._id); $('#viewRequestModal').modal('hide')"><i class="fas fa-edit mr-1"></i>Редагувати</button>
-                <button type="button" class="btn btn-info" onclick="assignTechnician()"><i class="fas fa-user-plus mr-1"></i>Призначити</button>
-                <button type="button" class="btn btn-primary" id="vrmCompleteBtn" onclick="completeRequest()"><i class="fas fa-check mr-1"></i>Завершити</button>
+                    <hr class="my-2">
+                    <small class="text-uppercase text-muted" style="font-size:.67rem;letter-spacing:.06em">Дії</small>
+                    <div class="mt-2 d-flex flex-column" id="quickActionsContainer">
+                        <!-- generated by generateQuickActions() -->
+                    </div>
+                    <div class="mt-2 d-flex flex-column">
+                        <button class="btn btn-info btn-sm mb-1" onclick="assignTechnician()">
+                            <i class="fas fa-user-plus mr-1"></i>Призначити
+                        </button>
+                        <button class="btn btn-outline-warning btn-sm mb-1" onclick="serviceManager.extendDeadline(serviceManager.currentRequest?.id || serviceManager.currentRequest?._id)">
+                            <i class="fas fa-calendar-plus mr-1"></i>Дедлайн +
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm mb-1" onclick="serviceManager.editRequest(serviceManager.currentRequest?.id || serviceManager.currentRequest?._id); $('#viewRequestModal').modal('hide')">
+                            <i class="fas fa-edit mr-1"></i>Редагувати
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm" id="vrmPdfBtn">
+                            <i class="fas fa-file-pdf mr-1"></i>PDF
+                        </button>
+                    </div>
+
+                </div><!-- /RIGHT -->
+
+            </div><!-- /SPLIT -->
+
+            <div class="modal-footer py-2" style="background:#f8f9fa;border-top:1px solid #dee2e6">
+                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal"><i class="fas fa-times mr-1"></i>Закрити</button>
+                <button type="button" class="btn btn-primary btn-sm" id="vrmCompleteBtn" onclick="completeRequest()"><i class="fas fa-check mr-1"></i>Завершити</button>
             </div>
         </div>
     </div>
 </div>
-
 <!-- Edit Request Modal -->
 <div class="modal fade" id="editRequestModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
@@ -1727,11 +1687,11 @@ class ServiceRequestManager {
             $('#vrmCompleteBtn').html('<i class="fas fa-check mr-1"></i>Завершити').removeClass('btn-warning').addClass('btn-primary').attr('onclick', 'completeRequest()');
         }
 
-        // ── Reset to first tab ──
+        // ── Reset sub-tabs to first ──
         $('#viewRequestModal .nav-tabs .nav-link').removeClass('active');
         $('#viewRequestModal .nav-tabs .nav-link:first').addClass('active');
         $('#viewRequestModal .tab-pane').removeClass('show active');
-        $('#vrmTabDesc').addClass('show active');
+        $('#vrmTabLoc').addClass('show active');
 
         $('#viewRequestModal').modal('show');
     }
@@ -1771,19 +1731,16 @@ class ServiceRequestManager {
             `;
         }
         
-        // Для активних заявок показуємо всі кнопки
+        // Для активних заявок показуємо контекстні кнопки
         return `
-            <button class="btn btn-success btn-block btn-sm" onclick="changeRequestStatus('in_progress')">
-                <i class="fas fa-play"></i> Розпочати роботу
+            <button class="btn btn-success btn-block btn-sm mb-1" onclick="changeRequestStatus('in_progress')">
+                <i class="fas fa-play mr-1"></i>Розпочати роботу
             </button>
-            <button class="btn btn-info btn-block btn-sm" onclick="assignTechnician()">
-                <i class="fas fa-user-plus"></i> Призначити техніка
-            </button>
-            <button class="btn btn-warning btn-block btn-sm" onclick="addComment()">
-                <i class="fas fa-comment"></i> Adicionar коментар
+            <button class="btn btn-outline-secondary btn-block btn-sm mb-1" onclick="$('.vrm-tab[href=&quot;#vrmTabComments&quot;]').tab('show')">
+                <i class="fas fa-comment mr-1"></i>Коментарі
             </button>
             <button class="btn btn-primary btn-block btn-sm" onclick="completeRequest()">
-                <i class="fas fa-check"></i> Завершити
+                <i class="fas fa-check mr-1"></i>Завершити
             </button>
         `;
     }

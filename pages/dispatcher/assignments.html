@@ -607,306 +607,185 @@
     <!-- Модальне вікно перегляду деталей призначення -->
     <div class="modal fade" id="viewAssignmentModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
-            <div class="modal-content" style="border-radius: 15px; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
-                <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
-                    <div>
-                        <h4 class="modal-title mb-0">
-                            <i class="fas fa-clipboard-list mr-2"></i>
-                            Деталі запиту <span id="modalRequestNumber" class="font-weight-bold"></span>
-                        </h4>
-                        <small id="modalRequestDate" class="text-white-50"></small>
+            <div class="modal-content" style="border-radius:12px;border:none;box-shadow:0 10px 40px rgba(0,0,0,.2)">
+                <!-- COMPACT HEADER -->
+                <div class="modal-header py-3" style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;border:none">
+                    <div class="d-flex align-items-center">
+                        <div>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-clipboard-list mr-2"></i>
+                                <h5 class="modal-title mb-0">Деталі запиту <span id="modalRequestNumber" class="font-weight-bold"></span></h5>
+                                <span id="modalStatus" class="badge badge-info ml-3" style="font-size:.8rem"></span>
+                                <span id="modalPriority" class="badge badge-warning ml-1" style="font-size:.8rem"></span>
+                            </div>
+                            <small id="modalRequestDate" class="text-white-50"></small>
+                        </div>
                     </div>
-                    <button type="button" class="close text-white" data-dismiss="modal">
-                        <span style="text-shadow: none; opacity: 1;">&times;</span>
-                    </button>
+                    <button type="button" class="close text-white" data-dismiss="modal" style="text-shadow:none;opacity:1"><span>&times;</span></button>
                 </div>
                 <div class="modal-body p-0">
-                    <!-- Статус та пріоритет (4 колонки) -->
-                    <div class="p-4" style="background: linear-gradient(to right, #f8f9fa, #ffffff);">
-                        <div class="row text-center">
-                            <div class="col-6 col-md-3" style="border-right:1px solid #dee2e6">
-                                <div class="d-flex align-items-center justify-content-center">
-                                    <i class="fas fa-info-circle fa-2x text-primary mr-3"></i>
-                                    <div>
-                                        <small class="text-muted d-block">Статус</small>
-                                        <span id="modalStatus" class="badge badge-info"></span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-6 col-md-3" style="border-right:1px solid #dee2e6">
-                                <div class="d-flex align-items-center justify-content-center">
-                                    <i class="fas fa-flag fa-2x text-warning mr-3"></i>
-                                    <div>
-                                        <small class="text-muted d-block">Пріоритет</small>
-                                        <span id="modalPriority" class="badge badge-warning"></span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-6 col-md-3" style="border-right:1px solid #dee2e6">
-                                <div class="d-flex align-items-center justify-content-center">
-                                    <i class="fas fa-user-cog fa-2x text-success mr-3"></i>
-                                    <div>
-                                        <small class="text-muted d-block">Технік</small>
-                                        <strong id="modalTechnician">Не призначено</strong>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-6 col-md-3">
-                                <div class="d-flex align-items-center justify-content-center">
-                                    <i class="fas fa-calendar-alt fa-2x text-danger mr-3"></i>
-                                    <div>
-                                        <small class="text-muted d-block">Заплановано</small>
-                                        <strong id="modalDeadline" style="font-size:.88rem">—</strong>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- SPLIT LAYOUT: LEFT=content always visible, RIGHT=info+actions -->
+                    <div class="d-flex" style="min-height:480px">
 
-                    <!-- Tabs навігація -->
-                    <ul class="nav nav-tabs px-4" style="background: #f8f9fa; border-bottom: 2px solid #dee2e6; flex-wrap:nowrap; overflow-x:auto;">
-                        <li class="nav-item flex-shrink-0">
-                            <a class="nav-link active" data-toggle="tab" href="#tabDetails">
-                                <i class="fas fa-info-circle mr-1"></i> Опис проблеми
-                            </a>
-                        </li>
-                        <li class="nav-item flex-shrink-0">
-                            <a class="nav-link" data-toggle="tab" href="#tabLocation">
-                                <i class="fas fa-map-marker-alt mr-1"></i> Локація
-                            </a>
-                        </li>
-                        <li class="nav-item flex-shrink-0">
-                            <a class="nav-link" data-toggle="tab" href="#tabClient">
-                                <i class="fas fa-user mr-1"></i> Клієнт
-                            </a>
-                        </li>
-                        <li class="nav-item flex-shrink-0">
-                            <a class="nav-link" data-toggle="tab" href="#tabHistory">
-                                <i class="fas fa-history mr-1"></i> Історія
-                            </a>
-                        </li>
-                        <li class="nav-item flex-shrink-0">
-                            <a class="nav-link" data-toggle="tab" href="#tabDispComments">
-                                <i class="fas fa-comments mr-1"></i> Коментарі
-                                <span class="badge badge-primary ml-1" id="dispCommentsCount">0</span>
-                            </a>
-                        </li>
-                        <li class="nav-item flex-shrink-0">
-                            <a class="nav-link" data-toggle="tab" href="#tabDispActions">
-                                <i class="fas fa-bolt mr-1"></i> Дії
-                            </a>
-                        </li>
-                    </ul>
+                        <!-- ─── LEFT PANEL (description + tabs for extra info) ─── -->
+                        <div class="flex-grow-1 border-right" style="overflow-y:auto">
 
-                    <!-- Tab контент -->
-                    <div class="tab-content p-4">
-                        <!-- Опис проблеми -->
-                        <div class="tab-pane fade show active" id="tabDetails">
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-body">
-                                    <h5 class="card-title text-primary">
-                                        <i class="fas fa-wrench mr-2"></i>Опис проблеми
-                                    </h5>
-                                    <p id="modalDescription" class="card-text" style="font-size: 1.1rem; line-height: 1.8;"></p>
-                                    
-                                    <div class="mt-4" id="modalNotesSection">
-                                        <h6 class="text-muted">
-                                            <i class="fas fa-sticky-note mr-2"></i>Додаткові примітки
-                                        </h6>
-                                        <p id="modalNotes" class="text-secondary"></p>
+                            <!-- Опис завжди видно -->
+                            <div class="p-4 pb-0">
+                                <h6 class="text-uppercase text-muted mb-2" style="font-size:.72rem;letter-spacing:.08em">
+                                    <i class="fas fa-wrench mr-1"></i>Опис проблеми
+                                </h6>
+                                <p id="modalDescription" style="font-size:1rem;line-height:1.7;white-space:pre-wrap"></p>
+                                <div id="modalNotesSection" style="display:none">
+                                    <div class="alert alert-warning py-2 px-3 mt-2 mb-0" style="font-size:.87rem">
+                                        <i class="fas fa-sticky-note mr-1"></i><strong>Примітка:</strong>
+                                        <span id="modalNotes"></span>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Локація -->
-                        <div class="tab-pane fade" id="tabLocation">
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-body">
-                                    <h5 class="card-title text-success">
-                                        <i class="fas fa-building mr-2"></i>Інформація про ліфт
-                                    </h5>
-                                    <div class="row mt-3">
-                                        <div class="col-md-12">
-                                            <div class="info-box bg-light mb-3">
-                                                <i class="fas fa-map-marker-alt text-danger"></i>
-                                                <div class="flex-grow-1">
-                                                    <small class="text-muted d-block">Адреса</small>
-                                                    <strong id="modalAddress"></strong>
-                                                </div>
-                                                <button class="btn btn-sm btn-primary ml-2" onclick="assignmentManager.openInMaps()">
-                                                    <i class="fas fa-map mr-1"></i>Карта
-                                                </button>
-                                            </div>
+                            <!-- Mini tabs for supplementary info -->
+                            <ul class="nav nav-tabs px-4 mt-3" style="border-bottom:2px solid #dee2e6">
+                                <li class="nav-item">
+                                    <a class="nav-link active disp-tab" data-toggle="tab" href="#tabLocation" style="padding:8px 14px;font-size:.82rem">
+                                        <i class="fas fa-map-marker-alt mr-1"></i>Локація
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link disp-tab" data-toggle="tab" href="#tabClient" style="padding:8px 14px;font-size:.82rem">
+                                        <i class="fas fa-user mr-1"></i>Клієнт
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link disp-tab" data-toggle="tab" href="#tabHistory" style="padding:8px 14px;font-size:.82rem">
+                                        <i class="fas fa-history mr-1"></i>Хронологія
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link disp-tab" data-toggle="tab" href="#tabDispComments" style="padding:8px 14px;font-size:.82rem">
+                                        <i class="fas fa-comments mr-1"></i>Коментарі
+                                        <span class="badge badge-primary ml-1" id="dispCommentsCount">0</span>
+                                    </a>
+                                </li>
+                            </ul>
+
+                            <div class="tab-content px-4 py-3">
+                                <!-- Локація -->
+                                <div class="tab-pane fade show active" id="tabLocation">
+                                    <div class="d-flex align-items-start mb-2">
+                                        <i class="fas fa-map-marker-alt text-danger mt-1 mr-2"></i>
+                                        <div class="flex-grow-1">
+                                            <small class="text-muted d-block">Адреса</small>
+                                            <strong id="modalAddress"></strong>
                                         </div>
-                                        <div class="col-md-6">
-                                            <div class="info-box bg-light">
-                                                <i class="fas fa-hashtag text-info"></i>
-                                                <div>
-                                                    <small class="text-muted d-block">ID Ліфта</small>
-                                                    <code id="modalLiftId"></code>
-                                                </div>
-                                            </div>
+                                        <button class="btn btn-sm btn-outline-primary ml-2" onclick="assignmentManager.openInMaps()">
+                                            <i class="fas fa-map mr-1"></i>Карта
+                                        </button>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-hashtag text-info mr-2"></i>
+                                        <span class="text-muted mr-1">ID ліфта:</span>
+                                        <code id="modalLiftId"></code>
+                                    </div>
+                                    <div id="assignmentMap" style="width:100%;height:220px;border-radius:8px;overflow:hidden;background:#f0f0f0;display:flex;align-items:center;justify-content:center;margin-top:12px">
+                                        <iframe id="mapIframe" width="100%" height="100%" frameborder="0" style="border:0" allowfullscreen></iframe>
+                                    </div>
+                                    <div id="nearestTechnicians" class="row mt-2"></div>
+                                </div>
+
+                                <!-- Клієнт -->
+                                <div class="tab-pane fade" id="tabClient">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;flex-shrink:0" class="mr-3">
+                                            <i class="fas fa-user text-white"></i>
                                         </div>
-                                        <div class="col-md-6">
-                                            <div class="info-box bg-light">
-                                                <i class="fas fa-route text-warning"></i>
-                                                <div>
-                                                    <small class="text-muted d-block">Координати</small>
-                                                    <code id="modalCoordinates">—</code>
-                                                </div>
-                                            </div>
+                                        <div>
+                                            <h6 id="modalClientName" class="mb-0 font-weight-bold"></h6>
+                                            <small class="text-muted">Клієнт</small>
                                         </div>
                                     </div>
-                                    
-                                    <!-- Карта -->
-                                    <div class="mt-4">
-                                        <h6 class="text-muted mb-3">
-                                            <i class="fas fa-map mr-2"></i>Карта локації
-                                        </h6>
-                                        <div id="assignmentMap" style="width: 100%; height: 300px; border-radius: 10px; overflow: hidden; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
-                                            <iframe id="mapIframe" width="100%" height="100%" frameborder="0" style="border:0" allowfullscreen></iframe>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Найближчі техніки -->
-                                    <div class="mt-4">
-                                        <h6 class="text-muted mb-3">
-                                            <i class="fas fa-users-cog mr-2"></i>Найближчі техніки
-                                        </h6>
-                                        <div id="nearestTechnicians" class="row">
-                                            <!-- Техніки будуть додані динамічно -->
-                                        </div>
+                                    <div class="mb-2"><i class="fas fa-envelope text-primary mr-2"></i><a id="modalClientEmail" href=""></a></div>
+                                    <div><i class="fas fa-phone text-success mr-2"></i><a id="modalClientPhone" href=""></a></div>
+                                </div>
+
+                                <!-- Хронологія -->
+                                <div class="tab-pane fade" id="tabHistory">
+                                    <div id="modalTimeline" class="timeline" style="padding-left:30px">
                                     </div>
                                 </div>
-                            </div>
-                        </div>
 
-                        <!-- Клієнт -->
-                        <div class="tab-pane fade" id="tabClient">
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-body">
-                                    <h5 class="card-title text-info">
-                                        <i class="fas fa-user-circle mr-2"></i>Контактна інформація
-                                    </h5>
-                                    <div class="row mt-3">
-                                        <div class="col-md-4">
-                                            <div class="text-center p-3">
-                                                <i class="fas fa-user-circle fa-4x text-primary mb-3"></i>
-                                                <h6 id="modalClientName" class="font-weight-bold"></h6>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-8">
-                                            <div class="info-box bg-light mb-3">
-                                                <i class="fas fa-envelope text-primary"></i>
-                                                <div>
-                                                    <small class="text-muted d-block">Email</small>
-                                                    <a id="modalClientEmail" href=""></a>
-                                                </div>
-                                            </div>
-                                            <div class="info-box bg-light">
-                                                <i class="fas fa-phone text-success"></i>
-                                                <div>
-                                                    <small class="text-muted d-block">Телефон</small>
-                                                    <a id="modalClientPhone" href=""></a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Історія -->
-                        <div class="tab-pane fade" id="tabHistory">
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-body">
-                                    <h5 class="card-title text-warning">
-                                        <i class="fas fa-clock mr-2"></i>Хронологія подій
-                                    </h5>
-                                    <div id="modalTimeline" class="timeline mt-4">
-                                        <!-- Timeline items will be added here -->
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Коментарі -->
-                        <div class="tab-pane fade" id="tabDispComments">
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-body">
-                                    <h5 class="card-title text-secondary mb-3">
-                                        <i class="fas fa-comments mr-2"></i>Коментарі
-                                    </h5>
-                                    <div id="dispCommentsList" style="max-height:400px;overflow-y:auto">
+                                <!-- Коментарі -->
+                                <div class="tab-pane fade" id="tabDispComments">
+                                    <div id="dispCommentsList" style="max-height:220px;overflow-y:auto">
                                         <p class="text-muted text-center py-3"><i class="fas fa-inbox fa-2x d-block mb-2"></i>Коментарів поки немає</p>
                                     </div>
-                                    <div class="mt-3 pt-3 border-top">
-                                        <div class="form-group mb-2">
-                                            <textarea class="form-control" id="dispNewComment" rows="2" placeholder="Написати коментар..."></textarea>
-                                        </div>
-                                        <button class="btn btn-primary btn-sm" onclick="assignmentManager.postDispComment()">
-                                            <i class="fas fa-paper-plane mr-1"></i>Відправити
+                                    <div class="mt-2 pt-2 border-top d-flex gap-2">
+                                        <textarea class="form-control form-control-sm flex-grow-1 mr-2" id="dispNewComment" rows="2" placeholder="Написати коментар..."></textarea>
+                                        <button class="btn btn-primary btn-sm" onclick="assignmentManager.postDispComment()" style="white-space:nowrap">
+                                            <i class="fas fa-paper-plane"></i>
                                         </button>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
+                            </div><!-- /tab-content -->
 
-                        <!-- Дії -->
-                        <div class="tab-pane fade" id="tabDispActions">
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-body">
-                                    <h5 class="card-title text-dark mb-3">
-                                        <i class="fas fa-bolt mr-2"></i>Швидкі дії
-                                    </h5>
-                                    <div class="row">
-                                        <div class="col-md-6 mb-2">
-                                            <button class="btn btn-success btn-block" onclick="assignmentManager.changeStatusFromModal('in_progress')">
-                                                <i class="fas fa-play mr-2"></i>Розпочати роботу
-                                            </button>
-                                        </div>
-                                        <div class="col-md-6 mb-2">
-                                            <button class="btn btn-primary btn-block" onclick="assignmentManager.changeStatusFromModal('completed')">
-                                                <i class="fas fa-check mr-2"></i>Завершити
-                                            </button>
-                                        </div>
-                                        <div class="col-md-6 mb-2">
-                                            <button class="btn btn-info btn-block" onclick="assignmentManager.reassignFromModal()">
-                                                <i class="fas fa-user-check mr-2"></i>Перепризначити
-                                            </button>
-                                        </div>
-                                        <div class="col-md-6 mb-2">
-                                            <button class="btn btn-warning btn-block" onclick="assignmentManager.extendDeadlineFromModal()">
-                                                <i class="fas fa-calendar-plus mr-2"></i>Продовжити дедлайн
-                                            </button>
-                                        </div>
-                                        <div class="col-md-6 mb-2">
-                                            <button class="btn btn-outline-secondary btn-block" onclick="assignmentManager.changeStatusFromModal('cancelled')">
-                                                <i class="fas fa-ban mr-2"></i>Скасувати заявку
-                                            </button>
-                                        </div>
-                                        <div class="col-md-6 mb-2">
-                                            <button class="btn btn-outline-danger btn-block" id="dispModalPdfBtn">
-                                                <i class="fas fa-file-pdf mr-2"></i>Exportar PDF
-                                            </button>
-                                        </div>
+                        </div><!-- /LEFT PANEL -->
+
+                        <!-- ─── RIGHT PANEL (info + actions) ─── -->
+                        <div style="width:240px;min-width:240px;background:#f8f9fa;overflow-y:auto;padding:16px">
+
+                            <!-- Technician -->
+                            <div class="mb-3">
+                                <small class="text-uppercase text-muted" style="font-size:.68rem;letter-spacing:.06em">Технік</small>
+                                <div class="d-flex align-items-center mt-1">
+                                    <div style="width:30px;height:30px;border-radius:50%;background:#28a745;display:flex;align-items:center;justify-content:center;flex-shrink:0" class="mr-2">
+                                        <i class="fas fa-user-cog text-white" style="font-size:12px"></i>
                                     </div>
+                                    <strong id="modalTechnician" style="font-size:.88rem">Не призначено</strong>
                                 </div>
                             </div>
-                        </div>
 
-                    </div><!-- /tab-content -->
+                            <!-- Deadline -->
+                            <div class="mb-3">
+                                <small class="text-uppercase text-muted" style="font-size:.68rem;letter-spacing:.06em">Заплановано</small>
+                                <div class="mt-1"><strong id="modalDeadline" style="font-size:.9rem">—</strong></div>
+                            </div>
+
+                            <hr class="my-2">
+
+                            <!-- Actions -->
+                            <small class="text-uppercase text-muted" style="font-size:.68rem;letter-spacing:.06em">Дії</small>
+                            <div class="mt-2 d-flex flex-column disp-right-actions">
+                                <button class="btn btn-success btn-sm mb-1" onclick="assignmentManager.reassignFromModal()">
+                                    <i class="fas fa-user-check mr-1"></i>Призначити / Змінити
+                                </button>
+                                <button class="btn btn-primary btn-sm mb-1 btn-start-work" onclick="assignmentManager.changeStatusFromModal('in_progress')">
+                                    <i class="fas fa-play mr-1"></i>Розпочати роботу
+                                </button>
+                                <button class="btn btn-success btn-sm mb-1 btn-complete-work" onclick="assignmentManager.changeStatusFromModal('completed')">
+                                    <i class="fas fa-check mr-1"></i>Завершити
+                                </button>
+                                <button class="btn btn-warning btn-sm mb-1" onclick="assignmentManager.extendDeadlineFromModal()">
+                                    <i class="fas fa-calendar-plus mr-1"></i>Дедлайн +
+                                </button>
+                                <button class="btn btn-outline-primary btn-sm mb-1" onclick="assignmentManager.editAssignment()">
+                                    <i class="fas fa-edit mr-1"></i>Редагувати
+                                </button>
+                                <button class="btn btn-outline-secondary btn-sm mb-1 btn-cancel-work" onclick="assignmentManager.changeStatusFromModal('cancelled')">
+                                    <i class="fas fa-ban mr-1"></i>Скасувати
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm mb-1" id="dispModalPdfBtn">
+                                    <i class="fas fa-file-pdf mr-1"></i>PDF
+                                </button>
+                            </div>
+
+                        </div><!-- /RIGHT PANEL -->
+
+                    </div><!-- /SPLIT LAYOUT -->
+
                 </div>
-                <div class="modal-footer" style="background: #f8f9fa; border-top: 2px solid #dee2e6;">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                        <i class="fas fa-times mr-2"></i>Закрити
-                    </button>
-                    <button type="button" class="btn btn-outline-primary" onclick="assignmentManager.editAssignment()">
-                        <i class="fas fa-edit mr-2"></i>Редагувати
-                    </button>
-                    <button type="button" class="btn btn-success" onclick="assignmentManager.reassignFromModal()">
-                        <i class="fas fa-user-check mr-2"></i>Перепризначити
+                <div class="modal-footer py-2" style="background:#f8f9fa;border-top:1px solid #dee2e6">
+                    <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">
+                        <i class="fas fa-times mr-1"></i>Закрити
                     </button>
                 </div>
             </div>
@@ -1762,16 +1641,18 @@
                     else Swal && Swal.fire('PDF', 'Функція PDF поки недоступна для диспетчера', 'info');
                 });
                 
-                // ── Показати правильні дії (hide/show status buttons) ──
-                const isCompleted = assignment.status === 'completed';
-                $('#tabDispActions .btn-success').toggle(!isCompleted);
-                $('#tabDispActions .btn-primary').toggle(!isCompleted);
+                // ── Показати правильні дії (hide/show status buttons у правій панелі) ──
+                const isCompleted = assignment.status === 'completed' || assignment.status === 'cancelled';
+                // Ховаємо кнопки дій що не мають сенсу для завершених/скасованих
+                $('#viewAssignmentModal .disp-right-actions .btn-start-work').toggle(!isCompleted);
+                $('#viewAssignmentModal .disp-right-actions .btn-complete-work').toggle(!isCompleted);
+                $('#viewAssignmentModal .disp-right-actions .btn-cancel-work').toggle(!isCompleted);
                 
                 // ── Скинути на перший таб ──
                 $('#viewAssignmentModal .nav-tabs .nav-link').removeClass('active');
                 $('#viewAssignmentModal .nav-tabs .nav-link:first').addClass('active');
                 $('#viewAssignmentModal .tab-pane').removeClass('show active');
-                $('#tabDetails').addClass('show active');
+                $('#tabLocation').addClass('show active');
                 
                 // Завантажити карту
                 this.loadMap(assignment.liftAddress);
@@ -1833,10 +1714,15 @@
                 const assignment = this.assignments.find(a => a.id === aid);
                 const mongoId = assignment?._id || aid;
                 try {
-                    const resp = await AuthManager.fetchWithAuth(`/api/requests/${mongoId}`, {
-                        method: 'PUT', body: JSON.stringify({ status: newStatus })
+                    const resp = await AuthManager.fetchWithAuth(`/api/requests/${mongoId}/status`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status: newStatus })
                     });
-                    if (!resp || !resp.ok) throw new Error((await resp.json()).message || 'Помилка');
+                    if (!resp || !resp.ok) {
+                        const err = await resp.json().catch(() => ({}));
+                        throw new Error(err.message || `Помилка ${resp.status}`);
+                    }
                     toastr.success('Статус змінено');
                     $('#viewAssignmentModal').modal('hide');
                     await this.loadAssignments();
