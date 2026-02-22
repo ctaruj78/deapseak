@@ -1486,6 +1486,25 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
                 _id: insertResult.insertedId,
                 ...newLift
             };
+
+            // 🏛️ Auto-send Início de Serviço to municipality if email available
+            if (municipalityData?.email) {
+                const liftDataForForm = {
+                    municipalNumber: liftData.municipalNumber,
+                    address: typeof liftData.address === 'object'
+                        ? `${liftData.address.street || ''}, ${liftData.address.city || ''}`.trim().replace(/^,\s*|,\s*$/, '')
+                        : (liftData.address || req.body.address || ''),
+                    brand: liftData.brand || req.body.brand || '',
+                    model: liftData.model || req.body.model || '',
+                    installationYear: liftData.installationYear || req.body.installationYear || '',
+                    capacity: liftData.capacity || req.body.capacity || '',
+                    municipalityName: municipalityData.name
+                };
+                console.log(`🏛️ Auto-enviando formulário início-de-serviço para Câmara: ${municipalityData.email}`);
+                emailService.sendMunicipalityForm('inicio-servico', liftDataForForm, municipalityData.email)
+                    .then(() => console.log(`✅ Formulário municipal (início-de-serviço) enviado para ${municipalityData.email}`))
+                    .catch(e => console.error(`⚠️ Falha no envio do formulário municipal: ${e.message}`));
+            }
         }
         
         res.json({
@@ -5426,7 +5445,7 @@ app.post('/api/contact', async (req, res) => {
             </div>
             <div class="footer">
                 <p>Este email foi enviado automaticamente através do formulário de contacto do website.</p>
-                <p><strong>FESTLIFT, LDA</strong> | info@festlift.pt | Tel: +351 214 190 863 | Móvel: +351 926 380 243/244</p>
+                <p><strong>FestLift - Elevadores e Serviços, Lda.</strong> | info@festlift.pt | Tel: +351 214 190 863 | Móvel: +351 926 380 243/244</p>
                 <p>Av. do Parque 84B, Rio de Mouro, Lisboa 2635-609 | NIF: 515924741</p>
             </div>
         </div>
@@ -5885,7 +5904,7 @@ app.post('/api/email/send-orcamento', authenticateToken, async (req, res) => {
                 <body style="margin: 0; padding: 0; background: #f5f5f5;">
                     <div class="container" style="font-family: Arial, sans-serif; max-width: 700px; margin: 20px auto; border: 1px solid #ddd; background: white;">
                         <div class="header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center;">
-                            <h1 style="margin: 0; font-size: 28px;">FestLift</h1>
+                            <h1 style="margin: 0; font-size: 28px;">FestLift - Elevadores e Serviços, Lda.</h1>
                             <p style="margin: 5px 0 0 0; font-size: 14px;">Manutenção de Elevadores</p>
                         </div>
                         
@@ -5951,7 +5970,7 @@ app.post('/api/email/send-orcamento', authenticateToken, async (req, res) => {
 
                         <div class="footer" style="background: #f8f9fa; padding: 25px 20px; text-align: center; border-top: 1px solid #ddd;">
                             <p style="margin: 0 0 10px 0; font-size: 15px; color: #333; font-weight: bold;">
-                                FESTLIFT, LDA
+                                FestLift - Elevadores e Serviços, Lda.
                             </p>
                             <p style="margin: 8px 0; font-size: 13px; color: #666; line-height: 1.8;">
                                 <strong>Av. do Parque 84B</strong><br>
@@ -6100,7 +6119,7 @@ app.post('/api/inspections/send-report', authenticateToken, async (req, res) => 
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 700px; margin: 0 auto; border: 1px solid #ddd;">
                     <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center;">
-                        <h1 style="margin: 0; font-size: 28px;">FESTLIFT, LDA</h1>
+                        <h1 style="margin: 0; font-size: 28px;">FestLift - Elevadores e Serviços, Lda.</h1>
                         <p style="margin: 5px 0 0 0; font-size: 14px;">Manutenção de Elevadores</p>
                     </div>
                     
@@ -6132,7 +6151,7 @@ app.post('/api/inspections/send-report', authenticateToken, async (req, res) => 
 
                     <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #ddd;">
                         <p style="margin: 0; font-size: 12px; color: #666;">Este é um email automático gerado pelo sistema FESTLIFT.<br>Para mais informações, contacte-nos através do nosso sistema.</p>
-                        <p style="margin: 10px 0 0 0; font-size: 11px; color: #999;">© ${new Date().getFullYear()} FESTLIFT, LDA - Todos os direitos reservados</p>
+                        <p style="margin: 10px 0 0 0; font-size: 11px; color: #999;">© ${new Date().getFullYear()} FestLift - Elevadores e Serviços, Lda. - Todos os direitos reservados</p>
                     </div>
                 </div>
             `

@@ -18,9 +18,9 @@ async function gerarPDFOrcamento(orcamento) {
             doc.on('error', reject);
             
             // Cabeçalho
-            doc.fontSize(24).font('Helvetica-Bold').text('FESTLIFT, LDA', { align: 'center' });
+            doc.fontSize(24).font('Helvetica-Bold').text('FestLift - Elevadores e Serviços, Lda.', { align: 'center' });
             doc.fontSize(10).font('Helvetica');
-            doc.text('Manutenção e Reparação de Elevadores', { align: 'center' });
+            doc.text('Elevadores e Serviços', { align: 'center' });
             doc.text('Av. do Parque 84B, Rio de Mouro, Lisboa 2635-609', { align: 'center' });
             doc.text('Tel: +351 214 190 863 | Móvel: +351 926 380 243/244', { align: 'center' });
             doc.text('Email: info@festlift.pt | NIF: 515924741', { align: 'center' });
@@ -123,10 +123,21 @@ async function gerarPDFOrcamento(orcamento) {
                 doc.font('Helvetica').text(orcamento.notas, 50, doc.y + 5, { width: 500 });
             }
             
+            // Dados Bancários para pagamento
+            doc.moveDown(2);
+            doc.fontSize(10).font('Helvetica-Bold').text('Dados Bancários / Pagamento:', 50, doc.y);
+            doc.moveTo(50, doc.y + 3).lineTo(380, doc.y + 3).stroke();
+            doc.moveDown(0.5);
+            doc.fontSize(9).font('Helvetica');
+            doc.text(`IBAN: ${process.env.COMPANY_IBAN || 'PT50 0010 0000 5854 8320 0015 4'}`, 50, doc.y);
+            doc.text(`BIC/SWIFT: ${process.env.COMPANY_BIC || 'BBPIPTPL'}`, 50, doc.y + 5);
+            doc.text(`Banco: ${process.env.COMPANY_BANK || 'Banco BPI'}`, 50, doc.y + 5);
+            doc.text(`Titular: ${process.env.COMPANY_ACCOUNT_HOLDER || 'FestLift - Elevadores e Serviços, Lda.'}`, 50, doc.y + 5);
+
             // Rodapé
             doc.fontSize(8).font('Helvetica');
             const footerY = 750;
-            doc.text('FESTLIFT, LDA - Manutenção de Elevadores', 50, footerY, { align: 'center', width: 500 });
+            doc.text('FestLift - Elevadores e Serviços, Lda. | NIF: 515924741', 50, footerY, { align: 'center', width: 500 });
             doc.text('NIF: 515924741 | Email: info@festlift.pt | Tel: +351 214 190 863 | Móvel: +351 926 380 243/244', 50, footerY + 12, { align: 'center', width: 500 });
             doc.text('Av. do Parque 84B, Rio de Mouro, Lisboa 2635-609', 50, footerY + 24, { align: 'center', width: 500 });
             
@@ -464,7 +475,7 @@ router.post('/:id/enviar', authenticate, async (req, res) => {
             orcamento.dataEnvio = new Date();
             orcamento.emailsEnviados.push({
                 para: emailDestino,
-                assunto: `Orçamento ${orcamento.numero} - FESTLIFT, LDA`,
+                assunto: `Orçamento ${orcamento.numero} - FestLift - Elevadores e Serviços, Lda.`,
                 data: new Date(),
                 sucesso: false,
                 erro: 'BREVO_API_KEY não configurado'
@@ -500,7 +511,7 @@ router.post('/:id/enviar', authenticate, async (req, res) => {
             );
             
             // Parse EMAIL_FROM для правильного sender
-            let senderName = 'FestLift';
+            let senderName = 'FestLift - Elevadores e Serviços, Lda.';
             let senderEmail = 'info@festlift.pt';
             
             if (process.env.EMAIL_FROM) {
@@ -538,11 +549,11 @@ router.post('/:id/enviar', authenticate, async (req, res) => {
             const mailOptions = {
                 from: process.env.EMAIL_FROM || process.env.SMTP_USER,
                 to: orcamento.cliente.email,
-                subject: `Orçamento ${orcamento.numero} - FESTLIFT, LDA`,
+                subject: `Orçamento ${orcamento.numero} - FestLift - Elevadores e Serviços, Lda.`,
                 html: `
                     <div style="font-family: Arial, sans-serif; max-width: 700px; margin: 0 auto; border: 1px solid #ddd;">
                         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center;">
-                            <h1 style="margin: 0; font-size: 28px;">FESTLIFT, LDA</h1>
+                            <h1 style="margin: 0; font-size: 28px;">FestLift - Elevadores e Serviços, Lda.</h1>
                             <p style="margin: 5px 0 0 0; font-size: 14px;">Manutenção de Elevadores</p>
                         </div>
                         
@@ -601,7 +612,7 @@ router.post('/:id/enviar', authenticate, async (req, res) => {
 
                         <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #ddd;">
                             <p style="margin: 5px 0; font-size: 14px; color: #666;">
-                                <strong>FESTLIFT, LDA - Manutenção de Elevadores</strong><br>
+                                <strong>FestLift - Elevadores e Serviços, Lda.</strong><br>
                                 Email: info@festlift.pt | Tel: +351 214 190 863<br>
                                 <small>Este orçamento foi gerado automaticamente.</small>
                             </p>
@@ -655,7 +666,7 @@ router.post('/:id/enviar', authenticate, async (req, res) => {
                     $push: {
                         emailsEnviados: {
                             para: emailDestino,
-                            assunto: `Orçamento ${orcamento.numero} - FESTLIFT, LDA`,
+                            assunto: `Orçamento ${orcamento.numero} - FestLift - Elevadores e Serviços, Lda.`,
                             data: new Date(),
                             sucesso: true,
                             messageId: result.messageId
@@ -670,8 +681,15 @@ router.post('/:id/enviar', authenticate, async (req, res) => {
                 data: orcamento
             });
         } catch (apiError) {
-            console.error('❌ Erro Brevo API:', apiError.message);
-            console.error('   Detalhes:', apiError.response?.body || apiError);
+            const brevoMsg = apiError.response?.body?.message || apiError.response?.text || apiError.message;
+            const brevoCode = apiError.response?.body?.code || String(apiError.status || '');
+            console.error(`❌ Erro Brevo API [${brevoCode}]: ${brevoMsg}`);
+            if (apiError.status === 401 || brevoCode === 'unauthorized') {
+                console.error('   ➡️ API key inválida ou expirada!');
+                console.error('   ➡️ Aceda a app.brevo.com → Settings → SMTP & API → API Keys');
+                console.error('   ➡️ Verifique/regenere a chave e atualize BREVO_API_KEY no .env');
+            }
+            console.error('   Detalhes completos:', apiError.response?.body || apiError.message);
             
             // Salvar log de erro (usando updateOne щоб уникнути валідації)
             await Orcamento.updateOne(
@@ -680,7 +698,7 @@ router.post('/:id/enviar', authenticate, async (req, res) => {
                     $push: {
                         emailsEnviados: {
                             para: emailDestino,
-                            assunto: `Orçamento ${orcamento.numero} - FESTLIFT, LDA`,
+                            assunto: `Orçamento ${orcamento.numero} - FestLift - Elevadores e Serviços, Lda.`,
                             data: new Date(),
                             sucesso: false,
                             erro: apiError.message

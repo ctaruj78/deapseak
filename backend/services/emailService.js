@@ -55,7 +55,18 @@ class EmailService {
             sendSmtpEmail.attachment = attachments;
         }
 
-        await this.apiInstance.sendTransacEmail(sendSmtpEmail);
+        try {
+            await this.apiInstance.sendTransacEmail(sendSmtpEmail);
+        } catch (brevoError) {
+            const msg = brevoError.response?.body?.message || brevoError.response?.text || brevoError.message;
+            const code = brevoError.response?.body?.code || String(brevoError.status || '');
+            console.error(`❌ Brevo API [${code}]: ${msg}`);
+            if (String(brevoError.status) === '401' || code === 'unauthorized') {
+                console.error('   ➡️ API key inválida/expirada — aceda a app.brevo.com → Settings → SMTP & API → API Keys');
+                console.error('   ➡️ Regenere a chave BREVO_API_KEY e atualize o ficheiro .env');
+            }
+            throw brevoError;
+        }
     }
 
     // Публічний метод для відправки email (для API endpoints)
@@ -394,8 +405,8 @@ class EmailService {
 
             // Визначаємо subject
             const subject = templateType === 'inicio-servico' 
-                ? `📝 FESTLIFT - Comunicação de Início de Serviço - Elevador ${liftData.municipalNumber}`
-                : `📝 FESTLIFT - Comunicação de Fim de Serviço - Elevador ${liftData.municipalNumber}`;
+                ? `📝 FestLift - Elevadores e Serviços - Comunicação de Início de Serviço - Elevador ${liftData.municipalNumber}`
+                : `📝 FestLift - Elevadores e Serviços - Comunicação de Fim de Serviço - Elevador ${liftData.municipalNumber}`;
 
             // Відправляємо email
             await this._sendEmail(municipalityEmail, subject, htmlContent, attachments);
