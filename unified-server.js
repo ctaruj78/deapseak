@@ -2808,7 +2808,39 @@ app.get('/api/requests/count-by-lift', authenticateToken, async (req, res) => {
 
 app.get('/api/requests', authenticateToken, async (req, res) => {
     try {
-        const requests = await db.collection('requests').find({}).toArray();
+        const role = req.user.role;
+        const userId = (req.user.userId || req.user.id || '').toString();
+        let query = {};
+
+        if (role === 'tech' || role === 'technician') {
+            // Technician sees only requests assigned to them
+            query.$or = [
+                { technician: userId },
+                { technicianId: userId }
+            ];
+            console.log(`🔧 Tech ${req.user.username} запитує свої завдання (userId=${userId})`);
+        } else if (role === 'client') {
+            // Client sees only requests on their lifts
+            const clientLifts = await db.collection('lifts')
+                .find({ client: userId }, { projection: { _id: 1 } })
+                .toArray();
+            const liftIds = clientLifts.map(l => l._id.toString());
+            if (liftIds.length === 0) {
+                console.log(`👤 Client ${req.user.username} не має ліфтів`);
+                return res.json({ success: true, data: [] });
+            }
+            query.liftId = { $in: liftIds };
+            console.log(`👤 Client ${req.user.username} запитує заявки для ${liftIds.length} ліфтів`);
+        } else {
+            // admin / dispatcher — all requests
+            console.log(`👨‍💼 ${role} ${req.user.username} запитує всі заявки`);
+        }
+
+        // Optional query filters
+        if (req.query.status) query.status = req.query.status;
+        if (req.query.priority) query.priority = req.query.priority;
+
+        const requests = await db.collection('requests').find(query).toArray();
         res.json({
             success: true,
             data: requests
@@ -2826,16 +2858,34 @@ app.get('/api/requests/:id', authenticateToken, async (req, res) => {
     try {
         const { ObjectId } = require('mongodb');
         const requestId = new ObjectId(req.params.id);
-        
+        const role = req.user.role;
+        const userId = (req.user.userId || req.user.id || '').toString();
+
         const request = await db.collection('requests').findOne({ _id: requestId });
-        
         if (!request) {
             return res.status(404).json({
                 success: false,
                 message: 'Заявку не знайдено'
             });
         }
-        
+
+        // Access control for tech and client roles
+        if (role === 'tech' || role === 'technician') {
+            const assignedToMe = request.technician === userId || request.technicianId === userId;
+            if (!assignedToMe) {
+                return res.status(403).json({ success: false, message: 'Доступ заборонено' });
+            }
+        } else if (role === 'client') {
+            const clientLifts = await db.collection('lifts')
+                .find({ client: userId }, { projection: { _id: 1 } })
+                .toArray();
+            const liftIds = clientLifts.map(l => l._id.toString());
+            if (!liftIds.includes(request.liftId)) {
+                return res.status(403).json({ success: false, message: 'Доступ заборонено' });
+            }
+        }
+        // admin / dispatcher: always allowed
+
         res.json({
             success: true,
             request: request
