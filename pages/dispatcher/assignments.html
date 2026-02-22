@@ -1026,85 +1026,187 @@
             }
             
             // Призначити заявку технічному фахівцю
-            async assignRequest(requestId, technicianId) {
+            async assignRequest(requestId, technicianId, extras = {}) {
                 console.log('📋 Призначаємо запит:', { requestId, technicianId });
-                
                 try {
+                    const body = { technicianId, assignedBy: this.currentUser?.id };
+                    if (extras.instructions) body.instructions = extras.instructions;
+                    if (extras.deadline) body.deadline = extras.deadline;
                     const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/assign`, {
                         method: 'POST',
-                        body: JSON.stringify({ 
-                            technicianId: technicianId,
-                            assignedBy: this.currentUser.id
-                        })
+                        body: JSON.stringify(body)
                     });
-                    
                     if (!response || !response.ok) {
                         const error = await response.json();
                         throw new Error(error.message || 'Помилка призначення');
                     }
-                    
+                    // Also update deadline/scheduledAt via PUT if provided
+                    if (extras.deadline) {
+                        await AuthManager.fetchWithAuth(`/api/requests/${requestId}`, {
+                            method: 'PUT',
+                            body: JSON.stringify({ deadline: extras.deadline, scheduledAt: extras.deadline })
+                        });
+                    }
                     console.log('✅ Запит успішно призначено');
                     await this.loadAssignments();
-                    
-                    if (typeof toastr !== 'undefined') {
-                        toastr.success('Заявку успішно призначено!');
-                    } else {
-                        alert('Заявку успішно призначено!');
-                    }
-                    
+                    toastr.success('Заявку призначено! Сповіщення відправлено.');
                 } catch (error) {
                     console.error('❌ Помилка призначення:', error);
-                    alert('Не вдалося призначити заявку: ' + error.message);
+                    toastr.error('Не вдалося призначити заявку: ' + error.message);
                 }
             }
 
-            // Показати діалог вибору техніка та призначити заявку
+            // Показати розширений модал призначення техніка (як в адмін панелі)
             async showAssignDialog(requestId) {
                 const activeTechs = (this.technicians || []).filter(t => t.active);
                 if (activeTechs.length === 0) {
-                    if (typeof Swal !== 'undefined') {
-                        Swal.fire({ icon: 'warning', title: 'Немає техніків', text: 'Немає доступних техніків для призначення.', confirmButtonColor: '#667eea', customClass: { popup: 'swal-dispatch' } });
-                    } else {
-                        alert('Немає доступних техніків для призначення.');
-                    }
+                    Swal.fire({ icon: 'warning', title: 'Немає техніків', text: 'Немає доступних техніків для призначення.', confirmButtonColor: '#667eea', customClass: { popup: 'swal-dispatch' } });
                     return;
                 }
 
-                const options = activeTechs.map(t => {
-                    const techId = (t._id && t._id.toString) ? t._id.toString() : (t._id || t.id || '');
-                    return `<option value="${techId}">${t.name}</option>`;
-                }).join('');
-
-                const { value: technicianId, isConfirmed } = await Swal.fire({
-                    title: 'Призначити техніка',
-                    html: `<div style="text-align:left;padding:4px 0">
-                               <div class="swal-field">
-                                   <label class="swal-label">Виберіть спеціаліста</label>
-                                   <select id="swal-tech-select" class="swal-select">
-                                       <option value="">— Оберіть зі списку —</option>
-                                       ${options}
-                                   </select>
-                               </div>
-                           </div>`,
-                    customClass: { popup: 'swal-dispatch' },
-                    confirmButtonText: 'Призначити',
-                    confirmButtonColor: '#667eea',
-                    cancelButtonText: 'Скасувати',
-                    cancelButtonColor: '#a0aec0',
-                    showCancelButton: true,
-                    focusConfirm: false,
-                    preConfirm: () => {
-                        const val = document.getElementById('swal-tech-select').value;
-                        if (!val) {
-                            Swal.showValidationMessage('Будь ласка, оберіть техніка');
-                        }
-                        return val;
-                    }
+                // Workload calculation
+                const allAssignments = this.assignments || [];
+                const workloadMap = {};
+                allAssignments.forEach(a => {
+                    const tid = (a.assignedToId || a.technicianId || a.assignedTo || '');
+                    const tidStr = (tid && tid.toString) ? tid.toString() : tid;
+                    if (tidStr && a.status !== 'completed') workloadMap[tidStr] = (workloadMap[tidStr] || 0) + 1;
                 });
 
-                if (isConfirmed && technicianId) {
-                    await this.assignRequest(requestId, technicianId);
-                }
+                const dotClass = n => n <= 2 ? 'green' : n <= 4 ? 'yellow' : 'red';
+                const today = new Date().toISOString().slice(0, 10);
+
+                const techRows = activeTechs.map(tech => {
+                    const tid = (tech._id && tech._id.toString) ? tech._id.toString() : (tech._id || tech.id || '');
+                    const tasks = workloadMap[tid] || 0;
+                    const dc = dotClass(tasks);
+                    const name = tech.name || `${tech.firstName || ''} ${tech.lastName || ''}`.trim() || 'Технік';
+                    const initials = name.split(' ').map(p => p[0] || '').join('').substring(0, 2).toUpperCase() || '?';
+                    const avatarBg = dc === 'green' ? '#28a745' : dc === 'yellow' ? '#ffc107' : '#dc3545';
+                    const segs = [1,2,3,4,5].map(i => {
+                        const cls = i <= tasks ? (dc === 'green' ? 'g' : dc === 'yellow' ? 'y' : 'r') : '';
+                        return `<div class="workload-seg ${cls}"></div>`;
+                    }).join('');
+                    return `
+                        <div class="workload-row" onclick="window._dispSelectTech(this,'${tid}')">
+                            <div class="tech-avatar-sm" style="background:${avatarBg};color:#fff">${initials}</div>
+                            <div class="flex-grow-1">
+                                <div class="font-weight-bold">${name}</div>
+                                <small class="text-muted">${tech.email || ''}</small>
+                            </div>
+                            <div class="d-flex align-items-center ml-2" style="gap:6px">
+                                <div class="workload-dot ${dc}" title="${tasks} активних"></div>
+                                <small class="text-muted">${tasks}</small>
+                                <div class="workload-bar">${segs}</div>
+                            </div>
+                        </div>`;
+                }).join('');
+
+                // Find request details for header
+                const req = allAssignments.find(a => {
+                    const aid = (a._id && a._id.toString) ? a._id.toString() : (a._id || a.id || '');
+                    return aid === requestId;
+                }) || {};
+                const priorityMap = { critical:'danger', high:'warning', medium:'info', low:'success' };
+                const pBadge = req.priority ? `<span class="badge badge-${priorityMap[req.priority]||'secondary'}">${req.priority}</span>` : '';
+                const addr = req.liftAddress || req.address || req.location || '—';
+
+                const modalHtml = `
+                <div class="modal fade" id="dispEnhancedAssignModal" tabindex="-1">
+                  <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                      <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title"><i class="fas fa-user-check mr-2"></i>Призначити техніка</h5>
+                        <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                      </div>
+                      <div class="modal-body">
+                        <div class="alert alert-light border mb-3 py-2">
+                          <div class="d-flex align-items-center">
+                            <div>${pBadge}<strong class="ml-1">${req.title || req.type || 'Заявка'}</strong>
+                              <div class="text-muted small mt-1"><i class="fas fa-map-marker-alt mr-1"></i>${addr}</div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="row">
+                          <div class="col-md-6">
+                            <h6 class="text-muted mb-2"><i class="fas fa-users mr-1"></i>Оберіть техніка</h6>
+                            <div id="dispEaTechList" style="max-height:320px;overflow-y:auto">${techRows}</div>
+                          </div>
+                          <div class="col-md-6">
+                            <h6 class="text-muted mb-2"><i class="fas fa-calendar-alt mr-1"></i>Деталі завдання</h6>
+                            <div class="form-group">
+                              <label class="small font-weight-bold">Дата виїзду</label>
+                              <input type="date" class="form-control form-control-sm" id="dispEaDate" min="${today}" value="${today}">
+                            </div>
+                            <div class="form-group">
+                              <label class="small font-weight-bold">Час</label>
+                              <input type="time" class="form-control form-control-sm" id="dispEaTime" value="09:00">
+                            </div>
+                            <div class="form-group">
+                              <label class="small font-weight-bold">Тривалість</label>
+                              <select class="form-control form-control-sm" id="dispEaDuration">
+                                <option value="1">~1 година</option>
+                                <option value="2" selected>~2 години</option>
+                                <option value="4">~4 години</option>
+                                <option value="8">Цілий день</option>
+                              </select>
+                            </div>
+                            <div class="form-group">
+                              <label class="small font-weight-bold">Інструкції</label>
+                              <textarea class="form-control form-control-sm" id="dispEaInstructions" rows="3"
+                                placeholder="Додаткові інструкції для техніка…"></textarea>
+                            </div>
+                            <div class="form-group">
+                              <label class="small font-weight-bold">Сповіщення</label>
+                              <div class="custom-control custom-switch mb-1">
+                                <input type="checkbox" class="custom-control-input" id="dispEaNotifyPush" checked>
+                                <label class="custom-control-label small" for="dispEaNotifyPush">Push техніку</label>
+                              </div>
+                              <div class="custom-control custom-switch mb-1">
+                                <input type="checkbox" class="custom-control-input" id="dispEaNotifyEmail" checked>
+                                <label class="custom-control-label small" for="dispEaNotifyEmail">Email техніку</label>
+                              </div>
+                              <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="dispEaNotifyClient">
+                                <label class="custom-control-label small" for="dispEaNotifyClient">Сповістити клієнта</label>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                        <button type="button" class="btn btn-primary" id="dispEaSubmitBtn">
+                          <i class="fas fa-user-check mr-1"></i>Призначити
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>`;
+
+                window._dispSelectedTechId = null;
+                window._dispSelectTech = (row, techId) => {
+                    document.querySelectorAll('#dispEnhancedAssignModal .workload-row').forEach(r => r.classList.remove('selected'));
+                    row.classList.add('selected');
+                    window._dispSelectedTechId = techId;
+                };
+
+                $('#dispEnhancedAssignModal').remove();
+                $('body').append(modalHtml);
+
+                const self = this;
+                document.getElementById('dispEaSubmitBtn').addEventListener('click', async () => {
+                    const techId = window._dispSelectedTechId;
+                    if (!techId) { toastr.warning('Оберіть техніка зі списку'); return; }
+                    const dateVal = document.getElementById('dispEaDate').value;
+                    const timeVal = document.getElementById('dispEaTime').value;
+                    const deadline = dateVal && timeVal ? new Date(`${dateVal}T${timeVal}`).toISOString() : undefined;
+                    const instructions = document.getElementById('dispEaInstructions').value;
+                    $('#dispEnhancedAssignModal').modal('hide');
+                    await self.assignRequest(requestId, techId, { instructions, deadline });
+                });
+
+                $('#dispEnhancedAssignModal').modal('show');
             }
 
             // Переназначити заявку
