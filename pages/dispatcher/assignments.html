@@ -2169,6 +2169,13 @@
                     $('#bulkAssignmentModal').modal('show');
                 },
 
+                // Продовжити дедлайн з модального вікна (закриває модалку спочатку)
+                extendDeadlineFromModal: function() {
+                    if (window.dispatcherManager) {
+                        window.dispatcherManager.extendDeadlineFromModal();
+                    }
+                },
+
                 // Перепризначити прострочені
                 extendDeadline: async function(requestId) {
                     const { value: days, isConfirmed } = await Swal.fire({
