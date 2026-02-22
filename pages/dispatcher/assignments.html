@@ -296,6 +296,28 @@
     .swal-alert-box { border-radius: 10px; padding: 12px 16px; margin-bottom: 14px; font-size: 13px; }
     .swal-alert-warning { background: #fff8e1; border-left: 4px solid #ffc107; color: #856404; }
     .swal-alert-info    { background: #e8f4fd; border-left: 4px solid #17a2b8; color: #0c5460; }
+
+    /* ─── Unified req-card design (matches admin/requests.html) ─── */
+    .req-card { border-left: 5px solid transparent; border-radius: 10px; transition: all 0.2s; }
+    .req-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.12) !important; }
+    .req-card-critical { border-left-color: #dc3545 !important; }
+    .req-card-high     { border-left-color: #fd7e14 !important; }
+    .req-card-medium   { border-left-color: #007bff !important; }
+    .req-card-low      { border-left-color: #28a745 !important; }
+    .req-icon-box { width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:17px; flex-shrink:0; }
+    .req-pulse { animation: req-blink 1.5s infinite; }
+    @keyframes req-blink { 0%,100%{opacity:1} 50%{opacity:.5} }
+    .req-cards-list .card { border:none; box-shadow:0 2px 8px rgba(0,0,0,0.07); }
+    .req-cards-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(380px,1fr)); gap:12px; }
+    .workload-row { display:flex; align-items:center; padding:10px 12px; border:2px solid #dee2e6; border-radius:10px; cursor:pointer; transition:all 0.15s; margin-bottom:8px; }
+    .workload-row:hover, .workload-row.selected { border-color:#007bff; background:#f0f7ff; }
+    .workload-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+    .workload-dot.green { background:#28a745; } .workload-dot.yellow { background:#ffc107; } .workload-dot.red { background:#dc3545; }
+    .workload-bar { display:flex; gap:2px; } .workload-seg { height:5px; width:14px; border-radius:3px; background:#dee2e6; }
+    .workload-seg.g { background:#28a745; } .workload-seg.y { background:#ffc107; } .workload-seg.r { background:#dc3545; }
+    .tech-avatar-sm { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; flex-shrink:0; margin-right:10px; }
+    .req-stat-card { cursor:pointer; transition:transform 0.15s; }
+    .req-stat-card:hover { transform:translateY(-3px); }
     </style>
     <!-- Service Integration -->
     <script src="../../assets/js/service-integration.js"></script>
@@ -1216,78 +1238,84 @@
             displayAssignments(assignments) {
                 const container = document.getElementById('assignmentsContainer');
                 if (!container) return;
-                
-                container.innerHTML = '';
-                
-                assignments.forEach(assignment => {
-                    // Convert MongoDB ObjectId to string
-                    const assignmentId = window.safeId ? window.safeId(assignment) : ((assignment._id && assignment._id.toString) ? assignment._id.toString() : (assignment._id || assignment.id || ''));
-                    if (!assignmentId) {
-                        console.error('❌ Призначення без ID:', assignment);
-                        return;
-                    }
-                    
-                    const card = document.createElement('div');
-                    card.className = `assignment-card ${assignment.priority}-priority`;
-                    // ID для відображення: requestNumber з API або останні 6 символів ObjectId
-                    const displayId = assignment._original?.requestNumber || 
-                        'REQ-' + assignmentId.slice(-6).toUpperCase();
-                    card.innerHTML = `
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h5 class="card-title mb-0">${displayId}</h5>
-                                <span class="priority-badge priority-${assignment.priority}">
-                                    ${this.getPriorityText(assignment.priority)}
-                                </span>
+
+                const priorityIconMap = {
+                    critical: { icon: 'fas fa-exclamation-circle', bg: '#dc3545' },
+                    high:     { icon: 'fas fa-arrow-up',           bg: '#fd7e14' },
+                    medium:   { icon: 'fas fa-minus',              bg: '#007bff' },
+                    low:      { icon: 'fas fa-arrow-down',         bg: '#28a745' }
+                };
+                const statusBadge = {
+                    new:         { cls: 'badge-info',    label: 'Нова' },
+                    assigned:    { cls: 'badge-primary',  label: 'Призначена' },
+                    in_progress: { cls: 'badge-warning',  label: 'В роботі' },
+                    completed:   { cls: 'badge-success',  label: 'Виконана' },
+                    cancelled:   { cls: 'badge-danger',   label: 'Скасована' }
+                };
+
+                const html = assignments.map(assignment => {
+                    const aid = window.safeId ? window.safeId(assignment)
+                        : ((assignment._id?.toString) ? assignment._id.toString() : (assignment._id || assignment.id || ''));
+                    if (!aid) return '';
+
+                    const priority = assignment.priority || 'medium';
+                    const pi = priorityIconMap[priority] || priorityIconMap.medium;
+                    const si = statusBadge[assignment.status] || { cls: 'badge-secondary', label: assignment.status };
+                    const displayId = assignment._original?.requestNumber || ('REQ-' + aid.slice(-6).toUpperCase());
+                    const isOverdue = assignment.deadline && new Date(assignment.deadline) < new Date() && assignment.status !== 'completed';
+                    const techName = assignment.assignedToName || assignment.technicianName || 'Не призначено';
+                    const address = assignment.liftAddress || assignment.address || assignment.location || '—';
+                    const descText = (assignment.description || '').substring(0, 120);
+
+                    const closeBtn = assignment.status !== 'completed'
+                        ? `<button class="btn btn-sm btn-success" onclick="dispatcherManager.closeRequest('${aid}')">
+                             <i class="fas fa-check-circle mr-1"></i>Закрити
+                           </button>`
+                        : '';
+                    const reopenBtn = assignment.status === 'completed'
+                        ? `<button class="btn btn-sm btn-outline-warning" onclick="dispatcherManager.reopenRequest('${aid}')">
+                             <i class="fas fa-redo mr-1"></i>Повторно відкрити
+                           </button>`
+                        : '';
+
+                    return `
+                    <div class="card req-card req-card-${priority} mb-2${isOverdue ? ' req-pulse' : ''}">
+                      <div class="card-body py-3">
+                        <div class="d-flex align-items-start">
+                          <div class="req-icon-box mr-3" style="background:${pi.bg}">
+                            <i class="${pi.icon}"></i>
+                          </div>
+                          <div class="flex-grow-1 min-width-0">
+                            <div class="d-flex align-items-center flex-wrap mb-1" style="gap:6px">
+                              <strong class="mr-1">${displayId}</strong>
+                              <span class="badge badge-pill ${si.cls}">${si.label}</span>
+                              ${isOverdue ? '<span class="badge badge-pill badge-danger">Протерм.</span>' : ''}
                             </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <small class="text-muted">Ліфт:</small>
-                                    <p class="mb-1">${assignment.liftAddress || assignment.liftId || 'Невідомо'}</p>
-                                </div>
-                                <div class="col-md-6">
-                                    <small class="text-muted">Статус:</small>
-                                    <p class="mb-1">
-                                        <span class="status-badge status-${assignment.status.replace('_', '-')}">
-                                            ${this.getStatusText(assignment.status)}
-                                        </span>
-                                    </p>
-                                </div>
+                            <div class="font-weight-bold mb-1">${assignment.title || assignment.type || 'Заявка'}</div>
+                            <p class="text-muted small mb-2">${descText}${descText.length >= 120 ? '…' : ''}</p>
+                            <div class="d-flex flex-wrap text-muted small" style="gap:12px">
+                              <span><i class="fas fa-map-marker-alt mr-1"></i>${address}</span>
+                              <span><i class="fas fa-user-wrench mr-1"></i>${techName}</span>
+                              <span><i class="fas fa-clock mr-1"></i>${new Date(assignment.createdAt).toLocaleDateString('uk-UA')}</span>
                             </div>
-                            
-                            <p class="text-muted mb-3">${assignment.description?.substring(0, 100)}...</p>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <small class="text-muted">Призначено:</small>
-                                    <p class="mb-0">${assignment.assignedToName || 'Не призначено'}</p>
-                                </div>
-                                <div class="col-md-6">
-                                    <small class="text-muted">Створено:</small>
-                                    <p class="mb-0">${new Date(assignment.createdAt).toLocaleDateString()}</p>
-                                </div>
-                            </div>
-                            
-                            <div class="assignment-actions">
-                                <button class="btn btn-sm btn-info" onclick="event.preventDefault(); dispatcherManager.viewAssignment('${assignmentId}'); return false;">
-                                    <i class="fas fa-eye"></i> Переглянути
-                                </button>
-                                <button class="btn btn-sm btn-warning" type="button" onclick="event.preventDefault(); dispatcherManager.showAssignDialog('${assignmentId}'); return false;">
-                                    <i class="fas fa-user-cog"></i> Призначити
-                                </button>
-                                ${assignment.status === 'new' ? `
-                                    <button class="btn btn-sm btn-success" onclick="dispatcherManager.approveRequest('${assignmentId}')">
-                                        <i class="fas fa-check"></i> Підтвердити
-                                    </button>
-                                ` : ''}
-                            </div>
+                          </div>
+                          <div class="d-flex flex-column align-items-end ml-2" style="gap:6px;flex-shrink:0">
+                            <button class="btn btn-sm btn-outline-info" onclick="dispatcherManager.viewAssignment('${aid}')">
+                              <i class="fas fa-eye mr-1"></i>Переглянути
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary" onclick="dispatcherManager.showAssignDialog('${aid}')">
+                              <i class="fas fa-user-cog mr-1"></i>Призначити
+                            </button>
+                            ${closeBtn}
+                            ${reopenBtn}
+                          </div>
                         </div>
-                    `;
-                    container.appendChild(card);
-                });
-                
-                // Оновлення лічильника
+                      </div>
+                    </div>`;
+                }).join('');
+
+                container.innerHTML = html || '<div class="p-4 text-center text-muted"><i class="fas fa-inbox fa-2x mb-2 d-block"></i>Заявок не знайдено</div>';
+
                 const shownEl = document.getElementById('shownCount');
                 const totalEl = document.getElementById('totalCount');
                 if (shownEl) shownEl.textContent = assignments.length;
@@ -1316,7 +1344,59 @@
                 if (completedEl) completedEl.textContent = stats.completed;
                 if (overdueEl) overdueEl.textContent = stats.overdue;
             }
-            
+
+            async closeRequest(requestId) {
+                if (!requestId) return;
+                const ok = await Swal.fire({
+                    title: 'Закрити заявку?',
+                    text: 'Заявку буде позначено як виконану.',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Так, закрити',
+                    cancelButtonText: 'Скасувати',
+                    customClass: { popup: 'swal-dispatch' }
+                });
+                if (!ok.isConfirmed) return;
+                try {
+                    const resp = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/status`, {
+                        method: 'PATCH',
+                        body: JSON.stringify({ status: 'completed' })
+                    });
+                    if (!resp || !resp.ok) throw new Error('Помилка оновлення статусу');
+                    if (window.toastr) toastr.success('Заявку закрито як виконану');
+                    await this.loadAssignments();
+                } catch (e) {
+                    console.error('closeRequest:', e);
+                    if (window.toastr) toastr.error('Помилка: ' + e.message);
+                }
+            }
+
+            async reopenRequest(requestId) {
+                if (!requestId) return;
+                const ok = await Swal.fire({
+                    title: 'Повторно відкрити?',
+                    text: 'Заявку буде повернено в статус "В роботі".',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Так, відкрити',
+                    cancelButtonText: 'Скасувати',
+                    customClass: { popup: 'swal-dispatch' }
+                });
+                if (!ok.isConfirmed) return;
+                try {
+                    const resp = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/status`, {
+                        method: 'PATCH',
+                        body: JSON.stringify({ status: 'in_progress' })
+                    });
+                    if (!resp || !resp.ok) throw new Error('Помилка оновлення статусу');
+                    if (window.toastr) toastr.success('Заявку повторно відкрито');
+                    await this.loadAssignments();
+                } catch (e) {
+                    console.error('reopenRequest:', e);
+                    if (window.toastr) toastr.error('Помилка: ' + e.message);
+                }
+            }
+
             viewAssignment(requestId) {
                 console.log('🔍 Переглядаємо запит:', requestId);
                 
