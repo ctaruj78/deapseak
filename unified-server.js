@@ -1486,25 +1486,6 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
                 _id: insertResult.insertedId,
                 ...newLift
             };
-
-            // 🏛️ Auto-send Início de Serviço to municipality if email available
-            if (municipalityData?.email) {
-                const liftDataForForm = {
-                    municipalNumber: liftData.municipalNumber,
-                    address: typeof liftData.address === 'object'
-                        ? `${liftData.address.street || ''}, ${liftData.address.city || ''}`.trim().replace(/^,\s*|,\s*$/, '')
-                        : (liftData.address || req.body.address || ''),
-                    brand: liftData.brand || req.body.brand || '',
-                    model: liftData.model || req.body.model || '',
-                    installationYear: liftData.installationYear || req.body.installationYear || '',
-                    capacity: liftData.capacity || req.body.capacity || '',
-                    municipalityName: municipalityData.name
-                };
-                console.log(`🏛️ Auto-enviando formulário início-de-serviço para Câmara: ${municipalityData.email}`);
-                emailService.sendMunicipalityForm('inicio-servico', liftDataForForm, municipalityData.email)
-                    .then(() => console.log(`✅ Formulário municipal (início-de-serviço) enviado para ${municipalityData.email}`))
-                    .catch(e => console.error(`⚠️ Falha no envio do formulário municipal: ${e.message}`));
-            }
         }
         
         res.json({
