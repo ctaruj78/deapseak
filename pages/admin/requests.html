@@ -168,6 +168,18 @@
             display: flex; align-items: center; justify-content: center;
             font-weight: 700; font-size: 13px; flex-shrink: 0; margin-right: 10px;
         }
+        /* ─── HYBRID VIEW MODAL ─── */
+        #viewRequestModal .nav-tabs .nav-link {
+            color: #6c757d; border: none; padding: 10px 16px; transition: all .25s; white-space: nowrap;
+        }
+        #viewRequestModal .nav-tabs .nav-link:hover { color: #667eea; background: rgba(102,126,234,.08); }
+        #viewRequestModal .nav-tabs .nav-link.active { color: #667eea; background: white; border-bottom: 3px solid #667eea; font-weight: 600; }
+        .vrm-timeline { position: relative; padding-left: 36px; }
+        .vrm-timeline::before { content:''; position:absolute; left:13px; top:0; bottom:0; width:3px; background:linear-gradient(to bottom,#667eea,#764ba2); border-radius:3px; }
+        .vrm-tl-item { position:relative; padding:14px; margin-bottom:16px; background:#f8f9fa; border-radius:10px; transition:all .2s; }
+        .vrm-tl-item:hover { background:#e9ecef; transform:translateX(4px); }
+        .vrm-tl-item::before { content:''; position:absolute; left:-29px; top:18px; width:13px; height:13px; border-radius:50%; background:#667eea; border:3px solid #fff; box-shadow:0 0 0 2px #667eea; }
+        .vrm-tl-dot { display:none; }
     </style>
     <link rel="stylesheet" href="/assets/css/table-drag-scroll.css">
     <link rel="stylesheet" href="/plugins/sweetalert2/css/sweetalert2.min.css">
@@ -683,71 +695,217 @@
 </div>
 
 <!-- View Request Modal -->
+<!-- ══════════════ HYBRID VIEW REQUEST MODAL ══════════════ -->
 <div class="modal fade" id="viewRequestModal" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="viewRequestTitle">Деталі заявки</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
-                </button>
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content" style="border-radius:15px;border:none;box-shadow:0 10px 40px rgba(0,0,0,.2)">
+
+            <!-- HEADER -->
+            <div class="modal-header" style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;border:none;padding:20px 25px">
+                <div>
+                    <h5 class="modal-title mb-0">
+                        <i class="fas fa-clipboard-list mr-2"></i>
+                        Деталі заявки <span id="vrmNum" class="font-weight-bold"></span>
+                    </h5>
+                    <small id="vrmDate" class="text-white-50"></small>
+                </div>
+                <button type="button" class="close text-white" data-dismiss="modal" style="text-shadow:none;opacity:1"><span>&times;</span></button>
             </div>
-            <div class="modal-body">
-                <div class="row">
-                    <div class="col-md-8">
-                        <div id="requestDetails">
-                            <!-- Деталі заявки -->
-                        </div>
-                        
-                        <!-- 🆕 КОМЕНТАРІ ДО ЗАЯВКИ -->
-                        <div class="card mt-3">
-                            <div class="card-header bg-light">
-                                <h6 class="mb-0">
-                                    <i class="fas fa-comments"></i> Коментарі
-                                    <span class="badge badge-primary ml-2" id="commentsCount">0</span>
-                                </h6>
-                            </div>
-                            <div class="card-body">
-                                <!-- Список коментарів -->
-                                <div id="commentsList" style="max-height: 300px; overflow-y: auto;">
-                                    <p class="text-muted text-center py-3">
-                                        <i class="fas fa-inbox"></i> Коментарів поки немає
-                                    </p>
-                                </div>
-                                
-                                <!-- Форма нового коментаря -->
-                                <div class="mt-3 border-top pt-3">
-                                    <div class="form-group">
-                                        <textarea 
-                                            class="form-control" 
-                                            id="newCommentText" 
-                                            rows="2" 
-                                            placeholder="Adicionar коментар..."></textarea>
-                                    </div>
-                                    <button 
-                                        class="btn btn-primary btn-sm" 
-                                        onclick="addComment()">
-                                        <i class="fas fa-paper-plane"></i> Adicionar коментар
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="request-timeline" id="requestTimeline">
-                            <!-- Таймлайн заявки -->
-                        </div>
+
+            <!-- INFO BAR: status / priority / technician / deadline -->
+            <div class="px-4 py-3" style="background:linear-gradient(to right,#f8f9fa,#fff);border-bottom:1px solid #dee2e6">
+                <div class="row text-center">
+                    <div class="col-6 col-md-3" style="border-right:1px solid #dee2e6">
+                        <small class="text-muted d-block">Статус</small>
+                        <span id="vrmStatus" class="badge mt-1" style="font-size:.82rem;padding:5px 10px"></span>
                     </div>
-                    <div class="col-md-4">
-                        <div class="card">
-                            <div class="card-header">
-                                <h6>Швидкі дії</h6>
+                    <div class="col-6 col-md-3" style="border-right:1px solid #dee2e6">
+                        <small class="text-muted d-block">Пріоритет</small>
+                        <span id="vrmPriority" class="badge mt-1" style="font-size:.82rem;padding:5px 10px"></span>
+                    </div>
+                    <div class="col-6 col-md-3" style="border-right:1px solid #dee2e6">
+                        <small class="text-muted d-block">Технік</small>
+                        <strong id="vrmTech" class="d-block mt-1 text-truncate" style="font-size:.88rem"></strong>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <small class="text-muted d-block">Заплановано</small>
+                        <strong id="vrmDeadline" class="d-block mt-1" style="font-size:.88rem"></strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB NAV -->
+            <ul class="nav nav-tabs px-4" style="background:#f8f9fa;border-bottom:2px solid #dee2e6;flex-wrap:nowrap;overflow-x:auto">
+                <li class="nav-item flex-shrink-0">
+                    <a class="nav-link active" data-toggle="tab" href="#vrmTabDesc"><i class="fas fa-align-left mr-1"></i>Опис</a>
+                </li>
+                <li class="nav-item flex-shrink-0">
+                    <a class="nav-link" data-toggle="tab" href="#vrmTabLoc"><i class="fas fa-map-marker-alt mr-1"></i>Локація</a>
+                </li>
+                <li class="nav-item flex-shrink-0">
+                    <a class="nav-link" data-toggle="tab" href="#vrmTabClient"><i class="fas fa-user mr-1"></i>Клієнт</a>
+                </li>
+                <li class="nav-item flex-shrink-0">
+                    <a class="nav-link" data-toggle="tab" href="#vrmTabComments">
+                        <i class="fas fa-comments mr-1"></i>Коментарі
+                        <span class="badge badge-primary ml-1" id="commentsCount">0</span>
+                    </a>
+                </li>
+                <li class="nav-item flex-shrink-0">
+                    <a class="nav-link" data-toggle="tab" href="#vrmTabHistory"><i class="fas fa-history mr-1"></i>Хронологія</a>
+                </li>
+                <li class="nav-item flex-shrink-0">
+                    <a class="nav-link" data-toggle="tab" href="#vrmTabActions"><i class="fas fa-bolt mr-1"></i>Дії</a>
+                </li>
+            </ul>
+
+            <!-- TAB CONTENT -->
+            <div class="tab-content p-4">
+
+                <!-- ① ОПИС -->
+                <div class="tab-pane fade show active" id="vrmTabDesc">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="text-primary mb-3"><i class="fas fa-wrench mr-2"></i>Тип та опис</h5>
+                            <div class="mb-3">
+                                <small class="text-muted text-uppercase font-weight-bold">Тип заявки</small>
+                                <div id="vrmType" class="mt-1 font-weight-bold"></div>
                             </div>
-                            <div class="card-body" id="quickActionsContainer">
-                                <!-- Кнопки генеруються динамічно через generateQuickActions() -->
+                            <div class="mb-3">
+                                <small class="text-muted text-uppercase font-weight-bold">Опис проблеми</small>
+                                <p id="vrmDescription" class="mt-2 p-3" style="font-size:1.05rem;line-height:1.8;background:#f8f9fa;border-radius:8px;white-space:pre-wrap"></p>
+                            </div>
+                            <div id="vrmNotesSection" style="display:none">
+                                <small class="text-muted text-uppercase font-weight-bold">Примітки</small>
+                                <p id="vrmNotes" class="mt-2 p-3 text-secondary" style="background:#fff3cd;border-radius:8px;border-left:4px solid #ffc107"></p>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- ② ЛОКАЦІЯ -->
+                <div class="tab-pane fade" id="vrmTabLoc">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="text-success mb-3"><i class="fas fa-building mr-2"></i>Інформація про ліфт</h5>
+                            <!-- address row -->
+                            <div class="d-flex align-items-center p-3 mb-3" style="background:#f8f9fa;border-radius:10px">
+                                <i class="fas fa-map-marker-alt text-danger fa-lg mr-3"></i>
+                                <div class="flex-grow-1">
+                                    <small class="text-muted d-block">Адреса</small>
+                                    <strong id="vrmAddress"></strong>
+                                </div>
+                                <button class="btn btn-sm btn-primary ml-3" onclick="window.serviceManager && window.serviceManager.openInMapsAdmin()">
+                                    <i class="fas fa-map mr-1"></i>Карта
+                                </button>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center p-3" style="background:#f8f9fa;border-radius:10px">
+                                        <i class="fas fa-hashtag text-info fa-lg mr-3"></i>
+                                        <div><small class="text-muted d-block">ID Ліфта</small><code id="vrmLiftId"></code></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center p-3" style="background:#f8f9fa;border-radius:10px">
+                                        <i class="fas fa-tag text-warning fa-lg mr-3"></i>
+                                        <div><small class="text-muted d-block">Тип заявки</small><span id="vrmTypeTag"></span></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <small class="text-muted text-uppercase font-weight-bold"><i class="fas fa-map mr-1"></i>Карта локації</small>
+                                <div id="vrmMapContainer" style="width:100%;height:300px;border-radius:10px;overflow:hidden;background:#f0f0f0;display:flex;align-items:center;justify-content:center;margin-top:10px">
+                                    <div class="text-center text-muted"><i class="fas fa-map-marked-alt fa-3x mb-2"></i><br>Вкажіть адресу</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ③ КЛІЄНТ -->
+                <div class="tab-pane fade" id="vrmTabClient">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="text-info mb-3"><i class="fas fa-user-circle mr-2"></i>Контактна інформація</h5>
+                            <div class="row">
+                                <div class="col-md-4 text-center py-3">
+                                    <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;margin:0 auto 10px">
+                                        <i class="fas fa-user fa-2x text-white"></i>
+                                    </div>
+                                    <h6 id="vrmClientName" class="font-weight-bold mb-0"></h6>
+                                    <small id="vrmClientRole" class="text-muted"></small>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="d-flex align-items-center p-3 mb-3" style="background:#f8f9fa;border-radius:10px">
+                                        <i class="fas fa-envelope text-primary fa-lg mr-3"></i>
+                                        <div><small class="text-muted d-block">Email</small><a id="vrmClientEmail" href=""></a></div>
+                                    </div>
+                                    <div class="d-flex align-items-center p-3" style="background:#f8f9fa;border-radius:10px">
+                                        <i class="fas fa-phone text-success fa-lg mr-3"></i>
+                                        <div><small class="text-muted d-block">Телефон</small><a id="vrmClientPhone" href=""></a></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ④ КОМЕНТАРІ -->
+                <div class="tab-pane fade" id="vrmTabComments">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="text-secondary mb-3"><i class="fas fa-comments mr-2"></i>Коментарі</h5>
+                            <div id="commentsList" style="max-height:400px;overflow-y:auto">
+                                <p class="text-muted text-center py-3"><i class="fas fa-inbox fa-2x mb-2 d-block"></i>Коментарів поки немає</p>
+                            </div>
+                            <div class="mt-3 pt-3 border-top">
+                                <div class="form-group mb-2">
+                                    <textarea class="form-control" id="newCommentText" rows="2" placeholder="Написати коментар..."></textarea>
+                                </div>
+                                <button class="btn btn-primary btn-sm" onclick="addComment()">
+                                    <i class="fas fa-paper-plane mr-1"></i>Відправити
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ⑤ ХРОНОЛОГІЯ -->
+                <div class="tab-pane fade" id="vrmTabHistory">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="text-warning mb-3"><i class="fas fa-clock mr-2"></i>Хронологія подій</h5>
+                            <div id="requestTimeline" class="vrm-timeline"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ⑥ ДІЇ -->
+                <div class="tab-pane fade" id="vrmTabActions">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="text-dark mb-3"><i class="fas fa-bolt mr-2"></i>Швидкі дії</h5>
+                            <div id="quickActionsContainer" class="row g-2"></div>
+                            <div class="mt-3 pt-3 border-top d-flex flex-wrap gap-2">
+                                <button class="btn btn-outline-danger btn-sm" id="vrmPdfBtn">
+                                    <i class="fas fa-file-pdf mr-1"></i>Exportar PDF
+                                </button>
+                                <button class="btn btn-outline-warning btn-sm" onclick="serviceManager.extendDeadline(serviceManager.currentRequest?.id || serviceManager.currentRequest?._id)">
+                                    <i class="fas fa-calendar-plus mr-1"></i>Продовжити дедлайн
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /tab-content -->
+
+            <div class="modal-footer" style="background:#f8f9fa;border-top:2px solid #dee2e6">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times mr-1"></i>Закрити</button>
+                <button type="button" class="btn btn-outline-primary" onclick="serviceManager.editRequest(serviceManager.currentRequest?.id || serviceManager.currentRequest?._id); $('#viewRequestModal').modal('hide')"><i class="fas fa-edit mr-1"></i>Редагувати</button>
+                <button type="button" class="btn btn-info" onclick="assignTechnician()"><i class="fas fa-user-plus mr-1"></i>Призначити</button>
+                <button type="button" class="btn btn-primary" id="vrmCompleteBtn" onclick="completeRequest()"><i class="fas fa-check mr-1"></i>Завершити</button>
             </div>
         </div>
     </div>
@@ -1482,80 +1640,117 @@ class ServiceRequestManager {
             console.error('Заявку не знайдено:', requestId);
             return;
         }
-
         this.currentRequest = request;
-        
-        const displayId = request.id || requestId.substring(0, 8);
-        $('#viewRequestTitle').text(`Заявка ${displayId}`);
-        
-        const details = `
-            <div class="request-info">
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <strong>Ліфт:</strong> ${request.liftId}<br>
-                        <strong>Адреса:</strong> ${request.liftAddress}
-                    </div>
-                    <div class="col-md-6">
-                        <strong>Тип:</strong> ${this.getTypeIcon(request.type)} ${this.getTypeText(request.type)}<br>
-                        <strong>Пріоритет:</strong> <span class="status-badge priority-${request.priority}">${this.getPriorityText(request.priority)}</span>
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <strong>Статус:</strong> <span class="status-badge status-${request.status}">${this.getStatusText(request.status)}</span>
-                    </div>
-                    <div class="col-md-6">
-                        <strong>Технік:</strong> ${request.technicianName || (request.technician ? 'Призначено' : 'Не призначено')}
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <strong>Опис:</strong><br>
-                    <p class="mt-2">${request.description}</p>
-                </div>
-                ${request.scheduledAt ? `
-                <div class="mb-3">
-                    <strong>Заплановано на:</strong> ${new Date(request.scheduledAt).toLocaleString('uk-UA')}
-                </div>
-                ` : ''}
-            </div>
-        `;
-        
-        $('#requestDetails').html(details);
-        
-        // Рендерим таймлайн
-        const timeline = request.timeline.map(item => `
-            <div class="timeline-item">
-                <div class="timeline-content">
-                    <div class="d-flex justify-content-between">
-                        <strong>${item.message}</strong>
-                        <small class="text-muted">${new Date(item.timestamp).toLocaleString('uk-UA')}</small>
-                    </div>
-                    <div class="text-muted">${item.user}</div>
-                </div>
-            </div>
-        `).join('');
-        
-        $('#requestTimeline').html(timeline);
-        
-        // 🆕 Завантажуємо коментарі для заявки
+        this._currentViewAddress = request.liftAddress;
+
+        // ── Header ──
+        const displayId = request.id || (typeof requestId === 'string' ? requestId.substring(0, 8) : requestId);
+        $('#vrmNum').text('#' + displayId);
+        $('#vrmDate').text('Створено: ' + (request.createdAt ? new Date(request.createdAt).toLocaleString('uk-UA') : '—'));
+
+        // ── Info bar ──
+        const statusColors = { new:'info', assigned:'primary', in_progress:'warning', completed:'success', cancelled:'danger' };
+        const statusTexts  = { new:'Нова', assigned:'Призначено', in_progress:'В роботі', completed:'Завершено', cancelled:'Скасовано' };
+        $('#vrmStatus')
+            .removeClass('badge-info badge-primary badge-warning badge-success badge-danger badge-secondary')
+            .addClass('badge-' + (statusColors[request.status] || 'secondary'))
+            .text(statusTexts[request.status] || request.status);
+
+        const prioColors = { critical:'dark', high:'danger', medium:'warning', low:'success' };
+        const prioTexts  = { critical:'Критичний', high:'Високий', medium:'Середній', low:'Низький' };
+        $('#vrmPriority')
+            .removeClass('badge-dark badge-danger badge-warning badge-success badge-secondary')
+            .addClass('badge-' + (prioColors[request.priority] || 'secondary'))
+            .text(prioTexts[request.priority] || request.priority);
+
+        $('#vrmTech').text(request.technicianName || (request.technician ? 'Призначено' : 'Не призначено'));
+        $('#vrmDeadline').html(request.scheduledAt
+            ? `<span class="${new Date(request.scheduledAt) < new Date() && request.status !== 'completed' ? 'text-danger' : ''}">${new Date(request.scheduledAt).toLocaleDateString('uk-UA')}</span>`
+            : '<span class="text-muted">—</span>');
+
+        // ── Tab①: Опис ──
+        const typeIcon = this.getTypeIcon ? this.getTypeIcon(request.type) : '';
+        const typeText = this.getTypeText ? this.getTypeText(request.type) : request.type;
+        $('#vrmType').html(typeIcon + ' ' + typeText);
+        $('#vrmDescription').text(request.description || 'Опис відсутній');
+        if (request.notes) { $('#vrmNotesSection').show(); $('#vrmNotes').text(request.notes); }
+        else { $('#vrmNotesSection').hide(); }
+
+        // ── Tab②: Локація ──
+        $('#vrmAddress').text(request.liftAddress || 'Адреса не вказана');
+        $('#vrmLiftId').text(request.liftId || '—');
+        $('#vrmTypeTag').text(typeText);
+        this._loadAdminMap(request.liftAddress);
+
+        // ── Tab③: Клієнт ──
+        const clientName  = request.clientName  || (request.client && (request.client.name || request.client.firstName)) || '—';
+        const clientEmail = request.clientEmail || (request.client && request.client.email) || '';
+        const clientPhone = request.clientPhone || (request.client && request.client.phone) || '';
+        $('#vrmClientName').text(clientName);
+        $('#vrmClientEmail').text(clientEmail || '—').attr('href', clientEmail ? 'mailto:' + clientEmail : '#');
+        $('#vrmClientPhone').text(clientPhone || '—').attr('href', clientPhone ? 'tel:' + clientPhone : '#');
+
+        // ── Tab④: Коментарі ──
         const requestIdForComments = request._id || request.id;
         loadComments(requestIdForComments);
-        
-        // Генеруємо кнопки в залежності від статусу
-        const quickActionsHtml = this.generateQuickActions(request);
-        $('#quickActionsContainer').html(quickActionsHtml);
-        
-        // Додаємо кнопку експорту PDF
-        const exportBtnHtml = `
-            <div class="mt-2">
-                <button class="btn btn-outline-danger btn-sm" onclick="exportRequestPDF('${request.id}')">
-                    <i class="fas fa-file-pdf"></i> Exportarувати PDF
-                </button>
-            </div>
-        `;
-        $('#quickActionsContainer').append(exportBtnHtml);
-        
+
+        // ── Tab⑤: Хронологія ──
+        const timelineEl = $('#requestTimeline');
+        timelineEl.empty();
+        const timelineItems = request.timeline || [];
+        if (timelineItems.length) {
+            timelineItems.forEach(item => {
+                timelineEl.append(`
+                    <div class="vrm-tl-item">
+                        <i class="fas fa-circle text-primary vrm-tl-dot"></i>
+                        <div>
+                            <h6 class="mb-1">${item.message || ''}</h6>
+                            <small class="text-muted d-block mb-1"><i class="far fa-clock mr-1"></i>${new Date(item.timestamp).toLocaleString('uk-UA')}</small>
+                            <p class="mb-0 text-secondary small">${item.user || ''}</p>
+                        </div>
+                    </div>`);
+            });
+        } else {
+            timelineEl.html('<p class="text-muted"><i class="fas fa-inbox mr-1"></i>Хронологія відсутня</p>');
+        }
+
+        // ── Tab⑥: Дії ──
+        const actionsHtml = this.generateQuickActions(request);
+        $('#quickActionsContainer').html(actionsHtml);
+        // PDF button
+        const pdfId = request.id || displayId;
+        $('#vrmPdfBtn').off('click').on('click', () => exportRequestPDF(pdfId));
+        // Footer complete/reopen button
+        if (request.status === 'completed') {
+            $('#vrmCompleteBtn').html('<i class="fas fa-undo mr-1"></i>Повернути в роботу').removeClass('btn-primary').addClass('btn-warning').attr('onclick', 'reopenRequest()');
+        } else {
+            $('#vrmCompleteBtn').html('<i class="fas fa-check mr-1"></i>Завершити').removeClass('btn-warning').addClass('btn-primary').attr('onclick', 'completeRequest()');
+        }
+
+        // ── Reset to first tab ──
+        $('#viewRequestModal .nav-tabs .nav-link').removeClass('active');
+        $('#viewRequestModal .nav-tabs .nav-link:first').addClass('active');
+        $('#viewRequestModal .tab-pane').removeClass('show active');
+        $('#vrmTabDesc').addClass('show active');
+
         $('#viewRequestModal').modal('show');
+    }
+
+    _loadAdminMap(address) {
+        const $c = $('#vrmMapContainer');
+        if (!address || address === 'Адреса не вказана') {
+            $c.html('<div class="text-center text-muted"><i class="fas fa-map-marked-alt fa-3x mb-2"></i><br>Адреса не вказана</div>');
+            return;
+        }
+        const encodedAddress = encodeURIComponent(address);
+        const mapUrl = `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodedAddress}&zoom=15`;
+        $c.html(`<iframe width="100%" height="100%" frameborder="0" style="border:0;border-radius:10px" allowfullscreen src="${mapUrl}"></iframe>`);
+    }
+
+    openInMapsAdmin() {
+        const addr = this._currentViewAddress;
+        if (!addr) return;
+        window.open('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(addr), '_blank');
     }
     
     generateQuickActions(request) {

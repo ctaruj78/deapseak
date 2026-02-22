@@ -621,11 +621,11 @@
                     </button>
                 </div>
                 <div class="modal-body p-0">
-                    <!-- Статус та пріоритет -->
+                    <!-- Статус та пріоритет (4 колонки) -->
                     <div class="p-4" style="background: linear-gradient(to right, #f8f9fa, #ffffff);">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="d-flex align-items-center">
+                        <div class="row text-center">
+                            <div class="col-6 col-md-3" style="border-right:1px solid #dee2e6">
+                                <div class="d-flex align-items-center justify-content-center">
                                     <i class="fas fa-info-circle fa-2x text-primary mr-3"></i>
                                     <div>
                                         <small class="text-muted d-block">Статус</small>
@@ -633,8 +633,8 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="d-flex align-items-center">
+                            <div class="col-6 col-md-3" style="border-right:1px solid #dee2e6">
+                                <div class="d-flex align-items-center justify-content-center">
                                     <i class="fas fa-flag fa-2x text-warning mr-3"></i>
                                     <div>
                                         <small class="text-muted d-block">Пріоритет</small>
@@ -642,8 +642,8 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="d-flex align-items-center">
+                            <div class="col-6 col-md-3" style="border-right:1px solid #dee2e6">
+                                <div class="d-flex align-items-center justify-content-center">
                                     <i class="fas fa-user-cog fa-2x text-success mr-3"></i>
                                     <div>
                                         <small class="text-muted d-block">Технік</small>
@@ -651,29 +651,49 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="col-6 col-md-3">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-calendar-alt fa-2x text-danger mr-3"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Заплановано</small>
+                                        <strong id="modalDeadline" style="font-size:.88rem">—</strong>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Tabs навігація -->
-                    <ul class="nav nav-tabs px-4" style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
-                        <li class="nav-item">
+                    <ul class="nav nav-tabs px-4" style="background: #f8f9fa; border-bottom: 2px solid #dee2e6; flex-wrap:nowrap; overflow-x:auto;">
+                        <li class="nav-item flex-shrink-0">
                             <a class="nav-link active" data-toggle="tab" href="#tabDetails">
                                 <i class="fas fa-info-circle mr-1"></i> Опис проблеми
                             </a>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item flex-shrink-0">
                             <a class="nav-link" data-toggle="tab" href="#tabLocation">
                                 <i class="fas fa-map-marker-alt mr-1"></i> Локація
                             </a>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item flex-shrink-0">
                             <a class="nav-link" data-toggle="tab" href="#tabClient">
                                 <i class="fas fa-user mr-1"></i> Клієнт
                             </a>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item flex-shrink-0">
                             <a class="nav-link" data-toggle="tab" href="#tabHistory">
                                 <i class="fas fa-history mr-1"></i> Історія
+                            </a>
+                        </li>
+                        <li class="nav-item flex-shrink-0">
+                            <a class="nav-link" data-toggle="tab" href="#tabDispComments">
+                                <i class="fas fa-comments mr-1"></i> Коментарі
+                                <span class="badge badge-primary ml-1" id="dispCommentsCount">0</span>
+                            </a>
+                        </li>
+                        <li class="nav-item flex-shrink-0">
+                            <a class="nav-link" data-toggle="tab" href="#tabDispActions">
+                                <i class="fas fa-bolt mr-1"></i> Дії
                             </a>
                         </li>
                     </ul>
@@ -810,13 +830,79 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+
+                        <!-- Коментарі -->
+                        <div class="tab-pane fade" id="tabDispComments">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title text-secondary mb-3">
+                                        <i class="fas fa-comments mr-2"></i>Коментарі
+                                    </h5>
+                                    <div id="dispCommentsList" style="max-height:400px;overflow-y:auto">
+                                        <p class="text-muted text-center py-3"><i class="fas fa-inbox fa-2x d-block mb-2"></i>Коментарів поки немає</p>
+                                    </div>
+                                    <div class="mt-3 pt-3 border-top">
+                                        <div class="form-group mb-2">
+                                            <textarea class="form-control" id="dispNewComment" rows="2" placeholder="Написати коментар..."></textarea>
+                                        </div>
+                                        <button class="btn btn-primary btn-sm" onclick="assignmentManager.postDispComment()">
+                                            <i class="fas fa-paper-plane mr-1"></i>Відправити
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Дії -->
+                        <div class="tab-pane fade" id="tabDispActions">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title text-dark mb-3">
+                                        <i class="fas fa-bolt mr-2"></i>Швидкі дії
+                                    </h5>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-2">
+                                            <button class="btn btn-success btn-block" onclick="assignmentManager.changeStatusFromModal('in_progress')">
+                                                <i class="fas fa-play mr-2"></i>Розпочати роботу
+                                            </button>
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <button class="btn btn-primary btn-block" onclick="assignmentManager.changeStatusFromModal('completed')">
+                                                <i class="fas fa-check mr-2"></i>Завершити
+                                            </button>
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <button class="btn btn-info btn-block" onclick="assignmentManager.reassignFromModal()">
+                                                <i class="fas fa-user-check mr-2"></i>Перепризначити
+                                            </button>
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <button class="btn btn-warning btn-block" onclick="assignmentManager.extendDeadlineFromModal()">
+                                                <i class="fas fa-calendar-plus mr-2"></i>Продовжити дедлайн
+                                            </button>
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <button class="btn btn-outline-secondary btn-block" onclick="assignmentManager.changeStatusFromModal('cancelled')">
+                                                <i class="fas fa-ban mr-2"></i>Скасувати заявку
+                                            </button>
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <button class="btn btn-outline-danger btn-block" id="dispModalPdfBtn">
+                                                <i class="fas fa-file-pdf mr-2"></i>Exportar PDF
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div><!-- /tab-content -->
                 </div>
                 <div class="modal-footer" style="background: #f8f9fa; border-top: 2px solid #dee2e6;">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">
                         <i class="fas fa-times mr-2"></i>Закрити
                     </button>
-                    <button type="button" class="btn btn-primary" onclick="assignmentManager.editAssignment()">
+                    <button type="button" class="btn btn-outline-primary" onclick="assignmentManager.editAssignment()">
                         <i class="fas fa-edit mr-2"></i>Редагувати
                     </button>
                     <button type="button" class="btn btn-success" onclick="assignmentManager.reassignFromModal()">
@@ -1658,6 +1744,35 @@
                 this.currentViewingId = requestId;
                 this.currentViewingAssignment = assignment;
                 
+                // ── Дедлайн (4-та колонка info bar) ──
+                const deadlineVal = assignment.deadline || assignment.scheduledAt;
+                if (deadlineVal) {
+                    const isOverdue = new Date(deadlineVal) < new Date() && assignment.status !== 'completed';
+                    $('#modalDeadline').html(`<span class="${isOverdue ? 'text-danger' : ''}">${new Date(deadlineVal).toLocaleDateString('uk-UA')}</span>`);
+                } else {
+                    $('#modalDeadline').html('<span class="text-muted">—</span>');
+                }
+                
+                // ── Коментарі tab ──
+                this.loadDispComments(assignment);
+                
+                // ── PDF-кнопка ──
+                $('#dispModalPdfBtn').off('click').on('click', () => {
+                    if (typeof exportRequestPDF === 'function') exportRequestPDF(requestId);
+                    else Swal && Swal.fire('PDF', 'Функція PDF поки недоступна для диспетчера', 'info');
+                });
+                
+                // ── Показати правильні дії (hide/show status buttons) ──
+                const isCompleted = assignment.status === 'completed';
+                $('#tabDispActions .btn-success').toggle(!isCompleted);
+                $('#tabDispActions .btn-primary').toggle(!isCompleted);
+                
+                // ── Скинути на перший таб ──
+                $('#viewAssignmentModal .nav-tabs .nav-link').removeClass('active');
+                $('#viewAssignmentModal .nav-tabs .nav-link:first').addClass('active');
+                $('#viewAssignmentModal .tab-pane').removeClass('show active');
+                $('#tabDetails').addClass('show active');
+                
                 // Завантажити карту
                 this.loadMap(assignment.liftAddress);
                 
@@ -1666,6 +1781,74 @@
                 
                 // Показати модальне вікно
                 $('#viewAssignmentModal').modal('show');
+            }
+
+            loadDispComments(assignment) {
+                const comments = (assignment && assignment.rawData && assignment.rawData.comments) || assignment?.comments || [];
+                const count = comments.length;
+                $('#dispCommentsCount').text(count || '0');
+                if (!count) {
+                    $('#dispCommentsList').html('<p class="text-muted text-center py-3"><i class="fas fa-inbox fa-2x d-block mb-2"></i>Коментарів поки немає</p>');
+                    return;
+                }
+                const html = comments.map(c => {
+                    const name = (c.user && (c.user.username || c.user.firstName)) || 'Користувач';
+                    const time = c.createdAt ? new Date(c.createdAt).toLocaleString('uk-UA') : '';
+                    return `<div class="border-bottom pb-2 mb-2">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <strong class="text-primary"><i class="fas fa-user-circle mr-1"></i>${name}</strong>
+                            <small class="text-muted">${time}</small>
+                        </div>
+                        <p class="mb-0 mt-1">${c.text || ''}</p>
+                    </div>`;
+                }).join('');
+                $('#dispCommentsList').html(html);
+            }
+
+            async postDispComment() {
+                const text = $('#dispNewComment').val().trim();
+                if (!text) { toastr.warning('Введіть текст коментаря'); return; }
+                const aid = this.currentViewingId;
+                if (!aid) return;
+                const assignment = this.assignments.find(a => a.id === aid);
+                const mongoId = assignment?._id || aid;
+                try {
+                    const resp = await AuthManager.fetchWithAuth(`/api/requests/${mongoId}/comments`, {
+                        method: 'POST', body: JSON.stringify({ text })
+                    });
+                    if (!resp || !resp.ok) throw new Error('Помилка');
+                    toastr.success('Коментар додано');
+                    $('#dispNewComment').val('');
+                    await this.loadAssignments();
+                    const updated = this.assignments.find(a => a.id === aid);
+                    if (updated) this.loadDispComments(updated);
+                } catch (e) {
+                    toastr.error('Не вдалось додати коментар: ' + e.message);
+                }
+            }
+
+            async changeStatusFromModal(newStatus) {
+                const aid = this.currentViewingId;
+                if (!aid) return;
+                const assignment = this.assignments.find(a => a.id === aid);
+                const mongoId = assignment?._id || aid;
+                try {
+                    const resp = await AuthManager.fetchWithAuth(`/api/requests/${mongoId}`, {
+                        method: 'PUT', body: JSON.stringify({ status: newStatus })
+                    });
+                    if (!resp || !resp.ok) throw new Error((await resp.json()).message || 'Помилка');
+                    toastr.success('Статус змінено');
+                    $('#viewAssignmentModal').modal('hide');
+                    await this.loadAssignments();
+                } catch (e) {
+                    toastr.error('Помилка: ' + e.message);
+                }
+            }
+
+            async extendDeadlineFromModal() {
+                const aid = this.currentViewingId;
+                if (!aid) return;
+                await this.extendDeadline(aid);
             }
             
             // Відкрити адресу в Google Maps
