@@ -105,6 +105,8 @@ https://<CODESPACE_NAME>-5000.app.github.dev
 ```bash
 # Запуск системи
 ./start-unified.sh     # ⭐ Запустити Unified Server (ЗАВЖДИ використовуйте цей!)
+npm run start:secure   # 🔐 Перевіряє GEMINI_API_KEY перед запуском
+npm run dev:secure     # 🔐 Те саме для dev/nodemon режиму
 
 # MongoDB
 pgrep mongod           # Перевірити чи запущено
@@ -122,6 +124,22 @@ tail -f ~/mongodb-data/mongod.log # MongoDB логи
 curl http://localhost:5000/api/health  # Перевірити API
 ps aux | grep -E "node|mongod"          # Переглянути процеси
 ```
+
+### 🤖 AI key та coverage-тест (без передачі ключа в команді)
+
+```bash
+# 1) Один раз створити .env з прикладу
+cp .env.example .env
+
+# 2) Додати в .env реальний ключ
+# GEMINI_API_KEY=...
+
+# 3) Запустити сервер і перевірку покриття AI
+npm start
+npm run test:ai:coverage
+```
+
+✅ Скрипт `test:ai:coverage` автоматично читає `.env`, тому ключ не потрапляє в history командного рядка.
 
 📖 **Детальна документація:** [QUICK-START.md](QUICK-START.md)
 

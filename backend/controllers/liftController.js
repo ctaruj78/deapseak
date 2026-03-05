@@ -78,6 +78,12 @@ exports.updateLift = async (req, res, next) => {
             const existingLift = await Lift.findOne({ municipalNumber: updates.municipalNumber, _id: { $ne: req.params.id } });
             if (existingLift) throw new AppError('Municipal number exists', 400);
         }
+        // Sanitize address: prevent city from duplicating street value
+        if (updates.address && typeof updates.address === 'object') {
+            if (updates.address.city && updates.address.city === updates.address.street) {
+                updates.address.city = '';
+            }
+        }
         const lift = await Lift.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true }).populate('client').populate('technician');
         if (!lift) throw new AppError('Lift not found', 404);
         res.json({ success: true, message: 'Lift updated', data: { lift } });
@@ -375,6 +381,58 @@ exports.deleteMaintenanceContract = async (req, res, next) => {
         res.json({
             success: true,
             message: 'Контракт видалено'
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Поширити контракт на всі ліфти за тією ж адресою (вулиця + індекс)
+ */
+exports.shareContractToSiblings = async (req, res, next) => {
+    try {
+        const lift = await Lift.findById(req.params.id);
+        if (!lift) throw new AppError('Ліфт не знайдено', 404);
+
+        if (!lift.maintenanceContract || !lift.maintenanceContract.contractFile) {
+            throw new AppError('У цього ліфта немає контракту для поширення', 400);
+        }
+
+        // Шукаємо ліфти за тією ж адресою (вулиця + постальний код)
+        const query = { _id: { $ne: lift._id } };
+        if (lift.address && lift.address.zipCode) {
+            query['address.zipCode'] = lift.address.zipCode;
+        }
+        if (lift.address && lift.address.street) {
+            query['address.street'] = lift.address.street;
+        }
+
+        const siblings = await Lift.find(query);
+
+        if (siblings.length === 0) {
+            return res.json({
+                success: true,
+                updated: 0,
+                message: 'Немає інших ліфтів за цією адресою'
+            });
+        }
+
+        // Копіюємо дані контракту (той самий файл PDF, ті самі метадані)
+        const contractData = lift.maintenanceContract.toObject();
+        delete contractData._id;
+        contractData.uploadedAt = new Date();
+
+        await Lift.updateMany(
+            { _id: { $in: siblings.map(s => s._id) } },
+            { $set: { maintenanceContract: contractData } }
+        );
+
+        res.json({
+            success: true,
+            updated: siblings.length,
+            liftNumbers: siblings.map(s => s.municipalNumber),
+            message: `Контракт застосовано до ${siblings.length} ліфт${siblings.length === 1 ? 'а' : 'ів'} за цією адресою`
         });
     } catch (error) {
         next(error);

@@ -939,7 +939,7 @@
                     </li>
                 </ul>
                 <!-- FORM -->
-                <form id="enhancedLiftForm" style="display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;">
+                <form id="enhancedLiftForm" novalidate style="display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;">
                     <div class="modal-body">
                         <input type="hidden" id="enhancedLiftId">
                         <div class="tab-content tab-content-wrap" id="eLiftTabContent">
@@ -1631,9 +1631,32 @@
         };
 
         // Ініціалізація при відкритті modal
-        $('#enhancedLiftModal').on('shown.bs.modal', function() {
+        document.getElementById('enhancedLiftModal').addEventListener('shown.bs.modal', function() {
             var cnt = document.getElementById('enhancedLiftsCountAtAddress');
+            // В режимі редагування зберігаємо municipalNumber перед eLiftUpdateRows (він скидає контейнер)
+            var savedMunNum = null;
+            var savedReadOnly = false;
+            if (window.enhancedLiftModal && window.enhancedLiftModal.currentLiftId) {
+                var munEl = document.getElementById('enhancedMunicipalNumber');
+                if (munEl && munEl.value) {
+                    savedMunNum = munEl.value;
+                    savedReadOnly = munEl.readOnly;
+                } else {
+                    // Fallback: поле ще не існує в DOM — беремо збережене значення з об'єкта
+                    savedMunNum = window.enhancedLiftModal.editMunicipalNumber || null;
+                    savedReadOnly = true;
+                }
+            }
             eLiftUpdateRows(cnt ? parseInt(cnt.value) || 1 : 1);
+            // Відновлюємо municipalNumber якщо він був збережений (режим редагування)
+            if (savedMunNum !== null && savedMunNum !== '') {
+                var munEl2 = document.getElementById('enhancedMunicipalNumber');
+                if (munEl2) {
+                    munEl2.value = savedMunNum;
+                    munEl2.readOnly = savedReadOnly;
+                    if (savedReadOnly) { munEl2.style.backgroundColor = '#f5f5f5'; munEl2.style.cursor = 'not-allowed'; }
+                }
+            }
             eLiftCalcPersons();
             eSetProgress(25, 0);
         });
@@ -1972,8 +1995,8 @@
                             <input type="date" id="contract-start-date" class="form-control" required>
                         </div>
                         <div class="form-group">
-                            <label for="contract-end-date">Дата закінчення *</label>
-                            <input type="date" id="contract-end-date" class="form-control" required>
+                            <label for="contract-end-date">Дата закінчення <small class="text-muted">(необов'язково — при відсутності продовжується автоматично на 1 рік)</small></label>
+                            <input type="date" id="contract-end-date" class="form-control">
                         </div>
                         <div class="form-group">
                             <label for="contract-notes">Примітки</label>
@@ -1983,6 +2006,18 @@
                             <label for="contract-file">Завантажити PDF контракт *</label>
                             <input type="file" id="contract-file" class="form-control-file" accept=".pdf" required>
                             <small class="form-text text-muted">Тільки PDF файли. Максимальний розмір: 10MB</small>
+                        </div>
+                        <!-- Блок застосувати до інших ліфтів за цією ж адресою -->
+                        <div id="contract-siblings-info" class="mt-3" style="display:none;">
+                            <div class="alert alert-info py-2 mb-0">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="contract-apply-siblings" checked>
+                                    <label class="custom-control-label font-weight-bold" for="contract-apply-siblings">
+                                        Застосувати до всіх ліфтів за цією адресою
+                                        <small id="contract-siblings-label" class="font-weight-normal d-block text-muted"></small>
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -2449,8 +2484,7 @@
                         <label for="service-start-date">
                             <i class="fas fa-calendar mr-1"></i>Data de Início de Serviço
                         </label>
-                        <input type="date" id="service-start-date" class="form-control" 
-                               value="${new Date().toISOString().split('T')[0]}">
+                        <input type="date" id="service-start-date" class="form-control">
                         <small class="form-text text-muted">
                             📅 Data em que o elevador começou a ser mantido pela FESTLIFT
                         </small>
@@ -2518,8 +2552,8 @@
     <script src="../../assets/js/lift-utils.js"></script>
     <script src="../../assets/js/lifts.js?v=20241206"></script>
     <script src="../../assets/js/simple-lift-modal.js?v=20241206"></script>
-    <script src="../../assets/js/form-validator.js?v=20241206"></script>
-    <script src="../../assets/js/enhanced-lift-modal.js?v=20241206"></script>
+    <script src="../../assets/js/form-validator.js?v=20260303a"></script>
+    <script src="../../assets/js/enhanced-lift-modal.js?v=20260303e"></script>
 
     <script>
         // 🧹 Функція для очищення тестових даних (тимчасова, для розробки)
@@ -4530,9 +4564,10 @@
             
             // Адреса з нового формату
             const address = lift.address || {};
-            const addressStr = address.street 
-                ? `${address.street}, ${address.city || ''}` 
-                : lift.address || 'Не вказано';
+            const addrStreet = address.street || (typeof lift.address === 'string' ? lift.address : '') || 'Не вказано';
+            // Показуємо місто лише якщо воно відрізняється від вулиці (щоб уникнути дублювання)
+            const addrCity = (address.city && address.city !== address.street) ? address.city : '';
+            const addressStr = addrCity ? `${addrStreet}, ${addrCity}` : addrStreet;
             const postalCode = address.zipCode || lift.postalCode || '';
             
             // Клієнт з populate
@@ -4775,9 +4810,10 @@
                 
                 // Розташування з нової структури
                 const address = lift.address || {};
-                const addressStr = address.street 
-                    ? `${address.street}, ${address.city || ''}` 
-                    : lift.address || 'Не вказано';
+                const _addrCity4Det = (address.city && address.city !== address.street) ? address.city : '';
+                const addressStr = address.street
+                    ? (_addrCity4Det ? `${address.street}, ${_addrCity4Det}` : address.street)
+                    : (typeof lift.address === 'string' ? lift.address : 'Не вказано');
                 const postalCode = address.zipCode || lift.postalCode || 'Не вказано';
                 
                 $('#detail-address').text(addressStr);
@@ -4893,9 +4929,10 @@
                         }
                         
                         setTimeout(() => {
+                            const _mapCity = lift.address?.city !== lift.address?.street ? lift.address?.city : '';
                             const addressStr = lift.address?.street 
-                                ? `${lift.address.street}, ${lift.address.city}` 
-                                : lift.address || '';
+                                ? (_mapCity ? `${lift.address.street}, ${_mapCity}` : lift.address.street)
+                                : (typeof lift.address === 'string' ? lift.address : '');
                             initDetailsMap(latitude, longitude, addressStr);
                         }, 200);
                     });
@@ -4990,12 +5027,24 @@
             const result = await apiCall(`/api/lifts/${liftId}`, 'GET');
             
             let lift;
-            if (result && result.success && result.data && result.data.data) {
-                // apiCall обгортає: {success, data: {server response}}
-                // Server response: {success, data: {...lift...}}
-                lift = result.data.data;
+            if (result && result.success && result.data) {
+                // Сервер повертає: {success:true, data:{lift:{...}}}
+                // apiCall обгортає: {success, data: <serverResponse>}
+                // Тому result.data = {success, data:{lift:{...}}} і result.data.data = {lift:{...}}
+                const rd = result.data;
+                const rdd = rd && rd.data;
+                if (rdd && rdd.lift && rdd.lift._id) {
+                    lift = rdd.lift;            // ✅ Стандартний формат: data.data.lift
+                } else if (rdd && rdd._id) {
+                    lift = rdd;                 // data.data — сам об'єкт
+                } else if (rd.lift && rd.lift._id) {
+                    lift = rd.lift;             // data.lift
+                } else if (rd._id) {
+                    lift = rd;                  // data — сам об'єкт
+                }
                 console.log('✅ Ліфт завантажено з API:', lift);
-            } else {
+            }
+            if (!lift) {
                 // Fallback до localStorage
                 console.log('⚠️ Завантаження з localStorage (API не доступний)');
                 const lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
@@ -5014,7 +5063,16 @@
             // ВАЖЛИВО: Встановлюємо currentLiftId в enhanced-lift-modal ПЕРЕД відкриттям
             if (window.enhancedLiftModal) {
                 window.enhancedLiftModal.currentLiftId = lift._id || lift.id;
+                window.enhancedLiftModal.editMunicipalNumber = lift.municipalNumber || '';
+                // Зберігаємо city/country щоб не губилися при збереженні (поле address — об'єкт у БД)
+                const addrObj = lift.address || {};
+                window.enhancedLiftModal.editAddress = {
+                    city:    typeof addrObj === 'object' ? (addrObj.city    || '') : '',
+                    country: typeof addrObj === 'object' ? (addrObj.country || 'Portugal') : 'Portugal',
+                    zipCode: typeof addrObj === 'object' ? (addrObj.zipCode || '') : ''
+                };
                 console.log('✅ Set enhancedLiftModal.currentLiftId:', window.enhancedLiftModal.currentLiftId);
+                console.log('✅ Set enhancedLiftModal.editAddress:', window.enhancedLiftModal.editAddress);
             }
 
             // Змінюємо заголовок модального вікна
@@ -5023,8 +5081,19 @@
             // Заповнюємо приховане поле з ID
             $('#enhancedLiftId').val(lift._id || lift.id);
             
+            // Ініціалізуємо контейнер ліфтів, щоб #enhancedMunicipalNumber існував у DOM
+            if (typeof window.eLiftUpdateRows === 'function') window.eLiftUpdateRows(1);
+
             // Основна інформація
             $('#enhancedMunicipalNumber').val(lift.municipalNumber || '');
+            // Блокуємо поле — муніципальний номер незмінний після реєстрації
+            const _munInpInline = document.getElementById('enhancedMunicipalNumber');
+            if (_munInpInline) {
+                _munInpInline.readOnly = true;
+                _munInpInline.style.backgroundColor = '#f5f5f5';
+                _munInpInline.style.cursor = 'not-allowed';
+                _munInpInline.title = 'Муніципальний номер не можна змінити після реєстрації ліфта';
+            }
             $('#enhancedLiftBrand').val(lift.manufacturer || lift.brand || '');
             $('#enhancedLiftModel').val(lift.model || '');
             $('#enhancedLiftType').val(lift.type || '');
@@ -6052,7 +6121,7 @@
             
             // Є контракт - показуємо інформацію
             const startDate = contract.startDate ? new Date(contract.startDate).toLocaleDateString('uk-UA') : 'Невідомо';
-            const endDate = contract.endDate ? new Date(contract.endDate).toLocaleDateString('uk-UA') : 'Невідомо';
+            const endDate = contract.endDate ? new Date(contract.endDate).toLocaleDateString('uk-UA') : null;
             const contractNumber = contract.contractNumber || 'Не вказано';
             const description = contract.description || '';
             
@@ -6060,6 +6129,7 @@
             const fileUrl = contract.contractFile.startsWith('/') 
                 ? contract.contractFile 
                 : `/uploads/${contract.contractFile}`;
+            const periodText = endDate ? `${startDate} - ${endDate}` : `з ${startDate} (автоматичне продовження)`;
             
             container.innerHTML = `
                 <div class="card">
@@ -6068,7 +6138,7 @@
                             <i class="fas fa-file-contract text-success"></i> Контракт №${contractNumber}
                         </h6>
                         <p class="card-text">
-                            <strong>Період дії:</strong> ${startDate} - ${endDate}<br>
+                            <strong>Період дії:</strong> ${periodText}<br>
                             ${description ? `<strong>Примітки:</strong> ${description}<br>` : ''}
                         </p>
                         <div class="btn-group">
@@ -6105,13 +6175,39 @@
     }
     
     function showUploadContractModal(liftId) {
-        // Якщо liftId не передано, беремо з dataset модального вікна
         if (!liftId) {
             const modal = document.getElementById('liftDetailsModal');
             liftId = modal?.dataset?.liftId || $('#detail-id').text();
         }
         console.log('📄 Відкриття форми контракту для ліфта:', liftId);
         $('#contract-lift-id').val(liftId);
+
+        // Шукаємо ліфти на тій самій адресі (вулиця + поштовий код)
+        const currentLift = (window.allLiftsData || []).find(
+            l => (l._id || l.id)?.toString() === liftId?.toString()
+        );
+        if (currentLift) {
+            const ca = currentLift.address || {};
+            const siblings = (window.allLiftsData || []).filter(l => {
+                if ((l._id || l.id)?.toString() === liftId?.toString()) return false;
+                const la = l.address || {};
+                return la.street && ca.street && la.street === ca.street &&
+                       la.zipCode && ca.zipCode && la.zipCode === ca.zipCode;
+            });
+            if (siblings.length > 0) {
+                const nums = siblings.map(s => s.municipalNumber).join(', ');
+                const suf = siblings.length === 1 ? '' : 'and';
+                $('#contract-siblings-label').text(
+                    `${siblings.length} ліфт${suf}: ${nums}`.replace('and', 'и')
+                );
+                $('#contract-apply-siblings').prop('checked', true);
+                $('#contract-siblings-info').show();
+            } else {
+                $('#contract-siblings-info').hide();
+            }
+        } else {
+            $('#contract-siblings-info').hide();
+        }
         $('#uploadContractModal').modal('show');
     }
     
@@ -6123,7 +6219,7 @@
         const notes = $('#contract-notes').val();
         const fileInput = document.getElementById('contract-file');
         
-        if (!contractNumber || !startDate || !endDate || !fileInput.files[0]) {
+        if (!contractNumber || !startDate || !fileInput.files[0]) {
             alert('Будь ласка, заповніть всі обов\'язкові поля та оберіть файл');
             return;
         }
@@ -6139,7 +6235,7 @@
             const formData = new FormData();
             formData.append('contractNumber', contractNumber);
             formData.append('startDate', startDate);
-            formData.append('endDate', endDate);
+            if (endDate) formData.append('endDate', endDate);
             if (notes) formData.append('notes', notes);
             formData.append('contract', fileInput.files[0]);
             
@@ -6180,7 +6276,24 @@
             console.log('📥 Contract upload response:', result);
             
             if (result.success) {
-                alert('Контракт успішно завантажено!');
+                // Поширити на ліфти за тією адресою якщо обрано
+                let sharedCount = 0;
+                if ($('#contract-apply-siblings').is(':checked') && $('#contract-siblings-info').is(':visible')) {
+                    try {
+                        const shareToken = AuthManager.getAuthToken();
+                        const shareUrl = AuthManager.getApiUrl(`/api/lifts/${liftId}/contract/share-to-siblings?token=${encodeURIComponent(shareToken)}`);
+                        const shareRes = await fetch(shareUrl, { method: 'POST' });
+                        const shareData = await shareRes.json();
+                        if (shareData.success) sharedCount = shareData.updated || 0;
+                        console.log('✅ Contract shared to siblings:', shareData);
+                    } catch (e) {
+                        console.warn('⚠️ Could not share contract to siblings:', e);
+                    }
+                }
+                const msg = sharedCount > 0
+                    ? `Контракт успішно завантажено та застосовано до ${sharedCount + 1} ліфтів за цією адресою!`
+                    : 'Контракт успішно завантажено!';
+                alert(msg);
                 $('#uploadContractModal').modal('hide');
                 $('#uploadContractForm')[0].reset();
                 // Оновлюємо деталі ліфта
@@ -6572,10 +6685,11 @@
                     postalCode = lift.postalCode || lift.zipCode || '';
                 } else if (typeof lift.address === 'object' && lift.address !== null) {
                     // Новий формат - адреса як об'єкт
+                    // Уникаємо дублювання: не показуємо city якщо воно = street
                     const parts = [];
                     if (lift.address.street) parts.push(lift.address.street);
-                    if (lift.address.city) parts.push(lift.address.city);
-                    if (lift.address.country && lift.address.country !== 'Ukraine') parts.push(lift.address.country);
+                    if (lift.address.city && lift.address.city !== lift.address.street) parts.push(lift.address.city);
+                    if (lift.address.country && lift.address.country !== 'Ukraine' && lift.address.country !== 'Portugal') parts.push(lift.address.country);
                     
                     addressStr = parts.length > 0 ? parts.join(', ') : 'Не вказано';
                     postalCode = lift.address.zipCode || lift.address.postalCode || '';

@@ -950,7 +950,7 @@ class AssignmentManager {
                                         <div class="form-group">
                                             <label for="client-phone">Телефон</label>
                                             <input type="tel" class="form-control" id="client-phone" 
-                                                   placeholder="+380 XX XXX XXXX">
+                                                   placeholder="+351 9XX XXX XXX">
                                         </div>
                                     </div>
                                 </div>

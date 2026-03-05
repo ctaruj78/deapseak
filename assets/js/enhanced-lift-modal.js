@@ -6,6 +6,8 @@ class EnhancedLiftModal {
         this.marker = null;
         this.currentCoords = null;
         this.detectedCountry = null; // Для автоматичної детекції країни за поштовим кодом
+        this.editAddress = {}; // Зберігає city/country при редагуванні (не відображаються в полях)
+        this.editMunicipalNumber = ''; // Зберігає municipalNumber при редагуванні (DOM може бути перебудований)
         this.init();
     }
 
@@ -317,11 +319,15 @@ class EnhancedLiftModal {
         const data = {
             id: $('#enhancedLiftId').val() || 'lift_' + Date.now(),
             municipalNumber: (() => {
-                // Try static field first, then dynamic container (new tab design)
+                // В режимі редагування першим пріоритетом — збережений номер (DOM перебудовується eLiftUpdateRows)
+                if (this.currentLiftId && this.editMunicipalNumber) return this.editMunicipalNumber;
+                // Try static field
                 const v = $('#enhancedMunicipalNumber').val();
                 if (v) return v;
+                // Try dynamic container (new tab design)
                 const dyn = document.querySelector('#eLiftRowsContainer input[data-elift-idx="1"]');
-                return (dyn && dyn.value) ? dyn.value : '';
+                if (dyn && dyn.value) return dyn.value;
+                return '';
             })(),
             serialNumber: $('#enhancedSerialNumber').val() || '',
             brand: $('#enhancedLiftBrand').val() || '',
@@ -370,6 +376,17 @@ class EnhancedLiftModal {
 
     validateBasicFields(data) {
         console.log('🔍 Validating enhanced lift form fields...');
+        const isEdit = !!this.currentLiftId;
+
+        // В режимі редагування гарантуємо, що поле муніципального номера не порожнє
+        // (eLiftUpdateRows може перебудувати DOM і тимчасово очистити значення)
+        if (isEdit && this.editMunicipalNumber) {
+            const munField = $('#enhancedMunicipalNumber');
+            console.log('🔧 Edit mode: ensuring municipalNumber field =', this.editMunicipalNumber);
+            munField.val(this.editMunicipalNumber);
+            const el = munField[0];
+            if (el) { el.readOnly = true; el.style.backgroundColor = '#f5f5f5'; el.style.cursor = 'not-allowed'; }
+        }
         
         // Створюємо валідатор якщо доступний
         if (typeof FormValidator !== 'undefined') {
@@ -377,17 +394,26 @@ class EnhancedLiftModal {
             validator.clearErrors();
             
             // Обов'язкові поля (тільки ті що позначені * в новому дизайні)
-            validator.required('#enhancedMunicipalNumber', 'Муніципальний номер');
-            validator.required('#enhancedLiftAddress', 'Адреса');
-            validator.required('#enhancedClientEmail', 'Email клієнта');
-            
-            // Email формат
-            validator.email('#enhancedClientEmail', 'Email клієнта');
-            
-            // Телефон якщо заповнений
-            if ($('#enhancedClientPhone').val()) {
-                validator.phone('#enhancedClientPhone', 'Телефон клієнта');
+            // В режимі редагування муніципальний номер вже є в editMunicipalNumber — не перевіряємо DOM
+            if (isEdit && this.editMunicipalNumber) {
+                // Позначаємо поле як валідне без перевірки (значення відомо з editMunicipalNumber)
+                $('#enhancedMunicipalNumber').removeClass('is-invalid').addClass('is-valid');
+            } else {
+                validator.required('#enhancedMunicipalNumber', 'Муніципальний номер');
             }
+            validator.required('#enhancedLiftAddress', 'Адреса');
+            // Email не обов'язковий при редагуванні (клієнт вже прив'язаний)
+            if (!isEdit) {
+                validator.required('#enhancedClientEmail', 'Email клієнта');
+            }
+            
+            // Email формат (тільки якщо заповнений)
+            if ($('#enhancedClientEmail').val()) {
+                validator.email('#enhancedClientEmail', 'Email клієнта');
+            }
+            
+            // Телефон — лише перевіряємо format якщо вже заповнений І має нестандартні символи
+            // (phone є необов'язковим, формат не блокує збереження)
             
             // Числові поля
             if ($('#enhancedLiftCapacity').val()) {
@@ -401,8 +427,8 @@ class EnhancedLiftModal {
             if (!validator.isValid()) {
                 const errors = validator.getErrors();
                 console.error('❌ Validation failed:', errors);
-                // Show specific user-friendly message
-                const errNames = errors.map(e => e.field || e.message || e).join(', ');
+                // Show specific user-friendly message (use message, not raw field ID)
+                const errNames = errors.map(e => e.message || e.field || e).join(', ');
                 this.showMessage('⚠️ Заповніть обов\'язкові поля: ' + errNames, 'warning');
                 // Switch back to Tab 1 (Object) where most required fields are
                 const tab1 = document.getElementById('eLiftTab-obj');
@@ -422,7 +448,8 @@ class EnhancedLiftModal {
                 data.municipalNumber = dynInput.value.trim();
             }
         }
-        const required = ['municipalNumber', 'address', 'clientEmail'];
+        // При редагуванні email не обов'язковий (клієнт вже прив'язаний)
+        const required = isEdit ? ['municipalNumber', 'address'] : ['municipalNumber', 'address', 'clientEmail'];
         const missing = [];
         
         for (let field of required) {
@@ -558,6 +585,15 @@ class EnhancedLiftModal {
                 message: hasCoords ? 'Використовуємо введені координати' : '⚡ Backend геокодує адресу автоматично'
             });
             
+            // 🏠 Формуємо address як об'єкт (Mongoose вимагає { street, city })
+            // ⚠️ city НЕ може fallback до street — це призводить до дублювання адреси в таблиці
+            const addressObj = {
+                street: liftData.address || '',
+                city: this.editAddress.city || '',
+                zipCode: liftData.postcode || this.editAddress.zipCode || '',
+                country: this.editAddress.country || 'Portugal'
+            };
+
             const apiData = {
                 municipalNumber: liftData.municipalNumber,
                 serialNumber: liftData.serialNumber,
@@ -568,7 +604,7 @@ class EnhancedLiftModal {
                 speed: liftData.speed,
                 floors: liftData.floorsCount || 5,
                 installationDate: liftData.installationYear ? `${liftData.installationYear}-01-01` : null,
-                address: liftData.address, // 🏛️ Backend використає це для геокодування та municipality detection
+                address: addressObj, // ✅ Правильний формат об'єкта
                 postalCode: liftData.postcode, // 📮 Поштовий індекс для визначення муніципалітету
                 client: testClientId, // ID клієнта
                 clientName: liftData.clientName,
@@ -641,8 +677,10 @@ class EnhancedLiftModal {
                     }
                 }
                 
-                // Скидаємо currentLiftId після успішного збереження
+                // Скидаємо currentLiftId та editAddress після успішного збереження
                 this.currentLiftId = null;
+                this.editAddress = {};
+                this.editMunicipalNumber = '';
 
                 // 🏢 Зберігаємо додаткові ліфти як окремі записи
                 const additionalNumbers = liftData.additionalMunicipalNumbers || [];
@@ -734,9 +772,11 @@ class EnhancedLiftModal {
         $('.invalid-feedback').remove();
         $('#enhancedModalTitle').text('Додати ліфт з картою');
         
-        // Скидаємо ID поточного ліфта і координати
+        // Скидаємо ID поточного ліфта, координати та збережену адресу
         this.currentLiftId = null;
         this.currentCoords = null;
+        this.editAddress = {};
+        this.editMunicipalNumber = '';
         if (this.marker && this.map) {
             this.map.removeLayer(this.marker);
             this.marker = null;
@@ -752,7 +792,9 @@ class EnhancedLiftModal {
         
         // Встановлюємо currentLiftId перед заповненням форми
         this.currentLiftId = liftData.id || liftData._id;
+        this.editMunicipalNumber = liftData.municipalNumber || '';
         console.log('🔧 Set currentLiftId:', this.currentLiftId);
+        console.log('🔧 Set editMunicipalNumber:', this.editMunicipalNumber);
         
         // Переконуємось що eLiftRowsContainer заповнений (створює #enhancedMunicipalNumber в DOM)
         if (typeof eLiftUpdateRows === 'function') eLiftUpdateRows(1);
@@ -768,6 +810,21 @@ class EnhancedLiftModal {
             munInput.style.cursor = 'not-allowed';
             munInput.title = 'Муніципальний номер не можна змінити після реєстрації ліфта';
         }
+
+        // Додатковий захист: відновити значення муніципального номера після показу модалки
+        // (shown.bs.modal викликає eLiftUpdateRows повторно і може скинути readOnly/value)
+        const _munNum = liftData.municipalNumber || '';
+        const _restoreMun = () => {
+            const el = document.getElementById('enhancedMunicipalNumber');
+            if (el) {
+                if (_munNum) el.value = _munNum;
+                el.readOnly = true;
+                el.style.backgroundColor = '#f5f5f5';
+                el.style.cursor = 'not-allowed';
+                el.title = 'Муніципальний номер не можна змінити після реєстрації ліфта';
+            }
+        };
+        $('#enhancedLiftModal').one('shown.bs.modal', _restoreMun);
         $('#enhancedSerialNumber').val(liftData.serial || liftData.serialNumber || '');
         $('#enhancedLiftBrand').val(liftData.brand || '');
         $('#enhancedLiftModel').val(liftData.model || '');

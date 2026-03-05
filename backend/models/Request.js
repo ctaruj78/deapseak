@@ -35,8 +35,21 @@ const requestSchema = new mongoose.Schema({
     },
     priority: {
         type: String,
-        enum: ['low', 'medium', 'high', 'urgent'],
+        enum: ['low', 'medium', 'high', 'urgent', 'critical'],
         default: 'medium',
+        index: true
+    },
+    type: {
+        type: String,
+        enum: ['emergency', 'maintenance', 'repair', 'inspection', 'other'],
+        default: 'maintenance',
+        index: true
+    },
+    scheduledDate: {
+        type: Date
+    },
+    requestNumber: {
+        type: String,
         index: true
     },
     photosBefore: [String],
@@ -62,6 +75,18 @@ const requestSchema = new mongoose.Schema({
 requestSchema.methods.addComment = function(userId, text) {
     this.comments.push({ user: userId, text });
 };
+
+// Автогенерація requestNumber типу REQ-2026-0010
+requestSchema.pre('save', async function(next) {
+    if (!this.requestNumber) {
+        const year = new Date().getFullYear();
+        const count = await mongoose.model('Request').countDocuments({
+            requestNumber: new RegExp(`^REQ-${year}-`)
+        });
+        this.requestNumber = `REQ-${year}-${String(count + 1).padStart(4, '0')}`;
+    }
+    next();
+});
 
 requestSchema.methods.changeStatus = function(newStatus, userId) {
     this.statusHistory.push({

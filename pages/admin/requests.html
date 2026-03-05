@@ -234,7 +234,7 @@
         <div class="sidebar">
             <div class="user-panel mt-3 pb-3 mb-3 d-flex">
                 <div class="image">
-                    <img src="https://via.placeholder.com/160x160" class="img-circle elevation-2" alt="User Image">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Ccircle cx='80' cy='80' r='80' fill='%23667eea'/%3E%3Ccircle cx='80' cy='62' r='30' fill='white'/%3E%3Cellipse cx='80' cy='135' rx='52' ry='40' fill='white'/%3E%3C/svg%3E" class="img-circle elevation-2" alt="User Image">
                 </div>
                 <div class="info">
                     <a href="profile.html" class="d-block">Іван Петренко</a>
@@ -631,10 +631,20 @@
                                 <label for="requestLift">Ліфт *</label>
                                 <select class="form-control" id="requestLift" required>
                                     <option value="">Оберіть ліфт...</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="requestClient">Клієнт *</label>
+                                <select class="form-control" id="requestClient" required>
+                                    <option value="">Оберіть клієнта...</option>
                                     <!-- Опції будуть завантажені динамічно -->
                                 </select>
                             </div>
                         </div>
+                    </div>
+                    <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="requestType">Тип заявки *</label>
@@ -647,8 +657,6 @@
                                 </select>
                             </div>
                         </div>
-                    </div>
-                    <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="requestPriority">Пріоритет *</label>
@@ -660,15 +668,21 @@
                                 </select>
                             </div>
                         </div>
+                    </div>
+                    <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="requestTechnician">Призначити техніка</label>
                                 <select class="form-control" id="requestTechnician">
                                     <option value="">Автоматичне призначення</option>
-                                    <option value="tech1">Петров І.В.</option>
-                                    <option value="tech2">Сидоров П.П.</option>
-                                    <option value="tech3">Козлов А.А.</option>
+                                    <!-- Опції будуть завантажені динамічно -->
                                 </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="requestScheduled">Запланована дата виконання</label>
+                                <input type="datetime-local" class="form-control" id="requestScheduled" min="">
                             </div>
                         </div>
                     </div>
@@ -676,11 +690,6 @@
                         <label for="requestDescription">Опис проблеми *</label>
                         <textarea class="form-control" id="requestDescription" rows="4" required 
                                   placeholder="Детально опишіть проблему або необхідні роботи..."></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="requestScheduled">Запланована дата виконання</label>
-                        <input type="datetime-local" class="form-control" id="requestScheduled" min="">
-                        <small class="form-text text-muted">Можна обрати тільки поточну дату або майбутню</small>
                     </div>
                 </form>
             </div>
@@ -1065,35 +1074,58 @@ class ServiceRequestManager {
                         const displayId = req.requestNumber || `REQ-${String(index + 1).padStart(4, '0')}`;
                         
                         // Використовуємо збережені дані про ліфт з заявки
-                        const liftId = req.liftMunicipalNumber || req.liftId || 'Невідомий';
-                        const liftAddress = req.liftAddress || 'Адреса невідома';
+                        const liftId = req.lift?.municipalNumber || req.liftMunicipalNumber || req.liftId || 'Невідомий';
+                        // Адреса ліфта: зі збагаченого populate або з прямого рядкового поля (старий формат)
+                        const liftAddrObj = req.lift?.address || {};
+                        const liftAddress = liftAddrObj.street
+                            ? (liftAddrObj.city && liftAddrObj.city !== liftAddrObj.street
+                                ? `${liftAddrObj.street}, ${liftAddrObj.city}`
+                                : liftAddrObj.street)
+                            : (req.liftAddress || 'Адреса невідома');
                         
-                        // Отримуємо дані техніка - використовуємо technicianName з API
-                        const techName = req.technicianName || null;
+                        // Дані клієнта з populated об'єкта (або збагаченого бекендом)
+                        const clientObj = req.client || {};
+                        const clientName  = (clientObj.firstName || clientObj.lastName)
+                            ? [clientObj.firstName, clientObj.lastName].filter(Boolean).join(' ')
+                            : (clientObj.name || clientObj.username || '—');
+                        const clientEmail = clientObj.email || '';
+                        const clientPhone = clientObj.phone || '';
+
+                        // Отримуємо дані техніка - використовуємо assignedTo з populated об'єкта
+                        const techObj = req.assignedTo || {};
+                        const techName = req.technicianName
+                            || ((techObj.firstName || techObj.lastName)
+                                ? [techObj.firstName, techObj.lastName].filter(Boolean).join(' ')
+                                : null);
                         
                         return {
                             id: displayId,
                             _id: req._id, // Зберігаємо реальний MongoDB ID
                             liftId: liftId,
                             liftAddress: liftAddress,
-                            liftMunicipalNumber: req.liftMunicipalNumber || liftId,
+                            liftMunicipalNumber: liftId,
                             type: req.type || 'maintenance', // Використовуємо req.type, а не status
                             priority: req.priority || 'medium',
                             status: req.status || 'new',
                             title: req.title || 'Без назви',
                             description: req.description || 'Без опису',
                             technician: techName,
-                            technicianId: req.technician,
+                            technicianId: req.assignedTo?._id || req.assignedTo,
+                            technicianName: techName,
+                            clientName: clientName,
+                            clientEmail: clientEmail,
+                            clientPhone: clientPhone,
+                            client: clientObj,
                             createdAt: req.createdAt,
                             scheduledAt: req.scheduledDate,
                             completedAt: req.completedDate,
-                            createdBy: req.client?._id || req.client,
-                            liftObjectId: req.liftId,
+                            createdBy: clientObj._id || req.client?._id || req.client,
+                            liftObjectId: req.lift?._id || req.liftId,
                             timeline: req.comments?.map(c => ({
                                 timestamp: c.createdAt,
                                 action: 'comment',
                                 message: c.text,
-                                user: c.user?.username || 'Unknown'
+                                user: c.user?.username || c.user?.firstName || 'Unknown'
                             })) || [],
                             rawData: req // Зберігаємо оригінальні дані
                         };
@@ -1308,27 +1340,34 @@ class ServiceRequestManager {
                 return;
             }
             
-            select.empty().append('<option value="">Оберіть ліфт...</option>');
-            
-            lifts.forEach(lift => {
-                // Формуємо читабельну назву ліфта
-                const municipalNumber = lift.municipalNumber || lift.name || 'Без номера';
-                
-                // ✅ ВИПРАВЛЕННЯ: address може бути об'єктом {street, city, zipCode}
-                let addressText = 'Адреса не вказана';
+            // Допоміжна функція для форматування ліфта
+            const formatLift = (lift) => {
+                const municipalNumber = lift.municipalNumber || lift.name || '';
+                let addressText = '';
                 if (typeof lift.address === 'object' && lift.address !== null) {
                     const parts = [];
                     if (lift.address.street) parts.push(lift.address.street);
                     if (lift.address.city) parts.push(lift.address.city);
-                    addressText = parts.join(', ') || 'Адреса не вказана';
+                    addressText = parts.join(', ');
                 } else if (typeof lift.address === 'string') {
                     addressText = lift.address;
                 }
+                return { municipalNumber, addressText };
+            };
+
+            // Фільтруємо ліфти без номера І без адреси (порожні записи)
+            const validLifts = lifts.filter(lift => {
+                const { municipalNumber, addressText } = formatLift(lift);
+                return municipalNumber || addressText;
+            });
+
+            select.empty().append('<option value="">Оберіть ліфт...</option>');
+            
+            validLifts.forEach(lift => {
+                const { municipalNumber, addressText } = formatLift(lift);
+                const numPart = municipalNumber ? `№${municipalNumber}` : '';
+                const displayText = numPart && addressText ? `${numPart} - ${addressText}` : (numPart || addressText);
                 
-                // Формат: "№123 - Rua Хрещатик, 1, Lisboa"
-                const displayText = `№${municipalNumber} - ${addressText}`;
-                
-                console.log('➕ Додаємо ліфт:', displayText);
                 select.append(`
                     <option value="${lift._id}" 
                             data-address="${addressText}" 
@@ -1338,27 +1377,16 @@ class ServiceRequestManager {
                 `);
             });
             
-            console.log('✅ Select заповнено, всього опцій:', select.find('option').length);
-            
+            console.log('✅ Select ліфтів заповнено, всього опцій:', select.find('option').length);
+
             // Також оновлюємо select у формі редагування
             const editSelect = $('#editRequestLift');
             if (editSelect.length) {
                 editSelect.empty().append('<option value="">Оберіть ліфт...</option>');
-                lifts.forEach(lift => {
-                    const municipalNumber = lift.municipalNumber || lift.name || 'Без номера';
-                    
-                    // ✅ ВИПРАВЛЕННЯ: address може бути об'єктом
-                    let addressText = 'Адреса не вказана';
-                    if (typeof lift.address === 'object' && lift.address !== null) {
-                        const parts = [];
-                        if (lift.address.street) parts.push(lift.address.street);
-                        if (lift.address.city) parts.push(lift.address.city);
-                        addressText = parts.join(', ') || 'Адреса не вказана';
-                    } else if (typeof lift.address === 'string') {
-                        addressText = lift.address;
-                    }
-                    
-                    const displayText = `№${municipalNumber} - ${addressText}`;
+                validLifts.forEach(lift => {
+                    const { municipalNumber, addressText } = formatLift(lift);
+                    const numPart = municipalNumber ? `№${municipalNumber}` : '';
+                    const displayText = numPart && addressText ? `${numPart} - ${addressText}` : (numPart || addressText);
                     
                     editSelect.append(`
                         <option value="${lift._id}" 
@@ -1369,10 +1397,56 @@ class ServiceRequestManager {
                     `);
                 });
             }
+
+            // Завантажуємо клієнтів і техніків у форму створення
+            await this.loadClients();
+            await this.loadTechniciansIntoNewForm();
         } catch (error) {
             console.error('❌ Помилка завантаження ліфтів:', error);
             const select = $('#requestLift');
             select.empty().append('<option value="">Помилка: ' + error.message + '</option>');
+        }
+    }
+
+    async loadClients() {
+        try {
+            const clientSelect = $('#requestClient');
+            if (!clientSelect.length) return;
+            clientSelect.empty().append('<option value="">Оберіть клієнта...</option>');
+            const resp = await AuthManager.fetchWithAuth('/api/users?role=client&limit=200');
+            if (!resp || !resp.ok) return;
+            const data = await resp.json();
+            const users = (Array.isArray(data.data) ? data.data : null) || [];
+            if (!users.length) {
+                clientSelect.append('<option value="" disabled>Клієнтів не знайдено</option>');
+                return;
+            }
+            users.forEach(u => {
+                const name = [u.firstName, u.lastName].filter(Boolean).join(' ') || u.username || u.email;
+                clientSelect.append(`<option value="${u._id}">${name}${u.email ? ' — ' + u.email : ''}</option>`);
+            });
+            console.log('✅ Клієнтів завантажено:', users.length);
+        } catch (e) {
+            console.error('❌ Помилка завантаження клієнтів:', e);
+        }
+    }
+
+    async loadTechniciansIntoNewForm() {
+        try {
+            const techSelect = $('#requestTechnician');
+            if (!techSelect.length) return;
+            techSelect.empty().append('<option value="">Автоматичне призначення</option>');
+            const resp = await AuthManager.fetchWithAuth('/api/users?role=technician&limit=200');
+            if (!resp || !resp.ok) return;
+            const data = await resp.json();
+            const techs = (Array.isArray(data.data) ? data.data : null) || [];
+            techs.forEach(t => {
+                const name = [t.firstName, t.lastName].filter(Boolean).join(' ') || t.username;
+                techSelect.append(`<option value="${t._id}">${name}</option>`);
+            });
+            console.log('✅ Техніків завантажено:', techs.length);
+        } catch (e) {
+            console.error('❌ Помилка завантаження техніків:', e);
         }
     }
 
@@ -1530,26 +1604,28 @@ class ServiceRequestManager {
             return;
         }
 
-        const newRequest = {
-            liftId: $('#requestLift').val(),
-            type: $('#requestType').val(),
-            priority: $('#requestPriority').val(),
-            status: 'new',
-            description: $('#requestDescription').val(),
-            technician: $('#requestTechnician').val() || null,
-            scheduledAt: $('#requestScheduled').val() ? new Date($('#requestScheduled').val()).toISOString() : null,
-            createdBy: 'admin'
-        };
+        const clientVal = $('#requestClient').val();
+        if (!clientVal) {
+            toastr.error('Будь ласка, оберіть клієнта');
+            return;
+        }
 
         // Отримуємо дані ліфта з option
         const selectedOption = $('#requestLift option:selected');
         const liftAddress = selectedOption.attr('data-address') || selectedOption.text().split(' - ')[1] || 'Адреса невідома';
-        const liftMunicipalNumber = selectedOption.attr('data-municipal') || 'Невідомий';
-        
-        // Додаємо дані ліфта
-        newRequest.liftAddress = liftAddress;
-        newRequest.liftMunicipalNumber = liftMunicipalNumber;
-        newRequest.title = this.getTypeText(newRequest.type) + ' - ' + liftAddress;
+        const liftMunicipalNumber = selectedOption.attr('data-municipal') || '';
+
+        const typeVal = $('#requestType').val();
+        const newRequest = {
+            liftId: $('#requestLift').val(),
+            client: clientVal,
+            type: typeVal,
+            priority: $('#requestPriority').val(),
+            description: $('#requestDescription').val(),
+            assignedTo: $('#requestTechnician').val() || undefined,
+            scheduledDate: $('#requestScheduled').val() ? new Date($('#requestScheduled').val()).toISOString() : undefined,
+            title: this.getTypeText(typeVal) + ' - ' + liftAddress
+        };
 
         if (!newRequest.liftId) {
             toastr.error('Будь ласка, оберіть ліфт');

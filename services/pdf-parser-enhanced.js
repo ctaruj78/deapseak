@@ -70,6 +70,53 @@ function extractMetadata(text) {
     
     console.log('\n🔍 ========== METADATA EXTRACTION START ==========');
     
+    // ===========================
+    // GATECI FORMAT (значення йде на НОВОМУ РЯДКУ після мітки)
+    // ===========================
+    
+    // 📍 Локація (GATECI): "Localização da instalação\n<address>"
+    const gateciLocMatch = text.match(/Localiza[çc][ãa]o\s+da\s+instala[çc][ãa]o\s*\n([^\n]{5,150})/i);
+    if (gateciLocMatch) {
+        metadata.location = gateciLocMatch[1].trim();
+        console.log('  ✅ [GATECI] Location:', metadata.location);
+    }
+    
+    // 🆔 ID ліфта (GATECI): "Processo N.º\n5635" або "Instalação N.º\n1"
+    const gateciProcessoMatch = text.match(/Processo\s+N\.?[ºo]\s*\n(\d+)/i);
+    const gateciInstalacaoMatch = text.match(/Instala[çc][ãa]o\s+N\.?[ºo]\s*\n(\d+)/i);
+    if (gateciProcessoMatch) {
+        metadata.liftId = gateciProcessoMatch[1];
+        console.log('  ✅ [GATECI] Processo (liftId):', metadata.liftId);
+    } else if (gateciInstalacaoMatch) {
+        metadata.liftId = gateciInstalacaoMatch[1];
+        console.log('  ✅ [GATECI] Instalação (liftId):', metadata.liftId);
+    }
+    
+    // 📅 Дата (GATECI): "Data da Inspeção\n2026-03-03"
+    const gateciDateMatch = text.match(/Data\s+da\s+Inspe[çc][ãa]o\s*\n(\d{4}-\d{2}-\d{2}|\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})/i);
+    if (gateciDateMatch) {
+        metadata.date = gateciDateMatch[1];
+        console.log('  ✅ [GATECI] Date:', metadata.date);
+    }
+    
+    // 👤 Інспектор (GATECI): "Validação/Inspetor\n<Name>"
+    const gateciInspMatch = text.match(/Valida[çc][ãa]o\s*\/\s*Inspe[ct]or\s*\n([^\n]{3,60})/i);
+    if (gateciInspMatch) {
+        const name = gateciInspMatch[1].trim();
+        // Відкидаємо якщо це не схоже на ім'я (тільки цифри/спецсимволи)
+        if (name.length >= 3 && /[a-záéíóúâêôçà-ú]/i.test(name)) {
+            metadata.inspector = name;
+            console.log('  ✅ [GATECI] Inspector:', metadata.inspector);
+        }
+    }
+    
+    // 🏢 Компанія (GATECI): "Empresa de Manutenção\n<name>"
+    const gateciCompMatch = text.match(/Empresa\s+de\s+Manuten[çc][ãa]o\s*\n([^\n]{3,100})/i);
+    if (gateciCompMatch) {
+        metadata.company = gateciCompMatch[1].trim();
+        console.log('  ✅ [GATECI] Company:', metadata.company);
+    }
+    
     // 📋 НОМЕР ЗВІТУ - 5 варіантів
     const reportNumberPatterns = [
         /(?:Relatório|Certificado|Auto|RELATÓRIO)\s*(?:N\.?º|Nº|n\.?|DE\s+CLÁUSULAS)?\s*:?\s*(\d+[-\/]\d+)/i,
@@ -89,7 +136,8 @@ function extractMetadata(text) {
     }
     if (!metadata.reportNumber) console.log('  ❌ No report number found');
     
-    // 📅 ДАТА - 6 форматів
+    // 📅 ДАТА - 6 форматів (пропускаємо якщо вже знайдено з GATECI)
+    if (!metadata.date) {
     const datePatterns = [
         /(?:DATA|Data|Emitido|Realizada)(?:\s+DA\s+INSPEÇÃO|\s+em|\s+de)?\s*:?\s*(\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})/i,
         /data[:\s]+(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/i,
@@ -108,8 +156,10 @@ function extractMetadata(text) {
         }
     }
     if (!metadata.date) console.log('  ❌ No date found');
+    } // end if (!metadata.date)
     
-    // 🏢 ID ЛІФТУ - 5 варіантів
+    // 🏢 ID ЛІФТУ - 5 варіантів (пропускаємо якщо вже знайдено з GATECI)
+    if (!metadata.liftId) {
     const liftIdPatterns = [
         /(?:ELEVADOR|Matrícula|Ascensor|Equipamento)\s*(?:N\.?º|Nº|n\.?)?\s*:?\s*(\d+)/i,
         /elevador[:\s]+n[úuº.]*\s*(\d+)/i,
@@ -127,8 +177,10 @@ function extractMetadata(text) {
         }
     }
     if (!metadata.liftId) console.log('  ❌ No lift ID found');
+    } // end if (!metadata.liftId)
     
-    // 📍 АДРЕСА/ЛОКАЦІЯ - 10 ПОКРАЩЕНИХ ВАРІАНТІВ
+    // 📍 АДРЕСА/ЛОКАЦІЯ - 10 ПОКРАЩЕНИХ ВАРІАНТІВ (пропускаємо якщо вже знайдено з GATECI)
+    if (!metadata.location) {
     console.log('\n📍 Searching for location...');
     const locationPatterns = [
         // 1. Традиційне "LOCALIZAÇÃO:"
@@ -171,8 +223,10 @@ function extractMetadata(text) {
         }
     }
     if (!metadata.location) console.log('  ❌ No location found with any method');
+    } // end if (!metadata.location)
     
-    // 👤 ІНСПЕКТОР - 15 ПОКРАЩЕНИХ ВАРІАНТІВ
+    // 👤 ІНСПЕКТОР - 15 ПОКРАЩЕНИХ ВАРІАНТІВ (пропускаємо якщо вже знайдено з GATECI)
+    if (!metadata.inspector) {
     console.log('\n👤 Searching for inspector name...');
     const inspectorPatterns = [
         // 1. TÉCNICO: Ім'я
@@ -229,6 +283,7 @@ function extractMetadata(text) {
         }
     }
     if (!metadata.inspector) console.log('  ❌ No inspector name found with any method');
+    } // end if (!metadata.inspector)
     
     // 🏭 КОМПАНІЯ - 7 варіантів
     const companyPatterns = [
@@ -373,6 +428,15 @@ function extractViolations(text) {
             descriptionMatch = afterClass.match(/C[123]\s*[-–—:.]?\s*(.{15,300}?)(?:\n|$)/);
         }
         
+        // Якщо опис починається з "| DL." (формат IEP/Custóias), спробуємо отримати повний рядок
+        // бо перший матч зупинився на «Artº NNº» всередині дужок і захопив лише префікс
+        if (descriptionMatch && /^\s*\|\s*[A-Z]/.test(descriptionMatch[1])) {
+            const fullLineMatch = afterClass.match(/C[123]\s*[-–—:.]?\s*(.{15,500}?)(?:\n|$)/);
+            if (fullLineMatch && fullLineMatch[1].length > descriptionMatch[1].length) {
+                descriptionMatch = fullLineMatch;
+            }
+        }
+        
         let description = descriptionMatch ? descriptionMatch[1].trim() : '';
         
         if (!description || description.length < 15) {
@@ -386,6 +450,15 @@ function extractViolations(text) {
             .replace(/\s*\([^)]*C[123][^)]*\)\s*$/, '')
             .trim();
         
+        // Видаляємо IEP-формат префікс: "| DL. 320/2002 (Artº 20º) - " → ""
+        description = description
+            .replace(/^\s*\|\s*[A-Z]+\.?\s*[\d/]+\s*(?:\([^)]+\))?\s*[-–—]\s*/, '')
+            .replace(/^\s*\|\s*/, '');
+        
+        if (!description || description.length < 10) {
+            return;
+        }
+        
         // Фільтруємо шум
         const excludePatterns = [
             /^\d+[-\/]\d+[-\/]\d+$/,
@@ -398,7 +471,16 @@ function extractViolations(text) {
             /cuja\s+resolução\s+deve\s+ser/i,
             /Página\s*\d+/i,
             /Impresso\s+ELEV/i,
-            /TÉCNICO\s+RESPONSÁVEL/i
+            /TÉCNICO\s+RESPONSÁVEL/i,
+            // Textos do rodapé (secção «Notas:» — prazos C2/C3, contactos da entidade)
+            /cláusulas do tipo\s+c[123]/i,
+            /cumprir no prazo máximo/i,
+            /de acordo com o decreto-lei n/i,
+            /decreto legislativo regional/i,
+            /instalações de elevação (em|na)/i,
+            /entidade inspetora de instala/i,
+            /responsável técnico/i,
+            /^\s*,\s*cumprir/i
         ];
         
         const isNoise = excludePatterns.some(pattern => pattern.test(description));
@@ -406,9 +488,10 @@ function extractViolations(text) {
             return;
         }
         
-        // Перевіряємо чи не дублікат
-        const key = `${classification}-${articleNum}-${description.substring(0, 50)}`;
-        if (!seen.has(key) && description.length >= 15) {
+        // Перевіряємо чи не дублікат (використовуємо 150 символів щоб розрізнити
+        // порушення з однаковим початком опису — напр. два Artigo 6 з різними деталями)
+        const key = `${classification}-${articleNum}-${description.substring(0, 150)}`;
+        if (!seen.has(key) && description.length >= 10) {
             seen.add(key);
             violations.push(createViolation(classification, articleNum, description, 'contextual'));
             count5++;
@@ -416,7 +499,49 @@ function extractViolations(text) {
     });
     console.log(`  Found: ${count5} additional violations`);
     
-    console.log(`\n📊 TOTAL VIOLATIONS: ${violations.length} (F1:${count1} F2:${count2} F3:${count3} F4:${count4} F5:${count5})`);
+    // ⭐ Формат 6: GATECI (компактний) — C[123] + артикул + текст без пробілів
+    // Приклади: C364º-1Não existe...  C393º - 1O dispositivo...  C313º.-1As faces...
+    //           C3(MS) Ponto 2 das OMSApós a modernização...
+    console.log('📋 Format 6: GATECI compact (C3<ART><TEXT>)');
+    
+    // Розбиваємо текст на потенційні записи GATECI
+    // Шукаємо рядки що починаються з C1/C2/C3 і одразу йде або цифра/дужка
+    const gatecLineRegex = /(C[123])(\d+[º°][.-]?\s*\d*|(\([A-Z]+\)[^\n]{0,40}?))([A-ZÁÉÍÓÚÂÊÔÃÇ][^C\n]{20,})/g;
+    let count6 = 0;
+    
+    while ((match = gatecLineRegex.exec(text)) !== null) {
+        const classification = match[1];
+        let rawArticle = match[2].trim();
+        let description = (match[4] || '').trim();
+        
+        // Нормалізуємо артикул: "64º-1" → "64", "(MS) Ponto 2" → "MS/2"
+        let articleNum;
+        const simpleArt = rawArticle.match(/^(\d+)[º°]/);
+        const msArt = rawArticle.match(/^\(([A-Z]+)\)/);
+        if (simpleArt) {
+            articleNum = simpleArt[1];
+        } else if (msArt) {
+            articleNum = msArt[1] + (rawArticle.match(/Ponto\s*(\d+)/) ? '/' + rawArticle.match(/Ponto\s*(\d+)/)[1] : '');
+        } else {
+            articleNum = rawArticle.replace(/[º°\s.-]/g, '') || 'NOTA';
+        }
+        
+        // Очищаємо опис — може бути злитий з наступним записом
+        description = description.replace(/\s*C[123]\d.*$/s, '').trim();
+        
+        if (description.length < 15) continue;
+        
+        const key = `${classification}-${articleNum}-${description.substring(0, 80)}`;
+        if (!seen.has(key)) {
+            seen.add(key);
+            violations.push(createViolation(classification, articleNum, description, 'gateci'));
+            count6++;
+            console.log(`  ✅ Format 6 GATECI: ${classification} Art.${articleNum} - "${description.substring(0, 50)}..."`);
+        }
+    }
+    console.log(`  Found: ${count6} violations`);
+    
+    console.log(`\n📊 TOTAL VIOLATIONS: ${violations.length} (F1:${count1} F2:${count2} F3:${count3} F4:${count4} F5:${count5} F6:${count6})`);
     console.log('========== VIOLATIONS EXTRACTION END ==========\n');
     
     return violations;
@@ -603,6 +728,31 @@ function getViolationsStats(violations) {
 }
 
 /**
+ * Попередня обробка тексту звіту:
+ * – відкидаємо юридичний розділ «OBRIGAÇÕES DO PROPRIETÁRIO», який містить
+ *   згадки C1/C2/C3 у пояснювальному тексті (не реальні порушення).
+ */
+function preprocessReportText(text) {
+    // Знаходимо кінець секції дефектів / початок юридичного блоку
+    const stopPatterns = [
+        /OBRIGA[CÇ][OÕ]ES\s+DO\s+PROPRIET[AÁ]RIO/i,
+        /EM\s+RELA[CÇ][AÃ]O\s+[AÀ]S\s+DEFICI[EÊ]NCIAS\s+DETETADAS/i,
+        /Classificação\s+das\s+Cláusulas/i,
+        /FONTE[:\s]+DIRE[CÇ][AÃ]O/i,
+        // Секція «Notas:» в кінці звіту IEP/Custóias (роз'яснення C1/C2/C3 + контакти)
+        /\nNotas?\s*:\s*\n[\s\S]{0,20}?C1\s+[-–]/i
+    ];
+    for (const pat of stopPatterns) {
+        const m = text.search(pat);
+        if (m > 200) {
+            console.log(`✂️ Truncating text at position ${m} (legal section detected)`);
+            return text.substring(0, m);
+        }
+    }
+    return text;
+}
+
+/**
  * ГОЛОВНА ФУНКЦІЯ - ПАРСИНГ PDF
  */
 async function parsePDF(filePath) {
@@ -617,9 +767,12 @@ async function parsePDF(filePath) {
         console.log(`📝 Extracted: ${text.length} characters, ${pdfData.numpages} pages`);
         console.log(`📄 First 300 chars: ${text.substring(0, 300)}...`);
         
+        // Відкидаємо юридичний розділ перед парсингом
+        const cleanText = preprocessReportText(text);
+        
         const reportType = detectReportType(text);
-        const metadata = extractMetadata(text);
-        const violations = extractViolations(text);
+        const metadata = extractMetadata(text);   // метадані — з повного тексту
+        const violations = extractViolations(cleanText);
         const conclusion = extractConclusion(text);
         const stats = getViolationsStats(violations);
         
@@ -629,29 +782,46 @@ async function parsePDF(filePath) {
         console.log(`  C2 (Medium): ${stats.medium}`);
         console.log(`  C3 (Low): ${stats.low}`);
         
-        // Визначення статусу
+        // Визначення статусу: спочатку з тексту документа, потім за статистикою
         const hasCritical = stats.critical > 0;
-        const hasMedium = stats.medium > 0;
+        const hasMedium  = stats.medium > 0;
         const hasViolations = stats.total > 0;
         
-        let passed = !hasViolations;
-        let finalReportType = 'certificate';
-        let finalConclusion = { ...conclusion, approved: !hasViolations };
+        // Пріоритет — явний висновок у документі (Aprovado / Reprovado)
+        const docSaysApproved  = /Aprovado|APROVADO/i.test(text);
+        const docSaysReprovado = /Reprovado|REPROVADO/i.test(text);
         
-        if (hasCritical || hasMedium) {
+        let passed;
+        let finalReportType;
+        let finalConclusion = { ...conclusion };
+        
+        if (docSaysReprovado && !docSaysApproved) {
             passed = false;
             finalReportType = 'failed';
             finalConclusion.approved = false;
-            console.log(`❌ REPROVADO: C1=${stats.critical} or C2=${stats.medium}`);
-        } else if (stats.low > 0 && stats.low <= 5) {
-            passed = true;
-            finalReportType = 'approved_with_c3';
-            finalConclusion.approved = true;
-            console.log(`✅ APROVADO com ressalvas: C3=${stats.low}`);
-        } else if (stats.low > 5) {
-            passed = false;
-            finalReportType = 'failed';
-            finalConclusion.approved = false;
+            console.log('❌ REPROVADO: explicit in document');
+        } else if (docSaysApproved) {
+            passed = stats.critical === 0 && stats.medium === 0;
+            finalReportType = (stats.low > 0) ? 'approved_with_c3' : 'certificate';
+            finalConclusion.approved = passed;
+            console.log(`✅ APROVADO (documento): passed=${passed}, C3=${stats.low}`);
+        } else {
+            // Fallback: на основі статистики (старий алгоритм)
+            if (hasCritical || hasMedium) {
+                passed = false;
+                finalReportType = 'failed';
+                finalConclusion.approved = false;
+                console.log(`❌ REPROVADO (stats): C1=${stats.critical}, C2=${stats.medium}`);
+            } else if (stats.low > 0 && stats.low <= 5) {
+                passed = true;
+                finalReportType = 'approved_with_c3';
+                finalConclusion.approved = true;
+                console.log(`✅ APROVADO com ressalvas (stats): C3=${stats.low}`);
+            } else {
+                passed = !hasViolations;
+                finalReportType = passed ? 'certificate' : 'failed';
+                finalConclusion.approved = passed;
+            }
         }
         
         console.log('========== PDF PARSING END ==========\n');

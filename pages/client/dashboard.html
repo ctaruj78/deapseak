@@ -780,6 +780,27 @@
                         <div class="col-12">
                             <div class="card card-client">
                                 <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-clipboard-list mr-2"></i>Останні заявки</h3>
+                                    <div class="card-tools">
+                                        <a href="/pages/client/requests.html" class="btn btn-sm btn-default">
+                                            <i class="fas fa-external-link-alt"></i> Всі заявки
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div id="recentRequestsContainer" class="p-3">
+                                        <!-- Заявки завантажуються динамічно -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notifications and Alerts -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card card-client">
+                                <div class="card-header">
                                     <h3 class="card-title"><i class="fas fa-bell mr-2"></i>Останні сповіщення</h3>
                                     <div class="card-tools">
                                         <span class="badge badge-danger" id="alertsCount">0</span>
@@ -872,10 +893,13 @@
             initializeClientDashboard();
 
             // Перевірка чи завантажено client-dashboard.js
+            // Захист від подвійної ініціалізації: clientDashboard вже може бути створено
             if (typeof ClientDashboard === 'undefined') {
                 console.error('ClientDashboard клас не завантажено!');
-            } else {
+            } else if (!window.clientDashboard) {
                 window.clientDashboard = new ClientDashboard();
+            } else {
+                console.log('[Dashboard] ClientDashboard вже ініціалізовано, пропускаємо повторне створення.');
             }
 
             /**

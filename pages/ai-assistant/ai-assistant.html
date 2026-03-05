@@ -1597,9 +1597,9 @@
                             </div>
                         </div>
                         <div id="pdfTextContent" class="card-body" style="display: none; max-height: 400px; overflow-y: auto;">
-                            <pre style="white-space: pre-wrap; font-family: monospace; font-size: 12px; background: #f4f6f9; padding: 15px; border-radius: 5px;">${escapeHtml(extractedText)}</pre>
+                            <pre style="white-space: pre-wrap; font-family: monospace; font-size: 12px; background: #f4f6f9; padding: 15px; border-radius: 5px; user-select: text; -webkit-user-select: text;">${escapeHtml(extractedText)}</pre>
                             <div class="text-right mt-3">
-                                <button onclick="copyPdfTextToClipboard()" class="btn btn-primary">
+                                <button onclick="copyPdfTextToClipboard(this)" class="btn btn-primary">
                                     <i class="fas fa-copy"></i> Copiar Todo o Texto
                                 </button>
                                 <span class="ml-2 text-muted">
@@ -1883,30 +1883,66 @@
             }
         }
         
-        function copyPdfTextToClipboard() {
+        function copyPdfTextToClipboard(buttonElement) {
             if (!window.currentPdfText) {
                 alert('Немає тексту для копіювання');
                 return;
             }
-            
-            navigator.clipboard.writeText(window.currentPdfText).then(() => {
-                const btn = event.target.closest('button');
-                if (btn) {
-                    const originalHTML = btn.innerHTML;
-                    btn.innerHTML = '<i class="fas fa-check"></i> Copiado!';
-                    btn.classList.remove('btn-primary');
-                    btn.classList.add('btn-success');
-                    
-                    setTimeout(() => {
-                        btn.innerHTML = originalHTML;
-                        btn.classList.remove('btn-success');
-                        btn.classList.add('btn-primary');
-                    }, 2000);
+
+            const btn = buttonElement || document.querySelector('#pdfTextContent button.btn');
+            const originalHTML = btn ? btn.innerHTML : '';
+
+            const showCopiedState = () => {
+                if (!btn) return;
+                btn.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-success');
+
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.classList.remove('btn-success');
+                    btn.classList.add('btn-primary');
+                }, 2000);
+            };
+
+            const fallbackCopy = () => {
+                const textArea = document.createElement('textarea');
+                textArea.value = window.currentPdfText;
+                textArea.setAttribute('readonly', '');
+                textArea.style.position = 'fixed';
+                textArea.style.opacity = '0';
+                document.body.appendChild(textArea);
+                textArea.select();
+                textArea.setSelectionRange(0, textArea.value.length);
+
+                let copied = false;
+                try {
+                    copied = document.execCommand('copy');
+                } catch (error) {
+                    copied = false;
                 }
-            }).catch(err => {
-                console.error('Помилка копіювання:', err);
-                alert('Не вдалося скопіювати текст');
-            });
+
+                document.body.removeChild(textArea);
+
+                if (copied) {
+                    showCopiedState();
+                    return;
+                }
+
+                alert('Не вдалося скопіювати текст автоматично. Виділіть текст у блоці та скопіюйте Ctrl/Cmd+C.');
+            };
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(window.currentPdfText)
+                    .then(showCopiedState)
+                    .catch((err) => {
+                        console.error('Помилка копіювання через Clipboard API:', err);
+                        fallbackCopy();
+                    });
+                return;
+            }
+
+            fallbackCopy();
         }
         
         function escapeHtml(text) {

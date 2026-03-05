@@ -463,7 +463,10 @@
         fetch('/api/invoices?status=unpaid', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
-        .then(res => res.json())
+        .then(res => {
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return res.json();
+        })
         .then(data => {
             if (data.data && Array.isArray(data.data)) {
                 const count = data.data.length;
@@ -471,7 +474,12 @@
                 if (badge) badge.textContent = count;
             }
         })
-        .catch(err => console.warn('Failed to load invoices count:', err));
+        .catch(err => {
+            console.warn('Failed to load invoices count:', err);
+            // Сховати лічильник якщо ендпоінт не існує
+            const badge = document.getElementById('invoicesCount');
+            if (badge) badge.style.display = 'none';
+        });
         
         // Кількість сповіщень
         fetch('/api/notifications?unread=true', {
@@ -931,16 +939,17 @@
                         this.updateStats(requests);
                     } else {
                         console.error('Failed to load requests:', response);
-                        toastr.error('Помилка завантаження заявок');
+                        this.displayRequests([]);
+                        this.updateStats([]);
+                        toastr.warning('Не вдалося завантажити заявки з сервера');
                     }
                 } catch (error) {
                     console.error('Error loading requests:', error);
+                    this.displayRequests([]);
+                    this.updateStats([]);
                     toastr.error('Помилка з\'єднання з сервером');
                 }
             }
-            
-            // Створити нову заявку через API
-            async submitNewRequest() {
                 try {
                     // Отримуємо дані з форми
                     const type = document.getElementById('requestType').value;
@@ -1006,13 +1015,6 @@
                     console.error('Error cancelling request:', error);
                     toastr.error('Помилка з\'єднання з сервером');
                 }
-            }
-            
-            // Завантажити та відобразити заявки
-            loadRequests() {
-                const requests = this.getMyRequests();
-                this.displayRequests(requests);
-                this.updateStats(requests);
             }
             
             displayRequests(requests) {

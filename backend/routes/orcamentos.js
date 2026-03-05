@@ -4,6 +4,8 @@ const Orcamento = require('../../models/Orcamento');
 const { authenticate } = require('../middleware/auth');
 const crypto = require('crypto');
 const PDFDocument = require('pdfkit');
+const path = require('path');
+const fs = require('fs');
 
 // Função para gerar PDF do orçamento
 async function gerarPDFOrcamento(orcamento) {
@@ -17,10 +19,18 @@ async function gerarPDFOrcamento(orcamento) {
             doc.on('end', () => resolve(Buffer.concat(chunks)));
             doc.on('error', reject);
             
-            // Cabeçalho
-            doc.fontSize(24).font('Helvetica-Bold').text('FestLift - Elevadores e Serviços, Lda.', { align: 'center' });
+            // Cabeçalho com logótipo
+            const logoPath = path.join(__dirname, '../../assets/img/logo.png');
+            if (fs.existsSync(logoPath)) {
+                // Fundo azul escuro atrás do logótipo
+                doc.rect(40, 35, 185, 80).fill('#1a3a6b');
+                doc.image(logoPath, 50, 45, { width: 160 });
+                doc.y = 130;
+            } else {
+                doc.fontSize(24).font('Helvetica-Bold').text('FestLift - Elevadores e Serviços, Lda.', { align: 'center' });
+                doc.moveDown();
+            }
             doc.fontSize(10).font('Helvetica');
-            doc.text('Elevadores e Serviços', { align: 'center' });
             doc.text('Av. do Parque 84B, Rio de Mouro, Lisboa 2635-609', { align: 'center' });
             doc.text('Tel: +351 214 190 863 | Móvel: +351 926 380 243/244', { align: 'center' });
             doc.text('Email: info@festlift.pt | NIF: 515924741', { align: 'center' });
@@ -148,6 +158,21 @@ async function gerarPDFOrcamento(orcamento) {
     });
 }
 
+function generatePublicAccessToken(id) {
+    return crypto
+        .createHash('sha256')
+        .update(id.toString() + (process.env.JWT_SECRET || 'deapseak_secret_key_2024'))
+        .digest('hex')
+        .substring(0, 16);
+}
+
+function buildPublicPdfUrl(req, orcamentoId, token) {
+    const configuredBaseUrl = process.env.PUBLIC_BASE_URL;
+    const runtimeBaseUrl = `${req.protocol}://${req.get('host')}`;
+    const baseUrl = (configuredBaseUrl || runtimeBaseUrl).replace(/\/$/, '');
+    return `${baseUrl}/api/orcamentos/public/${orcamentoId}/pdf?token=${token}`;
+}
+
 // PUBLIC ROUTE: GET /api/orcamentos/public/:id - Перегляд орçаменту без авторизації (з токеном)
 router.get('/public/:id', async (req, res) => {
     try {
@@ -155,11 +180,7 @@ router.get('/public/:id', async (req, res) => {
         const { id } = req.params;
         
         // Перевірка токену (простий base64(id + secret))
-        const expectedToken = crypto
-            .createHash('sha256')
-            .update(id + process.env.JWT_SECRET || 'deapseak_secret_key_2024')
-            .digest('hex')
-            .substring(0, 16);
+        const expectedToken = generatePublicAccessToken(id);
         
         if (!token || token !== expectedToken) {
             return res.status(401).json({
@@ -187,6 +208,43 @@ router.get('/public/:id', async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Erro ao buscar orçamento',
+            error: error.message
+        });
+    }
+});
+
+// GET /api/orcamentos/public/:id/pdf - Публічне завантаження PDF по токену
+router.get('/public/:id/pdf', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { token } = req.query;
+        const expectedToken = generatePublicAccessToken(id);
+
+        if (!token || token !== expectedToken) {
+            return res.status(401).json({
+                success: false,
+                message: 'Token de acesso inválido'
+            });
+        }
+
+        const orcamento = await Orcamento.findById(id);
+        if (!orcamento) {
+            return res.status(404).json({
+                success: false,
+                message: 'Orçamento não encontrado'
+            });
+        }
+
+        // Генеруємо PDF та віддаємо як attachment
+        const pdfBuffer = await gerarPDFOrcamento(orcamento);
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="Orcamento_${orcamento.numero}.pdf"`);
+        res.send(pdfBuffer);
+    } catch (error) {
+        console.error('Erro ao gerar PDF público:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erro ao gerar PDF',
             error: error.message
         });
     }
@@ -327,10 +385,16 @@ router.post('/', authenticate, async (req, res) => {
         // Gerar número automático
         const numero = await Orcamento.gerarNumero();
         
+        // Data de criação e validade automática (30 dias)
+        const dataAtual = new Date();
+        const validadeAte = new Date(dataAtual);
+        validadeAte.setDate(validadeAte.getDate() + 30);
+        
         // Criar orçamento
         const orcamento = new Orcamento({
             numero,
-            data: new Date(),
+            data: dataAtual,
+            validadeAte,
             cliente,
             servicos,
             subtotal,
@@ -467,8 +531,10 @@ router.post('/:id/enviar', authenticate, async (req, res) => {
         console.log(`📧 Enviando orçamento ${orcamento.numero} para ${emailDestino}`);
         
         // ✅ Usar Brevo API (замість SMTP)
-        if (!process.env.BREVO_API_KEY) {
-            console.warn('⚠️ BREVO_API_KEY não configurado');
+        const brevoKey = process.env.BREVO_API_KEY || '';
+        const brevoKeyValid = brevoKey && !brevoKey.includes('YOUR-API-KEY') && brevoKey.startsWith('xkeysib-');
+        if (!brevoKeyValid) {
+            console.warn('⚠️ BREVO_API_KEY não configurado ou é um placeholder');
             
             // Modo desenvolvimento - apenas logging
             orcamento.status = 'enviado';
@@ -492,11 +558,8 @@ router.post('/:id/enviar', authenticate, async (req, res) => {
         
         try {
             // Gerar token de acesso público para o orçamento
-            const viewToken = crypto
-                .createHash('sha256')
-                .update(orcamento._id.toString() + (process.env.JWT_SECRET || 'deapseak_secret_key_2024'))
-                .digest('hex')
-                .substring(0, 16);
+            const viewToken = generatePublicAccessToken(orcamento._id);
+            const publicPdfUrl = buildPublicPdfUrl(req, orcamento._id, viewToken);
             
             console.log(`🔐 Token gerado para ID ${orcamento._id}: ${viewToken}`);
             
@@ -550,11 +613,12 @@ router.post('/:id/enviar', authenticate, async (req, res) => {
                 from: process.env.EMAIL_FROM || process.env.SMTP_USER,
                 to: orcamento.cliente.email,
                 subject: `Orçamento ${orcamento.numero} - FestLift - Elevadores e Serviços, Lda.`,
+                text: `Orçamento ${orcamento.numero}\nCliente: ${orcamento.cliente.nome}\nTotal: €${orcamento.total.toFixed(2)}\nValidade: ${validadeFormatted}\n\nO PDF está anexado a este email.`,
                 html: `
                     <div style="font-family: Arial, sans-serif; max-width: 700px; margin: 0 auto; border: 1px solid #ddd;">
                         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center;">
-                            <h1 style="margin: 0; font-size: 28px;">FestLift - Elevadores e Serviços, Lda.</h1>
-                            <p style="margin: 5px 0 0 0; font-size: 14px;">Manutenção de Elevadores</p>
+                            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAScAAABhCAMAAACj8pe2AAABBVBMVEUAAAD////yphPyphPyphPyphPyphPyphPyphPyphP////yphPyphPyphPyphP////yphP////yphP////////51Zj////yphP////////////////////////yphP////yphPyphPyphP////////yphPyphP////////////yphPyphP////////////////yphP////yphPyphP////yphPyphPyphP////////////////////////yphP////yphPyphPyphP////yphPyphP////////yphPyphPyphPyphP////yphP////////////////////yphPyphP////yphMllZjmAAAAVXRSTlMARJlE7xFmzFXdu4h3M6p2uxEizAcD6QfeqvzumFUtIfrq5oluOhsM1J6AbWY5GuPSwsK0paKQSj8zMC0mFgz3yXxBHvXhfWJhWxbZsq+RW0sgt3ODe+6y2gAABTpJREFUeNrs10+LgmAQBvCh1c0oIwR5b6KCHvQihnqLFIP+0Knl+f4fZWsdS3etrgvO7/QSdHB4Z9556P+xFYn39NXUIvGOuQO0DxKv7V3ABUoSL6gJoBXmDljrJJ4Jt8BtOB1XwMwhMezDAzJFV/YcqA8khiwANyZmaEAuC8JfmzPgB3RnJUAakuhzTkB67BVu+VM40WXUwNzmNy+mxsW9NaK4s3OgNrjfpssk2zTnygeuZ9E4psDJad+8mFSWWI9FIZEU0wh84My3pmwmUuwVvHjmgFaQIIpdYMEReJ2Gbe0iuzkdauDLprFTGeBV/ObNcvXoxbXe/gqsxp5irATYhnxzvENvts/M9pYBO5PGrNCAieJJ9DvRGd6eSxYB7p5Gq/v9IfdZf/ecqE49x5piuv0U+OVgltmGnf4cZ4q5z2feAwYt/Ko378fHKaOo4qRifOr0hHUJ+GRe/yBxTwjxzW4do0wMAmEYHlubYbBRNKRImwvkIN/9r/LHDYuYf2QXtlnWebqIhsxbSIwxxhgz4tDzRIQbeljZZwAh7UIVKv2so+a5pB3RX/KV3u0kpT1ntk6DThK6lSDWSe3k0QsyZSdq1FkXVHlzznHEiUfnX3dyw4/4Zu912lAd9MBAIeukjeO7XXsg66SOk1CllS5imar/9yrjEgs7Os3a6YkHnSSjScsHnRr/g53oyN3aap0G40gBmijWaXSNyJ5i2zhnJ9IGU8iyRVRxznv8ZScJ0v8jWCd1nIRw0GWzTsNZGafihGhlVMk6EeGGBXdu2Knnp+r0x84ZpcwNw0B4sGTZrhNj8tQfWnqBnmfuf5SuE22ztKF9KC3kr7+X1aw1ggzYhECCrz/9M3O6yglf3l70x8+YOV3nNA6mt/35+IdPj5T+v5wmk8lkMplMfolEXLNlTE5ouMaIPyCq4V3xl3JCezffFjFlj6B5UQLQuyQWAbJqJ5DLsaLVm4IyvJgHUh4O1zk15T4HzBiz8lhPgsN5R1YukhpoXlRFZO5BWsHGKomIWveWIuvRJMy5bKd5oEFqd20McswBLbJKTfGxHjTuzlu+IbswhFRA82KjmAKydCIzwvxHQXt2r0x1fTEPkjaLro14zqFlAthnRObhvOc7euPSQgXNC/TQA6q2dpWTN0koXE/zIC5Nk2sjfA5oe0Kr57Q7bxnU2CqtgtULmHIdsjH+sO/Mux9KMvNpHiSToK6N8DmgRW2PFd93u/OedxpWmDYELkcBaAIW1Voasmr4fo4zP7tjo4bTfFTKIq4z4XOGSQr1eY4P5z3P8X/AJgWT39NveiswmUwm39o5mxYFoSgM37ZuRLxdSosWCSmkErjow2gRjJuoDN7//1fm0j1m2UiznbnnWcjZuHl5z8PBhf8Bb7fd7s0oy3oo+shK2b6QCfvYjYDTwgSVxLOeNJ2bZ6Yv4DAVNuI5QFyaOVKDn7Ocm6YtTsBoJ+xkOAfCq5nXyhVvTBU1qIwBxxPWcjkgoHyOfiG7MY62ZrqGwNzqf0BtcmBMkir848ta3pwnNV2E3exXQFyb2c3Xz2o6k5rGgC6W7cgzEJLEBypq1UQNmsXAai8YUWlJRU0oiTSrlm8ouhA4W62mljQHCklL5mf6eWoa5AY4VIJpJaUlTk1Ky3hCqRWALhbTICeAIolflaqaU4HV1GUZPCRVps3pCehiMS+kCjASJyKd3FIwXTIf0BInZAKoVDDvUDRtaDZ+RfkMrVr1WEJWUx+kbpI600/tA6vkfiQwvdBpeT86mQ+4AQpW0y8Y" alt="FestLift" style="max-height: 70px; background: #1a3a6b; padding: 8px; border-radius: 6px;">
+                            <p style="margin: 10px 0 0 0; font-size: 14px;">Manutenção de Elevadores</p>
                         </div>
                         
                         <div style="padding: 30px;">
@@ -637,6 +701,7 @@ router.post('/:id/enviar', authenticate, async (req, res) => {
             }];
             sendSmtpEmail.subject = mailOptions.subject;
             sendSmtpEmail.htmlContent = mailOptions.html;
+            sendSmtpEmail.textContent = mailOptions.text;
             
             // Додати PDF як вкладення
             sendSmtpEmail.attachment = [{
@@ -685,9 +750,172 @@ router.post('/:id/enviar', authenticate, async (req, res) => {
             const brevoCode = apiError.response?.body?.code || String(apiError.status || '');
             console.error(`❌ Erro Brevo API [${brevoCode}]: ${brevoMsg}`);
             if (apiError.status === 401 || brevoCode === 'unauthorized') {
-                console.error('   ➡️ API key inválida ou expirada!');
-                console.error('   ➡️ Aceda a app.brevo.com → Settings → SMTP & API → API Keys');
-                console.error('   ➡️ Verifique/regenere a chave e atualize BREVO_API_KEY no .env');
+                console.error('   ➡️ API key inválida — tentando SMTP como fallback...');
+                
+                // Fallback: tentar enviar via nodemailer SMTP
+                try {
+                    const nodemailer = require('nodemailer');
+                    const transporter = nodemailer.createTransport({
+                        host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
+                        port: parseInt(process.env.SMTP_PORT) || 587,
+                        secure: false,
+                        auth: {
+                            user: process.env.SMTP_USER,
+                            pass: process.env.SMTP_PASS
+                        }
+                    });
+                    
+                    const pdfBuffer = await gerarPDFOrcamento(orcamento);
+                    console.log(`📄 PDF gerado para SMTP: ${pdfBuffer.length} bytes`);
+                    const viewToken = generatePublicAccessToken(orcamento._id);
+                    const publicPdfUrl = buildPublicPdfUrl(req, orcamento._id, viewToken);
+                    const validadeDate = new Date(orcamento.validadeAte);
+                    const validadeFormatted = validadeDate.toLocaleDateString('pt-PT', { 
+                        day: '2-digit', month: '2-digit', year: 'numeric' 
+                    });
+                    
+                    // Gerar HTML com mesmo template rico do Brevo API
+                    let servicosHTML = '<table style="width: 100%; border-collapse: collapse;"><tr><th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Descrição</th><th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Quantidade</th><th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Preço Unit.</th><th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Total</th></tr>';
+                    orcamento.servicos.forEach(s => {
+                        servicosHTML += `
+                            <tr>
+                                <td style="border: 1px solid #ddd; padding: 8px;">${s.descricao}</td>
+                                <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${s.quantidade}</td>
+                                <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">€${s.precoUnitario.toFixed(2)}</td>
+                                <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">€${(s.quantidade * s.precoUnitario).toFixed(2)}</td>
+                            </tr>
+                        `;
+                    });
+                    servicosHTML += '</table>';
+                    
+                    const emailHTML = `
+                        <div style="font-family: Arial, sans-serif; max-width: 700px; margin: 0 auto; border: 1px solid #ddd;">
+                            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center;">
+                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAScAAABhCAMAAACj8pe2AAABBVBMVEUAAAD////yphPyphPyphPyphPyphPyphPyphPyphP////yphPyphPyphPyphP////yphP////yphP////////51Zj////yphP////////////////////////yphP////yphPyphPyphP////////yphPyphP////////////yphPyphP////////////////yphP////yphPyphP////yphPyphPyphP////////////////////////yphP////yphPyphPyphP////yphPyphP////////yphPyphPyphPyphP////yphP////////////////////yphPyphP////yphMllZjmAAAAVXRSTlMARJlE7xFmzFXdu4h3M6p2uxEizAcD6QfeqvzumFUtIfrq5oluOhsM1J6AbWY5GuPSwsK0paKQSj8zMC0mFgz3yXxBHvXhfWJhWxbZsq+RW0sgt3ODe+6y2gAABTpJREFUeNrs10+LgmAQBvCh1c0oIwR5b6KCHvQihnqLFIP+0Knl+f4fZWsdS3etrgvO7/QSdHB4Z9556P+xFYn39NXUIvGOuQO0DxKv7V3ABUoSL6gJoBXmDljrJJ4Jt8BtOB1XwMwhMezDAzJFV/YcqA8khiwANyZmaEAuC8JfmzPgB3RnJUAakuhzTkB67BVu+VM40WXUwNzmNy+mxsW9NaK4s3OgNrjfpssk2zTnygeuZ9E4psDJad+8mFSWWI9FIZEU0wh84My3pmwmUuwVvHjmgFaQIIpdYMEReJ2Gbe0iuzkdauDLprFTGeBV/ObNcvXoxbXe/gqsxp5irATYhnxzvENvts/M9pYBO5PGrNCAieJJ9DvRGd6eSxYB7p5Gq/v9IfdZf/ecqE49x5piuv0U+OVgltmGnf4cZ4q5z2feAwYt/Ko378fHKaOo4qRifOr0hHUJ+GRe/yBxTwjxzW4do0wMAmEYHlubYbBRNKRImwvkIN/9r/LHDYuYf2QXtlnWebqIhsxbSIwxxhgz4tDzRIQbeljZZwAh7UIVKv2so+a5pB3RX/KV3u0kpT1ntk6DThK6lSDWSe3k0QsyZSdq1FkXVHlzznHEiUfnX3dyw4/4Zu912lAd9MBAIeukjeO7XXsg66SOk1CllS5imar/9yrjEgs7Os3a6YkHnSSjScsHnRr/g53oyN3aap0G40gBmijWaXSNyJ5i2zhnJ9IGU8iyRVRxznv8ZScJ0v8jWCd1nIRw0GWzTsNZGafihGhlVMk6EeGGBXdu2Knnp+r0x84ZpcwNw0B4sGTZrhNj8tQfWnqBnmfuf5SuE22ztKF9KC3kr7+X1aw1ggzYhECCrz/9M3O6yglf3l70x8+YOV3nNA6mt/35+IdPj5T+v5wmk8lkMplMfolEXLNlTE5ouMaIPyCq4V3xl3JCezffFjFlj6B5UQLQuyQWAbJqJ5DLsaLVm4IyvJgHUh4O1zk15T4HzBiz8lhPgsN5R1YukhpoXlRFZO5BWsHGKomIWveWIuvRJMy5bKd5oEFqd20McswBLbJKTfGxHjTuzlu+IbswhFRA82KjmAKydCIzwvxHQXt2r0x1fTEPkjaLro14zqFlAthnRObhvOc7euPSQgXNC/TQA6q2dpWTN0koXE/zIC5Nk2sjfA5oe0Kr57Q7bxnU2CqtgtULmHIdsjH+sO/Mux9KMvNpHiSToK6N8DmgRW2PFd93u/OedxpWmDYELkcBaAIW1Voasmr4fo4zP7tjo4bTfFTKIq4z4XOGSQr1eY4P5z3P8X/AJgWT39NveiswmUwm39o5mxYFoSgM37ZuRLxdSosWCSmkErjow2gRjJuoDN7//1fm0j1m2UiznbnnWcjZuHl5z8PBhf8Bb7fd7s0oy3oo+shK2b6QCfvYjYDTwgSVxLOeNJ2bZ6Yv4DAVNuI5QFyaOVKDn7Ocm6YtTsBoJ+xkOAfCq5nXyhVvTBU1qIwBxxPWcjkgoHyOfiG7MY62ZrqGwNzqf0BtcmBMkir848ta3pwnNV2E3exXQFyb2c3Xz2o6k5rGgC6W7cgzEJLEBypq1UQNmsXAai8YUWlJRU0oiTSrlm8ouhA4W62mljQHCklL5mf6eWoa5AY4VIJpJaUlTk1Ky3hCqRWALhbTICeAIolflaqaU4HV1GUZPCRVps3pCehiMS+kCjASJyKd3FIwXTIf0BInZAKoVDDvUDRtaDZ+RfkMrVr1WEJWUx+kbpI600/tA6vkfiQwvdBpeT86mQ+4AQpW0y8Y" alt="FestLift" style="max-height: 70px; background: #1a3a6b; padding: 8px; border-radius: 6px;">
+                                <p style="margin: 10px 0 0 0; font-size: 14px;">Manutenção de Elevadores</p>
+                            </div>
+                            
+                            <div style="padding: 30px;">
+                                <h2 style="color: #333; border-bottom: 2px solid #667eea; padding-bottom: 10px;">
+                                    📄 Orçamento ${orcamento.numero}
+                                </h2>
+                                
+                                <div style="margin: 20px 0;">
+                                    <p><strong>Cliente:</strong> ${orcamento.cliente.nome}</p>
+                                    <p><strong>Email:</strong> ${orcamento.cliente.email}</p>
+                                    ${orcamento.cliente.morada ? `<p><strong>Morada:</strong> ${orcamento.cliente.morada}</p>` : ''}
+                                </div>
+
+                                <div style="margin: 20px 0;">
+                                    <p><strong>Data:</strong> ${new Date(orcamento.data).toLocaleDateString('pt-PT')}</p>
+                                    <p><strong>Validade:</strong> ${validadeFormatted}</p>
+                                </div>
+
+                                <h3 style="color: #667eea; margin-top: 30px;">Serviços</h3>
+                                ${servicosHTML}
+
+                                <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+                                    <table style="width: 100%; font-size: 16px;">
+                                        <tr>
+                                            <td style="text-align: right; padding: 5px;"><strong>Subtotal:</strong></td>
+                                            <td style="text-align: right; padding: 5px; width: 120px;">€${orcamento.subtotal.toFixed(2)}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="text-align: right; padding: 5px;"><strong>IVA (23%):</strong></td>
+                                            <td style="text-align: right; padding: 5px;">€${orcamento.iva.toFixed(2)}</td>
+                                        </tr>
+                                        <tr style="border-top: 2px solid #667eea;">
+                                            <td style="text-align: right; padding: 10px 5px 5px 5px;"><strong style="font-size: 18px; color: #667eea;">TOTAL:</strong></td>
+                                            <td style="text-align: right; padding: 10px 5px 5px 5px;"><strong style="font-size: 18px; color: #667eea;">€${orcamento.total.toFixed(2)}</strong></td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                ${orcamento.notas ? `
+                                    <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+                                        <strong>Notas:</strong><br>
+                                        ${orcamento.notas}
+                                    </div>
+                                ` : ''}
+
+                                <div style="margin-top: 30px; padding: 20px; background: #e7f3ff; border-radius: 8px; text-align: center;">
+                                    <p style="margin: 0 0 15px 0; color: #0066cc;">
+                                        <strong>Este orçamento é válido até ${validadeFormatted}</strong>
+                                    </p>
+                                    <p style="margin: 10px 0 0 0; font-size: 14px; color: #333;">
+                                        📎 O orçamento em PDF está anexado a este email
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #ddd;">
+                                <p style="margin: 5px 0; font-size: 14px; color: #666;">
+                                    <strong>FestLift - Elevadores e Serviços, Lda.</strong><br>
+                                    Email: info@festlift.pt | Tel: +351 214 190 863<br>
+                                    <small>Este orçamento foi gerado automaticamente.</small>
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                    
+                    await transporter.sendMail({
+                        from: process.env.SMTP_FROM || process.env.SMTP_USER,
+                        to: emailDestino,
+                        subject: `Orçamento ${orcamento.numero} - FestLift - Elevadores e Serviços, Lda.`,
+                        text: `Orçamento ${orcamento.numero}\nCliente: ${orcamento.cliente.nome}\nTotal: €${orcamento.total.toFixed(2)}\nValidade: ${validadeFormatted}\n\nO PDF está anexado a este email.`,
+                        html: emailHTML,
+                        attachments: [{
+                            filename: `Orcamento_${orcamento.numero}.pdf`,
+                            content: pdfBuffer
+                        }]
+                    });
+                    
+                    console.log(`✅ Email enviado via SMTP fallback com PDF anexado (${pdfBuffer.length} bytes)`);
+                    await Orcamento.updateOne(
+                        { _id: orcamento._id },
+                        {
+                            $set: { status: 'enviado', dataEnvio: new Date() },
+                            $push: {
+                                emailsEnviados: {
+                                    para: emailDestino,
+                                    assunto: `Orçamento ${orcamento.numero} - FestLift`,
+                                    data: new Date(),
+                                    sucesso: true
+                                }
+                            }
+                        }
+                    );
+                    
+                    return res.json({
+                        success: true,
+                        message: 'Orçamento enviado com sucesso via SMTP',
+                        data: orcamento
+                    });
+                } catch (smtpError) {
+                    console.error('❌ SMTP fallback também falhou:', smtpError.message);
+                    // Se SMTP também falhou, marcar como enviado em dev mode
+                    await Orcamento.updateOne(
+                        { _id: orcamento._id },
+                        {
+                            $set: { status: 'enviado', dataEnvio: new Date() },
+                            $push: {
+                                emailsEnviados: {
+                                    para: emailDestino,
+                                    assunto: `Orçamento ${orcamento.numero} - FestLift`,
+                                    data: new Date(),
+                                    sucesso: false,
+                                    erro: `API (401) e SMTP falharam: ${smtpError.message}`
+                                }
+                            }
+                        }
+                    );
+                    return res.json({
+                        success: true,
+                        message: 'Orçamento marcado como enviado (modo desenvolvimento)',
+                        data: orcamento,
+                        warning: `API e SMTP falharam. Configure credenciais válidas.`
+                    });
+                }
             }
             console.error('   Detalhes completos:', apiError.response?.body || apiError.message);
             

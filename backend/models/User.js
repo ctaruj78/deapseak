@@ -54,8 +54,10 @@ const userSchema = new mongoose.Schema({
         validate: {
             validator: function(v) {
                 // Дозволяємо пусте значення або формати +380, 380, 0, +351, +1 тощо
+                // Пробіли, дефіси та дужки допускаються
                 if (!v || v === '') return true;
-                return /^(\+\d{1,4}|0)\d{6,14}$/.test(v);
+                const stripped = v.replace(/[\s\-().]/g, '');
+                return /^(\+\d{1,4}|0)\d{6,14}$/.test(stripped);
             },
             message: 'Невірний формат телефону'
         }

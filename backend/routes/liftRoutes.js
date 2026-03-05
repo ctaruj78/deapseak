@@ -112,6 +112,13 @@ router.post('/:id/contract/email',
     liftController.emailMaintenanceContract
 );
 
+// POST /api/lifts/:id/contract/share-to-siblings - Поширити контракт на ліфти за тією ж адресою
+router.post('/:id/contract/share-to-siblings',
+    authenticate,
+    authorizeRoles('admin', 'dispatcher'),
+    liftController.shareContractToSiblings
+);
+
 // DELETE /api/lifts/:id - Видалення ліфта (тільки admin)
 router.delete('/:id', 
     authenticate, 

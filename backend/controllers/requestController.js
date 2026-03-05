@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const { Request, Lift, User } = require('../models');
 const { AppError } = require('../middleware/errorHandler');
 const emailService = require('../services/emailService');
@@ -5,17 +6,124 @@ const websocketService = require('../services/websocketService');
 const exportService = require('../services/exportService');
 
 /**
+ * Збагачує старий формат заявок (liftId/technician/createdBy) даними клієнта та ліфта.
+ * Нові заявки (де client вже populated) залишаються без змін.
+ */
+async function enrichOldFormatRequests(requests) {
+    // Збираємо унікальні liftId для старого формату (де client не populated)
+    const oldFormatIds = [];
+    requests.forEach(r => {
+        const raw = r._doc || r;
+        if (!r.client && raw.liftId && mongoose.Types.ObjectId.isValid(String(raw.liftId))) {
+            oldFormatIds.push(new mongoose.Types.ObjectId(String(raw.liftId)));
+        }
+    });
+
+    let liftMap = {};
+    if (oldFormatIds.length > 0) {
+        const lifts = await Lift.find({ _id: { $in: oldFormatIds } })
+            .populate('client', 'firstName lastName email phone')
+            .select('clientName clientEmail clientPhone client municipalNumber address');
+        lifts.forEach(l => { liftMap[String(l._id)] = l; });
+    }
+
+    // Збираємо унікальні emails ліфтів для пошуку юзерів по email як fallback
+    const emailsToLookup = new Set();
+    Object.values(liftMap).forEach(l => {
+        if ((!l.client || !l.client.email) && l.clientEmail) {
+            emailsToLookup.add(l.clientEmail.toLowerCase());
+        }
+    });
+    let userByEmailMap = {};
+    if (emailsToLookup.size > 0) {
+        const usersFound = await User.find({ email: { $in: Array.from(emailsToLookup) } })
+            .select('firstName lastName email phone');
+        usersFound.forEach(u => { userByEmailMap[u.email.toLowerCase()] = u; });
+    }
+
+    return requests.map(r => {
+        const raw = r._doc || r;
+        // Якщо client вже populated — повертаємо як є (новий формат)
+        if (r.client && (r.client.firstName || r.client.email)) return r;
+
+        const liftId = raw.liftId ? String(raw.liftId) : null;
+        const liftDoc = liftId ? liftMap[liftId] : null;
+
+        let clientData = null;
+        if (liftDoc) {
+            if (liftDoc.client && (liftDoc.client.firstName || liftDoc.client.email)) {
+                // populate успішний — є User з даними
+                clientData = liftDoc.client;
+            } else if (liftDoc.clientEmail) {
+                // Шукаємо User по email (для видалених/переіменованих)
+                const foundUser = userByEmailMap[liftDoc.clientEmail.toLowerCase()];
+                if (foundUser) {
+                    clientData = foundUser;
+                } else {
+                    // Використовуємо прямі поля ліфта
+                    clientData = {
+                        firstName: liftDoc.clientName || '',
+                        lastName: '',
+                        email: liftDoc.clientEmail,
+                        phone: liftDoc.clientPhone || ''
+                    };
+                }
+            } else if (liftDoc.clientName) {
+                clientData = {
+                    firstName: liftDoc.clientName,
+                    lastName: '',
+                    email: '',
+                    phone: liftDoc.clientPhone || ''
+                };
+            }
+        }
+
+        // Перетворюємо на plain object і додаємо збагачені поля
+        const plain = r.toObject ? r.toObject() : { ...raw };
+        if (clientData) plain.client = clientData;
+
+        // Заповнюємо lift з маппу якщо відсутній
+        if (!plain.lift && liftDoc) {
+            plain.lift = {
+                _id: liftDoc._id,
+                municipalNumber: liftDoc.municipalNumber,
+                address: liftDoc.address
+            };
+        }
+
+        // Техніка з old-format: technicianName
+        if (!plain.assignedTo && raw.technicianName) {
+            plain.assignedTo = { firstName: raw.technicianName, lastName: '', email: '', phone: '' };
+        }
+
+        return plain;
+    });
+}
+
+/**
  * Створення нового запиту
  */
 exports.createRequest = async (req, res, next) => {
     try {
         const {
-            lift,
+            lift: liftFromBody,
+            liftId: liftIdFromBody,       // сумісність з фронтом (старе поле)
             title,
             description,
             priority,
-            photosBefore
+            photosBefore,
+            client: clientFromBody,
+            assignedTo,
+            scheduledDate,
+            type
         } = req.body;
+
+        const lift = liftFromBody || liftIdFromBody;
+
+        // Клієнт: адмін/диспетчер може вказати довільного клієнта, клієнт — тільки себе
+        const clientId = (['admin', 'dispatcher'].includes(req.user.role) && clientFromBody)
+            ? clientFromBody
+            : req.user.id;
 
         // Перевірка існування ліфта
         const liftExists = await Lift.findById(lift);
@@ -24,18 +132,24 @@ exports.createRequest = async (req, res, next) => {
         }
 
         // Створення запиту
-        const request = await Request.create({
+        const requestData = {
             lift,
-            client: req.user.id, // З токена автентифікації
-            title,
+            client: clientId,
+            title: title || description?.substring(0, 60) || 'Нова заявка',
             description,
             priority: priority || 'medium',
             photosBefore: photosBefore || []
-        });
+        };
+        if (type) requestData.type = type;
+        if (assignedTo) requestData.assignedTo = assignedTo;
+        if (scheduledDate) requestData.scheduledDate = scheduledDate;
+
+        const request = await Request.create(requestData);
 
         await request.populate([
             { path: 'lift', select: 'municipalNumber address' },
-            { path: 'client', select: 'firstName lastName email phone' }
+            { path: 'client', select: 'firstName lastName email phone' },
+            { path: 'assignedTo', select: 'firstName lastName email phone' }
         ]);
 
         // Відправити email клієнту
@@ -105,7 +219,7 @@ exports.getAllRequests = async (req, res, next) => {
 
         const [requests, total] = await Promise.all([
             Request.find(query)
-                .populate('lift', 'municipalNumber address')
+                .populate('lift', 'municipalNumber address clientName clientEmail clientPhone client')
                 .populate('client', 'firstName lastName email phone')
                 .populate('assignedTo', 'firstName lastName email phone')
                 .sort(sort)
@@ -114,10 +228,13 @@ exports.getAllRequests = async (req, res, next) => {
             Request.countDocuments(query)
         ]);
 
+        // Збагачуємо старий формат заявок даними клієнта з ліфта
+        const enrichedRequests = await enrichOldFormatRequests(requests);
+
         res.json({
             success: true,
             data: {
-                requests,
+                requests: enrichedRequests,
                 pagination: {
                     page: parseInt(page),
                     limit: parseInt(limit),
@@ -137,7 +254,7 @@ exports.getAllRequests = async (req, res, next) => {
 exports.getRequestById = async (req, res, next) => {
     try {
         const request = await Request.findById(req.params.id)
-            .populate('lift', 'municipalNumber address technician')
+            .populate('lift', 'municipalNumber address technician clientName clientEmail clientPhone client')
             .populate('client', 'firstName lastName email phone')
             .populate('assignedTo', 'firstName lastName email phone')
             .populate('comments.user', 'firstName lastName');
@@ -147,13 +264,18 @@ exports.getRequestById = async (req, res, next) => {
         }
 
         // Перевірка доступу (клієнт може бачити тільки свої запити)
-        if (req.user.role === 'client' && request.client._id.toString() !== req.user.id) {
-            throw new AppError('Доступ заборонено', 403);
+        // Тільки для нового формату де client заповнений
+        if (req.user.role === 'client' && request.client) {
+            if (request.client._id && request.client._id.toString() !== req.user.id) {
+                throw new AppError('Доступ заборонено', 403);
+            }
         }
+
+        const [enriched] = await enrichOldFormatRequests([request]);
 
         res.json({
             success: true,
-            data: { request }
+            data: { request: enriched }
         });
     } catch (error) {
         next(error);

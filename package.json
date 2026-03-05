@@ -50,7 +50,9 @@
   },
   "scripts": {
     "start": "PORT=5000 node unified-server.js",
+    "start:secure": "node scripts/verify-gemini-key.js && npm start",
     "dev": "PORT=5000 nodemon unified-server.js",
+    "dev:secure": "node scripts/verify-gemini-key.js && npm run dev",
     "websocket": "echo 'WebSocket вже в unified-server.js'",
     "dev:all": "npm run dev",
     "auto-start": "bash auto-start.sh",
@@ -62,6 +64,7 @@
     "analyze-logs": "bash scripts/analyze-console-logs.sh",
     "audit": "echo '📋 System Audit Report: docs/SYSTEM-AUDIT-REPORT.md'",
     "test": "jest",
+    "test:ai:coverage": "node scripts/test-ai-coverage.js",
     "lint": "eslint backend/**/*.js",
     "format": "prettier --write backend/**/*.js frontend/**/*.js"
   },

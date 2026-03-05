@@ -20,7 +20,7 @@ class SettingsManager {
             firstName: 'Диспетчер',
             lastName: 'Системи',
             email: 'dispatcher@example.com',
-            phone: '+380001234567',
+            phone: '+351912000000',
             role: 'dispatcher',
             lastLogin: new Date().toLocaleString('uk-UA')
         };

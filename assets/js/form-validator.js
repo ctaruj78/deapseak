@@ -52,7 +52,7 @@ class FormValidator {
         return true;
     }
 
-    // Валідація телефону (український формат)
+    // Валідація телефону (міжнародний формат)
     phone(selector, fieldName = 'Телефон') {
         const field = this.form.find(selector);
         const value = field.val();
@@ -61,12 +61,12 @@ class FormValidator {
             return true; // Якщо пусте - нехай required перевіряє
         }
         
-        // Український формат: +380XXXXXXXXX або 0XXXXXXXXX
-        const phoneRegex = /^(\+380|380|0)\d{9}$/;
-        const cleanValue = value.replace(/[\s\-\(\)]/g, ''); // Видаляємо пробіли, дефіси, дужки
+        // Міжнародний формат: +XXXXXXXXXXX або локальний (7-15 цифр після очищення)
+        const cleanValue = value.replace(/[\s\-\(\)\.]/g, '');
+        const phoneRegex = /^\+?\d{7,15}$/;
         
         if (!phoneRegex.test(cleanValue)) {
-            this.addError(field, `${fieldName} має невірний формат. Приклад: +380501234567`);
+            this.addError(field, `${fieldName} має невірний формат. Приклад: +351912345678`);
             return false;
         }
         

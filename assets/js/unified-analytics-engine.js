@@ -425,7 +425,7 @@ class UnifiedAnalyticsEngine {
         if (!ctx) return;
 
         this.charts.qrUsers = new Chart(ctx, {
-            type: 'horizontalBar',
+            type: 'bar',
             data: {
                 labels: this.data.qr.topUsers.map(u => u.name),
                 datasets: [{
@@ -435,6 +435,7 @@ class UnifiedAnalyticsEngine {
                 }]
             },
             options: {
+                indexAxis: 'y',
                 responsive: true,
                 maintainAspectRatio: false
             }
@@ -447,6 +448,11 @@ class UnifiedAnalyticsEngine {
     initPredictionChart() {
         const ctx = document.getElementById('prediction-chart');
         if (!ctx) return;
+
+        // Знищуємо існуючий графік якщо вже є
+        const existing = Chart.getChart(ctx);
+        if (existing) existing.destroy();
+        if (this.charts.prediction) { try { this.charts.prediction.destroy(); } catch(e) {} this.charts.prediction = null; }
 
         const predictions = this.generatePredictions();
         
@@ -1316,8 +1322,11 @@ class UnifiedAnalyticsEngine {
         const ctx = document.getElementById('users-activity-chart');
         if (!ctx) return;
 
+        const existing = Chart.getChart(ctx);
+        if (existing) existing.destroy();
+
         new Chart(ctx, {
-            type: 'area',
+            type: 'line',
             data: {
                 labels: Array.from({length: 24}, (_, i) => i + ':00'),
                 datasets: [{
@@ -1352,19 +1361,28 @@ class UnifiedAnalyticsEngine {
     }
 
     /**
-     * 👥 Оновлення метрик користувачів
+     * 👥 Оновлення метрик користувачів — реальні дані з API
      */
-    updateUsersMetrics() {
-        const metrics = {
-            'active-users': '24',
-            'technicians-count': '18',
-            'admins-count': '3'
-        };
+    async updateUsersMetrics() {
+        try {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            const res = await fetch('/api/users', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const users = await res.json();
 
-        Object.entries(metrics).forEach(([id, value]) => {
-            const element = document.getElementById(id);
-            if (element) element.textContent = value;
-        });
+            const admins      = users.filter(u => u.role === 'admin').length;
+            const technicians = users.filter(u => u.role === 'technician' || u.role === 'tech').length;
+            const active      = users.filter(u => u.status !== 'inactive' && u.status !== 'blocked').length;
+
+            const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+            set('active-users',       active);
+            set('technicians-count',  technicians);
+            set('admins-count',       admins);
+        } catch (err) {
+            console.warn('⚠️ updateUsersMetrics: не вдалось завантажити користувачів', err);
+        }
     }
 
     /**
@@ -1435,7 +1453,9 @@ class UnifiedAnalyticsEngine {
         tabButtons.forEach(button => {
             button.addEventListener('click', (e) => {
                 e.preventDefault();
-                const targetTab = button.getAttribute('href').substring(1);
+                const href = button.getAttribute('href') || button.getAttribute('data-target') || '';
+                const targetTab = href.substring(1);
+                if (!targetTab) return;
                 
                 // Ініціалізуємо контент таба при першому відкритті
                 switch(targetTab) {
@@ -1661,6 +1681,10 @@ function initPredictionChart(attemptCount = 0) {
     }
     
     const ctx = canvas.getContext('2d');
+
+    // Знищуємо існуючий графік якщо вже є
+    const existingChart = Chart.getChart(canvas);
+    if (existingChart) existingChart.destroy();
     
     // Тестові дані для прогнозів
     const predictionData = {

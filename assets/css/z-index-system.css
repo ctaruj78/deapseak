@@ -1,0 +1,54 @@
+/**
+ * 📐 Z-Index System CSS
+ * Єдина система управління z-index для DeapSeaK
+ */
+
+:root {
+    --z-base:        0;
+    --z-dropdown:    1000;
+    --z-sticky:      1020;
+    --z-fixed:       1030;
+    --z-sidebar:     1040;
+    --z-backdrop:    1050;
+    --z-modal:       1060;
+    --z-popover:     1070;
+    --z-tooltip:     1080;
+    --z-notification: 10000;
+    --z-top:         99999;
+}
+
+/* Модальні вікна — базова ієрархія */
+.modal                { z-index: var(--z-modal) !important; }
+.modal-backdrop       { z-index: calc(var(--z-modal) - 10) !important; }
+
+/* Вкладені модальні вікна */
+.modal.nested-modal   { z-index: calc(var(--z-modal) + 20) !important; }
+.modal.nested-modal ~ .modal-backdrop { z-index: calc(var(--z-modal) + 10) !important; }
+
+/* Конкретні модальні вікна */
+#inspectionReportModal { z-index: var(--z-modal) !important; }
+#enhancedLiftModal     { z-index: var(--z-modal) !important; }
+#municipalityNotificationModal { z-index: calc(var(--z-modal) + 20) !important; }
+
+/* Sidebar */
+.main-sidebar          { z-index: var(--z-sidebar) !important; }
+.main-sidebar .nav-sidebar { z-index: inherit; }
+
+/* Navbar */
+.main-header           { z-index: var(--z-fixed) !important; }
+
+/* Leaflet map */
+.leaflet-pane          { z-index: var(--z-base) !important; }
+.leaflet-top,
+.leaflet-bottom        { z-index: 400 !important; }
+
+/* Повідомлення */
+.notification          { z-index: var(--z-notification) !important; }
+
+/* Dropdown меню */
+.dropdown-menu         { z-index: var(--z-dropdown) !important; }
+.select2-dropdown      { z-index: var(--z-dropdown) !important; }
+
+/* Підказки */
+.tooltip               { z-index: var(--z-tooltip) !important; }
+.popover               { z-index: var(--z-popover) !important; }

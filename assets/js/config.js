@@ -12,7 +12,7 @@ const CONFIG = {
         NAME: 'DeapSeaK',
         VERSION: '2.0.0',
         SUPPORT_EMAIL: 'support@deapseak.com',
-        SUPPORT_PHONE: '+380 44 123 4567'
+        SUPPORT_PHONE: '+351 800 502 020'
     },
 
     // 🔌 ПОРТИ СИСТЕМИ (ФІКСОВАНІ!)
@@ -124,7 +124,7 @@ function initializeTestData() {
                 role: 'admin',
                 firstName: 'Адміністратор',
                 lastName: 'Системи',
-                phone: '+380441234567',
+                phone: '+351912345678',
                 avatar: null,
                 isActive: true,
                 createdAt: new Date().toISOString()
@@ -137,7 +137,7 @@ function initializeTestData() {
                 role: 'tech',
                 firstName: 'Іван',
                 lastName: 'Технік',
-                phone: '+380441234568',
+                phone: '+351923456789',
                 avatar: null,
                 isActive: true,
                 createdAt: new Date().toISOString()
@@ -150,7 +150,7 @@ function initializeTestData() {
                 role: 'client',
                 firstName: 'Петро',
                 lastName: 'Клієнт',
-                phone: '+380441234569',
+                phone: '+351934567890',
                 avatar: null,
                 isActive: true,
                 createdAt: new Date().toISOString()

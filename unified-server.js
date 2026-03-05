@@ -149,11 +149,15 @@ async function connectMongo() {
 connectMongo();
 
 // Mongoose підключення (для backend/routes що використовують Mongoose моделі)
-mongoose.connect(MONGODB_URI + '/' + DB_NAME, {
+// Якщо MONGODB_URI вже містить ім'я БД — не додаємо DB_NAME повторно
+const mongooseURI = new URL(MONGODB_URI).pathname.length > 1
+    ? MONGODB_URI
+    : `${MONGODB_URI}/${DB_NAME}`;
+mongoose.connect(mongooseURI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 }).then(() => {
-    console.log('✅ Mongoose connected:', MONGODB_URI + '/' + DB_NAME);
+    console.log('✅ Mongoose connected:', mongooseURI);
 }).catch(err => {
     console.error('❌ Mongoose connection error:', err);
 });
@@ -2841,9 +2845,89 @@ app.get('/api/requests', authenticateToken, async (req, res) => {
         if (req.query.priority) query.priority = req.query.priority;
 
         const requests = await db.collection('requests').find(query).toArray();
+
+        // Збагачуємо кожну заявку даними клієнта і техніка
+        const enriched = await Promise.all(requests.map(async (r) => {
+            const { ObjectId } = require('mongodb');
+            // Клієнт: спочатку спробуємо з поля client/clientId, потім з ліфта
+            let clientObj = null;
+            const rawClient = r.client || r.clientId;
+            if (rawClient) {
+                try {
+                    const cId = (typeof rawClient === 'string') ? new ObjectId(rawClient) : rawClient;
+                    const u = await db.collection('users').findOne(
+                        { _id: cId },
+                        { projection: { password: 0 } }
+                    );
+                    if (u) clientObj = { _id: u._id, firstName: u.firstName, lastName: u.lastName, email: u.email, phone: u.phone };
+                } catch (_) {}
+            }
+            // Якщо client не знайдено — беремо дані з ліфта (старий формат заявок)
+            if (!clientObj && r.liftId) {
+                try {
+                    const lId = (typeof r.liftId === 'string') ? new ObjectId(r.liftId) : r.liftId;
+                    const liftDoc = await db.collection('lifts').findOne(
+                        { _id: lId },
+                        { projection: { client: 1, clientName: 1, clientEmail: 1, clientPhone: 1 } }
+                    );
+                    if (liftDoc) {
+                        // Спробуємо знайти User по client ref
+                        if (liftDoc.client) {
+                            try {
+                                const lcId = (typeof liftDoc.client === 'string') ? new ObjectId(liftDoc.client) : liftDoc.client;
+                                const u = await db.collection('users').findOne({ _id: lcId }, { projection: { password: 0 } });
+                                if (u) clientObj = { _id: u._id, firstName: u.firstName, lastName: u.lastName, email: u.email, phone: u.phone };
+                            } catch (_) {}
+                        }
+                        // Fallback: email/name прямо в ліфті
+                        if (!clientObj && (liftDoc.clientEmail || liftDoc.clientName)) {
+                            // Спробуємо знайти User по email
+                            if (liftDoc.clientEmail) {
+                                const u = await db.collection('users').findOne(
+                                    { email: liftDoc.clientEmail.toLowerCase() },
+                                    { projection: { password: 0 } }
+                                );
+                                if (u) clientObj = { _id: u._id, firstName: u.firstName, lastName: u.lastName, email: u.email, phone: u.phone };
+                            }
+                            if (!clientObj) {
+                                clientObj = {
+                                    firstName: liftDoc.clientName || '',
+                                    lastName: '',
+                                    email: liftDoc.clientEmail || '',
+                                    phone: liftDoc.clientPhone || ''
+                                };
+                            }
+                        }
+                    }
+                } catch (_) {}
+            }
+            // Технік
+            let techObj = null;
+            const rawTech = r.assignedTo || r.technician || r.technicianId;
+            if (rawTech) {
+                try {
+                    const tId = (typeof rawTech === 'string') ? new ObjectId(rawTech) : rawTech;
+                    const t = await db.collection('users').findOne(
+                        { _id: tId },
+                        { projection: { password: 0 } }
+                    );
+                    if (t) techObj = { _id: t._id, firstName: t.firstName, lastName: t.lastName, email: t.email };
+                } catch (_) {}
+            }
+            // Якщо технік не знайдений, але є technicianName — повертаємо як об'єкт
+            if (!techObj && r.technicianName) {
+                techObj = { firstName: r.technicianName, lastName: '', email: '' };
+            }
+            return {
+                ...r,
+                client: clientObj || r.client || null,
+                assignedTo: techObj || r.assignedTo || null
+            };
+        }));
+
         res.json({
             success: true,
-            data: requests
+            data: enriched
         });
     } catch (error) {
         console.error('❌ Помилка отримання заявок:', error);
@@ -2854,14 +2938,23 @@ app.get('/api/requests', authenticateToken, async (req, res) => {
     }
 });
 
+// Хелпер: будує MongoDB-запит для заявок за requestNumber (REQ-...) або ObjectId
+function buildRequestQuery(id) {
+    const { ObjectId } = require('mongodb');
+    if (/^REQ-/i.test(id)) {
+        return { requestNumber: id };
+    }
+    try { return { _id: new ObjectId(id) }; }
+    catch (_) { return { requestNumber: id }; }
+}
+
 app.get('/api/requests/:id', authenticateToken, async (req, res) => {
     try {
-        const { ObjectId } = require('mongodb');
-        const requestId = new ObjectId(req.params.id);
+        const requestQuery = buildRequestQuery(req.params.id);
         const role = req.user.role;
         const userId = (req.user.userId || req.user.id || '').toString();
 
-        const request = await db.collection('requests').findOne({ _id: requestId });
+        const request = await db.collection('requests').findOne(requestQuery);
         if (!request) {
             return res.status(404).json({
                 success: false,
@@ -2886,9 +2979,84 @@ app.get('/api/requests/:id', authenticateToken, async (req, res) => {
         }
         // admin / dispatcher: always allowed
 
+        // Збагачуємо клієнтські дані так само, як у GET /api/requests
+        const { ObjectId } = require('mongodb');
+        let clientObj = null;
+        const rawClient = request.client || request.clientId;
+        if (rawClient) {
+            try {
+                const cId = (typeof rawClient === 'string') ? new ObjectId(rawClient) : rawClient;
+                const u = await db.collection('users').findOne({ _id: cId }, { projection: { password: 0 } });
+                if (u) clientObj = { _id: u._id, firstName: u.firstName, lastName: u.lastName, email: u.email, phone: u.phone };
+            } catch (_) {}
+        }
+        if (!clientObj && request.liftId) {
+            try {
+                const lId = (typeof request.liftId === 'string') ? new ObjectId(request.liftId) : request.liftId;
+                const liftDoc = await db.collection('lifts').findOne(
+                    { _id: lId },
+                    { projection: { client: 1, clientName: 1, clientEmail: 1, clientPhone: 1, address: 1, municipalNumber: 1 } }
+                );
+                if (liftDoc) {
+                    if (liftDoc.client) {
+                        try {
+                            const lcId = (typeof liftDoc.client === 'string') ? new ObjectId(liftDoc.client) : liftDoc.client;
+                            const u = await db.collection('users').findOne({ _id: lcId }, { projection: { password: 0 } });
+                            if (u) clientObj = { _id: u._id, firstName: u.firstName, lastName: u.lastName, email: u.email, phone: u.phone };
+                        } catch (_) {}
+                    }
+                    if (!clientObj && (liftDoc.clientEmail || liftDoc.clientName)) {
+                        if (liftDoc.clientEmail) {
+                            const u = await db.collection('users').findOne(
+                                { email: liftDoc.clientEmail.toLowerCase() },
+                                { projection: { password: 0 } }
+                            );
+                            if (u) clientObj = { _id: u._id, firstName: u.firstName, lastName: u.lastName, email: u.email, phone: u.phone };
+                        }
+                        if (!clientObj) {
+                            clientObj = {
+                                firstName: liftDoc.clientName || '',
+                                lastName: '',
+                                email: liftDoc.clientEmail || '',
+                                phone: liftDoc.clientPhone || ''
+                            };
+                        }
+                    }
+                    // Збагачуємо також дані ліфта замовника
+                    if (!request.lift && liftDoc) {
+                        request.lift = {
+                            _id: liftDoc._id,
+                            municipalNumber: liftDoc.municipalNumber,
+                            address: liftDoc.address
+                        };
+                    }
+                }
+            } catch (_) {}
+        }
+        // Технік
+        let techObj = null;
+        const rawTech = request.assignedTo || request.technician || request.technicianId;
+        if (rawTech) {
+            try {
+                const tId = (typeof rawTech === 'string') ? new ObjectId(rawTech) : rawTech;
+                const t = await db.collection('users').findOne({ _id: tId }, { projection: { password: 0 } });
+                if (t) techObj = { _id: t._id, firstName: t.firstName, lastName: t.lastName, email: t.email, phone: t.phone };
+            } catch (_) {}
+        }
+        if (!techObj && request.technicianName) {
+            techObj = { firstName: request.technicianName, lastName: '', email: '' };
+        }
+
+        const enrichedRequest = {
+            ...request,
+            client: clientObj || request.client || null,
+            assignedTo: techObj || request.assignedTo || null
+        };
+
         res.json({
             success: true,
-            request: request
+            request: enrichedRequest,
+            data: { request: enrichedRequest }   // підтримка обох форматів відповіді
         });
     } catch (error) {
         console.error('❌ Помилка отримання заявки:', error);
@@ -2978,8 +3146,7 @@ app.post('/api/requests', authenticateToken, async (req, res) => {
 
 app.put('/api/requests/:id', authenticateToken, async (req, res) => {
     try {
-        const { ObjectId } = require('mongodb');
-        const requestId = new ObjectId(req.params.id);
+        const requestQuery = buildRequestQuery(req.params.id);
         
         const updateData = {
             ...req.body,
@@ -2988,7 +3155,7 @@ app.put('/api/requests/:id', authenticateToken, async (req, res) => {
         };
         
         const result = await db.collection('requests').updateOne(
-            { _id: requestId },
+            requestQuery,
             { $set: updateData }
         );
         
@@ -3015,8 +3182,7 @@ app.put('/api/requests/:id', authenticateToken, async (req, res) => {
 // PATCH /api/requests/:id/status - зміна статусу заявки
 app.patch('/api/requests/:id/status', authenticateToken, async (req, res) => {
     try {
-        const { ObjectId } = require('mongodb');
-        const requestId = new ObjectId(req.params.id);
+        const requestQuery = buildRequestQuery(req.params.id);
         const { status, technician } = req.body;
         
         console.log('🔄 Зміна статусу заявки:', req.params.id, '→', status);
@@ -3071,7 +3237,7 @@ app.patch('/api/requests/:id/status', authenticateToken, async (req, res) => {
         }
         
         const result = await db.collection('requests').updateOne(
-            { _id: requestId },
+            requestQuery,
             updateOperation
         );
         
@@ -3100,7 +3266,7 @@ app.patch('/api/requests/:id/status', authenticateToken, async (req, res) => {
 app.post('/api/requests/:id/comment', authenticateToken, async (req, res) => {
     try {
         const { ObjectId } = require('mongodb');
-        const requestId = new ObjectId(req.params.id);
+        const requestQuery = buildRequestQuery(req.params.id);
         const commentText = req.body.comment || req.body.text;
         
         console.log('💬 Додавання коментаря до заявки:', req.params.id);
@@ -3126,7 +3292,7 @@ app.post('/api/requests/:id/comment', authenticateToken, async (req, res) => {
         
         // Додаємо коментар до масиву
         const result = await db.collection('requests').updateOne(
-            { _id: requestId },
+            requestQuery,
             { 
                 $push: { comments: newComment },
                 $set: { 
@@ -3162,8 +3328,7 @@ app.post('/api/requests/:id/comment', authenticateToken, async (req, res) => {
 // POST /api/requests/:id/complete - завершити заявку
 app.post('/api/requests/:id/complete', authenticateToken, async (req, res) => {
     try {
-        const { ObjectId } = require('mongodb');
-        const requestId = new ObjectId(req.params.id);
+        const requestQuery = buildRequestQuery(req.params.id);
         const { resolution, workDone, partsUsed } = req.body;
         
         console.log('✅ Завершення заявки:', req.params.id);
@@ -3197,7 +3362,7 @@ app.post('/api/requests/:id/complete', authenticateToken, async (req, res) => {
         }
         
         const result = await db.collection('requests').updateOne(
-            { _id: requestId },
+            requestQuery,
             { $set: updateData }
         );
         
@@ -3228,7 +3393,7 @@ app.post('/api/requests/:id/complete', authenticateToken, async (req, res) => {
 app.post('/api/requests/:id/assign', authenticateToken, async (req, res) => {
     try {
         const { ObjectId } = require('mongodb');
-        const requestId = new ObjectId(req.params.id);
+        const requestQuery = buildRequestQuery(req.params.id);
         const { technicianId, instructions, deadline } = req.body;
         
         console.log('👨‍🔧 Призначення техніка:', technicianId, 'до заявки:', req.params.id);
@@ -3290,7 +3455,7 @@ app.post('/api/requests/:id/assign', authenticateToken, async (req, res) => {
         }
         
         const result = await db.collection('requests').updateOne(
-            { _id: requestId },
+            requestQuery,
             { $set: updateData }
         );
         
@@ -3328,9 +3493,9 @@ app.delete('/api/requests/:id', authenticateToken, async (req, res) => {
         }
 
         const { ObjectId } = require('mongodb');
-        const requestId = new ObjectId(req.params.id);
+        const requestQuery = buildRequestQuery(req.params.id);
         
-        const result = await db.collection('requests').deleteOne({ _id: requestId });
+        const result = await db.collection('requests').deleteOne(requestQuery);
         
         if (result.deletedCount === 0) {
             return res.status(404).json({
@@ -4076,13 +4241,13 @@ async function callGeminiAI(message, role, username, regulationsContext = null) 
         console.error('❌ Gemini AI error:', error.message);
         
         // Graceful fallback
-        if (error.message.includes('API key')) {
-            return '⚠️ Sistema de IA temporariamente indisponível. / Система ШІ тимчасово недоступна.\n\n' +
-                   'Entre em contato com o administrador. / Зверніться до адміністратора.';
-        }
+         if (error.message.includes('API key')) {
+             return '⚠️ Sistema de IA temporariamente indisponível.\n\n' +
+                 'Entre em contato com o administrador.';
+         }
         
-        return '❌ Desculpe, ocorreu um erro ao processar sua pergunta. / Вибачте, сталася помилка при обробці вашого запитання.\n\n' +
-               'Tente novamente ou reformule sua pergunta. / Спробуйте ще раз або переформулюйте запитання.';
+         return '❌ Desculpe, ocorreu um erro ao processar sua pergunta.\n\n' +
+             'Tente novamente ou reformule sua pergunta.';
     }
 }
 
@@ -6384,7 +6549,7 @@ app.post('/api/email/send-template', authenticateToken, async (req, res) => {
         });
 
         const mailOptions = {
-            from: process.env.EMAIL_FROM,
+            from: process.env.EMAIL_FROM || process.env.SMTP_FROM || '"LiftMaster Pro" <info@festlift.pt>',
             to: email,
             subject: subject || 'Тестовий email - DeapSeaK',
             html: htmlContent
@@ -6392,7 +6557,7 @@ app.post('/api/email/send-template', authenticateToken, async (req, res) => {
 
         await transporter.sendMail(mailOptions);
         
-        console.log(`✅ Template email sent to ${email} (template: ${templateId || 'custom'})`);
+        console.log(`✅ Template email sent to ${email} (template: ${templateId || 'custom'})`)
         res.json({ 
             success: true, 
             message: 'Email успішно відправлено',

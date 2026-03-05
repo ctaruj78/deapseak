@@ -31,7 +31,7 @@ class ClientDashboard {
                 firstName: 'Олександр',
                 lastName: 'Петренко',
                 email: 'client@example.com',
-                phone: '+380991234567',
+                phone: '+351912345678',
                 company: 'ТОВ "Українські будівлі"'
             };
             
@@ -272,13 +272,19 @@ class ClientDashboard {
     }
 
     initCharts() {
-        // Знищити попередній графік якщо існує
+        // Знищити попередній графік через глобальний реєстр Chart.js (незалежно від екземпляру)
+        const existingChart = Chart.getChart('liftsChart');
+        if (existingChart) {
+            existingChart.destroy();
+        }
         if (this.liftsChart) {
-            this.liftsChart.destroy();
+            this.liftsChart = null;
         }
 
         // Ініціалізація діаграми стану ліфтів
-        const ctx = document.getElementById('liftsChart').getContext('2d');
+        const canvasEl = document.getElementById('liftsChart');
+        if (!canvasEl) return;
+        const ctx = canvasEl.getContext('2d');
         this.liftsChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
