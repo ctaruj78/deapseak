@@ -1,85 +1,71 @@
 // Service Worker для push notifications та PWA
-const CACHE_NAME = 'liftmanager-v1.2';
+const CACHE_NAME = 'liftmanager-v1.5';
 const urlsToCache = [
-    '/',
-    '/index.html',
-    '/login.html',
-    '/manifest.json',
-    '/assets/css/main.css',
-    '/assets/css/auth.css',
-    '/assets/js/config.js',
-    '/assets/js/auth.js',
-    '/assets/js/common.js',
-    '/assets/img/logo.png',
-    // AdminLTE assets
-    'https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css',
-    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
-    'https://code.jquery.com/jquery-3.6.0.min.js',
-    'https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js',
-    'https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js'
+    '/manifest.json'
 ];
 
-// Install event - кешування ресурсів
+// Install event
 self.addEventListener('install', event => {
-    console.log('Service Worker installing.');
+    console.log('Service Worker installing v1.5');
     event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then(cache => {
-                console.log('Opened cache');
-                return cache.addAll(urlsToCache);
-            })
+        caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
     );
+    // Активуємо новий SW без очікування закриття старих вкладок
     self.skipWaiting();
 });
 
-// Activate event - очищення старого кешу
+// Activate event - очищення старого кешу + примусове перезавантаження всіх сторінок
 self.addEventListener('activate', event => {
-    console.log('Service Worker activating.');
+    console.log('Service Worker activating v1.5 — clearing all caches and reloading clients');
     event.waitUntil(
-        caches.keys().then(cacheNames => {
-            return Promise.all(
-                cacheNames.map(cacheName => {
-                    if (cacheName !== CACHE_NAME) {
-                        console.log('Deleting old cache:', cacheName);
-                        return caches.delete(cacheName);
-                    }
+        caches.keys()
+            .then(cacheNames => Promise.all(
+                cacheNames.map(name => {
+                    console.log('Deleting cache:', name);
+                    return caches.delete(name); // видаляємо ВСІ кеші
                 })
-            );
-        })
-    );
-    self.clients.claim();
-});
-
-// Fetch event - обслуговування запитів з кешу
-self.addEventListener('fetch', event => {
-    event.respondWith(
-        caches.match(event.request)
-            .then(response => {
-                // Повертаємо з кешу, якщо є
-                if (response) {
-                    return response;
-                }
-
-                // Інакше робимо запит до мережі
-                return fetch(event.request).then(response => {
-                    // Не кешуємо API запити або POST запити
-                    if (!event.request.url.includes('/api/') &&
-                        event.request.method !== 'POST') {
-                        const responseToCache = response.clone();
-                        caches.open(CACHE_NAME)
-                            .then(cache => {
-                                cache.put(event.request, responseToCache);
-                            });
-                    }
-                    return response;
+            ))
+            .then(() => self.clients.claim())
+            .then(() => self.clients.matchAll({ type: 'window' }))
+            .then(clients => {
+                // Перезавантажуємо всі відкриті вкладки
+                clients.forEach(client => {
+                    console.log('Reloading client:', client.url);
+                    client.navigate(client.url);
                 });
             })
-            .catch(() => {
-                // Fallback для офлайн режиму
-                if (event.request.destination === 'document') {
-                    return caches.match('/index.html');
+    );
+});
+
+// Fetch event - HTML-сторінки та API ЗАВЖДИ з мережі, без кешу
+self.addEventListener('fetch', event => {
+    const url = new URL(event.request.url);
+
+    // HTML сторінки та API — завжди мережа, ніколи кеш
+    if (event.request.destination === 'document' ||
+        url.pathname.endsWith('.html') ||
+        url.pathname === '/' ||
+        url.pathname.includes('/api/')) {
+        event.respondWith(
+            fetch(event.request).catch(() => fetch('/index.html'))
+        );
+        return;
+    }
+
+    // Статичні ресурси (CSS, JS, шрифти) — кеш з фолбеком на мережу
+    event.respondWith(
+        caches.match(event.request).then(cached => {
+            if (cached) return cached;
+            return fetch(event.request).then(response => {
+                if (event.request.method === 'GET' && response.ok) {
+                    const clone = response.clone();
+                    caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
                 }
-            })
+                return response;
+            });
+        }).catch(() => {
+            if (event.request.destination === 'document') return fetch('/index.html');
+        })
     );
 });
 

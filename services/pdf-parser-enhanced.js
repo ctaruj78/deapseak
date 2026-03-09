@@ -12,6 +12,7 @@
 
 const fs = require('fs');
 const pdfParse = require('pdf-parse');
+const { isLikelyScanned, ocrPDF } = require('./pdf-ocr-gemini');
 
 // ПОВНА БАЗА ДАНИХ АРТИКУЛІВ - Decreto-Lei n.º 320/2002
 const regulationArticlesComplete = require('./regulation-articles-complete');
@@ -762,10 +763,25 @@ async function parsePDF(filePath) {
         
         const dataBuffer = fs.readFileSync(filePath);
         const pdfData = await pdfParse(dataBuffer);
-        const text = pdfData.text;
+        let text = pdfData.text;
+        let ocrUsed = false;
         
         console.log(`📝 Extracted: ${text.length} characters, ${pdfData.numpages} pages`);
         console.log(`📄 First 300 chars: ${text.substring(0, 300)}...`);
+        
+        // 🔍 Якщо тексту мало — скан, запускаємо OCR через Gemini Vision
+        if (isLikelyScanned(text)) {
+            console.log('🔎 Detected SCANNED PDF (low text content). Attempting Gemini Vision OCR...');
+            const apiKey = process.env.GEMINI_API_KEY;
+            const ocrResult = await ocrPDF(filePath, apiKey, pdfData.numpages || 8);
+            if (ocrResult.success && ocrResult.text.length > 200) {
+                text = ocrResult.text;
+                ocrUsed = true;
+                console.log(`✅ OCR extracted ${text.length} chars via Gemini Vision (${ocrResult.pagesProcessed} pages)`);
+            } else {
+                console.warn('⚠️ OCR did not produce usable text:', ocrResult.error || 'too short');
+            }
+        }
         
         // Відкидаємо юридичний розділ перед парсингом
         const cleanText = preprocessReportText(text);
@@ -850,7 +866,8 @@ async function parsePDF(filePath) {
             conclusion: finalConclusion,
             rawText: text,
             pageCount: pdfData.numpages,
-            info: pdfData.info
+            info: pdfData.info,
+            ocrUsed: ocrUsed
         };
         
     } catch (error) {

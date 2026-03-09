@@ -810,10 +810,16 @@ const upload = multer({
         fileSize: 10 * 1024 * 1024 // 10MB
     },
     fileFilter: (req, file, cb) => {
-        if (file.mimetype === 'application/pdf') {
+        const allowed = [
+            'application/pdf',
+            'image/jpeg',
+            'image/png',
+            'image/jpg'
+        ];
+        if (allowed.includes(file.mimetype)) {
             cb(null, true);
         } else {
-            cb(new Error('Only PDF files are allowed'));
+            cb(new Error('Allowed file types: PDF, JPG, PNG'));
         }
     }
 });
@@ -925,6 +931,9 @@ app.post('/api/pdf/upload', authenticateToken, upload.single('pdfReport'), async
                 response.pageCount = result.pageCount || 0;
                 console.log(`📝 Extracted text included: ${result.rawText.length} chars, ${result.pageCount} pages`);
             }
+            
+            // Повідомляємо frontend чи використовувався OCR (для попередження про якість)
+            response.ocrUsed = result.ocrUsed || false;
             
             res.json(response);
         } else {
@@ -1738,8 +1747,138 @@ app.post('/api/lifts/:id/contract', authenticateToken, upload.single('contract')
     }
 });
 
-// POST /api/lifts/:id/inspection-report - додавання звіту інспекції
-app.post('/api/lifts/:id/inspection-report', authenticateToken, async (req, res) => {
+// GET /api/lifts/:id/contract - отримати контракт ліфта
+app.get('/api/lifts/:id/contract', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const liftId = new ObjectId(req.params.id);
+        const lift = await db.collection('lifts').findOne({ _id: liftId }, { projection: { maintenanceContract: 1 } });
+        if (!lift) return res.status(404).json({ success: false, message: 'Ліфт не знайдено' });
+        res.json({ success: true, data: { contract: lift.maintenanceContract || null } });
+    } catch (error) {
+        console.error('❌ Помилка отримання контракту:', error);
+        res.status(500).json({ success: false, message: 'Помилка сервера' });
+    }
+});
+
+// DELETE /api/lifts/:id/contract - видалення контракту
+app.delete('/api/lifts/:id/contract', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const liftId = new ObjectId(req.params.id);
+        const lift = await db.collection('lifts').findOne({ _id: liftId }, { projection: { maintenanceContract: 1 } });
+        if (!lift) return res.status(404).json({ success: false, message: 'Ліфт не знайдено' });
+
+        // Видаляємо файл з диску
+        if (lift.maintenanceContract?.path) {
+            const fs = require('fs').promises;
+            await fs.unlink(lift.maintenanceContract.path).catch(() => {});
+        }
+
+        const result = await db.collection('lifts').updateOne(
+            { _id: liftId },
+            { $unset: { maintenanceContract: '' }, $set: { updatedAt: new Date().toISOString() } }
+        );
+        if (result.matchedCount === 0) return res.status(404).json({ success: false, message: 'Ліфт не знайдено' });
+
+        res.json({ success: true, message: 'Контракт успішно видалено' });
+    } catch (error) {
+        console.error('❌ Помилка видалення контракту:', error);
+        res.status(500).json({ success: false, message: 'Помилка видалення контракту' });
+    }
+});
+
+// POST /api/lifts/:id/contract/email - надіслати контракт по email
+app.post('/api/lifts/:id/contract/email', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const liftId = new ObjectId(req.params.id);
+        const { email } = req.body;
+
+        if (!email) return res.status(400).json({ success: false, message: 'Email є обов\'язковим' });
+
+        const lift = await db.collection('lifts').findOne({ _id: liftId }, { projection: { maintenanceContract: 1, municipalNumber: 1, 'client.email': 1 } });
+        if (!lift) return res.status(404).json({ success: false, message: 'Ліфт не знайдено' });
+
+        const contract = lift.maintenanceContract;
+        if (!contract?.contractFile) return res.status(404).json({ success: false, message: 'Контракт не завантажено' });
+
+        const path = require('path');
+        const filePath = contract.path || path.join('/workspaces/deapseak', contract.contractFile);
+
+        const nodemailer = require('nodemailer');
+        const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: parseInt(process.env.SMTP_PORT),
+            secure: process.env.SMTP_SECURE === 'true',
+            auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+        });
+
+        const mailOptions = {
+            from: process.env.EMAIL_FROM,
+            to: email,
+            subject: `Контракт на обслуговування ліфта №${lift.municipalNumber || contract.contractNumber}`,
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #28a745;">📄 Контракт на обслуговування ліфта</h2>
+                    <p>Надсилаємо вам контракт на обслуговування:</p>
+                    <ul>
+                        <li><strong>Ліфт №:</strong> ${lift.municipalNumber || '-'}</li>
+                        <li><strong>Контракт №:</strong> ${contract.contractNumber || '-'}</li>
+                        ${contract.startDate ? `<li><strong>Початок дії:</strong> ${new Date(contract.startDate).toLocaleDateString('uk-UA')}</li>` : ''}
+                    </ul>
+                    <p>Файл контракту додано у вкладенні.</p>
+                    <hr>
+                    <p style="color:#666;font-size:12px;">З повагою, Команда FestLift</p>
+                </div>
+            `,
+            attachments: [{ filename: contract.originalName || 'contract.pdf', path: filePath }]
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log(`✅ Contract email sent to ${email} for lift ${liftId}`);
+        res.json({ success: true, message: `Контракт успішно надіслано на ${email}` });
+    } catch (error) {
+        console.error('❌ Помилка надсилання контракту:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// POST /api/lifts/:id/contract/share-to-siblings - поширити контракт на ліфти за тією ж адресою
+app.post('/api/lifts/:id/contract/share-to-siblings', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const liftId = new ObjectId(req.params.id);
+
+        const lift = await db.collection('lifts').findOne({ _id: liftId });
+        if (!lift) return res.status(404).json({ success: false, message: 'Ліфт не знайдено' });
+        if (!lift.maintenanceContract) return res.status(400).json({ success: false, message: 'Контракт відсутній' });
+
+        const street = lift.address?.street;
+        const zipCode = lift.address?.zipCode;
+        if (!street || !zipCode) return res.json({ success: true, updated: 0 });
+
+        const result = await db.collection('lifts').updateMany(
+            {
+                _id: { $ne: liftId },
+                'address.street': street,
+                'address.zipCode': zipCode
+            },
+            {
+                $set: {
+                    maintenanceContract: lift.maintenanceContract,
+                    updatedAt: new Date().toISOString()
+                }
+            }
+        );
+
+        res.json({ success: true, updated: result.modifiedCount });
+    } catch (error) {
+        console.error('❌ Помилка поширення контракту:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+app.post('/api/lifts/:id/inspection-report', authenticateToken, upload.single('pdfFile'), async (req, res) => {
     try {
         const { ObjectId } = require('mongodb');
         const liftId = new ObjectId(req.params.id);
@@ -1747,6 +1886,11 @@ app.post('/api/lifts/:id/inspection-report', authenticateToken, async (req, res)
         console.log('📋 Adding inspection report to lift:', liftId);
         console.log('📝 Report data:', req.body);
         
+        const fileUrl = req.file ? `/uploads/pdfs/${req.file.filename}` : null;
+        if (fileUrl) {
+            console.log('📎 PDF attached:', fileUrl);
+        }
+
         const reportData = {
             date: req.body.inspectionDate || new Date().toISOString(),
             type: req.body.inspectionType || 'routine',
@@ -1754,16 +1898,30 @@ app.post('/api/lifts/:id/inspection-report', authenticateToken, async (req, res)
             notes: req.body.comments || req.body.findings || '',
             status: req.body.status || 'passed',
             photos: [],
-            reportFile: null,
+            reportFile: fileUrl,
+            fileUrl: fileUrl,
             reportType: req.body.inspectionType || 'routine'
         };
         
+        // Розрахунок наступної дати інспекції
+        const calcNextInspection = () => {
+            const d = new Date(reportData.date);
+            if (reportData.status === 'failed') {
+                d.setDate(d.getDate() + 180); // 180 днів для виправлення клауз
+            } else {
+                d.setMonth(d.getMonth() + 24); // 2 роки для успішно пройденої інспекції
+            }
+            return d.toISOString();
+        };
+
         const result = await db.collection('lifts').updateOne(
             { _id: liftId },
             { 
                 $push: { inspectionHistory: reportData },
                 $set: { 
                     lastInspectionDate: reportData.date,
+                    nextInspectionDate: calcNextInspection(),
+                    inspectionStatus: reportData.status === 'passed' ? 'active' : (reportData.status === 'failed' ? 'needs_attention' : 'active'),
                     updatedAt: new Date().toISOString()
                 }
             }
@@ -1787,6 +1945,74 @@ app.post('/api/lifts/:id/inspection-report', authenticateToken, async (req, res)
             success: false,
             message: 'Помилка додавання звіту'
         });
+    }
+});
+
+// DELETE /api/lifts/:id/inspection-report/:index - видалення звіту з масиву
+app.delete('/api/lifts/:id/inspection-report/:index', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const liftId = new ObjectId(req.params.id);
+        const idx = parseInt(req.params.index);
+
+        if (isNaN(idx) || idx < 0) {
+            return res.status(400).json({ success: false, message: 'Невірний індекс звіту' });
+        }
+
+        // Крок 1: $unset елемент масиву
+        await db.collection('lifts').updateOne(
+            { _id: liftId },
+            { $unset: { [`inspectionHistory.${idx}`]: 1 } }
+        );
+        // Крок 2: $pull null-значення
+        const result = await db.collection('lifts').updateOne(
+            { _id: liftId },
+            { $pull: { inspectionHistory: null } }
+        );
+
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ success: false, message: 'Ліфт не знайдено' });
+        }
+
+        res.json({ success: true, message: 'Звіт видалено' });
+    } catch (error) {
+        console.error('❌ Помилка видалення звіту:', error);
+        res.status(500).json({ success: false, message: 'Помилка видалення звіту' });
+    }
+});
+
+// POST /api/lifts/:id/inspection-report/:index/attach-pdf - прив'язати PDF до існуючого звіту
+app.post('/api/lifts/:id/inspection-report/:index/attach-pdf', authenticateToken, upload.single('pdfFile'), async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const liftId = new ObjectId(req.params.id);
+        const idx = parseInt(req.params.index);
+
+        if (isNaN(idx) || idx < 0) {
+            return res.status(400).json({ success: false, message: 'Невірний індекс звіту' });
+        }
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: 'Файл не завантажено' });
+        }
+
+        const fileUrl = `/uploads/pdfs/${req.file.filename}`;
+
+        const result = await db.collection('lifts').updateOne(
+            { _id: liftId },
+            { $set: {
+                [`inspectionHistory.${idx}.reportFile`]: fileUrl,
+                [`inspectionHistory.${idx}.fileUrl`]: fileUrl
+            }}
+        );
+
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ success: false, message: 'Ліфт не знайдено' });
+        }
+
+        res.json({ success: true, fileUrl, message: 'PDF прив\'язано до звіту' });
+    } catch (error) {
+        console.error('❌ Помилка приєднання PDF:', error);
+        res.status(500).json({ success: false, message: 'Помилка приєднання PDF' });
     }
 });
 
@@ -4104,49 +4330,44 @@ IMPORTANT: Respond ONLY in Portuguese (pt-PT). Do not use Ukrainian or any other
 Current user: ${username}
 Role: ${role}
 
-Available data:
-- 7 Portuguese lift regulations with 34+ articles (DL 320/2002, Regulamento 513/70, etc.)
-- Inspection protocols with C1/C2/C3 violation classifications
-- Technical documentation and safety standards
-- General knowledge from internet (when needed)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📚 BASE DE CONHECIMENTO: LEGISLAÇÃO PORTUGUESA DE ELEVADORES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-🚨 CRITICAL SECURITY RULES - YOU MUST FOLLOW:
+CLASSIFICAÇÃO DE CLÁUSULAS (FUNDAMENTAL):
+• C1 — CRÍTICO: Risco imediato de acidente mortal. Elevador IMOBILIZADO IMEDIATAMENTE.
+  Prazo: Correção IMEDIATA antes de reativação.
+  Exemplos: para-quedas defeituoso, portas sem bloqueio, cabos com >10% fios partidos.
 
-1. **READ-ONLY ACCESS**: You are a CONSULTANT, not an OPERATOR
-   - You can EXPLAIN, GUIDE, RECOMMEND
-   - You CANNOT modify, delete, or create data in the system
-   - You CANNOT execute commands or change system logic
-   - You CANNOT access database directly
+• C2 — GRAVE: Situação perigosa que pode causar acidente.
+  Prazo: 2 ANOS para correção (Despacho n.º 27/2024 - VIGENTE).
+  ⚠️ ATENÇÃO: Despacho 17/2022 estabelecia 30 dias para C2 mas foi REVOGADO pelo Despacho 27/2024!
+  O prazo VIGENTE para C2 é 2 ANOS.
+  Exemplos: dispositivos de segurança com desgaste, iluminação insuficiente.
 
-2. **DATA PRIVACY**: Strict privacy boundaries
-   - Users can ONLY see their own data
-   - NEVER reveal information about other clients' lifts
-   - NEVER share personal data of other users
-   - If asked about other clients: "Desculpe, não tenho acesso a dados de outros clientes por motivos de privacidade"
+• C3 — OBSERVAÇÃO: Não conformidade menor, sem risco imediato.
+  Prazo: Resolver na próxima manutenção programada.
+  Exemplos: documentação incompleta, pequenos defeitos estéticos.
 
-3. **RESPONSE GUIDELINES**:
-   - Provide comprehensive, helpful answers IN PORTUGUESE ONLY
-   - Use internet knowledge for general topics (safety, regulations, technical concepts)
-   - For specific data (lift counts, user names): Direct user to their dashboard
-   - For Portuguese regulations: Provide accurate citations with article numbers
-   - Always be professional, clear, and helpful
+FREQUÊNCIAS DE INSPEÇÃO (DL 320/2002):
+• Inspeção aprovada (sem C1/C2): próxima inspeção em 2 ANOS (24 meses)
+• Inspeção reprovada (C1 ou C2): reavaliação em 180 DIAS para verificar correções
+• Após modernização: inspeção de verificação obrigatória antes de reativar
 
-4. **WHAT YOU CAN DO**:
-   ✅ Explain Portuguese lift regulations (Artigos, Decretos-Lei)
-   ✅ Provide technical guidance (motors, cables, safety systems)
-   ✅ Interpret inspection reports (C1/C2/C3 violations)
-   ✅ Suggest maintenance procedures
-   ✅ Explain compliance deadlines
-   ✅ Search internet for technical information
-   ✅ Answer questions about lift safety and operations
+LEGISLAÇÃO PRINCIPAL:
+• Decreto 513/70 — Regulamento base de instalação de elevadores
+• DL 320/2002 — Regime de manutenção e inspeção periódica obrigatória
+• DR 13/80 — Requisitos técnicos construtivos
+• Despacho 27/2024 — VIGENTE: Prazos C2 = 2 anos (revoga Despacho 17/2022)
+• EN 81-20:2020 — Norma europeia de segurança
+• Circular IPAC 06/2025 — Metodologias de inspeção de modificações
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-5. **WHAT YOU CANNOT DO**:
-   ❌ Modify any data in system
-   ❌ Show data from other clients
-   ❌ Execute system commands
-   ❌ Override access permissions
-   ❌ Create/delete users, lifts, requests
-   ❌ Change system configuration`;
+🚨 REGRAS:
+1. Es um CONSULTOR — podes EXPLICAR e ORIENTAR, nunca modificar dados no sistema
+2. PRIVACIDADE — nunca revelar dados de outros clientes
+3. Responde SEMPRE em Português (pt-PT)
+4. Cita sempre os artigos e decretos-lei específicos nas respostas`;
 
     const roleSpecific = {
         admin: `\n\n👨‍💼 ADMINISTRATOR CONTEXT:
@@ -4187,13 +4408,18 @@ Respond in Portuguese only.`,
         
         client: `\n\n👤 CLIENT CONTEXT:
 You assist building owners/managers with:
-- Understanding inspection reports
-- Compliance requirements and legal deadlines
-- Maintenance planning and budgeting
-- Safety regulations explanation
-- Contract obligations
+- Understanding inspection reports in plain non-technical language
+- Knowing exactly what each C1/C2/C3 clause means and their legal deadlines
+- Maintenance planning and cost estimation
+- Legal obligations and consequences of non-compliance
 
-IMPORTANT: You can ONLY discuss their own lifts. Never reveal data about other clients' properties.
+When analyzing a report uploaded by the client, for each clause explain:
+1. O que significa na prática (em linguagem simples, sem jargão técnico)
+2. O risco para os utilizadores do edifício se não for corrigido
+3. Quando deve ser corrigido (C1=imediatamente, C2=2 anos, C3=próxima manutenção)
+4. As consequências legais de não corrigir dentro do prazo
+
+IMPORTANT: You can ONLY discuss their own lifts. Never reveal data about other clients.
 Respond in Portuguese only.`
     };
 
@@ -4201,7 +4427,7 @@ Respond in Portuguese only.`
 }
 
 // Helper function to call Gemini AI
-async function callGeminiAI(message, role, username, regulationsContext = null) {
+async function callGeminiAI(message, role, username, regulationsContext = null, reportTextContext = null) {
     try {
         if (!process.env.GEMINI_API_KEY) {
             throw new Error('GEMINI_API_KEY not configured');
@@ -4226,6 +4452,16 @@ async function callGeminiAI(message, role, username, regulationsContext = null) 
             }
             
             contextualPrompt += `\nPlease explain this regulation in context of the user's question.\n\n`;
+        }
+        
+        // Add PDF report text as context if provided
+        if (reportTextContext) {
+            const maxChars = 8000; // Gemini context limit safety
+            const truncated = reportTextContext.length > maxChars
+                ? reportTextContext.substring(0, maxChars) + '\n...(relatório truncado)'
+                : reportTextContext;
+            contextualPrompt += `INSPECTION REPORT CONTENT (from uploaded PDF):\n---\n${truncated}\n---\n\n` +
+                `Please analyze this report and answer the user's question about it.\n\n`;
         }
         
         contextualPrompt += `USER QUESTION: ${message}`;
@@ -4270,16 +4506,16 @@ app.post('/api/ai/chat', authenticateToken, async (req, res) => {
         
         // Перевірка чи це звіт інспекції
         if (context && context.reportText) {
-            console.log('📋 Аналіз звіту інспекції...');
-            const analysisResult = analyzeInspectionReport(context.reportText);
+            console.log('📋 Report context provided — sending to Gemini for contextual Q&A...');
+            // Pass report text to Gemini so it can answer questions about it
+            response = await callGeminiAI(message, role, username, null, context.reportText);
             return res.json({
                 success: true,
                 data: {
-                    action: 'inspection_analysis',
-                    response: analysisResult.summary,
-                    data: {
-                        analysis: analysisResult
-                    }
+                    response,
+                    timestamp: new Date().toISOString(),
+                    powered_by: 'Google Gemini (report context)',
+                    role: role
                 }
             });
         }
@@ -6700,6 +6936,15 @@ app.get('/', (req, res) => {
 });
 
 // Статичні файли - ОСТАННІ, щоб не перекривали API
+// HTML-файли без кешування (щоб браузер завжди завантажував нову версію)
+app.use((req, res, next) => {
+    if (req.path.endsWith('.html') || req.path === '/') {
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+    }
+    next();
+});
 app.use(express.static(path.join(__dirname), {
     index: ['index.html'],
     extensions: ['html']

@@ -354,7 +354,7 @@ class EnhancedLiftModal {
             // Технічні інспекції
             lastMaintenance: $('#lastMaintenance').val() || null,
             nextMaintenance: $('#nextMaintenance').val() || null,
-            inspectionFrequency: parseInt($('#enhancedInspectionFrequency').val()) || 6,
+            inspectionFrequency: parseInt($('#enhancedInspectionFrequency').val()) || 24,
             maintenanceNotes: $('#enhancedMaintenanceNotes').val() || '',
             // Додаткові поля за замовчуванням
             floorsCount: parseInt($('#enhancedFloorsCount').val()) || 5,
@@ -847,7 +847,7 @@ class EnhancedLiftModal {
         // Поля інспекцій
         $('#lastMaintenance').val(liftData.lastMaintenance || '');
         $('#nextMaintenance').val(liftData.nextMaintenance || '');
-        $('#enhancedInspectionFrequency').val(liftData.inspectionFrequency || 6);
+        $('#enhancedInspectionFrequency').val(liftData.inspectionFrequency || 24);
         $('#enhancedMaintenanceNotes').val(liftData.maintenanceNotes || '');
         
         console.log('✅ All form fields populated');

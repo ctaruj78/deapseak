@@ -1,14 +1,27 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"
-    <!-- Global Settings -->
-    <script src="../../assets/js/global-settings.js"></script>
-    <link rel="stylesheet" href="../../assets/css/theme-dark.css">>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+    <!-- Примусово оновлюємо сторінку при зміні service worker -->
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.addEventListener('controllerchange', function() {
+            console.log('[SW] New service worker activated — reloading page for fresh content');
+            window.location.reload();
+        });
+        // Також скасовуємо реєстрацію застарілих SW та оновлюємо
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            registrations.forEach(function(reg) { reg.update(); });
+        });
+    }
+    </script>
+    <!-- Global Settings -->
+    <script src="../../assets/js/global-settings.js"></script>
+    <link rel="stylesheet" href="../../assets/css/theme-dark.css">
     <title data-i18n-title="lift_management">Панель диспетчера - Управління ліфтами</title>
     
     <!-- AdminLTE CSS -->
@@ -607,7 +620,7 @@
                                     <h3 class="card-title">Список ліфтів <span id="lift-count">(0)</span></h3>
                                     <div class="card-tools">
                                         <button id="add-lift-button" class="btn btn-success btn-sm" onclick="openEnhancedModal()">
-                                            <i class="fas fa-plus"></i> Adicionar ліфт
+                                            <i class="fas fa-plus"></i> Додати ліфт
                                         </button>
                                     </div>
                                 </div>
@@ -616,9 +629,9 @@
                                     <div class="row mb-3">
                                         <div class="col-md-4">
                                             <div class="form-group">
-                                                <label>Pesquisar:</label>
+                                                <label>Пошук:</label>
                                                 <div class="input-group">
-                                                    <input type="text" id="searchInput" class="form-control" placeholder="Pesquisar по моделі, адресі, ID..." aria-label="Pesquisar ліфтів">
+                                                    <input type="text" id="searchInput" class="form-control" placeholder="Пошук по моделі, адресі, ID..." aria-label="Пошук ліфтів">
                                                     <div class="input-group-append">
                                                         <button class="btn btn-primary" id="searchBtn" aria-label="Виконати пошук">
                                                             <i class="fas fa-search"></i>
@@ -677,10 +690,10 @@
                                 <div class="card-footer clearfix">
                                     <div class="float-left">
                                         <button class="btn btn-success btn-sm" id="exportCSVBtn">
-                                            <i class="fas fa-download"></i> Exportar CSV
+                                            <i class="fas fa-download"></i> Експорт CSV
                                         </button>
                                         <button class="btn btn-info btn-sm ml-2" id="exportPDFBtn">
-                                            <i class="fas fa-file-pdf"></i> Exportar PDF
+                                            <i class="fas fa-file-pdf"></i> Експорт PDF
                                         </button>
                                     </div>
                                     <div class="pagination-container d-flex justify-content-between align-items-center">
@@ -758,7 +771,7 @@
                 <!-- HEADER -->
                 <div class="modal-header lift-header">
                     <h5 class="modal-title" id="enhancedModalTitle">
-                        <i class="fas fa-plus-circle mr-2"></i>Adicionar novo ліфт
+                        <i class="fas fa-plus-circle mr-2"></i>Додати новий ліфт
                     </h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
@@ -1013,11 +1026,12 @@
                                         <small class="font-weight-normal text-muted ml-1">(необов'язково)</small>
                                     </div>
                                     <div class="sc-b">
+                                        <div id="edit-contract-file-banner" class="mb-3"></div>
                                         <div class="row">
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label>Тип договору</label>
-                                                    <select name="contractType" class="form-control">
+                                                    <select id="editContractType" name="contractType" class="form-control">
                                                         <option value="">— Оберіть —</option>
                                                         <option>Повне обслуговування</option>
                                                         <option>Часткове обслуговування</option>
@@ -1029,13 +1043,17 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label>Дата початку договору</label>
-                                                    <input type="date" name="contractStart" class="form-control">
+                                                    <input type="date" id="editContractStart" name="contractStart" class="form-control">
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label>Дата закінчення</label>
-                                                    <input type="date" name="contractEnd" class="form-control">
+                                                    <label>Термін дії</label>
+                                                    <div class="custom-control custom-switch mt-1">
+                                                        <input type="checkbox" class="custom-control-input" id="editContractAutoRenew" name="contractAutoRenew" checked>
+                                                        <label class="custom-control-label" for="editContractAutoRenew">Автоматичне продовження</label>
+                                                    </div>
+                                                    <small class="text-muted">Договір продовжується автоматично якщо клієнт не розірвав</small>
                                                 </div>
                                             </div>
                                         </div>
@@ -1043,14 +1061,14 @@
                                             <div class="col-md-6">
                                                 <div class="form-group">
                                                     <label>Номер договору</label>
-                                                    <input type="text" name="contractNumber" class="form-control" placeholder="CT-2024-0001">
+                                                    <input type="text" id="editContractNumber" name="contractNumber" class="form-control" placeholder="CT-2024-0001">
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
                                                     <label>Вартість обслуговування / міс (€)</label>
                                                     <div class="input-group">
-                                                        <input type="number" name="contractPrice" class="form-control" placeholder="0.00" step="0.01" min="0">
+                                                        <input type="number" id="editContractPrice" name="contractPrice" class="form-control" placeholder="0.00" step="0.01" min="0">
                                                         <div class="input-group-append">
                                                             <span class="input-group-text">€</span>
                                                         </div>
@@ -1231,7 +1249,7 @@
                                                         <option value="operational">✅ Працює (Operacional)</option>
                                                         <option value="maintenance">🔧 На технічному обслуговуванні</option>
                                                         <option value="broken">❌ Поламаний</option>
-                                                        <option value="inactive">⛔ Неактивний (Inativo)</option>
+                                                        <option value="inactive">⛔ Неактивний</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -1325,7 +1343,7 @@
                         </div>
                         <div class="d-flex" style="gap:8px;">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                                <i class="fas fa-times mr-1"></i>Cancelar
+                                <i class="fas fa-times mr-1"></i>Скасувати
                             </button>
                             <button type="button" class="btn btn-outline-primary" id="eLiftBtnPrev"
                                     onclick="eLiftPrevTab()" disabled>
@@ -1336,7 +1354,7 @@
                                 Далі <i class="fas fa-chevron-right ml-1"></i>
                             </button>
                             <button type="submit" class="btn btn-success d-none" id="eLiftBtnSave">
-                                <i class="fas fa-save mr-1"></i>Guardar ліфт
+                                <i class="fas fa-save mr-1"></i>Зберегти ліфт
                             </button>
                         </div>
                     </div>
@@ -1666,7 +1684,7 @@
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h6>Звіти інспекцій</h6>
                                 <button type="button" class="btn btn-sm btn-primary" onclick="showAddReportModal()">
-                                    <i class="fas fa-plus"></i> Adicionar звіт
+                                    <i class="fas fa-plus"></i> Додати звіт
                                 </button>
                             </div>
                             
@@ -1693,7 +1711,7 @@
                                         </div>
                                         <div class="col-md-4">
                                             <input type="text" id="filter-report-search" class="form-control form-control-sm" 
-                                                   placeholder="Pesquisar..." onkeyup="filterReports()">
+                                                    placeholder="Пошук..." onkeyup="filterReports()">
                                         </div>
                                         <div class="col-md-2">
                                             <button class="btn btn-sm btn-secondary btn-block" onclick="clearReportFilters()">
@@ -1766,6 +1784,15 @@
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">
                         <i class="fas fa-times"></i> Закрити
                     </button>
+                    <button type="button" class="btn btn-outline-info" id="btn-download-report" style="display:none;" onclick="downloadReportPDF()">
+                        <i class="fas fa-download"></i> Завантажити PDF
+                    </button>
+                    <button type="button" class="btn btn-warning" onclick="sendReportByEmailFromModal()">
+                        <i class="fas fa-envelope"></i> Надіслати Email клієнту
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="deleteReportFromModal()">
+                        <i class="fas fa-trash"></i> Видалити звіт
+                    </button>
                     <button type="button" class="btn btn-primary" onclick="printReport()">
                         <i class="fas fa-print"></i> Друкувати
                     </button>
@@ -1779,7 +1806,7 @@
         <div class="modal-dialog" role="document" style="max-height: 95vh; margin: 1.75rem auto;">
             <div class="modal-content" style="max-height: 95vh; display: flex; flex-direction: column;">
                 <div class="modal-header bg-primary" style="flex-shrink: 0;">
-                    <h5 class="modal-title">Adicionar звіт інспекції</h5>
+                    <h5 class="modal-title"><i class="fas fa-plus-circle"></i> Додати звіт</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -1789,7 +1816,8 @@
                         <input type="hidden" id="report-lift-id">
                         <div class="form-group">
                             <label for="report-type">Тип звіту *</label>
-                            <select id="report-type" class="form-control" required>
+                            <select id="report-type" class="form-control" required
+                                onchange="document.getElementById('report-status-group').style.display=this.value==='inspection'?'block':'none';">
                                 <option value="">Оберіть тип...</option>
                                 <option value="inspection">Інспекція</option>
                                 <option value="maintenance">Технічне обслуговування</option>
@@ -1800,6 +1828,14 @@
                         <div class="form-group">
                             <label for="report-date">Дата *</label>
                             <input type="date" id="report-date" class="form-control" required>
+                        </div>
+                        <div class="form-group" id="report-status-group" style="display:none;">
+                            <label for="report-status">Результат інспекції</label>
+                            <select id="report-status" class="form-control">
+                                <option value="passed">✅ Пройдено — сертифікат видано (наст. через 2 роки)</option>
+                                <option value="failed">⚠️ Не пройдено — є клаузи (180 днів для виправлення)</option>
+                            </select>
+                            <small class="form-text text-muted">Визначає дату наступної інспекції</small>
                         </div>
                         <div class="form-group">
                             <label for="report-description">Опис</label>
@@ -1813,9 +1849,11 @@
                     </form>
                 </div>
                 <div class="modal-footer" style="flex-shrink: 0; border-top: 1px solid #dee2e6;">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times"></i> Скасувати
+                    </button>
                     <button type="button" class="btn btn-primary" onclick="submitReport()">
-                        <i class="fas fa-save"></i> Guardar
+                        <i class="fas fa-save"></i> Зберегти
                     </button>
                 </div>
             </div>
@@ -1844,8 +1882,18 @@
                             <input type="date" id="contract-start-date" class="form-control" required>
                         </div>
                         <div class="form-group">
-                            <label for="contract-end-date">Дата закінчення <small class="text-muted">(необов'язково — при відсутності продовжується автоматично на 1 рік)</small></label>
-                            <input type="date" id="contract-end-date" class="form-control">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="contract-auto-renew" checked
+                                    onchange="document.getElementById('contract-end-date-wrap').style.display = this.checked ? 'none' : 'block'">
+                                <label class="custom-control-label font-weight-bold" for="contract-auto-renew">Автоматичне продовження</label>
+                            </div>
+                            <small class="text-muted">Договір продовжується автоматично, якщо клієнт не розірвав контракт</small>
+                        </div>
+                        <div id="contract-end-date-wrap" style="display:none;">
+                            <div class="form-group">
+                                <label for="contract-end-date">Дата закінчення <small class="text-muted">(якщо договір фіксований)</small></label>
+                                <input type="date" id="contract-end-date" class="form-control">
+                            </div>
                         </div>
                         <div class="form-group">
                             <label for="contract-notes">Примітки</label>
@@ -1871,7 +1919,7 @@
                     </form>
                 </div>
                 <div class="modal-footer" style="flex-shrink: 0; border-top: 1px solid #dee2e6;">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
                     <button type="button" class="btn btn-success" onclick="submitContract()">
                         <i class="fas fa-upload"></i> Завантажити
                     </button>
@@ -1925,7 +1973,7 @@
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header bg-danger">
-                    <h5 class="modal-title">Adicionar втручання</h5>
+                    <h5 class="modal-title">Додати втручання</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -2024,8 +2072,8 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-danger" id="saveInterventionBtn">Guardar втручання</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                    <button type="button" class="btn btn-danger" id="saveInterventionBtn">Зберегти втручання</button>
                 </div>
             </div>
         </div>
@@ -2068,7 +2116,7 @@
             <div class="modal-content" style="max-height: 90vh; display: flex; flex-direction: column;">
                 <div class="modal-header bg-warning">
                     <h5 class="modal-title">
-                        <i class="fas fa-clipboard-check mr-2"></i>Adicionar звіт інспекції
+                        <i class="fas fa-clipboard-check mr-2"></i>Додати звіт інспекції
                     </h5>
                     <button type="button" class="close" id="closeInspectionModalBtn" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
@@ -2176,7 +2224,7 @@
                                                     <i class="fas fa-archive mr-1"></i>Архівувати
                                                 </button>
                                                 <button type="button" class="btn btn-danger btn-sm" onclick="removeInspectionPDF()">
-                                                    <i class="fas fa-trash mr-1"></i>Eliminar
+                                                    <i class="fas fa-trash mr-1"></i>Видалити
                                                 </button>
                                             </div>
                                         </div>
@@ -2239,10 +2287,10 @@
                         </div>
                         <div>
                             <button type="button" class="btn btn-secondary mr-2" id="cancelInspectionReportBtn">
-                                <i class="fas fa-times"></i> Cancelar
+                                <i class="fas fa-times"></i> Скасувати
                             </button>
                             <button type="button" class="btn btn-success" id="saveInspectionReportBtn">
-                                <i class="fas fa-save"></i> Guardar звіт інспекції
+                                <i class="fas fa-save"></i> Зберегти звіт
                             </button>
                         </div>
                     </div>
@@ -2350,7 +2398,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                        <i class="fas fa-times mr-1"></i>Cancelar
+                        <i class="fas fa-times mr-1"></i>Скасувати
                     </button>
                     <button type="button" class="btn btn-info" id="btn-preview-municipality-email">
                         <i class="fas fa-eye mr-1"></i>Попередній перегляд
@@ -2500,7 +2548,7 @@
                                 </form>
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
                                 <button type="button" class="btn btn-primary" onclick="sendEmailWithPDF()">Надіслати</button>
                             </div>
                         </div>
@@ -2712,7 +2760,7 @@
         }
 
         function deleteArchivedReport(reportId) {
-            if (confirm('Eliminar цей звіт з архіву назавжди?')) {
+                if (confirm('Видалити цей звіт з архіву назавжди?')) {
                 let archivedReports = JSON.parse(localStorage.getItem('archived_reports') || '[]');
                 archivedReports = archivedReports.filter(report => report.id !== reportId);
                 localStorage.setItem('archived_reports', JSON.stringify(archivedReports));
@@ -2834,10 +2882,16 @@
             }, 500);
             
             // Ініціалізуємо LiftManager з assets/js/lifts.js
+            // ⚠️ На цій сторінці рендеринг таблиці керується через loadLiftsFromAPI + displayLiftsInTable
+            // тому вимикаємо авторендер LiftManager щоб уникнути конфлікту лічильників
             console.log('Document ready, initializing LiftManager...');
             if (typeof LiftManager !== 'undefined') {
                 console.log('LiftManager class found, creating instance...');
                 window.liftManager = new LiftManager();
+                // Блокуємо повторний renderLiftsTable щоб не скидати лічильники
+                if (window.liftManager) {
+                    window.liftManager.renderLiftsTable = function() {};
+                }
                 console.log('LiftManager instance created successfully');
             } else {
                 console.error('LiftManager class not found');
@@ -2927,7 +2981,7 @@
         } else {
             // Режим створення - скидаємо форму
             console.log('➕ CREATE MODE: New lift');
-            $('#enhancedModalTitle').text('Adicionar новий ліфт');
+            $('#enhancedModalTitle').text('Додати новий ліфт');
             
             // Очищуємо currentLiftId для режиму створення
             window.enhancedLiftModal.currentLiftId = null;
@@ -3171,7 +3225,7 @@
     }
 
     function cancelInspection(inspectionId) {
-        if (confirm('Cancelar цю інспекцію?')) {
+        if (confirm('Widaлити цю інспекцію?')) {
             let inspections = JSON.parse(localStorage.getItem('scheduled_inspections') || '[]');
             inspections = inspections.filter(i => i.id !== inspectionId);
             localStorage.setItem('scheduled_inspections', JSON.stringify(inspections));
@@ -3621,10 +3675,14 @@
         let calculatedNextMaintenance = null;
         if (shouldUpdateMaintenance) {
             const inspectionDateObj = new Date(inspectionDate);
-            const frequencyMonths = frequencyOverride ? parseInt(frequencyOverride) : 6; // стандартно 6 місяців
-            
             calculatedNextMaintenance = new Date(inspectionDateObj);
-            calculatedNextMaintenance.setMonth(calculatedNextMaintenance.getMonth() + frequencyMonths);
+            if (frequencyOverride) {
+                calculatedNextMaintenance.setMonth(calculatedNextMaintenance.getMonth() + parseInt(frequencyOverride));
+            } else if (inspectionStatus === 'failed') {
+                calculatedNextMaintenance.setDate(calculatedNextMaintenance.getDate() + 180); // 180 днів для виправлення клауз
+            } else {
+                calculatedNextMaintenance.setMonth(calculatedNextMaintenance.getMonth() + 24); // 2 роки для успішної інспекції
+            }
             calculatedNextMaintenance = calculatedNextMaintenance.toISOString().split('T')[0]; // YYYY-MM-DD формат
         }
 
@@ -3846,7 +3904,7 @@
                             </form>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
                             <button type="button" class="btn btn-primary" onclick="sendEmailWithInspectionPDF()">Надіслати</button>
                         </div>
                     </div>
@@ -4435,11 +4493,11 @@
         
         if (!paginationEl || !showingCountEl || !totalCountEl) return;
         
-        // Оновлюємо інфо
+        // Завжди оновлюємо лічильники
         showingCountEl.textContent = currentLifts;
         totalCountEl.textContent = totalLifts;
         
-        // Якщо одна сторінка або менше
+        // Якщо одна сторінка або менше — приховуємо
         if (totalPages <= 1) {
             paginationEl.innerHTML = '';
             return;
@@ -4565,12 +4623,12 @@
                 <tr>
                     <td colspan="10" class="text-center text-muted py-4">
                         <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
-                        <p class="mb-0">Elevadores не знайдені</p>
-                        <small>Додайте перший ліфт, натиснувши кнопку "Adicionar ліфт"</small>
+                        <p class="mb-0">Ліфти не знайдені</p>
+                        <small>Додайте перший ліфт, натиснувши кнопку &laquo;Додати ліфт&raquo;</small>
                     </td>
                 </tr>
             `;
-            // Оновлюємо статистику (всі нулі)
+            updatePagination(0, 0);
             updateLiftsStatistics(lifts);
             return;
         }
@@ -4664,8 +4722,7 @@
                         </button>
                         <button type="button" class="btn btn-danger" 
                                 onclick="deleteLift('${liftId}')"
-                                title="Eliminar">
-                            <i class="fas fa-trash"></i>
+                                title="\u0412\u0438\u0434\u0430\u043b\u0438\u0442\u0438">\n                            <i class="fas fa-trash"></i>
                         </button>
                     </div>
                 </td>
@@ -4756,11 +4813,11 @@
     function getStatusText(status) {
         const statusTexts = {
             'operational': 'Працює',
-            'active': 'Ativo',
+            'active': 'Активний',
             'maintenance': 'Обслуговування',
             'repair': 'Ремонт',
             'out-of-service': 'Не працює',
-            'inactive': 'Inativo'
+            'inactive': 'Неактивний'
         };
         return statusTexts[status] || 'Невизначено';
     }
@@ -4843,7 +4900,7 @@
                 
                 // Частота інспекцій - тільки якщо вказана
                 $('#detail-frequency').text(
-                    lift.inspectionFrequency ? `${lift.inspectionFrequency} міс.` : 'Не вказано'
+                    lift.inspectionFrequency ? (lift.inspectionFrequency === 24 ? '2 роки' : lift.inspectionFrequency === 12 ? '1 рік' : `${lift.inspectionFrequency} міс.`) : 'Не вказано'
                 );
                 
                 // Розташування з нової структури
@@ -4905,12 +4962,15 @@
                     ? lift.inspectionHistory[lift.inspectionHistory.length - 1] 
                     : null;
                 
+                const inspTypeLabels = { inspection: 'Інспекція', maintenance: 'Технічне обслуговування', repair: 'Ремонт', emergency: 'Аварійний виклик' };
+                const inspStatusLabels = { completed: 'Виконано', passed: 'Пройдено', failed: 'Не пройдено' };
+                
                 $('#detail-inspection-date').text(
                     lastReport && lastReport.date ? new Date(lastReport.date).toLocaleDateString('uk-UA') : 'Не вказано'
                 );
-                $('#detail-inspection-type').text(lastReport ? lastReport.type || 'Не вказано' : 'Не вказано');
-                $('#detail-inspection-status').text(lastReport ? lastReport.status || 'Не вказано' : 'Не вказано');
-                $('#detail-inspection-comments').text(lastReport ? lastReport.notes || 'Не вказано' : 'Не вказано');
+                $('#detail-inspection-type').text(lastReport ? (inspTypeLabels[lastReport.type] || lastReport.type || 'Не вказано') : 'Не вказано');
+                $('#detail-inspection-status').text(lastReport ? (inspStatusLabels[lastReport.status] || lastReport.status || 'Не вказано') : 'Не вказано');
+                $('#detail-inspection-comments').text(lastReport ? lastReport.notes || lastReport.comments || '—' : 'Не вказано');
                 
                 // Додаткова інформація
                 $('#detail-created').text(
@@ -5157,7 +5217,47 @@
             $('#enhancedClientPhone').val(client.phone || lift.clientPhone || lift.phone || '');
             $('#enhancedContactPerson').val(lift.contactPerson || '');
             $('#enhancedAccessCode').val(lift.intercomCode || lift.accessCode || '');
-            
+
+            // Контракт
+            const contract = lift.maintenanceContract || null;
+            if (contract) {
+                $('#editContractType').val(contract.contractType || '');
+                if (contract.startDate) $('#editContractStart').val(new Date(contract.startDate).toISOString().split('T')[0]);
+                $('#editContractNumber').val(contract.contractNumber || '');
+                $('#editContractPrice').val(contract.contractPrice || '');
+                $('#editContractAutoRenew').prop('checked', !contract.endDate);
+                const banner = document.getElementById('edit-contract-file-banner');
+                if (banner) {
+                    if (contract.contractFile) {
+                        const cfUrl = contract.contractFile.startsWith('/') ? contract.contractFile : `/uploads/${contract.contractFile}`;
+                        const cfStart = contract.startDate ? new Date(contract.startDate).toLocaleDateString('uk-UA') : 'Невідомо';
+                        const cfEnd = contract.endDate ? new Date(contract.endDate).toLocaleDateString('uk-UA') : null;
+                        const cfPeriod = cfEnd ? `${cfStart} – ${cfEnd}` : `з ${cfStart} (автопродовження)`;
+                        banner.innerHTML = `
+                            <div class="alert alert-success py-2 mb-0 d-flex align-items-center">
+                                <i class="fas fa-file-contract fa-lg mr-2"></i>
+                                <div class="flex-grow-1">
+                                    <strong>Контракт завантажено</strong> №${contract.contractNumber || '—'}
+                                    <span class="text-success ml-2">&bull; ${cfPeriod}</span>
+                                </div>
+                                <a href="${cfUrl}" target="_blank" class="btn btn-sm btn-outline-success ml-2">
+                                    <i class="fas fa-eye"></i> Переглянути
+                                </a>
+                            </div>`;
+                    } else {
+                        banner.innerHTML = `<div class="alert alert-warning py-2 mb-0"><i class="fas fa-exclamation-triangle"></i> Файл контракту не завантажено</div>`;
+                    }
+                }
+            } else {
+                $('#editContractType').val('');
+                $('#editContractStart').val('');
+                $('#editContractNumber').val('');
+                $('#editContractPrice').val('');
+                $('#editContractAutoRenew').prop('checked', true);
+                const banner = document.getElementById('edit-contract-file-banner');
+                if (banner) banner.innerHTML = `<div class="alert alert-light py-2 mb-0 text-muted"><i class="fas fa-info-circle"></i> Контракт ще не завантажено</div>`;
+            }
+
             // Технічні дані
             $('#enhancedLiftStatus').val(lift.status || 'operational');
             
@@ -5636,7 +5736,8 @@
         
         try {
             // Використовуємо inspectionHistory з моделі ліфта
-            allReports = lift.inspectionHistory || [];
+            // Зберігаємо оригінальний індекс для коректного видалення після сортування
+            allReports = (lift.inspectionHistory || []).map((r, i) => ({ ...r, _originalIndex: i }));
             
             if (allReports.length === 0) {
                 container.innerHTML = `
@@ -5737,42 +5838,52 @@
                     ? new Date(report.inspectionDate || report.date).toLocaleDateString('uk-UA') 
                     : 'Невідома дата';
                 const type = report.inspectionType || report.type || 'Не вказано';
-                const notes = report.comments || report.findings || report.notes || 'Без коментарів';
+                const notes = report.comments || report.findings || report.notes || '';
                 const status = report.status || 'completed';
-                const inspector = report.inspectorName || 'Невідомий';
-                const fileUrl = report.fileUrl || report.file || null;
+                const inspector = report.inspectorName || report.inspector || '';
+                const fileUrl = report.fileUrl || report.reportFile || report.file || null;
+
+                // Знаходимо реальний індекс в БД (оригінальний, до сортування)
+                const realIndex = report._originalIndex !== undefined ? report._originalIndex : allReports.indexOf(report);
                 
                 // Статус badge
-                const statusBadge = status === 'passed' || status === 'completed'
-                    ? '<span class="badge badge-success">Пройдено</span>'
-                    : status === 'failed'
-                    ? '<span class="badge badge-danger">Не пройдено</span>'
-                    : '<span class="badge badge-info">Виконано</span>';
+                const statusBadge = '<span class="badge badge-secondary">Додано</span>';
                 
+                // Тип: локалізована назва
+                const typeLabels = { inspection: 'Інспекція', maintenance: 'ТО', repair: 'Ремонт', emergency: 'Аварійний' };
+                const typeLabel = typeLabels[type] || type;
+
                 html += `
-                    <div class="list-group-item">
+                    <div class="list-group-item py-2">
                         <div class="d-flex justify-content-between align-items-start">
                             <div class="flex-grow-1">
                                 <h6 class="mb-1">
                                     <i class="fas fa-clipboard-check text-primary"></i>
-                                    ${type} ${statusBadge}
+                                    ${typeLabel} ${statusBadge}
+                                    ${fileUrl ? '<i class="fas fa-paperclip text-success ml-1" title="PDF прикріплено"></i>' : ''}
                                 </h6>
-                                <p class="mb-1"><small><strong>Дата:</strong> ${date}</small></p>
-                                <p class="mb-1"><small><strong>Інспектор:</strong> ${inspector}</small></p>
-                                <p class="mb-1"><small>${notes}</small></p>
+                                <p class="mb-0"><small><strong>Дата:</strong> ${date}</small></p>
+                                ${inspector ? `<p class="mb-0"><small><strong>Інспектор:</strong> ${inspector}</small></p>` : ''}
+                                ${notes ? `<p class="mb-0"><small class="text-muted">${notes}</small></p>` : ''}
                             </div>
-                            <div class="btn-group-vertical ml-2">
-                                <button class="btn btn-sm btn-outline-primary mb-1" onclick='viewReportDetails(${JSON.stringify(report).replace(/'/g, "&apos;")})' title="Переглянути деталі">
+                            <div class="btn-group-vertical ml-2" style="min-width:100px;">
+                                <button class="btn btn-sm btn-outline-primary mb-1" onclick='viewReportDetails(${JSON.stringify(report).replace(/'/g, "&apos;")}, ${realIndex})' title="Переглянути деталі">
                                     <i class="fas fa-eye"></i> Деталі
                                 </button>
-                                <button class="btn btn-sm btn-outline-success mb-1" onclick='printReportDirect(${JSON.stringify(report).replace(/'/g, "&apos;")})' title="Друкувати звіт">
+                                <button class="btn btn-sm btn-outline-success mb-1" onclick='printReportDirect(${JSON.stringify(report).replace(/'/g, "&apos;")})' title="Друкувати">
                                     <i class="fas fa-print"></i> Друк
                                 </button>
-                                ${fileUrl ? `
-                                    <a href="${fileUrl}" target="_blank" class="btn btn-sm btn-outline-info" title="Відкрити PDF файл">
-                                        <i class="fas fa-file-pdf"></i> PDF
-                                    </a>
-                                ` : ''}
+                                <button class="btn btn-sm btn-outline-warning mb-1" onclick='sendReportByEmailFromHistory("${document.getElementById("liftDetailsModal")?.dataset?.liftId || ""}", ${JSON.stringify(report).replace(/'/g, "&apos;")})' title="Надіслати клієнту Email">
+                                    <i class="fas fa-envelope"></i> Email
+                                </button>
+                                <button class="btn btn-sm ${fileUrl ? 'btn-outline-info' : 'btn-outline-warning'} mb-1"
+                                        onclick='attachPDFToReport(${realIndex})' 
+                                        title="${fileUrl ? 'Замінити PDF' : 'Прикріпити PDF'}">
+                                    <i class="fas fa-${fileUrl ? 'sync' : 'paperclip'}"></i> ${fileUrl ? 'PDF ↺' : 'PDF+'}
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick='deleteReport(${realIndex})' title="Видалити звіт">
+                                    <i class="fas fa-trash"></i> Видалити
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -5825,6 +5936,124 @@
         $('#report-lift-id').val(liftId);
         $('#addReportModal').modal('show');
     }
+
+    // =============================================
+    // Видалення звіту
+    // =============================================
+    async function deleteReport(reportIndex) {
+        if (!confirm('Видалити цей звіт назавжди?')) return;
+
+        const modal = document.getElementById('liftDetailsModal');
+        const liftId = modal?.dataset?.liftId || $('#detail-id').text();
+        if (!liftId) return alert('Не вдалося визначити ID ліфта');
+
+        // reportIndex - це _originalIndex (індекс у БД inspectionHistory)
+        try {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            const response = await fetch(`/api/lifts/${encodeURIComponent(liftId)}/inspection-report/${reportIndex}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const result = await response.json();
+            if (result.success) {
+                showLiftDetails(liftId);
+            } else {
+                alert('Помилка: ' + (result.message || 'Не вдалося видалити'));
+            }
+        } catch (e) {
+            alert('Помилка видалення: ' + e.message);
+        }
+    }
+
+    // =============================================
+    // Надсилання звіту з історії по Email
+    // =============================================
+    async function sendReportByEmailFromHistory(liftId, report) {
+        const lift = (window.allLiftsData || []).find(l => (l._id || l.id)?.toString() === liftId?.toString());
+        const defaultEmail = lift?.client?.email || lift?.clientEmail || '';
+
+        const email = prompt('Введіть email адресу для надсилання звіту:', defaultEmail);
+        if (!email) return;
+
+        try {
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            const response = await fetch('/api/email/send-inspection-report', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ clientEmail: email, reportData: report })
+            });
+            const result = await response.json();
+            if (result.success) {
+                alert('Звіт успішно надіслано на ' + email);
+            } else {
+                alert('Помилка надсилання: ' + (result.message || 'Невідома помилка'));
+            }
+        } catch (e) {
+            console.error('❌ Помилка надсилання звіту:', e);
+            alert('Помилка надсилання звіту: ' + e.message);
+        }
+    }
+
+    function sendReportByEmailFromModal() {
+        const liftId = window.currentReportLiftId;
+        const report = window.currentReportForActions;
+        if (!liftId) { alert('Неможливо надіслати: ID ліфта не знайдено'); return; }
+        sendReportByEmailFromHistory(liftId, report);
+    }
+
+    function deleteReportFromModal() {
+        const reportIndex = window.currentReportOrigIndex;
+        if (reportIndex === null || reportIndex === undefined) { alert('Індекс звіту не визначено'); return; }
+        $('#viewReportModal').modal('hide');
+        setTimeout(() => deleteReport(reportIndex), 350);
+    }
+
+    // =============================================
+    // Прикріплення PDF до існуючого звіту
+    // =============================================
+    function attachPDFToReport(reportIndex) {
+        const modal = document.getElementById('liftDetailsModal');
+        const liftId = modal?.dataset?.liftId || $('#detail-id').text();
+        if (!liftId) return alert('Не вдалося визначити ID ліфта');
+
+        // Створюємо прихований input для вибору PDF
+        const inp = document.createElement('input');
+        inp.type = 'file';
+        inp.accept = '.pdf,image/*';
+        inp.style.display = 'none';
+        document.body.appendChild(inp);
+
+        inp.addEventListener('change', async function() {
+            const file = inp.files[0];
+            document.body.removeChild(inp);
+            if (!file) return;
+
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            const formData = new FormData();
+            formData.append('pdfFile', file);
+
+            try {
+                const response = await fetch(
+                    `/api/lifts/${encodeURIComponent(liftId)}/inspection-report/${reportIndex}/attach-pdf`,
+                    { method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: formData }
+                );
+                const result = await response.json();
+                if (result.success) {
+                    alert('PDF успішно прикріплено!');
+                    showLiftDetails(liftId);
+                } else {
+                    alert('Помилка: ' + (result.message || 'Не вдалося прикріпити PDF'));
+                }
+            } catch (e) {
+                alert('Помилка: ' + e.message);
+            }
+        });
+
+        inp.click();
+    }
     
     async function submitReport() {
         const liftId = $('#report-lift-id').val();
@@ -5842,19 +6071,39 @@
         }
         
         try {
-            // Формуємо дані звіту як JSON (не FormData, бо не завантажуємо файл)
-            const reportData = {
-                inspectionType: type,
-                inspectionDate: date,
-                status: status,
-                comments: description || '',
-                findings: description || ''
-            };
-            
-            console.log('📤 Дані звіту:', reportData);
-            
-            // Використовуємо apiCall для автоматичної обробки auth
-            const result = await apiCall(`/api/lifts/${encodeURIComponent(liftId)}/inspection-report`, 'POST', reportData);
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            const pdfFile = fileInput && fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+
+            let result;
+            if (pdfFile) {
+                // Якщо є PDF — надсилаємо через FormData
+                const formData = new FormData();
+                formData.append('inspectionType', type);
+                formData.append('inspectionDate', date);
+                formData.append('status', status);
+                formData.append('comments', description || '');
+                formData.append('findings', description || '');
+                formData.append('pdfFile', pdfFile);
+
+                console.log('📤 Відправка з PDF файлом:', pdfFile.name);
+                const response = await fetch(`/api/lifts/${encodeURIComponent(liftId)}/inspection-report`, {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token },
+                    body: formData
+                });
+                result = await response.json();
+            } else {
+                // Без файлу — JSON
+                const reportData = {
+                    inspectionType: type,
+                    inspectionDate: date,
+                    status: status,
+                    comments: description || '',
+                    findings: description || ''
+                };
+                console.log('📤 Дані звіту (JSON):', reportData);
+                result = await apiCall(`/api/lifts/${encodeURIComponent(liftId)}/inspection-report`, 'POST', reportData);
+            }
             
             console.log('📥 Відповідь сервера:', result);
             
@@ -5877,8 +6126,20 @@
     // Функції перегляду та друку звітів
     // ============================================
     
-    function viewReportDetails(report) {
-        console.log('👁️ Перегляд звіту:', report);
+    function viewReportDetails(report, reportIndex) {
+        console.log('👁️ Перегляд звіту:', report, 'index:', reportIndex);
+        
+        // Якщо індекс не переданий — шукаємо по об'єкту
+        if (reportIndex === undefined || reportIndex === null) {
+            reportIndex = allReports.indexOf(report);
+        }
+        
+        const fileUrl = report.fileUrl || report.reportFile || report.file || null;
+        
+        // Якщо є PDF — відкриваємо відразу в новій вкладці
+        if (fileUrl) {
+            window.open(fileUrl, '_blank');
+        }
         
         const date = report.inspectionDate || report.date 
             ? new Date(report.inspectionDate || report.date).toLocaleDateString('uk-UA', {
@@ -5887,86 +6148,64 @@
                 day: 'numeric'
             }) 
             : 'Невідома дата';
-        const type = report.inspectionType || report.type || 'Не вказано';
-        const notes = report.comments || report.findings || report.notes || 'Без коментарів';
+        const typeLabels = { inspection: 'Інспекція', maintenance: 'Технічне обслуговування', repair: 'Ремонт', emergency: 'Аварійний виклик' };
+        const typeRaw = report.inspectionType || report.type || '';
+        const type = typeLabels[typeRaw] || typeRaw || 'Не вказано';
+        const notes = report.comments || report.findings || report.notes || '';
         const status = report.status || 'completed';
-        const inspector = report.inspectorName || 'Невідомий';
-        const fileUrl = report.fileUrl || report.file || null;
-        
-        // Статус badge
-        let statusBadge = '';
-        let statusClass = '';
+        const inspector = report.inspectorName || report.inspector || '';
+
+        let statusBadge = '', statusClass = '';
         if (status === 'passed' || status === 'completed') {
-            statusBadge = 'Пройдено';
-            statusClass = 'success';
+            statusBadge = 'Пройдено'; statusClass = 'success';
         } else if (status === 'failed') {
-            statusBadge = 'Не пройдено';
-            statusClass = 'danger';
+            statusBadge = 'Не пройдено'; statusClass = 'danger';
         } else {
-            statusBadge = 'Виконано';
-            statusClass = 'info';
+            statusBadge = 'Виконано'; statusClass = 'info';
         }
         
-        // Іконка по типу
         let typeIcon = 'fa-clipboard-check';
-        if (type.toLowerCase().includes('ремонт') || type === 'repair') {
-            typeIcon = 'fa-wrench';
-        } else if (type.toLowerCase().includes('аварі') || type === 'emergency') {
-            typeIcon = 'fa-exclamation-triangle';
-        } else if (type.toLowerCase().includes('то') || type === 'maintenance') {
-            typeIcon = 'fa-tools';
-        }
+        if (typeRaw === 'repair') typeIcon = 'fa-wrench';
+        else if (typeRaw === 'emergency') typeIcon = 'fa-exclamation-triangle';
+        else if (typeRaw === 'maintenance') typeIcon = 'fa-tools';
         
         const detailsHtml = `
-            <div class="card">
-                <div class="card-header bg-${statusClass} text-white">
-                    <h5 class="mb-0">
-                        <i class="fas ${typeIcon}"></i> ${type}
+            <div class="card border-0">
+                <div class="card-header bg-${statusClass} text-white py-2">
+                    <h5 class="mb-0"><i class="fas ${typeIcon}"></i> ${type}
+                        <span class="badge badge-light text-${statusClass} ml-2">${statusBadge}</span>
                     </h5>
                 </div>
-                <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <p><strong><i class="fas fa-calendar"></i> Дата:</strong></p>
-                            <p class="ml-4">${date}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <p><strong><i class="fas fa-info-circle"></i> Статус:</strong></p>
-                            <p class="ml-4"><span class="badge badge-${statusClass}">${statusBadge}</span></p>
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <p><strong><i class="fas fa-user"></i> Інспектор:</strong></p>
-                            <p class="ml-4">${inspector}</p>
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <p><strong><i class="fas fa-comment"></i> Коментарі та висновки:</strong></p>
-                            <div class="ml-4 p-3 bg-light rounded">
-                                ${notes}
-                            </div>
-                        </div>
-                    </div>
-                    
+                <div class="card-body pb-2">
                     ${fileUrl ? `
-                        <div class="row">
-                            <div class="col-12">
-                                <p><strong><i class="fas fa-file-pdf"></i> Прикріплений файл:</strong></p>
-                                <a href="${fileUrl}" target="_blank" class="btn btn-outline-primary ml-4">
-                                    <i class="fas fa-external-link-alt"></i> Відкрити PDF файл
-                                </a>
-                            </div>
+                    <div class="alert alert-success d-flex align-items-center mb-3 py-2">
+                        <i class="fas fa-file-pdf fa-2x mr-3"></i>
+                        <div class="flex-grow-1">
+                            <strong>PDF звіт відкрито в новій вкладці</strong>
                         </div>
-                    ` : ''}
+                        <a href="${fileUrl}" target="_blank" class="btn btn-success btn-sm ml-2">
+                            <i class="fas fa-external-link-alt"></i> Відкрити PDF
+                        </a>
+                    </div>` : `
+                    <div class="alert alert-warning py-2 mb-3">
+                        <i class="fas fa-exclamation-triangle"></i> PDF файл не прикріплено
+                        ${reportIndex >= 0 ? `
+                        <button class="btn btn-sm btn-warning ml-2" onclick="attachPDFToReport(${reportIndex}); $('#viewReportModal').modal('hide');">
+                            <i class="fas fa-paperclip"></i> Прикріпити PDF
+                        </button>` : ''}
+                    </div>`}
+                    <div class="row">
+                        <div class="col-6"><strong><i class="fas fa-calendar text-muted"></i> Дата:</strong><br>${date}</div>
+                        <div class="col-6"><strong><i class="fas fa-user text-muted"></i> Інспектор:</strong><br>${inspector || '<em class="text-muted">Не вказано</em>'}</div>
+                    </div>
+                    ${notes ? `
+                    <div class="mt-3">
+                        <strong><i class="fas fa-comment text-muted"></i> Коментарі:</strong>
+                        <div class="p-2 bg-light rounded mt-1">${notes}</div>
+                    </div>` : ''}
                 </div>
-                <div class="card-footer text-muted">
-                    <small>
-                        <i class="fas fa-clock"></i> Створено: ${report.createdAt ? new Date(report.createdAt).toLocaleString('uk-UA') : 'Не вказано'}
-                    </small>
+                <div class="card-footer text-muted py-1">
+                    <small><i class="fas fa-clock"></i> ${report.createdAt ? new Date(report.createdAt).toLocaleString('uk-UA') : date}</small>
                 </div>
             </div>
         `;
@@ -5975,11 +6214,110 @@
         
         // Зберігаємо звіт для друку
         window.currentReportForPrint = report;
+        window.currentReportForActions = report;
+        window._currentReportFileUrl = fileUrl;
+        window.currentReportLiftId = document.getElementById('liftDetailsModal')?.dataset?.liftId || '';
+        window.currentReportOrigIndex = reportIndex !== undefined ? reportIndex : null;
+        
+        const btnDownload = document.getElementById('btn-download-report');
+        if (btnDownload) btnDownload.style.display = fileUrl ? '' : 'none';
         
         $('#viewReportModal').modal('show');
     }
+        const fileUrl = report.fileUrl || report.reportFile || report.file || null;
+
+        // Статус badge
+        let statusBadge = '', statusClass = '';
+        if (status === 'passed' || status === 'completed') {
+            statusBadge = 'Пройдено'; statusClass = 'success';
+        } else if (status === 'failed') {
+            statusBadge = 'Не пройдено'; statusClass = 'danger';
+        } else {
+            statusBadge = 'Виконано'; statusClass = 'info';
+        }
+        
+        // Іконка по типу
+        let typeIcon = 'fa-clipboard-check';
+        if (typeRaw === 'repair') typeIcon = 'fa-wrench';
+        else if (typeRaw === 'emergency') typeIcon = 'fa-exclamation-triangle';
+        else if (typeRaw === 'maintenance') typeIcon = 'fa-tools';
+        
+        const detailsHtml = `
+            <div class="card border-0">
+                <div class="card-header bg-${statusClass} text-white py-2">
+                    <h5 class="mb-0"><i class="fas ${typeIcon}"></i> ${type}
+                        <span class="badge badge-light text-${statusClass} ml-2">${statusBadge}</span>
+                    </h5>
+                </div>
+                <div class="card-body pb-2">
+                    <div class="row">
+                        <div class="col-6"><strong><i class="fas fa-calendar text-muted"></i> Дата:</strong><br>${date}</div>
+                        <div class="col-6"><strong><i class="fas fa-user text-muted"></i> Інспектор:</strong><br>${inspector || '<em class="text-muted">Не вказано</em>'}</div>
+                    </div>
+                    ${notes ? `
+                    <div class="mt-3">
+                        <strong><i class="fas fa-comment text-muted"></i> Коментарі:</strong>
+                        <div class="p-2 bg-light rounded mt-1">${notes}</div>
+                    </div>` : ''}
+                    <div class="mt-3">
+                        <strong><i class="fas fa-file-pdf text-${fileUrl ? 'success' : 'muted'}"></i> PDF документ:</strong>
+                        ${fileUrl ? `
+                        <div class="mt-1">
+                            <a href="${fileUrl}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-external-link-alt"></i> Відкрити в новій вкладці
+                            </a>
+                        </div>` : `
+                        <div class="mt-1">
+                            <span class="text-muted">PDF не прикріплено</span>
+                            ${reportIndex >= 0 ? `
+                            <button class="btn btn-sm btn-warning ml-2" onclick="attachPDFToReport(${reportIndex}); $('#viewReportModal').modal('hide');">
+                                <i class="fas fa-paperclip"></i> Прикріпити PDF
+                            </button>` : ''}
+                        </div>`}
+                    </div>
+                </div>
+                <div class="card-footer text-muted py-1">
+                    <small><i class="fas fa-clock"></i> ${report.createdAt ? new Date(report.createdAt).toLocaleString('uk-UA') : date}</small>
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('report-details-content').innerHTML = detailsHtml;
+        
+        // Зберігаємо звіт для дій
+        window.currentReportForPrint = report;
+        window.currentReportForActions = report;
+        window._currentReportFileUrl = fileUrl;
+        window.currentReportLiftId = document.getElementById('liftDetailsModal')?.dataset?.liftId || '';
+        window.currentReportOrigIndex = reportIndex !== undefined ? reportIndex : null;
+        
+        const btnDownload = document.getElementById('btn-download-report');
+        if (btnDownload) btnDownload.style.display = fileUrl ? '' : 'none';
+        
+        $('#viewReportModal').modal('show');
+    }
+
+    function downloadReportPDF() {
+        if (window._currentReportFileUrl) {
+            const a = document.createElement('a');
+            a.href = window._currentReportFileUrl;
+            a.download = '';
+            a.target = '_blank';
+            a.click();
+        }
+    }
     
     function printReport() {
+        // Якщо є PDF — відкриваємо для друку
+        if (window._currentReportFileUrl) {
+            const printWin = window.open(window._currentReportFileUrl, '_blank');
+            if (printWin) {
+                printWin.addEventListener('load', () => {
+                    try { printWin.print(); } catch(e) {}
+                });
+            }
+            return;
+        }
         if (window.currentReportForPrint) {
             printReportDirect(window.currentReportForPrint);
         }
@@ -5987,6 +6325,18 @@
     
     function printReportDirect(report) {
         console.log('🖨️ Друк звіту:', report);
+
+        // Якщо є PDF файл — відкриваємо його для друку
+        const fileUrl = report.fileUrl || report.reportFile || report.file || null;
+        if (fileUrl) {
+            const printWin = window.open(fileUrl, '_blank');
+            if (printWin) {
+                printWin.addEventListener('load', () => {
+                    try { printWin.print(); } catch(e) {}
+                });
+            }
+            return;
+        }
         
         const date = report.inspectionDate || report.date 
             ? new Date(report.inspectionDate || report.date).toLocaleDateString('uk-UA', {
@@ -5995,10 +6345,12 @@
                 day: 'numeric'
             }) 
             : 'Невідома дата';
-        const type = report.inspectionType || report.type || 'Не вказано';
-        const notes = report.comments || report.findings || report.notes || 'Без коментарів';
+        const typeLabels2 = { inspection: 'Інспекція', maintenance: 'Технічне обслуговування', repair: 'Ремонт', emergency: 'Аварійний виклик' };
+        const typeRaw2 = report.inspectionType || report.type || '';
+        const type = typeLabels2[typeRaw2] || typeRaw2 || 'Не вказано';
+        const notes = report.comments || report.findings || report.notes || '';
         const status = report.status || 'completed';
-        const inspector = report.inspectorName || 'Невідомий';
+        const inspector = report.inspectorName || report.inspector || '';
         
         // Статус
         let statusText = '';
@@ -6229,7 +6581,7 @@
                                 <i class="fas fa-sync"></i> Оновити
                             </button>
                             <button type="button" class="btn btn-sm btn-danger" onclick="deleteContract('${liftId}')">
-                                <i class="fas fa-trash"></i> Eliminar
+                                <i class="fas fa-trash"></i> Видалити
                             </button>
                         </div>
                     </div>
@@ -6288,7 +6640,8 @@
         const liftId = $('#contract-lift-id').val();
         const contractNumber = $('#contract-number').val();
         const startDate = $('#contract-start-date').val();
-        const endDate = $('#contract-end-date').val();
+        const autoRenew = $('#contract-auto-renew').is(':checked');
+        const endDate = autoRenew ? '' : $('#contract-end-date').val();
         const notes = $('#contract-notes').val();
         const fileInput = document.getElementById('contract-file');
         
@@ -6308,7 +6661,7 @@
             const formData = new FormData();
             formData.append('contractNumber', contractNumber);
             formData.append('startDate', startDate);
-            if (endDate) formData.append('endDate', endDate);
+            if (!autoRenew && endDate) formData.append('endDate', endDate);
             if (notes) formData.append('notes', notes);
             formData.append('contract', fileInput.files[0]);
             
@@ -6559,7 +6912,7 @@
         const exportCSVBtn = document.getElementById('exportCSVBtn');
         if (exportCSVBtn) {
             exportCSVBtn.addEventListener('click', async function() {
-                console.log('📥 Exportar CSV...');
+                console.log('📥 Експорт CSV...');
                 try {
                     // Отримуємо всі ліфти з API
                     const lifts = await window.loadLiftsFromAPI();
@@ -6639,8 +6992,8 @@
         const exportPDFBtn = document.getElementById('exportPDFBtn');
         if (exportPDFBtn) {
             exportPDFBtn.addEventListener('click', function() {
-                console.log('📄 Exportar PDF...');
-                alert('Exportar PDF буде доступний у наступній версії.\n\nНаразі використовуйте експорт CSV.');
+                console.log('📄 Експорт PDF...');
+                alert('Експорт PDF буде доступний у наступній версії.\n\nНаразі використайте експорт CSV.');
                 // TODO: Adicionar jsPDF бібліотеку та реалізувати експорт PDF
             });
             console.log('✅ Обробник PDF додано');

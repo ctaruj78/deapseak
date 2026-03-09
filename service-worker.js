@@ -1,7 +1,7 @@
 // service-worker.js
 // Кешування сторінок, інструкцій, чек-листів, завдань для офлайн-режиму
 
-const CACHE_NAME = 'deapseak-tech-cache-v3';
+const CACHE_NAME = 'deapseak-tech-cache-v4';
 const urlsToCache = [
   '/',
   '/pages/tech/ar-helper.html',

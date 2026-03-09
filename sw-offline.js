@@ -1,4 +1,4 @@
-const CACHE_NAME = 'deapseak-v1';
+const CACHE_NAME = 'deapseak-v2';
 const OFFLINE_URL = '/offline.html';
 
 // Файли для кешування при встановленні

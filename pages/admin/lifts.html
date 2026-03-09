@@ -1160,11 +1160,12 @@
                                         <small class="font-weight-normal text-muted ml-1">(необов'язково)</small>
                                     </div>
                                     <div class="sc-b">
+                                        <div id="edit-contract-file-banner" class="mb-3"></div>
                                         <div class="row">
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label>Тип договору</label>
-                                                    <select name="contractType" class="form-control">
+                                                    <select id="editContractType" name="contractType" class="form-control">
                                                         <option value="">— Оберіть —</option>
                                                         <option>Повне обслуговування</option>
                                                         <option>Часткове обслуговування</option>
@@ -1176,13 +1177,17 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label>Дата початку договору</label>
-                                                    <input type="date" name="contractStart" class="form-control">
+                                                    <input type="date" id="editContractStart" name="contractStart" class="form-control">
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label>Дата закінчення</label>
-                                                    <input type="date" name="contractEnd" class="form-control">
+                                                    <label>Термін дії</label>
+                                                    <div class="custom-control custom-switch mt-1">
+                                                        <input type="checkbox" class="custom-control-input" id="editContractAutoRenew" name="contractAutoRenew" checked>
+                                                        <label class="custom-control-label" for="editContractAutoRenew">Автоматичне продовження</label>
+                                                    </div>
+                                                    <small class="text-muted">Договір продовжується автоматично якщо клієнт не розірвав</small>
                                                 </div>
                                             </div>
                                         </div>
@@ -1190,14 +1195,14 @@
                                             <div class="col-md-6">
                                                 <div class="form-group">
                                                     <label>Номер договору</label>
-                                                    <input type="text" name="contractNumber" class="form-control" placeholder="CT-2024-0001">
+                                                    <input type="text" id="editContractNumber" name="contractNumber" class="form-control" placeholder="CT-2024-0001">
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
                                                     <label>Вартість обслуговування / міс (€)</label>
                                                     <div class="input-group">
-                                                        <input type="number" name="contractPrice" class="form-control" placeholder="0.00" step="0.01" min="0">
+                                                        <input type="number" id="editContractPrice" name="contractPrice" class="form-control" placeholder="0.00" step="0.01" min="0">
                                                         <div class="input-group-append">
                                                             <span class="input-group-text">€</span>
                                                         </div>
@@ -1452,9 +1457,6 @@
                                                       class="form-control" rows="3"
                                                       placeholder="Записи про ТО, ремонти, заміни деталей, особливості..."></textarea>
                                         </div>
-                                        <button type="button" class="btn btn-outline-info btn-sm" id="addInspectionReportBtn">
-                                            <i class="fas fa-file-upload mr-1"></i> Adicionar звіт інспекції (PDF)
-                                        </button>
                                     </div>
                                 </div>
 
@@ -1917,6 +1919,15 @@
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">
                         <i class="fas fa-times"></i> Закрити
                     </button>
+                    <button type="button" class="btn btn-outline-info" id="btn-download-report" style="display:none;" onclick="downloadReportPDF()">
+                        <i class="fas fa-download"></i> Завантажити PDF
+                    </button>
+                    <button type="button" class="btn btn-warning" id="viewReportEmailBtn" onclick="emailInspectionReportFromModal()">
+                        <i class="fas fa-envelope"></i> Надіслати Email клієнту
+                    </button>
+                    <button type="button" class="btn btn-danger" id="viewReportDeleteBtn" onclick="deleteInspectionReportFromModal()">
+                        <i class="fas fa-trash"></i> Видалити звіт
+                    </button>
                     <button type="button" class="btn btn-primary" onclick="printReport()">
                         <i class="fas fa-print"></i> Друкувати
                     </button>
@@ -1940,7 +1951,8 @@
                         <input type="hidden" id="report-lift-id">
                         <div class="form-group">
                             <label for="report-type">Тип звіту *</label>
-                            <select id="report-type" class="form-control" required>
+                            <select id="report-type" class="form-control" required
+                                onchange="document.getElementById('report-status-group').style.display=this.value==='inspection'?'block':'none';">
                                 <option value="">Оберіть тип...</option>
                                 <option value="inspection">Інспекція</option>
                                 <option value="maintenance">Технічне обслуговування</option>
@@ -1951,6 +1963,14 @@
                         <div class="form-group">
                             <label for="report-date">Дата *</label>
                             <input type="date" id="report-date" class="form-control" required>
+                        </div>
+                        <div class="form-group" id="report-status-group" style="display:none;">
+                            <label for="report-status">Результат інспекції</label>
+                            <select id="report-status" class="form-control">
+                                <option value="passed">✅ Пройдено — сертифікат видано (наст. через 2 роки)</option>
+                                <option value="failed">⚠️ Не пройдено — є клаузи (180 днів для виправлення)</option>
+                            </select>
+                            <small class="form-text text-muted">Визначає дату наступної інспекції</small>
                         </div>
                         <div class="form-group">
                             <label for="report-description">Опис</label>
@@ -1964,9 +1984,9 @@
                     </form>
                 </div>
                 <div class="modal-footer" style="flex-shrink: 0; border-top: 1px solid #dee2e6;">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
                     <button type="button" class="btn btn-primary" onclick="submitReport()">
-                        <i class="fas fa-save"></i> Guardar
+                        <i class="fas fa-save"></i> Зберегти
                     </button>
                 </div>
             </div>
@@ -1995,8 +2015,18 @@
                             <input type="date" id="contract-start-date" class="form-control" required>
                         </div>
                         <div class="form-group">
-                            <label for="contract-end-date">Дата закінчення <small class="text-muted">(необов'язково — при відсутності продовжується автоматично на 1 рік)</small></label>
-                            <input type="date" id="contract-end-date" class="form-control">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="contract-auto-renew" checked
+                                    onchange="document.getElementById('contract-end-date-wrap').style.display = this.checked ? 'none' : 'block'">
+                                <label class="custom-control-label font-weight-bold" for="contract-auto-renew">Автоматичне продовження</label>
+                            </div>
+                            <small class="text-muted">Договір продовжується автоматично, якщо клієнт не розірвав контракт</small>
+                        </div>
+                        <div id="contract-end-date-wrap" style="display:none;">
+                            <div class="form-group">
+                                <label for="contract-end-date">Дата закінчення <small class="text-muted">(якщо договір фіксований)</small></label>
+                                <input type="date" id="contract-end-date" class="form-control">
+                            </div>
                         </div>
                         <div class="form-group">
                             <label for="contract-notes">Примітки</label>
@@ -2212,196 +2242,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Inspection Report Modal (спрощена версія) -->
-    <div class="modal fade" id="inspectionReportModal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document" style="max-height: 90vh;">
-            <div class="modal-content" style="max-height: 90vh; display: flex; flex-direction: column;">
-                <div class="modal-header bg-warning">
-                    <h5 class="modal-title">
-                        <i class="fas fa-clipboard-check mr-2"></i>Adicionar звіт інспекції
-                    </h5>
-                    <button type="button" class="close" id="closeInspectionModalBtn" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body" style="flex: 1; overflow-y: auto; max-height: calc(90vh - 120px);">
-                    <form id="inspectionReportForm">
-                        <!-- Інформація про інспекцію -->
-                        <div class="card card-outline card-info mb-3">
-                            <div class="card-header">
-                                <h3 class="card-title"><i class="fas fa-info-circle mr-2"></i>Інформація про інспекцію</h3>
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="inspectionDate">Дата інспекції</label>
-                                            <input type="date" id="inspectionDate" name="inspectionDate" class="form-control" required>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="inspectionType">Тип інспекції</label>
-                                            <select class="form-control" id="inspectionType" name="inspectionType" required>
-                                                <option value="">Оберіть тип...</option>
-                                                <option value="technical">Технічна інспекція</option>
-                                                <option value="safety">Перевірка безпеки</option>
-                                                <option value="maintenance">Планове обслуговування</option>
-                                                <option value="repair">Ремонтні роботи</option>
-                                                <option value="certification">Сертифікація</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="inspectorName">Ім'я інспектора</label>
-                                            <input type="text" 
-                                                   id="inspectorName" 
-                                                   name="inspectorName"
-                                                   class="form-control" 
-                                                   placeholder="Введіть прізвище, ім'я та по-батькові інспектора" 
-                                                   autocomplete="off" 
-                                                   tabindex="1"
-                                                   maxlength="100"
-                                                   required>
-                                            <small class="form-text text-muted">Приклад: Петренко Петро Петрович</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="inspectionStatus">Статус інспекції</label>
-                                            <select class="form-control" id="inspectionStatus">
-                                                <option value="passed">Пройдено успішно</option>
-                                                <option value="failed">Виявлені порушення</option>
-                                                <option value="conditional">Умовно пройдено</option>
-                                                <option value="pending">Pendente повторної перевірки</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- PDF Звіт -->
-                        <div class="card card-outline card-success mb-3">
-                            <div class="card-header">
-                                <h3 class="card-title"><i class="fas fa-file-pdf mr-2"></i>PDF Звіт інспекції</h3>
-                            </div>
-                            <div class="card-body">
-                                <div class="form-group">
-                                    <label for="inspectionReportPDF">Завантажити PDF звіт</label>
-                                    <input type="file" id="inspectionReportPDF" class="form-control-file" accept="application/pdf" required>
-                                    <small class="text-muted">Тільки PDF файли, до 10MB</small>
-                                </div>
-                                
-                                <!-- Попередній перегляд та дії з PDF -->
-                                <div id="pdfReportPreviewContainer" style="display: none;" class="mt-3">
-                                    <div class="card">
-                                        <div class="card-header">
-                                            <h6 class="card-title mb-0">
-                                                <i class="fas fa-file-pdf text-danger mr-2"></i>
-                                                <span id="pdfReportFileName">Завантажений звіт</span>
-                                            </h6>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="btn-group mr-2" role="group">
-                                                <button type="button" class="btn btn-primary btn-sm" onclick="previewInspectionPDF()">
-                                                    <i class="fas fa-eye mr-1"></i>Переглянути
-                                                </button>
-                                                <button type="button" class="btn btn-success btn-sm" onclick="printInspectionPDF()">
-                                                    <i class="fas fa-print mr-1"></i>Друкувати
-                                                </button>
-                                                <button type="button" class="btn btn-info btn-sm" onclick="downloadInspectionPDF()">
-                                                    <i class="fas fa-download mr-1"></i>Завантажити
-                                                </button>
-                                            </div>
-                                            <div class="btn-group" role="group">
-                                                <button type="button" class="btn btn-warning btn-sm" onclick="emailInspectionPDF()">
-                                                    <i class="fas fa-envelope mr-1"></i>Email
-                                                </button>
-                                                <button type="button" class="btn btn-secondary btn-sm" onclick="archiveInspectionPDF()">
-                                                    <i class="fas fa-archive mr-1"></i>Архівувати
-                                                </button>
-                                                <button type="button" class="btn btn-danger btn-sm" onclick="removeInspectionPDF()">
-                                                    <i class="fas fa-trash mr-1"></i>Eliminar
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Спрощена інформація -->
-                        <div class="card card-outline card-info mb-3">
-                            <div class="card-header">
-                                <h3 class="card-title"><i class="fas fa-calendar mr-2"></i>Додаткова інформація</h3>
-                            </div>
-                            <div class="card-body">
-                                <div class="form-group">
-                                    <label>Автоматичне оновлення</label>
-                                    <div class="custom-control custom-checkbox">
-                                        <input type="checkbox" class="custom-control-input" id="updateMaintenanceDates" checked>
-                                        <label class="custom-control-label" for="updateMaintenanceDates">
-                                            Оновити дати ТО в основній інформації ліфта
-                                        </label>
-                                    </div>
-                                    <small class="text-muted">
-                                        Автоматично оновить "Останнє ТО" на дату цієї інспекції та розрахує "Наступне ТО"
-                                    </small>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="maintenanceFrequencyOverride">Періодичність для наступного ТО</label>
-                                    <select class="form-control" id="maintenanceFrequencyOverride">
-                                        <option value="">Використати стандартну (з налаштувань ліфта)</option>
-                                        <option value="3">Через 3 місяці</option>
-                                        <option value="6">Через 6 місяців</option>
-                                        <option value="12">Через 12 місяців</option>
-                                        <option value="24">Через 24 місяці</option>
-                                    </select>
-                                    <small class="text-muted">
-                                        Залишіть порожнім для використання стандартної періодичності ліфта
-                                    </small>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="inspectionComments">Коментарі інспектора</label>
-                                    <textarea class="form-control" 
-                                              id="inspectionComments" 
-                                              name="inspectionComments"
-                                              rows="4" 
-                                              placeholder="Введіть коментарі, рекомендації, виявлені недоліки або інші примітки...">
-                                    </textarea>
-                                    <small class="form-text text-muted">Необов'язкове поле для додаткової інформації</small>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer" style="flex-shrink: 0; border-top: 1px solid #dee2e6; background: #f8f9fa;">
-                    <div class="w-100 d-flex justify-content-between align-items-center">
-                        <div class="text-muted">
-                            <small><i class="fas fa-info-circle"></i> Переконайтеся, що всі поля заповнені</small>
-                        </div>
-                        <div>
-                            <button type="button" class="btn btn-secondary mr-2" id="cancelInspectionReportBtn">
-                                <i class="fas fa-times"></i> Cancelar
-                            </button>
-                            <button type="button" class="btn btn-success" id="saveInspectionReportBtn">
-                                <i class="fas fa-save"></i> Guardar звіт інспекції
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Municipality Notification Modal -->
     <div class="modal fade" id="municipalityModal" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
@@ -3747,10 +3587,14 @@
         let calculatedNextMaintenance = null;
         if (shouldUpdateMaintenance) {
             const inspectionDateObj = new Date(inspectionDate);
-            const frequencyMonths = frequencyOverride ? parseInt(frequencyOverride) : 6; // стандартно 6 місяців
-            
             calculatedNextMaintenance = new Date(inspectionDateObj);
-            calculatedNextMaintenance.setMonth(calculatedNextMaintenance.getMonth() + frequencyMonths);
+            if (frequencyOverride) {
+                calculatedNextMaintenance.setMonth(calculatedNextMaintenance.getMonth() + parseInt(frequencyOverride));
+            } else if (inspectionStatus === 'failed') {
+                calculatedNextMaintenance.setDate(calculatedNextMaintenance.getDate() + 180); // 180 днів для виправлення клауз
+            } else {
+                calculatedNextMaintenance.setMonth(calculatedNextMaintenance.getMonth() + 24); // 2 роки для успішної інспекції
+            }
             calculatedNextMaintenance = calculatedNextMaintenance.toISOString().split('T')[0]; // YYYY-MM-DD формат
         }
 
@@ -4805,7 +4649,7 @@
                 
                 // Частота інспекцій - тільки якщо вказана
                 $('#detail-frequency').text(
-                    lift.inspectionFrequency ? `${lift.inspectionFrequency} міс.` : 'Не вказано'
+                    lift.inspectionFrequency ? (lift.inspectionFrequency === 24 ? '2 роки' : lift.inspectionFrequency === 12 ? '1 рік' : `${lift.inspectionFrequency} міс.`) : 'Не вказано'
                 );
                 
                 // Розташування з нової структури
@@ -5123,6 +4967,46 @@
             $('#enhancedClientPhone').val(client.phone || lift.clientPhone || lift.phone || '');
             $('#enhancedContactPerson').val(lift.contactPerson || '');
             $('#enhancedAccessCode').val(lift.intercomCode || lift.accessCode || '');
+
+            // Контракт
+            const contract = lift.maintenanceContract || null;
+            if (contract) {
+                $('#editContractType').val(contract.contractType || '');
+                if (contract.startDate) $('#editContractStart').val(new Date(contract.startDate).toISOString().split('T')[0]);
+                $('#editContractNumber').val(contract.contractNumber || '');
+                $('#editContractPrice').val(contract.contractPrice || '');
+                $('#editContractAutoRenew').prop('checked', !contract.endDate);
+                const banner = document.getElementById('edit-contract-file-banner');
+                if (banner) {
+                    if (contract.contractFile) {
+                        const cfUrl = contract.contractFile.startsWith('/') ? contract.contractFile : `/uploads/${contract.contractFile}`;
+                        const cfStart = contract.startDate ? new Date(contract.startDate).toLocaleDateString('uk-UA') : 'Невідомо';
+                        const cfEnd = contract.endDate ? new Date(contract.endDate).toLocaleDateString('uk-UA') : null;
+                        const cfPeriod = cfEnd ? `${cfStart} – ${cfEnd}` : `з ${cfStart} (автопродовження)`;
+                        banner.innerHTML = `
+                            <div class="alert alert-success py-2 mb-0 d-flex align-items-center">
+                                <i class="fas fa-file-contract fa-lg mr-2"></i>
+                                <div class="flex-grow-1">
+                                    <strong>Контракт завантажено</strong> №${contract.contractNumber || '—'}
+                                    <span class="text-success ml-2">&bull; ${cfPeriod}</span>
+                                </div>
+                                <a href="${cfUrl}" target="_blank" class="btn btn-sm btn-outline-success ml-2">
+                                    <i class="fas fa-eye"></i> Переглянути
+                                </a>
+                            </div>`;
+                    } else {
+                        banner.innerHTML = `<div class="alert alert-warning py-2 mb-0"><i class="fas fa-exclamation-triangle"></i> Файл контракту не завантажено</div>`;
+                    }
+                }
+            } else {
+                $('#editContractType').val('');
+                $('#editContractStart').val('');
+                $('#editContractNumber').val('');
+                $('#editContractPrice').val('');
+                $('#editContractAutoRenew').prop('checked', true);
+                const banner = document.getElementById('edit-contract-file-banner');
+                if (banner) banner.innerHTML = `<div class="alert alert-light py-2 mb-0 text-muted"><i class="fas fa-info-circle"></i> Контракт ще не завантажено</div>`;
+            }
             
             // Технічні дані
             $('#enhancedLiftStatus').val(lift.status || 'operational');
@@ -5563,7 +5447,8 @@
         
         try {
             // Використовуємо inspectionHistory з моделі ліфта
-            allReports = lift.inspectionHistory || [];
+            // Зберігаємо оригінальний індекс для API видалення
+            allReports = (lift.inspectionHistory || []).map((r, i) => ({ ...r, _originalIndex: i }));
             
             if (allReports.length === 0) {
                 container.innerHTML = `
@@ -5666,15 +5551,14 @@
                 const type = report.inspectionType || report.type || 'Не вказано';
                 const notes = report.comments || report.findings || report.notes || 'Без коментарів';
                 const status = report.status || 'completed';
-                const inspector = report.inspectorName || 'Невідомий';
-                const fileUrl = report.fileUrl || report.file || null;
+                const inspector = report.inspectorName || report.inspector || 'Невідомий';
+                const fileUrl = report.fileUrl || report.reportFile || report.file || null;
+                const reportLiftId = document.getElementById('liftDetailsModal')?.dataset?.liftId || '';
+                const reportOrigIndex = report._originalIndex !== undefined ? report._originalIndex : index;
+                const reportJson = JSON.stringify(report).replace(/'/g, "&apos;");
                 
                 // Статус badge
-                const statusBadge = status === 'passed' || status === 'completed'
-                    ? '<span class="badge badge-success">Пройдено</span>'
-                    : status === 'failed'
-                    ? '<span class="badge badge-danger">Не пройдено</span>'
-                    : '<span class="badge badge-info">Виконано</span>';
+                const statusBadge = '<span class="badge badge-secondary">Додано</span>';
                 
                 html += `
                     <div class="list-group-item">
@@ -5689,11 +5573,17 @@
                                 <p class="mb-1"><small>${notes}</small></p>
                             </div>
                             <div class="btn-group-vertical ml-2">
-                                <button class="btn btn-sm btn-outline-primary mb-1" onclick='viewReportDetails(${JSON.stringify(report).replace(/'/g, "&apos;")})' title="Переглянути деталі">
+                                <button class="btn btn-sm btn-outline-primary mb-1" onclick='viewReportDetails(${reportJson})' title="Переглянути деталі">
                                     <i class="fas fa-eye"></i> Деталі
                                 </button>
-                                <button class="btn btn-sm btn-outline-success mb-1" onclick='printReportDirect(${JSON.stringify(report).replace(/'/g, "&apos;")})' title="Друкувати звіт">
+                                <button class="btn btn-sm btn-outline-success mb-1" onclick='printReportDirect(${reportJson})' title="Друкувати звіт">
                                     <i class="fas fa-print"></i> Друк
+                                </button>
+                                <button class="btn btn-sm btn-outline-warning mb-1" onclick='emailInspectionReport("${reportLiftId}", ${reportOrigIndex}, ${reportJson})' title="Надіслати клієнту Email">
+                                    <i class="fas fa-envelope"></i> Email
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger mb-1" onclick='deleteInspectionReport("${reportLiftId}", ${reportOrigIndex})' title="Видалити звіт">
+                                    <i class="fas fa-trash"></i> Видалити
                                 </button>
                                 ${fileUrl ? `
                                     <a href="${fileUrl}" target="_blank" class="btn btn-sm btn-outline-info" title="Відкрити PDF файл">
@@ -5769,19 +5659,39 @@
         }
         
         try {
-            // Формуємо дані звіту як JSON (не FormData, бо не завантажуємо файл)
-            const reportData = {
-                inspectionType: type,
-                inspectionDate: date,
-                status: status,
-                comments: description || '',
-                findings: description || ''
-            };
-            
-            console.log('📤 Дані звіту:', reportData);
-            
-            // Використовуємо apiCall для автоматичної обробки auth
-            const result = await apiCall(`/api/lifts/${encodeURIComponent(liftId)}/inspection-report`, 'POST', reportData);
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            const pdfFile = fileInput && fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+
+            let result;
+            if (pdfFile) {
+                // Якщо є PDF — надсилаємо через FormData
+                const formData = new FormData();
+                formData.append('inspectionType', type);
+                formData.append('inspectionDate', date);
+                formData.append('status', status);
+                formData.append('comments', description || '');
+                formData.append('findings', description || '');
+                formData.append('pdfFile', pdfFile);
+
+                console.log('📤 Відправка з PDF файлом:', pdfFile.name);
+                const response = await fetch(`/api/lifts/${encodeURIComponent(liftId)}/inspection-report`, {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token },
+                    body: formData
+                });
+                result = await response.json();
+            } else {
+                // Без файлу — JSON
+                const reportData = {
+                    inspectionType: type,
+                    inspectionDate: date,
+                    status: status,
+                    comments: description || '',
+                    findings: description || ''
+                };
+                console.log('📤 Дані звіту (JSON):', reportData);
+                result = await apiCall(`/api/lifts/${encodeURIComponent(liftId)}/inspection-report`, 'POST', reportData);
+            }
             
             console.log('📥 Відповідь сервера:', result);
             
@@ -5789,7 +5699,6 @@
                 alert('Звіт успішно додано!');
                 $('#addReportModal').modal('hide');
                 $('#addReportForm')[0].reset();
-                // Оновлюємо деталі ліфта
                 showLiftDetails(liftId);
             } else {
                 alert('Помилка: ' + (result.message || result.error || 'Не вдалося додати звіт'));
@@ -5807,6 +5716,13 @@
     function viewReportDetails(report) {
         console.log('👁️ Перегляд звіту:', report);
         
+        const fileUrl = report.fileUrl || report.reportFile || report.file || null;
+        
+        // Якщо є PDF — відкриваємо відразу в новій вкладці
+        if (fileUrl) {
+            window.open(fileUrl, '_blank');
+        }
+        
         const date = report.inspectionDate || report.date 
             ? new Date(report.inspectionDate || report.date).toLocaleDateString('uk-UA', {
                 year: 'numeric',
@@ -5814,99 +5730,103 @@
                 day: 'numeric'
             }) 
             : 'Невідома дата';
-        const type = report.inspectionType || report.type || 'Не вказано';
-        const notes = report.comments || report.findings || report.notes || 'Без коментарів';
+        const typeLabels = { inspection: 'Інспекція', maintenance: 'Технічне обслуговування', repair: 'Ремонт', emergency: 'Аварійний виклик' };
+        const typeRaw = report.inspectionType || report.type || '';
+        const type = typeLabels[typeRaw] || typeRaw || 'Не вказано';
+        const notes = report.comments || report.findings || report.notes || '';
         const status = report.status || 'completed';
-        const inspector = report.inspectorName || 'Невідомий';
-        const fileUrl = report.fileUrl || report.file || null;
+        const inspector = report.inspectorName || report.inspector || '';
         
-        // Статус badge
-        let statusBadge = '';
-        let statusClass = '';
+        let statusBadge = '', statusClass = '';
         if (status === 'passed' || status === 'completed') {
-            statusBadge = 'Пройдено';
-            statusClass = 'success';
+            statusBadge = 'Пройдено'; statusClass = 'success';
         } else if (status === 'failed') {
-            statusBadge = 'Не пройдено';
-            statusClass = 'danger';
+            statusBadge = 'Не пройдено'; statusClass = 'danger';
         } else {
-            statusBadge = 'Виконано';
-            statusClass = 'info';
+            statusBadge = 'Виконано'; statusClass = 'info';
         }
         
-        // Іконка по типу
         let typeIcon = 'fa-clipboard-check';
-        if (type.toLowerCase().includes('ремонт') || type === 'repair') {
-            typeIcon = 'fa-wrench';
-        } else if (type.toLowerCase().includes('аварі') || type === 'emergency') {
-            typeIcon = 'fa-exclamation-triangle';
-        } else if (type.toLowerCase().includes('то') || type === 'maintenance') {
-            typeIcon = 'fa-tools';
-        }
+        if (typeRaw === 'repair') typeIcon = 'fa-wrench';
+        else if (typeRaw === 'emergency') typeIcon = 'fa-exclamation-triangle';
+        else if (typeRaw === 'maintenance') typeIcon = 'fa-tools';
         
         const detailsHtml = `
-            <div class="card">
-                <div class="card-header bg-${statusClass} text-white">
-                    <h5 class="mb-0">
-                        <i class="fas ${typeIcon}"></i> ${type}
+            <div class="card border-0">
+                <div class="card-header bg-${statusClass} text-white py-2">
+                    <h5 class="mb-0"><i class="fas ${typeIcon}"></i> ${type}
+                        <span class="badge badge-light text-${statusClass} ml-2">${statusBadge}</span>
                     </h5>
                 </div>
-                <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <p><strong><i class="fas fa-calendar"></i> Дата:</strong></p>
-                            <p class="ml-4">${date}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <p><strong><i class="fas fa-info-circle"></i> Статус:</strong></p>
-                            <p class="ml-4"><span class="badge badge-${statusClass}">${statusBadge}</span></p>
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <p><strong><i class="fas fa-user"></i> Інспектор:</strong></p>
-                            <p class="ml-4">${inspector}</p>
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <p><strong><i class="fas fa-comment"></i> Коментарі та висновки:</strong></p>
-                            <div class="ml-4 p-3 bg-light rounded">
-                                ${notes}
-                            </div>
-                        </div>
-                    </div>
-                    
+                <div class="card-body pb-2">
                     ${fileUrl ? `
-                        <div class="row">
-                            <div class="col-12">
-                                <p><strong><i class="fas fa-file-pdf"></i> Прикріплений файл:</strong></p>
-                                <a href="${fileUrl}" target="_blank" class="btn btn-outline-primary ml-4">
-                                    <i class="fas fa-external-link-alt"></i> Відкрити PDF файл
-                                </a>
-                            </div>
+                    <div class="alert alert-success d-flex align-items-center mb-3 py-2">
+                        <i class="fas fa-file-pdf fa-2x mr-3"></i>
+                        <div class="flex-grow-1">
+                            <strong>PDF звіт відкрито в новій вкладці</strong>
                         </div>
-                    ` : ''}
+                        <a href="${fileUrl}" target="_blank" class="btn btn-success btn-sm ml-2">
+                            <i class="fas fa-external-link-alt"></i> Відкрити PDF
+                        </a>
+                    </div>` : `
+                    <div class="alert alert-warning py-2 mb-3">
+                        <i class="fas fa-exclamation-triangle"></i> PDF файл не прикріплено
+                    </div>`}
+                    <div class="row">
+                        <div class="col-6"><strong><i class="fas fa-calendar text-muted"></i> Дата:</strong><br>${date}</div>
+                        <div class="col-6"><strong><i class="fas fa-user text-muted"></i> Інспектор:</strong><br>${inspector || '<em class="text-muted">Не вказано</em>'}</div>
+                    </div>
+                    ${notes ? `
+                    <div class="mt-3">
+                        <strong><i class="fas fa-comment text-muted"></i> Коментарі:</strong>
+                        <div class="p-2 bg-light rounded mt-1">${notes}</div>
+                    </div>` : ''}
                 </div>
-                <div class="card-footer text-muted">
-                    <small>
-                        <i class="fas fa-clock"></i> Створено: ${report.createdAt ? new Date(report.createdAt).toLocaleString('uk-UA') : 'Не вказано'}
-                    </small>
+                <div class="card-footer text-muted py-1">
+                    <small><i class="fas fa-clock"></i> ${report.createdAt ? new Date(report.createdAt).toLocaleString('uk-UA') : date}</small>
                 </div>
             </div>
         `;
         
         document.getElementById('report-details-content').innerHTML = detailsHtml;
         
-        // Зберігаємо звіт для друку
+        // Зберігаємо звіт для дій
         window.currentReportForPrint = report;
+        window.currentReportForActions = report;
+        window._currentReportFileUrl = fileUrl;
+        window.currentReportLiftId = document.getElementById('liftDetailsModal')?.dataset?.liftId || '';
+        window.currentReportOrigIndex = report._originalIndex !== undefined ? report._originalIndex : null;
+        
+        const btnDownload = document.getElementById('btn-download-report');
+        if (btnDownload) btnDownload.style.display = fileUrl ? '' : 'none';
+        
+        const modalFooterEmailBtn = document.getElementById('viewReportEmailBtn');
+        const modalFooterDeleteBtn = document.getElementById('viewReportDeleteBtn');
+        if (modalFooterEmailBtn) modalFooterEmailBtn.style.display = window.currentReportLiftId ? '' : 'none';
+        if (modalFooterDeleteBtn) modalFooterDeleteBtn.style.display = (window.currentReportLiftId && window.currentReportOrigIndex !== null) ? '' : 'none';
         
         $('#viewReportModal').modal('show');
     }
+
+    function downloadReportPDF() {
+        if (window._currentReportFileUrl) {
+            const a = document.createElement('a');
+            a.href = window._currentReportFileUrl;
+            a.download = '';
+            a.target = '_blank';
+            a.click();
+        }
+    }
     
     function printReport() {
+        // Якщо є PDF — відкриваємо для друку
+        if (window._currentReportFileUrl) {
+            const printWin = window.open(window._currentReportFileUrl, '_blank');
+            if (printWin) {
+                printWin.addEventListener('load', () => { try { printWin.print(); } catch(e) {} });
+            }
+            return;
+        }
         if (window.currentReportForPrint) {
             printReportDirect(window.currentReportForPrint);
         }
@@ -5915,6 +5835,16 @@
     function printReportDirect(report) {
         console.log('🖨️ Друк звіту:', report);
         
+        // Якщо є PDF файл — відкриваємо його для друку
+        const fileUrl = report.fileUrl || report.reportFile || report.file || null;
+        if (fileUrl) {
+            const printWin = window.open(fileUrl, '_blank');
+            if (printWin) {
+                printWin.addEventListener('load', () => { try { printWin.print(); } catch(e) {} });
+            }
+            return;
+        }
+        
         const date = report.inspectionDate || report.date 
             ? new Date(report.inspectionDate || report.date).toLocaleDateString('uk-UA', {
                 year: 'numeric',
@@ -5925,7 +5855,7 @@
         const type = report.inspectionType || report.type || 'Не вказано';
         const notes = report.comments || report.findings || report.notes || 'Без коментарів';
         const status = report.status || 'completed';
-        const inspector = report.inspectorName || 'Невідомий';
+        const inspector = report.inspectorName || report.inspector || 'Невідомий';
         
         // Статус
         let statusText = '';
@@ -6215,7 +6145,8 @@
         const liftId = $('#contract-lift-id').val();
         const contractNumber = $('#contract-number').val();
         const startDate = $('#contract-start-date').val();
-        const endDate = $('#contract-end-date').val();
+        const autoRenew = $('#contract-auto-renew').is(':checked');
+        const endDate = autoRenew ? '' : $('#contract-end-date').val();
         const notes = $('#contract-notes').val();
         const fileInput = document.getElementById('contract-file');
         
@@ -6235,7 +6166,7 @@
             const formData = new FormData();
             formData.append('contractNumber', contractNumber);
             formData.append('startDate', startDate);
-            if (endDate) formData.append('endDate', endDate);
+            if (!autoRenew && endDate) formData.append('endDate', endDate);
             if (notes) formData.append('notes', notes);
             formData.append('contract', fileInput.files[0]);
             
@@ -6342,6 +6273,77 @@
             console.error('❌ Помилка видалення контракту:', error);
             alert('Помилка видалення контракту');
         }
+    }
+
+    // ============================================
+    // Функції для роботи зі звітами інспекцій
+    // ============================================
+
+    async function deleteInspectionReport(liftId, reportIndex) {
+        if (!liftId) { alert('ID ліфта не знайдено'); return; }
+        if (reportIndex === undefined || reportIndex === null) { alert('Індекс звіту не визначено'); return; }
+        if (!confirm('Ви впевнені, що хочете видалити цей звіт?')) return;
+
+        try {
+            const result = await apiCall(`/api/lifts/${liftId}/inspection-report/${reportIndex}`, 'DELETE');
+
+            if (result && result.success) {
+                alert('Звіт успішно видалено');
+                showLiftDetails(liftId);
+            } else {
+                alert('Помилка видалення: ' + (result?.message || 'Невідома помилка'));
+            }
+        } catch (error) {
+            console.error('❌ Помилка видалення звіту:', error);
+            alert('Помилка видалення звіту');
+        }
+    }
+
+    async function emailInspectionReport(liftId, reportIndex, report) {
+        // Спробуємо отримати email клієнта з даних ліфта
+        const lift = (window.allLiftsData || []).find(l => (l._id || l.id)?.toString() === liftId?.toString());
+        const defaultEmail = lift?.client?.email || lift?.clientEmail || '';
+
+        const email = prompt('Введіть email адресу для надсилання звіту:', defaultEmail);
+        if (!email) return;
+
+        try {
+            const result = await apiCall('/api/email/send-inspection-report', 'POST', {
+                clientEmail: email,
+                reportData: report
+            });
+
+            if (result && result.success) {
+                alert('Звіт успішно надіслано на ' + email);
+            } else {
+                alert('Помилка надсилання: ' + (result?.message || 'Невідома помилка'));
+            }
+        } catch (error) {
+            console.error('❌ Помилка надсилання звіту:', error);
+            alert('Помилка надсилання звіту');
+        }
+    }
+
+    function deleteInspectionReportFromModal() {
+        const liftId = window.currentReportLiftId;
+        const reportIndex = window.currentReportOrigIndex;
+        if (!liftId || reportIndex === null || reportIndex === undefined) {
+            alert('Неможливо видалити: дані звіту не знайдено');
+            return;
+        }
+        $('#viewReportModal').modal('hide');
+        setTimeout(() => deleteInspectionReport(liftId, reportIndex), 350);
+    }
+
+    function emailInspectionReportFromModal() {
+        const liftId = window.currentReportLiftId;
+        const reportIndex = window.currentReportOrigIndex;
+        const report = window.currentReportForActions;
+        if (!liftId) {
+            alert('Неможливо надіслати: ID ліфта не знайдено');
+            return;
+        }
+        emailInspectionReport(liftId, reportIndex, report);
     }
     
     // ========================

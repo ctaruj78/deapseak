@@ -1394,7 +1394,7 @@
                 }
                 
                 if (data.success && data.analysis) {
-                    displayAnalysisResults(data.analysis, data.extractedText);
+                    displayAnalysisResults(data.analysis, data.extractedText, data.ocrUsed);
                 } else {
                     resultsContent.innerHTML = `<div class="alert alert-danger">❌ Помилка: ${data.error || data.message || 'Не вдалося проаналізувати звіт'}</div>`;
                 }
@@ -1405,18 +1405,34 @@
             });
         }
 
-        function displayAnalysisResults(result, extractedText) {
+        function displayAnalysisResults(result, extractedText, ocrUsed) {
             console.log('🎨 displayAnalysisResults called with:', result);
             console.log('📋 Violations:', result.violations);
             console.log('📊 Stats:', result.stats);
             console.log('📝 Extracted text:', extractedText ? extractedText.length + ' chars' : 'none');
+            console.log('🔎 OCR used:', ocrUsed);
             
             const resultsContent = document.getElementById('analysisResultsContent');
             
             const metadata = result.metadata || {};
             const stats = result.stats || { total: 0, critical: 0, medium: 0, low: 0 };
             
-            let html = `
+            // Попередження для сканованих документів (OCR)
+            const ocrWarning = ocrUsed ? `
+                <div class="alert alert-warning alert-dismissible" role="alert" style="border-left: 4px solid #e08e0b;">
+                    <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+                    <h6 class="alert-heading"><i class="fas fa-scan mr-1"></i><i class="fas fa-exclamation-triangle mr-1"></i> Documento digitalizado (scan) detetado</h6>
+                    <hr style="margin: 6px 0;">
+                    <p class="mb-1">Este PDF parece ser um <strong>documento digitalizado</strong> (scan), não um PDF digital nativo. O sistema utilizou reconhecimento ótico de texto (OCR) para extrair o conteúdo, o que pode resultar em:</p>
+                    <ul class="mb-2" style="padding-left: 20px;">
+                        <li>Texto incorretamente reconhecido (letras trocadas, palavras unidas)</li>
+                        <li>Cláusulas C1/C2/C3 que podem ter sido perdidas ou mal lidas</li>
+                        <li>Números de artigos ou datas imprecisas</li>
+                    </ul>
+                    <p class="mb-0"><strong>💡 Recomendação:</strong> Para uma análise mais precisa e fiável, forneça sempre o <strong>PDF digital original</strong> (gerado diretamente pelo software da entidade inspetora, não uma fotocópia ou scan). Em caso de dúvida, confirme os resultados com o documento físico.</p>
+                </div>` : '';
+            
+            let html = ocrWarning + `
                 <div class="row">
                     <div class="col-md-12">
                         <div class="callout ${result.passed ? 'callout-success' : 'callout-danger'}">

@@ -722,21 +722,21 @@
 
     <!-- Модальне вікно деталей ліфта -->
     <div class="modal fade" id="liftDetailsModal" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Деталі ліфта</h5>
-                    <button type="button" class="close" data-dismiss="modal">
+        <div class="modal-dialog modal-xl" role="document" style="max-width: 90vw; margin: 1rem auto;">
+            <div class="modal-content" style="max-height: 95vh; display: flex; flex-direction: column;">
+                <div class="modal-header bg-primary text-white" style="flex-shrink: 0;">
+                    <h5 class="modal-title"><i class="fas fa-elevator"></i> Деталі ліфта</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">
                         <span>&times;</span>
                     </button>
                 </div>
-                <div class="modal-body" id="liftDetailsContent">
+                <div class="modal-body" id="liftDetailsContent" style="flex: 1; overflow-y: auto; overflow-x: hidden;">
                     <!-- Вміст деталей ліфта буде завантажено тут -->
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                <div class="modal-footer" style="flex-shrink: 0;">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times"></i> Закрити</button>
                     <button type="button" class="btn btn-primary" onclick="liftsManager.requestService(currentLiftId)">
-                        Замовити послугу
+                        <i class="fas fa-tools"></i> Замовити послугу
                     </button>
                 </div>
             </div>
@@ -762,6 +762,16 @@
 
     <script>
         let currentLiftId = null;
+        
+        // Очищаємо карту при закритті модального вікна
+        $('#liftDetailsModal').on('hidden.bs.modal', function() {
+            if (window._clientLiftMap) {
+                window._clientLiftMap.remove();
+                window._clientLiftMap = null;
+            }
+            // Закриваємо також дочірній модал перегляду звіту
+            $('#clientReportViewModal').modal('hide');
+        });
         
         function logout() {
             if (confirm('Ви впевнені, що хочете вийти з системи?')) {
