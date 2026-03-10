@@ -507,7 +507,10 @@ $(document).ready(function() {
 
 async function loadAllRegulations() {
     try {
-        const response = await fetch('/api/regulations');
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/regulations', {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
         const data = await response.json();
         
         if (data.success) {
@@ -628,7 +631,10 @@ async function searchRegulations() {
     }
     
     try {
-        const response = await fetch(`/api/regulations?keyword=${encodeURIComponent(query)}`);
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/regulations?keyword=${encodeURIComponent(query)}`, {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
         const data = await response.json();
         
         if (data.success) {

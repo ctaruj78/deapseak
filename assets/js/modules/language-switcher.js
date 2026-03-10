@@ -59,9 +59,12 @@ class LanguageSwitcher {
   applyTranslations() {
     const t = this.translations[this.current];
     if (!t) return;
-    document.querySelector('h1')?.textContent = t.lifts;
-    document.querySelector('.card-title')?.textContent = t.map;
-    document.querySelectorAll('.overview-card')[0]?.querySelector('p')?.textContent = t.lifts;
+    const h1 = document.querySelector('h1');
+    if (h1) h1.textContent = t.lifts;
+    const cardTitle = document.querySelector('.card-title');
+    if (cardTitle) cardTitle.textContent = t.map;
+    const overviewCard = document.querySelectorAll('.overview-card')[0];
+    if (overviewCard) { const p = overviewCard.querySelector('p'); if (p) p.textContent = t.lifts; }
     document.querySelectorAll('.card-title').forEach(card => {
       if (card.textContent.includes('Документація')) card.textContent = t.documentation;
       if (card.textContent.includes('Фідбек')) card.textContent = t.feedback;

@@ -727,7 +727,7 @@
                                                 <div class="action-icon">🔧</div>
                                                 <h5>Заявка на ТО</h5>
                                                 <p>Планове технічне обслуговування</p>
-                                                <button class="btn btn-light btn-sm" onclick="requestsManager.createMaintenanceRequest()">
+                                                <button class="btn btn-light btn-sm" onclick="clientRequestsManager.createMaintenanceRequest()">
                                                     Створити
                                                 </button>
                                             </div>
@@ -737,7 +737,7 @@
                                                 <div class="action-icon">⚠️</div>
                                                 <h5>Аварійний ремонт</h5>
                                                 <p>Терміновий ремонт ліфта</p>
-                                                <button class="btn btn-light btn-sm" onclick="requestsManager.createRepairRequest()">
+                                                <button class="btn btn-light btn-sm" onclick="clientRequestsManager.createRepairRequest()">
                                                     Створити
                                                 </button>
                                             </div>
@@ -747,7 +747,7 @@
                                                 <div class="action-icon">💬</div>
                                                 <h5>Консультація</h5>
                                                 <p>Консультація з техніком</p>
-                                                <button class="btn btn-light btn-sm" onclick="requestsManager.createConsultationRequest()">
+                                                <button class="btn btn-light btn-sm" onclick="clientRequestsManager.createConsultationRequest()">
                                                     Замовити
                                                 </button>
                                             </div>
@@ -757,7 +757,7 @@
                                                 <div class="action-icon">📋</div>
                                                 <h5>Технічний огляд</h5>
                                                 <p>Повний огляд ліфта</p>
-                                                <button class="btn btn-dark btn-sm" onclick="requestsManager.createInspectionRequest()">
+                                                <button class="btn btn-dark btn-sm" onclick="clientRequestsManager.createInspectionRequest()">
                                                     Запланувати
                                                 </button>
                                             </div>
@@ -950,6 +950,8 @@
                     toastr.error('Помилка з\'єднання з сервером');
                 }
             }
+
+            async submitNewRequest() {
                 try {
                     // Отримуємо дані з форми
                     const type = document.getElementById('requestType').value;
@@ -1121,6 +1123,26 @@
             rateTechnician(requestId) {
                 // Логіка для оцінки техніка
                 toastr.info('Функція оцінки техніка буде додана пізніше');
+            }
+
+            createMaintenanceRequest() {
+                document.getElementById('requestType').value = 'maintenance';
+                $('#newRequestModal').modal('show');
+            }
+
+            createRepairRequest() {
+                document.getElementById('requestType').value = 'repair';
+                $('#newRequestModal').modal('show');
+            }
+
+            createConsultationRequest() {
+                document.getElementById('requestType').value = 'consultation';
+                $('#newRequestModal').modal('show');
+            }
+
+            createInspectionRequest() {
+                document.getElementById('requestType').value = 'inspection';
+                $('#newRequestModal').modal('show');
             }
             
             getStatusText(status) {

@@ -5472,6 +5472,14 @@ console.log('   - /api/orcamentos (кошториси)');
 
 // 🔧 Global Error Handler - ВАЖЛИВО: має бути ПІСЛЯ всіх роутів
 const { errorHandler } = require('./backend/middleware/errorHandler');
+
+// ═══════════════════════════════════════════════════════════
+// 📄 INVOICES API - Рахунки (заглушка до реалізації)
+// ═══════════════════════════════════════════════════════════
+app.get('/api/invoices', authenticateToken, async (req, res) => {
+    res.json({ success: true, data: [] });
+});
+
 app.use(errorHandler);
 console.log('✅ Global error handler підключено');
 
