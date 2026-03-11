@@ -945,7 +945,8 @@
              */
             async function loadClientProfile() {
                 try {
-                    const data = await AuthManager.fetchWithAuth('/api/users/profile');
+                    const res = await AuthManager.fetchWithAuth('/api/users/profile');
+                    const data = res ? await res.json() : null;
                     
                     if (data && data.success && data.data) {
                         const userData = data.data;
@@ -969,7 +970,8 @@
             async function loadClientLifts() {
                 try {
                     console.log('🔄 Завантаження ліфтів клієнта з API...');
-                    const data = await AuthManager.fetchWithAuth('/api/lifts');
+                    const res = await AuthManager.fetchWithAuth('/api/lifts');
+                    const data = res ? await res.json() : null;
                     
                     if (!data || !data.success) {
                         throw new Error('Помилка завантаження ліфтів');
@@ -1027,7 +1029,8 @@
              */
             async function loadClientNotifications() {
                 try {
-                    const data = await AuthManager.fetchWithAuth('/api/notifications');
+                    const res = await AuthManager.fetchWithAuth('/api/notifications');
+                    const data = res ? await res.json() : null;
                     
                     if (data && data.success) {
                         const notifications = data.notifications || [];

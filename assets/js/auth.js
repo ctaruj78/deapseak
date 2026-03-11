@@ -132,7 +132,7 @@ class AuthManager {
                 return null;
             }
             
-            return await response.json();
+            return response;
         } catch (error) {
             console.error('❌ Помилка запиту:', error);
             throw error;

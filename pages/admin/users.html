@@ -721,7 +721,8 @@
             async loadUsers() {
                 try {
                     console.log('🔄 Завантаження користувачів з API...');
-                    const data = await AuthManager.fetchWithAuth('/api/users');
+                    const res = await AuthManager.fetchWithAuth('/api/users');
+                    const data = res ? await res.json() : null;
                     
                     if (!data) {
                         throw new Error('Помилка завантаження користувачів');

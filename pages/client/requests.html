@@ -932,9 +932,10 @@
             // Завантажити та відобразити заявки
             async loadRequests() {
                 try {
-                    const response = await AuthManager.fetchWithAuth('/api/requests');
+                    const res = await AuthManager.fetchWithAuth('/api/requests');
+                    const response = res ? await res.json() : null;
                     
-                    if (response.success && response.data && response.data.requests) {
+                    if (response && response.success && response.data && response.data.requests) {
                         const requests = response.data.requests;
                         this.displayRequests(requests);
                         this.updateStats(requests);
@@ -978,18 +979,19 @@
                     };
 
                     // Відправляємо через API
-                    const response = await AuthManager.fetchWithAuth('/api/requests', {
+                    const res = await AuthManager.fetchWithAuth('/api/requests', {
                         method: 'POST',
                         body: JSON.stringify(requestData)
                     });
+                    const response = res ? await res.json() : null;
 
-                    if (response.success) {
+                    if (response && response.success) {
                         toastr.success('Заявку успішно створено!');
                         $('#newRequestModal').modal('hide');
                         document.getElementById('newRequestForm').reset();
                         this.loadRequests();
                     } else {
-                        toastr.error(response.message || 'Помилка створення заявки');
+                        toastr.error((response && response.message) || 'Помилка створення заявки');
                     }
                 } catch (error) {
                     console.error('Error creating request:', error);
@@ -1004,15 +1006,16 @@
                 }
 
                 try {
-                    const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/cancel`, {
+                    const res = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/cancel`, {
                         method: 'POST'
                     });
+                    const response = res ? await res.json() : null;
 
-                    if (response.success) {
+                    if (response && response.success) {
                         toastr.info('Заявку скасовано');
                         this.loadRequests();
                     } else {
-                        toastr.error(response.message || 'Неможливо скасувати заявку в поточному статусі');
+                        toastr.error((response && response.message) || 'Неможливо скасувати заявку в поточному статусі');
                     }
                 } catch (error) {
                     console.error('Error cancelling request:', error);

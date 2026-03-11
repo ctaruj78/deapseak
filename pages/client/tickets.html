@@ -458,7 +458,8 @@
 
             async loadTickets() {
                 try {
-                    const data = await AuthManager.fetchWithAuth('/api/support/tickets');
+                    const res = await AuthManager.fetchWithAuth('/api/support/tickets');
+                    const data = res ? await res.json() : {};
                     const tickets = (data.success && data.data) ? data.data : [];
                     this.allTickets = tickets;
                     this.renderTickets(tickets);
@@ -557,11 +558,12 @@
                 }
 
                 try {
-                    const data = await AuthManager.fetchWithAuth('/api/support/tickets', {
+                    const res = await AuthManager.fetchWithAuth('/api/support/tickets', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ category, priority, subject, description })
                     });
+                    const data = res ? await res.json() : {};
 
                     if (data.success) {
                         $('#newTicketModal').modal('hide');
@@ -579,7 +581,8 @@
             async closeTicket(id) {
                 if (!confirm('Закрити це звернення?')) return;
                 try {
-                    const data = await AuthManager.fetchWithAuth(`/api/support/tickets/${id}/close`, { method: 'POST' });
+                    const res = await AuthManager.fetchWithAuth(`/api/support/tickets/${id}/close`, { method: 'POST' });
+                    const data = res ? await res.json() : {};
                     if (data.success) {
                         this.loadTickets();
                     } else {

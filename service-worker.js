@@ -27,16 +27,23 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
+
+  // Пропускаємо крос-оригінальні запити (напр. шрифти через тунель) — щоб уникнути CORS
+  if (url.origin !== self.location.origin) {
+    return;
+  }
+
   // НЕ кешуємо API запити - вони повинні йти напряму до сервера
-  if (event.request.url.includes('/api/')) {
+  if (url.pathname.startsWith('/api/')) {
     event.respondWith(fetch(event.request));
     return;
   }
-  
-  // Кешуємо тільки статичні ресурси
+
+  // Кешуємо тільки статичні ресурси того самого походження
   event.respondWith(
     caches.match(event.request)
-      .then(response => response || fetch(event.request))
+      .then(response => response || fetch(event.request).catch(() => new Response('', { status: 408, statusText: 'Offline' })))
   );
 });
 

@@ -637,16 +637,25 @@ class EnhancedLiftModal {
             let liftObject;
             if (isEdit) {
                 // Оновлення існуючого ліфта
+                // ⚠️ Використовуємо fetch напряму — AuthManager.fetchWithAuth повертає вже розпарсений JSON,
+                // тому перевірка response.ok на ньому не працює і призводить до помилки "Network error"
                 console.log(`🔄 Updating lift ${liftId} via API...`);
-                const response = await AuthManager.fetchWithAuth(`/api/lifts/${liftId}`, {
+                const response = await fetch(AuthManager.getApiUrl(`/api/lifts/${liftId}`), {
                     method: 'PUT',
+                    headers: AuthManager.getAuthHeaders(),
                     body: JSON.stringify(apiData)
                 });
-                
-                if (!response || !response.ok) {
-                    throw new Error(`API error: ${response?.status || 'Network error'}`);
+
+                if (response.status === 401) {
+                    AuthManager.logout();
+                    throw new Error('Сесія закінчилась, увійдіть знову');
                 }
-                
+
+                if (!response.ok) {
+                    const errBody = await response.json().catch(() => ({}));
+                    throw new Error(`API error: ${response.status} ${errBody.message || errBody.error || ''}`);
+                }
+
                 const responseData = await response.json();
                 result = { success: true, data: responseData };
                 liftObject = responseData.data || responseData.lift || responseData;
