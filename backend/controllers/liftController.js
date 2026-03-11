@@ -28,9 +28,24 @@ exports.getAllLifts = async (req, res, next) => {
     try {
         const { status, client, technician, search, needsMaintenance, page = 1, limit = 20, sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
         const query = {};
+
+        // 🔐 Фільтрація по ролі - клієнт бачить тільки свої ліфти
+        if (req.user.role === 'client') {
+            query.client = req.user.id;
+        } else if (req.user.role === 'technician') {
+            // Технік бачить тільки ліфти з призначених завдань — обмеженого доступу до /api/lifts
+            // Дозволяємо фільтр по technician або повертаємо порожній список
+            if (technician) {
+                query.technician = technician;
+            } else {
+                query.technician = req.user.id;
+            }
+        } else if (req.user.role === 'admin' || req.user.role === 'dispatcher') {
+            // Адмін і диспетчер бачать всі ліфти (фільтри нижче застосовуються додатково)
+            if (client) query.client = client;
+        }
+
         if (status) query.status = status;
-        if (client) query.client = client;
-        if (technician) query.technician = technician;
         if (search) {
             query.$or = [
                 { municipalNumber: { $regex: search, $options: 'i' } },

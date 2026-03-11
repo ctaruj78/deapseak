@@ -841,7 +841,7 @@
     <script src="../../assets/js/auth.js"></script>
 
     <!-- Client Dashboard JS -->
-    <script src="../../assets/js/modules/client-dashboard.js"></script>
+    <script src="../../assets/js/modules/client-dashboard.js?v=1773220162"></script>
 
     <script>
         // Функція виходу
@@ -873,7 +873,7 @@
             $('#darkModeToggle').on('click', function() {
                 $('body').toggleClass('dark-mode');
                 $(this).find('i').toggleClass('fa-moon fa-sun');
-                clientDashboard.showNotification(
+                window.clientDashboard?.showNotification(
                     $('body').hasClass('dark-mode') ? 'Темна тема увімкнена' : 'Темна тема вимкнена', 
                     'success'
                 );
@@ -892,14 +892,9 @@
             // Ініціалізація клієнтських даних з API
             initializeClientDashboard();
 
-            // Перевірка чи завантажено client-dashboard.js
-            // Захист від подвійної ініціалізації: clientDashboard вже може бути створено
+            // client-dashboard.js створює window.clientDashboard сам через DOMContentLoaded
             if (typeof ClientDashboard === 'undefined') {
                 console.error('ClientDashboard клас не завантажено!');
-            } else if (!window.clientDashboard) {
-                window.clientDashboard = new ClientDashboard();
-            } else {
-                console.log('[Dashboard] ClientDashboard вже ініціалізовано, пропускаємо повторне створення.');
             }
 
             /**
@@ -950,10 +945,10 @@
              */
             async function loadClientProfile() {
                 try {
-                    const response = await window.authManager.apiRequest('/users/profile');
+                    const data = await AuthManager.fetchWithAuth('/api/users/profile');
                     
-                    if (response.ok) {
-                        const userData = await response.json();
+                    if (data && data.success && data.data) {
+                        const userData = data.data;
                         
                         // Зберігаємо в localStorage для офлайн доступу
                         localStorage.setItem('currentUser', JSON.stringify(userData));
@@ -974,13 +969,12 @@
             async function loadClientLifts() {
                 try {
                     console.log('🔄 Завантаження ліфтів клієнта з API...');
-                    const response = await AuthManager.fetchWithAuth('/api/lifts');
+                    const data = await AuthManager.fetchWithAuth('/api/lifts');
                     
-                    if (!response.ok) {
+                    if (!data || !data.success) {
                         throw new Error('Помилка завантаження ліфтів');
                     }
 
-                    const data = await response.json();
                     const clientLifts = data.data || [];
                     
                     console.log('✅ Elevadores завантажено:', clientLifts.length);
@@ -989,7 +983,7 @@
                     
                     return clientLifts;
                 } catch (error) {
-                    console.error('❌ Помилка завантаження ліфтів:', error);
+                    console.warn('⚠️ Помилка завантаження ліфтів:', error.message);
                     return [];
                 }
             }
@@ -1033,11 +1027,10 @@
              */
             async function loadClientNotifications() {
                 try {
-                    const response = await window.authManager.apiRequest('/notifications/client/my');
+                    const data = await AuthManager.fetchWithAuth('/api/notifications');
                     
-                    if (response.ok) {
-                        const data = await response.json();
-                        const notifications = Array.isArray(data) ? data : data.notifications || [];
+                    if (data && data.success) {
+                        const notifications = data.notifications || [];
                         
                         // Оновлюємо лічильник сповіщень
                         const unreadCount = notifications.filter(n => !n.read).length;

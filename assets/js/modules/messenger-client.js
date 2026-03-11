@@ -7,7 +7,7 @@ class MessengerClient {
     this.container = null;
     this.sender = localStorage.getItem('userName') || 'Клієнт';
     this.role = localStorage.getItem('userRole') || 'client';
-    this.apiUrl = 'http://localhost:5000/api/chat';
+    this.apiUrl = window.location.origin + '/api/chat';
   }
 
   render(containerSelector) {

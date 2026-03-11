@@ -28,7 +28,9 @@ class InvoiceManager {
             });
             
             if (response.ok) {
-                this.invoices = await response.json();
+                const json = await response.json();
+                const raw = json.data ?? json.invoices ?? json;
+                this.invoices = Array.isArray(raw) ? raw : [];
                 localStorage.setItem('invoices', JSON.stringify(this.invoices));
             } else {
                 throw new Error('API недоступне');

@@ -521,7 +521,7 @@
         // 🆕 Завантаження з API
         async function loadNotificationsFromAPI() {
             try {
-                const token = localStorage.getItem('token');
+                const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token');
                 if (!token) {
                     window.location.href = '/pages/auth/login.html';
                     return;
@@ -539,7 +539,8 @@
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
 
-                notifications = await response.json();
+                const data = await response.json();
+                notifications = data.notifications || data.data || (Array.isArray(data) ? data : []);
                 filteredNotifications = [...notifications];
                 
                 console.log('✅ Notifications loaded from API:', notifications.length);

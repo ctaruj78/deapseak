@@ -80,7 +80,12 @@ class AuthManager {
     }
 
     static getAuthToken() {
-        return localStorage.getItem(this.TOKEN_KEY);
+        return localStorage.getItem(this.TOKEN_KEY)
+            || localStorage.getItem('authToken')
+            || localStorage.getItem('token')
+            || localStorage.getItem('lm_token')
+            || localStorage.getItem('deapseak_token')
+            || null;
     }
 
     static getAuthHeaders() {
@@ -122,12 +127,12 @@ class AuthManager {
             const response = await fetch(apiUrl, config);
             
             if (response.status === 401) {
-                console.warn('⚠️ Отримано 401');
+                console.warn('⚠️ Отримано 401 - перенаправлення на логін');
                 this.logout();
                 return null;
             }
             
-            return response;
+            return await response.json();
         } catch (error) {
             console.error('❌ Помилка запиту:', error);
             throw error;

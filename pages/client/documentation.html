@@ -426,6 +426,9 @@
                                 <button class="btn btn-outline-secondary category-btn" onclick="filterByCategory('accessibility')">
                                     <i class="fas fa-wheelchair"></i> Acessibilidade
                                 </button>
+                                <button class="btn btn-outline-danger category-btn" onclick="filterByCategory('fire-safety')">
+                                    <i class="fas fa-fire"></i> Incêndio
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -477,6 +480,7 @@
 <script src="../../plugins/jquery/jquery.min.js"></script>
 <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
 <script src="../../plugins/adminlte/adminlte.min.js"></script>
+<script src="../../assets/js/auth.js"></script>
 <script src="../../assets/js/modules/regulations-ai-integration.js"></script>
 
 <script>
@@ -507,11 +511,8 @@ $(document).ready(function() {
 
 async function loadAllRegulations() {
     try {
-        const token = localStorage.getItem('token');
-        const response = await fetch('/api/regulations', {
-            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-        });
-        const data = await response.json();
+        const res = await fetch('/api/regulations');
+        const data = await res.json();
         
         if (data.success) {
             allRegulations = data.data;
@@ -543,18 +544,20 @@ function displayRegulations(regulations) {
     }
     
     regulations.forEach(reg => {
+        const identifier = reg.number || reg.code || reg.id || '';
+        const category = getRegCategory(reg);
         const card = `
             <div class="col-md-6 mb-3">
-                <div class="card regulation-card" onclick="showRegulationDetail('${reg.code}')">
+                <div class="card regulation-card" onclick="showRegulationDetail('${identifier}')">
                     <div class="card-body">
                         <h5 class="card-title">
-                            <strong>${reg.code}</strong>
-                            <span class="badge badge-${getCategoryColor(reg.category)} regulation-badge float-right">
-                                ${getCategoryName(reg.category)}
+                            <strong>${identifier}</strong>
+                            <span class="badge badge-${getCategoryColor(category)} regulation-badge float-right">
+                                ${getCategoryName(category)}
                             </span>
                         </h5>
                         <p class="card-text">
-                            <strong>${reg.titleUA || reg.title}</strong>
+                            <strong>${reg.titleUA || reg.title || ''}</strong>
                         </p>
                         <p class="text-muted small">
                             ${reg.summaryUA || reg.summary || ''}
@@ -572,6 +575,10 @@ function displayRegulations(regulations) {
 }
 
 async function showRegulationDetail(code) {
+    if (!code || code === 'undefined') {
+        alert('Erro: identificador do documento inválido');
+        return;
+    }
     const result = await regulationsAI.getRegulation(code);
     
     if (!result.success || !result.data) {
@@ -580,41 +587,34 @@ async function showRegulationDetail(code) {
     }
     
     const reg = result.data;
+    const identifier = reg.number || reg.code || reg.id || code;
+    const title = reg.titleUA || reg.title || identifier;
+    const summary = reg.summaryUA || reg.summary || '';
     
-    $('#regulationTitle').html(`<strong>${reg.code}</strong> - ${reg.titleUA || reg.title}`);
+    $('#regulationTitle').html(`<strong>${identifier}</strong> - ${title}`);
     
+    const issueDate = reg.date || reg.issueDate;
+    const points = reg.inspection_points || reg.requirements || [];
+
     let body = `
         <div class="regulation-detail">
-            <p><strong>Resumo:</strong><br>${reg.summaryUA || reg.summary}</p>
+            <p><strong>Resumo:</strong><br>${summary}</p>
             
-            ${reg.issueDate ? `<p><small class="text-muted">📅 Emissão: ${new Date(reg.issueDate).toLocaleDateString('pt-PT')}</small></p>` : ''}
+            ${issueDate ? `<p><small class="text-muted">📅 Emissão: ${new Date(issueDate).toLocaleDateString('pt-PT')}</small></p>` : ''}
+            ${reg.status ? `<p><small class="text-muted">📌 Status: ${reg.status}</small></p>` : ''}
             
-            ${reg.requirements && reg.requirements.length > 0 ? `
-                <h5 class="mt-3"><i class="fas fa-clipboard-list"></i> Requisitos:</h5>
-                ${reg.requirements.map(req => `
-                    <div class="requirement-item ${req.severity}">
-                        <strong>${req.description}</strong>
-                        <br><small>Severidade: <span class="badge badge-${req.severity === 'mandatory' ? 'danger' : 'warning'}">${req.severity}</span></small>
-                        ${req.commonViolations && req.commonViolations.length > 0 ? `
-                            <br><small class="text-danger">⚠️ Violações comuns: ${req.commonViolations.join(', ')}</small>
-                        ` : ''}
+            ${points.length > 0 ? `
+                <h5 class="mt-3"><i class="fas fa-clipboard-list"></i> Pontos de inspeção:</h5>
+                ${points.map(pt => `
+                    <div class="requirement-item">
+                        <strong>${pt.requirement || pt.description || ''}</strong>
+                        ${pt.client_explanation ? `<br><small class="text-muted">${pt.client_explanation}</small>` : ''}
+                        ${pt.severity ? `<br><small>Severidade: <span class="badge badge-${pt.severity === 'mandatory' ? 'danger' : 'warning'}">${pt.severity}</span></small>` : ''}
                     </div>
                 `).join('')}
             ` : ''}
             
-            ${reg.aiContext && reg.aiContext.explanations && reg.aiContext.explanations.length > 0 ? `
-                <h5 class="mt-3"><i class="fas fa-lightbulb"></i> Explicações:</h5>
-                <ul>
-                    ${reg.aiContext.explanations.map(exp => `<li>${exp}</li>`).join('')}
-                </ul>
-            ` : ''}
-            
-            ${reg.aiContext && reg.aiContext.commonQuestions && reg.aiContext.commonQuestions.length > 0 ? `
-                <h5 class="mt-3"><i class="fas fa-question-circle"></i> Perguntas Frequentes:</h5>
-                <ul>
-                    ${reg.aiContext.commonQuestions.map(q => `<li>${q}</li>`).join('')}
-                </ul>
-            ` : ''}
+            ${reg.source ? `<p class="mt-3"><small class="text-muted">📎 Fonte: ${reg.source}</small></p>` : ''}
         </div>
     `;
     
@@ -631,11 +631,8 @@ async function searchRegulations() {
     }
     
     try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`/api/regulations?keyword=${encodeURIComponent(query)}`, {
-            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-        });
-        const data = await response.json();
+        const res = await fetch(`/api/regulations?search=${encodeURIComponent(query)}`);
+        const data = await res.json();
         
         if (data.success) {
             displayRegulations(data.data);
@@ -693,9 +690,44 @@ function filterByCategory(category) {
     if (category === 'all') {
         displayRegulations(allRegulations);
     } else {
-        const filtered = allRegulations.filter(reg => reg.category === category);
+        const filtered = allRegulations.filter(reg => getRegCategory(reg) === category);
         displayRegulations(filtered);
     }
+}
+
+function getRegCategory(reg) {
+    if (!reg) return 'safety';
+    const id = reg.id || '';
+    const scope = (reg.scope || []).join(' ').toLowerCase();
+
+    // ID-based mapping (найточніший)
+    const idMap = {
+        'DEC_513_1970':    'safety',
+        'DEC_REG_13_1980': 'safety',
+        'NP_EN_81_71_2022': 'safety',
+        'NP_EN_81_77_2020': 'safety',
+        'DL_295_1998':     'installation',
+        'NP_EN_81_20_2020': 'installation',
+        'NP_EN_81_50_2020': 'installation',
+        'DL_320_2002':     'maintenance',
+        'NP_EN_13015_2003': 'maintenance',
+        'DL_103_2008':     'inspection',
+        'NP_EN_81_80_2020': 'inspection',
+        'PORT_348_2013':   'inspection',
+        'PORT_185_2013':   'inspection',
+        'NP_EN_81_70_2022': 'accessibility',
+        'NP_EN_81_72_2020': 'fire-safety',
+        'NP_EN_81_73_2020': 'fire-safety',
+    };
+    if (idMap[id]) return idMap[id];
+
+    // Fallback: виводимо з scope
+    if (scope.includes('manutenção') || scope.includes('manutencion')) return 'maintenance';
+    if (scope.includes('inspecção') || scope.includes('inspeção'))     return 'inspection';
+    if (scope.includes('instalação') || scope.includes('colocação no mercado')) return 'installation';
+    if (scope.includes('acessibilid'))  return 'accessibility';
+    if (scope.includes('incêndio') || scope.includes('bombeiro'))       return 'fire-safety';
+    return 'safety';
 }
 
 function getCategoryColor(category) {
@@ -726,13 +758,18 @@ function getCategoryName(category) {
 
 function getTypeName(type) {
     const names = {
-        'decree-law': 'Decreto-Lei',
-        'european-norm': 'Norma Europeia',
-        'ordinance': 'Portaria',
-        'technical-standard': 'Norma Técnica',
-        'inspection-guide': 'Guia de Inspeção'
+        'decreto':               'Decreto',
+        'decreto-lei':           'Decreto-Lei',
+        'decreto_regulamentar':  'Decreto Regulamentar',
+        'norma_europeia':        'Norma Europeia',
+        'portaria':              'Portaria',
+        'decree-law':            'Decreto-Lei',
+        'european-norm':         'Norma Europeia',
+        'ordinance':             'Portaria',
+        'technical-standard':    'Norma Técnica',
+        'inspection-guide':      'Guia de Inspeção'
     };
-    return names[type] || type;
+    return names[type] || type || '—';
 }
 
 function showError(message) {

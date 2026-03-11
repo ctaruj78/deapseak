@@ -23,7 +23,9 @@ class LiftsManager {
     async loadLifts() {
         try {
             // Спроба отримати дані з API
-            const token = localStorage.getItem('token');
+            const token = AuthManager.getAuthToken
+                ? AuthManager.getAuthToken()
+                : (localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token'));
             const response = await fetch('/api/lifts', {
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -126,12 +128,12 @@ class LiftsManager {
     sortLifts(lifts) {
         return lifts.sort((a, b) => {
             switch (this.filters.sort) {
-                case 'name': return a.model.localeCompare(b.model);
-                case 'status': return a.status.localeCompare(b.status);
-                case 'location': return a.location.localeCompare(b.location);
+                case 'name': return (a.model || '').localeCompare(b.model || '');
+                case 'status': return (a.status || '').localeCompare(b.status || '');
+                case 'location': return this.formatLocation(a).localeCompare(this.formatLocation(b));
                 case 'maintenance': 
-                    return new Date(a.nextMaintenance) - new Date(b.nextMaintenance);
-                default: return a.model.localeCompare(b.model);
+                    return new Date(a.nextMaintenance || a.nextInspectionDate || 0) - new Date(b.nextMaintenance || b.nextInspectionDate || 0);
+                default: return (a.model || '').localeCompare(b.model || '');
             }
         });
     }

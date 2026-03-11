@@ -721,13 +721,12 @@
             async loadUsers() {
                 try {
                     console.log('🔄 Завантаження користувачів з API...');
-                    const response = await AuthManager.fetchWithAuth('/api/users');
+                    const data = await AuthManager.fetchWithAuth('/api/users');
                     
-                    if (!response.ok) {
+                    if (!data) {
                         throw new Error('Помилка завантаження користувачів');
                     }
 
-                    const data = await response.json();
                     this.allUsers = Array.isArray(data) ? data : (data.data || data.users || []);
                     
                     // Зберігаємо оригінальні індекси для стабільного displayId

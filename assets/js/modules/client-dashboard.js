@@ -142,7 +142,7 @@ class ClientDashboard {
                     <td><span class="badge ${statusClass}">${activity.statusText}</span></td>
                     <td>${activity.time}<br><small>${activity.date}</small></td>
                     <td>
-                        <button class="btn btn-sm btn-info" onclick="clientDashboard.viewActivityDetails(${activity.id})">
+                        <button class="btn btn-sm btn-info" onclick="window.clientDashboard?.viewActivityDetails(${activity.id})">
                             <i class="fas fa-eye"></i>
                         </button>
                     </td>
@@ -210,7 +210,7 @@ class ClientDashboard {
                             <small><i class="fas fa-calendar-alt mr-1"></i>${item.date} о ${item.time}</small>
                         </div>
                         <div>
-                            <button class="btn btn-light btn-sm" onclick="clientDashboard.viewMaintenanceDetails(${item.id})">
+                            <button class="btn btn-light btn-sm" onclick="window.clientDashboard?.viewMaintenanceDetails(${item.id})">
                                 <i class="fas fa-info-circle"></i>
                             </button>
                         </div>
@@ -261,7 +261,7 @@ class ClientDashboard {
             const alertClass = notification.read ? 'alert-secondary' : 'alert-warning';
             const notificationElement = `
                 <div class="alert ${alertClass} alert-dismissible">
-                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true" onclick="clientDashboard.markAsRead(${notification.id})">×</button>
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true" onclick="window.clientDashboard?.markAsRead(${notification.id})">×</button>
                     <h5>${notification.title}</h5>
                     <p>${notification.message}</p>
                     <small>${notification.time}</small>
@@ -318,6 +318,24 @@ class ClientDashboard {
                     }
                 }
             }
+        });
+    }
+
+    setupEventListeners() {
+        // Кнопка оновлення активностей
+        $(document).on('click', '#refreshActivities', () => this.refreshActivities());
+
+        // Закриття сповіщень
+        $(document).on('click', '.notification-item .close', (e) => {
+            const id = $(e.currentTarget).closest('.notification-item').data('id');
+            if (id) this.markAsRead(id);
+        });
+
+        // Позначити всі як прочитані
+        $(document).on('click', '#markAllRead', () => {
+            $('#notificationsList .alert').alert('close');
+            $('#alertsCount').text('0');
+            this.showNotification('Всі сповіщення позначено як прочитані', 'success');
         });
     }
 

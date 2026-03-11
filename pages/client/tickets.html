@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мої звернення - Cliente</title>
+
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+
+    <style>
+        .ticket-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .ticket-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-open      { background: #e3f2fd; color: #1565c0; }
+        .status-in_progress { background: #fff3e0; color: #e65100; }
+        .status-resolved  { background: #e8f5e9; color: #2e7d32; }
+        .status-closed    { background: #f5f5f5; color: #616161; }
+
+        .priority-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .priority-high   { background: #ffebee; color: #c62828; }
+        .priority-medium { background: #fff8e1; color: #f57f17; }
+        .priority-low    { background: #e8f5e9; color: #2e7d32; }
+
+        .stat-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-icon { font-size: 2.2rem; }
+
+        .stat-info h3 {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .stat-info p { margin: 0; color: #666; font-size: 0.85rem; }
+
+        .badge-purple {
+            background: linear-gradient(135deg, #6f42c1, #8e44ad);
+            color: white;
+        }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed" data-required-role="client">
+    <div class="wrapper">
+
+        <!-- Навігаційна панель -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button">
+                        <i class="fas fa-bars"></i>
+                    </a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="/pages/client/dashboard.html" class="nav-link">Головна</a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="/pages/client/support.html" class="nav-link">Suporte</a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="/pages/client/tickets.html" class="nav-link active">Звернення</a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/pages/client/notifications.html" title="Сповіщення">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge badge-danger navbar-badge" id="notificationCount">0</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" id="darkModeToggle" title="Темна тема">
+                        <i class="fas fa-moon"></i>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="logout()" title="Вийти">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Бічна панель -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <a href="/pages/client/dashboard.html" class="brand-link text-center">
+                <span class="brand-text font-weight-light">Cliente</span>
+            </a>
+            <div class="sidebar">
+                <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                    <div class="image">
+                        <img src="../../assets/img/avatars/client.png" class="img-circle elevation-2" alt="Cliente">
+                    </div>
+                    <div class="info">
+                        <a href="/pages/client/profile.html" class="d-block" id="clientName">Cliente</a>
+                        <small class="text-success"><i class="fas fa-circle mr-1"></i> Online</small>
+                    </div>
+                </div>
+                <nav class="mt-2">
+                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                        <li class="nav-item">
+                            <a href="/pages/client/dashboard.html" class="nav-link" id="nav-dashboard">
+                                <i class="nav-icon fas fa-tachometer-alt"></i>
+                                <p>Dashboard</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/client/my-lifts.html" class="nav-link" id="nav-my-lifts">
+                                <i class="nav-icon fas fa-elevator"></i>
+                                <p>Meus Elevadores</p>
+                                <span class="badge badge-info right" id="liftsCount">0</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/client/ai-predictions.html" class="nav-link" id="nav-ai-predictions">
+                                <i class="nav-icon fas fa-brain"></i>
+                                <p>Previsões AI <span class="badge badge-purple right">Novo</span></p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/client/requests.html" class="nav-link" id="nav-requests">
+                                <i class="nav-icon fas fa-tasks"></i>
+                                <p>Pedidos</p>
+                                <span class="badge badge-warning right" id="requestsCount">0</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/client/invoices.html" class="nav-link" id="nav-invoices">
+                                <i class="nav-icon fas fa-file-invoice"></i>
+                                <p>Faturas</p>
+                                <span class="badge badge-success right" id="invoicesCount">0</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/client/history.html" class="nav-link" id="nav-history">
+                                <i class="nav-icon fas fa-history"></i>
+                                <p>Histórico</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/client/documentation.html" class="nav-link" id="nav-documentation">
+                                <i class="nav-icon fas fa-book"></i>
+                                <p>Documentação</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link" id="nav-ai-assistant">
+                                <i class="nav-icon fas fa-magic"></i>
+                                <p>Assistente AI <span class="badge badge-success right">★</span></p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/client/notifications.html" class="nav-link" id="nav-notifications">
+                                <i class="nav-icon fas fa-bell"></i>
+                                <p>Notificações</p>
+                                <span class="badge badge-danger right" id="notificationsBadge">0</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/client/support.html" class="nav-link" id="nav-support">
+                                <i class="nav-icon fas fa-headset"></i>
+                                <p>Suporte</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/client/profile.html" class="nav-link" id="nav-profile">
+                                <i class="nav-icon fas fa-user"></i>
+                                <p>Perfil</p>
+                            </a>
+                        </li>
+                        <li class="nav-header">CONFIGURAÇÕES</li>
+                        <li class="nav-item">
+                            <a href="/pages/client/settings.html" class="nav-link" id="nav-settings">
+                                <i class="nav-icon fas fa-cog"></i>
+                                <p>Definições</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" onclick="logout()" class="nav-link">
+                                <i class="nav-icon fas fa-sign-out-alt text-danger"></i>
+                                <p>Sair</p>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <section class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1><i class="fas fa-ticket-alt mr-2"></i>Мої звернення</h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="/pages/client/dashboard.html">Головна</a></li>
+                                <li class="breadcrumb-item"><a href="/pages/client/support.html">Suporte</a></li>
+                                <li class="breadcrumb-item active">Звернення</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content">
+                <div class="container-fluid">
+
+                    <!-- Статистика -->
+                    <div class="row">
+                        <div class="col-lg-3 col-md-6">
+                            <div class="stat-card">
+                                <div class="stat-icon">🎫</div>
+                                <div class="stat-info">
+                                    <h3 id="statTotal">0</h3>
+                                    <p>Всього звернень</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="stat-card">
+                                <div class="stat-icon">🔓</div>
+                                <div class="stat-info">
+                                    <h3 id="statOpen">0</h3>
+                                    <p>Відкриті</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="stat-card">
+                                <div class="stat-icon">⏳</div>
+                                <div class="stat-info">
+                                    <h3 id="statInProgress">0</h3>
+                                    <p>В роботі</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="stat-card">
+                                <div class="stat-icon">✅</div>
+                                <div class="stat-info">
+                                    <h3 id="statResolved">0</h3>
+                                    <p>Вирішені</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Панель управління -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="card ticket-card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-list mr-2"></i>Список звернень</h3>
+                                    <div class="card-tools d-flex align-items-center" style="gap: 8px;">
+                                        <select id="filterStatus" class="form-control form-control-sm" style="width: auto;" onchange="ticketsManager.applyFilters()">
+                                            <option value="">Всі статуси</option>
+                                            <option value="open">Відкриті</option>
+                                            <option value="in_progress">В роботі</option>
+                                            <option value="resolved">Вирішені</option>
+                                            <option value="closed">Закриті</option>
+                                        </select>
+                                        <select id="filterPriority" class="form-control form-control-sm" style="width: auto;" onchange="ticketsManager.applyFilters()">
+                                            <option value="">Всі пріоритети</option>
+                                            <option value="high">Високий</option>
+                                            <option value="medium">Середній</option>
+                                            <option value="low">Низький</option>
+                                        </select>
+                                        <button class="btn btn-primary btn-sm" onclick="$('#newTicketModal').modal('show')">
+                                            <i class="fas fa-plus"></i> Нове звернення
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>№</th>
+                                                    <th>Тема</th>
+                                                    <th>Категорія</th>
+                                                    <th>Пріоритет</th>
+                                                    <th>Статус</th>
+                                                    <th>Дата</th>
+                                                    <th>Дії</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="ticketsTableBody">
+                                                <tr>
+                                                    <td colspan="7" class="text-center py-4">
+                                                        <i class="fas fa-spinner fa-spin mr-2"></i> Завантаження...
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="card-footer text-center">
+                                    <a href="/pages/client/support.html" class="btn btn-sm btn-default">
+                                        <i class="fas fa-headset mr-1"></i> Служба підтримки
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+
+        <footer class="main-footer">
+            <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
+            Sistema de gestão de elevadores v2.1.0.
+            <div class="float-right d-none d-sm-inline-block">
+                <b>Versão</b> 2.1.0
+            </div>
+        </footer>
+    </div>
+
+    <!-- Modal: Нове звернення -->
+    <div class="modal fade" id="newTicketModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-ticket-alt mr-2"></i>Нове звернення</h5>
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <form id="newTicketForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Категорія *</label>
+                                    <select id="ticketCategory" class="form-control" required>
+                                        <option value="">Оберіть категорію...</option>
+                                        <option value="technical">Технічне питання</option>
+                                        <option value="billing">Рахунки та оплата</option>
+                                        <option value="emergency">Аварійна ситуація</option>
+                                        <option value="general">Загальне питання</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Пріоритет *</label>
+                                    <select id="ticketPriority" class="form-control" required>
+                                        <option value="medium">Середній</option>
+                                        <option value="high">Високий</option>
+                                        <option value="low">Низький</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Тема *</label>
+                            <input type="text" id="ticketSubject" class="form-control" required placeholder="Коротко опишіть проблему">
+                        </div>
+                        <div class="form-group">
+                            <label>Детальний опис *</label>
+                            <textarea id="ticketDescription" class="form-control" rows="5" required placeholder="Детально опишіть ваше звернення..."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="ticketsManager.submitTicket()">
+                        <i class="fas fa-paper-plane mr-1"></i> Відправити
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Перегляд тикету -->
+    <div class="modal fade" id="viewTicketModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Деталі звернення</h5>
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body" id="ticketDetailsContent"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../../plugins/jquery/jquery.min.js"></script>
+    <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="../../plugins/adminlte/adminlte.min.js"></script>
+    <script src="../../assets/js/auth.js"></script>
+
+    <script>
+        function logout() {
+            if (confirm('Ви впевнені, що хочете вийти з системи?')) {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userData');
+                window.location.replace('/pages/auth/login.html');
+            }
+        }
+
+        // Активна навігація
+        (function() {
+            const el = document.getElementById('nav-support');
+            if (el) el.classList.add('active');
+
+            const userData = JSON.parse(localStorage.getItem('userData')) || {};
+            if (userData.firstName) {
+                const nameEl = document.getElementById('clientName');
+                if (nameEl) nameEl.textContent = `${userData.firstName} ${userData.lastName || ''}`;
+            }
+        })();
+
+        // Темна тема
+        document.getElementById('darkModeToggle').addEventListener('click', function() {
+            document.body.classList.toggle('dark-mode');
+        });
+
+        class TicketsManager {
+            constructor() {
+                this.allTickets = [];
+            }
+
+            async loadTickets() {
+                try {
+                    const data = await AuthManager.fetchWithAuth('/api/support/tickets');
+                    const tickets = (data.success && data.data) ? data.data : [];
+                    this.allTickets = tickets;
+                    this.renderTickets(tickets);
+                    this.updateStats(tickets);
+                } catch (err) {
+                    console.error('Error loading tickets:', err);
+                    this.renderEmpty();
+                }
+            }
+
+            applyFilters() {
+                const status = document.getElementById('filterStatus').value;
+                const priority = document.getElementById('filterPriority').value;
+                let filtered = this.allTickets;
+                if (status) filtered = filtered.filter(t => t.status === status);
+                if (priority) filtered = filtered.filter(t => t.priority === priority);
+                this.renderTickets(filtered);
+            }
+
+            renderTickets(tickets) {
+                const tbody = document.getElementById('ticketsTableBody');
+                if (!tickets || tickets.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">
+                        <i class="fas fa-inbox fa-2x mb-2 d-block"></i> Звернень не знайдено
+                    </td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = tickets.map(t => {
+                    const id = t._id || t.id || '';
+                    return `<tr>
+                        <td>#${String(id).slice(-6) || '—'}</td>
+                        <td>${this.esc(t.subject || t.title || '—')}</td>
+                        <td>${this.categoryLabel(t.category)}</td>
+                        <td><span class="priority-badge priority-${t.priority || 'medium'}">${this.priorityLabel(t.priority)}</span></td>
+                        <td><span class="ticket-status status-${(t.status || 'open').replace('_','-')}">${this.statusLabel(t.status)}</span></td>
+                        <td>${t.createdAt ? new Date(t.createdAt).toLocaleDateString('uk-UA') : '—'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="ticketsManager.viewTicket('${id}')" title="Переглянути">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            ${(t.status === 'open' || t.status === 'in_progress') ? `
+                            <button class="btn btn-sm btn-danger" onclick="ticketsManager.closeTicket('${id}')" title="Закрити">
+                                <i class="fas fa-times"></i>
+                            </button>` : ''}
+                        </td>
+                    </tr>`;
+                }).join('');
+            }
+
+            renderEmpty() {
+                document.getElementById('ticketsTableBody').innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">
+                    <i class="fas fa-exclamation-circle fa-2x mb-2 d-block"></i> Не вдалося завантажити звернення
+                </td></tr>`;
+            }
+
+            updateStats(tickets) {
+                const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+                set('statTotal', tickets.length);
+                set('statOpen', tickets.filter(t => t.status === 'open').length);
+                set('statInProgress', tickets.filter(t => t.status === 'in_progress').length);
+                set('statResolved', tickets.filter(t => t.status === 'resolved' || t.status === 'closed').length);
+            }
+
+            viewTicket(id) {
+                const t = this.allTickets.find(x => (x._id || x.id) == id);
+                if (!t) return;
+                document.getElementById('ticketDetailsContent').innerHTML = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Тема:</strong> ${this.esc(t.subject || t.title || '—')}</p>
+                            <p><strong>Категорія:</strong> ${this.categoryLabel(t.category)}</p>
+                            <p><strong>Пріоритет:</strong> <span class="priority-badge priority-${t.priority || 'medium'}">${this.priorityLabel(t.priority)}</span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Статус:</strong> <span class="ticket-status status-${(t.status||'open').replace('_','-')}">${this.statusLabel(t.status)}</span></p>
+                            <p><strong>Дата:</strong> ${t.createdAt ? new Date(t.createdAt).toLocaleString('uk-UA') : '—'}</p>
+                        </div>
+                        <div class="col-12 mt-3">
+                            <h6>Опис:</h6>
+                            <p>${this.esc(t.description || t.message || 'Опис відсутній')}</p>
+                            ${t.response ? `<h6>Відповідь підтримки:</h6><p>${this.esc(t.response)}</p>` : ''}
+                        </div>
+                    </div>`;
+                $('#viewTicketModal').modal('show');
+            }
+
+            async submitTicket() {
+                const category = document.getElementById('ticketCategory').value;
+                const priority = document.getElementById('ticketPriority').value;
+                const subject = document.getElementById('ticketSubject').value.trim();
+                const description = document.getElementById('ticketDescription').value.trim();
+
+                if (!category || !subject || !description) {
+                    alert('Будь ласка, заповніть всі обов\'язкові поля');
+                    return;
+                }
+
+                try {
+                    const data = await AuthManager.fetchWithAuth('/api/support/tickets', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ category, priority, subject, description })
+                    });
+
+                    if (data.success) {
+                        $('#newTicketModal').modal('hide');
+                        document.getElementById('newTicketForm').reset();
+                        this.loadTickets();
+                    } else {
+                        alert(data.message || 'Помилка при створенні звернення');
+                    }
+                } catch (err) {
+                    console.error('Error submitting ticket:', err);
+                    alert('Помилка з\'єднання з сервером');
+                }
+            }
+
+            async closeTicket(id) {
+                if (!confirm('Закрити це звернення?')) return;
+                try {
+                    const data = await AuthManager.fetchWithAuth(`/api/support/tickets/${id}/close`, { method: 'POST' });
+                    if (data.success) {
+                        this.loadTickets();
+                    } else {
+                        alert(data.message || 'Не вдалося закрити звернення');
+                    }
+                } catch (err) {
+                    console.error('Error closing ticket:', err);
+                    alert('Помилка з\'єднання з сервером');
+                }
+            }
+
+            statusLabel(s) {
+                return { open: 'Відкрите', in_progress: 'В роботі', resolved: 'Вирішено', closed: 'Закрито' }[s] || s || 'Відкрите';
+            }
+            priorityLabel(p) {
+                return { high: 'Високий', medium: 'Середній', low: 'Низький' }[p] || p || 'Середній';
+            }
+            categoryLabel(c) {
+                return { technical: 'Технічне', billing: 'Оплата', emergency: 'Аварійне', general: 'Загальне' }[c] || c || '—';
+            }
+            esc(str) {
+                return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            }
+        }
+
+        $(document).ready(function() {
+            window.ticketsManager = new TicketsManager();
+            ticketsManager.loadTickets();
+
+            $('#darkModeToggle').on('click', function() {
+                $('body').toggleClass('dark-mode');
+                $(this).find('i').toggleClass('fa-moon fa-sun');
+            });
+        });
+    </script>
+</body>
+</html>

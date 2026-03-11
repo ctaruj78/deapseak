@@ -4274,20 +4274,20 @@
         }
         
         try {
-            const response = await AuthManager.fetchWithAuth(endpoint, {
+            // fetchWithAuth повертає вже розпарсований JSON (не Response)
+            const result = await AuthManager.fetchWithAuth(endpoint, {
                 method: method,
                 body: data ? JSON.stringify(data) : null
             });
             
-            if (!response) {
+            if (!result) {
                 return { success: false, error: 'Помилка авторизації' };
             }
             
-            const result = await response.json();
             return { 
-                success: response.ok, 
-                data: result, 
-                status: response.status,
+                success: result.success !== false,
+                data: result,
+                status: 200,
                 message: result.message || null
             };
         } catch (error) {

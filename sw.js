@@ -1,12 +1,12 @@
 // Service Worker для push notifications та PWA
-const CACHE_NAME = 'liftmanager-v1.5';
+const CACHE_NAME = 'liftmanager-v2.0';
 const urlsToCache = [
     '/manifest.json'
 ];
 
 // Install event
 self.addEventListener('install', event => {
-    console.log('Service Worker installing v1.5');
+    console.log('Service Worker installing v2.0');
     event.waitUntil(
         caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
     );
@@ -16,7 +16,7 @@ self.addEventListener('install', event => {
 
 // Activate event - очищення старого кешу + примусове перезавантаження всіх сторінок
 self.addEventListener('activate', event => {
-    console.log('Service Worker activating v1.5 — clearing all caches and reloading clients');
+    console.log('Service Worker activating v2.0 — clearing all caches and reloading clients');
     event.waitUntil(
         caches.keys()
             .then(cacheNames => Promise.all(
@@ -45,7 +45,8 @@ self.addEventListener('fetch', event => {
     if (event.request.destination === 'document' ||
         url.pathname.endsWith('.html') ||
         url.pathname === '/' ||
-        url.pathname.includes('/api/')) {
+        url.pathname.includes('/api/') ||
+        url.pathname.includes('/assets/js/')) {  // JS модулі — завжди з мережі (часто змінюються)
         event.respondWith(
             fetch(event.request).catch(() => fetch('/index.html'))
         );

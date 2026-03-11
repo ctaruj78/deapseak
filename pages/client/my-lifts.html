@@ -755,11 +755,11 @@
     <script src="../../assets/js/auth.js?v=1768338689"></script>
 
     <!-- Lifts Manager JS -->
-    <script src="../../assets/js/modules/lifts-manager.js?v=1768338689"></script>
+    <script src="../../assets/js/modules/lifts-manager.js?v=1773220609"></script>
     <script src="../../assets/js/modules/push-notifications-client.js?v=1768338689"></script>
-    <script src="../../assets/js/modules/messenger-client.js?v=1768338689"></script>
+    <script src="../../assets/js/modules/messenger-client.js?v=1773221574"></script>
     <script src="../../assets/js/modules/voice-assistant-client.js?v=1768338689"></script>
-    <script src="../../assets/js/modules/language-switcher.js"></script>
+    <script src="../../assets/js/modules/language-switcher.js?v=1773221574"></script>
 
     <script>
         let currentLiftId = null;
@@ -793,7 +793,15 @@
         }
 
         function renderLiftsMap(lifts) {
+          const container = document.getElementById('liftsMap');
+          if (!container) return;
+          // Destroy any existing map instance before re-initializing
+          if (window._liftsPageMap) {
+            window._liftsPageMap.remove();
+            window._liftsPageMap = null;
+          }
           const map = L.map('liftsMap').setView([38.7223, -9.1393], 13); // Лісабон
+          window._liftsPageMap = map;
           L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: 'Map data © OpenStreetMap contributors'
           }).addTo(map);
@@ -876,8 +884,10 @@
             // Завантажуємо дані
             await loadUserData();
 
-            // Ініціалізація менеджера ліфтів
-            window.liftsManager = new LiftsManager();
+            // Ініціалізація менеджера ліфтів (lifts-manager.js may have already created one)
+            if (!window.liftsManager) {
+                window.liftsManager = new LiftsManager();
+            }
 
             // Після завантаження ліфтів
             setTimeout(() => {

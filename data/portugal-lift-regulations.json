@@ -1,12 +1,12 @@
 {
   "metadata": {
     "country": "Portugal",
-    "last_updated": "2025-12-10",
+    "last_updated": "2026-03-11",
     "language": "pt-PT",
     "scope": "Regulamentação de Elevadores e Inspeções",
     "version": "4.0",
     "generated_by": "DeapSeaK AI Knowledge Generator",
-    "laws_count": 13,
+    "laws_count": 16,
     "total_articles": 24,
     "total_violation_codes": 49,
     "latest_addition": "EN Standards + Decreto Regulamentar 13/80"
@@ -1113,6 +1113,200 @@
       "sections": [],
       "key_requirements": [],
       "applicability": {}
+    },
+    {
+      "id": "PORT_348_2013",
+      "type": "portaria",
+      "number": "348/2013",
+      "date": "2013-11-27",
+      "title": "Portaria n.º 348/2013",
+      "subtitle": "Regulamento de Inspeção de Ascensores, Monta-cargas, Escadas Mecânicas e Tapetes Rolantes",
+      "status": "vigente",
+      "summary": "Aprova o Regulamento de Inspeção periódica obrigatória de ascensores, monta-cargas, escadas mecânicas e tapetes rolantes. Define periodicidade, metodologia e critérios de classificação de anomalias (A1, A2, A3) nas inspeções.",
+      "scope": [
+        "Periodicidade das inspeções obrigatórias",
+        "Metodologia de inspeção",
+        "Classificação de anomalias A1/A2/A3",
+        "Relatório de inspeção",
+        "Entidades inspetoras (OII)",
+        "Elevadores residenciais e comerciais"
+      ],
+      "source": {
+        "file": "portaria-348-2013.json",
+        "chapters_count": 4,
+        "critical_requirements": 6
+      },
+      "inspection_points": [
+        {
+          "requirement": "Inspeção periódica obrigatória a cada 2 anos",
+          "description": "Elevadores em edifícios residenciais devem ser inspecionados por OII credenciada de 2 em 2 anos",
+          "client_explanation": "Cada 2 anos um inspetor credenciado verifica o seu elevador e emite certificado de conformidade",
+          "severity": "mandatory",
+          "urgency": "C1",
+          "penalty": "€250 a €5000 por falta de inspeção em dia"
+        },
+        {
+          "requirement": "Anomalias A1 (críticas) — paragem imediata",
+          "description": "Anomalias que representam risco imediato de acidente. O elevador é selado até reparação confirmada",
+          "client_explanation": "Se o inspetor encontrar falha crítica, o elevador é parado imediatamente por lei",
+          "severity": "mandatory",
+          "urgency": "C1",
+          "penalty": "Responsabilidade criminal em caso de acidente com elevador com A1 por resolver"
+        },
+        {
+          "requirement": "Anomalias A2 — reparação em 30 dias",
+          "description": "Falhas graves que requerem reparação obrigatória num prazo de 30 dias após inspeção",
+          "client_explanation": "Falhas graves têm 30 dias para serem reparadas, com re-inspeção confirmadora",
+          "severity": "mandatory",
+          "urgency": "C2",
+          "penalty": "€500 a €2500"
+        },
+        {
+          "requirement": "Anomalias A3 — reparação recomendada",
+          "description": "Inconformidades menores registadas no relatório mas sem prazo obrigatório imediato",
+          "client_explanation": "Pequenos defeitos que devem ser corrigidos na próxima manutenção",
+          "severity": "recommended",
+          "urgency": "C3",
+          "penalty": "Registo negativo no histórico do elevador"
+        },
+        {
+          "requirement": "Relatório de inspeção entregue ao proprietário",
+          "description": "A OII deve emitir relatório detalhado com resultado da inspeção em 5 dias úteis",
+          "client_explanation": "Recebe relatório escrito com todas as anomalias detetadas e prazos de resolução",
+          "severity": "mandatory",
+          "urgency": "C2",
+          "penalty": "€250 a €1250"
+        },
+        {
+          "requirement": "Livro de inspeções disponível no local",
+          "description": "Cada elevador deve ter livro de registo de manutenção e inspeções acessível aos inspetores",
+          "client_explanation": "O elevador tem de ter um dossier com histórico de manutenções e inspeções anteriores",
+          "severity": "mandatory",
+          "urgency": "C2",
+          "penalty": "€250 a €2500"
+        }
+      ]
+    },
+    {
+      "id": "PORT_185_2013",
+      "type": "portaria",
+      "number": "185/2013",
+      "date": "2013-06-10",
+      "title": "Portaria n.º 185/2013",
+      "subtitle": "Organismos de Inspeção e Instalação (OII) de Elevadores",
+      "status": "vigente",
+      "summary": "Define os requisitos de acreditação, competências técnicas e obrigações das Entidades Inspetoras (OII) autorizadas a realizar inspeções periódicas obrigatórias a elevadores em Portugal.",
+      "scope": [
+        "Requisitos de acreditação de OII",
+        "Competências técnicas de inspetores",
+        "Obrigações de reporte ao DGEG",
+        "Registo nacional de OII",
+        "Auditoria e fiscalização de OII"
+      ],
+      "source": {
+        "file": "portaria-185-2013.json",
+        "chapters_count": 3,
+        "critical_requirements": 4
+      },
+      "inspection_points": [
+        {
+          "requirement": "Inspeções apenas por OII acreditada pelo IPAC",
+          "description": "Só organismos acreditados pelo Instituto Português de Acreditação (IPAC) podem realizar inspeções legais",
+          "client_explanation": "Certifique-se que a empresa de inspeção tem acreditação IPAC válida antes de contratar",
+          "severity": "mandatory",
+          "urgency": "C1",
+          "penalty": "Inspeção sem valor legal — coima ao proprietário e à empresa"
+        },
+        {
+          "requirement": "Inspetor deve ter certificação técnica reconhecida",
+          "description": "Cada inspetor individual necessita de qualificação técnica específica em elevadores registada no DGEG",
+          "client_explanation": "Pode verificar a validade do inspetor no site do DGEG (Direção-Geral de Energia e Geologia)",
+          "severity": "mandatory",
+          "urgency": "C2",
+          "penalty": "Nulidade do relatório de inspeção"
+        },
+        {
+          "requirement": "OII reporta resultados ao DGEG",
+          "description": "Cada inspeção realizada deve ser registada na plataforma nacional do DGEG em 10 dias úteis",
+          "client_explanation": "O Estado mantém registo centralizado do estado de todos os elevadores do país",
+          "severity": "mandatory",
+          "urgency": "C2",
+          "penalty": "Perda de acreditação da OII"
+        },
+        {
+          "requirement": "Imparcialidade e independência da OII",
+          "description": "A entidade inspetora não pode ter qualquer relação comercial com a empresa de manutenção do mesmo elevador",
+          "client_explanation": "A empresa que inspeciona não pode ser a mesma que faz a manutenção — garantia de imparcialidade",
+          "severity": "mandatory",
+          "urgency": "C1",
+          "penalty": "Nulidade da inspeção + sanção à OII"
+        }
+      ]
+    },
+    {
+      "id": "NP_EN_13015_2003",
+      "type": "norma_europeia",
+      "number": "NP EN 13015:2003+A1",
+      "date": "2009-01-01",
+      "title": "NP EN 13015:2003+A1:2009",
+      "subtitle": "Manutenção de Ascensores e Escadas Mecânicas — Regras para Instruções de Manutenção",
+      "status": "vigente",
+      "summary": "Norma harmonizada europeia que define os requisitos mínimos para programas de manutenção e inspeção de elevadores. Estabelece o conteúdo obrigatório do plano de manutenção preventiva e os critérios de inspeção de segurança.",
+      "scope": [
+        "Plano de manutenção preventiva",
+        "Inspeção de componentes de segurança",
+        "Documentação técnica obrigatória",
+        "Competências do técnico de manutenção",
+        "Intervenção após anomalia",
+        "Registo e rastreabilidade de intervenções"
+      ],
+      "source": {
+        "file": "np-en-13015-2003.json",
+        "chapters_count": 5,
+        "critical_requirements": 5
+      },
+      "inspection_points": [
+        {
+          "requirement": "Plano de manutenção preventiva documentado",
+          "description": "Cada elevador deve ter plano de manutenção específico com lista de tarefas, periodicidade e responsáveis",
+          "client_explanation": "A empresa de manutenção deve fornecer plano escrito de todas as verificações que fará ao seu elevador",
+          "severity": "mandatory",
+          "urgency": "C2",
+          "penalty": "Não-conformidade na inspeção periódica"
+        },
+        {
+          "requirement": "Verificação de componentes de segurança a cada visita",
+          "description": "Cada visita de manutenção deve incluir verificação obrigatória de: parachoques, dispositivos de segurança, limitador de velocidade",
+          "client_explanation": "Mesmo em visitas rápidas, os dispositivos de emergência devem ser sempre testados",
+          "severity": "mandatory",
+          "urgency": "C1",
+          "penalty": "Responsabilidade por acidentes causados por segurança não verificada"
+        },
+        {
+          "requirement": "Registo de todas as intervenções com data e técnico",
+          "description": "Cada intervenção deve ser registada no livro de manutenção com data, técnico responsável e trabalho realizado",
+          "client_explanation": "Todas as visitas ficam registadas — pode consultar o histórico completo do seu elevador",
+          "severity": "mandatory",
+          "urgency": "C2",
+          "penalty": "Perda de rastreabilidade — coima na inspeção OII"
+        },
+        {
+          "requirement": "Técnico de manutenção com qualificação reconhecida",
+          "description": "Técnicos que realizam manutenção devem ter formação específica em elevadores reconhecida pela EMA registada",
+          "client_explanation": "A empresa de manutenção deve empregar técnicos certificados, não pessoal não qualificado",
+          "severity": "mandatory",
+          "urgency": "C1",
+          "penalty": "Responsabilidade da EMA em caso de acidente"
+        },
+        {
+          "requirement": "Resposta a avaria em tempo máximo contratual",
+          "description": "Contrato de manutenção deve definir tempo máximo de resposta a avaria com encerramento de pessoas",
+          "client_explanation": "O seu contrato de manutenção deve incluir tempo de resposta garantido para libertação de pessoas presas",
+          "severity": "mandatory",
+          "urgency": "C1",
+          "penalty": "Responsabilidade civil por dano causado pelo atraso"
+        }
+      ]
     }
   ],
   "violation_codes": [

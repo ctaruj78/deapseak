@@ -903,6 +903,7 @@
     <script src="../../plugins/jquery/jquery.min.js"></script>
     <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
     <script src="../../plugins/adminlte/adminlte.min.js"></script>
+    <script src="../../assets/js/auth.js"></script>
 
     <script>
         let currentRequestId = null;
@@ -1077,10 +1078,14 @@
                     completed: requests.filter(r => r.status === 'completed').length
                 };
                 
-                document.getElementById('totalRequests').textContent = stats.total;
-                document.getElementById('newRequests').textContent = stats.new;
-                document.getElementById('inProgressRequests').textContent = stats.inProgress;
-                document.getElementById('completedRequests').textContent = stats.completed;
+                const elTotal = document.getElementById('totalRequests');
+                const elPending = document.getElementById('pendingRequests');
+                const elInProgress = document.getElementById('inProgressRequests');
+                const elCompleted = document.getElementById('completedRequests');
+                if (elTotal) elTotal.textContent = stats.total;
+                if (elPending) elPending.textContent = stats.new;
+                if (elInProgress) elInProgress.textContent = stats.inProgress;
+                if (elCompleted) elCompleted.textContent = stats.completed;
             }
             
             viewRequest(requestId) {
@@ -1164,6 +1169,44 @@
                 };
                 return priorityMap[priority] || priority;
             }
+
+            applyFilters() {
+                const status = document.getElementById('filterStatus')?.value;
+                const priority = document.getElementById('filterPriority')?.value;
+                this.loadRequests({ status, priority });
+            }
+
+            resetFilters() {
+                const filterStatus = document.getElementById('filterStatus');
+                const filterPriority = document.getElementById('filterPriority');
+                if (filterStatus) filterStatus.value = '';
+                if (filterPriority) filterPriority.value = '';
+                this.loadRequests();
+            }
+
+            exportRequests() {
+                toastr.info('Функція експорту буде додана пізніше');
+            }
+
+            printRequests() {
+                window.print();
+            }
+
+            previousPage() {
+                toastr.info('Функція пагінації буде додана пізніше');
+            }
+
+            nextPage() {
+                toastr.info('Функція пагінації буде додана пізніше');
+            }
+
+            downloadReport(requestId) {
+                toastr.info('Функція завантаження звіту буде додана пізніше');
+            }
+
+            chatWithTech(requestId) {
+                toastr.info('Функція чату з техніком буде додана пізніше');
+            }
         }
 
         $(document).ready(function() {
@@ -1195,6 +1238,7 @@
             // Ініціалізація систем
             serviceIntegration = new ServiceRequestsIntegration();
             window.clientRequestsManager = new ClientRequestsManager();
+            window.requestsManager = window.clientRequestsManager;
             
             // Завантажити заявки
             clientRequestsManager.loadRequests();

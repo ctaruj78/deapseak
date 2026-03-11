@@ -959,8 +959,8 @@ app.post('/api/pdf/upload', authenticateToken, upload.single('pdfReport'), async
     }
 });
 
-// Portuguese Regulations Search API
-app.get('/api/regulations', authenticateToken, async (req, res) => {
+// Portuguese Regulations Search API (public - no auth required)
+app.get('/api/regulations', async (req, res) => {
     try {
         const { search } = req.query;
         
