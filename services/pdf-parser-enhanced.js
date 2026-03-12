@@ -510,14 +510,15 @@ function extractViolations(text) {
     console.log(`  Found: ${count5} additional violations`);
     
     // ⭐ Формат 6: GATECI (компактний) — C[123] + артикул + текст без пробілів
-    // Приклади: C364º-1Não existe...  C393º - 1O dispositivo...  C313º.-1As faces...
+    // Приклади: C364º.-1Não existe...  C286º.-4Inexistência...  C313º.-1As faces...
+    //           C233º-2 ; 7.6.2 EN 81O vidro...  C36.3.5.1A casa de máquinas...
     //           C3(MS) Ponto 2 das OMSApós a modernização...
     console.log('📋 Format 6: GATECI compact (C3<ART><TEXT>)');
     
     // Розбиваємо текст на потенційні записи GATECI
-    // Шукаємо рядки що починаються з C1/C2/C3 і одразу йде або цифра/дужка
-    // Опис: будь-який текст до наступного C[123]+цифра або кінця рядка (дозволяємо велику C всередині тексту)
-    const gatecLineRegex = /(C[123])(\d+[º°][.-]?\s*\d*|\([A-Z]+\)[^\n]{0,40}?)([A-ZÁÉÍÓÚÂÊÔÃÇ].{15,}?)(?=C[123]\d|$)/gs;
+    // Артикул може бути: "86º.-4", "64º.-1", "33º-2 ; 7.6.2 EN 81", "6.3.5.1", "(MS) Ponto 2"
+    // Опис: до наступного C[123]+цифра або кінця (дозволяємо велику C всередині тексту)
+    const gatecLineRegex = /(C[123])(\d+(?:\.\d+){2,}|\d+[º°][.\-]{0,2}\s*\d*(?:\s*;\s*[\d.]+(?:\s+EN\s+[\w-]+)?)?|\([A-Z]+\)[^\n]{0,40}?)([A-ZÁÉÍÓÚÂÊÔÃÇ].{15,}?)(?=C[123][\d(\n]|\n{2,}|$)/gs;
     let count6 = 0;
     
     while ((match = gatecLineRegex.exec(text)) !== null) {
@@ -525,11 +526,14 @@ function extractViolations(text) {
         let rawArticle = match[2].trim();
         let description = (match[3] || '').trim();
         
-        // Нормалізуємо артикул: "64º-1" → "64", "(MS) Ponto 2" → "MS/2"
+        // Нормалізуємо артикул: "86º.-4" → "86", "6.3.5.1" → "6.3.5.1", "(MS) Ponto 2" → "MS/2"
         let articleNum;
+        const decimalArt = rawArticle.match(/^(\d+(?:\.\d+){2,})/);  // 6.3.5.1
         const simpleArt = rawArticle.match(/^(\d+)[º°]/);
         const msArt = rawArticle.match(/^\(([A-Z]+)\)/);
-        if (simpleArt) {
+        if (decimalArt) {
+            articleNum = decimalArt[1];
+        } else if (simpleArt) {
             articleNum = simpleArt[1];
         } else if (msArt) {
             articleNum = msArt[1] + (rawArticle.match(/Ponto\s*(\d+)/) ? '/' + rawArticle.match(/Ponto\s*(\d+)/)[1] : '');
@@ -556,10 +560,10 @@ function extractViolations(text) {
     console.log(`  Found: ${count6} violations`);
     
     // ⭐ Формат 7: GATECI таблиця де кожна колонка на новому рядку
-    // PDF текст: "C2\n86º.-4\nInexistência de ligação à terra..."
+    // PDF текст: "C2\n86º.-4\nInexistência...", "C3\n6.3.5.1\nA casa de máquinas..."
     // Тільки якщо між класифікацією та артикулом є новий рядок
     console.log('📋 Format 7: GATECI table with newlines between columns');
-    const format7Regex = /(C[123])\n(\d+[º°][.-]?\d*(?:[\s;]+\d+(?:\.\d+)*(?:\s+EN\s+[\w-]+)?)?)\n([A-ZÁÉÍÓÚÂÊÔÃÇ].{15,}?)(?=\nC[123]\n|\n{2,}|$)/gms;
+    const format7Regex = /(C[123])\n(\d+(?:\.\d+){2,}|\d+[º°][.\-]{0,2}\d*(?:[\s;]+[\d.]+(?:\s+EN\s+[\w-]+)?)?)\n([A-ZÁÉÍÓÚÂÊÔÃÇ].{15,}?)(?=\nC[123]\n|\n{2,}|$)/gms;
     let count7 = 0;
     
     while ((match = format7Regex.exec(text)) !== null) {
@@ -567,8 +571,9 @@ function extractViolations(text) {
         const rawArticle = match[2].trim();
         let description = match[3].trim();
         
-        const simpleArt = rawArticle.match(/^(\d+)[º°]/);
-        let articleNum = simpleArt ? simpleArt[1] : rawArticle.replace(/[º°\s.-]/g, '') || 'NOTA';
+        const decimalArt7 = rawArticle.match(/^(\d+(?:\.\d+){2,})/);
+        const simpleArt7 = rawArticle.match(/^(\d+)[º°]/);
+        let articleNum = decimalArt7 ? decimalArt7[1] : (simpleArt7 ? simpleArt7[1] : (rawArticle.replace(/[º°\s.-]/g, '') || 'NOTA'));
         
         // Прибираємо footer тексту
         description = description.replace(/\nAvenida.*/s, '').trim();
@@ -585,10 +590,28 @@ function extractViolations(text) {
     }
     console.log(`  Found: ${count7} violations`);
     
-    console.log(`\n📊 TOTAL VIOLATIONS: ${violations.length} (F1:${count1} F2:${count2} F3:${count3} F4:${count4} F5:${count5} F6:${count6} F7:${count7})`);
+    // Secondary dedup: prefer entries with a real article over NOTA for same description
+    const seenByDesc = new Map(); // "C3-A casa de..." → index in violations
+    const deduped = [];
+    for (const v of violations) {
+        const descKey = `${v.classification}-${v.description.substring(0, 120)}`;
+        if (seenByDesc.has(descKey)) {
+            const existing = deduped[seenByDesc.get(descKey)];
+            // Replace NOTA with real article if we now have one
+            if (existing.article === 'NOTA' && v.article !== 'NOTA') {
+                deduped[seenByDesc.get(descKey)] = v;
+            }
+            // else keep existing (first wins)
+        } else {
+            seenByDesc.set(descKey, deduped.length);
+            deduped.push(v);
+        }
+    }
+
+    console.log(`\n📊 TOTAL VIOLATIONS: ${violations.length} raw → ${deduped.length} after desc-dedup (F1:${count1} F2:${count2} F3:${count3} F4:${count4} F5:${count5} F6:${count6} F7:${count7})`);
     console.log('========== VIOLATIONS EXTRACTION END ==========\n');
     
-    return violations;
+    return deduped;
 }
 
 /**
