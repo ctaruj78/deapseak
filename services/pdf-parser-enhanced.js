@@ -490,7 +490,15 @@ function extractViolations(text) {
             /instalações de elevação (em|na)/i,
             /entidade inspetora de instala/i,
             /responsável técnico/i,
-            /^\s*,\s*cumprir/i
+            /^\s*,\s*cumprir/i,
+            // GATECI footer/section headers (not violations)
+            /Deficiências a reparar no prazo/i,
+            /Data da Inspe[cç][aã]o/i,
+            /Valida[cç][aã]o.*Inspe/i,
+            /Propriet[aá]rio.*Empresa de Manuten/i,
+            /reparar no prazo de \d+\s*dias/i,
+            // Описи що починаються з C[123]+цифра — артефакт коли Format 5 підхоплює standalone C[123] рядок
+            /^C[123]\d+[º°]/,
         ];
         
         const isNoise = excludePatterns.some(pattern => pattern.test(description));
@@ -510,25 +518,59 @@ function extractViolations(text) {
     console.log(`  Found: ${count5} additional violations`);
     
     // ⭐ Формат 6: GATECI (компактний) — C[123] + артикул + текст без пробілів
-    // Приклади: C364º.-1Não existe...  C286º.-4Inexistência...  C313º.-1As faces...
+    // Приклади: C364º.-1Não existe...  C286º.-4Inexistência...
     //           C233º-2 ; 7.6.2 EN 81O vidro...  C36.3.5.1A casa de máquinas...
-    //           C3(MS) Ponto 2 das OMSApós a modernização...
+    //           C3Recomendação:... (без артикулу — article group порожній)
     console.log('📋 Format 6: GATECI compact (C3<ART><TEXT>)');
-    
-    // Розбиваємо текст на потенційні записи GATECI
+
+    // Хелпер: розбиває опис що містить вбудовані C[123]Текст або orphan article рядки
+    function splitEmbeddedEntries(classification, articleNum, rawDesc) {
+        const splitPoints = [];
+        let m;
+        // Pattern 1: \nC[123][Uppercase] — вбудована класифікація, напр. \nC3Recomendação
+        const cSplitRe = /\n(C[123])([A-ZÁÉÍÓÚÂÊÔÃÇ])/g;
+        while ((m = cSplitRe.exec(rawDesc)) !== null) {
+            splitPoints.push({ pos: m.index, cls: m[1], art: null, skip: 3 }); // skip \nC3 (3 chars)
+        }
+        // Pattern 2: \n\d+[º°]...[Uppercase] — orphan article без C[123], напр. \n9º-1As
+        const orphanRe = /\n(\d+[º°][.\-]{0,2}\d*)([A-ZÁÉÍÓÚÂÊÔÃÇ])/g;
+        while ((m = orphanRe.exec(rawDesc)) !== null) {
+            const rawArt = m[1];
+            const alreadyCovered = splitPoints.some(sp => Math.abs(sp.pos - m.index) < 2);
+            if (!alreadyCovered) {
+                const artNum = rawArt.match(/^(\d+)[º°]/)?.[1] || null;
+                splitPoints.push({ pos: m.index, cls: classification, art: artNum, skip: 1 + rawArt.length });
+            }
+        }
+        if (splitPoints.length === 0) return [{ cls: classification, art: articleNum, desc: rawDesc }];
+        splitPoints.sort((a, b) => a.pos - b.pos);
+        const entries = [];
+        const firstDesc = rawDesc.substring(0, splitPoints[0].pos).trim();
+        if (firstDesc.length >= 15) entries.push({ cls: classification, art: articleNum, desc: firstDesc });
+        for (let i = 0; i < splitPoints.length; i++) {
+            const sp = splitPoints[i];
+            const textStart = sp.pos + sp.skip;
+            const textEnd = i + 1 < splitPoints.length ? splitPoints[i + 1].pos : rawDesc.length;
+            const desc = rawDesc.substring(textStart, textEnd).trim();
+            if (desc.length >= 15) entries.push({ cls: sp.cls, art: sp.art, desc: desc });
+        }
+        return entries.length > 0 ? entries : [{ cls: classification, art: articleNum, desc: rawDesc }];
+    }
+
     // Артикул може бути: "86º.-4", "64º.-1", "33º-2 ; 7.6.2 EN 81", "6.3.5.1", "(MS) Ponto 2"
-    // Опис: до наступного C[123]+цифра або кінця (дозволяємо велику C всередині тексту)
-    const gatecLineRegex = /(C[123])(\d+(?:\.\d+){2,}|\d+[º°][.\-]{0,2}\s*\d*(?:\s*;\s*[\d.]+(?:\s+EN\s+[\w-]+)?)?|\([A-Z]+\)[^\n]{0,40}?)([A-ZÁÉÍÓÚÂÊÔÃÇ].{15,}?)(?=C[123][\d(\n]|\n{2,}|$)/gs;
+    // Або порожній (C3 одразу перед великою літерою): "C3Recomendação:"
+    // Lookahead: зупиняємось перед C[123]+цифра/uppercase/newline або подвійним переносом
+    const gatecLineRegex = /(C[123])(\d+(?:\.\d+){2,}|\d+[º°][.\-]{0,2}\s*\d*(?:\s*;\s*[\d.]+(?:\s+EN\s+[\w-]+)?)?|\([A-Z]+\)[^\n]{0,40}?|(?=[A-ZÁÉÍÓÚÂÊÔÃÇ]))([A-ZÁÉÍÓÚÂÊÔÃÇ].{15,}?)(?=C[123](?:[\d(\n]|[A-ZÁÉÍÓÚÂÊÔÃÇ])|\n{2,}|$)/gs;
     let count6 = 0;
-    
+
     while ((match = gatecLineRegex.exec(text)) !== null) {
         const classification = match[1];
         let rawArticle = match[2].trim();
         let description = (match[3] || '').trim();
-        
-        // Нормалізуємо артикул: "86º.-4" → "86", "6.3.5.1" → "6.3.5.1", "(MS) Ponto 2" → "MS/2"
+
+        // Нормалізуємо артикул: "86º.-4" → "86", "6.3.5.1" → "6.3.5.1", "(MS) Ponto 2" → "MS/2", "" → "NOTA"
         let articleNum;
-        const decimalArt = rawArticle.match(/^(\d+(?:\.\d+){2,})/);  // 6.3.5.1
+        const decimalArt = rawArticle.match(/^(\d+(?:\.\d+){2,})/);
         const simpleArt = rawArticle.match(/^(\d+)[º°]/);
         const msArt = rawArticle.match(/^\(([A-Z]+)\)/);
         if (decimalArt) {
@@ -538,23 +580,28 @@ function extractViolations(text) {
         } else if (msArt) {
             articleNum = msArt[1] + (rawArticle.match(/Ponto\s*(\d+)/) ? '/' + rawArticle.match(/Ponto\s*(\d+)/)[1] : '');
         } else {
-            articleNum = rawArticle.replace(/[º°\s.-]/g, '') || 'NOTA';
+            articleNum = rawArticle.replace(/[º°\s.-]/g, '') || null; // null → NOTA via createViolation
         }
-        
+
         // Очищаємо опис від можливих хвостів (footer тексту, повтори)
         description = description
-            .replace(/\n{2,}.*/s, '')  // Зупиняємось на подвійному переносі
-            .replace(/Avenida.*$/s, '') // Прибираємо footer GATECI
+            .replace(/\n{2,}.*/s, '')
+            .replace(/Avenida.*$/s, '')
             .trim();
-        
+
         if (description.length < 15) continue;
-        
-        const key = `${classification}-${articleNum}-${description}`;
-        if (!seen.has(key)) {
-            seen.add(key);
-            violations.push(createViolation(classification, articleNum, description, 'gateci'));
-            count6++;
-            console.log(`  ✅ Format 6 GATECI: ${classification} Art.${articleNum} - "${description.substring(0, 50)}..."`);
+
+        // Розбиваємо опис якщо він містить вбудовані підзаписи
+        const subEntries = splitEmbeddedEntries(classification, articleNum, description);
+        for (const { cls, art, desc } of subEntries) {
+            if (desc.length < 15) continue;
+            const key = `${cls}-${art || 'NOTA'}-${desc}`;
+            if (!seen.has(key)) {
+                seen.add(key);
+                violations.push(createViolation(cls, art, desc, 'gateci'));
+                count6++;
+                console.log(`  ✅ Format 6 GATECI: ${cls} Art.${art || 'NOTA'} - "${desc.substring(0, 50)}..."`);
+            }
         }
     }
     console.log(`  Found: ${count6} violations`);
