@@ -668,7 +668,14 @@ class UnifiedAnalyticsEngine {
     updateCharts() {
         Object.values(this.charts).forEach(chart => {
             if (chart && typeof chart.update === 'function') {
-                chart.update('none'); // Без анімації для реал-тайм
+                // Перевіряємо що canvas елемент ще є в DOM
+                try {
+                    if (chart.canvas && document.contains(chart.canvas)) {
+                        chart.update('none'); // Без анімації для реал-тайм
+                    }
+                } catch (e) {
+                    // Мовчки ігноруємо — canvas міг бути видалений при переключенні вкладок
+                }
             }
         });
     }
@@ -1370,7 +1377,9 @@ class UnifiedAnalyticsEngine {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (!res.ok) throw new Error('HTTP ' + res.status);
-            const users = await res.json();
+            const body = await res.json();
+            // API повертає { success, data: [...] } або просто масив
+            const users = Array.isArray(body) ? body : (body.data || body.users || []);
 
             const admins      = users.filter(u => u.role === 'admin').length;
             const technicians = users.filter(u => u.role === 'technician' || u.role === 'tech').length;
@@ -1485,7 +1494,7 @@ class UnifiedAnalyticsEngine {
                         break;
                 }
                 
-                this.showTab(targetTab);
+                this.activateTab(targetTab);
             });
         });
     }
