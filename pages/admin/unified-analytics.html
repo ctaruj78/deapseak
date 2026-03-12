@@ -1798,19 +1798,24 @@ setTimeout(() => {
             const lifts = liftsData.data || [];
             const municipalities = municipalitiesData.data || [];
             
+            // Карта муніципалітетів (актуальні дані з JSON)
+            const municipalityMap = {};
+            municipalities.forEach(m => { municipalityMap[m.name] = m; });
+            
             // Підрахунок ліфтів по муніципалітетам
             const municipalityStats = {};
             
             lifts.forEach(lift => {
                 if (lift.municipality && lift.municipality.name) {
                     const name = lift.municipality.name;
+                    const current = municipalityMap[name] || {};
                     if (!municipalityStats[name]) {
                         municipalityStats[name] = {
                             name: name,
-                            distrito: lift.municipality.distrito || 'N/A',
-                            distance: lift.municipality.distance_km || 0,
-                            email: lift.municipality.email || 'N/A',
-                            phone: lift.municipality.phone || 'N/A',
+                            distrito: current.distrito || lift.municipality.distrito || 'N/A',
+                            distance: current.distance_km || lift.municipality.distance_km || 0,
+                            email: current.email || lift.municipality.email || 'N/A',
+                            phone: current.phone || lift.municipality.phone || 'N/A',
                             liftsCount: 0,
                             emailsSent: lift.municipality.notification_history?.length || 0
                         };
