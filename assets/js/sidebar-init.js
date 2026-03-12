@@ -118,6 +118,47 @@ function loadSidebarWithInit(sidebarPath = 'includes/sidebar.html') {
     });
 }
 
+/**
+ * Оновлює ім'я користувача в sidebar з localStorage (уникає flash hardcoded імені)
+ */
+function updateSidebarUserName() {
+    try {
+        // Пробуємо різні ключі localStorage
+        let userData = null;
+        const keys = ['liftmanager_user', 'lm_session', 'userData', 'user'];
+        for (const key of keys) {
+            const raw = localStorage.getItem(key);
+            if (raw) {
+                try { userData = JSON.parse(raw); } catch (e) { /* skip */ }
+                if (userData && (userData.firstName || userData.username || userData.name)) break;
+            }
+        }
+
+        if (!userData) return;
+
+        const firstName = userData.firstName || '';
+        const lastName  = userData.lastName  || '';
+        const fullName  = (firstName + ' ' + lastName).trim()
+                       || userData.username
+                       || userData.name
+                       || '';
+
+        if (fullName) {
+            const el = document.querySelector('.user-panel .info a');
+            if (el) el.textContent = fullName;
+        }
+    } catch (e) {
+        // Мовчазно ігноруємо помилки
+    }
+}
+
+// Виконуємо відразу + після DOMContentLoaded (на випадок динамічного sidebar)
+updateSidebarUserName();
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', updateSidebarUserName);
+}
+
 // Export for use in pages
 window.initSidebarTreeview = initSidebarTreeview;
 window.loadSidebarWithInit = loadSidebarWithInit;
+window.updateSidebarUserName = updateSidebarUserName;
