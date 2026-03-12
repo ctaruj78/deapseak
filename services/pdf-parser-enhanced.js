@@ -333,7 +333,7 @@ function extractViolations(text) {
     let count1 = 0;
     
     while ((match = format1Regex.exec(text)) !== null) {
-        const key = `${match[1]}-${match[2]}-${match[3].substring(0, 50)}`;
+        const key = `${match[1]}-${match[2]}-${match[3].trim()}`;
         if (!seen.has(key)) {
             seen.add(key);
             violations.push(createViolation(match[1], match[2], match[3].trim(), 'standard'));
@@ -348,7 +348,7 @@ function extractViolations(text) {
     let count2 = 0;
     
     while ((match = format2Regex.exec(text)) !== null) {
-        const key = `${match[3]}-${match[1]}-${match[2].substring(0, 50)}`;
+        const key = `${match[3]}-${match[1]}-${match[2].trim()}`;
         if (!seen.has(key)) {
             seen.add(key);
             violations.push(createViolation(match[3], match[1], match[2].trim(), 'article_first'));
@@ -363,7 +363,7 @@ function extractViolations(text) {
     let count3 = 0;
     
     while ((match = format3Regex.exec(text)) !== null) {
-        const key = `${match[3]}-${match[2]}-${match[1].substring(0, 50)}`;
+        const key = `${match[3]}-${match[2]}-${match[1].trim()}`;
         if (!seen.has(key)) {
             seen.add(key);
             violations.push(createViolation(match[3], match[2], match[1].trim(), 'bullet_point'));
@@ -378,7 +378,7 @@ function extractViolations(text) {
     let count4 = 0;
     
     while ((match = format4Regex.exec(text)) !== null) {
-        const key = `${match[1]}-${match[2]}-${match[3].substring(0, 50)}`;
+        const key = `${match[1]}-${match[2]}-${match[3].trim()}`;
         if (!seen.has(key)) {
             seen.add(key);
             violations.push(createViolation(match[1], match[2], match[3].trim(), 'table'));
@@ -421,6 +421,13 @@ function extractViolations(text) {
             articleNum = articleMatch ? articleMatch[1] : null;
         }
         
+        // Метод 4: GATECI формат — одразу після C[123] йде "NNº" або "NNº.-N"
+        if (!articleNum) {
+            const afterClassDirect = text.substring(position + 2, position + 20);
+            const directArt = afterClassDirect.match(/^[\s\n]*(\d+)[º°]/);
+            if (directArt) articleNum = directArt[1];
+        }
+        
         // Витягуємо опис після C1/C2/C3
         const afterClass = text.substring(position);
         let descriptionMatch = afterClass.match(/C[123]\s*[-–—:.]?\s*(.{15,400}?)(?:\n\n|C[123]|Página|P\s*á\s*g|CLÁUSULAS|Art\.?º?\s*\d|$)/s);
@@ -447,6 +454,8 @@ function extractViolations(text) {
         // Очищаємо опис
         description = description
             .replace(/^\s*[-–—:.]\s*/, '')
+            .replace(/^\d+[º°][.-]?\s*\d*\s*(?:;\s*\d+[º°][.-]?\s*\d*)?(?:\s*;\s*[0-9.]+\s+EN\s+[\w-]+)?\s*/, '') // Видаляємо артикул(и) з початку опису (GATECI)
+            .replace(/^[-.\s\d]+(?=[A-ZÁÉÍÓÚÂÊÔÃÇ])/, '') // Прибираємо залишки цифр/знаків перед першою літерою
             .replace(/\s+/g, ' ')
             .replace(/\s*\([^)]*C[123][^)]*\)\s*$/, '')
             .trim();
@@ -507,13 +516,14 @@ function extractViolations(text) {
     
     // Розбиваємо текст на потенційні записи GATECI
     // Шукаємо рядки що починаються з C1/C2/C3 і одразу йде або цифра/дужка
-    const gatecLineRegex = /(C[123])(\d+[º°][.-]?\s*\d*|(\([A-Z]+\)[^\n]{0,40}?))([A-ZÁÉÍÓÚÂÊÔÃÇ][^C\n]{20,})/g;
+    // Опис: будь-який текст до наступного C[123]+цифра або кінця рядка (дозволяємо велику C всередині тексту)
+    const gatecLineRegex = /(C[123])(\d+[º°][.-]?\s*\d*|\([A-Z]+\)[^\n]{0,40}?)([A-ZÁÉÍÓÚÂÊÔÃÇ].{15,}?)(?=C[123]\d|$)/gs;
     let count6 = 0;
     
     while ((match = gatecLineRegex.exec(text)) !== null) {
         const classification = match[1];
         let rawArticle = match[2].trim();
-        let description = (match[4] || '').trim();
+        let description = (match[3] || '').trim();
         
         // Нормалізуємо артикул: "64º-1" → "64", "(MS) Ponto 2" → "MS/2"
         let articleNum;
@@ -527,12 +537,15 @@ function extractViolations(text) {
             articleNum = rawArticle.replace(/[º°\s.-]/g, '') || 'NOTA';
         }
         
-        // Очищаємо опис — може бути злитий з наступним записом
-        description = description.replace(/\s*C[123]\d.*$/s, '').trim();
+        // Очищаємо опис від можливих хвостів (footer тексту, повтори)
+        description = description
+            .replace(/\n{2,}.*/s, '')  // Зупиняємось на подвійному переносі
+            .replace(/Avenida.*$/s, '') // Прибираємо footer GATECI
+            .trim();
         
         if (description.length < 15) continue;
         
-        const key = `${classification}-${articleNum}-${description.substring(0, 80)}`;
+        const key = `${classification}-${articleNum}-${description}`;
         if (!seen.has(key)) {
             seen.add(key);
             violations.push(createViolation(classification, articleNum, description, 'gateci'));
@@ -542,7 +555,37 @@ function extractViolations(text) {
     }
     console.log(`  Found: ${count6} violations`);
     
-    console.log(`\n📊 TOTAL VIOLATIONS: ${violations.length} (F1:${count1} F2:${count2} F3:${count3} F4:${count4} F5:${count5} F6:${count6})`);
+    // ⭐ Формат 7: GATECI таблиця де кожна колонка на новому рядку
+    // PDF текст: "C2\n86º.-4\nInexistência de ligação à terra..."
+    // Тільки якщо між класифікацією та артикулом є новий рядок
+    console.log('📋 Format 7: GATECI table with newlines between columns');
+    const format7Regex = /(C[123])\n(\d+[º°][.-]?\d*(?:[\s;]+\d+(?:\.\d+)*(?:\s+EN\s+[\w-]+)?)?)\n([A-ZÁÉÍÓÚÂÊÔÃÇ].{15,}?)(?=\nC[123]\n|\n{2,}|$)/gms;
+    let count7 = 0;
+    
+    while ((match = format7Regex.exec(text)) !== null) {
+        const classification = match[1];
+        const rawArticle = match[2].trim();
+        let description = match[3].trim();
+        
+        const simpleArt = rawArticle.match(/^(\d+)[º°]/);
+        let articleNum = simpleArt ? simpleArt[1] : rawArticle.replace(/[º°\s.-]/g, '') || 'NOTA';
+        
+        // Прибираємо footer тексту
+        description = description.replace(/\nAvenida.*/s, '').trim();
+        
+        if (description.length < 15) continue;
+        
+        const key = `${classification}-${articleNum}-${description}`;
+        if (!seen.has(key)) {
+            seen.add(key);
+            violations.push(createViolation(classification, articleNum, description, 'gateci-table'));
+            count7++;
+            console.log(`  ✅ Format 7 GATECI-table: ${classification} Art.${articleNum} - "${description.substring(0, 50)}..."`);
+        }
+    }
+    console.log(`  Found: ${count7} violations`);
+    
+    console.log(`\n📊 TOTAL VIOLATIONS: ${violations.length} (F1:${count1} F2:${count2} F3:${count3} F4:${count4} F5:${count5} F6:${count6} F7:${count7})`);
     console.log('========== VIOLATIONS EXTRACTION END ==========\n');
     
     return violations;
