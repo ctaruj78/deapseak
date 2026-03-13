@@ -24,11 +24,19 @@ class AuthManager {
     }
 
     static logout() {
-        localStorage.removeItem(this.TOKEN_KEY);
-        localStorage.removeItem(this.USER_KEY);
-        localStorage.removeItem('userData');  // Очищаємо userData
-        localStorage.removeItem('lm_session');
-        localStorage.removeItem('lm_user');
+        // Очищаємо ВСІ ключі авторизації (і нові і старі формати)
+        [
+            this.TOKEN_KEY,       // liftmanager_jwt
+            this.USER_KEY,        // liftmanager_user
+            'userData',
+            'lm_session',
+            'lm_user',
+            'token',              // Головний токен (login.html)
+            'authToken',          // Для lifts-manager.js
+            'lm_token',           // Старий формат
+            'deapseak_token',     // V2 формат
+            'user'                // Головний user (login.html)
+        ].forEach(key => localStorage.removeItem(key));
         
         document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
         
@@ -73,10 +81,29 @@ class AuthManager {
     }
 
     static getCurrentUser() {
-        if (!this.isAuthenticated()) return null;
+        const token = localStorage.getItem(this.TOKEN_KEY);
+        if (!token) return null;
         
-        const user = localStorage.getItem(this.USER_KEY);
-        return user ? JSON.parse(user) : null;
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const now = Math.floor(Date.now() / 1000);
+            if (payload.exp && payload.exp < now) return null;
+            
+            // JWT payload is authoritative for role/id/email (signed, can't be tampered)
+            // Merge with stored user data for additional fields (name, phone, etc.)
+            const storedUser = localStorage.getItem(this.USER_KEY);
+            const userData = storedUser ? JSON.parse(storedUser) : {};
+            
+            return {
+                ...userData,
+                id:    payload.id    || userData.id,
+                role:  payload.role  || userData.role,
+                email: payload.email || userData.email
+            };
+        } catch (error) {
+            console.error('❌ Помилка читання даних користувача:', error);
+            return null;
+        }
     }
 
     static getAuthToken() {
@@ -177,6 +204,29 @@ class AuthManager {
                 window.location.replace(loginPath);
             }
             return;
+        }
+
+        // 🔐 Перевірка ролі: якщо сторінка вимагає конкретну роль — перевіряємо
+        const bodyRequiredRole = document.body
+            ? document.body.getAttribute('data-required-role')
+            : null;
+        if (bodyRequiredRole) {
+            const user = this.getCurrentUser();
+            const userRole = user ? user.role : null;
+            if (userRole && userRole !== bodyRequiredRole) {
+                console.warn(`⚠️ Роль "${userRole}" не має доступу до сторінки для "${bodyRequiredRole}". Редірект...`);
+                // Редіректимо на відповідну панель за роллю
+                const roleRedirects = {
+                    'admin':      '/pages/admin/admin-dashboard.html',
+                    'dispatcher': '/pages/dispatcher/dashboard.html',
+                    'technician': '/pages/tech/dashboard.html',
+                    'tech':       '/pages/tech/dashboard.html',
+                    'client':     '/pages/client/dashboard.html'
+                };
+                const target = roleRedirects[userRole] || '/pages/auth/login.html';
+                window.location.replace(target);
+                return;
+            }
         }
     }
 }

@@ -265,7 +265,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/pages/client/support.html" title="Suporte">
+                    <a class="nav-link" href="/pages/client/support.html" title="Підтримка">
                         <i class="fas fa-headset"></i>
                     </a>
                 </li>
@@ -322,7 +322,7 @@
                 <li class="nav-item">
                     <a href="/pages/client/my-lifts.html" class="nav-link" id="nav-my-lifts">
                         <i class="nav-icon fas fa-elevator"></i>
-                        <p>Meus Elevadores</p>
+                        <p>Мої ліфти</p>
                         <span class="badge badge-info right" id="liftsCount">0</span>
                     </a>
                 </li>
@@ -332,7 +332,7 @@
                     <a href="/pages/client/ai-predictions.html" class="nav-link" id="nav-ai-predictions">
                         <i class="nav-icon fas fa-brain"></i>
                         <p>
-                            Previsões AI
+                            Прогнозування AI
                             <span class="badge badge-purple right">Novo</span>
                         </p>
                     </a>
@@ -342,7 +342,7 @@
                 <li class="nav-item">
                     <a href="/pages/client/requests.html" class="nav-link" id="nav-requests">
                         <i class="nav-icon fas fa-tasks"></i>
-                        <p>Pedidos</p>
+                        <p>Заявки</p>
                         <span class="badge badge-warning right" id="requestsCount">0</span>
                     </a>
                 </li>
@@ -351,7 +351,7 @@
                 <li class="nav-item">
                     <a href="/pages/client/invoices.html" class="nav-link" id="nav-invoices">
                         <i class="nav-icon fas fa-file-invoice"></i>
-                        <p>Faturas</p>
+                        <p>Рахунки</p>
                         <span class="badge badge-success right" id="invoicesCount">0</span>
                     </a>
                 </li>
@@ -360,7 +360,7 @@
                 <li class="nav-item">
                     <a href="/pages/client/history.html" class="nav-link" id="nav-history">
                         <i class="nav-icon fas fa-history"></i>
-                        <p>Histórico</p>
+                        <p>Історія</p>
                     </a>
                 </li>
                 
@@ -368,7 +368,7 @@
                 <li class="nav-item">
                     <a href="/pages/client/documentation.html" class="nav-link" id="nav-documentation">
                         <i class="nav-icon fas fa-book"></i>
-                        <p>Documentação</p>
+                        <p>Документація</p>
                     </a>
                 </li>
                 
@@ -376,7 +376,7 @@
                 <li class="nav-item">
                     <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link" id="nav-ai-assistant">
                         <i class="nav-icon fas fa-magic"></i>
-                        <p>Assistente AI</p>
+                        <p>Асистент AI</p>
                         <span class="badge badge-success right">★</span>
                     </a>
                 </li>
@@ -385,7 +385,7 @@
                 <li class="nav-item">
                     <a href="/pages/client/notifications.html" class="nav-link" id="nav-notifications">
                         <i class="nav-icon fas fa-bell"></i>
-                        <p>Notificações</p>
+                        <p>Сповіщення</p>
                         <span class="badge badge-danger right" id="notificationsBadge">0</span>
                     </a>
                 </li>
@@ -394,7 +394,7 @@
                 <li class="nav-item">
                     <a href="/pages/client/support.html" class="nav-link" id="nav-support">
                         <i class="nav-icon fas fa-headset"></i>
-                        <p>Suporte</p>
+                        <p>Підтримка</p>
                     </a>
                 </li>
                 
@@ -402,16 +402,16 @@
                 <li class="nav-item">
                     <a href="/pages/client/profile.html" class="nav-link" id="nav-profile">
                         <i class="nav-icon fas fa-user"></i>
-                        <p>Perfil</p>
+                        <p>Профіль</p>
                     </a>
                 </li>
                 
                 <!-- Налаштування (окремо внизу) -->
-                <li class="nav-header">CONFIGURAÇÕES</li>
+                <li class="nav-header">НАЛАШТУВАННЯ</li>
                 <li class="nav-item">
                     <a href="/pages/client/settings.html" class="nav-link" id="nav-settings">
                         <i class="nav-icon fas fa-cog"></i>
-                        <p>Definições</p>
+                        <p>Налаштування</p>
                     </a>
                 </li>
                 
@@ -419,7 +419,7 @@
                 <li class="nav-item">
                     <a href="#" onclick="logout()" class="nav-link">
                         <i class="nav-icon fas fa-sign-out-alt text-danger"></i>
-                        <p>Sair</p>
+                        <p>Вийти</p>
                     </a>
                 </li>
             </ul>
@@ -826,7 +826,7 @@
         <!-- Footer -->
         <footer class="main-footer">
             <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
-            Sistema de gestão de elevadores v2.1.0.
+            Система управління ліфтами v2.1.0.
             <div class="float-right d-none d-sm-inline-block">
                 <b>Versão</b> 2.1.0
             </div>
@@ -977,7 +977,8 @@
                         throw new Error('Помилка завантаження ліфтів');
                     }
 
-                    const clientLifts = data.data || [];
+                    // API повертає { data: { lifts: [...], pagination: {...} } }
+                    const clientLifts = (data.data && data.data.lifts) ? data.data.lifts : (Array.isArray(data.data) ? data.data : []);
                     
                     console.log('✅ Elevadores завантажено:', clientLifts.length);
                     
@@ -992,32 +993,21 @@
 
             /**
              * Завантаження заявок клієнта
-             * TODO: Реалізувати requests API в unified-server
              */
             async function loadClientRequests() {
                 try {
                     console.log('🔄 Завантаження заявок клієнта...');
-                    // TODO: Коли requests API буде готовий, розкоментувати:
-                    // const response = await AuthManager.fetchWithAuth('/api/requests');
-                    // const data = await response.json();
-                    // return data.data || [];
+                    const response = await AuthManager.fetchWithAuth('/api/requests');
+                    const data = response ? await response.json() : null;
                     
-                    // Тимчасово: створюємо тестові дані
-                    const userData = AuthManager.getCurrentUser();
-                    const testRequests = [
-                        {
-                            _id: '1',
-                            type: 'maintenance',
-                            status: 'pending',
-                            priority: 'medium',
-                            description: 'Планове технічне обслуговування',
-                            createdAt: new Date().toISOString(),
-                            lift: { municipalNumber: '001' }
-                        }
-                    ];
+                    if (!data || !data.success) {
+                        throw new Error('Помилка завантаження заявок');
+                    }
                     
-                    console.log('⚠️ Використовуються тестові дані для заявок');
-                    return testRequests;
+                    // API повертає { data: { requests: [...], pagination: {...} } }
+                    const requests = (data.data && data.data.requests) ? data.data.requests : (Array.isArray(data.data) ? data.data : (data.requests || []));
+                    console.log('✅ Заявки завантажено:', requests.length);
+                    return requests;
                 } catch (error) {
                     console.error('❌ Помилка завантаження заявок:', error);
                     return [];
@@ -1091,6 +1081,15 @@
                 // Elevadores на обслуговуванні
                 const liftsInMaintenance = lifts.filter(l => l.status === 'maintenance').length;
                 $('#liftsInMaintenance').text(liftsInMaintenance);
+                
+                // Оновлення статус-бейджу
+                if (liftsInMaintenance === 0) {
+                    $('#statusBadge').text('Всі працюють').removeClass().addClass('status-badge all-operational');
+                } else if (liftsInMaintenance <= 2) {
+                    $('#statusBadge').text('Обслуговування').removeClass().addClass('status-badge maintenance-needed');
+                } else {
+                    $('#statusBadge').text('Критично').removeClass().addClass('status-badge critical');
+                }
             }
 
             /**

@@ -1,15 +1,19 @@
 {
   "metadata": {
     "country": "Portugal",
-    "last_updated": "2026-03-11",
+    "last_updated": "2026-03-13",
     "language": "pt-PT",
     "scope": "Regulamentação de Elevadores e Inspeções",
     "version": "4.0",
     "generated_by": "DeapSeaK AI Knowledge Generator",
-    "laws_count": 16,
+    "laws_count": 18,
     "total_articles": 24,
     "total_violation_codes": 49,
-    "latest_addition": "EN Standards + Decreto Regulamentar 13/80"
+    "latest_addition": "EN Standards + Decreto Regulamentar 13/80",
+    "authority": "DGEG — Direção-Geral de Energia e Geologia",
+    "authority_url": "https://www.dgeg.gov.pt/pt/areas-setoriais/energia/energia-eletrica/instalacoes-de-elevacao/",
+    "last_verified_online": "2025-01-01",
+    "notes": "DGEG é a autoridade competente para ascensores em Portugal. DL 58/2017 é a lei principal para ascensores NOVOS (Diretiva 2014/33/UE). DL 103/2008 aplica-se a monta-cargas/escadas mecânicas (Diretiva Máquinas). DL 320/2002 aplica-se à manutenção e inspeção após entrada em serviço. Câmaras municipais têm competência de fiscalização de inspeções periódicas."
   },
   "regulations": [
     {
@@ -508,7 +512,30 @@
         "sem_seguro": "€7500 a €37500",
         "exercicio_sem_registo_DGE": "€7500 a €37500",
         "pessoa_singular_maximo": "€3750"
-      }
+      },
+      "authority": "DGEG — Direção-Geral de Energia e Geologia"
+    },
+    {
+      "id": "LEI_65_2013",
+      "type": "lei",
+      "number": "65/2013",
+      "date": "2013-08-27",
+      "title": "Lei n.º 65/2013",
+      "subtitle": "Regime das EMIE e EIIE — Empresas de Manutenção e Entidades Inspetoras",
+      "status": "vigente",
+      "authority": "DGEG — Direção-Geral de Energia e Geologia",
+      "summary": "Define quem pode fazer manutenção (EMIE) e inspeções (EIIE) de elevadores em Portugal. Reconhecimento e controlo pela DGEG. EIIE devem ser acreditadas pelo IPAC (ISO 17020).",
+      "source": {
+        "file": "lei-65-2013.json",
+        "sections_count": 1,
+        "critical_articles": 4
+      },
+      "scope": [
+        "Reconhecimento de EMIE (Empresas de Manutenção de Instalações de Elevação)",
+        "Reconhecimento de EIIE (Entidades Inspetoras de Instalações de Elevação)",
+        "Controlo e fiscalização pela DGEG",
+        "Registo nacional de EMIE e EIIE"
+      ]
     },
     {
       "id": "DL_295_1998",
@@ -516,7 +543,7 @@
       "number": "295/98",
       "date": "1998-09-22",
       "title": "Decreto-Lei n.º 295/98",
-      "status": "vigente",
+      "status": "revogado",
       "summary": "Segurança de ascensores - Marcação CE, conformidade, organismos notificados",
       "scope": [
         "Objecto e âmbito",
@@ -810,7 +837,53 @@
         "periodoTransitorio": "Até 30/06/1999 (legislação antiga)",
         "revogacaoEfectiva": "01/07/1999 (DL 131/87 e 110/91 não aplicáveis a novos)",
         "directivaEuropeia": "Directiva 95/16/CE de 29/06/1995"
-      }
+      },
+      "revoked_by": "Decreto-Lei n.º 103/2008",
+      "notes": "Transpunha a Directiva 95/16/CE. Revogado pelo DL 103/2008 que transpôs a nova Diretiva 2014/33/UE.",
+      "authority": "DGEG — Direção-Geral de Energia e Geologia"
+    },
+    {
+      "id": "DL_58_2017",
+      "type": "decreto-lei",
+      "number": "58/2017",
+      "date": "2017-06-09",
+      "title": "Decreto-Lei n.º 58/2017",
+      "subtitle": "Transposição da Diretiva Ascensores 2014/33/UE para Portugal",
+      "status": "vigente",
+      "priority": "CRITICAL",
+      "authority": "DGEG — Direção-Geral de Energia e Geologia",
+      "transposes": "Diretiva 2014/33/UE (Diretiva Ascensores)",
+      "revokes": [
+        "Decreto-Lei n.º 295/98"
+      ],
+      "summary": "Lei principal para ascensores NOVOS em Portugal. Transpõe a Diretiva 2014/33/UE. A DGEG coordena a aplicação. Fiscalização pelo ASAE (DL 23/2011). Aplica-se a ascensores instalados permanentemente em edifícios.",
+      "applies_to": "Ascensores novos colocados no mercado após 9 de junho de 2017",
+      "source": {
+        "file": "decreto-lei-58-2017.json",
+        "sections_count": 1,
+        "critical_articles": 5
+      },
+      "scope": [
+        "Colocação no mercado de ascensores novos",
+        "Requisitos essenciais de segurança (Anexo I Diretiva)",
+        "Marcação CE e declaração UE de conformidade",
+        "Organismos notificados (acreditados pelo IPAC)",
+        "Fiscalização pelo ASAE"
+      ],
+      "inspection_points": [
+        {
+          "point": "marcacao_ce",
+          "article": "Art. 5.º",
+          "client_explanation": "Cada ascensor novo deve ter marcação CE na cabina e declaração UE de conformidade emitida pelo instalador.",
+          "severity": "critical"
+        },
+        {
+          "point": "organismo_notificado",
+          "article": "Art. 9.º",
+          "client_explanation": "A avaliação de conformidade deve ser feita por organismo notificado acreditado pelo IPAC.",
+          "severity": "critical"
+        }
+      ]
     },
     {
       "id": "DEC_REG_13_1980",
@@ -842,7 +915,7 @@
       ],
       "modifications_to": "Decreto n.º 513/70 (1970-10-30)",
       "effective_date": "180 dias após publicação",
-      "authority": "Ministério da Indústria e Energia"
+      "authority": "DGEG — Direção-Geral de Energia e Geologia (ex-Ministério da Indústria e Energia)"
     },
     {
       "id": "NP_EN_81_20_2020",
@@ -894,7 +967,8 @@
           ]
         }
       ],
-      "applicability": {}
+      "applicability": {},
+      "authority": "IPQ — Instituto Português da Qualidade / CEN"
     },
     {
       "id": "NP_EN_81_50_2020",
@@ -918,7 +992,8 @@
       },
       "sections": [],
       "key_requirements": [],
-      "applicability": {}
+      "applicability": {},
+      "authority": "IPQ — Instituto Português da Qualidade / CEN"
     },
     {
       "id": "NP_EN_81_70_2022",
@@ -969,7 +1044,8 @@
           ]
         }
       ],
-      "applicability": {}
+      "applicability": {},
+      "authority": "IPQ — Instituto Português da Qualidade / CEN"
     },
     {
       "id": "NP_EN_81_71_2022",
@@ -991,7 +1067,8 @@
       },
       "sections": [],
       "key_requirements": [],
-      "applicability": {}
+      "applicability": {},
+      "authority": "IPQ — Instituto Português da Qualidade / CEN"
     },
     {
       "id": "NP_EN_81_72_2020",
@@ -1021,7 +1098,8 @@
         "Proteção contra entrada de água (extinção de incêndios)",
         "Sinalização: triângulo vermelho com símbolo bombeiro"
       ],
-      "applicability": {}
+      "applicability": {},
+      "authority": "IPQ — Instituto Português da Qualidade / CEN"
     },
     {
       "id": "NP_EN_81_73_2020",
@@ -1044,7 +1122,8 @@
       },
       "sections": [],
       "key_requirements": [],
-      "applicability": {}
+      "applicability": {},
+      "authority": "IPQ — Instituto Português da Qualidade / CEN"
     },
     {
       "id": "NP_EN_81_77_2020",
@@ -1066,7 +1145,8 @@
       },
       "sections": [],
       "key_requirements": [],
-      "applicability": {}
+      "applicability": {},
+      "authority": "IPQ — Instituto Português da Qualidade / CEN"
     },
     {
       "id": "NP_EN_81_80_2020",
@@ -1089,15 +1169,16 @@
       },
       "sections": [],
       "key_requirements": [],
-      "applicability": {}
+      "applicability": {},
+      "authority": "IPQ — Instituto Português da Qualidade / CEN"
     },
     {
       "id": "DL_103_2008",
-      "type": "norma_europeia",
+      "type": "decreto-lei",
       "number": "103/2008",
-      "title": "Decreto-Lei n.º 103/2008 - Transposição da Diretiva Ascensores para Portugal",
+      "title": "Decreto-Lei n.º 103/2008 - Transposição da Diretiva Máquinas 2006/42/CE",
       "status": "vigente",
-      "summary": "Legislação nacional que transpõe a Diretiva Europeia 95/16/CE (agora 2014/33/UE) sobre elevadores. Estabelece requisitos legais, procedimentos de certificação e inspeções obrigatórias.",
+      "summary": "Transpõe a Diretiva Máquinas 2006/42/CE. Aplica-se a monta-cargas, escadas mecânicas e tapetes rolantes. NÃO se aplica a ascensores de passageiros (abrangidos pelo DL 58/2017).",
       "scope": [
         "Requisitos legais para instalação de elevadores novos",
         "Procedimentos de certificação CE",
@@ -1112,7 +1193,11 @@
       },
       "sections": [],
       "key_requirements": [],
-      "applicability": {}
+      "applicability": {},
+      "authority": "DGAE — Direção-Geral das Atividades Económicas (coordenação); ASAE (fiscalização)",
+      "transposes": "Diretiva 2006/42/CE — Diretiva Máquinas",
+      "applies_to": "Monta-cargas, escadas mecânicas, tapetes rolantes",
+      "does_not_apply_to": "Ascensores novos — abrangidos pelo DL 58/2017 (Diretiva Ascensores 2014/33/UE)"
     },
     {
       "id": "PORT_348_2013",
@@ -1306,7 +1391,8 @@
           "urgency": "C1",
           "penalty": "Responsabilidade civil por dano causado pelo atraso"
         }
-      ]
+      ],
+      "authority": "IPQ — Instituto Português da Qualidade / CEN"
     }
   ],
   "violation_codes": [

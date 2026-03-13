@@ -7,7 +7,11 @@
   "url": "https://eur-lex.europa.eu/legal-content/PT/TXT/?uri=CELEX:32014L0033",
   "priority": "HIGH",
   "scope": "Substitui a Diretiva 95/16/CE — harmonização UE para ascensores novos colocados no mercado",
-  "status": "Em vigor — transposta para Portugal pelo DL 163/2006 (atualizado)",
+  "status": "Em vigor — transposta para Portugal pelo Decreto-Lei n.º 58/2017, de 9 de junho",
+  "authority": "DGEG — Direção-Geral de Energia e Geologia",
+  "authorityUrl": "https://www.dgeg.gov.pt/pt/areas-setoriais/energia/energia-eletrica/instalacoes-de-elevacao/ascensores-novos/",
+  "transposedBy": "Decreto-Lei n.º 58/2017",
+  "lastChecked": "2025-01-01",
   "articles": [
     {
       "number": "Art. 1.º",

@@ -5,8 +5,16 @@
     "date": "22 de Setembro de 1998",
     "scope": "Segurança de ascensores - Marcação CE, conformidade, organismos notificados",
     "transposes": "Directiva n.º 95/16/CE (29 Junho 1995)",
-    "authority": "Direcção-Geral da Energia (DGE), Instituto Português da Qualidade (IPQ)",
-    "relatedLaws": ["Decreto 513/70", "DL 320/2002", "DL 131/87 (revogado)", "DL 110/91 (revogado)"]
+    "authority": "DGEG — Direção-Geral de Energia e Geologia (ex-DGE)",
+    "relatedLaws": [
+      "Decreto 513/70",
+      "DL 320/2002",
+      "DL 131/87 (revogado)",
+      "DL 110/91 (revogado)"
+    ],
+    "status": "REVOGADO — substituído pelo Decreto-Lei n.º 103/2008",
+    "revoked_by": "Decreto-Lei n.º 103/2008",
+    "notes": "Transpunha a Directiva 95/16/CE. A DGE (Direcção-Geral da Energia) foi fundida na DGEG em 2004."
   },
   "chapters": [
     "Objecto e âmbito",

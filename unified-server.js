@@ -17,6 +17,8 @@ const mongoose = require('mongoose');
 const multer = require('multer');
 const fs = require('fs').promises;
 const https = require('https');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 
 // 🤖 Google Gemini AI
 const { GoogleGenerativeAI } = require('@google/generative-ai');
@@ -105,24 +107,54 @@ async function geocodeAddress(address) {
 const PORT = parseInt(process.env.DEAPSEAK_PORT || '5000', 10);
 console.log(`🔧 Налаштування порту: DEAPSEAK_PORT=${process.env.DEAPSEAK_PORT}, final PORT=${PORT}`);
 
-// Middleware - CORS для Codespaces
+// 🔐 Helmet - HTTP security headers (XSS, clickjacking, sniffing, etc.)
+app.use(helmet({
+    contentSecurityPolicy: false, // Вимкнено бо AdminLTE CDN inline-scripts
+    crossOriginEmbedderPolicy: false
+}));
+
+// 🔐 Rate Limiting
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 хвилин
+    max: 20,                   // max 20 спроб входу за 15 хв
+    message: { success: false, message: 'Забагато спроб входу. Спробуйте через 15 хвилин.' },
+    standardHeaders: true,
+    legacyHeaders: false
+});
+const aiLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 хвилина
+    max: 30,             // max 30 AI-запитів на хвилину
+    message: { success: false, message: 'Забагато запитів до AI. Зачекайте хвилину.' }
+});
+const generalLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 300,            // 300 запитів/хв для загального API
+    message: { success: false, message: 'Забагато запитів. Зачекайте хвилину.' }
+});
+
+// Middleware - CORS
+const isProduction = process.env.NODE_ENV === 'production';
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').filter(Boolean);
+
 app.use(cors({
     origin: function(origin, callback) {
-        // Дозволити запити без origin (Postman, curl) або з будь-якого origin
-        if (!origin || 
-            origin.includes('localhost') || 
-            origin.includes('127.0.0.1') ||
-            origin.includes('github.dev') ||
-            origin.includes('app.github.dev')) {
-            callback(null, true);
-        } else {
-            callback(null, true); // В dev режимі дозволяємо все
-        }
+        if (!origin) return callback(null, true); // Postman/curl
+        if (!isProduction) return callback(null, true); // dev - дозволяємо все
+        // Production: тільки явно дозволені origins або festlift.pt домени
+        const allowed = allowedOrigins.length > 0
+            ? allowedOrigins.some(o => origin.startsWith(o.trim()))
+            : (origin.includes('localhost') || origin.includes('127.0.0.1') ||
+               origin.includes('github.dev') || origin.includes('app.github.dev') ||
+               origin.includes('festlift.pt'));
+        callback(allowed ? null : new Error('CORS: Origin not allowed'), allowed);
     },
     credentials: true
 }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// General rate limit для всіх API запитів
+app.use('/api/', generalLimiter);
 
 // MongoDB підключення
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
@@ -1200,8 +1232,17 @@ app.get('/api/lifts', authenticateToken, async (req, res) => {
                     message: 'Некоректний токен користувача'
                 });
             }
-            query.client = clientId.toString();
-            console.log(`👤 Клієнт ${req.user.username} запитує свої ліфти (client: ${clientId})`);
+            // Шукаємо по обох форматах: string і ObjectId (сумісність з різними способами збереження)
+            // + fallback по clientEmail (якщо акаунт пересоздано і ID змінився)
+            let clientObjId = null;
+            try { clientObjId = new ObjectId(clientId.toString()); } catch (e) { /* не валідний ObjectId */ }
+            const clientEmail = req.user.email;
+            const orConditions = clientObjId
+                ? [{ client: clientId.toString() }, { client: clientObjId }, { 'client._id': clientId.toString() }, { 'client._id': clientObjId }]
+                : [{ client: clientId.toString() }, { 'client._id': clientId.toString() }];
+            if (clientEmail) orConditions.push({ clientEmail: clientEmail.toLowerCase() });
+            query.$or = orConditions;
+            console.log(`👤 Клієнт ${req.user.username} запитує свої ліфти (clientId: ${clientId}, email: ${clientEmail})`);
         } else if (req.user.role === 'technician') {
             // Технік бачить ліфти з призначених йому запитів
             const techId = req.user.id || req.user.userId;
@@ -1608,7 +1649,7 @@ app.put('/api/lifts/:id', authenticateToken, async (req, res) => {
         }
         
         // Клієнт може оновлювати тільки свої ліфти
-        if (req.user.role === 'client' && lift.clientId !== req.user.userId) {
+        if (req.user.role === 'client' && lift.clientId !== req.user.id && lift.clientId !== req.user.userId) {
             console.warn(`⚠️ Клієнт ${req.user.username} намагається оновити чужий ліфт ${liftId}`);
             return res.status(403).json({
                 success: false,
@@ -2505,7 +2546,7 @@ app.get('/api/municipalities/stats', authenticateToken, async (req, res) => {
 app.get('/api/users/profile', authenticateToken, async (req, res) => {
     try {
         const { ObjectId } = require('mongodb');
-        const userId = req.user.userId;
+        const userId = req.user.id || req.user.userId;
         
         // Перевірка чи userId є валідним ObjectId
         let query;
@@ -2651,7 +2692,7 @@ app.get('/api/auth/status', authenticateToken, (req, res) => {
         success: true,
         authenticated: true,
         user: {
-            id: req.user.userId,
+            id: req.user.id || req.user.userId,
             email: req.user.email,
             role: req.user.role,
             username: req.user.username
@@ -2871,7 +2912,7 @@ app.delete('/api/users/:id', authenticateToken, async (req, res) => {
         const userId = new ObjectId(req.params.id);
         
         // Перевіряємо що користувач не видаляє сам себе
-        if (req.user.userId === req.params.id) {
+        if ((req.user.id || req.user.userId) === req.params.id) {
             return res.status(400).json({
                 success: false,
                 message: 'Ви не можете видалити свій власний акаунт'
@@ -3051,8 +3092,17 @@ app.get('/api/requests', authenticateToken, async (req, res) => {
             console.log(`🔧 Tech ${req.user.username} запитує свої завдання (userId=${userId})`);
         } else if (role === 'client') {
             // Client sees only requests on their lifts
+            const { ObjectId: OID } = require('mongodb');
+            let clientObjId = null;
+            try { clientObjId = new OID(userId); } catch (e) { /* не ObjectId */ }
+            const clientEmail = req.user.email;
+            const liftOrConditions = clientObjId
+                ? [{ client: userId }, { client: clientObjId }, { 'client._id': userId }, { 'client._id': clientObjId }]
+                : [{ client: userId }, { 'client._id': userId }];
+            if (clientEmail) liftOrConditions.push({ clientEmail: clientEmail.toLowerCase() });
+            const liftFilterQuery = { $or: liftOrConditions };
             const clientLifts = await db.collection('lifts')
-                .find({ client: userId }, { projection: { _id: 1 } })
+                .find(liftFilterQuery, { projection: { _id: 1 } })
                 .toArray();
             const liftIds = clientLifts.map(l => l._id.toString());
             if (liftIds.length === 0) {
@@ -3509,7 +3559,7 @@ app.post('/api/requests/:id/comment', authenticateToken, async (req, res) => {
             id: new ObjectId().toString(),
             text: commentText.trim(),
             author: {
-                id: req.user.userId,
+                id: req.user.id || req.user.userId,
                 username: req.user.username,
                 role: req.user.role
             },
@@ -3571,7 +3621,7 @@ app.post('/api/requests/:id/complete', authenticateToken, async (req, res) => {
             resolution: resolution.trim(),
             completedAt: new Date().toISOString(),
             completedBy: {
-                id: req.user.userId,
+                id: req.user.id || req.user.userId,
                 username: req.user.username,
                 role: req.user.role
             },
@@ -3664,7 +3714,7 @@ app.post('/api/requests/:id/assign', authenticateToken, async (req, res) => {
             status: 'assigned',
             assignedAt: new Date().toISOString(),
             assignedBy: {
-                id: req.user.userId,
+                id: req.user.id || req.user.userId,
                 username: req.user.username,
                 role: req.user.role
             },
@@ -3750,7 +3800,7 @@ app.delete('/api/requests/:id', authenticateToken, async (req, res) => {
 // GET /api/settings - отримання налаштувань користувача
 app.get('/api/settings', authenticateToken, async (req, res) => {
     try {
-        const userId = req.user.userId;
+        const userId = req.user.id || req.user.userId;
         
         // Шукаємо налаштування користувача
         let userSettings = await db.collection('user_settings').findOne({ userId });
@@ -3793,7 +3843,7 @@ app.get('/api/settings', authenticateToken, async (req, res) => {
 // PUT /api/settings - оновлення налаштувань
 app.put('/api/settings', authenticateToken, async (req, res) => {
     try {
-        const userId = req.user.userId;
+        const userId = req.user.id || req.user.userId;
         const newSettings = req.body;
         
         const result = await db.collection('user_settings').updateOne(
@@ -3825,7 +3875,7 @@ app.put('/api/settings', authenticateToken, async (req, res) => {
 // PUT /api/settings/language - оновлення мови
 app.put('/api/settings/language', authenticateToken, async (req, res) => {
     try {
-        const userId = req.user.userId;
+        const userId = req.user.id || req.user.userId;
         const { language } = req.body;
         
         if (!language) {
@@ -3863,7 +3913,7 @@ app.put('/api/settings/language', authenticateToken, async (req, res) => {
 // PUT /api/settings/theme - оновлення теми
 app.put('/api/settings/theme', authenticateToken, async (req, res) => {
     try {
-        const userId = req.user.userId;
+        const userId = req.user.id || req.user.userId;
         const { theme } = req.body;
         
         if (!theme) {
@@ -4355,12 +4405,22 @@ FREQUÊNCIAS DE INSPEÇÃO (DL 320/2002):
 • Após modernização: inspeção de verificação obrigatória antes de reativar
 
 LEGISLAÇÃO PRINCIPAL:
+• DL 58/2017 — LEI PRINCIPAL para ascensores NOVOS. Transpõe Diretiva 2014/33/UE. Coordenado pela DGEG. Fiscalização pelo ASAE.
+  ⚠️ NÃO confundir com DL 103/2008 que se aplica a monta-cargas/escadas (Diretiva Máquinas)
+• DL 320/2002 — Regime de manutenção e inspeção periódica obrigatória (após entrada em serviço)
+  Câmaras municipais têm competência de fiscalização das inspeções periódicas
+• Lei 65/2013 — Regime das EMIE (Empresas de Manutenção de Instalações de Elevação) e EIIE (Entidades Inspetoras). Reconhecimento e controlo pela DGEG.
 • Decreto 513/70 — Regulamento base de instalação de elevadores
-• DL 320/2002 — Regime de manutenção e inspeção periódica obrigatória
 • DR 13/80 — Requisitos técnicos construtivos
 • Despacho 27/2024 — VIGENTE: Prazos C2 = 2 anos (revoga Despacho 17/2022)
-• EN 81-20:2020 — Norma europeia de segurança
+• EN 81-20:2020 + EN 81-50:2020 — Normas europeias de segurança (substituem EN 81-1 e EN 81-2)
 • Circular IPAC 06/2025 — Metodologias de inspeção de modificações
+
+AUTORIDADES COMPETENTES:
+• DGEG (Direção-Geral de Energia e Geologia) — coordena DL 58/2017, reconhece EMIE/EIIE
+• ASAE — fiscalização de mercado (ascensores novos)
+• Câmaras Municipais — fiscalização de inspeções periódicas (DL 320/2002)
+• DGAE — coordena DL 103/2008 (monta-cargas/escadas mecânicas)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 🚨 REGRAS:
@@ -4488,7 +4548,7 @@ async function callGeminiAI(message, role, username, regulationsContext = null, 
 }
 
 // AI Chat endpoint
-app.post('/api/ai/chat', authenticateToken, async (req, res) => {
+app.post('/api/ai/chat', authenticateToken, aiLimiter, async (req, res) => {
     try {
         const { message, context } = req.body;
         
@@ -5443,7 +5503,7 @@ app.get('/api/ai/regulations/:id', authenticateToken, async (req, res) => {
 
 // 🔐 Auth Routes (login, register, profile) + User Management
 const authRoutes = require('./backend/routes/authRoutes');
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', loginLimiter, authRoutes); // loginLimiter захищає від brute-force
 app.use('/api/users', authRoutes); // authRoutes містить /users endpoints
 
 // 🏢 Lift Routes (CRUD операції з ліфтами)
@@ -5650,7 +5710,7 @@ app.post('/api/orcamentos', authenticateToken, async (req, res) => {
             notas,
             status: 'rascunho',
             criadoPor: req.user.username,
-            criadoPorId: req.user.userId,
+            criadoPorId: req.user.id || req.user.userId,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
         };
@@ -6404,7 +6464,7 @@ app.post('/api/email/send-orcamento', authenticateToken, async (req, res) => {
                     emailsEnviados: {
                         email: clientEmail,
                         dataEnvio: new Date().toISOString(),
-                        enviadoPor: req.user.userId
+                        enviadoPor: req.user.id || req.user.userId
                     }
                 }
             }

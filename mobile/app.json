@@ -1,0 +1,49 @@
+{
+  "expo": {
+    "name": "DeapSeaK",
+    "slug": "deapseak-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "deapseak",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#007bff"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.deapseak.mobile",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Додаток використовує камеру для сканування QR-кодів ліфтів",
+        "NSPhotoLibraryUsageDescription": "Додаток використовує фотогалерею для додавання фото до заявок"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#007bff"
+      },
+      "package": "com.deapseak.mobile",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Додаток використовує камеру для сканування QR-кодів ліфтів"
+        }
+      ]
+    ]
+  }
+}

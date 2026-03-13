@@ -43,12 +43,18 @@ class LanguageSwitcher {
   render(containerSelector) {
     const container = document.querySelector(containerSelector);
     if (!container) return;
-    container.innerHTML = `<div class="mb-3"><label>Мова:</label> <select id="langSelect" class="form-control" style="width:auto;display:inline-block;">
-      ${Object.entries(this.languages).map(([code, name]) => `<option value="${code}" ${code===this.current?'selected':''}>${name}</option>`).join('')}
-    </select></div>`;
-    document.getElementById('langSelect').onchange = (e) => this.switchLang(e.target.value);
-    this.applyTranslations();
-  }
+    // Видаляємо попередній виджет якщо існує, щоб уникнути дублювання
+    const existing = document.getElementById('langSwitcherWidget');
+    if (existing) existing.remove();
+    // Вставляємо виджет на початок контейнера — НЕ замінюємо весь вміст
+    const widget = document.createElement('div');
+    widget.id = 'langSwitcherWidget';
+    widget.className = 'mb-2 px-3 py-1';
+    widget.style.cssText = 'position:relative;z-index:10;';
+    widget.innerHTML = `<label style="font-size:12px;margin-bottom:2px;">Мова:</label> <select id="langSelect" class="form-control form-control-sm" style="width:auto;display:inline-block;">
+          ${Object.entries(this.languages).map(([code, name]) => `<option value="${code}" ${code===this.current?'selected':''}>${name}</option>`).join('')}
+        </select>`;
+    container.prepend(widget);
 
   switchLang(lang) {
     this.current = lang;

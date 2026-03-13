@@ -1,7 +1,7 @@
 // service-worker-client.js
 // Service Worker для PWA клієнтської панелі
 
-const CACHE_NAME = 'liftmaster-client-cache-v2';
+const CACHE_NAME = 'liftmaster-client-cache-v3';
 const urlsToCache = [
   '/pages/client/my-lifts.html',
   '/pages/client/requests.html',
@@ -37,12 +37,20 @@ self.addEventListener('fetch', event => {
   if (request.method !== 'GET') return;
   if (!request.url.startsWith(self.location.origin)) return;
 
+  // ⚡ API-запити ЗАВЖДИ йдуть через мережу (not cached)
+  // Кешування API відповідей викликає баги (застарілі дані про ліфти, заявки і т.д.)
+  const url = new URL(request.url);
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(fetch(request));
+    return;
+  }
+
   event.respondWith(
     caches.match(request).then(cached => {
       if (cached) return cached;
 
       return fetch(request).then(response => {
-        // Кешуємо лише успішні відповіді того самого origin
+        // Кешуємо лише успішні відповіді того самого origin (але не API)
         if (
           response.ok &&
           response.type === 'basic' &&

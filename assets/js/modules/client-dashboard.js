@@ -56,30 +56,13 @@ class ClientDashboard {
     }
 
     loadStatistics() {
-        // Імітація завантаження статистики
-        const stats = {
-            totalLifts: 12,
-            operationalLifts: 9,
-            maintenanceLifts: 2,
-            activeRequests: 3,
-            notifications: 5
-        };
-
-        $('#totalLifts').text(stats.totalLifts);
-        $('#operationalLifts').text(stats.operationalLifts);
-        $('#maintenanceLifts').text(stats.maintenanceLifts);
-        $('#activeRequests').text(stats.activeRequests);
-        $('#notificationCount').text(stats.notifications);
-        $('#notificationsBadge').text(stats.notifications);
-        
-        // Оновлення бейджу статусу
-        if (stats.maintenanceLifts === 0) {
-            $('#statusBadge').text('Всі працюють').removeClass().addClass('status-badge all-operational');
-        } else if (stats.maintenanceLifts <= 2) {
-            $('#statusBadge').text('Обслуговування').removeClass().addClass('status-badge maintenance-needed');
-        } else {
-            $('#statusBadge').text('Критично').removeClass().addClass('status-badge critical');
-        }
+        // Статистика завантажується через initializeClientDashboard() з реального API
+        // Показуємо стан завантаження
+        $('#totalLifts').text('...');
+        $('#activeRequests').text('...');
+        $('#completedThisMonth').text('...');
+        $('#liftsInMaintenance').text('...');
+        // Статус-бейдж оновлюється разом з реальними даними в updateClientStats()
     }
 
     loadRecentActivities() {
