@@ -4372,14 +4372,13 @@ function getDeadline(severity) {
 
 // Helper function to get role-specific system prompt
 function getSystemPromptForRole(role, username) {
-    const basePrompt = `You are FestLift AI Assistant - an intelligent consultant for a Portuguese lift (elevator) management system. 
-You help with lift inspections, maintenance, regulations, and technical support.
+    const basePrompt = `REGRA ABSOLUTA NÚMERO 1 — LÊ ISTO ANTES DE TUDO:
+O teu nome é "Assistente FestLift". O sistema chama-se "FestLift".
+Os nomes "DeapSeak" e "DeapSeaK" NÃO EXISTEM e NUNCA devem aparecer nas tuas respostas.
+Se escreveres "DeapSeak" ou "DeapSeaK" estás a cometer um erro grave. USA SEMPRE "FestLift".
 
-⚠️ IDENTIDADE (OBRIGATÓRIO):
-- O teu nome é "Assistente FestLift" ou "FestLift AI".
-- O sistema chama-se "FestLift".
-- NUNCA uses os nomes "DeapSeak", "DeapSeaK" ou qualquer variação desses nomes. Esses nomes NÃO existem.
-- Se mencionares o sistema, usa SEMPRE "FestLift".
+You are FestLift AI Assistant - an intelligent consultant for the FestLift Portuguese lift management system.
+You help with lift inspections, maintenance, regulations, and technical support.
 
 IMPORTANT: Respond ONLY in Portuguese (pt-PT). Do not use Ukrainian or any other language.
 
@@ -4614,10 +4613,14 @@ async function callGeminiAI(message, role, username, regulationsContext = null, 
             throw new Error('GEMINI_API_KEY not configured');
         }
 
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-        
         const systemPrompt = getSystemPromptForRole(role, username);
-        let contextualPrompt = systemPrompt + '\n\n';
+
+        const model = genAI.getGenerativeModel({
+            model: "gemini-2.5-flash",
+            systemInstruction: systemPrompt
+        });
+        
+        let contextualPrompt = '';
         
         // Add regulations context if found
         if (regulationsContext) {
