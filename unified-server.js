@@ -4429,6 +4429,120 @@ AUTORIDADES COMPETENTES:
 • DGAE — coordena DL 103/2008 (monta-cargas/escadas mecânicas)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🏢 SISTEMA FESTLIFT — ESTRUTURA E FUNCIONALIDADES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PAINEL ADMIN (pages/admin/):
+• Dashboard — visão geral: estatísticas de elevadores, pedidos pendentes, alertas
+• Lifts (lifts.html) — gestão completa do parque de elevadores: adicionar, editar, ver estado
+• Users (users.html) — gestão de utilizadores, atribuição de papéis (admin/dispatcher/tech/client)
+• Role Manager (role-manager.html) — permissões e papéis do sistema
+• Reports (reports.html) — relatórios de inspeção, geração e envio por email
+• Orçamentos (orcamentos-list.html) — lista e gestão de orçamentos/propostas
+• Requests (requests.html) — pedidos de serviço dos clientes
+• Analytics (analytics-dashboard.html) — gráficos e KPIs do sistema
+• Maps (maps.html) — mapa geográfico dos elevadores
+• QR Management (qr-management.html) — gestão de QR codes dos elevadores
+• Predictive Maintenance (predictive-maintenance.html) — análise preditiva com AI
+• Notifications (notifications.html) — alertas e notificações do sistema
+• Audit Log (audit-log.html) — registo de todas as ações
+
+PAINEL DISPATCHER (pages/dispatcher/):
+• Dashboard — tarefas do dia, técnicos disponíveis, mapa de atribuições
+• Assignments (assignments.html) — atribuir técnicos a inspeções/reparações
+• Calendar (calendar.html) — calendário de inspeções e manutenções
+• Lifts (lifts.html) — estado dos elevadores, histórico de intervenções
+• Technicians (technicians.html) — lista de técnicos, disponibilidade, localização
+• Monitoring (monitoring.html) — monitorização em tempo real
+• Maps (maps.html) — mapa com localização de técnicos e elevadores
+• Clients (clients.html) — lista de clientes/edifícios
+• Reports (reports.html) — relatórios por técnico/período
+• Orçamentos (orcamentos-list.html) — orçamentos em curso
+
+PAINEL TÉCNICO (pages/tech/):
+• Dashboard — tarefas atribuídas hoje, próximas inspeções
+• Tasks (tasks.html) — lista de tarefas: inspeções, reparações, manutenções
+• Inspections (inspections.html) — formulário de inspeção com checklist C1/C2/C3
+• Schedule (schedule.html) — agenda pessoal do técnico
+• QR Scanner (qr-scanner.html) — ler QR code do elevador para acesso rápido à ficha
+• Checklists (checklists.html) — checklists de manutenção preventiva
+• Manuals (manuals.html) — manuais técnicos por fabricante/modelo
+• Knowledge Base (knowledge-base.html) — base de conhecimento técnico
+• Reports (reports.html) — gerar relatório de inspeção após visita
+• AR Helper (ar-helper.html) — assistente de realidade aumentada
+• Task Map (task-map.html) — mapa das tarefas do dia
+
+PAINEL CLIENTE (pages/client/):
+• Dashboard — estado dos seus elevadores, próximas inspeções, alertas ativos
+• My Lifts (my-lifts.html) — lista dos elevadores do cliente com estado e histórico
+• History (history.html) — histórico completo de inspeções e intervenções
+• Requests (requests.html) — criar pedidos de serviço/urgência
+• Tickets (tickets.html) — acompanhar estado dos pedidos
+• Invoices (invoices.html) — faturas e orçamentos aprovados
+• Documentation (documentation.html) — documentos técnicos dos elevadores
+• Notifications (notifications.html) — alertas de prazos, inspeções, etc.
+• Support (support.html) — contacto direto com FestLift
+• AI Predictions (ai-predictions.html) — previsões de manutenção com AI
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔧 AVARIAS TÍPICAS DE ELEVADORES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+AVARIAS MECÂNICAS:
+• Cabos de suspensão — desgaste, fios partidos (>10% = C1), elongação excessiva
+• Para-quedas — desgaste ou falha no acionamento (sempre C1)
+• Guias e patilhas — desgaste, desalinhamento, ruídos
+• Amortecedores — deformação permanente, perda de fluido hidráulico
+• Motor de tração — sobreaquecimento, vibrações, consumo elevado
+• Freio eletromagnético — desgaste das pastilhas, folga excessiva (C1 se não travar)
+
+AVARIAS ELÉTRICAS/ELETRÓNICAS:
+• Fechaduras de portas (contatos) — falha no bloqueio ou deteção (frequente, C1 se porta abre com cabine em movimento)
+• Botoneiras — botões sem resposta, display apagado
+• Painel de controlo — erros de programação, fusíveis queimados
+• Sistema de nivelação — paragem acima/abaixo do andar (>20mm = risco de queda)
+• Iluminação da cabine — lâmpadas fundidas (C2 se sem emergência)
+• Telefone de emergência — inoperacional (C2)
+• Intercomunicador — falha na comunicação com exterior
+
+AVARIAS HIDRÁULICAS (elevadores hidráulicos):
+• Fuga de óleo no cilindro — perda de altura, contaminação ambiental
+• Válvula de descida — descida descontrolada (C1)
+• Bomba hidráulica — ruído excessivo, pressão insuficiente
+• Acumulador — perda de pressão
+
+SINTOMAS COMUNS E CAUSAS PROVÁVEIS:
+• Elevador para entre andares → contacto de porta, sobrecarga, fusível
+• Porta não fecha → obstáculo, fotocélula suja, folga excessiva na fechadura
+• Ruído excessivo → guias secas, rolamentos desgastados, cabos mal tensionados
+• Solavanco na paragem → calibração do freio, nivelador
+• Elevador desce lentamente → óleo frio (hidráulico), contrapeso desajustado
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚖️ CONSEQUÊNCIAS LEGAIS DE INCUMPRIMENTO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+NÃO CORRIGIR C1 (incumprimento imediato):
+• Crime de exposição a perigo (Código Penal, art.º 291.º) se mantiver elevador em serviço
+• Responsabilidade civil ilimitada por danos a terceiros (DL 363/91 — responsabilidade do produtor/operador)
+• Seguro de responsabilidade civil VOID — seguradora pode recusar indemnização
+• Câmara Municipal pode ordenar selagem imediata do elevador e multa entre €2.500 e €44.000 (DL 320/2002, art.º 42.º)
+• Proprietário do edifício assume responsabilidade pessoal por qualquer acidente
+
+NÃO CORRIGIR C2 NO PRAZO DE 2 ANOS (Despacho 27/2024):
+• Na inspeção seguinte, C2 não corrigida torna-se automaticamente fundamento de reprovação com prazo reduzido
+• Câmara Municipal pode interditar o uso do elevador
+• Coima entre €500 e €3.740 (pessoa singular) ou €2.500 e €44.000 (pessoa coletiva) — DL 320/2002
+• Seguro pode cobrir sinistro mas com direito de regresso contra o proprietário
+
+NÃO REALIZAR INSPEÇÃO PERIÓDICA (DL 320/2002):
+• Coima nos mesmos limites acima
+• Elevador considerado "sem certificação" — responsabilidade agravada em caso de acidente
+• EIIE acreditada pode recusar-se a realizar inspeção se elevador apresentar riscos óbvios
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 🚨 REGRAS:
 1. Es um CONSULTOR — podes EXPLICAR e ORIENTAR, nunca modificar dados no sistema
 2. PRIVACIDADE — nunca revelar dados de outros clientes
