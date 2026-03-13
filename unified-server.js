@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-// UNIFIED SERVER - DeapSeaK v2
+// UNIFIED SERVER - FestLift v2
 // ═══════════════════════════════════════════════════════════
 // ⚠️ ВАЖЛИВО: Один сервер для Frontend + API + WebSocket
 // ⚠️ ФІКСОВАНИЙ ПОРТ: 5000 (НІКОЛИ НЕ ЗМІНЮЙТЕ БЕЗ ЗАПИТУ!)
@@ -63,7 +63,7 @@ async function geocodeAddress(address) {
         
         https.get(url, {
             headers: {
-                'User-Agent': 'DeapSeaK-LiftManagement/2.0'
+                'User-Agent': 'FestLift-LiftManagement/2.0'
             }
         }, (response) => {
             let data = '';
@@ -4372,7 +4372,7 @@ function getDeadline(severity) {
 
 // Helper function to get role-specific system prompt
 function getSystemPromptForRole(role, username) {
-    const basePrompt = `You are DeapSeak AI Assistant - an intelligent consultant for a Portuguese lift (elevator) management system. 
+    const basePrompt = `You are FestLift AI Assistant - an intelligent consultant for a Portuguese lift (elevator) management system. 
 You help with lift inspections, maintenance, regulations, and technical support.
 
 IMPORTANT: Respond ONLY in Portuguese (pt-PT). Do not use Ukrainian or any other language.
@@ -5247,7 +5247,7 @@ app.post('/api/ai/chat', authenticateToken, aiLimiter, async (req, res) => {
         }
         // Default helpful response (PT + UA)
         else {
-            response = `👋 Olá! Sou o assistente DeapSeaK. / Вітаю! Я AI Асистент DeapSeaK.\n\n` +
+            response = `👋 Olá! Sou o assistente FestLift. / Вітаю! Я AI Асистент FestLift.\n\n` +
                       `Posso ajudar com / Можу допомогти з:\n` +
                       `📚 Regulamentação portuguesa / Португальські регламенти\n` +
                       `🔍 Informações sobre inspeções / Інформація про інспекції\n` +
@@ -6563,7 +6563,7 @@ app.post('/api/inspections/send-report', authenticateToken, async (req, res) => 
         }) : 'Não especificada';
 
         const mailOptions = {
-            from: process.env.EMAIL_FROM || 'DeapSeaK System <noreply@deapseak.com>',
+            from: process.env.EMAIL_FROM || 'FestLift <info@festlift.pt>',
             to: recipientEmail,
             subject: `Relatório de Manutenção ${inspectionNumber} - FESTLIFT`,
             html: `
@@ -6652,7 +6652,7 @@ app.post('/api/email/send-contract', authenticateToken, upload.single('pdf'), as
         const mailOptions = {
             from: process.env.EMAIL_FROM,
             to: email,
-            subject: subject || 'Контракт - DeapSeaK',
+            subject: subject || 'Контракт - FestLift',
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                     <h2 style="color: #007bff;">📄 Контракт на обслуговування</h2>
@@ -6661,7 +6661,7 @@ app.post('/api/email/send-contract', authenticateToken, upload.single('pdf'), as
                     <hr>
                     <p style="color: #666; font-size: 12px;">
                         З повагою,<br>
-                        Команда DeapSeaK
+                        Команда FestLift
                     </p>
                 </div>
             `
@@ -6720,7 +6720,7 @@ app.post('/api/email/send-inspection-pdf', authenticateToken, upload.single('pdf
         const mailOptions = {
             from: process.env.EMAIL_FROM,
             to: email,
-            subject: subject || 'Звіт інспекції - DeapSeaK',
+            subject: subject || 'Звіт інспекції - FestLift',
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                     <h2 style="color: #007bff;">📋 Звіт інспекції ліфта</h2>
@@ -6732,7 +6732,7 @@ app.post('/api/email/send-inspection-pdf', authenticateToken, upload.single('pdf
                     <hr>
                     <p style="color: #666; font-size: 12px;">
                         З повагою,<br>
-                        Команда DeapSeaK
+                        Команда FestLift
                     </p>
                 </div>
             `
@@ -6809,7 +6809,7 @@ app.post('/api/email/send-inspection-reminder', authenticateToken, async (req, r
                     <div style="background: #f8f9fa; padding: 15px; text-align: center; border: 1px solid #ddd; border-top: none; border-radius: 0 0 8px 8px;">
                         <p style="margin: 0; color: #666; font-size: 12px;">
                             З повагою,<br>
-                            <strong>Команда DeapSeaK</strong>
+                            <strong>Команда FestLift</strong>
                         </p>
                     </div>
                 </div>
@@ -6855,7 +6855,7 @@ app.post('/api/email/send-template', authenticateToken, async (req, res) => {
         const mailOptions = {
             from: process.env.EMAIL_FROM || process.env.SMTP_FROM || '"LiftMaster Pro" <info@festlift.pt>',
             to: email,
-            subject: subject || 'Тестовий email - DeapSeaK',
+            subject: subject || 'Тестовий email - FestLift',
             html: htmlContent
         };
 

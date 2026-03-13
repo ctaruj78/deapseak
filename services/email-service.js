@@ -7,7 +7,7 @@ const nodemailer = require('nodemailer');
 class EmailService {
     constructor() {
         this.transporter = null;
-        this.from = process.env.EMAIL_FROM || 'DeapSeaK <noreply@deapseak.com>';
+        this.from = process.env.EMAIL_FROM || 'FestLift <info@festlift.pt>';
         this.init();
     }
 
@@ -82,7 +82,7 @@ class EmailService {
             </div>
             
             <p>Ми повідомимо вас про зміну статусу заявки.</p>
-            <p>З повагою,<br>Команда DeapSeaK</p>
+            <p>З повагою,<br>Команда FestLift</p>
         `;
 
         return await this.sendEmail({ to: clientEmail, subject, html });
@@ -107,7 +107,7 @@ class EmailService {
             </div>
             
             <p>Будь ласка, зв'яжіться з клієнтом найближчим часом.</p>
-            <p>З повагою,<br>Команда DeapSeaK</p>
+            <p>З повагою,<br>Команда FestLift</p>
         `;
 
         return await this.sendEmail({ to: techEmail, subject, html });
@@ -131,7 +131,7 @@ class EmailService {
             </div>
             
             <p>Дякуємо за використання наших послуг!</p>
-            <p>З повагою,<br>Команда DeapSeaK</p>
+            <p>З повагою,<br>Команда FestLift</p>
         `;
 
         return await this.sendEmail({ to: clientEmail, subject, html });
@@ -154,7 +154,7 @@ class EmailService {
             </div>
             
             <p>Якщо у вас виникли питання, будь ласка, зв'яжіться з нами.</p>
-            <p>З повагою,<br>Команда DeapSeaK</p>
+            <p>З повагою,<br>Команда FestLift</p>
         `;
 
         return await this.sendEmail({ to: clientEmail, subject, html });

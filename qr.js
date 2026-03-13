@@ -279,7 +279,7 @@ class QRManager {
                         <img src="${canvas.toDataURL('image/png')}" class="qr-image" alt="QR Code">
                         <div class="print-info">
                             <p>Создан: ${new Date().toLocaleString()}</p>
-                            <p>DeapSeak LiftMaster - Система управления лифтами</p>
+                            <p>FestLift - Sistema de Gestão de Elevadores</p>
                         </div>
                         <button class="no-print" onclick="window.print()">Печать</button>
                     </div>
@@ -458,7 +458,7 @@ class QRManager {
                         <img src="${canvas.toDataURL('image/png')}" class="qr-image" alt="QR Code">
                         <div class="print-info">
                             <p>Создан: ${new Date().toLocaleString()}</p>
-                            <p>DeapSeak LiftMaster - Система управления лифтами</p>
+                            <p>FestLift - Sistema de Gestão de Elevadores</p>
                         </div>
                         <button class="no-print" onclick="window.print()">Печать</button>
                     </div>

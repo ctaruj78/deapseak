@@ -1,5 +1,5 @@
 /**
- * DeapSeaK AI Interface Controller
+ * FestLift AI Interface Controller
  * ================================
  * 
  * Динамічне управління інтерфейсом на основі AI рекомендацій
