@@ -317,7 +317,9 @@ class LiftsManager {
 
         try {
             // Завантажуємо повні дані з API (включно з inspectionHistory та maintenanceContract)
-            const token = localStorage.getItem('token');
+            const token = (typeof AuthManager !== 'undefined' && AuthManager.getAuthToken)
+                ? AuthManager.getAuthToken()
+                : (sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('token'));
             const response = await fetch(`/api/lifts/${liftId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -766,7 +768,9 @@ class LiftsManager {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) { alert('Невірний формат email адреси'); return; }
 
-        const token = localStorage.getItem('token');
+        const token = (typeof AuthManager !== 'undefined' && AuthManager.getAuthToken)
+            ? AuthManager.getAuthToken()
+            : (sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('token'));
         fetch('/api/email/send-inspection-report', {
             method: 'POST',
             headers: {
@@ -793,7 +797,9 @@ class LiftsManager {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) { alert('Невірний формат email адреси'); return; }
 
-        const token = localStorage.getItem('token');
+        const token = (typeof AuthManager !== 'undefined' && AuthManager.getAuthToken)
+            ? AuthManager.getAuthToken()
+            : (sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('token'));
         // Знаходимо liftId з поточного ліфта
         const liftId = this.currentLift?._id || this.currentLift?.id || '';
         fetch(`/api/lifts/${liftId}/contract/email`, {
@@ -1018,7 +1024,9 @@ class LiftsManager {
 
     async submitServiceRequest(liftId, data) {
         try {
-            const token = localStorage.getItem('token');
+            const token = (typeof AuthManager !== 'undefined' && AuthManager.getAuthToken)
+                ? AuthManager.getAuthToken()
+                : (sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('token'));
             const response = await fetch('/api/requests', {
                 method: 'POST',
                 headers: {
@@ -1069,7 +1077,9 @@ class LiftsManager {
         }
 
         try {
-            const token = localStorage.getItem('token');
+            const token = (typeof AuthManager !== 'undefined' && AuthManager.getAuthToken)
+                ? AuthManager.getAuthToken()
+                : (sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('token'));
             const response = await fetch(`/api/lifts/${liftId}/history`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
