@@ -412,7 +412,7 @@
     loadClientCounts();
     
     function loadClientCounts() {
-        const token = localStorage.getItem('token');
+        const token = sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('token');
         if (!token) return;
         
         // Кількість ліфтів

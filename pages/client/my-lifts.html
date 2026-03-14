@@ -437,22 +437,11 @@
     loadClientCounts();
     
     function loadClientCounts() {
-        const token = localStorage.getItem('token');
+        const token = sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token');
         if (!token) return;
         
-        // Кількість ліфтів
-        fetch('/api/lifts', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.data && Array.isArray(data.data)) {
-                const count = data.data.length;
-                const badge = document.getElementById('liftsCount');
-                if (badge) badge.textContent = count;
-            }
-        })
-        .catch(err => console.warn('Failed to load lifts count:', err));
+        // Кількість ліфтів — оновлюється через lifts-manager.js (updateOverview)
+        // тут не чіпаємо #liftsCount щоб уникнути конфлікту
         
         // Кількість заявок
         fetch('/api/requests?status=pending,in_progress', {
@@ -755,7 +744,7 @@
     <script src="../../assets/js/auth.js?v=1768338689"></script>
 
     <!-- Lifts Manager JS -->
-    <script src="../../assets/js/modules/lifts-manager.js?v=1773220609"></script>
+    <script src="../../assets/js/modules/lifts-manager.js?v=1773300001"></script>
     <script src="../../assets/js/modules/push-notifications-client.js?v=1768338689"></script>
     <script src="../../assets/js/modules/messenger-client.js?v=1773221574"></script>
     <script src="../../assets/js/modules/voice-assistant-client.js?v=1768338689"></script>

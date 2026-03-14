@@ -367,7 +367,12 @@
                         localStorage.setItem('lm_session', JSON.stringify(user));     // Старий формат
                         localStorage.setItem('liftmanager_user', JSON.stringify(user)); // AuthManager формат
                         
-                        console.log('✅ Токен збережено в localStorage');
+                        // ⚡ MULTI-TAB FIX: зберігаємо також в sessionStorage (per-tab)
+                        // Кожна вкладка матиме власний токен → різні ролі не конфліктують
+                        sessionStorage.setItem('liftmanager_jwt', token);
+                        sessionStorage.setItem('liftmanager_user', JSON.stringify(user));
+                        
+                        console.log('✅ Токен збережено в localStorage + sessionStorage');
                         console.log('✅ userData збережено:', user.role, user.email);
                         
                         showMessage('Успішний вхід! Перенаправлення...', 'success');

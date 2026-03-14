@@ -25,7 +25,7 @@ class LiftsManager {
             // Спроба отримати дані з API
             const token = AuthManager.getAuthToken
                 ? AuthManager.getAuthToken()
-                : (localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token'));
+                : (sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token'));
             const response = await fetch('/api/lifts', {
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -191,6 +191,7 @@ class LiftsManager {
                             </div>
                         </div>
                         <div class="p-3">
+                            ${lift.municipalNumber ? `<p><strong><i class="fas fa-hashtag mr-2"></i>Муніципальний №:</strong> <span class="badge badge-dark">${lift.municipalNumber}</span></p>` : ''}
                             <p><strong><i class="fas fa-map-marker-alt mr-2"></i>Локація:</strong> ${location}</p>
                             <p><strong><i class="fas fa-tag mr-2"></i>Тип:</strong> ${typeText}</p>
                             <p><strong><i class="fas fa-wrench mr-2"></i>Останнє ТО:</strong> ${this.formatDate(lift.lastMaintenance)}</p>
