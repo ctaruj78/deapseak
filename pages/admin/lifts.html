@@ -2510,9 +2510,7 @@
             }
 
             try {
-                const token = localStorage.getItem('jwt_token') || 
-                             localStorage.getItem('liftmanager_jwt') || 
-                             localStorage.getItem('token');
+                const token = AuthManager.getAuthToken();
                 
                 if (!token) {
                     alert('Автентифікація необхідна');
@@ -2529,12 +2527,9 @@
                     formData.append('pdf', currentPDFFile);
                 }
 
-                // Відправка через Brevo SMTP API
-                const response = await fetch('/api/email/send-contract', {
+                // Відправка через Brevo SMTP API (token у query параметрі — CORS workaround)
+                const response = await fetch(`/api/email/send-contract?token=${encodeURIComponent(token)}`, {
                     method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    },
                     body: formData
                 });
 
@@ -3079,9 +3074,7 @@
         const emailContent = template.replace('{INSPECTION_DATE}', formattedDate);
         
         try {
-            const token = localStorage.getItem('jwt_token') || 
-                         localStorage.getItem('liftmanager_jwt') || 
-                         localStorage.getItem('token');
+            const token = AuthManager.getAuthToken();
             
             if (!token) {
                 console.error('JWT token не знайдено');
@@ -3850,9 +3843,7 @@
         }
 
         try {
-            const token = localStorage.getItem('jwt_token') || 
-                         localStorage.getItem('liftmanager_jwt') || 
-                         localStorage.getItem('token');
+            const token = AuthManager.getAuthToken();
             
             if (!token) {
                 alert('Автентифікація необхідна');
@@ -3869,12 +3860,9 @@
                 formData.append('pdf', currentInspectionPDFFile);
             }
 
-            // Відправка через Brevo SMTP API
-            const response = await fetch('/api/email/send-inspection-pdf', {
+            // Відправка через Brevo SMTP API (token у query параметрі — CORS workaround)
+            const response = await fetch(`/api/email/send-inspection-pdf?token=${encodeURIComponent(token)}`, {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                },
                 body: formData
             });
 
@@ -5665,12 +5653,19 @@
         }
         
         try {
-            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            // Використовуємо AuthManager для отримання токена (підтримка sessionStorage)
+            const token = AuthManager.getAuthToken();
+            if (!token) {
+                alert('Сесія прострочена. Будь ласка, увійдіть знову');
+                window.location.replace('/pages/auth/login.html');
+                return;
+            }
             const pdfFile = fileInput && fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
 
             let result;
             if (pdfFile) {
                 // Якщо є PDF — надсилаємо через FormData
+                // Передаємо токен через query параметр (CORS workaround — уникаємо preflight)
                 const formData = new FormData();
                 formData.append('inspectionType', type);
                 formData.append('inspectionDate', date);
@@ -5680,9 +5675,9 @@
                 formData.append('pdfFile', pdfFile);
 
                 console.log('📤 Відправка з PDF файлом:', pdfFile.name);
-                const response = await fetch(`/api/lifts/${encodeURIComponent(liftId)}/inspection-report`, {
+                const apiUrl = `/api/lifts/${encodeURIComponent(liftId)}/inspection-report?token=${encodeURIComponent(token)}`;
+                const response = await fetch(apiUrl, {
                     method: 'POST',
-                    headers: { 'Authorization': 'Bearer ' + token },
                     body: formData
                 });
                 result = await response.json();
