@@ -763,17 +763,47 @@
             }
         }
 
-        function getCoordsFromAddress(address) {
-          // DEMO: повертає координати для кількох адрес, для реального проекту потрібен geocoding API
-          if (!address || typeof address !== 'string') {
-            return [38.7223, -9.1393]; // Лісабон за замовчуванням
+        // Geocoding cache to avoid duplicate requests
+        const _geocodeCache = {};
+
+        async function getCoordsForLift(lift) {
+          // 1. Use stored GeoJSON coordinates if available (most reliable)
+          if (lift.location && lift.location.coordinates &&
+              Array.isArray(lift.location.coordinates) &&
+              lift.location.coordinates.length === 2) {
+            const [lon, lat] = lift.location.coordinates;
+            if (lat && lon && Math.abs(lat) <= 90 && Math.abs(lon) <= 180) {
+              return [lat, lon]; // Leaflet uses [lat, lng]
+            }
           }
-          if (address.includes('Baixa')) return [38.7115, -9.1395];
-          if (address.includes('Avenida')) return [38.7223, -9.1393];
-          return [38.7223, -9.1393]; // Лісабон за замовчуванням
+          // 2. Try direct lat/lng fields
+          if (lift.lat && lift.lng) return [parseFloat(lift.lat), parseFloat(lift.lng)];
+          if (lift.latitude && lift.longitude) return [parseFloat(lift.latitude), parseFloat(lift.longitude)];
+
+          // 3. Geocode the address via Nominatim (OpenStreetMap, free, no key needed)
+          const addressStr = (typeof lift.location === 'string' ? lift.location : '')
+            || lift.address?.street || (typeof lift.address === 'string' ? lift.address : '')
+            || lift.name || '';
+          if (addressStr && addressStr.length > 3) {
+            if (_geocodeCache[addressStr]) return _geocodeCache[addressStr];
+            try {
+              const q = encodeURIComponent(addressStr + ', Portugal');
+              const resp = await fetch(`https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1`, {
+                headers: { 'Accept-Language': 'pt', 'User-Agent': 'FestLift/2.0' }
+              });
+              const data = await resp.json();
+              if (data && data[0]) {
+                const coords = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+                _geocodeCache[addressStr] = coords;
+                return coords;
+              }
+            } catch (e) { /* fall through */ }
+          }
+          // 4. Default: Lisbon with tiny random jitter so stacked unknowns are visible
+          return [38.7223 + (Math.random() - 0.5) * 0.02, -9.1393 + (Math.random() - 0.5) * 0.02];
         }
 
-        function renderLiftsMap(lifts) {
+        async function renderLiftsMap(lifts) {
           const container = document.getElementById('liftsMap');
           if (!container) return;
           // Destroy any existing map instance before re-initializing
@@ -781,26 +811,41 @@
             window._liftsPageMap.remove();
             window._liftsPageMap = null;
           }
-          const map = L.map('liftsMap').setView([38.7223, -9.1393], 13); // Лісабон
+          const map = L.map('liftsMap').setView([38.7223, -9.1393], 10);
           window._liftsPageMap = map;
           L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: 'Map data © OpenStreetMap contributors'
           }).addTo(map);
-          lifts.forEach(lift => {
-            const addressStr = lift.location || lift.address?.street || lift.address || '';
-            const coords = getCoordsFromAddress(addressStr);
-            const statusColor = lift.status === 'operational' ? 'green' : lift.status === 'maintenance' ? 'orange' : 'red';
+
+          const bounds = [];
+          for (const lift of lifts) {
+            const coords = await getCoordsForLift(lift);
+            bounds.push(coords);
+            const statusColor = lift.status === 'operational' ? '#28a745'
+              : lift.status === 'maintenance' ? '#fd7e14' : '#dc3545';
+            const addressDisplay = (typeof lift.location === 'string' ? lift.location : '')
+              || lift.address?.street || (typeof lift.address === 'string' ? lift.address : '') || '—';
             const marker = L.circleMarker(coords, {
               color: statusColor,
+              fillColor: statusColor,
               radius: 12,
-              fillOpacity: 0.7
+              fillOpacity: 0.75,
+              weight: 2
             }).addTo(map);
-            let popupHtml = `<b>${lift.model}</b><br><b>Статус:</b> ${lift.status}<br><b>Адреса:</b> ${lift.location}`;
-            if (lift.maintenanceHistory && lift.maintenanceHistory.length) {
-              popupHtml += '<br><b>Історія ТО:</b><ul>' + lift.maintenanceHistory.map(h => `<li>${h.date}: ${h.type} (${h.technician})</li>`).join('') + '</ul>';
-            }
+            const liftName = lift.name || lift.model || 'Ліфт';
+            const municipalNum = lift.municipalNumber ? `<br><b>Камарал №:</b> ${lift.municipalNumber}` : '';
+            let popupHtml = `<b>${liftName}</b>${municipalNum}<br><b>Статус:</b> ${lift.status}<br><b>Адреса:</b> ${addressDisplay}`;
             marker.bindPopup(popupHtml);
-          });
+            marker.bindTooltip(liftName, { permanent: false, direction: 'top' });
+          }
+          // Fit map to show all markers
+          if (bounds.length > 0) {
+            if (bounds.length === 1) {
+              map.setView(bounds[0], 15);
+            } else {
+              map.fitBounds(bounds, { padding: [30, 30] });
+            }
+          }
         }
 
         $(document).ready(async function() {
@@ -871,9 +916,9 @@
             }
 
             // Після завантаження ліфтів
-            setTimeout(() => {
+            setTimeout(async () => {
               if (window.liftsManager && window.liftsManager.lifts) {
-                renderLiftsMap(window.liftsManager.lifts);
+                await renderLiftsMap(window.liftsManager.lifts);
               }
             }, 1500);
 
