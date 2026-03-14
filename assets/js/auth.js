@@ -277,6 +277,31 @@ if (typeof window !== 'undefined') {
     }
 }
 
+// Auto-populate sidebar name elements on every page
+if (typeof window !== 'undefined') {
+    const _populateSidebarName = () => {
+        try {
+            const stored = sessionStorage.getItem('liftmanager_user') || localStorage.getItem('liftmanager_user');
+            if (!stored) return;
+            const u = JSON.parse(stored);
+            const name = ((u.firstName || '') + ' ' + (u.lastName || '')).trim() || u.username || u.email || '—';
+            // All known sidebar name element IDs across panels
+            ['sidebarName', 'sidebarUserName', 'clientName', 'techName', 'adminName'].forEach(function(id) {
+                const el = document.getElementById(id);
+                // Only set if still showing placeholder (don't override runtime-set values)
+                if (el && ['—', 'Cliente', 'Технік', 'Диспетчер', 'Адміністратор', ''].includes(el.textContent.trim())) {
+                    el.textContent = name;
+                }
+            });
+        } catch (e) {}
+    };
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', _populateSidebarName);
+    } else {
+        _populateSidebarName();
+    }
+}
+
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = AuthManager;
 }
