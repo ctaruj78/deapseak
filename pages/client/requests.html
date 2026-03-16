@@ -439,15 +439,15 @@
         .catch(err => console.warn('Failed to load lifts count:', err));
         
         // Кількість заявок
-        fetch('/api/requests?status=pending,in_progress', {
+        fetch('/api/requests', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
         .then(res => res.json())
         .then(data => {
             if (data.data && Array.isArray(data.data)) {
-                const count = data.data.length;
+                const active = data.data.filter(r => r.status !== 'completed' && r.status !== 'cancelled').length;
                 const badge = document.getElementById('requestsCount');
-                if (badge) badge.textContent = count;
+                if (badge) badge.textContent = active;
             }
         })
         .catch(err => console.warn('Failed to load requests count:', err));
@@ -559,7 +559,7 @@
                         <div class="col-12">
                             <div class="card request-card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-filter mr-2"></i>Filtroи заявок</h3>
+                                    <h3 class="card-title"><i class="fas fa-filter mr-2"></i>Фільтри заявок</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
@@ -568,9 +568,10 @@
                                                 <label>Статус:</label>
                                                 <select id="statusFilter" class="form-control">
                                                     <option value="all">Всі статуси</option>
-                                                    <option value="pending">В очікуванні</option>
-                                                    <option value="in-progress">Em progresso</option>
-                                                    <option value="completed">Concluído</option>
+                                                    <option value="new">Нова</option>
+                                                    <option value="assigned">Призначено</option>
+                                                    <option value="in_progress">В роботі</option>
+                                                    <option value="completed">Завершено</option>
                                                     <option value="cancelled">Скасовано</option>
                                                 </select>
                                             </div>
@@ -580,6 +581,7 @@
                                                 <label>Пріоритет:</label>
                                                 <select id="priorityFilter" class="form-control">
                                                     <option value="all">Всі пріоритети</option>
+                                                    <option value="critical">Критичний</option>
                                                     <option value="high">Високий</option>
                                                     <option value="medium">Середній</option>
                                                     <option value="low">Низький</option>
@@ -638,7 +640,7 @@
                                 <div class="stat-icon">🔧</div>
                                 <div class="stat-info">
                                     <h3 id="inProgressRequests">0</h3>
-                                    <p>Em progresso</p>
+                                    <p>В роботі</p>
                                 </div>
                             </div>
                         </div>
@@ -647,7 +649,7 @@
                                 <div class="stat-icon">✅</div>
                                 <div class="stat-info">
                                     <h3 id="completedRequests">0</h3>
-                                    <p>Concluído</p>
+                                    <p>Завершено</p>
                                 </div>
                             </div>
                         </div>
@@ -942,6 +944,7 @@
                         const requests = Array.isArray(response.data)
                             ? response.data
                             : (response.data && Array.isArray(response.data.requests) ? response.data.requests : []);
+                        this._cachedRequests = requests;
                         this.displayRequests(requests);
                         this.updateStats(requests);
                     } else {
@@ -1049,31 +1052,54 @@
                     }
                     
                     const row = document.createElement('tr');
+
+                    // Номер заявки
+                    const displayId = request.requestNumber || ('#' + requestId.slice(-6).toUpperCase());
+
+                    // Дата
+                    const dateStr = request.createdAt
+                        ? new Date(request.createdAt).toLocaleString('uk-UA', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'})
+                        : '—';
+
+                    // Адреса ліфта
+                    const liftLabel = (() => {
+                        const addr = request.liftAddress || '';
+                        const num = request.liftMunicipalNumber || request.liftId || '';
+                        if (addr && num) return `${num}<br><small class="text-muted">${addr}</small>`;
+                        return addr || num || '—';
+                    })();
+
+                    // Опис (скорочений)
+                    const descShort = (request.description || '—').substring(0, 60) + ((request.description || '').length > 60 ? '…' : '');
+
+                    // Пріоритет
+                    const priorityClass = { critical: 'danger', urgent: 'danger', high: 'warning', medium: 'info', low: 'success' }[request.priority] || 'secondary';
+
+                    // Статус
+                    const statusNorm = (request.status || 'new') === 'pending' ? 'new' : (request.status || 'new');
+                    const statusClass = { new: 'primary', assigned: 'warning', in_progress: 'info', completed: 'success', cancelled: 'secondary' }[statusNorm] || 'secondary';
+
+                    // Технік
+                    const techLabel = request.technicianName || (request.assignedTo ? 'Призначено' : '<span class="text-muted">Не призначено</span>');
+
                     row.innerHTML = `
-                        <td>#${requestId}</td>
-                        <td>${request.liftId || 'Загальне'}</td>
-                        <td>${request.type || 'Обслуговування'}</td>
-                        <td>
-                            <span class="status-badge status-${request.status.replace('_', '-')}">
-                                ${this.getStatusText(request.status)}
-                            </span>
-                        </td>
-                        <td>
-                            <span class="priority-badge priority-${request.priority}">
-                                ${this.getPriorityText(request.priority)}
-                            </span>
-                        </td>
-                        <td>${new Date(request.createdAt).toLocaleDateString()}</td>
+                        <td><strong>${displayId}</strong></td>
+                        <td style="white-space:nowrap">${dateStr}</td>
+                        <td>${liftLabel}</td>
+                        <td style="max-width:200px">${descShort}</td>
+                        <td><span class="badge badge-${priorityClass}">${this.getPriorityText(request.priority)}</span></td>
+                        <td><span class="badge badge-${statusClass}">${this.getStatusText(statusNorm)}</span></td>
+                        <td>${techLabel}</td>
                         <td>
                             <button class="btn btn-sm btn-info btn-icon" onclick="clientRequestsManager.viewRequest('${requestId}')" title="Переглянути">
                                 <i class="fas fa-eye"></i>
                             </button>
-                            ${request.status === 'new' ? `
-                                <button class="btn btn-sm btn-danger btn-icon" onclick="clientRequestsManager.cancelRequest('${requestId}')" title="Cancelar">
+                            ${statusNorm === 'new' ? `
+                                <button class="btn btn-sm btn-danger btn-icon" onclick="clientRequestsManager.cancelRequest('${requestId}')" title="Скасувати">
                                     <i class="fas fa-times"></i>
                                 </button>
                             ` : ''}
-                            ${request.status === 'completed' ? `
+                            ${statusNorm === 'completed' ? `
                                 <button class="btn btn-sm btn-warning btn-icon" onclick="clientRequestsManager.rateTechnician('${requestId}')" title="Оцінити">
                                     <i class="fas fa-star"></i>
                                 </button>
@@ -1087,7 +1113,7 @@
             updateStats(requests) {
                 const stats = {
                     total: requests.length,
-                    new: requests.filter(r => r.status === 'new').length,
+                    new: requests.filter(r => r.status === 'new' || r.status === 'pending').length,
                     inProgress: requests.filter(r => r.status === 'in_progress' || r.status === 'assigned').length,
                     completed: requests.filter(r => r.status === 'completed').length
                 };
@@ -1103,7 +1129,11 @@
             }
             
             viewRequest(requestId) {
-                const request = this.integration.getRequest(requestId);
+                // Шукаємо заявку в локальному кеші (завантаженому через loadRequests)
+                const request = this._cachedRequests && this._cachedRequests.find(r => {
+                    const id = (r._id && r._id.toString) ? r._id.toString() : (r._id || r.id || '');
+                    return id === requestId;
+                });
                 if (request) {
                     currentRequestId = requestId;
                     
@@ -1111,18 +1141,19 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <h6>Основна інформація</h6>
-                                <p><strong>ID:</strong> #${request.id}</p>
-                                <p><strong>Ліфт:</strong> ${request.liftId || 'Загальне'}</p>
-                                <p><strong>Тип:</strong> ${request.type || 'Обслуговування'}</p>
+                                <p><strong>ID:</strong> ${request.requestNumber || ('#' + requestId.slice(-6).toUpperCase())}</p>
+                                <p><strong>Ліфт:</strong> ${request.liftMunicipalNumber || request.liftId || '—'}</p>
+                                ${request.liftAddress ? `<p><strong>Адреса:</strong> ${request.liftAddress}</p>` : ''}
+                                <p><strong>Тип:</strong> ${this.getTypeText(request.type)}</p>
                                 <p><strong>Пріоритет:</strong> ${this.getPriorityText(request.priority)}</p>
                                 <p><strong>Статус:</strong> ${this.getStatusText(request.status)}</p>
                             </div>
                             <div class="col-md-6">
                                 <h6>Деталі</h6>
-                                <p><strong>Створено:</strong> ${new Date(request.createdAt).toLocaleString()}</p>
-                                ${request.assignedTo ? `<p><strong>Призначено:</strong> ${request.assignedTo}</p>` : ''}
-                                ${request.deadline ? `<p><strong>Термін:</strong> ${new Date(request.deadline).toLocaleString()}</p>` : ''}
-                                ${request.completedAt ? `<p><strong>Concluído:</strong> ${new Date(request.completedAt).toLocaleString()}</p>` : ''}
+                                <p><strong>Створено:</strong> ${new Date(request.createdAt).toLocaleString('uk-UA')}</p>
+                                ${request.technicianName ? `<p><strong>Технік:</strong> ${request.technicianName}</p>` : '<p><strong>Технік:</strong> <span class="text-muted">Не призначено</span></p>'}
+                                ${request.deadline ? `<p><strong>Термін:</strong> ${new Date(request.deadline).toLocaleString('uk-UA')}</p>` : ''}
+                                ${request.completedAt ? `<p><strong>Завершено:</strong> ${new Date(request.completedAt).toLocaleString('uk-UA')}</p>` : ''}
                             </div>
                             <div class="col-12 mt-3">
                                 <h6>Опис</h6>
@@ -1171,17 +1202,30 @@
             
             getStatusText(status) {
                 const statusMap = {
-                    'new': 'Нова',
+                    'new': 'Нова', 'pending': 'Нова',
                     'assigned': 'Призначено',
-                    'in_progress': 'Em progresso',
-                    'completed': 'Concluído',
+                    'in_progress': 'В роботі',
+                    'completed': 'Завершено',
                     'cancelled': 'Скасовано'
                 };
                 return statusMap[status] || status;
             }
+
+            getTypeText(type) {
+                const typeMap = {
+                    'maintenance': 'Планове ТО',
+                    'repair': 'Ремонт',
+                    'inspection': 'Інспекція',
+                    'consultation': 'Консультація',
+                    'orcamento': 'Орсаменто',
+                    'emergency': 'Аварійна ситуація'
+                };
+                return typeMap[type] || type;
+            }
             
             getPriorityText(priority) {
                 const priorityMap = {
+                    'critical': 'Критичний', 'urgent': 'Критичний',
                     'high': 'Високий',
                     'medium': 'Середній',
                     'low': 'Низький'
@@ -1190,17 +1234,30 @@
             }
 
             applyFilters() {
-                const status = document.getElementById('filterStatus')?.value;
-                const priority = document.getElementById('filterPriority')?.value;
-                this.loadRequests({ status, priority });
+                const status = document.getElementById('statusFilter')?.value;
+                const priority = document.getElementById('priorityFilter')?.value;
+                let filtered = this._cachedRequests || [];
+                if (status && status !== 'all') {
+                    filtered = filtered.filter(r => {
+                        const s = (r.status === 'pending' ? 'new' : r.status);
+                        return s === status;
+                    });
+                }
+                if (priority && priority !== 'all') {
+                    filtered = filtered.filter(r => {
+                        const p = (r.priority === 'urgent' ? 'critical' : r.priority);
+                        return p === priority;
+                    });
+                }
+                this.displayRequests(filtered);
             }
 
             resetFilters() {
-                const filterStatus = document.getElementById('filterStatus');
-                const filterPriority = document.getElementById('filterPriority');
-                if (filterStatus) filterStatus.value = '';
-                if (filterPriority) filterPriority.value = '';
-                this.loadRequests();
+                const filterStatus = document.getElementById('statusFilter');
+                const filterPriority = document.getElementById('priorityFilter');
+                if (filterStatus) filterStatus.value = 'all';
+                if (filterPriority) filterPriority.value = 'all';
+                if (this._cachedRequests) this.displayRequests(this._cachedRequests);
             }
 
             exportRequests() {
