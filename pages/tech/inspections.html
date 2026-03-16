@@ -320,12 +320,6 @@
                         <p>AR Helper</p>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="/pages/tech/tools.html" class="nav-link">
-                        <i class="fas fa-tools nav-icon"></i>
-                        <p>Калькулятори</p>
-                    </a>
-                </li>
             </ul>
         </li>
 
@@ -814,6 +808,13 @@
 
             // Ініціалізація менеджера інспекцій
             window.inspectionManager = new InspectionManager();
+
+            // Перенести фокус з модалки перед закриттям (уникнення aria-hidden на focused element)
+            $(document).on('hide.bs.modal', '.modal', function () {
+                if (document.activeElement && this.contains(document.activeElement)) {
+                    document.activeElement.blur();
+                }
+            });
         });
 
         if ('serviceWorker' in navigator) {

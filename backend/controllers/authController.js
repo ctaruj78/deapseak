@@ -123,9 +123,8 @@ exports.login = async (req, res, next) => {
             throw new AppError('Невірний email/username або пароль', 401);
         }
 
-        // Оновлення lastLogin
-        user.lastLogin = new Date();
-        await user.save();
+        // Оновлення lastLogin (через updateOne щоб не запускати валідацію Mongoose)
+        await user.constructor.updateOne({ _id: user._id }, { $set: { lastLogin: new Date() } });
 
         // Генерація токенів
         const tokenPayload = {

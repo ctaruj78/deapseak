@@ -1,16 +1,9 @@
 // service-worker-client.js
 // Service Worker для PWA клієнтської панелі
 
-const CACHE_NAME = 'liftmaster-client-cache-v3';
+const CACHE_NAME = 'liftmaster-client-cache-v4';
+// Кешуємо тільки статичні активи — HTML і JS завжди завантажуються з мережі
 const urlsToCache = [
-  '/pages/client/my-lifts.html',
-  '/pages/client/requests.html',
-  '/assets/js/modules/lifts-manager.js',
-  '/assets/js/modules/client-manager.js',
-  '/assets/js/modules/ai-assistant.js',
-  '/assets/js/modules/language-switcher.js',
-  '/assets/js/modules/voice-assistant-client.js',
-  '/assets/js/modules/push-notifications-client.js',
   '/assets/css/main.css',
   '/assets/img/icons/pwa-icon-192.png',
   '/assets/img/icons/pwa-icon-512.png'
@@ -47,6 +40,13 @@ self.addEventListener('fetch', event => {
 
   event.respondWith(
     caches.match(request).then(cached => {
+      // HTML-сторінки та JS-модулі — завжди беремо з мережі (щоб не показувати стару версію)
+      const isHtml = url.pathname.endsWith('.html') || url.pathname === '/';
+      const isJs = url.pathname.endsWith('.js');
+      if (isHtml || isJs) {
+        return fetch(request).catch(() => cached || Response.error());
+      }
+
       if (cached) return cached;
 
       return fetch(request).then(response => {
@@ -74,9 +74,12 @@ self.addEventListener('fetch', event => {
 
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(keys => Promise.all(
-      keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
-    ))
+    caches.keys()
+      .then(keys => Promise.all(
+        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+      ))
+      .then(() => self.clients.claim())
+      .then(() => self.clients.matchAll({ type: 'window' }))
+      .then(clients => clients.forEach(client => client.navigate(client.url)))
   );
-  self.clients.claim();
 });

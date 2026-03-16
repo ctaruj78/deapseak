@@ -242,7 +242,9 @@ class AuthManager {
         if (bodyRequiredRole) {
             const user = this.getCurrentUser();
             const userRole = user ? user.role : null;
-            if (userRole && userRole !== bodyRequiredRole) {
+            // Нормалізуємо роль: 'tech' і 'technician' — одне й те саме
+            const normalize = r => (r === 'technician' ? 'tech' : r);
+            if (userRole && normalize(userRole) !== normalize(bodyRequiredRole)) {
                 console.warn(`⚠️ Роль "${userRole}" не має доступу до сторінки для "${bodyRequiredRole}". Редірект...`);
                 // Редіректимо на відповідну панель за роллю
                 const roleRedirects = {

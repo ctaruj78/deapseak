@@ -131,7 +131,7 @@
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(0,0,0,0.12) !important;
         }
-        .req-card-critical { border-left-color: #dc3545 !important; }
+        .req-card-critical, .req-card-urgent { border-left-color: #dc3545 !important; }
         .req-card-high     { border-left-color: #fd7e14 !important; }
         .req-card-medium   { border-left-color: #007bff !important; }
         .req-card-low      { border-left-color: #28a745 !important; }
@@ -515,6 +515,8 @@
                                 <option value="maintenance">Планове ТО</option>
                                 <option value="repair">Ремонт</option>
                                 <option value="inspection">Інспекція</option>
+                                <option value="consultation">Консультація</option>
+                                <option value="orcamento">Орсаменто</option>
                             </select>
                         </div>
                         <div class="col-md-3">
@@ -652,6 +654,8 @@
                                 <select class="form-control" id="requestType" required>
                                     <option value="">Оберіть тип...</option>
                                     <option value="emergency">🚨 Аварійна ситуація</option>
+                                    <option value="consultation">💬 Консультація</option>
+                                    <option value="orcamento">💰 Орсаменто</option>
                                     <option value="maintenance">🔧 Планове ТО</option>
                                     <option value="repair">🛠️ Ремонт</option>
                                     <option value="inspection">📋 Інспекція</option>
@@ -912,6 +916,8 @@
                                     <option value="maintenance">ТО</option>
                                     <option value="repair">Ремонт</option>
                                     <option value="inspection">Інспекція</option>
+                                    <option value="consultation">Консультація</option>
+                                    <option value="orcamento">Орсаменто</option>
                                 </select>
                                 <small class="form-text text-muted">Тип не можна змінити</small>
                             </div>
@@ -1106,9 +1112,25 @@ class ServiceRequestManager {
                             liftAddress: liftAddress,
                             liftMunicipalNumber: liftId,
                             type: req.type || 'maintenance', // Використовуємо req.type, а не status
-                            priority: req.priority || 'medium',
-                            status: req.status || 'new',
-                            title: req.title || 'Без назви',
+                            priority: (() => {
+                                const p = req.priority || 'medium';
+                                return p === 'urgent' ? 'critical' : p; // urgent -> critical
+                            })(),
+                            status: (() => {
+                                const s = req.status || 'new';
+                                return s === 'pending' ? 'new' : s; // pending -> new
+                            })(),
+                            title: (() => {
+                                if (req.title && req.title !== 'Без назви') return req.title;
+                                // Автогенерація з типу + адреси
+                                const typeMap = { maintenance: 'ТО', repair: 'Ремонт', inspection: 'Інспекція', consultation: 'Консультація', emergency: 'Аварія', orcamento: 'Орсаменто' };
+                                const typePart = typeMap[req.type] || req.type || 'Заявка';
+                                const addr = (() => {
+                                    const a = req.lift?.address || {};
+                                    return a.street ? [a.street, a.city].filter(Boolean).join(', ') : (req.liftAddress || '');
+                                })();
+                                return addr ? `${typePart} — ${addr}` : typePart;
+                            })(),
                             description: req.description || 'Без опису',
                             technician: techName,
                             technicianId: req.assignedTo?._id || req.assignedTo,
@@ -1465,10 +1487,10 @@ class ServiceRequestManager {
             return;
         }
 
-        const priorityColors = { critical: 'danger', high: 'warning', medium: 'info', low: 'success' };
-        const priorityIcons  = { critical: 'exclamation-triangle', high: 'bolt', medium: 'wrench', low: 'clipboard-check' };
-        const statusColors   = { new: 'primary', assigned: 'warning', in_progress: 'info', completed: 'success', cancelled: 'secondary' };
-        const statusTexts    = { new: 'Нова', assigned: 'Призначена', in_progress: 'В роботі', completed: 'Виконана', cancelled: 'Скасована' };
+        const priorityColors = { critical: 'danger', urgent: 'danger', high: 'warning', medium: 'info', low: 'success' };
+        const priorityIcons  = { critical: 'exclamation-triangle', urgent: 'exclamation-triangle', high: 'bolt', medium: 'wrench', low: 'clipboard-check' };
+        const statusColors   = { new: 'primary', pending: 'primary', assigned: 'warning', in_progress: 'info', completed: 'success', cancelled: 'secondary' };
+        const statusTexts    = { new: 'Нова', pending: 'Нова', assigned: 'Призначена', in_progress: 'В роботі', completed: 'Виконана', cancelled: 'Скасована' };
 
         this.requests.forEach(request => {
             const requestId = (request._id && request._id.toString) ? request._id.toString() : (request._id || request.id || '');
@@ -1552,7 +1574,9 @@ class ServiceRequestManager {
             emergency: '🚨',
             maintenance: '🔧',
             repair: '🛠️',
-            inspection: '📋'
+            inspection: '📋',
+            consultation: '💬',
+            orcamento: '💰'
         };
         return icons[type] || '📝';
     }
@@ -1562,7 +1586,9 @@ class ServiceRequestManager {
             emergency: 'Аварія',
             maintenance: 'ТО',
             repair: 'Ремонт',
-            inspection: 'Інспекція'
+            inspection: 'Інспекція',
+            consultation: 'Консультація',
+            orcamento: 'Орсаменто'
         };
         return texts[type] || type;
     }
@@ -1570,6 +1596,7 @@ class ServiceRequestManager {
     getPriorityText(priority) {
         const texts = {
             critical: 'Критичний',
+            urgent: 'Критичний',
             high: 'Високий',
             medium: 'Середній',
             low: 'Низький'
@@ -1580,8 +1607,9 @@ class ServiceRequestManager {
     getStatusText(status) {
         const texts = {
             new: 'Нова',
+            pending: 'Нова',
             assigned: 'Призначена',
-            in_progress: 'Em progresso',
+            in_progress: 'В роботі',
             completed: 'Завершена',
             cancelled: 'Скасована'
         };
@@ -1686,8 +1714,8 @@ class ServiceRequestManager {
         $('#vrmDate').text('Створено: ' + (request.createdAt ? new Date(request.createdAt).toLocaleString('uk-UA') : '—'));
 
         // ── Info bar ──
-        const statusColors = { new:'info', assigned:'primary', in_progress:'warning', completed:'success', cancelled:'danger' };
-        const statusTexts  = { new:'Нова', assigned:'Призначено', in_progress:'В роботі', completed:'Завершено', cancelled:'Скасовано' };
+        const statusColors = { new:'info', pending:'info', assigned:'primary', in_progress:'warning', completed:'success', cancelled:'danger' };
+        const statusTexts  = { new:'Нова', pending:'Нова', assigned:'Призначено', in_progress:'В роботі', completed:'Завершено', cancelled:'Скасовано' };
         $('#vrmStatus')
             .removeClass('badge-info badge-primary badge-warning badge-success badge-danger badge-secondary')
             .addClass('badge-' + (statusColors[request.status] || 'secondary'))

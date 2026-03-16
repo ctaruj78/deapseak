@@ -366,12 +366,6 @@
                         <p>AR Helper</p>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="/pages/tech/tools.html" class="nav-link">
-                        <i class="fas fa-tools nav-icon"></i>
-                        <p>Калькулятори</p>
-                    </a>
-                </li>
             </ul>
         </li>
 
@@ -803,7 +797,8 @@
             }
             
             async init() {
-                if (!AuthManager.isAuthenticated() || !this.currentUser || this.currentUser.role !== 'technician') {
+                const role = this.currentUser ? this.currentUser.role : null;
+                if (!AuthManager.isAuthenticated() || !role || (role !== 'technician' && role !== 'tech')) {
                     alert('Доступ тільки для техніків');
                     AuthManager.logout();
                     return;
@@ -897,7 +892,8 @@
                     const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/complete`, {
                         method: 'POST',
                         body: JSON.stringify({
-                            workDescription: workDescription.trim(),
+                            resolution: workDescription.trim(),
+                            workDone: workDescription.trim(),
                             laborHours: 1 // За замовчуванням 1 година
                         })
                     });

@@ -8,8 +8,8 @@ class KnowledgeManager {
         this.init();
     }
 
-    init() {
-        this.loadArticles();
+    async init() {
+        await this.loadArticles();
         this.setupEventListeners();
         this.renderPopularArticles();
         this.renderRecentArticles();
@@ -21,9 +21,12 @@ class KnowledgeManager {
     async loadArticles() {
         try {
             // Спроба отримати дані з API
+            const token = (window.AuthManager && AuthManager.getToken && AuthManager.getToken())
+                || localStorage.getItem('liftmanager_jwt')
+                || localStorage.getItem('authToken');
             const response = await fetch('/api/knowledge-base', {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    'Authorization': `Bearer ${token}`
                 }
             });
             
@@ -354,7 +357,7 @@ class KnowledgeManager {
     }
 
     renderPopularArticles() {
-        const popular = this.articles
+        const popular = [...this.articles]
             .sort((a, b) => b.views - a.views)
             .slice(0, 4);
 
@@ -368,7 +371,7 @@ class KnowledgeManager {
     }
 
     renderRecentArticles() {
-        const recent = this.articles
+        const recent = [...this.articles]
             .sort((a, b) => new Date(b.updatedDate) - new Date(a.updatedDate))
             .slice(0, 4);
 

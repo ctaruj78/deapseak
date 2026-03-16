@@ -124,12 +124,6 @@
                         <p>AR Helper</p>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="/pages/tech/tools.html" class="nav-link">
-                        <i class="fas fa-tools nav-icon"></i>
-                        <p>Калькулятори</p>
-                    </a>
-                </li>
             </ul>
         </li>
 
@@ -263,7 +257,7 @@
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h3 class="card-title">Завдання на сьогодні</h3>
+                                    <h3 class="card-title">Активні завдання</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="table-responsive">
@@ -299,6 +293,82 @@
                 <b>Versão</b> 2.1.0
             </div>
         </footer>
+    </div>
+
+    <!-- Task Details Modal -->
+    <div class="modal fade" id="taskDetailsModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-clipboard-list mr-2"></i>Деталі завдання</h5>
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body" id="taskDetailsBody">
+                    <div class="text-center py-4"><i class="fas fa-spinner fa-spin fa-2x"></i></div>
+                </div>
+                <div class="modal-footer" id="taskDetailsFooter">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Complete Task Modal -->
+    <div class="modal fade" id="completeTaskModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="fas fa-check-circle mr-2"></i>Завершити завдання</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="completeTaskId">
+                    <div class="form-group">
+                        <label><i class="fas fa-tools mr-1"></i>Опис виконаної роботи <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="completeWorkDescription" rows="3" placeholder="Опишіть що було зроблено..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-cogs mr-1"></i>Використані запчастини/матеріали</label>
+                        <input type="text" class="form-control" id="completePartsUsed" placeholder="напр. Мастильний матеріал, Ремінь приводу...">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-clock mr-1"></i>Витрачено часу (годин)</label>
+                        <input type="number" class="form-control" id="completeLaborHours" min="0.5" max="24" step="0.5" value="1">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                    <button type="button" class="btn btn-success" onclick="submitCompleteTask()">
+                        <i class="fas fa-check mr-1"></i>Завершити
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Note Modal -->
+    <div class="modal fade" id="addNoteModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-sticky-note mr-2"></i>Додати примітку</h5>
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="noteTaskId">
+                    <div class="form-group">
+                        <label>Текст примітки <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="noteText" rows="4" placeholder="Введіть примітку до завдання..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                    <button type="button" class="btn btn-primary" onclick="submitNote()">
+                        <i class="fas fa-save mr-1"></i>Зберегти
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Scripts -->
@@ -352,16 +422,21 @@
                 ]);
 
                 // Обчислюємо статистики
-                const activeAssignments = assignments.filter(a => a.status === 'assigned' || a.status === 'in_progress').length;
+                const isActive = a => a.status === 'assigned' || a.status === 'in_progress';
+                const activeAssignments = assignments.filter(isActive).length;
                 const completedToday = assignments.filter(a => {
                     return a.status === 'completed' && 
                            new Date(a.updatedAt).toDateString() === new Date().toDateString();
                 }).length;
-                const urgentAssignments = assignments.filter(a => a.priority === 'high' && a.status !== 'completed').length;
+                // Термінові = активні з пріоритетом high/urgent/critical
+                const urgentAssignments = assignments.filter(a =>
+                    isActive(a) && (a.priority === 'high' || a.priority === 'urgent' || a.priority === 'critical')
+                ).length;
+                // Прострочені = активні де scheduledDate вже минув
                 const overdueAssignments = assignments.filter(a => {
-                    return a.status !== 'completed' && 
-                           a.deadline && 
-                           new Date(a.deadline) < new Date();
+                    if (!isActive(a)) return false;
+                    const dueDate = a.scheduledDate || a.deadline;
+                    return dueDate && new Date(dueDate) < new Date();
                 }).length;
 
                 // Оновлюємо інтерфейс
@@ -440,7 +515,7 @@
 
         // Функція відображення завдань техніка
         function displayTechTasks(assignments) {
-            // Знаходимо таблицю завдань на сьогодні
+            // Знаходимо таблицю завдань
             const tasksTable = document.getElementById('todayTasks');
             
             if (!tasksTable) {
@@ -456,7 +531,7 @@
                     <tr>
                         <td colspan="6" class="text-center text-muted py-4">
                             <i class="fas fa-clipboard-check fa-3x mb-3 d-block"></i>
-                            <p class="mb-0">Завдань на сьогодні немає</p>
+                            <p class="mb-0">Активних завдань немає</p>
                             <small>Нові завдання з'являться тут автоматично</small>
                         </td>
                     </tr>
@@ -464,28 +539,26 @@
                 return;
             }
 
-            // Filtroуємо завдання на сьогодні
-            const today = new Date();
-            const todayTasks = assignments.filter(assignment => {
-                if (!assignment.scheduledDate && !assignment.deadline) return true; // Якщо дати немає, вважаємо що на сьогодні
-                
-                const taskDate = new Date(assignment.scheduledDate || assignment.deadline);
-                return taskDate.toDateString() === today.toDateString();
-            });
+            // Показуємо всі активні завдання (не завершені та не скасовані)
+            const activeTasks = assignments.filter(assignment =>
+                assignment.status !== 'completed' && assignment.status !== 'cancelled'
+            );
 
-            if (todayTasks.length === 0) {
+            console.log('[Tech Dashboard] Активних завдань для відображення:', activeTasks.length, '/ всього:', assignments.length);
+
+            if (activeTasks.length === 0) {
                 tasksTable.innerHTML = `
                     <tr>
                         <td colspan="6" class="text-center text-muted py-4">
                             <i class="fas fa-calendar-check fa-2x mb-2 d-block"></i>
-                            <p class="mb-0">Завдань на сьогодні немає</p>
+                            <p class="mb-0">Активних завдань немає</p>
                         </td>
                     </tr>
                 `;
                 return;
             }
             
-            todayTasks.forEach(task => {
+            activeTasks.forEach(task => {
                 // Convert MongoDB ObjectId to string
                 const taskId = window.safeId ? window.safeId(task) : ((task._id && task._id.toString) ? task._id.toString() : (task._id || task.id || ''));
                 const liftId = task.lift ? (window.safeId ? window.safeId(task.lift) : ((task.lift._id && task.lift._id.toString) ? task.lift._id.toString() : (task.lift._id || task.lift.id || ''))) : '';
@@ -494,8 +567,12 @@
                     console.error('❌ Завдання без ID:', task);
                     return;
                 }
+
+                const dueDate = task.scheduledDate || task.deadline;
+                const isOverdue = dueDate && new Date(dueDate) < new Date();
                 
                 const row = document.createElement('tr');
+                if (isOverdue) row.classList.add('table-danger');
                 
                 // Час завдання
                 const time = task.scheduledTime || 
@@ -557,10 +634,14 @@
         // Допоміжні функції для відображення
         function getPriorityBadge(priority) {
             switch (priority) {
+                case 'critical':
+                    return '<span class="badge badge-danger">Критичний</span>';
+                case 'urgent':
+                    return '<span class="badge badge-danger">Терміново</span>';
                 case 'high':
-                    return '<span class="badge badge-danger">Високий</span>';
+                    return '<span class="badge badge-warning">Високий</span>';
                 case 'medium':
-                    return '<span class="badge badge-warning">Середній</span>';
+                    return '<span class="badge badge-secondary">Середній</span>';
                 case 'low':
                     return '<span class="badge badge-info">Низький</span>';
                 default:
@@ -584,38 +665,158 @@
         }
 
         // Функції обробки завдань
-        function openTaskDetails(taskId) {
+        async function openTaskDetails(taskId) {
             console.log('📋 Відкриття деталей завдання:', taskId);
-            
-            // Тут можна відкрити модальне вікно або перейти на сторінку деталей
-            alert(`Деталі завдання ${taskId}\n\nФункція в розробці`);
+            $('#taskDetailsModal').modal('show');
+            $('#taskDetailsBody').html('<div class="text-center py-4"><i class="fas fa-spinner fa-spin fa-2x"></i></div>');
+            $('#taskDetailsFooter').html('<button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>');
+
+            try {
+                const response = await AuthManager.fetchWithAuth(`/api/requests/${taskId}`);
+                if (!response || !response.ok) throw new Error('API error ' + response?.status);
+                const data = await response.json();
+                const task = data.data || data;
+
+                const liftInfo = task.lift
+                    ? `${task.lift.address || '—'}${task.lift.municipalNumber ? ' (Ліфт №' + task.lift.municipalNumber + ')' : ''}`
+                    : '—';
+                const scheduledStr = task.scheduledDate
+                    ? new Date(task.scheduledDate).toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                    : 'Не визначено';
+                const createdStr = task.createdAt
+                    ? new Date(task.createdAt).toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                    : '—';
+
+                const typeLabels = { emergency: 'Аварія', maintenance: 'ТО', repair: 'Ремонт', inspection: 'Інспекція', other: 'Інше' };
+
+                const commentsHtml = (task.comments && task.comments.length > 0)
+                    ? task.comments.map(c => `
+                        <div class="border-left border-primary pl-2 mb-2">
+                            <small class="text-muted">${new Date(c.createdAt).toLocaleString('uk-UA')}</small>
+                            <p class="mb-0">${c.text}</p>
+                        </div>`).join('')
+                    : '<p class="text-muted">Приміток немає</p>';
+
+                $('#taskDetailsBody').html(`
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-sm table-borderless">
+                                <tr><th width="140">Номер:</th><td><code>${task.requestNumber || '—'}</code></td></tr>
+                                <tr><th>Тип:</th><td>${typeLabels[task.type] || task.type || '—'}</td></tr>
+                                <tr><th>Пріоритет:</th><td>${getPriorityBadge(task.priority)}</td></tr>
+                                <tr><th>Статус:</th><td>${getStatusBadge(task.status)}</td></tr>
+                                <tr><th>Заплановано:</th><td>${scheduledStr}</td></tr>
+                                <tr><th>Створено:</th><td>${createdStr}</td></tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-sm table-borderless">
+                                <tr><th width="100">Ліфт:</th><td>${liftInfo}</td></tr>
+                                ${task.lift?.address ? `<tr><th>Адреса:</th><td>${task.lift.address}</td></tr>` : ''}
+                                ${task.laborHours ? `<tr><th>Год. роботи:</th><td>${task.laborHours} год</td></tr>` : ''}
+                                ${task.partsUsed ? `<tr><th>Запчастини:</th><td>${task.partsUsed}</td></tr>` : ''}
+                            </table>
+                        </div>
+                    </div>
+                    <hr>
+                    <h6>Опис заявки</h6>
+                    <p>${task.description || task.title || '—'}</p>
+                    ${task.workDescription ? `<h6>Виконана робота</h6><p>${task.workDescription}</p>` : ''}
+                    <hr>
+                    <h6>Примітки / Коментарі</h6>
+                    ${commentsHtml}
+                `);
+
+                // Кнопки дій залежно від статусу
+                let actionBtns = '';
+                if (task.status === 'assigned') {
+                    actionBtns += `<button class="btn btn-primary mr-2" onclick="startTask('${taskId}');$('#taskDetailsModal').modal('hide');"><i class="fas fa-play mr-1"></i>Почати</button>`;
+                }
+                if (task.status === 'in_progress') {
+                    actionBtns += `<button class="btn btn-success mr-2" onclick="completeTask('${taskId}');$('#taskDetailsModal').modal('hide');"><i class="fas fa-check mr-1"></i>Завершити</button>`;
+                }
+                if (task.lift?.address || (task.lift?.location?.coordinates)) {
+                    actionBtns += `<button class="btn btn-info mr-2" onclick="showRoute('${task.lift._id || task.lift.id || ''}')"><i class="fas fa-route mr-1"></i>Маршрут</button>`;
+                }
+                actionBtns += `<button class="btn btn-outline-secondary mr-2" onclick="addTaskNote('${taskId}');$('#taskDetailsModal').modal('hide');"><i class="fas fa-sticky-note mr-1"></i>Примітка</button>`;
+
+                $('#taskDetailsFooter').html(`
+                    ${actionBtns}
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                `);
+
+            } catch (error) {
+                console.error('❌ Помилка завантаження деталей:', error);
+                $('#taskDetailsBody').html(`
+                    <div class="text-center text-danger py-4">
+                        <i class="fas fa-exclamation-triangle fa-2x mb-2 d-block"></i>
+                        <p>Не вдалося завантажити деталі завдання</p>
+                        <small>${error.message}</small>
+                    </div>
+                `);
+            }
         }
 
         function startTask(taskId) {
             console.log('▶️ Початок виконання завдання:', taskId);
-            
-            if (confirm('Почати виконання цього завдання?')) {
-                // Оновити статус завдання
-                updateTaskStatus(taskId, 'in_progress');
-            }
+            updateTaskStatus(taskId, 'in_progress');
         }
 
         function completeTask(taskId) {
             console.log('✅ Завершення завдання:', taskId);
-            
-            if (confirm('Завершити це завдання?')) {
-                // Оновити статус завдання
-                updateTaskStatus(taskId, 'completed');
+            document.getElementById('completeTaskId').value = taskId;
+            document.getElementById('completeWorkDescription').value = '';
+            document.getElementById('completePartsUsed').value = '';
+            document.getElementById('completeLaborHours').value = '1';
+            $('#completeTaskModal').modal('show');
+        }
+
+        async function submitCompleteTask() {
+            const taskId = document.getElementById('completeTaskId').value;
+            const workDescription = document.getElementById('completeWorkDescription').value.trim();
+            const partsUsed = document.getElementById('completePartsUsed').value.trim();
+            const laborHours = parseFloat(document.getElementById('completeLaborHours').value) || 0;
+
+            if (!workDescription) {
+                document.getElementById('completeWorkDescription').classList.add('is-invalid');
+                return;
+            }
+            document.getElementById('completeWorkDescription').classList.remove('is-invalid');
+
+            try {
+                // Оновлюємо деталі роботи
+                await AuthManager.fetchWithAuth(`/api/requests/${taskId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ workDescription, partsUsed, laborHours })
+                });
+                // Оновлюємо статус
+                await updateTaskStatus(taskId, 'completed');
+                $('#completeTaskModal').modal('hide');
+            } catch (error) {
+                console.error('❌ Помилка завершення:', error);
+                alert('Помилка при завершенні завдання');
             }
         }
 
         function addTaskNote(taskId) {
             console.log('📝 Додавання примітки до завдання:', taskId);
-            
-            const note = prompt('Введіть примітку до завдання:');
-            if (note && note.trim()) {
-                addNoteToTask(taskId, note.trim());
+            document.getElementById('noteTaskId').value = taskId;
+            document.getElementById('noteText').value = '';
+            $('#addNoteModal').modal('show');
+        }
+
+        async function submitNote() {
+            const taskId = document.getElementById('noteTaskId').value;
+            const note = document.getElementById('noteText').value.trim();
+
+            if (!note) {
+                document.getElementById('noteText').classList.add('is-invalid');
+                return;
             }
+            document.getElementById('noteText').classList.remove('is-invalid');
+
+            await addNoteToTask(taskId, note);
+            $('#addNoteModal').modal('hide');
         }
 
         function showRoute(liftId) {

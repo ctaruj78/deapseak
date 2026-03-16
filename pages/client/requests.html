@@ -8,6 +8,7 @@
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="../../plugins/toastr/css/toastr.min.css">
     
     <!-- Додаткові стилі -->
     <style>
@@ -754,6 +755,16 @@
                                                 </button>
                                             </div>
                                         </div>
+                                        <div class="col-md-3 mb-4">
+                                            <div class="action-btn bg-success text-white">
+                                                <div class="action-icon">💰</div>
+                                                <h5>Орсаменто</h5>
+                                                <p>Запит кошторису на роботи</p>
+                                                <button class="btn btn-light btn-sm" onclick="clientRequestsManager.createOrcamentoRequest()">
+                                                    Запитати
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -795,6 +806,7 @@
                                         <option value="repair">Ремонт</option>
                                         <option value="inspection">Технічний огляд</option>
                                         <option value="consultation">Консультація</option>
+                                        <option value="orcamento">Орсаменто (Кошторис)</option>
                                         <option value="emergency">Аварійна ситуація</option>
                                     </select>
                                 </div>
@@ -803,10 +815,7 @@
                                 <div class="form-group">
                                     <label for="requestLift">Ліфт *</label>
                                     <select id="requestLift" class="form-control" required>
-                                        <option value="">Оберіть ліфт...</option>
-                                        <option value="lift1">Otis Gen2 - Rua Центральна, 12</option>
-                                        <option value="lift2">Schindler 3300 - пр. Перемоги, 45</option>
-                                        <option value="lift3">KONE MonoSpace - Rua Шевченка, 78</option>
+                                        <option value="">Завантаження ліфтів...</option>
                                     </select>
                                 </div>
                             </div>
@@ -817,9 +826,10 @@
                                 <div class="form-group">
                                     <label for="requestPriority">Пріоритет *</label>
                                     <select id="requestPriority" class="form-control" required>
-                                        <option value="medium">Середній</option>
-                                        <option value="high">Високий</option>
                                         <option value="low">Низький</option>
+                                        <option value="medium" selected>Середній</option>
+                                        <option value="high">Високий</option>
+                                        <option value="critical">Критичний 🔴</option>
                                     </select>
                                 </div>
                             </div>
@@ -895,6 +905,7 @@
     <script src="../../plugins/jquery/jquery.min.js"></script>
     <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
     <script src="../../plugins/adminlte/adminlte.min.js"></script>
+    <script src="../../plugins/toastr/js/toastr.min.js"></script>
     <script src="../../assets/js/auth.js"></script>
 
     <script>
@@ -927,8 +938,10 @@
                     const res = await AuthManager.fetchWithAuth('/api/requests');
                     const response = res ? await res.json() : null;
                     
-                    if (response && response.success && response.data && response.data.requests) {
-                        const requests = response.data.requests;
+                    if (response && response.success) {
+                        const requests = Array.isArray(response.data)
+                            ? response.data
+                            : (response.data && Array.isArray(response.data.requests) ? response.data.requests : []);
                         this.displayRequests(requests);
                         this.updateStats(requests);
                     } else {
@@ -961,13 +974,19 @@
                         return;
                     }
 
+                    // Отримуємо адресу вибраного ліфта з select'а
+                    const liftSelect = document.getElementById('requestLift');
+                    const selectedOption = liftSelect.options[liftSelect.selectedIndex];
+                    const liftAddress = selectedOption ? selectedOption.dataset.address : '';
+
                     // Формуємо дані заявки
                     const requestData = {
                         type: type,
                         liftId: liftId,
                         title: title,
                         description: description,
-                        priority: urgent ? 'high' : (priority || 'medium')
+                        priority: urgent ? 'critical' : (priority || 'medium'),
+                        liftAddress: liftAddress
                     };
 
                     // Відправляємо через API
@@ -1144,6 +1163,11 @@
                 document.getElementById('requestType').value = 'inspection';
                 $('#newRequestModal').modal('show');
             }
+
+            createOrcamentoRequest() {
+                document.getElementById('requestType').value = 'orcamento';
+                $('#newRequestModal').modal('show');
+            }
             
             getStatusText(status) {
                 const statusMap = {
@@ -1237,6 +1261,37 @@
             
             // Завантажити заявки
             clientRequestsManager.loadRequests();
+
+            // Завантаження реальних ліфтів у форму нової заявки
+            $('#newRequestModal').on('show.bs.modal', async function() {
+                const select = document.getElementById('requestLift');
+                if (select.options.length > 1) return; // вже завантажено
+                select.innerHTML = '<option value="">Завантаження ліфтів...</option>';
+                try {
+                    const res = await AuthManager.fetchWithAuth('/api/lifts');
+                    const data = res ? await res.json() : null;
+                    const lifts = (data && Array.isArray(data.data)) ? data.data : [];
+                    if (lifts.length === 0) {
+                        select.innerHTML = '<option value="">Ліфтів немає</option>';
+                        return;
+                    }
+                    select.innerHTML = '<option value="">Оберіть ліфт...</option>';
+                    lifts.forEach(lift => {
+                        const addr = lift.address
+                            ? [lift.address.street, lift.address.city].filter(Boolean).join(', ')
+                            : '';
+                        const label = (lift.municipalNumber || lift._id) + (addr ? ' — ' + addr : '');
+                        const opt = document.createElement('option');
+                        opt.value = lift._id;
+                        opt.dataset.address = addr;
+                        opt.textContent = label;
+                        select.appendChild(opt);
+                    });
+                } catch (e) {
+                    console.error('Помилка завантаження ліфтів:', e);
+                    select.innerHTML = '<option value="">Помилка завантаження</option>';
+                }
+            });
         });
 
         document.addEventListener('DOMContentLoaded', function() {

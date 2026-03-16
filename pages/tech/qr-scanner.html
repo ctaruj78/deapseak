@@ -8,7 +8,7 @@
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <!-- Font Awesome -->
-  <link rel="stylesheet" href="../../plugins/fontawesome-free/css/all.min.css">
+  <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
   <!-- Theme style -->
   <link rel="stylesheet" href="/plugins/sweetalert2/css/sweetalert2.min.css">
   <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
@@ -195,12 +195,6 @@
                     <a href="/pages/tech/ar-helper.html" class="nav-link">
                         <i class="fas fa-cube nav-icon"></i>
                         <p>AR Helper</p>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="/pages/tech/tools.html" class="nav-link">
-                        <i class="fas fa-tools nav-icon"></i>
-                        <p>Калькулятори</p>
                     </a>
                 </li>
             </ul>
@@ -453,7 +447,7 @@
 <!-- jQuery -->
 <script src="../../plugins/jquery/jquery.min.js"></script>
 <!-- Bootstrap 4 -->
-<script src="../../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
 <!-- AdminLTE App -->
 <script src="../../plugins/adminlte/adminlte.min.js"></script>
 <!-- QR Code Libraries -->
@@ -482,7 +476,7 @@ document.addEventListener("DOMContentLoaded", function() {
     
     // Configurações для користувача
     const user = AuthManager.getCurrentUser();
-    if (user && user.role !== 'technician' && user.role !== 'admin' && user.role !== 'dispatcher') {
+    if (user && user.role !== 'technician' && user.role !== 'tech' && user.role !== 'admin' && user.role !== 'dispatcher') {
         // Якщо не технік, адмін або диспетчер - перенаправляємо
         window.location.replace('/index.html');
         return;
@@ -1177,10 +1171,13 @@ document.addEventListener("DOMContentLoaded", function() {
     });
     
     // Кнопка виходу
-    document.getElementById('logout-button').addEventListener('click', function() {
-        logout();
-        window.location.replace('/pages/auth/login.html');
-    });
+    const logoutBtn = document.getElementById('logout-button');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function() {
+            logout();
+            window.location.replace('/pages/auth/login.html');
+        });
+    }
     
     // Ініціалізація
     loadCameras();

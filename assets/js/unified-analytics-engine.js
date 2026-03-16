@@ -1030,6 +1030,14 @@ class UnifiedAnalyticsEngine {
 
         console.log('📊 Створюємо графік прогнозів...');
 
+        // Знищуємо існуючий графік якщо вже є
+        if (this.charts.prediction) {
+            this.charts.prediction.destroy();
+            this.charts.prediction = null;
+        }
+        const existingChart = Chart.getChart(ctx);
+        if (existingChart) existingChart.destroy();
+
         // Отримуємо дані прогнозів від AI системи
         const predictions = this.predictiveSystem ? 
             this.predictiveSystem.getSystemPredictions() : 

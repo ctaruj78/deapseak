@@ -55,6 +55,8 @@ class LanguageSwitcher {
           ${Object.entries(this.languages).map(([code, name]) => `<option value="${code}" ${code===this.current?'selected':''}>${name}</option>`).join('')}
         </select>`;
     container.prepend(widget);
+    document.getElementById('langSelect').addEventListener('change', (e) => this.switchLang(e.target.value));
+  }
 
   switchLang(lang) {
     this.current = lang;

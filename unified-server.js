@@ -516,7 +516,42 @@ app.get('/api/qr/stats', authenticateToken, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// 📋 INSPECTIONS
+// � KNOWLEDGE BASE
+// ═══════════════════════════════════════════════════════════
+
+// GET /api/knowledge-base - список статей бази знань
+app.get('/api/knowledge-base', authenticateToken, async (req, res) => {
+    try {
+        if (!db) {
+            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+        }
+        const articles = await db.collection('knowledge_base')
+            .find({})
+            .sort({ updatedDate: -1 })
+            .toArray();
+        res.json(articles);
+    } catch (error) {
+        console.error('❌ Помилка отримання бази знань:', error);
+        res.status(500).json({ success: false, message: 'Помилка сервера' });
+    }
+});
+
+// POST /api/knowledge-base - додати статтю
+app.post('/api/knowledge-base', authenticateToken, async (req, res) => {
+    try {
+        if (!db) {
+            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+        }
+        const article = { ...req.body, createdAt: new Date(), updatedAt: new Date() };
+        const result = await db.collection('knowledge_base').insertOne(article);
+        res.status(201).json({ success: true, id: result.insertedId });
+    } catch (error) {
+        console.error('❌ Помилка створення статті:', error);
+        res.status(500).json({ success: false, message: 'Помилка сервера' });
+    }
+});
+
+// �📋 INSPECTIONS
 // ═══════════════════════════════════════════════════════════
 
 // GET all inspections
@@ -1629,6 +1664,61 @@ app.get('/api/lifts/:id', authenticateToken, async (req, res) => {
             success: false,
             message: 'Помилка отримання ліфта'
         });
+    }
+});
+
+// GET /api/lifts/:id/history - історія обслуговування ліфта
+app.get('/api/lifts/:id/history', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const liftId = new ObjectId(req.params.id);
+
+        const lift = await db.collection('lifts').findOne({ _id: liftId });
+        if (!lift) {
+            return res.status(404).json({ success: false, message: 'Ліфт не знайдено' });
+        }
+
+        // 🔐 Перевірка прав доступу
+        if (req.user.role === 'client') {
+            const clientId = req.user.id || req.user.userId;
+            const liftClientId = lift.client ? lift.client.toString() : null;
+            if (liftClientId !== clientId) {
+                return res.status(403).json({ success: false, message: 'Немає доступу до цього ліфта' });
+            }
+        }
+
+        // Збираємо inspectionHistory з самого ліфта
+        const inspections = (lift.inspectionHistory || []).map(entry => ({
+            date: entry.date,
+            type: entry.reportType || 'inspection',
+            description: entry.notes || '',
+            technician: entry.inspector || '',
+            status: entry.status === 'passed' ? 'completed' : (entry.status === 'failed' ? 'failed' : 'conditional')
+        }));
+
+        // Збираємо завершені запити на обслуговування з колекції requests
+        const completedRequests = await db.collection('requests').find({
+            liftId: liftId.toString(),
+            status: { $in: ['completed', 'done', 'closed'] }
+        }).toArray();
+
+        const requestHistory = completedRequests.map(req => ({
+            date: req.completedAt || req.updatedAt || req.createdAt,
+            type: req.type || req.requestType || 'maintenance',
+            description: req.description || req.title || '',
+            technician: req.technicianName || '',
+            status: 'completed'
+        }));
+
+        // Об'єднуємо і сортуємо за датою (новіші спочатку)
+        const history = [...inspections, ...requestHistory].sort(
+            (a, b) => new Date(b.date) - new Date(a.date)
+        );
+
+        res.json({ success: true, data: history });
+    } catch (error) {
+        console.error('❌ Помилка отримання історії ліфта:', error);
+        res.status(500).json({ success: false, message: 'Помилка отримання історії обслуговування' });
     }
 });
 
@@ -3374,6 +3464,19 @@ app.post('/api/requests', authenticateToken, async (req, res) => {
         const newRequest = {
             ...req.body,
             requestNumber,
+            // Автоматично генеруємо заголовок якщо не вказано
+            title: req.body.title || (() => {
+                const typeMap = { maintenance: 'Технічне обслуговування', repair: 'Ремонт', inspection: 'Технічний огляд', consultation: 'Консультація', emergency: 'Аварійна ситуація' };
+                const typeName = typeMap[req.body.type] || req.body.type || 'Заявка';
+                if (liftData?.address) {
+                    const parts = [];
+                    if (liftData.address.street) parts.push(liftData.address.street);
+                    if (liftData.address.city) parts.push(liftData.address.city);
+                    const addr = parts.join(', ');
+                    return addr ? `${typeName} — ${addr}` : typeName;
+                }
+                return typeName;
+            })(),
             // Якщо знайшли ліфт - збагачуємо дані
             liftAddress: (() => {
                 if (!liftData?.address) return req.body.liftAddress || 'Адреса невідома';

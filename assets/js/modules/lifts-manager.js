@@ -981,6 +981,8 @@ class LiftsManager {
                             <option value="maintenance">Планове обслуговування</option>
                             <option value="repair">Ремонт</option>
                             <option value="inspection">Інспекція</option>
+                            <option value="consultation">Консультація</option>
+                            <option value="orcamento">Орсаменто (Кошторис)</option>
                             <option value="emergency">Аварійна ситуація</option>
                         </select>
                     </div>
@@ -992,9 +994,9 @@ class LiftsManager {
                         <label>Пріоритет:</label>
                         <select id="servicePriority" class="form-control">
                             <option value="low">Низький</option>
-                            <option value="medium">Середній</option>
+                            <option value="medium" selected>Середній</option>
                             <option value="high">Високий</option>
-                            <option value="urgent">Термінова</option>
+                            <option value="critical">Критичний 🔴</option>
                         </select>
                     </div>
                 </div>
