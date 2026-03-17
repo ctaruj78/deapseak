@@ -28,6 +28,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 const emailService = require('./backend/services/emailService');
 
 const app = express();
+app.set('trust proxy', 1); // Довіряємо проксі (Codespaces / nginx)
 
 // ═══════════════════════════════════════════════════════════
 // 🌍 GEOCODING - Конвертація адреси в координати
@@ -165,9 +166,7 @@ let mongoClient;
 // Async функція для підключення до MongoDB
 async function connectMongo() {
     try {
-        mongoClient = await MongoClient.connect(MONGODB_URI, { 
-            useUnifiedTopology: true 
-        });
+        mongoClient = await MongoClient.connect(MONGODB_URI);
         db = mongoClient.db(DB_NAME);
         console.log('✅ MongoDB connected:', MONGODB_URI, 'DB:', DB_NAME);
         return db;
@@ -185,10 +184,7 @@ connectMongo();
 const mongooseURI = new URL(MONGODB_URI).pathname.length > 1
     ? MONGODB_URI
     : `${MONGODB_URI}/${DB_NAME}`;
-mongoose.connect(mongooseURI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-}).then(() => {
+mongoose.connect(mongooseURI).then(() => {
     console.log('✅ Mongoose connected:', mongooseURI);
 }).catch(err => {
     console.error('❌ Mongoose connection error:', err);
@@ -3257,6 +3253,31 @@ app.get('/api/requests', authenticateToken, async (req, res) => {
         // Optional query filters
         if (req.query.status) query.status = req.query.status;
         if (req.query.priority) query.priority = req.query.priority;
+
+        // Filter by clientId: find the client's lifts first, then filter requests by liftId
+        if (req.query.clientId) {
+            const { ObjectId: OID } = require('mongodb');
+            const qClientId = req.query.clientId.toString();
+            let clientObjId = null;
+            try { clientObjId = new OID(qClientId); } catch (e) {}
+            const liftOrConds = clientObjId
+                ? [{ client: qClientId }, { client: clientObjId }, { 'client._id': qClientId }, { 'client._id': clientObjId }]
+                : [{ client: qClientId }, { 'client._id': qClientId }];
+            // Also match by client email in case lifts store clientEmail
+            try {
+                const cUser = await db.collection('users').findOne({ _id: clientObjId }, { projection: { email: 1 } });
+                if (cUser?.email) liftOrConds.push({ clientEmail: cUser.email.toLowerCase() });
+            } catch (e) {}
+            const clientLifts = await db.collection('lifts')
+                .find({ $or: liftOrConds }, { projection: { _id: 1 } })
+                .toArray();
+            const liftIds = clientLifts.map(l => l._id.toString());
+            console.log(`🔍 Фільтр по clientId=${qClientId}: знайдено ${liftIds.length} ліфтів`);
+            if (liftIds.length === 0) {
+                return res.json({ success: true, data: [] });
+            }
+            query.liftId = { $in: liftIds };
+        }
 
         const requests = await db.collection('requests').find(query).toArray();
 

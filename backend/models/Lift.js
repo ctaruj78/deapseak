@@ -111,7 +111,13 @@ const liftSchema = new mongoose.Schema({
             default: 'client'
         }
     },
-    notes: String
+    notes: String,
+    deletionRequest: {
+        requested: { type: Boolean, default: false },
+        requestedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        requestedAt: Date,
+        reason: String
+    }
 }, {
     timestamps: true,
     toJSON: { virtuals: true },

@@ -15,7 +15,6 @@ class ClientManager {
 
     init() {
         this.loadClients();
-        this.loadClientRequests();
         this.setupRealTimeUpdates();
     }
 
@@ -33,9 +32,21 @@ class ClientManager {
                 const result = await response.json();
                 console.log('📥 Отримано дані від API:', result);
                 
-                // API повертає {success: true, data: [...]}
-                const users = result.success ? (result.data || []) : [];
-                console.log('👥 Знайдено користувачів:', users.length);
+                // API повертає {success: true, data: [...]} — фільтруємо тільки клієнтів
+                const users = (result.success ? (result.data || []) : []).filter(u => u.role === 'client');
+                console.log('👥 Знайдено клієнтів:', users.length);
+
+                // Завантажуємо заявки та ліфти для підрахунку
+                let allRequests = [];
+                try {
+                    const reqRes = await fetch('/api/requests', {
+                        headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+                    });
+                    if (reqRes.ok) {
+                        const reqData = await reqRes.json();
+                        allRequests = reqData.requests || reqData.data || [];
+                    }
+                } catch (e) { /* ігноруємо */ }
                 
                 // Конвертуємо користувачів у формат клієнтів
                 this.clients = users.map((user, index) => {
@@ -47,6 +58,15 @@ class ClientManager {
                     
                     // Формуємо повне ім'я
                     const fullName = user.companyName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Без імені';
+                    
+                    // Підраховуємо заявки для цього клієнта з завантажених даних
+                    const uid = String(user._id);
+                    const clientReqs = allRequests.filter(r => {
+                        const cid = r.client?._id || r.clientId;
+                        return cid && String(cid) === uid;
+                    });
+                    const activeStatuses = ['new', 'assigned', 'in_progress', 'open', 'pending'];
+                    const clientActiveReqs = clientReqs.filter(r => activeStatuses.includes(r.status)).length;
                     
                     return {
                         id: user._id,
@@ -65,19 +85,30 @@ class ClientManager {
                         contactPosition: user.contactPosition || 'Клієнт',
                         contractInfo: user.contractInfo || `Договір від ${new Date(user.createdAt || Date.now()).toLocaleDateString('uk-UA')}`,
                         notes: user.notes || '',
-                        rating: user.rating || 4.0,
-                        totalRequests: user.requestsCount || 0,
-                        activeRequests: user.activeRequests || 0,
-                        requestsCount: user.requestsCount || 0,
+                        rating: user.rating || null,
+                        totalRequests: clientReqs.length,
+                        activeRequests: clientActiveReqs,
+                        requestsCount: clientReqs.length,
                         avatar: avatar,
                         createdAt: user.createdAt || new Date().toISOString(),
-                        liftsCount: user.liftsCount || 0 // Кількість ліфтів клієнта
+                        liftsCount: user.liftsCount || 0
                     };
                 });
+                
+                this.requests = allRequests.map(req => ({
+                    id: req._id,
+                    clientId: req.client?._id || req.clientId,
+                    clientName: req.client ? `${req.client.firstName || ''} ${req.client.lastName || ''}`.trim() : 'Невідомо',
+                    title: req.title || req.description?.substring(0, 50) || 'Без назви',
+                    priority: req.priority || 'medium',
+                    status: req.status || 'new',
+                    date: new Date(req.createdAt).toLocaleString('uk-UA')
+                }));
                 
                 console.log('✅ Клієнтів оброблено:', this.clients.length);
                 this.filteredClients = [...this.clients];
                 this.renderClients();
+                this.renderRecentRequests();
                 this.updateStats();
             } else {
                 console.warn('⚠️ API повернув помилку, використовуємо demo дані');
@@ -369,7 +400,7 @@ class ClientManager {
                     <small class="text-muted">Заявок</small>
                 </div>
                 <div class="col-4">
-                    <div class="text-warning font-weight-bold">${client.rating}</div>
+                    <div class="text-warning font-weight-bold">${client.rating != null ? client.rating : '—'}</div>
                     <small class="text-muted">Рейтинг</small>
                 </div>
             </div>
@@ -539,7 +570,7 @@ class ClientManager {
                 <td><span class="badge ${statusClass}">${statusText}</span></td>
                 <td>${request.date}</td>
                 <td>
-                    <button class="btn btn-sm btn-primary" onclick="clientManager.viewRequest(${request.id})">
+                    <button class="btn btn-sm btn-primary" onclick="clientManager.viewRequest('${request.id}')">
                         <i class="fas fa-eye"></i>
                     </button>
                 </td>
@@ -606,7 +637,7 @@ class ClientManager {
                         <p><strong>Тип:</strong> ${this.getTypeText(client.type)}</p>
                         <p><strong>Статус:</strong> <span class="badge badge-${client.status === 'active' ? 'success' : client.status === 'suspended' ? 'warning' : 'secondary'}">${this.getStatusText(client.status)}</span></p>
                         <p><strong>Пріоритет:</strong> <span class="priority-badge priority-${client.priority}">${this.getPriorityText(client.priority)}</span></p>
-                        <p><strong>Рейтинг:</strong> <span class="text-warning"><i class="fas fa-star"></i> ${client.rating}</span></p>
+                        <p><strong>Рейтинг:</strong> <span class="text-warning"><i class="fas fa-star"></i> ${client.rating != null ? client.rating : '—'}</span></p>
                         
                         <h6 class="mt-3">Контактна особа:</h6>
                         <p>${client.contactPerson} (${client.contactPosition})</p>
@@ -626,19 +657,19 @@ class ClientManager {
                         <div class="row text-center">
                             <div class="col-4">
                                 <div class="stats-box-sm">
-                                    <div class="stats-number">${client.totalRequests}</div>
+                                    <div class="stats-number" id="modalStatTotal">${client.totalRequests}</div>
                                     <div class="stats-label">Всього</div>
                                 </div>
                             </div>
                             <div class="col-4">
                                 <div class="stats-box-sm">
-                                    <div class="stats-number">${client.activeRequests}</div>
+                                    <div class="stats-number" id="modalStatActive">${client.activeRequests}</div>
                                     <div class="stats-label">Активних</div>
                                 </div>
                             </div>
                             <div class="col-4">
                                 <div class="stats-box-sm">
-                                    <div class="stats-number">${client.totalRequests - client.activeRequests}</div>
+                                    <div class="stats-number" id="modalStatCompleted">${client.totalRequests - client.activeRequests}</div>
                                     <div class="stats-label">Завершено</div>
                                 </div>
                             </div>
@@ -648,17 +679,23 @@ class ClientManager {
                 
                 <div class="row mt-3">
                     <div class="col-12">
-                        <h6>Ліфти клієнта: <span class="badge badge-success">${client.liftsCount || 0}</span></h6>
+                        <h6>Ліфти клієнта: <span id="clientLiftsBadge" class="badge badge-success">...</span></h6>
                         <div id="clientLiftsContainer">
                             <div class="text-center py-3">
                                 <i class="fas fa-spinner fa-spin"></i> Завантаження ліфтів...
                             </div>
                         </div>
-                        ${client.liftsCount > 0 ? `
-                            <button class="btn btn-sm btn-primary mt-2" onclick="clientManager.viewAllClientLifts('${client._id || client.id}')">
-                                <i class="fas fa-elevator"></i> Переглянути всі ліфти
-                            </button>
-                        ` : ''}
+                    </div>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h6>Заявки клієнта: <span id="clientRequestsBadge" class="badge badge-info">...</span></h6>
+                        <div id="clientRequestsContainer">
+                            <div class="text-center py-2">
+                                <i class="fas fa-spinner fa-spin"></i> Завантаження заявок...
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -673,14 +710,18 @@ class ClientManager {
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
-                <button type="button" class="btn btn-primary" onclick="clientManager.editClient(${client.id})">Редагувати</button>
+                <button type="button" class="btn btn-primary" onclick="clientManager.editClient('${client._id || client.id}')">Редагувати</button>
             </div>
         `;
         
         this.showCustomModal(modalContent);
         
-        // Завантажити ліфти клієнта після відкриття модалки
-        setTimeout(() => this.loadClientLifts(client._id || client.id), 100);
+        // Завантажити ліфти та заявки клієнта після відкриття модалки
+        const cid = client._id || client.id;
+        setTimeout(() => {
+            this.loadClientLifts(cid);
+            this.loadClientRequestsForModal(cid);
+        }, 100);
     }
     
     // Завантаження ліфтів клієнта
@@ -702,6 +743,10 @@ class ClientManager {
             const result = await response.json();
             const lifts = result.data || result.lifts || [];
             
+            // Оновити лічильник
+            const badge = document.getElementById('clientLiftsBadge');
+            if (badge) badge.textContent = lifts.length;
+            
             if (lifts.length === 0) {
                 container.innerHTML = `
                     <div class="alert alert-info">
@@ -711,32 +756,46 @@ class ClientManager {
                 return;
             }
             
-            // Показати перші 5 ліфтів
-            const liftsToShow = lifts.slice(0, 5);
+            const statusMap = {
+                'operational': { badge: 'success', text: 'Активний' },
+                'maintenance': { badge: 'warning', text: 'Обслуговування' },
+                'repair': { badge: 'danger', text: 'Ремонт' },
+                'out_of_service': { badge: 'secondary', text: 'Неактивний' },
+                'inspection': { badge: 'info', text: 'Огляд' }
+            };
+            
             container.innerHTML = `
                 <div class="list-group">
-                    ${liftsToShow.map(lift => `
+                    ${lifts.map(lift => {
+                        const st = statusMap[lift.status] || { badge: 'secondary', text: lift.status || 'Невідомо' };
+                        const addr = typeof lift.address === 'object'
+                            ? [lift.address.street, lift.address.city].filter(Boolean).join(', ')
+                            : (lift.address || '');
+                        return `
                         <a href="/pages/dispatcher/lifts.html?highlight=${lift._id}" class="list-group-item list-group-item-action" style="cursor: pointer;">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <strong><i class="fas fa-elevator text-primary"></i> ${lift.municipalNumber || 'Без номера'}</strong>
                                     <br>
                                     <small class="text-muted">
-                                        <i class="fas fa-map-marker-alt"></i> ${typeof lift.address === 'object' ? (lift.address.street || lift.address.full) : lift.address}
+                                        <i class="fas fa-map-marker-alt"></i> ${addr || 'Адреса невідома'}
                                     </small>
                                     ${lift.capacity ? `<br><small class="text-muted"><i class="fas fa-weight"></i> ${lift.capacity} кг</small>` : ''}
                                 </div>
                                 <div class="text-right">
-                                    <span class="badge badge-${lift.status === 'active' ? 'success' : lift.status === 'maintenance' ? 'warning' : 'secondary'}">
-                                        ${lift.status === 'active' ? 'Активний' : lift.status === 'maintenance' ? 'На обслуговуванні' : 'Неактивний'}
-                                    </span>
+                                    <span class="badge badge-${st.badge}">${st.text}</span>
                                     ${lift.nextInspectionDate ? `<br><small class="text-muted"><i class="fas fa-calendar"></i> ${new Date(lift.nextInspectionDate).toLocaleDateString('uk-UA')}</small>` : ''}
                                 </div>
                             </div>
                         </a>
-                    `).join('')}
+                        `;
+                    }).join('')}
                 </div>
-                ${lifts.length > 5 ? `<small class="text-muted">Показано 5 з ${lifts.length} ліфтів</small>` : ''}
+                <div class="mt-2">
+                    <a href="/pages/dispatcher/lifts.html?clientId=${clientId}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-external-link-alt"></i> Відкрити всі ліфти
+                    </a>
+                </div>
             `;
         } catch (error) {
             console.error('❌ Помилка завантаження ліфтів:', error);
@@ -751,6 +810,101 @@ class ClientManager {
     // Перегляд всіх ліфтів клієнта (перехід на сторінку ліфтів з фільтром)
     viewAllClientLifts(clientId) {
         window.location.href = `/pages/dispatcher/lifts.html?clientId=${clientId}`;
+    }
+
+    // Завантаження заявок клієнта для модалки
+    async loadClientRequestsForModal(clientId) {
+        const container = document.getElementById('clientRequestsContainer');
+        const badge = document.getElementById('clientRequestsBadge');
+        if (!container) return;
+
+        try {
+            const response = await fetch(`/api/requests?clientId=${clientId}`, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+            });
+
+            let requests = [];
+            if (response.ok) {
+                const result = await response.json();
+                requests = result.data || result.requests || [];
+            } else {
+                // Fallback: filter from already-loaded requests
+                const cid = String(clientId);
+                requests = this.requests.filter(r => String(r.clientId) === cid || String(r.client?._id) === cid);
+            }
+
+            if (badge) badge.textContent = requests.length;
+
+            // Оновити статистику заявок у модалці
+            const activeStatuses = ['new', 'open', 'assigned', 'in_progress', 'pending'];
+            const activeCount = requests.filter(r => activeStatuses.includes(r.status)).length;
+            const closedCount = requests.length - activeCount;
+            const elTotal = document.getElementById('modalStatTotal');
+            const elActive = document.getElementById('modalStatActive');
+            const elCompleted = document.getElementById('modalStatCompleted');
+            if (elTotal) elTotal.textContent = requests.length;
+            if (elActive) elActive.textContent = activeCount;
+            if (elCompleted) elCompleted.textContent = closedCount;
+
+            if (requests.length === 0) {
+                container.innerHTML = `<div class="alert alert-info mb-0"><i class="fas fa-info-circle"></i> Заявок ще немає</div>`;
+                return;
+            }
+
+            const statusMap = {
+                'new': { badge: 'info', text: 'Нова' },
+                'open': { badge: 'info', text: 'Відкрита' },
+                'assigned': { badge: 'primary', text: 'Призначена' },
+                'in_progress': { badge: 'warning', text: 'В роботі' },
+                'pending': { badge: 'warning', text: 'Очікує' },
+                'completed': { badge: 'success', text: 'Завершена' },
+                'cancelled': { badge: 'secondary', text: 'Скасована' }
+            };
+            const priorityMap = {
+                'critical': { badge: 'danger', text: 'Критичний' },
+                'high': { badge: 'warning', text: 'Високий' },
+                'medium': { badge: 'info', text: 'Середній' },
+                'normal': { badge: 'info', text: 'Середній' },
+                'low': { badge: 'secondary', text: 'Низький' }
+            };
+
+            container.innerHTML = `
+                <div class="list-group">
+                    ${requests.slice(0, 10).map(req => {
+                        const st = statusMap[req.status] || { badge: 'secondary', text: req.status || 'Невідомо' };
+                        const pr = priorityMap[req.priority] || { badge: 'secondary', text: req.priority || '' };
+                        const title = req.title || req.description?.substring(0, 60) || 'Без назви';
+                        const date = req.createdAt ? new Date(req.createdAt).toLocaleDateString('uk-UA') : (req.date || '');
+                        return `
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <strong>${title}</strong>
+                                    ${date ? `<br><small class="text-muted"><i class="fas fa-calendar"></i> ${date}</small>` : ''}
+                                </div>
+                                <div class="text-right">
+                                    <span class="badge badge-${st.badge}">${st.text}</span>
+                                    ${req.priority ? `<br><span class="badge badge-${pr.badge} mt-1">${pr.text}</span>` : ''}
+                                </div>
+                            </div>
+                        </div>`;
+                    }).join('')}
+                </div>
+                ${requests.length > 10 ? `<small class="text-muted mt-1 d-block">Показано 10 з ${requests.length} заявок</small>` : ''}
+            `;
+        } catch (error) {
+            console.error('❌ Помилка завантаження заявок:', error);
+
+            // Fallback to in-memory data
+            const cid = String(clientId);
+            const requests = this.requests.filter(r => String(r.clientId) === cid);
+            if (badge) badge.textContent = requests.length;
+            if (requests.length === 0) {
+                container.innerHTML = `<div class="alert alert-info mb-0"><i class="fas fa-info-circle"></i> Заявок ще немає</div>`;
+            } else {
+                container.innerHTML = `<div class="alert alert-warning mb-0"><i class="fas fa-exclamation-triangle"></i> Завантажено ${requests.length} заявок з кешу</div>`;
+            }
+        }
     }
 
     // Показати модальне вікно додавання клієнта
@@ -1123,9 +1277,10 @@ class ClientManager {
         const totalClients = this.clients.length;
         const activeClients = this.clients.filter(c => c.status === 'active').length;
         const totalRequests = this.clients.reduce((sum, client) => sum + (client.requestsCount || 0), 0);
-        const avgRating = totalClients > 0 
-            ? (this.clients.reduce((sum, client) => sum + client.rating, 0) / totalClients).toFixed(1)
-            : '0.0';
+        const ratedClients = this.clients.filter(c => c.rating != null);
+        const avgRating = ratedClients.length > 0
+            ? (ratedClients.reduce((sum, c) => sum + c.rating, 0) / ratedClients.length).toFixed(1)
+            : '—';
         
         // Безпечне оновлення DOM елементів (можуть не існувати на всіх сторінках)
         const totalClientsEl = document.getElementById('totalClients');

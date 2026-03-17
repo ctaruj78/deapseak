@@ -119,6 +119,13 @@ router.post('/:id/contract/share-to-siblings',
     liftController.shareContractToSiblings
 );
 
+// POST /api/lifts/:id/request-deletion - Запит на видалення (dispatcher)
+router.post('/:id/request-deletion',
+    authenticate,
+    authorizeRoles('admin', 'dispatcher'),
+    liftController.requestDeletion
+);
+
 // DELETE /api/lifts/:id - Видалення ліфта (тільки admin)
 router.delete('/:id', 
     authenticate, 

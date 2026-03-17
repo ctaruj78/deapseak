@@ -3,10 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Диспетчер — Suporte</title>
+    <title>Suporte Técnico - FestLift</title>
     <script src="../../assets/js/global-settings.js"></script>
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    <style>
+        .support-card {
+            transition: all 0.3s ease;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+        }
+        .support-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .contact-method {
+            text-align: center;
+            padding: 25px 20px;
+            color: white;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            height: 100%;
+        }
+        .contact-method i { font-size: 2.5rem; margin-bottom: 12px; opacity: 0.9; display: block; }
+        .contact-method h5 { font-weight: 600; margin-bottom: 8px; }
+        .contact-method p { opacity: 0.9; margin-bottom: 4px; font-size: 0.9rem; }
+        .contact-email  { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .contact-phone  { background: linear-gradient(135deg, #f093fb, #f5576c); }
+        .contact-chat   { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+        .system-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .info-item:last-child { border-bottom: none; }
+        .ticket-card {
+            border-left: 4px solid;
+            margin-bottom: 12px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .ticket-high   { border-left-color: #dc3545; }
+        .ticket-medium { border-left-color: #ffc107; }
+        .ticket-low    { border-left-color: #28a745; }
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 500; }
+        .status-open        { background: #e3f2fd; color: #1976d2; }
+        .status-in-progress { background: #fff3e0; color: #f57c00; }
+        .status-resolved    { background: #e8f5e8; color: #388e3c; }
+        .status-closed      { background: #f3e5f5; color: #7b1fa2; }
+        .faq-item {
+            padding: 15px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .faq-item:hover { border-color: #667eea; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .faq-item .faq-answer { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid #e9ecef; color: #555; }
+        .faq-item.open .faq-answer { display: block; }
+        .faq-item.open { border-color: #667eea; background: #f8f5ff; }
+    </style>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed" data-required-role="dispatcher">
     <div class="wrapper">
@@ -19,32 +87,235 @@
                     <a href="dashboard.html" class="nav-link">Головна</a>
                 </li>
             </ul>
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="if(typeof logout==='function')logout()">
+                        <i class="fas fa-sign-out-alt"></i> Вийти
+                    </a>
+                </li>
+            </ul>
         </nav>
-  <!-- Sidebar Placeholder -->
-  <div id="sidebar-placeholder"></div>
+
+        <div id="sidebar-placeholder"></div>
+
         <div class="content-wrapper">
-            <div class="content-header">
+            <section class="content-header">
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1 class="m-0">Suporte</h1>
+                            <h1><i class="fas fa-headset mr-2"></i>Suporte Técnico</h1>
                         </div>
-                    </div>
-                </div>
-            </div>
-            <section class="content">
-                <div class="container-fluid">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">Служба підтримки</h3>
-                        </div>
-                        <div class="card-body">
-                            <p>Тут буде інформація про службу підтримки для диспетчера.</p>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="dashboard.html">Головна</a></li>
+                                <li class="breadcrumb-item active">Suporte</li>
+                            </ol>
                         </div>
                     </div>
                 </div>
             </section>
+
+            <section class="content">
+                <div class="container-fluid">
+
+                    <!-- System Info -->
+                    <div class="system-info">
+                        <h5 class="mb-3"><i class="fas fa-info-circle mr-2 text-primary"></i>Інформація про систему</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="info-item">
+                                    <span>Версія системи:</span>
+                                    <strong>FestLift v2.1.0</strong>
+                                </div>
+                                <div class="info-item">
+                                    <span>Статус системи:</span>
+                                    <span class="badge badge-success">Активна</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-item">
+                                    <span>Технічна підтримка:</span>
+                                    <strong>Доступна 24/7</strong>
+                                </div>
+                                <div class="info-item">
+                                    <span>Ваша роль:</span>
+                                    <strong>Диспетчер</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Methods -->
+                    <div class="row mb-2">
+                        <div class="col-lg-4 col-md-6 mb-3">
+                            <div class="contact-method contact-email">
+                                <i class="fas fa-envelope"></i>
+                                <h5>Email підтримка</h5>
+                                <p>support@festlift.pt</p>
+                                <p>Відповідь протягом 2 годин</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-6 mb-3">
+                            <div class="contact-method contact-phone">
+                                <i class="fas fa-phone"></i>
+                                <h5>Телефон гарячої лінії</h5>
+                                <p>+351 214 190 863</p>
+                                <p>Цілодобово для критичних випадків</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-6 mb-3">
+                            <div class="contact-method contact-chat">
+                                <i class="fas fa-comments"></i>
+                                <h5>Online чат</h5>
+                                <p>Доступний у робочі години</p>
+                                <p>08:00 – 20:00 (WET)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Ticket -->
+                    <div class="card support-card">
+                        <div class="card-header bg-white">
+                            <h3 class="card-title">
+                                <i class="fas fa-plus-circle mr-2 text-primary"></i>
+                                Створити запит до технічної підтримки
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <form id="supportTicketForm">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="ticketSubject">Тема запиту <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="ticketSubject"
+                                                   placeholder="Коротко опишіть проблему" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="ticketPriority">Пріоритет</label>
+                                            <select class="form-control" id="ticketPriority">
+                                                <option value="low">Низький</option>
+                                                <option value="medium" selected>Середній</option>
+                                                <option value="high">Високий</option>
+                                                <option value="critical">Критичний</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="ticketCategory">Категорія</label>
+                                            <select class="form-control" id="ticketCategory">
+                                                <option value="technical">Технічна проблема</option>
+                                                <option value="lift">Проблема з ліфтом</option>
+                                                <option value="assignment">Призначення завдань</option>
+                                                <option value="report">Звіти / аналітика</option>
+                                                <option value="access">Доступ / авторизація</option>
+                                                <option value="other">Інше</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="ticketDescription">Опис проблеми <span class="text-danger">*</span></label>
+                                    <textarea class="form-control" id="ticketDescription" rows="5" required
+                                        placeholder="Опишіть проблему детально: що відбувається, кроки для відтворення, будь-які повідомлення про помилки"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane mr-2"></i>Надіслати запит
+                                </button>
+                                <button type="reset" class="btn btn-secondary ml-2">
+                                    <i class="fas fa-times mr-1"></i>Скинути
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Recent Tickets -->
+                    <div class="card support-card">
+                        <div class="card-header bg-white">
+                            <h3 class="card-title">
+                                <i class="fas fa-history mr-2 text-info"></i>Мої останні запити
+                            </h3>
+                        </div>
+                        <div class="card-body" id="recentTickets">
+                            <div class="ticket-card ticket-medium">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">TKT-2026-003: Помилка при призначенні технічника</h6>
+                                        <p class="mb-1 text-muted small">Система не зберігає призначення якщо технік вже має 3 активних завдання</p>
+                                        <small class="text-muted">Створено: 15.03.2026, 11:20</small>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="status-badge status-in-progress">Em progresso</span><br>
+                                        <small class="text-muted">Середній</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ticket-card ticket-low">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">TKT-2026-002: Запит на нову функцію фільтрації</h6>
+                                        <p class="mb-1 text-muted small">Додати фільтр по районах міста у списку ліфтів</p>
+                                        <small class="text-muted">Створено: 08.03.2026, 09:45</small>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="status-badge status-resolved">Вирішено</span><br>
+                                        <small class="text-muted">Низький</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ticket-card ticket-high">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">TKT-2026-001: Сповіщення не приходять</h6>
+                                        <p class="mb-1 text-muted small">Перестали надходити email-сповіщення про нові заявки</p>
+                                        <small class="text-muted">Створено: 02.03.2026, 16:00</small>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="status-badge status-closed">Закрито</span><br>
+                                        <small class="text-muted">Високий</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ -->
+                    <div class="card support-card">
+                        <div class="card-header bg-white">
+                            <h3 class="card-title">
+                                <i class="fas fa-question-circle mr-2 text-warning"></i>Часті запитання
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="faq-item" onclick="toggleFaq(this)">
+                                <h6 class="mb-0"><i class="fas fa-chevron-right mr-2 text-muted"></i>Як призначити заявку технічному спеціалісту?</h6>
+                                <div class="faq-answer">Перейдіть до розділу <strong>Заявки</strong>, знайдіть потрібну заявку та натисніть кнопку <em>Призначити</em>. Виберіть технічного спеціаліста зі списку доступних та підтвердіть призначення.</div>
+                            </div>
+                            <div class="faq-item" onclick="toggleFaq(this)">
+                                <h6 class="mb-0"><i class="fas fa-chevron-right mr-2 text-muted"></i>Як створити новий орсамент (orçamento)?</h6>
+                                <div class="faq-answer">Перейдіть до розділу <strong>Orçamentos</strong> та натисніть <em>Novo Orçamento</em>. Заповніть дані клієнта, адресу об'єкта та список послуг з вартістю. Після збереження можна надіслати орсамент на email клієнта.</div>
+                            </div>
+                            <div class="faq-item" onclick="toggleFaq(this)">
+                                <h6 class="mb-0"><i class="fas fa-chevron-right mr-2 text-muted"></i>Що робити якщо ліфт змінив статус на «Аварійний»?</h6>
+                                <div class="faq-answer">При аварійному статусі негайно створіть заявку з пріоритетом <strong>Критичний</strong> та призначте найближчого доступного технічного спеціаліста. Також повідомте відповідального клієнта через систему сповіщень.</div>
+                            </div>
+                            <div class="faq-item" onclick="toggleFaq(this)">
+                                <h6 class="mb-0"><i class="fas fa-chevron-right mr-2 text-muted"></i>Як переглянути QR-код ліфта?</h6>
+                                <div class="faq-answer">Відкрийте картку ліфта у розділі <strong>Elevadores</strong> та натисніть на вкладку <em>QR código</em>. Там ви знайдете поточний QR-код, можете завантажити або роздрукувати його.</div>
+                            </div>
+                            <div class="faq-item" onclick="toggleFaq(this)">
+                                <h6 class="mb-0"><i class="fas fa-chevron-right mr-2 text-muted"></i>Як запросити видалення ліфта із системи?</h6>
+                                <div class="faq-answer">Диспетчер не може видаляти ліфти напряму. У розділі <strong>Elevadores</strong> натисніть <em>Excluir</em> — система автоматично надішле запит на підтвердження адміністратору. Адміністратор отримає сповіщення та виконає видалення.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
         </div>
+
         <footer class="main-footer">
             <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
             Sistema de gestão de elevadores v2.1.0.
@@ -53,38 +324,62 @@
             </div>
         </footer>
     </div>
+
     <script src="../../plugins/jquery/jquery.min.js"></script>
     <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
     <script src="../../plugins/adminlte/adminlte.min.js"></script>
-<!-- jQuery -->
-<script src="../../plugins/jquery/jquery.min.js"></script>
-<!-- Bootstrap -->
-<script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
-<!-- AdminLTE -->
-<script src="../../plugins/adminlte/adminlte.min.js"></script>
+    <script src="../../assets/js/sidebar-init.js"></script>
+    <script src="../../assets/js/config.js?v=20241116"></script>
+    <script src="../../assets/js/auth.js?v=20241206"></script>
+    <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
 
-<!-- Sidebar Init (MUST be before other scripts) -->
-<script src="../../assets/js/sidebar-init.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            if (typeof loadSidebarWithInit === "function") {
+                loadSidebarWithInit("includes/sidebar.html");
+            }
+        });
 
-<!-- API Configuration -->
-<script src="../../assets/js/config.js?v=20241116"></script>
+        document.getElementById('supportTicketForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const ticketNum = 'TKT-' + new Date().getFullYear() + '-' + String(Date.now()).slice(-4);
+            const subject  = document.getElementById('ticketSubject').value;
+            const priority = document.getElementById('ticketPriority');
+            const category = document.getElementById('ticketCategory');
 
-<!-- Auth System -->
-<script src="../../assets/js/auth.js?v=20241206"></script>
+            // Prepend new ticket to recent list
+            const priorityClass = { low: 'ticket-low', medium: 'ticket-medium', high: 'ticket-high', critical: 'ticket-high' };
+            const statusLabel = '<span class="status-badge status-open">Відкрито</span>';
+            const date = new Date().toLocaleString('uk-UA', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+            const html = `
+                <div class="ticket-card ${priorityClass[priority.value]}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="mb-1">${ticketNum}: ${subject}</h6>
+                            <p class="mb-1 text-muted small">${category.options[category.selectedIndex].text}</p>
+                            <small class="text-muted">Створено: ${date}</small>
+                        </div>
+                        <div class="text-right">${statusLabel}<br><small class="text-muted">${priority.options[priority.selectedIndex].text}</small></div>
+                    </div>
+                </div>`;
+            document.getElementById('recentTickets').insertAdjacentHTML('afterbegin', html);
 
-<!-- DataTables (if needed) -->
-<script src="../../plugins/datatables/jquery.dataTables.min.js"></script>
-<script src="../../plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({ icon: 'success', title: 'Запит надіслано!', html: `Ваш номер запиту: <strong>${ticketNum}</strong><br>Очікуйте відповіді на вашу адресу email.`, confirmButtonColor: '#667eea' });
+            } else {
+                alert('Запит ' + ticketNum + ' надіслано! Очікуйте відповіді на email.');
+            }
+            this.reset();
+        });
 
-<!-- SweetAlert2 -->
-<script src="../../plugins/sweetalert2/sweetalert2.min.js"></script>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        if (typeof loadSidebarWithInit === "function") {
-            loadSidebarWithInit("includes/sidebar.html");
+        function toggleFaq(el) {
+            el.classList.toggle('open');
+            const icon = el.querySelector('.fa-chevron-right, .fa-chevron-down');
+            if (icon) {
+                icon.classList.toggle('fa-chevron-right');
+                icon.classList.toggle('fa-chevron-down');
+            }
         }
-    });
-</script>
+    </script>
 </body>
 </html>

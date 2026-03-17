@@ -25,21 +25,22 @@ class ReportManager {
 
     async loadReportData() {
         try {
-            const [assignmentsRes, techsRes, customersRes, financialsRes] = await Promise.all([
-                fetch('../api/assignments/reports'),
-                fetch('../api/technicians/performance'),
-                fetch('../api/customers/satisfaction'),
-                fetch('../api/financials/reports')
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token') || '';
+            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+            const [requestsRes, liftsRes] = await Promise.all([
+                fetch('/api/requests/stats', { headers }),
+                fetch('/api/lifts/stats', { headers })
             ]);
 
-            if (assignmentsRes.ok && techsRes.ok && customersRes.ok && financialsRes.ok) {
-                this.reportData = {
-                    assignments: await assignmentsRes.json(),
-                    technicians: await techsRes.json(),
-                    customers: await customersRes.json(),
-                    financials: await financialsRes.json()
-                };
-                
+            if (requestsRes.ok && liftsRes.ok) {
+                const requestsData = await requestsRes.json();
+                const liftsData = await liftsRes.json();
+
+                // Нормалізуємо реальні дані до формату reportData
+                this.reportData.liftsStats = liftsData.data || liftsData;
+                this.reportData.requestsStats = requestsData.data || requestsData;
+
                 localStorage.setItem('reportData', JSON.stringify(this.reportData));
             } else {
                 throw new Error('API недоступне');
@@ -179,6 +180,8 @@ class ReportManager {
     initializePerformanceChart() {
         const ctx = document.getElementById('performanceChart');
         if (ctx) {
+            const existing = Chart.getChart(ctx);
+            if (existing) existing.destroy();
             this.charts.performance = new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -219,6 +222,8 @@ class ReportManager {
     initializePriorityChart() {
         const ctx = document.getElementById('priorityChart');
         if (ctx) {
+            const existing = Chart.getChart(ctx);
+            if (existing) existing.destroy();
             const priorityData = {
                 high: this.reportData.assignments.reduce((sum, day) => sum + day.highPriority, 0),
                 medium: this.reportData.assignments.reduce((sum, day) => sum + (day.total - day.highPriority), 0)
@@ -250,6 +255,8 @@ class ReportManager {
     initializeTechPerformanceChart() {
         const ctx = document.getElementById('techPerformanceChart');
         if (ctx) {
+            const existing = Chart.getChart(ctx);
+            if (existing) existing.destroy();
             this.charts.techPerformance = new Chart(ctx, {
                 type: 'bar',
                 data: {
@@ -277,6 +284,8 @@ class ReportManager {
     initializeWorkloadChart() {
         const ctx = document.getElementById('workloadChart');
         if (ctx) {
+            const existing = Chart.getChart(ctx);
+            if (existing) existing.destroy();
             // Групування по днях тижня
             const daysOfWeek = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
             const workloadData = daysOfWeek.map(() => 0);

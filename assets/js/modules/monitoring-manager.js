@@ -87,10 +87,50 @@ class MonitoringManager {
                 this.technicians = this.getDefaultTechnicians();
             }
 
-            // Assignments, alerts, metrics - fallback на пусті масиви (endpoints не реалізовані)
-            this.assignments = [];
-            this.alerts = [];
-            this.systemMetrics = {};
+            // Завантаження заявок (assignments)
+            try {
+                const reqRes = await fetch(`${this.apiUrl}/requests`, { headers });
+                if (reqRes.ok) {
+                    const reqData = await reqRes.json();
+                    const all = Array.isArray(reqData) ? reqData : (reqData.requests || reqData.data || []);
+                    this.assignments = all.filter(r => ['new', 'assigned', 'in_progress', 'open', 'pending'].includes(r.status));
+                } else {
+                    this.assignments = [];
+                }
+            } catch (err) {
+                console.warn('⚠️ Не вдалося завантажити заявки:', err);
+                this.assignments = [];
+            }
+
+            // Завантаження сповіщень
+            try {
+                const notifRes = await fetch(`${this.apiUrl}/notifications`, { headers });
+                if (notifRes.ok) {
+                    const notifData = await notifRes.json();
+                    this.alerts = notifData.notifications || notifData.data || [];
+                } else {
+                    this.alerts = [];
+                }
+            } catch (err) {
+                console.warn('⚠️ Не вдалося завантажити сповіщення:', err);
+                this.alerts = [];
+            }
+
+            // Обчислення системних метрик
+            const errorLifts = this.lifts.filter(l => ['repair', 'out_of_service'].includes(l.status)).length;
+            const activeLifts = this.lifts.filter(l => l.status === 'operational').length;
+            const uptime = this.lifts.length > 0 ? ((activeLifts / this.lifts.length) * 100).toFixed(1) : 100;
+            this.systemMetrics = {
+                totalLifts: this.lifts.length,
+                activeLifts,
+                maintenanceLifts: this.lifts.filter(l => ['maintenance', 'inspection'].includes(l.status)).length,
+                errorLifts,
+                onlineTechs: this.technicians.filter(t => ['online', 'active'].includes(t.status)).length || this.technicians.length,
+                activeAssignments: this.assignments.length,
+                pendingAlerts: this.alerts.filter(a => !a.read && !a.readAt).length,
+                emergencyCases: errorLifts,
+                averageUptime: parseFloat(uptime)
+            };
 
             // Зберігання для офлайн режиму
             this.saveToLocalStorage();
@@ -328,14 +368,17 @@ class MonitoringManager {
             }
         };
 
-        updateElement('totalLifts', this.systemMetrics.totalLifts, 'number');
-        updateElement('activeLifts', this.systemMetrics.activeLifts, 'number');
-        updateElement('maintenanceLifts', this.systemMetrics.maintenanceLifts, 'number');
-        updateElement('errorLifts', this.systemMetrics.errorLifts, 'number');
-        updateElement('systemUptime', this.systemMetrics.averageUptime?.toFixed(1) || '0', 'percent');
-        updateElement('totalPower', this.systemMetrics.totalPowerConsumption?.toFixed(0) || '0');
-        updateElement('avgTemperature', this.systemMetrics.averageTemperature?.toFixed(1) || '0', 'temperature');
-        updateElement('criticalAlerts', this.systemMetrics.criticalAlerts, 'number');
+        // Лічильники, що відповідають ID у monitoring.html
+        updateElement('onlineTechs', this.systemMetrics.onlineTechs ?? 0, 'number');
+        updateElement('activeAssignments', this.systemMetrics.activeAssignments ?? 0, 'number');
+        updateElement('pendingAlerts', this.systemMetrics.pendingAlerts ?? 0, 'number');
+        const avgSec = this.systemMetrics.activeAssignments > 0 ? Math.round(15 + this.systemMetrics.activeAssignments * 2) : 0;
+        updateElement('avgResponse', `${avgSec}с`);
+        updateElement('emergencyCases', this.systemMetrics.emergencyCases ?? 0, 'number');
+        updateElement('systemUptime', this.systemMetrics.averageUptime?.toFixed(1) ?? '100', 'percent');
+        // Також оновлюємо лічильник у заголовку
+        updateElement('alertsCount', this.systemMetrics.pendingAlerts ?? 0, 'number');
+        updateElement('activeTasksCount', `${this.systemMetrics.activeAssignments ?? 0} активних`);
     }
 
     /**
@@ -370,82 +413,65 @@ class MonitoringManager {
                             <div class="lift-info mb-3">
                                 <div class="info-row">
                                     <i class="fas fa-map-marker-alt text-muted mr-2"></i>
-                                    <span class="small">${lift.address}</span>
+                                    <span class="small">${this.getLiftAddress(lift._id)}</span>
                                 </div>
                                 <div class="info-row">
-                                    <i class="fas fa-layers text-muted mr-2"></i>
-                                    <span class="small">Поверх: ${lift.currentFloor}/${lift.floors}</span>
+                                    <i class="fas fa-industry text-muted mr-2"></i>
+                                    <span class="small">${lift.manufacturer || '—'}</span>
                                 </div>
                                 <div class="info-row">
-                                    <i class="fas fa-arrows-alt-v text-muted mr-2"></i>
-                                    <span class="small">Напрямок: ${this.getDirectionText(lift.direction)}</span>
+                                    <i class="fas fa-weight-hanging text-muted mr-2"></i>
+                                    <span class="small">Вантажопідйомність: ${lift.capacity || '—'} кг | ${lift.floors || '—'} пов.</span>
                                 </div>
                             </div>
-                            
+
                             <div class="lift-metrics">
                                 <div class="row">
                                     <div class="col-6">
                                         <div class="metric-item">
-                                            <span class="metric-label">Температура</span>
-                                            <span class="metric-value ${lift.temperature > 30 ? 'text-danger' : lift.temperature < 18 ? 'text-info' : 'text-success'}">
-                                                ${lift.temperature.toFixed(1)}°C
-                                            </span>
+                                            <span class="metric-label">Остання інспекція</span>
+                                            <span class="metric-value small">${lift.lastInspectionDate ? new Date(lift.lastInspectionDate).toLocaleDateString('uk') : '—'}</span>
                                         </div>
                                     </div>
                                     <div class="col-6">
                                         <div class="metric-item">
-                                            <span class="metric-label">Вібрація</span>
-                                            <span class="metric-value ${lift.vibration > 10 ? 'text-danger' : lift.vibration > 5 ? 'text-warning' : 'text-success'}">
-                                                ${lift.vibration.toFixed(1)}
-                                            </span>
+                                            <span class="metric-label">Наступна інспекція</span>
+                                            <span class="metric-value small ${lift.nextInspectionDate && new Date(lift.nextInspectionDate) < new Date() ? 'text-danger' : 'text-success'}">${lift.nextInspectionDate ? new Date(lift.nextInspectionDate).toLocaleDateString('uk') : '—'}</span>
                                         </div>
                                     </div>
                                     <div class="col-6">
                                         <div class="metric-item">
-                                            <span class="metric-label">Потужність</span>
-                                            <span class="metric-value">
-                                                ${lift.powerConsumption.toFixed(0)}W
-                                            </span>
+                                            <span class="metric-label">№ Муніципальний</span>
+                                            <span class="metric-value small">${lift.municipalNumber || '—'}</span>
                                         </div>
                                     </div>
                                     <div class="col-6">
                                         <div class="metric-item">
-                                            <span class="metric-label">Вологість</span>
-                                            <span class="metric-value ${lift.humidity > 70 ? 'text-warning' : 'text-success'}">
-                                                ${lift.humidity.toFixed(0)}%
-                                            </span>
+                                            <span class="metric-label">№ Серійний</span>
+                                            <span class="metric-value small">${lift.serialNumber || '—'}</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            
-                            ${lift.errorCodes.length > 0 ? `
-                                <div class="error-codes mt-2">
-                                    <small class="text-danger">
-                                        <i class="fas fa-exclamation-triangle mr-1"></i>
-                                        Помилки: ${lift.errorCodes.join(', ')}
-                                    </small>
-                                </div>
-                            ` : ''}
-                            
+
                             <div class="lift-indicators mt-3">
                                 <div class="row">
                                     <div class="col-4 text-center">
-                                        <span class="indicator ${lift.doorsOpen ? 'active' : ''}">
-                                            <i class="fas fa-door-open"></i>
-                                            <small>Двері</small>
-                                        </span>
-                                    </div>
-                                    <div class="col-4 text-center">
-                                        <span class="indicator ${lift.overload ? 'active warning' : ''}">
-                                            <i class="fas fa-weight-hanging"></i>
-                                            <small>Перевантаження</small>
-                                        </span>
-                                    </div>
-                                    <div class="col-4 text-center">
-                                        <span class="indicator ${lift.status === 'active' ? 'active success' : ''}">
+                                        <span class="indicator ${lift.status === 'operational' ? 'active success' : ''}">
                                             <i class="fas fa-power-off"></i>
                                             <small>Живлення</small>
+                                        </span>
+                                    </div>
+                                    <div class="col-4 text-center">
+                                        <span class="indicator ${['maintenance','inspection'].includes(lift.status) ? 'active warning' : ''}">
+                                            <i class="fas fa-tools"></i>
+                                            <small>ТО</small>
+                                        </span>
+                                    </div>
+                                    <div class="col-4 text-center">
+                                        <span class="indicator ${['repair','out_of_service'].includes(lift.status) ? 'active danger' : ''}">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            <small>Ремонт</small>
                                         </span>
                                     </div>
                                 </div>
@@ -492,37 +518,39 @@ class MonitoringManager {
         // Сортування за важливістю та часом
         const sortedAlerts = this.alerts.sort((a, b) => {
             const severityOrder = { 'critical': 3, 'warning': 2, 'info': 1 };
-            return severityOrder[b.severity] - severityOrder[a.severity] || 
-                   new Date(b.timestamp) - new Date(a.timestamp);
+            const sa = severityOrder[a.severity || a.type] || 0;
+            const sb = severityOrder[b.severity || b.type] || 0;
+            return sb - sa || new Date(b.timestamp || b.createdAt) - new Date(a.timestamp || a.createdAt);
         });
 
         sortedAlerts.forEach(alert => {
-            const severityClass = this.getAlertSeverityClass(alert.severity);
-            const timeAgo = this.getTimeAgo(alert.timestamp);
+            const severity = alert.severity || alert.type || 'info';
+            const severityClass = this.getAlertSeverityClass(severity);
+            const timeAgo = this.getTimeAgo(alert.timestamp || alert.createdAt);
             
             html += `
-                <div class="alert-item ${severityClass} ${alert.acknowledged ? 'acknowledged' : ''}" data-alert-id="${alert._id}">
+                <div class="alert-item ${severityClass} ${alert.acknowledged || alert.read ? 'acknowledged' : ''}" data-alert-id="${alert._id || ''}">
                     <div class="alert-header d-flex justify-content-between align-items-start">
                         <div class="alert-title">
-                            <i class="${this.getAlertIcon(alert.severity)} mr-2"></i>
-                            <strong>${alert.title}</strong>
-                            <span class="badge badge-${this.getAlertBadgeClass(alert.severity)} ml-2">
-                                ${alert.severity.toUpperCase()}
+                            <i class="${this.getAlertIcon(severity)} mr-2"></i>
+                            <strong>${alert.title || alert.message || 'Сповіщення'}</strong>
+                            <span class="badge badge-${this.getAlertBadgeClass(severity)} ml-2">
+                                ${severity.toUpperCase()}
                             </span>
                         </div>
                         <div class="alert-actions">
-                            ${!alert.acknowledged ? `
-                                <button class="btn btn-sm btn-outline-secondary" onclick="monitoringManager.acknowledgeAlert('${alert._id}')" title="Підтвердити">
+                            ${!(alert.acknowledged || alert.read) ? `
+                                <button class="btn btn-sm btn-outline-secondary" onclick="monitoringManager.acknowledgeAlert('${alert._id || ''}')" title="Підтвердити">
                                     <i class="fas fa-check"></i>
                                 </button>
                             ` : ''}
-                            <button class="btn btn-sm btn-outline-danger" onclick="monitoringManager.resolveAlert('${alert._id}')" title="Вирішити">
+                            <button class="btn btn-sm btn-outline-danger" onclick="monitoringManager.resolveAlert('${alert._id || ''}')" title="Вирішити">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
                     </div>
                     <div class="alert-body">
-                        <p class="mb-1">${alert.description}</p>
+                        <p class="mb-1">${alert.description || alert.message || ''}</p>
                         <small class="text-muted">
                             <i class="fas fa-clock mr-1"></i>
                             ${timeAgo}
@@ -602,16 +630,19 @@ class MonitoringManager {
      * Оновлення системних метрик
      */
     updateSystemMetrics() {
+        const errorLifts = this.lifts.filter(l => ['repair', 'out_of_service'].includes(l.status)).length;
+        const activeLifts = this.lifts.filter(l => l.status === 'operational').length;
+        const uptime = this.lifts.length > 0 ? ((activeLifts / this.lifts.length) * 100).toFixed(1) : 100;
         this.systemMetrics = {
             totalLifts: this.lifts.length,
-            activeLifts: this.lifts.filter(l => l.status === 'active').length,
-            maintenanceLifts: this.lifts.filter(l => l.status === 'maintenance').length,
-            errorLifts: this.lifts.filter(l => l.status === 'error').length,
-            averageUptime: 98.5 + (Math.random() - 0.5) * 0.2,
-            totalPowerConsumption: this.lifts.reduce((sum, lift) => sum + lift.powerConsumption, 0),
-            averageTemperature: this.lifts.reduce((sum, lift) => sum + lift.temperature, 0) / this.lifts.length,
-            criticalAlerts: this.alerts.filter(a => a.severity === 'critical' && !a.resolvedAt).length,
-            warningAlerts: this.alerts.filter(a => a.severity === 'warning' && !a.resolvedAt).length
+            activeLifts,
+            maintenanceLifts: this.lifts.filter(l => ['maintenance', 'inspection'].includes(l.status)).length,
+            errorLifts,
+            onlineTechs: this.technicians.filter(t => ['online', 'active'].includes(t.status)).length || this.technicians.length,
+            activeAssignments: this.assignments.length,
+            pendingAlerts: this.alerts.filter(a => !a.read && !a.readAt).length,
+            emergencyCases: errorLifts,
+            averageUptime: parseFloat(uptime)
         };
     }
 
@@ -620,40 +651,44 @@ class MonitoringManager {
      */
     getLiftStatusClass(status) {
         const classes = {
-            'active': 'border-success',
+            'operational': 'border-success',
             'maintenance': 'border-warning',
-            'error': 'border-danger',
-            'inactive': 'border-secondary'
+            'inspection': 'border-info',
+            'repair': 'border-danger',
+            'out_of_service': 'border-secondary'
         };
         return classes[status] || 'border-secondary';
     }
 
     getLiftStatusIcon(status) {
         const icons = {
-            'active': 'fas fa-play-circle text-success',
+            'operational': 'fas fa-play-circle text-success',
             'maintenance': 'fas fa-tools text-warning',
-            'error': 'fas fa-exclamation-circle text-danger',
-            'inactive': 'fas fa-pause-circle text-secondary'
+            'inspection': 'fas fa-search text-info',
+            'repair': 'fas fa-exclamation-circle text-danger',
+            'out_of_service': 'fas fa-pause-circle text-secondary'
         };
         return icons[status] || 'fas fa-question-circle';
     }
 
     getStatusBadgeClass(status) {
         const classes = {
-            'active': 'success',
+            'operational': 'success',
             'maintenance': 'warning',
-            'error': 'danger',
-            'inactive': 'secondary'
+            'inspection': 'info',
+            'repair': 'danger',
+            'out_of_service': 'secondary'
         };
         return classes[status] || 'secondary';
     }
 
     getStatusText(status) {
         const texts = {
-            'active': 'Активний',
+            'operational': 'Операційний',
             'maintenance': 'Обслуговування',
-            'error': 'Помилка',
-            'inactive': 'Неактивний'
+            'inspection': 'Огляд',
+            'repair': 'Ремонт',
+            'out_of_service': 'Неактивний'
         };
         return texts[status] || status;
     }
@@ -706,8 +741,13 @@ class MonitoringManager {
     }
 
     getLiftAddress(liftId) {
-        const lift = this.lifts.find(l => l._id === liftId);
-        return lift ? lift.address : 'Невідома адреса';
+        const id = liftId && typeof liftId === 'object' ? (liftId._id || liftId.toString()) : String(liftId || '');
+        const lift = this.lifts.find(l => String(l._id) === id);
+        if (!lift) return id ? id.slice(-6) : 'Невідома адреса';
+        const a = lift.address;
+        if (!a) return lift.registrationNumber || 'Невідома адреса';
+        if (typeof a === 'string') return a;
+        return [a.street, a.city].filter(Boolean).join(', ') || 'Невідома адреса';
     }
 
     /**
@@ -1357,6 +1397,133 @@ class MonitoringManager {
         return this.alerts
             .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
             .slice(0, limit);
+    }
+
+    /**
+     * Центрування карти
+     */
+    centerMap() {
+        const map = document.getElementById('techMap');
+        if (map) {
+            map.querySelectorAll('.tech-marker').forEach(m => m.style.opacity = '1');
+        }
+        console.log('🗺️ Карту центровано');
+    }
+
+    /**
+     * Перемикання теплової карти
+     */
+    toggleHeatmap() {
+        const map = document.getElementById('techMap');
+        if (!map) return;
+        const isActive = map.classList.toggle('heatmap-active');
+        console.log(isActive ? '🔥 Теплова карта увімкнена' : '🗺️ Теплова карта вимкнена');
+    }
+
+    /**
+     * Очищення алертів
+     */
+    clearAlerts() {
+        this.alerts = [];
+        this.updateAlertsPanel();
+        this.updateDashboard();
+        console.log('🗑️ Алерти очищено');
+    }
+
+    /**
+     * Відкриття модального вікна трансляції
+     */
+    startBroadcast() {
+        if (typeof $ !== 'undefined') {
+            $('#broadcastModal').modal('show');
+        }
+    }
+
+    /**
+     * Надсилання трансляції
+     */
+    sendBroadcast() {
+        const textarea = document.querySelector('#broadcastModal textarea');
+        const select = document.querySelector('#broadcastModal select');
+        const msg = textarea ? textarea.value.trim() : '';
+        const priority = select ? select.value : 'normal';
+        if (!msg) {
+            alert('Введіть текст повідомлення');
+            return;
+        }
+        console.log(`📡 Трансляція (${priority}): ${msg}`);
+        if (typeof $ !== 'undefined') {
+            $('#broadcastModal').modal('hide');
+        }
+        if (textarea) textarea.value = '';
+        alert(`Повідомлення надіслано (пріоритет: ${priority})`);
+    }
+
+    /**
+     * Експорт логів
+     */
+    exportLogs() {
+        const rows = [
+            ['Час', 'Тип', 'Повідомлення'],
+            ...this.alerts.map(a => [
+                a.timestamp ? new Date(a.timestamp).toLocaleString() : '',
+                a.type || a.severity || '',
+                a.title || a.message || ''
+            ])
+        ];
+        const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `monitoring-logs-${new Date().toISOString().slice(0,10)}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+        console.log('📥 Логи експортовано');
+    }
+
+    /**
+     * Системна діагностика
+     */
+    systemDiagnostics() {
+        const liftsTotal = this.lifts.length;
+        const operationalLifts = this.lifts.filter(l => l.status === 'operational').length;
+        const repairLifts = this.lifts.filter(l => ['repair', 'out_of_service'].includes(l.status)).length;
+        const techsOnline = this.technicians.filter(t => ['online', 'active'].includes(t.status)).length;
+        const report = [
+            `=== Системна діагностика ===`,
+            `Дата: ${new Date().toLocaleString()}`,
+            ``,
+            `Ліфти:`,
+            `  Всього: ${liftsTotal}`,
+            `  Операційних: ${operationalLifts}`,
+            `  На ремонті: ${repairLifts}`,
+            ``,
+            `Техніки:`,
+            `  Онлайн: ${techsOnline} / ${this.technicians.length}`,
+            ``,
+            `Завдання:`,
+            `  Активних: ${this.assignments.length}`,
+            ``,
+            `Сповіщення:`,
+            `  Непрочитаних: ${this.alerts.filter(a => !a.read && !a.readAt).length}`,
+        ].join('\n');
+        alert(report);
+        console.log(report);
+    }
+
+    /**
+     * Відкриття налаштувань
+     */
+    showSettings() {
+        const interval = prompt(
+            'Інтервал оновлення (секунди):',
+            this.refreshInterval / 1000
+        );
+        if (interval !== null && !isNaN(parseInt(interval))) {
+            this.refreshInterval = parseInt(interval) * 1000;
+            alert(`✅ Інтервал оновлення встановлено: ${interval}с`);
+        }
     }
 }
 

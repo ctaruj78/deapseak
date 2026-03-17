@@ -461,6 +461,11 @@
                                 <i class="fas fa-envelope text-info"></i>
                                 ${orcamento.cliente.email}
                             </p>
+                            ${orcamento.cliente.morada ? `
+                            <p class="mb-2">
+                                <i class="fas fa-map-marker-alt text-danger"></i>
+                                ${orcamento.cliente.morada.split('\n')[0]}
+                            </p>` : ''}
                             <p class="mb-2">
                                 <i class="fas fa-calendar text-success"></i>
                                 Data: ${data}

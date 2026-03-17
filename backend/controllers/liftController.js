@@ -117,6 +117,49 @@ exports.deleteLift = async (req, res, next) => {
     }
 };
 
+exports.requestDeletion = async (req, res, next) => {
+    try {
+        const lift = await Lift.findByIdAndUpdate(
+            req.params.id,
+            { $set: { deletionRequest: {
+                requested: true,
+                requestedBy: req.user.id,
+                requestedAt: new Date(),
+                reason: req.body.reason || ''
+            }}},
+            { new: true, runValidators: false }
+        );
+        if (!lift) throw new AppError('Lift not found', 404);
+
+        // Сповіщення для адміністраторів
+        try {
+            const mongoose = require('mongoose');
+            const db = mongoose.connection.db;
+            const admins = await User.find({ role: 'admin', isActive: true }, '_id').lean();
+            const notifications = admins.map(admin => ({
+                userId: admin._id.toString(),
+                type: 'deletion_request',
+                title: 'Запит на видалення ліфта',
+                message: `Диспетчер ${req.user.email} запитав видалення ліфта №${lift.municipalNumber || lift._id}`,
+                liftId: lift._id,
+                requestedBy: req.user.id,
+                read: false,
+                createdAt: new Date()
+            }));
+            if (notifications.length > 0) {
+                await db.collection('notifications').insertMany(notifications);
+            }
+        } catch (notifErr) {
+            // Не блокуємо відповідь якщо сповіщення не вдалось
+            console.error('⚠️ Notification error:', notifErr.message);
+        }
+
+        res.json({ success: true, message: 'Запит на видалення відправлено адміністратору' });
+    } catch (error) {
+        next(error);
+    }
+};
+
 exports.getLiftsStats = async (req, res, next) => {
     try {
         const [total, byStatus, needsMaintenance] = await Promise.all([
