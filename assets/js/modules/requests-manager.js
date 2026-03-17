@@ -424,7 +424,7 @@ class RequestsManager {
                 }
             });
             try {
-                const res = await fetch('http://localhost:5000/api/upload', {
+                const res = await fetch(window.location.origin + '/api/upload', {
                     method: 'POST',
                     body: data
                 });

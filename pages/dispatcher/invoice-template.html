@@ -43,6 +43,51 @@
         }
         @media print {
             .no-print { display: none !important; }
+
+            /* Force backgrounds and borders to print */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+
+            /* Table borders */
+            .invoice-table,
+            .invoice-table th,
+            .invoice-table td,
+            .table-bordered,
+            .table-bordered th,
+            .table-bordered td {
+                border: 1px solid #555 !important;
+            }
+            .invoice-table th,
+            .table-bordered thead th {
+                background-color: #e8e8e8 !important;
+                color: #000 !important;
+            }
+            .invoice-table tr:nth-child(even) td,
+            .table-bordered tbody tr:nth-child(even) td {
+                background-color: #f9f9f9 !important;
+            }
+
+            /* Logo background */
+            [style*="background: #1a3a6b"],
+            [style*="background:#1a3a6b"] {
+                background: #1a3a6b !important;
+                background-color: #1a3a6b !important;
+            }
+
+            /* Bank details — replace alert-info light blue with solid dark */
+            .alert-info {
+                background-color: #d6eaf8 !important;
+                border: 2px solid #2980b9 !important;
+                color: #1a252f !important;
+            }
+            .alert-info h5,
+            .alert-info p,
+            .alert-info strong {
+                color: #1a252f !important;
+            }
         }
     </style>
     <link rel="stylesheet" href="/assets/css/table-drag-scroll.css">

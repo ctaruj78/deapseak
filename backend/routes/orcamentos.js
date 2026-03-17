@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Orcamento = require('../../models/Orcamento');
+require('../models/User'); // ensure User schema is registered for populate()
 const { authenticate } = require('../middleware/auth');
 const crypto = require('crypto');
 const PDFDocument = require('pdfkit');

@@ -1304,12 +1304,25 @@ app.get('/api/lifts', authenticateToken, async (req, res) => {
             
             // Додати фільтр по clientId якщо переданий
             if (req.query.clientId) {
+                const { ObjectId: ObjId } = require('mongodb');
                 const clientId = req.query.clientId.toString();
-                query.$or = [
+                const orConds = [
                     { client: clientId },
                     { 'client._id': clientId }
                 ];
-                console.log(`🔍 Фільтр по clientId: ${clientId}`);
+                try {
+                    const cObjId = new ObjId(clientId);
+                    orConds.push({ client: cObjId }, { 'client._id': cObjId });
+                } catch(e) {}
+                // Look up user to match by email/phone too
+                try {
+                    const ObjId2 = require('mongodb').ObjectId;
+                    const cUser = await db.collection('users').findOne({ _id: new ObjId2(clientId) });
+                    if (cUser?.email) orConds.push({ clientEmail: cUser.email.toLowerCase() });
+                    if (cUser?.phone?.trim()) orConds.push({ clientPhone: cUser.phone });
+                } catch(e) {}
+                query.$or = orConds;
+                console.log(`🔍 Фільтр по clientId: ${clientId} (${orConds.length} умов)`);
             }
         }
         
@@ -2691,6 +2704,41 @@ app.get('/api/users/technicians', authenticateToken, async (req, res) => {
     }
 });
 
+// GET /api/technicians - список техніків для TechnicianManager
+app.get('/api/technicians', authenticateToken, async (req, res) => {
+    try {
+        const technicians = await db.collection('users').find(
+            { role: { $in: ['technician', 'tech'] } },
+            { projection: { password: 0 } }
+        ).toArray();
+
+        // Нормалізуємо формат для technician-manager.js
+        const result = technicians.map(t => ({
+            id: t._id,
+            firstName: t.firstName || t.name?.split(' ')[0] || t.username || '',
+            lastName: t.lastName || t.name?.split(' ').slice(1).join(' ') || '',
+            email: t.email || '',
+            phone: t.phone || '',
+            specialty: t.specialty || 'general',
+            status: t.status || 'offline',
+            skills: t.skills || [],
+            workload: t.workload || 'low',
+            currentAssignments: t.currentAssignments || 0,
+            avatar: t.avatar || null,
+            location: t.location || null,
+            notes: t.notes || ''
+        }));
+
+        res.json(result);
+    } catch (error) {
+        console.error('❌ Помилка завантаження техніків:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Помилка завантаження техніків'
+        });
+    }
+});
+
 // GET /api/users - отримання користувачів (тільки admin)
 app.get('/api/users', authenticateToken, async (req, res) => {
     try {
@@ -2729,16 +2777,16 @@ app.get('/api/users', authenticateToken, async (req, res) => {
                 for (let user of users) {
                     // Підрахувати ліфти клієнта - перевіряємо всі можливі формати
                     const userId = user._id.toString();
-                    const liftCount = await liftsCollection.countDocuments({
-                        $or: [
-                            { client: userId },
-                            { client: user._id },
-                            { 'client._id': userId },
-                            { 'client._id': user._id },
-                            { clientEmail: user.email },
-                            { clientPhone: user.phone }
-                        ]
-                    });
+                    const orConditions = [
+                        { client: userId },
+                        { client: user._id },
+                        { 'client._id': userId },
+                        { 'client._id': user._id }
+                    ];
+                    // Only add email/phone conditions when they have real values
+                    if (user.email) orConditions.push({ clientEmail: user.email.toLowerCase() });
+                    if (user.phone && user.phone.trim()) orConditions.push({ clientPhone: user.phone });
+                    const liftCount = await liftsCollection.countDocuments({ $or: orConditions });
                     user.liftsCount = liftCount;
                     console.log(`📊 Клієнт ${user.email}: ${liftCount} ліфтів`);
                 }
@@ -5744,6 +5792,12 @@ app.use('/api/requests', requestRoutes);
 // ⚙️ Settings Routes (налаштування системи)
 const settingsRoutes = require('./backend/routes/settingsRoutes');
 app.use('/api/settings', settingsRoutes);
+
+// Register User model in root mongoose so .populate('criadoPor') works.
+// backend/models/User.js uses backend/node_modules/mongoose (separate instance).
+if (!mongoose.modelNames().includes('User')) {
+    mongoose.model('User', new mongoose.Schema({}, { strict: false }));
+}
 
 // 📊 Orçamentos Routes (кошториси, пропозиції)
 const orcamentosRoutes = require('./backend/routes/orcamentos');

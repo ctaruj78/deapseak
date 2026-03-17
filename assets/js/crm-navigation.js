@@ -6,7 +6,7 @@
 class CRMNavigationManager {
     constructor() {
         this.currentUser = JSON.parse(localStorage.getItem('userData')) || {};
-        this.apiUrl = 'http://localhost:5000/api';
+        this.apiUrl = window.location.origin + '/api';
         this.activeModule = null;
         
         this.init();

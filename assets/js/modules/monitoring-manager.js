@@ -4,8 +4,8 @@
  */
 class MonitoringManager {
     constructor() {
-        this.apiUrl = 'http://localhost:5000/api';
-        this.wsUrl = 'ws://localhost:3002';
+        this.apiUrl = window.location.origin + '/api';
+        this.wsUrl = (window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host;
         
         // Дані для моніторингу
         this.lifts = [];

@@ -1362,6 +1362,7 @@
             </div>
         </div>
     </div>
+    <script src="../../plugins/jquery/jquery.min.js"></script>
     <!-- JS: динамічні рядки + прогрес + калькулятор -->
     <script>
     (function() {
@@ -2381,8 +2382,8 @@
                         <label for="service-start-date">
                             <i class="fas fa-calendar mr-1"></i>Data de Início de Serviço
                         </label>
-                        <input type="date" id="service-start-date" class="form-control" 
-                               value="${new Date().toISOString().split('T')[0]}">
+                        <input type="date" id="service-start-date" class="form-control">
+                        <script>document.getElementById('service-start-date').value = new Date().toISOString().split('T')[0];</script>
                         <small class="form-text text-muted">
                             📅 Data em que o elevador começou a ser mantido pela FESTLIFT
                         </small>
@@ -2412,7 +2413,6 @@
     </div>
 
     <!-- Scripts -->
-    <script src="../../plugins/jquery/jquery.min.js"></script>
     <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
     <script src="../../plugins/adminlte/adminlte.min.js"></script>
 
@@ -6164,79 +6164,6 @@
             statusBadge = 'Виконано'; statusClass = 'info';
         }
         
-        let typeIcon = 'fa-clipboard-check';
-        if (typeRaw === 'repair') typeIcon = 'fa-wrench';
-        else if (typeRaw === 'emergency') typeIcon = 'fa-exclamation-triangle';
-        else if (typeRaw === 'maintenance') typeIcon = 'fa-tools';
-        
-        const detailsHtml = `
-            <div class="card border-0">
-                <div class="card-header bg-${statusClass} text-white py-2">
-                    <h5 class="mb-0"><i class="fas ${typeIcon}"></i> ${type}
-                        <span class="badge badge-light text-${statusClass} ml-2">${statusBadge}</span>
-                    </h5>
-                </div>
-                <div class="card-body pb-2">
-                    ${fileUrl ? `
-                    <div class="alert alert-success d-flex align-items-center mb-3 py-2">
-                        <i class="fas fa-file-pdf fa-2x mr-3"></i>
-                        <div class="flex-grow-1">
-                            <strong>PDF звіт відкрито в новій вкладці</strong>
-                        </div>
-                        <a href="${fileUrl}" target="_blank" class="btn btn-success btn-sm ml-2">
-                            <i class="fas fa-external-link-alt"></i> Відкрити PDF
-                        </a>
-                    </div>` : `
-                    <div class="alert alert-warning py-2 mb-3">
-                        <i class="fas fa-exclamation-triangle"></i> PDF файл не прикріплено
-                        ${reportIndex >= 0 ? `
-                        <button class="btn btn-sm btn-warning ml-2" onclick="attachPDFToReport(${reportIndex}); $('#viewReportModal').modal('hide');">
-                            <i class="fas fa-paperclip"></i> Прикріпити PDF
-                        </button>` : ''}
-                    </div>`}
-                    <div class="row">
-                        <div class="col-6"><strong><i class="fas fa-calendar text-muted"></i> Дата:</strong><br>${date}</div>
-                        <div class="col-6"><strong><i class="fas fa-user text-muted"></i> Інспектор:</strong><br>${inspector || '<em class="text-muted">Не вказано</em>'}</div>
-                    </div>
-                    ${notes ? `
-                    <div class="mt-3">
-                        <strong><i class="fas fa-comment text-muted"></i> Коментарі:</strong>
-                        <div class="p-2 bg-light rounded mt-1">${notes}</div>
-                    </div>` : ''}
-                </div>
-                <div class="card-footer text-muted py-1">
-                    <small><i class="fas fa-clock"></i> ${report.createdAt ? new Date(report.createdAt).toLocaleString('uk-UA') : date}</small>
-                </div>
-            </div>
-        `;
-        
-        document.getElementById('report-details-content').innerHTML = detailsHtml;
-        
-        // Зберігаємо звіт для друку
-        window.currentReportForPrint = report;
-        window.currentReportForActions = report;
-        window._currentReportFileUrl = fileUrl;
-        window.currentReportLiftId = document.getElementById('liftDetailsModal')?.dataset?.liftId || '';
-        window.currentReportOrigIndex = reportIndex !== undefined ? reportIndex : null;
-        
-        const btnDownload = document.getElementById('btn-download-report');
-        if (btnDownload) btnDownload.style.display = fileUrl ? '' : 'none';
-        
-        $('#viewReportModal').modal('show');
-    }
-        const fileUrl = report.fileUrl || report.reportFile || report.file || null;
-
-        // Статус badge
-        let statusBadge = '', statusClass = '';
-        if (status === 'passed' || status === 'completed') {
-            statusBadge = 'Пройдено'; statusClass = 'success';
-        } else if (status === 'failed') {
-            statusBadge = 'Не пройдено'; statusClass = 'danger';
-        } else {
-            statusBadge = 'Виконано'; statusClass = 'info';
-        }
-        
-        // Іконка по типу
         let typeIcon = 'fa-clipboard-check';
         if (typeRaw === 'repair') typeIcon = 'fa-wrench';
         else if (typeRaw === 'emergency') typeIcon = 'fa-exclamation-triangle';

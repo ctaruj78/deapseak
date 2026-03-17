@@ -9,6 +9,7 @@ const { authorizeRoles } = require('../middleware/roleAuth');
 const adminOrDispatcher = [authenticate, authorizeRoles('admin', 'dispatcher')];
 
 // MongoDB routes
+router.get('/', ...adminOrDispatcher, controller.getAllTechniciansMongo);
 router.get('/mongo', ...adminOrDispatcher, controller.getAllTechniciansMongo);
 router.post('/mongo', ...adminOrDispatcher,
 	[

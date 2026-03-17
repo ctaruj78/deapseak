@@ -249,7 +249,7 @@ if (typeof window !== 'undefined') {
     // Авто-синхронізація при відновленні з'єднання
     window.addEventListener('online', async () => {
         const token = localStorage.getItem('token');
-        const apiUrl = localStorage.getItem('API_BASE_URL') || 'http://localhost:5000';
+        const apiUrl = localStorage.getItem('API_BASE_URL') || window.location.origin;
         
         if (token) {
             try {

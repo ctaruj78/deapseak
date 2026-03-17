@@ -50,9 +50,7 @@ class UniversalWebSocketManager {
                 return;
             }
 
-            const wsUrl = window.location.protocol === 'https:' 
-                ? `${window.location.protocol}//${window.location.host}` 
-                : 'http://localhost:5000';
+            const wsUrl = `${window.location.protocol}//${window.location.host}`;
             
             console.log(`[WebSocket] Підключення для ролі: ${this.userRole} до ${wsUrl}`);
             

@@ -714,16 +714,8 @@
                 $('#dispatcherName').text(`${userData.firstName} ${userData.lastName || ''}`);
             }
 
-            // Ініціалізація менеджера моніторингу
-            window.monitoringManager = new MonitoringManager();
         });
     </script>
-<!-- jQuery -->
-<script src="../../plugins/jquery/jquery.min.js"></script>
-<!-- Bootstrap -->
-<script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
-<!-- AdminLTE -->
-<script src="../../plugins/adminlte/adminlte.min.js"></script>
 
 <!-- Sidebar Init (MUST be before other scripts) -->
 <script src="../../assets/js/sidebar-init.js"></script>
@@ -745,19 +737,6 @@
     document.addEventListener("DOMContentLoaded", function() {
         if (typeof loadSidebarWithInit === "function") {
             loadSidebarWithInit("includes/sidebar.html");
-        }
-    });
-</script>
-</body>
-</html>
-
-<!-- Ініціалізація динамічного сайдбару -->
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        if (typeof loadSidebarWithInit === "function") {
-            loadSidebarWithInit("includes/sidebar.html");
-        } else {
-            console.error('❌ loadSidebarWithInit function not found!');
         }
     });
 </script>

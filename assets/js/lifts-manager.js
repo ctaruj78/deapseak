@@ -27,7 +27,7 @@ const LiftsManager = (function() {
     
     // Конфігурація
     const config = {
-        API_BASE_URL: window.API_BASE_URL || 'http://localhost:5000',
+        API_BASE_URL: window.API_BASE_URL || window.location.origin,
         MAP_CENTER: [38.7223, -9.1393], // Лісабон, Португалія
         MAP_ZOOM: 11,
         ITEMS_PER_PAGE: 10

@@ -875,6 +875,75 @@
             border: 2px solid #e9ecef;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
+
+        /* Grid view */
+        #assignmentsContainer.view-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+        }
+        #assignmentsContainer.view-grid .req-card {
+            height: 100%;
+            margin-bottom: 0 !important;
+        }
+        #assignmentsContainer.view-grid .card-body .d-flex {
+            flex-direction: column;
+        }
+        #assignmentsContainer.view-grid .req-card .d-flex.align-items-start {
+            flex-direction: column;
+        }
+        #assignmentsContainer.view-grid .req-card .req-icon-box {
+            margin-bottom: 10px;
+            margin-right: 0 !important;
+        }
+        #assignmentsContainer.view-grid .req-card .d-flex.flex-column.align-items-end {
+            flex-direction: row !important;
+            align-items: center !important;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            margin-left: 0 !important;
+            gap: 6px;
+        }
+
+        /* Timeline view */
+        #assignmentsContainer.view-timeline {
+            position: relative;
+            padding-left: 36px;
+        }
+        #assignmentsContainer.view-timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #dee2e6;
+        }
+        .tl-item {
+            position: relative;
+            margin-bottom: 18px;
+        }
+        .tl-item::before {
+            content: '';
+            position: absolute;
+            left: -29px;
+            top: 18px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #fff;
+            border: 3px solid #007bff;
+            z-index: 1;
+        }
+        .tl-item.priority-critical::before { border-color: #dc3545; }
+        .tl-item.priority-high::before     { border-color: #fd7e14; }
+        .tl-item.priority-medium::before   { border-color: #007bff; }
+        .tl-item.priority-low::before      { border-color: #28a745; }
+        .tl-date {
+            font-size: 0.72rem;
+            color: #6c757d;
+            margin-bottom: 4px;
+        }
     </style>
 
     <!-- Модальне вікно масового призначення -->
@@ -946,6 +1015,7 @@
                 this.integration = serviceIntegration;
                 this.currentUser = this.getCurrentUser();
                 this.technicians = [];
+                this.currentView = 'list';
                 this.init();
             }
             
@@ -1306,6 +1376,28 @@
                 const container = document.getElementById('assignmentsContainer');
                 if (!container) return;
 
+                // Apply view class
+                container.className = container.className.replace(/\bview-\S+/g, '').trim();
+                if (this.currentView === 'grid') container.classList.add('view-grid');
+                else if (this.currentView === 'timeline') container.classList.add('view-timeline');
+
+                if (this.currentView === 'grid') {
+                    this._renderGrid(container, assignments);
+                } else if (this.currentView === 'timeline') {
+                    this._renderTimeline(container, assignments);
+                } else {
+                    this._renderList(container, assignments);
+                }
+
+                const shownEl = document.getElementById('shownCount');
+                const totalEl = document.getElementById('totalCount');
+                if (shownEl) shownEl.textContent = assignments.length;
+                if (totalEl) totalEl.textContent = assignments.length;
+            }
+
+            _buildCardHelpers(assignment) {
+                const aid = window.safeId ? window.safeId(assignment)
+                    : ((assignment._id?.toString) ? assignment._id.toString() : (assignment._id || assignment.id || ''));
                 const priorityIconMap = {
                     critical: { icon: 'fas fa-exclamation-circle', bg: '#dc3545' },
                     high:     { icon: 'fas fa-arrow-up',           bg: '#fd7e14' },
@@ -1319,44 +1411,33 @@
                     completed:   { cls: 'badge-success',  label: 'Виконана' },
                     cancelled:   { cls: 'badge-danger',   label: 'Скасована' }
                 };
+                const priority = assignment.priority || 'medium';
+                const pi = priorityIconMap[priority] || priorityIconMap.medium;
+                const si = statusBadge[assignment.status] || { cls: 'badge-secondary', label: assignment.status };
+                const displayId = assignment._original?.requestNumber || ('REQ-' + aid.slice(-6).toUpperCase());
+                const isOverdue = assignment.deadline && new Date(assignment.deadline) < new Date() && assignment.status !== 'completed';
+                const techName = assignment.assignedToName || assignment.technicianName || 'Не призначено';
+                const address = assignment.liftAddress || assignment.address || assignment.location || '—';
+                const closeBtn = assignment.status !== 'completed'
+                    ? `<button class="btn btn-sm btn-success" onclick="dispatcherManager.closeRequest('${aid}')"><i class="fas fa-check-circle mr-1"></i>Закрити</button>` : '';
+                const reopenBtn = assignment.status === 'completed'
+                    ? `<button class="btn btn-sm btn-outline-warning" onclick="dispatcherManager.reopenRequest('${aid}')"><i class="fas fa-redo mr-1"></i>Відкрити</button>` : '';
+                const extendBtn = isOverdue
+                    ? `<button class="btn btn-sm btn-warning" onclick="assignmentManager.extendDeadline('${aid}')"><i class="fas fa-calendar-plus mr-1"></i>Продовжити</button>` : '';
+                return { aid, priority, pi, si, displayId, isOverdue, techName, address, closeBtn, reopenBtn, extendBtn };
+            }
 
+            _renderList(container, assignments) {
+                const empty = '<div class="p-4 text-center text-muted"><i class="fas fa-inbox fa-2x mb-2 d-block"></i>Заявок не знайдено</div>';
                 const html = assignments.map(assignment => {
-                    const aid = window.safeId ? window.safeId(assignment)
-                        : ((assignment._id?.toString) ? assignment._id.toString() : (assignment._id || assignment.id || ''));
+                    const { aid, priority, pi, si, displayId, isOverdue, techName, address, closeBtn, reopenBtn, extendBtn } = this._buildCardHelpers(assignment);
                     if (!aid) return '';
-
-                    const priority = assignment.priority || 'medium';
-                    const pi = priorityIconMap[priority] || priorityIconMap.medium;
-                    const si = statusBadge[assignment.status] || { cls: 'badge-secondary', label: assignment.status };
-                    const displayId = assignment._original?.requestNumber || ('REQ-' + aid.slice(-6).toUpperCase());
-                    const isOverdue = assignment.deadline && new Date(assignment.deadline) < new Date() && assignment.status !== 'completed';
-                    const techName = assignment.assignedToName || assignment.technicianName || 'Не призначено';
-                    const address = assignment.liftAddress || assignment.address || assignment.location || '—';
                     const descText = (assignment.description || '').substring(0, 120);
-
-                    const closeBtn = assignment.status !== 'completed'
-                        ? `<button class="btn btn-sm btn-success" onclick="dispatcherManager.closeRequest('${aid}')">
-                             <i class="fas fa-check-circle mr-1"></i>Закрити
-                           </button>`
-                        : '';
-                    const reopenBtn = assignment.status === 'completed'
-                        ? `<button class="btn btn-sm btn-outline-warning" onclick="dispatcherManager.reopenRequest('${aid}')">
-                             <i class="fas fa-redo mr-1"></i>Повторно відкрити
-                           </button>`
-                        : '';
-                    const extendBtn = isOverdue
-                        ? `<button class="btn btn-sm btn-warning" onclick="assignmentManager.extendDeadline('${aid}')" title="Продовжити дедлайн">
-                             <i class="fas fa-calendar-plus mr-1"></i>Продовжити
-                           </button>`
-                        : '';
-
                     return `
                     <div class="card req-card req-card-${priority} mb-2${isOverdue ? ' req-pulse' : ''}">
                       <div class="card-body py-3">
                         <div class="d-flex align-items-start">
-                          <div class="req-icon-box mr-3" style="background:${pi.bg}">
-                            <i class="${pi.icon}"></i>
-                          </div>
+                          <div class="req-icon-box mr-3" style="background:${pi.bg}"><i class="${pi.icon}"></i></div>
                           <div class="flex-grow-1 min-width-0">
                             <div class="d-flex align-items-center flex-wrap mb-1" style="gap:6px">
                               <strong class="mr-1">${displayId}</strong>
@@ -1372,29 +1453,96 @@
                             </div>
                           </div>
                           <div class="d-flex flex-column align-items-end ml-2" style="gap:6px;flex-shrink:0">
-                            <button class="btn btn-sm btn-outline-info" onclick="dispatcherManager.viewAssignment('${aid}')">
-                              <i class="fas fa-eye mr-1"></i>Переглянути
-                            </button>
-                            <button class="btn btn-sm btn-outline-primary" onclick="dispatcherManager.showAssignDialog('${aid}')">
-                              <i class="fas fa-user-cog mr-1"></i>Призначити
-                            </button>
-                            ${closeBtn}
-                            ${extendBtn}
-                            ${reopenBtn}
+                            <button class="btn btn-sm btn-outline-info" onclick="dispatcherManager.viewAssignment('${aid}')"><i class="fas fa-eye mr-1"></i>Переглянути</button>
+                            <button class="btn btn-sm btn-outline-primary" onclick="dispatcherManager.showAssignDialog('${aid}')"><i class="fas fa-user-cog mr-1"></i>Призначити</button>
+                            ${closeBtn}${extendBtn}${reopenBtn}
                           </div>
                         </div>
                       </div>
                     </div>`;
                 }).join('');
-
-                container.innerHTML = html || '<div class="p-4 text-center text-muted"><i class="fas fa-inbox fa-2x mb-2 d-block"></i>Заявок не знайдено</div>';
-
-                const shownEl = document.getElementById('shownCount');
-                const totalEl = document.getElementById('totalCount');
-                if (shownEl) shownEl.textContent = assignments.length;
-                if (totalEl) totalEl.textContent = assignments.length;
+                container.innerHTML = html || empty;
             }
-            
+
+            _renderGrid(container, assignments) {
+                const empty = '<div class="p-4 text-center text-muted col-12"><i class="fas fa-inbox fa-2x mb-2 d-block"></i>Заявок не знайдено</div>';
+                const html = assignments.map(assignment => {
+                    const { aid, priority, pi, si, displayId, isOverdue, techName, address, closeBtn, reopenBtn, extendBtn } = this._buildCardHelpers(assignment);
+                    if (!aid) return '';
+                    const descText = (assignment.description || '').substring(0, 80);
+                    return `
+                    <div class="card req-card req-card-${priority}${isOverdue ? ' req-pulse' : ''}">
+                      <div class="card-body py-3">
+                        <div class="d-flex align-items-center mb-2">
+                          <div class="req-icon-box mr-2" style="background:${pi.bg};width:32px;height:32px;font-size:.85rem"><i class="${pi.icon}"></i></div>
+                          <div>
+                            <strong>${displayId}</strong><br>
+                            <span class="badge badge-pill ${si.cls}">${si.label}</span>
+                            ${isOverdue ? '<span class="badge badge-pill badge-danger ml-1">Протерм.</span>' : ''}
+                          </div>
+                        </div>
+                        <div class="font-weight-bold mb-1" style="font-size:.9rem">${assignment.title || assignment.type || 'Заявка'}</div>
+                        <p class="text-muted small mb-2">${descText}${descText.length >= 80 ? '…' : ''}</p>
+                        <div class="text-muted small mb-2">
+                          <div><i class="fas fa-map-marker-alt mr-1"></i>${address}</div>
+                          <div><i class="fas fa-user-wrench mr-1"></i>${techName}</div>
+                        </div>
+                        <div class="d-flex flex-wrap" style="gap:4px">
+                          <button class="btn btn-xs btn-outline-info" onclick="dispatcherManager.viewAssignment('${aid}')"><i class="fas fa-eye"></i></button>
+                          <button class="btn btn-xs btn-outline-primary" onclick="dispatcherManager.showAssignDialog('${aid}')"><i class="fas fa-user-cog"></i></button>
+                          ${closeBtn}${extendBtn}${reopenBtn}
+                        </div>
+                      </div>
+                    </div>`;
+                }).join('');
+                container.innerHTML = html || empty;
+            }
+
+            _renderTimeline(container, assignments) {
+                const empty = '<div class="p-4 text-center text-muted"><i class="fas fa-inbox fa-2x mb-2 d-block"></i>Заявок не знайдено</div>';
+                const statusBadge = {
+                    new:         { cls: 'badge-info',    label: 'Нова' },
+                    assigned:    { cls: 'badge-primary',  label: 'Призначена' },
+                    in_progress: { cls: 'badge-warning',  label: 'В роботі' },
+                    completed:   { cls: 'badge-success',  label: 'Виконана' },
+                    cancelled:   { cls: 'badge-danger',   label: 'Скасована' }
+                };
+                const sorted = [...assignments].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                const html = sorted.map(assignment => {
+                    const { aid, priority, si, displayId, isOverdue, techName, address, closeBtn, reopenBtn, extendBtn } = this._buildCardHelpers(assignment);
+                    if (!aid) return '';
+                    const dateStr = assignment.createdAt ? new Date(assignment.createdAt).toLocaleString('uk-UA') : '—';
+                    const descText = (assignment.description || '').substring(0, 100);
+                    return `
+                    <div class="tl-item priority-${priority}">
+                      <div class="tl-date">${dateStr}</div>
+                      <div class="card req-card req-card-${priority} mb-0${isOverdue ? ' req-pulse' : ''}">
+                        <div class="card-body py-2 px-3">
+                          <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                              <strong>${displayId}</strong>
+                              <span class="badge badge-pill ${si.cls} ml-1">${si.label}</span>
+                              ${isOverdue ? '<span class="badge badge-pill badge-danger ml-1">Протерм.</span>' : ''}
+                              <div class="font-weight-bold mt-1">${assignment.title || assignment.type || 'Заявка'}</div>
+                              ${descText ? `<p class="text-muted small mb-1">${descText}${descText.length >= 100 ? '…' : ''}</p>` : ''}
+                              <div class="text-muted small">
+                                <i class="fas fa-map-marker-alt mr-1"></i>${address}
+                                <span class="ml-2"><i class="fas fa-user-wrench mr-1"></i>${techName}</span>
+                              </div>
+                            </div>
+                            <div class="d-flex flex-column align-items-end ml-2" style="gap:4px;flex-shrink:0">
+                              <button class="btn btn-xs btn-outline-info" onclick="dispatcherManager.viewAssignment('${aid}')"><i class="fas fa-eye"></i></button>
+                              <button class="btn btn-xs btn-outline-primary" onclick="dispatcherManager.showAssignDialog('${aid}')"><i class="fas fa-user-cog"></i></button>
+                              ${closeBtn}${extendBtn}${reopenBtn}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>`;
+                }).join('');
+                container.innerHTML = html || empty;
+            }
+
             updateStats(assignments) {
                 const stats = {
                     total: assignments.length,
@@ -2647,12 +2795,9 @@
 <!-- API Configuration -->
 <script src="../../assets/js/config.js?v=20241116"></script>
 
-<!-- Auth System -->
-<script src="../../assets/js/auth.js?v=20241206"></script>
-
 <!-- DataTables (if needed) -->
-<script src="../../plugins/datatables/jquery.dataTables.min.js"></script>
-<script src="../../plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="../../plugins/datatables/js/jquery.dataTables.min.js"></script>
+<script src="../../plugins/datatables/js/dataTables.bootstrap4.min.js"></script>
 
 <!-- SweetAlert2 -->
 <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
@@ -2662,6 +2807,26 @@
         if (typeof loadSidebarWithInit === "function") {
             loadSidebarWithInit("includes/sidebar.html");
         }
+
+        // View switcher: list / grid / timeline
+        document.getElementById('listView')?.addEventListener('change', function() {
+            if (this.checked && window.dispatcherManager) {
+                window.dispatcherManager.currentView = 'list';
+                window.dispatcherManager.displayAssignments(window.dispatcherManager.assignments || []);
+            }
+        });
+        document.getElementById('gridView')?.addEventListener('change', function() {
+            if (this.checked && window.dispatcherManager) {
+                window.dispatcherManager.currentView = 'grid';
+                window.dispatcherManager.displayAssignments(window.dispatcherManager.assignments || []);
+            }
+        });
+        document.getElementById('timelineView')?.addEventListener('change', function() {
+            if (this.checked && window.dispatcherManager) {
+                window.dispatcherManager.currentView = 'timeline';
+                window.dispatcherManager.displayAssignments(window.dispatcherManager.assignments || []);
+            }
+        });
     });
 </script>
 </body>

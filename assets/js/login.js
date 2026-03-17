@@ -7,9 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         
-        // ВАЖЛИВО: Завжди використовуємо localhost навіть в Codespaces
-        // GitHub Codespaces має проблеми з CORS через tunnel
-        const apiUrl = 'http://localhost:5000';
+        const apiUrl = window.location.origin;
         
         try {
             const response = await fetch(`${apiUrl}/api/auth/login`, {
