@@ -251,6 +251,65 @@ router.get('/public/:id/pdf', async (req, res) => {
     }
 });
 
+// GET /api/orcamentos/my - Orçamentos do cliente autenticado (por email)
+router.get('/my', authenticate, async (req, res) => {
+    try {
+        const clienteEmail = req.user.email;
+        const orcamentos = await Orcamento.find({
+            'cliente.email': clienteEmail.toLowerCase(),
+            status: { $in: ['enviado', 'aprovado', 'rejeitado', 'expirado'] }
+        })
+            .sort({ data: -1 })
+            .select('-emailsEnviados -pdfPath');
+
+        res.json({ success: true, data: orcamentos });
+    } catch (error) {
+        console.error('Erro ao buscar orçamentos do cliente:', error);
+        res.status(500).json({ success: false, message: 'Erro ao buscar orçamentos', error: error.message });
+    }
+});
+
+// POST /api/orcamentos/:id/resposta - Cliente aprova ou rejeita o orçamento
+router.post('/:id/resposta', authenticate, async (req, res) => {
+    try {
+        const { status, observacao } = req.body;
+        if (!['aprovado', 'rejeitado'].includes(status)) {
+            return res.status(400).json({ success: false, message: "Status deve ser 'aprovado' ou 'rejeitado'" });
+        }
+
+        const orcamento = await Orcamento.findById(req.params.id);
+        if (!orcamento) {
+            return res.status(404).json({ success: false, message: 'Orçamento não encontrado' });
+        }
+
+        // Verificar que o email do utilizador autenticado corresponde ao cliente do orçamento
+        if (orcamento.cliente.email.toLowerCase() !== req.user.email.toLowerCase()) {
+            return res.status(403).json({ success: false, message: 'Sem permissão para responder a este orçamento' });
+        }
+
+        if (orcamento.status !== 'enviado') {
+            return res.status(400).json({
+                success: false,
+                message: `Orçamento já foi respondido (status atual: '${orcamento.status}')`
+            });
+        }
+
+        orcamento.status = status;
+        orcamento.dataResposta = new Date();
+        if (observacao) orcamento.notas = (orcamento.notas ? orcamento.notas + '\n\n' : '') + `Resposta do cliente: ${observacao}`;
+        await orcamento.save();
+
+        res.json({
+            success: true,
+            message: status === 'aprovado' ? 'Orçamento aprovado com sucesso!' : 'Orçamento rejeitado.',
+            data: { status: orcamento.status, dataResposta: orcamento.dataResposta }
+        });
+    } catch (error) {
+        console.error('Erro ao responder orçamento:', error);
+        res.status(500).json({ success: false, message: 'Erro ao processar resposta', error: error.message });
+    }
+});
+
 // GET /api/orcamentos - Список всіх орçаментів
 router.get('/', authenticate, async (req, res) => {
     try {
@@ -618,7 +677,7 @@ router.post('/:id/enviar', authenticate, async (req, res) => {
                 html: `
                     <div style="font-family: Arial, sans-serif; max-width: 700px; margin: 0 auto; border: 1px solid #ddd;">
                         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center;">
-                            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAScAAABhCAMAAACj8pe2AAABBVBMVEUAAAD////yphPyphPyphPyphPyphPyphPyphPyphP////yphPyphPyphPyphP////yphP////yphP////////51Zj////yphP////////////////////////yphP////yphPyphPyphP////////yphPyphP////////////yphPyphP////////////////yphP////yphPyphP////yphPyphPyphP////////////////////////yphP////yphPyphPyphP////yphPyphP////////yphPyphPyphPyphP////yphP////////////////////yphPyphP////yphMllZjmAAAAVXRSTlMARJlE7xFmzFXdu4h3M6p2uxEizAcD6QfeqvzumFUtIfrq5oluOhsM1J6AbWY5GuPSwsK0paKQSj8zMC0mFgz3yXxBHvXhfWJhWxbZsq+RW0sgt3ODe+6y2gAABTpJREFUeNrs10+LgmAQBvCh1c0oIwR5b6KCHvQihnqLFIP+0Knl+f4fZWsdS3etrgvO7/QSdHB4Z9556P+xFYn39NXUIvGOuQO0DxKv7V3ABUoSL6gJoBXmDljrJJ4Jt8BtOB1XwMwhMezDAzJFV/YcqA8khiwANyZmaEAuC8JfmzPgB3RnJUAakuhzTkB67BVu+VM40WXUwNzmNy+mxsW9NaK4s3OgNrjfpssk2zTnygeuZ9E4psDJad+8mFSWWI9FIZEU0wh84My3pmwmUuwVvHjmgFaQIIpdYMEReJ2Gbe0iuzkdauDLprFTGeBV/ObNcvXoxbXe/gqsxp5irATYhnxzvENvts/M9pYBO5PGrNCAieJJ9DvRGd6eSxYB7p5Gq/v9IfdZf/ecqE49x5piuv0U+OVgltmGnf4cZ4q5z2feAwYt/Ko378fHKaOo4qRifOr0hHUJ+GRe/yBxTwjxzW4do0wMAmEYHlubYbBRNKRImwvkIN/9r/LHDYuYf2QXtlnWebqIhsxbSIwxxhgz4tDzRIQbeljZZwAh7UIVKv2so+a5pB3RX/KV3u0kpT1ntk6DThK6lSDWSe3k0QsyZSdq1FkXVHlzznHEiUfnX3dyw4/4Zu912lAd9MBAIeukjeO7XXsg66SOk1CllS5imar/9yrjEgs7Os3a6YkHnSSjScsHnRr/g53oyN3aap0G40gBmijWaXSNyJ5i2zhnJ9IGU8iyRVRxznv8ZScJ0v8jWCd1nIRw0GWzTsNZGafihGhlVMk6EeGGBXdu2Knnp+r0x84ZpcwNw0B4sGTZrhNj8tQfWnqBnmfuf5SuE22ztKF9KC3kr7+X1aw1ggzYhECCrz/9M3O6yglf3l70x8+YOV3nNA6mt/35+IdPj5T+v5wmk8lkMplMfolEXLNlTE5ouMaIPyCq4V3xl3JCezffFjFlj6B5UQLQuyQWAbJqJ5DLsaLVm4IyvJgHUh4O1zk15T4HzBiz8lhPgsN5R1YukhpoXlRFZO5BWsHGKomIWveWIuvRJMy5bKd5oEFqd20McswBLbJKTfGxHjTuzlu+IbswhFRA82KjmAKydCIzwvxHQXt2r0x1fTEPkjaLro14zqFlAthnRObhvOc7euPSQgXNC/TQA6q2dpWTN0koXE/zIC5Nk2sjfA5oe0Kr57Q7bxnU2CqtgtULmHIdsjH+sO/Mux9KMvNpHiSToK6N8DmgRW2PFd93u/OedxpWmDYELkcBaAIW1Voasmr4fo4zP7tjo4bTfFTKIq4z4XOGSQr1eY4P5z3P8X/AJgWT39NveiswmUwm39o5mxYFoSgM37ZuRLxdSosWCSmkErjow2gRjJuoDN7//1fm0j1m2UiznbnnWcjZuHl5z8PBhf8Bb7fd7s0oy3oo+shK2b6QCfvYjYDTwgSVxLOeNJ2bZ6Yv4DAVNuI5QFyaOVKDn7Ocm6YtTsBoJ+xkOAfCq5nXyhVvTBU1qIwBxxPWcjkgoHyOfiG7MY62ZrqGwNzqf0BtcmBMkir848ta3pwnNV2E3exXQFyb2c3Xz2o6k5rGgC6W7cgzEJLEBypq1UQNmsXAai8YUWlJRU0oiTSrlm8ouhA4W62mljQHCklL5mf6eWoa5AY4VIJpJaUlTk1Ky3hCqRWALhbTICeAIolflaqaU4HV1GUZPCRVps3pCehiMS+kCjASJyKd3FIwXTIf0BInZAKoVDDvUDRtaDZ+RfkMrVr1WEJWUx+kbpI600/tA6vkfiQwvdBpeT86mQ+4AQpW0y8Y" alt="FestLift" style="max-height: 70px; background: #1a3a6b; padding: 8px; border-radius: 6px;">
+                            <h1 style="margin: 0; font-size: 24px; letter-spacing: 1px;">FestLift</h1>
                             <p style="margin: 10px 0 0 0; font-size: 14px;">Manutenção de Elevadores</p>
                         </div>
                         
@@ -702,7 +761,6 @@ router.post('/:id/enviar', authenticate, async (req, res) => {
             }];
             sendSmtpEmail.subject = mailOptions.subject;
             sendSmtpEmail.htmlContent = mailOptions.html;
-            sendSmtpEmail.textContent = mailOptions.text;
             
             // Додати PDF як вкладення
             sendSmtpEmail.attachment = [{
@@ -792,7 +850,7 @@ router.post('/:id/enviar', authenticate, async (req, res) => {
                     const emailHTML = `
                         <div style="font-family: Arial, sans-serif; max-width: 700px; margin: 0 auto; border: 1px solid #ddd;">
                             <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center;">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAScAAABhCAMAAACj8pe2AAABBVBMVEUAAAD////yphPyphPyphPyphPyphPyphPyphPyphP////yphPyphPyphPyphP////yphP////yphP////////51Zj////yphP////////////////////////yphP////yphPyphPyphP////////yphPyphP////////////yphPyphP////////////////yphP////yphPyphP////yphPyphPyphP////////////////////////yphP////yphPyphPyphP////yphPyphP////////yphPyphPyphPyphP////yphP////////////////////yphPyphP////yphMllZjmAAAAVXRSTlMARJlE7xFmzFXdu4h3M6p2uxEizAcD6QfeqvzumFUtIfrq5oluOhsM1J6AbWY5GuPSwsK0paKQSj8zMC0mFgz3yXxBHvXhfWJhWxbZsq+RW0sgt3ODe+6y2gAABTpJREFUeNrs10+LgmAQBvCh1c0oIwR5b6KCHvQihnqLFIP+0Knl+f4fZWsdS3etrgvO7/QSdHB4Z9556P+xFYn39NXUIvGOuQO0DxKv7V3ABUoSL6gJoBXmDljrJJ4Jt8BtOB1XwMwhMezDAzJFV/YcqA8khiwANyZmaEAuC8JfmzPgB3RnJUAakuhzTkB67BVu+VM40WXUwNzmNy+mxsW9NaK4s3OgNrjfpssk2zTnygeuZ9E4psDJad+8mFSWWI9FIZEU0wh84My3pmwmUuwVvHjmgFaQIIpdYMEReJ2Gbe0iuzkdauDLprFTGeBV/ObNcvXoxbXe/gqsxp5irATYhnxzvENvts/M9pYBO5PGrNCAieJJ9DvRGd6eSxYB7p5Gq/v9IfdZf/ecqE49x5piuv0U+OVgltmGnf4cZ4q5z2feAwYt/Ko378fHKaOo4qRifOr0hHUJ+GRe/yBxTwjxzW4do0wMAmEYHlubYbBRNKRImwvkIN/9r/LHDYuYf2QXtlnWebqIhsxbSIwxxhgz4tDzRIQbeljZZwAh7UIVKv2so+a5pB3RX/KV3u0kpT1ntk6DThK6lSDWSe3k0QsyZSdq1FkXVHlzznHEiUfnX3dyw4/4Zu912lAd9MBAIeukjeO7XXsg66SOk1CllS5imar/9yrjEgs7Os3a6YkHnSSjScsHnRr/g53oyN3aap0G40gBmijWaXSNyJ5i2zhnJ9IGU8iyRVRxznv8ZScJ0v8jWCd1nIRw0GWzTsNZGafihGhlVMk6EeGGBXdu2Knnp+r0x84ZpcwNw0B4sGTZrhNj8tQfWnqBnmfuf5SuE22ztKF9KC3kr7+X1aw1ggzYhECCrz/9M3O6yglf3l70x8+YOV3nNA6mt/35+IdPj5T+v5wmk8lkMplMfolEXLNlTE5ouMaIPyCq4V3xl3JCezffFjFlj6B5UQLQuyQWAbJqJ5DLsaLVm4IyvJgHUh4O1zk15T4HzBiz8lhPgsN5R1YukhpoXlRFZO5BWsHGKomIWveWIuvRJMy5bKd5oEFqd20McswBLbJKTfGxHjTuzlu+IbswhFRA82KjmAKydCIzwvxHQXt2r0x1fTEPkjaLro14zqFlAthnRObhvOc7euPSQgXNC/TQA6q2dpWTN0koXE/zIC5Nk2sjfA5oe0Kr57Q7bxnU2CqtgtULmHIdsjH+sO/Mux9KMvNpHiSToK6N8DmgRW2PFd93u/OedxpWmDYELkcBaAIW1Voasmr4fo4zP7tjo4bTfFTKIq4z4XOGSQr1eY4P5z3P8X/AJgWT39NveiswmUwm39o5mxYFoSgM37ZuRLxdSosWCSmkErjow2gRjJuoDN7//1fm0j1m2UiznbnnWcjZuHl5z8PBhf8Bb7fd7s0oy3oo+shK2b6QCfvYjYDTwgSVxLOeNJ2bZ6Yv4DAVNuI5QFyaOVKDn7Ocm6YtTsBoJ+xkOAfCq5nXyhVvTBU1qIwBxxPWcjkgoHyOfiG7MY62ZrqGwNzqf0BtcmBMkir848ta3pwnNV2E3exXQFyb2c3Xz2o6k5rGgC6W7cgzEJLEBypq1UQNmsXAai8YUWlJRU0oiTSrlm8ouhA4W62mljQHCklL5mf6eWoa5AY4VIJpJaUlTk1Ky3hCqRWALhbTICeAIolflaqaU4HV1GUZPCRVps3pCehiMS+kCjASJyKd3FIwXTIf0BInZAKoVDDvUDRtaDZ+RfkMrVr1WEJWUx+kbpI600/tA6vkfiQwvdBpeT86mQ+4AQpW0y8Y" alt="FestLift" style="max-height: 70px; background: #1a3a6b; padding: 8px; border-radius: 6px;">
+                                <h1 style="margin: 0; font-size: 24px; letter-spacing: 1px;">FestLift</h1>
                                 <p style="margin: 10px 0 0 0; font-size: 14px;">Manutenção de Elevadores</p>
                             </div>
                             
@@ -863,7 +921,6 @@ router.post('/:id/enviar', authenticate, async (req, res) => {
                         from: process.env.SMTP_FROM || process.env.SMTP_USER,
                         to: emailDestino,
                         subject: `Orçamento ${orcamento.numero} - FestLift - Elevadores e Serviços, Lda.`,
-                        text: `Orçamento ${orcamento.numero}\nCliente: ${orcamento.cliente.nome}\nTotal: €${orcamento.total.toFixed(2)}\nValidade: ${validadeFormatted}\n\nO PDF está anexado a este email.`,
                         html: emailHTML,
                         attachments: [{
                             filename: `Orcamento_${orcamento.numero}.pdf`,
@@ -985,6 +1042,46 @@ router.get('/stats/dashboard', authenticate, async (req, res) => {
             message: 'Erro ao buscar estatísticas',
             error: error.message
         });
+    }
+});
+
+// PATCH /api/orcamentos/:id/status - Mudar status (aprovar / rejeitar)
+router.patch('/:id/status', authenticate, async (req, res) => {
+    try {
+        const { status } = req.body;
+        const allowedTransitions = ['aprovado', 'rejeitado'];
+
+        if (!allowedTransitions.includes(status)) {
+            return res.status(400).json({
+                success: false,
+                message: `Status inválido. Use: ${allowedTransitions.join(', ')}`
+            });
+        }
+
+        const orcamento = await Orcamento.findById(req.params.id);
+        if (!orcamento) {
+            return res.status(404).json({ success: false, message: 'Orçamento não encontrado' });
+        }
+
+        if (orcamento.status !== 'enviado') {
+            return res.status(400).json({
+                success: false,
+                message: `Apenas orçamentos com status 'enviado' podem ser aprovados ou rejeitados (atual: '${orcamento.status}')`
+            });
+        }
+
+        orcamento.status = status;
+        orcamento.dataResposta = new Date();
+        await orcamento.save();
+
+        res.json({
+            success: true,
+            message: `Orçamento ${status} com sucesso`,
+            data: orcamento
+        });
+    } catch (error) {
+        console.error('Erro ao atualizar status:', error);
+        res.status(500).json({ success: false, message: 'Erro ao atualizar status', error: error.message });
     }
 });
 

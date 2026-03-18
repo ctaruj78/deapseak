@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Os Meus Orçamentos - FestLift</title>
+
+    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+
+    <style>
+        .orcamento-card {
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        .orcamento-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .status-badge {
+            font-size: 0.85rem;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        .badge-rascunho  { background-color: #6c757d; color: #fff; }
+        .badge-enviado   { background-color: #17a2b8; color: #fff; }
+        .badge-aprovado  { background-color: #28a745; color: #fff; }
+        .badge-rejeitado { background-color: #dc3545; color: #fff; }
+        .badge-expirado  { background-color: #ffc107; color: #000; }
+
+        .action-banner {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border-radius: 10px;
+            padding: 18px 24px;
+            margin-bottom: 10px;
+        }
+        .action-banner.reject {
+            background: linear-gradient(135deg, #dc3545, #e83e8c);
+        }
+        .servicos-table th { background: #f4f6f9; }
+        #emptyState { display: none; }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed" data-required-role="client">
+<div class="wrapper">
+
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+            </li>
+            <li class="nav-item d-none d-sm-inline-block">
+                <a href="/pages/client/dashboard.html" class="nav-link">Головна</a>
+            </li>
+            <li class="nav-item d-none d-sm-inline-block">
+                <a href="/pages/client/orcamentos.html" class="nav-link active">Orçamentos</a>
+            </li>
+        </ul>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link notification-bell" href="/pages/client/notifications.html" title="Sповіщення">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge" id="notificationCount">0</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" id="darkModeToggle" title="Темна тема"><i class="fas fa-moon"></i></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" onclick="logout()" title="Вийти"><i class="fas fa-sign-out-alt"></i></a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <a href="/pages/client/dashboard.html" class="brand-link">
+            <span class="elevation-3" style="display:inline-flex;align-items:center;justify-content:center;width:33px;height:33px;border-radius:50%;background:linear-gradient(135deg,#28a745,#20c997);color:#fff;font-size:17px;margin-right:8px;opacity:.9;flex-shrink:0;"><i class="fas fa-user-tie"></i></span>
+            <span class="brand-text font-weight-light" style="line-height:1.4;">FestLift <small style="opacity:.7;font-size:11px;">Painel Cliente</small><br><small id="clientName" style="opacity:.85;font-size:11px;color:#aed6b1;font-weight:400;">—</small></span>
+        </a>
+        <div class="sidebar">
+            <nav class="mt-2">
+                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                    <li class="nav-item">
+                        <a href="/pages/client/dashboard.html" class="nav-link" id="nav-dashboard">
+                            <i class="nav-icon fas fa-tachometer-alt"></i><p>Dashboard</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/client/my-lifts.html" class="nav-link" id="nav-my-lifts">
+                            <i class="nav-icon fas fa-elevator"></i><p>Мої ліфти<span class="badge badge-info right" id="liftsCount">0</span></p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/client/ai-predictions.html" class="nav-link" id="nav-ai-predictions">
+                            <i class="nav-icon fas fa-brain"></i><p>Прогнозування AI<span class="badge badge-purple right">Novo</span></p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/client/requests.html" class="nav-link" id="nav-requests">
+                            <i class="nav-icon fas fa-tasks"></i><p>Заявки<span class="badge badge-warning right" id="requestsCount">0</span></p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/client/orcamentos.html" class="nav-link active" id="nav-orcamentos">
+                            <i class="nav-icon fas fa-file-invoice-dollar"></i>
+                            <p>Orçamentos<span class="badge badge-warning right" id="orcamentosCount">0</span></p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/client/invoices.html" class="nav-link" id="nav-invoices">
+                            <i class="nav-icon fas fa-file-invoice"></i><p>Рахунки<span class="badge badge-success right" id="invoicesCount">0</span></p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/client/history.html" class="nav-link" id="nav-history">
+                            <i class="nav-icon fas fa-history"></i><p>Історія</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/client/documentation.html" class="nav-link" id="nav-documentation">
+                            <i class="nav-icon fas fa-book"></i><p>Documentação</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link" id="nav-ai-assistant">
+                            <i class="nav-icon fas fa-magic"></i><p>Asistente AI<span class="badge badge-success right">★</span></p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/client/notifications.html" class="nav-link" id="nav-notifications">
+                            <i class="nav-icon fas fa-bell"></i><p>Сповіщення<span class="badge badge-danger right" id="notificationsBadge">0</span></p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/client/support.html" class="nav-link" id="nav-support">
+                            <i class="nav-icon fas fa-headset"></i><p>Підтримка</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/client/profile.html" class="nav-link" id="nav-profile">
+                            <i class="nav-icon fas fa-user"></i><p>Профіль</p>
+                        </a>
+                    </li>
+                    <li class="nav-header">НАЛАШТУВАННЯ</li>
+                    <li class="nav-item">
+                        <a href="/pages/client/settings.html" class="nav-link" id="nav-settings">
+                            <i class="nav-icon fas fa-cog"></i><p>Налаштування</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" onclick="logout()" class="nav-link">
+                            <i class="nav-icon fas fa-sign-out-alt text-danger"></i><p>Вийти</p>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Content -->
+    <div class="content-wrapper">
+        <section class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1><i class="fas fa-file-invoice-dollar mr-2"></i>Os Meus Orçamentos</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="/pages/client/dashboard.html">Головна</a></li>
+                            <li class="breadcrumb-item active">Orçamentos</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content">
+            <div class="container-fluid">
+
+                <!-- Resumo -->
+                <div class="row mb-3" id="resumoRow">
+                    <div class="col-6 col-md-3 mb-3">
+                        <div class="info-box bg-info">
+                            <span class="info-box-icon"><i class="fas fa-paper-plane"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Pendentes de resposta</span>
+                                <span class="info-box-number" id="countEnviado">0</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3 mb-3">
+                        <div class="info-box bg-success">
+                            <span class="info-box-icon"><i class="fas fa-check-circle"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Aprovados</span>
+                                <span class="info-box-number" id="countAprovado">0</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3 mb-3">
+                        <div class="info-box bg-danger">
+                            <span class="info-box-icon"><i class="fas fa-times-circle"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Rejeitados</span>
+                                <span class="info-box-number" id="countRejeitado">0</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3 mb-3">
+                        <div class="info-box bg-warning">
+                            <span class="info-box-icon"><i class="fas fa-hourglass-end"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Expirados</span>
+                                <span class="info-box-number" id="countExpirado">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Estado vazio -->
+                <div id="emptyState" class="text-center py-5">
+                    <i class="fas fa-file-invoice-dollar fa-4x text-muted mb-3"></i>
+                    <h4 class="text-muted">Ainda não recebeu nenhum orçamento</h4>
+                    <p class="text-muted">Quando a FestLift enviar um orçamento para si, aparecerá aqui.</p>
+                </div>
+
+                <!-- Loading -->
+                <div id="loadingState" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-2 text-muted">A carregar orçamentos...</p>
+                </div>
+
+                <!-- Lista de orçamentos -->
+                <div id="orcamentosList" class="row" style="display:none;"></div>
+
+            </div>
+        </section>
+    </div>
+
+    <footer class="main-footer">
+        <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
+        Sistema de gestão de elevadores v2.1.0.
+    </footer>
+</div>
+
+<!-- Modal detalhe do orçamento -->
+<div class="modal fade" id="orcamentoModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient-primary text-white">
+                <h5 class="modal-title"><i class="fas fa-file-invoice-dollar mr-2"></i><span id="modalNumero"></span></h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+            <div class="modal-footer" id="modalFooter"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmação de resposta -->
+<div class="modal fade" id="respostaModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header" id="respostaModalHeader">
+                <h5 class="modal-title" id="respostaModalTitle"></h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <p id="respostaModalText"></p>
+                <div class="form-group">
+                    <label for="observacaoInput">Observação (opcional):</label>
+                    <textarea id="observacaoInput" class="form-control" rows="3" placeholder="Pode adicionar um comentário..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn" id="confirmarRespostaBtn" onclick="confirmarResposta()">Confirmar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="../../plugins/jquery/jquery.min.js"></script>
+<script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="../../plugins/adminlte/adminlte.min.js"></script>
+
+<script>
+    const API_BASE_URL = '';
+    let orcamentosData = [];
+    let pendingAction = null; // { id, status }
+
+    function getToken() {
+        return localStorage.getItem('liftmanager_jwt') ||
+               localStorage.getItem('jwt_token') ||
+               localStorage.getItem('token') ||
+               localStorage.getItem('lm_token');
+    }
+
+    function logout() {
+        if (confirm('Tem certeza que deseja sair?')) {
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.replace('/pages/auth/login.html');
+        }
+    }
+
+    // ─── Carregar orçamentos ─────────────────────────────────────
+    async function carregarOrcamentos() {
+        document.getElementById('loadingState').style.display = 'block';
+        document.getElementById('orcamentosList').style.display = 'none';
+        document.getElementById('emptyState').style.display = 'none';
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/orcamentos/my`, {
+                headers: { 'Authorization': `Bearer ${getToken()}` }
+            });
+            const json = await res.json();
+            if (!res.ok) throw new Error(json.message || 'Erro ao carregar');
+
+            orcamentosData = json.data || [];
+            renderOrcamentos(orcamentosData);
+        } catch (err) {
+            console.error(err);
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('emptyState').style.display = 'block';
+        }
+    }
+
+    const statusLabels = {
+        enviado:   'Aguarda resposta',
+        aprovado:  'Aprovado',
+        rejeitado: 'Rejeitado',
+        expirado:  'Expirado'
+    };
+
+    function renderOrcamentos(list) {
+        document.getElementById('loadingState').style.display = 'none';
+
+        // Contadores
+        const counts = { enviado: 0, aprovado: 0, rejeitado: 0, expirado: 0 };
+        list.forEach(o => { if (counts[o.status] !== undefined) counts[o.status]++; });
+        document.getElementById('countEnviado').textContent   = counts.enviado;
+        document.getElementById('countAprovado').textContent  = counts.aprovado;
+        document.getElementById('countRejeitado').textContent = counts.rejeitado;
+        document.getElementById('countExpirado').textContent  = counts.expirado;
+
+        // Badge no sidebar
+        const badge = document.getElementById('orcamentosCount');
+        if (badge) badge.textContent = counts.enviado;
+
+        if (list.length === 0) {
+            document.getElementById('emptyState').style.display = 'block';
+            return;
+        }
+
+        const container = document.getElementById('orcamentosList');
+        container.innerHTML = list.map(o => criarCard(o)).join('');
+        container.style.display = 'flex';
+        container.classList.add('row');
+    }
+
+    function criarCard(o) {
+        const statusClass = `badge-${o.status}`;
+        const statusText = statusLabels[o.status] || o.status;
+        const data = new Date(o.data).toLocaleDateString('pt-PT');
+        const validadeAte = o.validadeAte ? new Date(o.validadeAte).toLocaleDateString('pt-PT') : 'N/A';
+        const total = (o.total || 0).toFixed(2);
+
+        let actionBtns = '';
+        if (o.status === 'enviado') {
+            actionBtns = `
+                <button class="btn btn-success btn-sm mr-1" onclick="abrirResposta('${o._id}', 'aprovado'); event.stopPropagation();">
+                    <i class="fas fa-check"></i> Aprovar
+                </button>
+                <button class="btn btn-outline-danger btn-sm" onclick="abrirResposta('${o._id}', 'rejeitado'); event.stopPropagation();">
+                    <i class="fas fa-times"></i> Rejeitar
+                </button>`;
+        } else if (o.status === 'aprovado') {
+            actionBtns = `<span class="text-success"><i class="fas fa-check-circle"></i> Aprovado por si</span>`;
+        } else if (o.status === 'rejeitado') {
+            actionBtns = `<span class="text-danger"><i class="fas fa-times-circle"></i> Rejeitado por si</span>`;
+        } else if (o.status === 'expirado') {
+            actionBtns = `<span class="text-warning"><i class="fas fa-hourglass-end"></i> Orçamento expirado</span>`;
+        }
+
+        return `
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card orcamento-card h-100" style="cursor:pointer;" onclick="verDetalhe('${o._id}')">
+                    <div class="card-header bg-gradient-primary d-flex justify-content-between align-items-center">
+                        <span class="text-white font-weight-bold"><i class="fas fa-file-invoice-dollar mr-1"></i>${o.numero}</span>
+                        <span class="status-badge ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-1"><i class="fas fa-calendar text-primary mr-1"></i><strong>Data:</strong> ${data}</p>
+                        <p class="mb-1"><i class="fas fa-clock text-warning mr-1"></i><strong>Válido até:</strong> ${validadeAte}</p>
+                        <hr>
+                        <h4 class="text-right text-primary mb-0"><strong>€ ${total}</strong></h4>
+                    </div>
+                    <div class="card-footer d-flex align-items-center justify-content-between flex-wrap" style="gap:6px;">
+                        <button class="btn btn-info btn-sm" onclick="verDetalhe('${o._id}'); event.stopPropagation();">
+                            <i class="fas fa-eye"></i> Ver detalhe
+                        </button>
+                        <div>${actionBtns}</div>
+                    </div>
+                </div>
+            </div>`;
+    }
+
+    // ─── Ver detalhe no modal ────────────────────────────────────
+    function verDetalhe(id) {
+        const o = orcamentosData.find(x => x._id === id);
+        if (!o) return;
+
+        document.getElementById('modalNumero').textContent = `Orçamento ${o.numero}`;
+
+        const linhas = (o.servicos || []).map(s => `
+            <tr>
+                <td>${s.descricao}</td>
+                <td class="text-center">${s.quantidade}</td>
+                <td class="text-right">€${(s.precoUnitario || 0).toFixed(2)}</td>
+                <td class="text-right">€${(s.total || 0).toFixed(2)}</td>
+            </tr>`).join('');
+
+        document.getElementById('modalBody').innerHTML = `
+            <div class="row mb-3">
+                <div class="col-sm-6">
+                    <p><strong>Data:</strong> ${new Date(o.data).toLocaleDateString('pt-PT')}</p>
+                    <p><strong>Válido até:</strong> ${o.validadeAte ? new Date(o.validadeAte).toLocaleDateString('pt-PT') : 'N/A'}</p>
+                    <p><strong>Status:</strong> <span class="status-badge ${`badge-${o.status}`}">${statusLabels[o.status] || o.status}</span></p>
+                    ${o.dataResposta ? `<p><strong>Data de resposta:</strong> ${new Date(o.dataResposta).toLocaleDateString('pt-PT')}</p>` : ''}
+                </div>
+                <div class="col-sm-6">
+                    <p><strong>Nome:</strong> ${o.cliente?.nome || '—'}</p>
+                    <p><strong>Email:</strong> ${o.cliente?.email || '—'}</p>
+                    ${o.cliente?.morada ? `<p><strong>Morada:</strong> ${o.cliente.morada}</p>` : ''}
+                </div>
+            </div>
+            <table class="table table-sm table-bordered servicos-table">
+                <thead><tr><th>Descrição</th><th class="text-center">Qtd</th><th class="text-right">Preço unit.</th><th class="text-right">Total</th></tr></thead>
+                <tbody>${linhas}</tbody>
+                <tfoot>
+                    <tr><td colspan="3" class="text-right"><strong>Subtotal</strong></td><td class="text-right">€${(o.subtotal || 0).toFixed(2)}</td></tr>
+                    <tr><td colspan="3" class="text-right"><strong>IVA (23%)</strong></td><td class="text-right">€${(o.iva || 0).toFixed(2)}</td></tr>
+                    <tr class="table-active"><td colspan="3" class="text-right"><strong>TOTAL</strong></td><td class="text-right"><strong>€${(o.total || 0).toFixed(2)}</strong></td></tr>
+                </tfoot>
+            </table>
+            ${o.notas ? `<div class="alert alert-light mt-2"><strong>Notas:</strong> ${o.notas}</div>` : ''}`;
+
+        const footer = document.getElementById('modalFooter');
+        if (o.status === 'enviado') {
+            footer.innerHTML = `
+                <button class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                <button class="btn btn-success" onclick="abrirResposta('${o._id}', 'aprovado')">
+                    <i class="fas fa-check"></i> Aprovar orçamento
+                </button>
+                <button class="btn btn-danger" onclick="abrirResposta('${o._id}', 'rejeitado')">
+                    <i class="fas fa-times"></i> Rejeitar orçamento
+                </button>`;
+        } else {
+            footer.innerHTML = `<button class="btn btn-secondary" data-dismiss="modal">Fechar</button>`;
+        }
+
+        $('#orcamentoModal').modal('show');
+    }
+
+    // ─── Aprovar / Rejeitar ──────────────────────────────────────
+    function abrirResposta(id, novoStatus) {
+        pendingAction = { id, novoStatus };
+        const isAprovar = novoStatus === 'aprovado';
+
+        const header = document.getElementById('respostaModalHeader');
+        header.className = 'modal-header ' + (isAprovar ? 'bg-success text-white' : 'bg-danger text-white');
+        document.getElementById('respostaModalTitle').textContent = isAprovar ? '✔ Aprovar orçamento' : '✕ Rejeitar orçamento';
+        document.getElementById('respostaModalText').textContent = isAprovar
+            ? 'Ao aprovar, está a confirmar que aceita este orçamento e a FestLift será notificada para avançar.'
+            : 'Ao rejeitar, está a recusar este orçamento. Pode adicionar um comentário para justificar.';
+        document.getElementById('observacaoInput').value = '';
+
+        const btn = document.getElementById('confirmarRespostaBtn');
+        btn.className = 'btn ' + (isAprovar ? 'btn-success' : 'btn-danger');
+        btn.textContent = isAprovar ? 'Confirmar aprovação' : 'Confirmar rejeição';
+
+        // Fechar modal de detalhe se estiver aberto
+        $('#orcamentoModal').modal('hide');
+        setTimeout(() => $('#respostaModal').modal('show'), 400);
+    }
+
+    async function confirmarResposta() {
+        if (!pendingAction) return;
+        const { id, novoStatus } = pendingAction;
+        const observacao = document.getElementById('observacaoInput').value.trim();
+
+        const btn = document.getElementById('confirmarRespostaBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A processar...';
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/orcamentos/${id}/resposta`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${getToken()}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status: novoStatus, observacao })
+            });
+            const json = await res.json();
+            if (!res.ok) throw new Error(json.message || 'Erro');
+
+            $('#respostaModal').modal('hide');
+            pendingAction = null;
+
+            // Mostrar mensagem de sucesso
+            const alertClass = novoStatus === 'aprovado' ? 'alert-success' : 'alert-danger';
+            const msg = document.createElement('div');
+            msg.className = `alert ${alertClass} alert-dismissible fade show position-fixed`;
+            msg.style.cssText = 'top:20px;right:20px;z-index:9999;min-width:300px;';
+            msg.innerHTML = `<strong>${json.message}</strong><button type="button" class="close" data-dismiss="alert">&times;</button>`;
+            document.body.appendChild(msg);
+            setTimeout(() => msg.remove(), 5000);
+
+            // Recarregar lista
+            await carregarOrcamentos();
+        } catch (err) {
+            alert('Erro: ' + err.message);
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    // ─── Init ─────────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+        // Nome do utilizador
+        try {
+            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+            if (userData.firstName) {
+                document.getElementById('clientName').textContent = `${userData.firstName} ${userData.lastName || ''}`.trim();
+            }
+        } catch(e) {}
+
+        // Tema escuro
+        document.getElementById('darkModeToggle').addEventListener('click', function() {
+            document.body.classList.toggle('dark-mode');
+            this.querySelector('i').classList.toggle('fa-moon');
+            this.querySelector('i').classList.toggle('fa-sun');
+        });
+
+        // Fechar modal sem foco perdido (acessibilidade)
+        $(document).on('hide.bs.modal', '.modal', function() {
+            if (document.activeElement && this.contains(document.activeElement)) {
+                document.activeElement.blur();
+            }
+        });
+
+        carregarOrcamentos();
+    });
+</script>
+
+<!-- Sidebar counter loader (padrão dos outros pages) -->
+<script>
+(function() {
+    const token = sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('token');
+    if (!token) return;
+    fetch('/api/lifts', { headers: { 'Authorization': `Bearer ${token}` } })
+        .then(r => r.json()).then(d => {
+            const b = document.getElementById('liftsCount');
+            if (b && d.data) b.textContent = d.data.length;
+        }).catch(() => {});
+    fetch('/api/requests?status=pending,in_progress', { headers: { 'Authorization': `Bearer ${token}` } })
+        .then(r => r.json()).then(d => {
+            const b = document.getElementById('requestsCount');
+            if (b && d.data) b.textContent = d.data.length;
+        }).catch(() => {});
+    fetch('/api/notifications?unread=true', { headers: { 'Authorization': `Bearer ${token}` } })
+        .then(r => r.json()).then(d => {
+            const b = document.getElementById('notificationsBadge');
+            if (b && d.data) { b.textContent = d.data.length; b.style.display = d.data.length > 0 ? 'inline-block' : 'none'; }
+        }).catch(() => {});
+})();
+</script>
+
+<style>
+.badge-purple { background: linear-gradient(135deg,#6f42c1,#8e44ad); color: #fff; }
+.dark-mode .card { background: #1e2435; border-color: #2d3347; }
+.dark-mode .card-header { background: #252a3a !important; }
+</style>
+</body>
+</html>

@@ -7388,4 +7388,24 @@ server.listen(PORT, '0.0.0.0', () => {
     console.log(`💬 WebSocket server: ws://0.0.0.0:${PORT}`);
 });
 
+// ⏰ Cron diário — marcar orçamentos expirados automaticamente
+async function atualizarOrcamentosExpirados() {
+    try {
+        const mongoose = require('mongoose');
+        if (mongoose.connection.readyState !== 1) return;
+        const result = await mongoose.connection.db.collection('orcamentos').updateMany(
+            { status: 'enviado', validadeAte: { $lt: new Date() } },
+            { $set: { status: 'expirado' } }
+        );
+        if (result.modifiedCount > 0) {
+            console.log(`⏰ Cron: ${result.modifiedCount} orçamento(s) marcado(s) como expirado`);
+        }
+    } catch (err) {
+        console.error('❌ Cron expirado erro:', err.message);
+    }
+}
+// Executar imediatamente ao iniciar e depois a cada 24h
+atualizarOrcamentosExpirados();
+setInterval(atualizarOrcamentosExpirados, 24 * 60 * 60 * 1000);
+
 module.exports = { app, server, io };

@@ -298,6 +298,13 @@
                             <button class="btn btn-sm btn-danger" onclick="eliminarOrcamento('${orcamento._id}'); event.stopPropagation();">
                                 <i class="fas fa-trash"></i> Eliminar
                             </button>
+                            ${orcamento.status === 'enviado' ? `
+                            <button class="btn btn-sm btn-success mt-1" onclick="mudarStatus('${orcamento._id}', 'aprovado'); event.stopPropagation();">
+                                <i class="fas fa-check"></i> Aprovar
+                            </button>
+                            <button class="btn btn-sm btn-danger mt-1" onclick="mudarStatus('${orcamento._id}', 'rejeitado'); event.stopPropagation();">
+                                <i class="fas fa-times"></i> Rejeitar
+                            </button>` : ''}
                         </div>
                     </div>
                 </div>
@@ -342,6 +349,37 @@
             } catch (error) {
                 console.error('Erro:', error);
                 alert('Erro ao eliminar orçamento: ' + error.message);
+            }
+        }
+
+        // Mudar status do orçamento (aprovar / rejeitar)
+        async function mudarStatus(id, novoStatus) {
+            const labels = { aprovado: 'aprovar', rejeitado: 'rejeitar' };
+            if (!confirm(`Tem certeza que deseja ${labels[novoStatus]} este orçamento?`)) return;
+
+            try {
+                const token = localStorage.getItem('liftmanager_jwt') ||
+                             localStorage.getItem('jwt_token') ||
+                             localStorage.getItem('token') ||
+                             localStorage.getItem('lm_token');
+
+                const response = await fetch(`${API_BASE_URL}/api/orcamentos/${id}/status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: novoStatus })
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.message || 'Erro ao atualizar status');
+
+                alert(data.message);
+                carregarOrcamentos();
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro: ' + error.message);
             }
         }
 
