@@ -14,9 +14,6 @@ class LiftsManager {
     init() {
         this.loadLifts();
         this.setupEventListeners();
-        this.updateOverview();
-        this.loadMaintenanceSchedule();
-        this.loadStatistics();
         this.loadDocuments();
     }
 
@@ -54,6 +51,8 @@ class LiftsManager {
         }
 
         this.applyFilters();
+        this.loadMaintenanceSchedule();
+        this.loadStatistics();
     }
 
     setupEventListeners() {
@@ -905,7 +904,7 @@ class LiftsManager {
                     <div>
                         <strong>${this.formatDate(lift.nextMaintenance)}</strong>
                         <br>
-                        <small>${lift.model} - ${lift.location}</small>
+                        <small>${lift.model} - ${this.formatLocation(lift)}</small>
                     </div>
                     <span class="badge ${statusClass}">${status}</span>
                 </div>
