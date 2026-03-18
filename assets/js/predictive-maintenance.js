@@ -108,7 +108,9 @@ class PredictiveMaintenanceSystem {
             
             // Спробуємо завантажити з API
             try {
-                const token = localStorage.getItem('token');
+                const token = (typeof AuthManager !== 'undefined' && AuthManager.getAuthToken)
+                    ? AuthManager.getAuthToken()
+                    : (sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token'));
                 if (token) {
                     console.log('🔑 Використовуємо токен для запиту ліфтів...');
                     const response = await fetch('/api/lifts', {
@@ -121,9 +123,11 @@ class PredictiveMaintenanceSystem {
                         const data = await response.json();
                         console.log('📦 Отримані дані з API:', data);
                         
-                        // API може повертати {lifts: [...]} або просто [...]
+                        // API повертає {success: true, data: {lifts: [...], pagination: {...}}}
                         if (Array.isArray(data)) {
                             lifts = data;
+                        } else if (data.data?.lifts && Array.isArray(data.data.lifts)) {
+                            lifts = data.data.lifts;
                         } else if (data.lifts && Array.isArray(data.lifts)) {
                             lifts = data.lifts;
                         } else if (data.data && Array.isArray(data.data)) {
