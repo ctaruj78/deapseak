@@ -16,6 +16,8 @@ const { isLikelyScanned, ocrPDF } = require('./pdf-ocr-gemini');
 
 // ПОВНА БАЗА ДАНИХ АРТИКУЛІВ - Decreto-Lei n.º 320/2002
 const regulationArticlesComplete = require('./regulation-articles-complete');
+// Keywords DB partilhada — enriquece sub-cláusulas não catalogadas
+const { matchByDescriptionText: matchViolationByText } = require('./violation-keywords');
 
 // Використовуємо повну базу даних
 const regulationArticles = regulationArticlesComplete;
@@ -698,11 +700,13 @@ function createViolation(classification, articleNum, description, format) {
     let article = regulationArticles[finalArticleNum];
     
     // Якщо не знайдено і це підпункт (наприклад 45.1), спробуємо основний артикул
+    let usedParentFallback = false;
     if (!article && finalArticleNum !== 'NOTA' && typeof finalArticleNum === 'string' && finalArticleNum.includes('.')) {
         const mainArticle = finalArticleNum.split('.')[0];
         console.log(`    🔍 Subarticle ${finalArticleNum} not found, trying main article ${mainArticle}`);
         article = regulationArticles[mainArticle];
         if (article) {
+            usedParentFallback = true; // sub-cláusula → pai: enrichment SEMPRE necessário
             console.log(`    ✅ Found main article ${mainArticle} in database`);
             // Зберігаємо оригінальний підпункт у finalArticleNum для відображення
             article = {
@@ -712,6 +716,31 @@ function createViolation(classification, articleNum, description, format) {
             };
         }
     }
+
+    // ── TEXT-BASED ENRICHMENT (sub-cláusulas) ────────────────────────────────
+    // Quando usámos o pai como fallback, o título/why são do contexto errado.
+    // matchViolationByText identifica o contexto real pelo texto da descrição.
+    if (usedParentFallback || (!article && !isNota)) {
+        const textMatch = matchViolationByText(description);
+        if (textMatch) {
+            article = article ? {
+                ...article,
+                title: textMatch.title,
+                explanation: textMatch.title,
+                why: textMatch.why,
+                solution: textMatch.solution,
+                urgency: textMatch.urgency
+            } : {
+                title: textMatch.title,
+                explanation: textMatch.title,
+                why: textMatch.why,
+                solution: textMatch.solution,
+                urgency: textMatch.urgency
+            };
+            console.log(`    ✏️  Enriched by text-match: ${textMatch.title.substring(0, 60)}`);
+        }
+    }
+    // ── FIM TEXT-BASED ENRICHMENT ────────────────────────────────────────────
     
     // Якщо все ще не знайдено, створюємо за замовчуванням
     if (!article) {

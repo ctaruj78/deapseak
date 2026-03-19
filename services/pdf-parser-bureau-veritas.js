@@ -266,33 +266,7 @@ const violationKeywordsDB = [
     }
 ];
 
-/**
- * Tenta identificar o artigo e classificação a partir do texto da descrição.
- * Retorna o melhor match ou null.
- * @param {string} description
- * @returns {{ article, classification, title, why, solution, urgency }|null}
- */
-function matchByDescriptionText(description) {
-    if (!description || description.length < 10) return null;
-
-    for (const entry of violationKeywordsDB) {
-        for (const pattern of entry.patterns) {
-            if (pattern.test(description)) {
-                console.log(`  🔤 Text-match: "${description.substring(0, 50)}" → Art.${entry.article || 'N/A'} (${entry.classification})`);
-                return {
-                    article: entry.article,
-                    classification: entry.classification,
-                    title: entry.title,
-                    explanation: entry.title,
-                    why: entry.why,
-                    solution: entry.solution,
-                    urgency: entry.urgency
-                };
-            }
-        }
-    }
-    return null;
-}
+// matchByDescriptionText vem do módulo violation-keywords (importado acima)
 
 /**
  * ВИТЯГУВАННЯ МЕТАДАНИХ - УНІВЕРСАЛЬНИЙ
@@ -862,12 +836,14 @@ function createViolation(classification, articleNum, description) {
     
     // Отримуємо інформацію з бази даних за артикулом
     let article = regulationArticles[normalizedArticle];
+    let usedParentFallback = false;
     
     // Якщо не знайдено — шукаємо основний артикул (напр. "8.3.2" → "8")
     if (!article && normalizedArticle.includes('.')) {
         const mainArticle = normalizedArticle.split('.')[0];
         article = regulationArticles[mainArticle];
         if (article) {
+            usedParentFallback = true; // sub-cláusula → pai: enrichment SEMPRE necessário
             article = {
                 ...article,
                 title: article.title.replace(mainArticle, normalizedArticle),
@@ -876,10 +852,10 @@ function createViolation(classification, articleNum, description) {
     }
 
     // ── TEXT-BASED ENRICHMENT ──────────────────────────────────────────────
-    // Se o artigo ainda não foi encontrado na base, tentamos identificar
-    // pelo texto da descrição (violationKeywordsDB).
+    // Quando a sub-cláusula (ex. 6.3.6) não existe na DB e usamos o pai (Art.6),
+    // o título/why do pai são para outro contexto. Text-match corrige isso.
     let textMatch = null;
-    if (!article || article.explanation === 'Consultar regulamento para detalhes específicos') {
+    if (!article || usedParentFallback || article.explanation === 'Consultar regulamento para detalhes específicos') {
         textMatch = matchByDescriptionText(description);
         if (textMatch) {
             // Se não tínhamos artigo, usar o artigo inferido pelo texto
