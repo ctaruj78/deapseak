@@ -1,7 +1,7 @@
 // service-worker.js
 // Кешування сторінок, інструкцій, чек-листів, завдань для офлайн-режиму
 
-const CACHE_NAME = 'deapseak-tech-cache-v4';
+const CACHE_NAME = 'deapseak-tech-cache-v5';
 const urlsToCache = [
   '/',
   '/pages/tech/ar-helper.html',
@@ -40,7 +40,15 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Кешуємо тільки статичні ресурси того самого походження
+  // Навігаційні запити (завантаження HTML-сторінок) завжди йдуть напряму до мережі.
+  // Без цього service worker може повернути 408 для admin/tech сторінок при
+  // будь-якій тимчасовій помилці мережі, навіть коли сервер доступний.
+  if (event.request.mode === 'navigate') {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
+  // Кешуємо тільки статичні ресурси того самого походження (JS, CSS, зображення тощо)
   event.respondWith(
     caches.match(event.request)
       .then(response => response || fetch(event.request).catch(() => new Response('', { status: 408, statusText: 'Offline' })))
