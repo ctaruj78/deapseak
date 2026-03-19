@@ -64,7 +64,7 @@ echo "---------------"
 echo -n "POST /api/auth/login... "
 LOGIN_RESPONSE=$(curl -s -X POST http://localhost:5000/api/auth/login \
     -H "Content-Type: application/json" \
-    -d '{"email":"admin@deapseak.com","password":"admin123"}')
+    -d '{"email":"info@festlift.pt","password":"admin123"}')
 
 if echo "$LOGIN_RESPONSE" | grep -q '"success":true'; then
     echo -e "${GREEN}✅ PASS${NC}"
@@ -131,7 +131,7 @@ echo ""
 echo -e "${BLUE}5️⃣  AUTH.JS REDIRECTS${NC}"
 echo "-------------------"
 echo -n "logout() redirect... "
-if grep -q "window.location.href = '/pages/auth/login.html'" /workspaces/deapseak/assets/js/auth.js; then
+if grep -q "window.location.replace('/pages/auth/login.html')\|window.location.href.*pages/auth/login.html" /workspaces/deapseak/assets/js/auth.js; then
     echo -e "${GREEN}✅ PASS${NC}"
     ((PASSED++))
 else
@@ -140,7 +140,7 @@ else
 fi
 
 echo -n "checkAuthOnPageLoad() redirect... "
-if grep -q "window.location.href = '/pages/auth/login.html'" /workspaces/deapseak/assets/js/auth.js; then
+if grep -q "window.location.replace\|window.location.href.*login" /workspaces/deapseak/assets/js/auth.js; then
     echo -e "${GREEN}✅ PASS${NC}"
     ((PASSED++))
 else

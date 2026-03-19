@@ -20,14 +20,17 @@ class HistoryManager {
     async loadHistory() {
         try {
             // Спроба отримати дані з API
+            const token = localStorage.getItem('authToken') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('token');
             const response = await fetch('/api/maintenance-history', {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    'Authorization': `Bearer ${token}`
                 }
             });
             
             if (response.ok) {
-                this.events = await response.json();
+                const raw = await response.json();
+                // Підтримка як масиву, так і {success, data} формату
+                this.events = Array.isArray(raw) ? raw : (raw.data || []);
                 localStorage.setItem('maintenanceHistory', JSON.stringify(this.events));
             } else {
                 throw new Error('API недоступне');
@@ -201,9 +204,9 @@ class HistoryManager {
         const searchTerm = $('#searchInput').val().toLowerCase();
         if (searchTerm) {
             filteredEvents = filteredEvents.filter(event =>
-                event.description.toLowerCase().includes(searchTerm) ||
-                event.technician.toLowerCase().includes(searchTerm) ||
-                event.details.toLowerCase().includes(searchTerm)
+                (event.description || '').toLowerCase().includes(searchTerm) ||
+                (event.technician || '').toLowerCase().includes(searchTerm) ||
+                (event.details || '').toLowerCase().includes(searchTerm)
             );
         }
 

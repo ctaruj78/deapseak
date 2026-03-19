@@ -5799,7 +5799,9 @@ app.get('/api/ai/regulations/:id', authenticateToken, async (req, res) => {
 
 // 🔐 Auth Routes (login, register, profile) + User Management
 const authRoutes = require('./backend/routes/authRoutes');
-app.use('/api/auth', loginLimiter, authRoutes); // loginLimiter захищає від brute-force
+app.use('/api/auth/login', loginLimiter);    // loginLimiter тільки для login
+app.use('/api/auth/register', loginLimiter); // і register (захист від brute-force)
+app.use('/api/auth', authRoutes);
 app.use('/api/users', authRoutes); // authRoutes містить /users endpoints
 
 // 🏢 Lift Routes (CRUD операції з ліфтами)
@@ -5840,6 +5842,101 @@ const { errorHandler } = require('./backend/middleware/errorHandler');
 // ═══════════════════════════════════════════════════════════
 app.get('/api/invoices', authenticateToken, async (req, res) => {
     res.json({ success: true, data: [] });
+});
+
+// ═══════════════════════════════════════════════════════════
+// 🔧 MAINTENANCE HISTORY API - Повна історія обслуговування
+// ═══════════════════════════════════════════════════════════
+app.get('/api/maintenance-history', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const userId = req.user.id || req.user.userId;
+        const userRole = req.user.role;
+
+        // Будуємо запит в залежності від ролі
+        let liftFilter = {};
+        if (userRole === 'client') {
+            // Клієнт бачить тільки свої ліфти
+            const clientLifts = await db.collection('lifts').find(
+                { $or: [{ client: userId }, { clientId: userId }, { 'client._id': userId }] },
+                { projection: { _id: 1, model: 1, location: 1, address: 1 } }
+            ).toArray();
+            const liftIds = clientLifts.map(l => l._id.toString());
+            if (liftIds.length === 0) {
+                return res.json([]);
+            }
+            liftFilter = { liftId: { $in: liftIds } };
+        } else if (userRole === 'technician' || userRole === 'tech') {
+            // Технік бачить тільки свої завдання
+            liftFilter = { $or: [
+                { technician: userId },
+                { technicianId: userId },
+                { assignedTo: userId }
+            ]};
+        }
+        // admin та dispatcher бачать усе
+
+        // Отримуємо завершені та в процесі запити
+        const requests = await db.collection('requests').find({
+            ...liftFilter
+        }).sort({ createdAt: -1 }).limit(500).toArray();
+
+        // Завантажуємо ліфти для join
+        const liftIds = [...new Set(requests.map(r => r.liftId).filter(Boolean))];
+        const lifts = {};
+        if (liftIds.length > 0) {
+            const liftDocs = await db.collection('lifts').find({
+                $or: [
+                    { _id: { $in: liftIds.map(id => { try { return new ObjectId(id); } catch(e) { return null; } }).filter(Boolean) } },
+                    { _id: { $in: liftIds } }
+                ]
+            }).toArray();
+            liftDocs.forEach(l => { lifts[l._id.toString()] = l; });
+        }
+
+        // Завантажуємо техніків для join
+        const techIds = [...new Set(requests.map(r => r.technician || r.technicianId || r.assignedTo).filter(Boolean))];
+        const techs = {};
+        if (techIds.length > 0) {
+            const techDocs = await db.collection('users').find({
+                $or: [
+                    { _id: { $in: techIds.map(id => { try { return new ObjectId(id); } catch(e) { return null; } }).filter(Boolean) } }
+                ]
+            }).toArray();
+            techDocs.forEach(u => { techs[u._id.toString()] = u; });
+        }
+
+        // Маппінг у формат очікуваний history-manager.js
+        const history = requests.map(req => {
+            const lift = lifts[req.liftId] || {};
+            const techId = req.technician || req.technicianId || req.assignedTo || '';
+            const tech = techs[techId] || {};
+            const firstName = tech.firstName || tech.name || '';
+            const lastName = tech.lastName || '';
+            const techName = (firstName + ' ' + lastName).trim() || tech.username || tech.email || techId;
+
+            return {
+                id: req._id.toString(),
+                type: req.type || 'maintenance',
+                date: req.completedAt || req.updatedAt || req.createdAt,
+                liftId: req.liftId || '',
+                lift: lift.model || lift.serialNumber || 'N/A',
+                location: lift.address || lift.location || lift.building || '',
+                technician: techName,
+                status: req.status || 'completed',
+                description: req.description || req.title || '',
+                duration: req.duration || null,
+                cost: req.cost || null,
+                rating: req.rating || null,
+                details: req.details || req.notes || req.workDone || ''
+            };
+        });
+
+        res.json(history);
+    } catch (error) {
+        console.error('❌ Помилка maintenance-history:', error);
+        res.status(500).json({ success: false, message: 'Помилка отримання історії обслуговування' });
+    }
 });
 
 app.use(errorHandler);

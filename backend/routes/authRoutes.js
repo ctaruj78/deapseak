@@ -27,6 +27,9 @@ router.post('/reset-password', authController.resetPassword);
 // GET /api/auth/profile - Отримання профілю поточного користувача
 router.get('/profile', authenticate, authController.getProfile);
 
+// GET /api/auth/me - Alias для /profile (зворотна сумісність)
+router.get('/me', authenticate, authController.getProfile);
+
 // PUT /api/auth/profile - Оновлення профілю користувача
 router.put('/profile', authenticate, authController.updateProfile);
 

@@ -3,6 +3,7 @@ const router = express.Router();
 const Orcamento = require('../../models/Orcamento');
 require('../models/User'); // ensure User schema is registered for populate()
 const { authenticate } = require('../middleware/auth');
+const { authorizeRoles } = require('../middleware/roleAuth');
 const crypto = require('crypto');
 const PDFDocument = require('pdfkit');
 const path = require('path');
@@ -311,7 +312,7 @@ router.post('/:id/resposta', authenticate, async (req, res) => {
 });
 
 // GET /api/orcamentos - Список всіх орçаментів
-router.get('/', authenticate, async (req, res) => {
+router.get('/', authenticate, authorizeRoles('admin', 'dispatcher'), async (req, res) => {
     try {
         const { status, page = 1, limit = 20, search } = req.query;
         

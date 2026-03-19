@@ -22,7 +22,9 @@ const roles = [
     });
 
     for (const role of roles) {
-        const page = await browser.newPage();
+        // Використовуємо окремий incognito context для кожної ролі
+        const context = await browser.createBrowserContext();
+        const page = await context.newPage();
         
         try {
             // 1. Login test
@@ -91,6 +93,7 @@ const roles = [
         }
         
         await page.close();
+        await context.close();
     }
     
     await browser.close();
