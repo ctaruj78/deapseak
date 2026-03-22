@@ -4486,6 +4486,8 @@
             throw new Error(msg);
         }
         const saved = result.data || result.lift || result;
+        // 👤 Кешуємо інформацію про нового клієнта для показу сповіщення
+        window.__lastNewClient = result.newClient || null;
         console.log('✅ Ліфт збережено:', saved);
         return saved;
     };

@@ -673,7 +673,23 @@ class EnhancedLiftModal {
             console.log('✅ Lift object:', liftObject);
             
             if (result && result.success && liftObject) {
-                this.showMessage(isEdit ? 'Ліфт успішно оновлено!' : 'Ліфт успішно збережено!', 'success');
+                // 👤 Якщо автоматично створено нового клієнта — показати сповіщення
+                const nc = window.__lastNewClient;
+                if (nc && nc.created) {
+                    const emailStatus = nc.emailSent === false
+                        ? `⚠️ Email не відправлено (${nc.emailError || 'SMTP не налаштовано'})`
+                        : '📧 Запрошення відправлено на email';
+                    this.showMessage(
+                        `✅ Ліфт збережено! 👤 Новий клієнт створено автоматично:<br>` +
+                        `<strong>${nc.email}</strong><br>` +
+                        `🔑 Тимчасовий пароль: <code style="background:#fff;padding:2px 6px;border-radius:3px">${nc.password}</code><br>` +
+                        emailStatus,
+                        'success'
+                    );
+                    window.__lastNewClient = null;
+                } else {
+                    this.showMessage(isEdit ? 'Ліфт успішно оновлено!' : 'Ліфт успішно збережено!', 'success');
+                }
                 $('#enhancedLiftModal').modal('hide');
                 
                 // 🏛️ Перевірка municipality notification (тільки для нових ліфтів)

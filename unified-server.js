@@ -1637,10 +1637,154 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
             };
         }
         
+        // ─────────────────────────────────────────────────────
+        // 👤 AUTO-CREATE CLIENT USER + надіслати запрошення
+        // ─────────────────────────────────────────────────────
+        let newClientInfo = null;
+        const clientEmail = (liftData.clientEmail || '').trim().toLowerCase();
+
+        if (clientEmail) {
+            const existingClientUser = await db.collection('users').findOne({
+                email: clientEmail
+            });
+
+            if (!existingClientUser) {
+                // Генеруємо надійний пароль: 6 random digits + 2 uppercase + special
+                const rawPassword =
+                    Math.random().toString(36).slice(2, 6).toUpperCase() +
+                    Math.floor(1000 + Math.random() * 9000) +
+                    ['!', '@', '#', '$'][Math.floor(Math.random() * 4)];
+
+                const hashedPassword = await bcrypt.hash(rawPassword, 10);
+
+                const nameParts = (liftData.clientName || '').trim().split(/\s+/);
+                const newClientDoc = {
+                    email: clientEmail,
+                    username: clientEmail.split('@')[0],
+                    firstName: nameParts[0] || '',
+                    lastName: nameParts.slice(1).join(' ') || '',
+                    phone: liftData.clientPhone || '',
+                    password: hashedPassword,
+                    role: 'client',
+                    isActive: true,
+                    status: 'offline',
+                    createdAt: new Date().toISOString(),
+                    createdBy: req.user.username,
+                    invitedFromLift: result._id ? String(result._id) : null
+                };
+
+                const insertedClient = await db.collection('users').insertOne(newClientDoc);
+
+                // Прив'язуємо клієнта до ліфта (поле client = ObjectId)
+                const { ObjectId: ObjId } = require('mongodb');
+                await db.collection('lifts').updateOne(
+                    { _id: result._id },
+                    { $set: { client: insertedClient.insertedId } }
+                );
+                result.client = insertedClient.insertedId;
+
+                newClientInfo = {
+                    email: clientEmail,
+                    password: rawPassword,
+                    created: true
+                };
+
+                console.log(`👤 Новий клієнт створено автоматично: ${clientEmail} / пароль: ${rawPassword}`);
+
+                // 📧 Відправляємо запрошення
+                const siteBase = process.env.SITE_URL ||
+                    `${req.protocol}://${req.headers.host}`;
+
+                const inviteHtml = `<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  body{font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:0}
+  .wrap{max-width:600px;margin:30px auto;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.12)}
+  .header{background:linear-gradient(135deg,#1a237e,#1565c0);padding:32px 30px;text-align:center;color:#fff}
+  .header h1{margin:0;font-size:26px;letter-spacing:1px}
+  .header p{margin:6px 0 0;font-size:14px;opacity:.85}
+  .body{padding:32px 30px}
+  .body h2{color:#1a237e;font-size:20px;margin-top:0}
+  .creds{background:#e8f0fe;border-left:4px solid #1565c0;border-radius:6px;padding:18px 22px;margin:20px 0}
+  .creds p{margin:6px 0;font-size:15px}
+  .creds strong{color:#1a237e}
+  .creds code{background:#fff;padding:3px 8px;border-radius:4px;font-size:15px;letter-spacing:1px;border:1px solid #c5cae9}
+  .btn{display:inline-block;background:#1565c0;color:#fff!important;text-decoration:none;padding:13px 32px;border-radius:6px;font-size:15px;font-weight:bold;margin-top:20px}
+  .footer{background:#f8f9fa;padding:18px 30px;text-align:center;font-size:12px;color:#888}
+  .lift-box{background:#f0f4ff;border:1px solid #c5cae9;border-radius:6px;padding:14px 18px;margin:16px 0;font-size:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <h1>🏢 FestLift</h1>
+    <p>Plataforma de Gestão de Elevadores</p>
+  </div>
+  <div class="body">
+    <h2>Bem-vindo(a)${newClientDoc.firstName ? ', ' + newClientDoc.firstName : ''}!</h2>
+    <p>A sua empresa foi registada na plataforma <strong>FestLift</strong> como cliente de manutenção de elevadores.</p>
+    <p>O seu acesso à plataforma foi criado automaticamente. Pode acompanhar o estado dos seus elevadores, consultar relatórios e criar pedidos de serviço.</p>
+
+    <div class="lift-box">
+      🛗 <strong>Elevador registado:</strong> ${liftData.municipalNumber || '—'}<br>
+      📍 <strong>Morada:</strong> ${typeof liftData.address === 'object'
+        ? [liftData.address.street, liftData.address.zipCode, liftData.address.city].filter(Boolean).join(', ')
+        : (liftData.address || '—')}
+    </div>
+
+    <div class="creds">
+      <p>🔐 <strong>Os seus dados de acesso:</strong></p>
+      <p><strong>Email:</strong> <code>${clientEmail}</code></p>
+      <p><strong>Palavra-passe temporária:</strong> <code>${rawPassword}</code></p>
+    </div>
+
+    <p style="font-size:13px;color:#e53935;font-weight:bold">⚠️ Por razões de segurança, altere a sua palavra-passe após o primeiro login.</p>
+
+    <a href="${siteBase}/pages/auth/login.html" class="btn">Entrar na plataforma →</a>
+  </div>
+  <div class="footer">
+    FestLift Portugal &bull; Este email foi gerado automaticamente. Não responda a este endereço.
+  </div>
+</div>
+</body>
+</html>`;
+
+                try {
+                    await emailService.sendEmail(
+                        clientEmail,
+                        '🏢 FestLift — Bem-vindo(a)! Os seus dados de acesso',
+                        inviteHtml
+                    );
+                    console.log(`✅ Convite enviado para: ${clientEmail}`);
+                    newClientInfo.emailSent = true;
+                } catch (emailErr) {
+                    console.warn(`⚠️ Falha ao enviar convite para ${clientEmail}:`, emailErr.message);
+                    newClientInfo.emailSent = false;
+                    newClientInfo.emailError = emailErr.message;
+                }
+            } else {
+                // Utilizador já existe — só garante que o lift.client aponta para ele
+                if (!result.client) {
+                    const { ObjectId: ObjId } = require('mongodb');
+                    await db.collection('lifts').updateOne(
+                        { _id: result._id },
+                        { $set: { client: existingClientUser._id } }
+                    );
+                    result.client = existingClientUser._id;
+                }
+                console.log(`ℹ️ Utilizador já existe para email ${clientEmail} — sem convite enviado`);
+            }
+        }
+        // ─────────────────────────────────────────────────────
+
         res.json({
             success: true,
             message: message,
-            data: result
+            data: result,
+            newClient: newClientInfo
         });
     } catch (error) {
         console.error('❌ Помилка створення ліфта:', error);
