@@ -66,6 +66,10 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: true
     },
+    mustChangePassword: {
+        type: Boolean,
+        default: false  // true — примусова зміна пароля при першому вході
+    },
     lastLogin: {
         type: Date
     },

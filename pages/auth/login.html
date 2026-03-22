@@ -383,15 +383,28 @@
                         // Перевіряємо чи є збережене перенаправлення
                         const redirectUrl = sessionStorage.getItem('redirect_after_login');
                         
-                        // Перенаправлення через 500мс
-                        setTimeout(() => {
-                            if (redirectUrl) {
-                                sessionStorage.removeItem('redirect_after_login');
-                                window.location.href = redirectUrl;
-                            } else {
-                                redirectUserByRole(user.role);
+                        // 🔐 Якщо обліковий запис має mustChangePassword — показуємо модал
+                        if (user.mustChangePassword) {
+                            // Зберігаємо, де після зміни перейти
+                            window.__mustChangeRedirectUrl  = redirectUrl;
+                            window.__mustChangeUserRole     = user.role;
+                            const modal = document.getElementById('mustChangePasswordModal');
+                            if (modal) {
+                                modal.style.display = 'flex';
+                                document.getElementById('mcpEmail').value = user.email;
+                                showMessage('Вітаємо! Будь ласка змініть тимчасовий пароль перед початком роботи.', 'warning');
                             }
-                        }, 500);
+                        } else {
+                            // Звичайний вхід — перенаправляємо через 500мс
+                            setTimeout(() => {
+                                if (redirectUrl) {
+                                    sessionStorage.removeItem('redirect_after_login');
+                                    window.location.href = redirectUrl;
+                                } else {
+                                    redirectUserByRole(user.role);
+                                }
+                            }, 500);
+                        }
                         
                     } else {
                         // Помилка - розблоковуємо форму
@@ -438,6 +451,89 @@
         
         // Викликаємо ініціалізацію одразу
         initLoginForm();
+    </script>
+
+    <!-- 🔐 Модал примусової зміни пароля -->
+    <div id="mustChangePasswordModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:9999;align-items:center;justify-content:center">
+      <div style="background:#fff;border-radius:12px;padding:36px 32px;max-width:440px;width:94%;box-shadow:0 8px 32px rgba(0,0,0,.25)">
+        <div style="text-align:center;margin-bottom:20px">
+          <span style="font-size:40px">🔐</span>
+          <h3 style="color:#1a237e;margin:8px 0 4px">Altere a sua palavra-passe</h3>
+          <p style="color:#666;font-size:14px;margin:0">A sua conta foi criada com uma palavra-passe temporária.<br>Por segurança, defina uma palavra-passe pessoal antes de continuar.</p>
+        </div>
+        <div id="mcpError" style="display:none;background:#fff3cd;border:1px solid #ffc107;border-radius:6px;padding:10px 14px;margin-bottom:14px;color:#856404;font-size:14px"></div>
+        <div style="margin-bottom:14px">
+          <label style="font-weight:600;font-size:14px;color:#333">Palavra-passe temporária (que usou para entrar)</label>
+          <input type="password" id="mcpCurrent" class="form-control" placeholder="Palavra-passe temporária" style="margin-top:5px">
+        </div>
+        <div style="margin-bottom:14px">
+          <label style="font-weight:600;font-size:14px;color:#333">Nova palavra-passe</label>
+          <input type="password" id="mcpNew" class="form-control" placeholder="Mínimo 8 caracteres" style="margin-top:5px">
+        </div>
+        <div style="margin-bottom:20px">
+          <label style="font-weight:600;font-size:14px;color:#333">Confirmar nova palavra-passe</label>
+          <input type="password" id="mcpConfirm" class="form-control" placeholder="Repita a nova palavra-passe" style="margin-top:5px">
+        </div>
+        <input type="hidden" id="mcpEmail">
+        <button id="mcpSubmitBtn" onclick="submitMustChangePassword()" style="width:100%;background:#1565c0;color:#fff;border:none;border-radius:6px;padding:13px;font-size:16px;font-weight:bold;cursor:pointer">
+          🔐 Guardar nova palavra-passe
+        </button>
+      </div>
+    </div>
+
+    <script>
+    async function submitMustChangePassword() {
+        const currentPwd = document.getElementById('mcpCurrent').value.trim();
+        const newPwd     = document.getElementById('mcpNew').value.trim();
+        const confirmPwd = document.getElementById('mcpConfirm').value.trim();
+        const errBox     = document.getElementById('mcpError');
+        const btn        = document.getElementById('mcpSubmitBtn');
+
+        errBox.style.display = 'none';
+
+        if (!currentPwd) { errBox.textContent = 'Introduza a palavra-passe temporária.'; errBox.style.display='block'; return; }
+        if (newPwd.length < 8) { errBox.textContent = 'A nova palavra-passe deve ter pelo menos 8 caracteres.'; errBox.style.display='block'; return; }
+        if (newPwd !== confirmPwd) { errBox.textContent = 'As palavras-passe não coincidem.'; errBox.style.display='block'; return; }
+        if (newPwd === currentPwd) { errBox.textContent = 'A nova palavra-passe deve ser diferente da actual.'; errBox.style.display='block'; return; }
+
+        btn.disabled = true;
+        btn.textContent = 'A guardar...';
+
+        const token = localStorage.getItem('authToken') || localStorage.getItem('token') || '';
+        try {
+            const res = await fetch('/api/auth/change-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ currentPassword: currentPwd, newPassword: newPwd })
+            });
+            const data = await res.json();
+            if (!res.ok || !data.success) {
+                errBox.textContent = data.message || 'Erro ao alterar a palavra-passe.';
+                errBox.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = '🔐 Guardar nova palavra-passe';
+                return;
+            }
+
+            // Успіх — оновлюємо userData в localStorage
+            const storedUser = JSON.parse(localStorage.getItem('userData') || '{}');
+            storedUser.mustChangePassword = false;
+            ['userData','user','lm_session','liftmanager_user'].forEach(k => localStorage.setItem(k, JSON.stringify(storedUser)));
+
+            document.getElementById('mustChangePasswordModal').style.display = 'none';
+            // Перенаправляємо
+            const redirectUrl = window.__mustChangeRedirectUrl;
+            setTimeout(() => {
+                if (redirectUrl) { sessionStorage.removeItem('redirect_after_login'); window.location.href = redirectUrl; }
+                else { redirectUserByRole(window.__mustChangeUserRole); }
+            }, 300);
+        } catch(e) {
+            errBox.textContent = 'Erro de rede. Tente novamente.';
+            errBox.style.display = 'block';
+            btn.disabled = false;
+            btn.textContent = '🔐 Guardar nova palavra-passe';
+        }
+    }
     </script>
 </body>
 </html>

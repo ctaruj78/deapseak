@@ -245,11 +245,12 @@ exports.changePassword = async (req, res, next) => {
 
         // Оновлення пароля (автоматично хешується)
         user.password = newPassword;
+        user.mustChangePassword = false; // Знімаємо примусовову після зміни
         await user.save();
 
         res.json({
             success: true,
-            message: 'Пароль успішно змінено'
+            message: 'Palavra-passe alterada com sucesso'
         });
     } catch (error) {
         next(error);

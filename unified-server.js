@@ -2965,7 +2965,8 @@ async function createUserWithInvite(userData, role, createdBy, req) {
         skills: userData.skills || [],
         notes: userData.notes || '',
         createdAt: new Date().toISOString(),
-        createdBy
+        createdBy,
+        mustChangePassword: true  // Примусова зміна пароля при першому вході
     };
     // Remove undefined fields
     Object.keys(newDoc).forEach(k => newDoc[k] === undefined && delete newDoc[k]);
