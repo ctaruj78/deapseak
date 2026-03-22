@@ -4493,7 +4493,9 @@
         $(document).on('input', '#enhancedLiftAddress, #enhancedLiftPostcode', function() {
             clearTimeout(siblingsTimer);
             siblingsTimer = setTimeout(() => {
-                const addrVal = ($('#enhancedLiftAddress').val() || '').trim().toLowerCase();
+                const normalize = s => (s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+                const addrVal = normalize($('#enhancedLiftAddress').val() || '');
+                const postcodeVal = normalize($('#enhancedLiftPostcode').val() || '');
                 const liftId = $('#enhancedLiftId').val() || ''; // при редагуванні виключаємо поточний
                 if (!addrVal || !window.allLiftsData) {
                     $('#admin-siblings-info').hide();
@@ -4502,10 +4504,17 @@
                 const siblings = window.allLiftsData.filter(l => {
                     const lid = (l._id || l.id || '').toString();
                     if (liftId && lid === liftId) return false; // не рахуємо себе
-                    const lAddr = l.address && l.address.street
-                        ? (l.address.street + ' ' + (l.address.city || '')).toLowerCase()
-                        : (typeof l.address === 'string' ? l.address.toLowerCase() : '');
-                    return lAddr.includes(addrVal) || addrVal.includes(lAddr.split(',')[0].trim());
+                    // Порівнюємо повну адресу (вулиця + номер будинку) точно
+                    const storedStreet = normalize(
+                        (l.address && l.address.street)
+                            ? l.address.street
+                            : (typeof l.address === 'string' ? l.address : '')
+                    );
+                    const streetMatch = storedStreet === addrVal;
+                    // Якщо обидві сторони мають поштовий код — він теж повинен збігатися
+                    const storedZip = normalize((l.address && l.address.zipCode) || '');
+                    const zipMatch = (storedZip && postcodeVal) ? storedZip === postcodeVal : true;
+                    return streetMatch && zipMatch;
                 });
                 const infoEl = document.getElementById('admin-siblings-info');
                 const textEl = document.getElementById('admin-siblings-text');
