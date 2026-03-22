@@ -70,6 +70,10 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false  // true — примусова зміна пароля при першому вході
     },
+    tempPasswordHint: {
+        type: String,
+        default: ''  // тимчасовий пароль (очищається після зміни)
+    },
     lastLogin: {
         type: Date
     },

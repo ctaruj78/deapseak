@@ -844,6 +844,24 @@
                                         <!-- Безпека -->
                                         <div class="tab-pane fade" id="security" role="tabpanel">
                                             <h4 class="mb-4">Безпека</h4>
+
+                                            <!-- 🔑 Тимчасовий пароль — показується поки mustChangePassword = true -->
+                                            <div id="tempPasswordHintCard" style="display:none" class="mb-4">
+                                                <div style="background:#fff8e1;border:2px solid #ffb300;border-radius:10px;padding:20px 24px">
+                                                    <div class="d-flex align-items-start">
+                                                        <span style="font-size:32px;margin-right:16px">🔑</span>
+                                                        <div style="flex:1">
+                                                            <strong style="font-size:16px;color:#5d4037">A sua palavra-passe temporária</strong>
+                                                            <p style="color:#6d4c00;font-size:14px;margin:6px 0 12px">A sua conta foi criada com uma palavra-passe temporária. Guarde-a ou altere-a para uma palavra-passe pessoal.</p>
+                                                            <div style="display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #ffe082;border-radius:6px;padding:10px 16px">
+                                                                <code id="tempPasswordDisplay" style="font-size:20px;font-weight:bold;color:#e65100;letter-spacing:3px"></code>
+                                                                <button type="button" onclick="copyTempPassword()" style="margin-left:auto;background:none;border:1px solid #ffb300;border-radius:4px;padding:4px 12px;font-size:13px;cursor:pointer;color:#e65100">📋 Copiar</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
                                             <div class="row">
                                                 <div class="col-md-6">
                                                     <div class="card">
@@ -1274,6 +1292,12 @@
                     
                     // Зберігаємо в localStorage для кешування
                     localStorage.setItem('userData', JSON.stringify(userData));
+
+                    // 🔑 Показуємо тимчасовий пароль якщо ще не змінено
+                    if (userData.mustChangePassword && userData.tempPasswordHint) {
+                        document.getElementById('tempPasswordDisplay').textContent = userData.tempPasswordHint;
+                        document.getElementById('tempPasswordHintCard').style.display = 'block';
+                    }
                 } else {
                     console.warn('⚠️ API /api/users/me failed, using localStorage fallback');
                     
@@ -1400,7 +1424,12 @@
                 try {
                     const token = localStorage.getItem('liftmanager_jwt') || sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('token');
                     const res = await fetch('/api/users/change-password', { method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ currentPassword: current, newPassword: newPwd }) });
-                    if (res.ok) { showSettingsToast('Пароль успішно змінено', 'success'); $('#profileChangePasswordForm')[0].reset(); }
+                    if (res.ok) {
+                        showSettingsToast('Palauma-passe alterada com sucesso', 'success');
+                        $('#profileChangePasswordForm')[0].reset();
+                        // Сховати підказку тимчасового пароля
+                        document.getElementById('tempPasswordHintCard').style.display = 'none';
+                    }
                     else { const d = await res.json(); showSettingsToast(d.message || 'Помилка зміни пароля', 'error'); }
                 } catch { showSettingsToast('Помилка з’єднання', 'error'); }
                 finally { $('#profileChangePwdBtn').prop('disabled', false).html('<i class="fas fa-key mr-2"></i>Змінити пароль'); }
@@ -1436,6 +1465,26 @@
                 $('#settings-tab').tab('show');
             }
         });
+
+        // 🔑 Копіювати тимчасовий пароль у буфер обміну
+        function copyTempPassword() {
+            const pwd = document.getElementById('tempPasswordDisplay').textContent;
+            if (!pwd) return;
+            navigator.clipboard.writeText(pwd).then(() => {
+                const btn = event.target;
+                const orig = btn.textContent;
+                btn.textContent = '✅ Copiado!';
+                setTimeout(() => { btn.textContent = orig; }, 1800);
+            }).catch(() => {
+                // Fallback
+                const ta = document.createElement('textarea');
+                ta.value = pwd;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+            });
+        }
     </script>
 </body>
 </html>

@@ -246,6 +246,7 @@ exports.changePassword = async (req, res, next) => {
         // Оновлення пароля (автоматично хешується)
         user.password = newPassword;
         user.mustChangePassword = false; // Знімаємо примусовову після зміни
+        user.tempPasswordHint = '';  // Очищаємо підказку пароля після зміни
         await user.save();
 
         res.json({
