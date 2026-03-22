@@ -392,6 +392,8 @@
                             if (modal) {
                                 modal.style.display = 'flex';
                                 document.getElementById('mcpEmail').value = user.email;
+                                // Автозаповнюємо поточний пароль — юзер щойно його ввів
+                                document.getElementById('mcpCurrent').value = document.getElementById('password').value;
                                 showMessage('Вітаємо! Будь ласка змініть тимчасовий пароль перед початком роботи.', 'warning');
                             }
                         } else {
