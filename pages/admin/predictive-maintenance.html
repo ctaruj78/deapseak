@@ -188,192 +188,306 @@
 
     <!-- Main Sidebar -->
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
-        <a href="/" class="brand-link">
-                            <span class="elevation-3" style="display:inline-flex;align-items:center;justify-content:center;width:33px;height:33px;border-radius:50%;background:linear-gradient(135deg,#17a2b8,#007bff);color:#fff;font-size:17px;margin-right:8px;opacity:.9;flex-shrink:0;"><i class="fas fa-shield-alt"></i></span>
-<span class="brand-text font-weight-light" style="line-height:1.4;">FestLift <small style="opacity:.7;font-size:11px;">Painel Admin</small><br><small id="sidebarName" style="opacity:.85;font-size:11px;color:#9ecfff;font-weight:400;">—</small></span>
-        </a>
-        
-        <div class="sidebar">
-            <!-- CANONICAL ADMIN SIDEBAR - Copy this to all admin pages -->
-<nav class="mt-2">
-    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-        <!-- Dashboard -->
-        <li class="nav-item">
-            <a href="/pages/admin/admin-dashboard.html" class="nav-link">
-                <i class="nav-icon fas fa-tachometer-alt"></i>
-                <p>Дашборд</p>
-            </a>
-        </li>
+    <a href="/pages/admin/admin-dashboard.html" class="brand-link">
+        <span class="elevation-3" style="display:inline-flex;align-items:center;justify-content:center;width:33px;height:33px;border-radius:50%;background:linear-gradient(135deg,#17a2b8,#007bff);color:#fff;font-size:17px;margin-right:8px;opacity:.9;flex-shrink:0;"><i class="fas fa-shield-alt"></i></span>
+        <span class="brand-text font-weight-light" style="line-height:1.4;">FestLift <small style="opacity:.7;font-size:11px;">Painel Admin</small><br><small id="sidebarName" style="opacity:.85;font-size:11px;color:#9ecfff;font-weight:400;">—</small></span>
+    </a>
 
-        <!-- QR System -->
-        <li class="nav-item">
-            <a href="#" class="nav-link">
-                <i class="nav-icon fas fa-qrcode"></i>
-                <p>
-                    QR Система
-                    <i class="right fas fa-angle-left"></i>
-                </p>
-            </a>
-            <ul class="nav nav-treeview">
-                <li class="nav-item">
-                    <a href="/pages/admin/qr-management.html" class="nav-link">
-                        <i class="fas fa-cog nav-icon"></i>
-                        <p>Gestão QR-кодами</p>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="/pages/admin/qr-analytics.html" class="nav-link">
-                        <i class="fas fa-chart-line nav-icon"></i>
-                        <p>Análise QR-кодів</p>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="/pages/admin/qr-history.html" class="nav-link">
-                        <i class="fas fa-history nav-icon"></i>
-                        <p>Історія сканувань</p>
-                    </a>
-                </li>
-            </ul>
-        </li>
-
-        <!-- Lifts -->
-        <li class="nav-item">
-            <a href="#" class="nav-link">
-                <i class="nav-icon fas fa-elevator"></i>
-                <p>
-                    Elevadores
-                    <i class="right fas fa-angle-left"></i>
-                </p>
-            </a>
-            <ul class="nav nav-treeview">
-                <li class="nav-item">
-                    <a href="/pages/admin/lifts.html" class="nav-link">
-                        <i class="fas fa-list nav-icon"></i>
-                        <p>Управління ліфтами</p>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="/pages/admin/requests.html" class="nav-link">
-                        <i class="fas fa-clipboard-list nav-icon"></i>
-                        <p>Заявки</p>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="/pages/admin/maps.html" class="nav-link">
-                        <i class="fas fa-map-marked-alt nav-icon"></i>
-                        <p>Мапа ліфтів</p>
-                    </a>
-                </li>
-            </ul>
-        </li>
-
-        <!-- Users -->
-        <li class="nav-item">
-            <a href="/pages/admin/users.html" class="nav-link">
-                <i class="nav-icon fas fa-users"></i>
-                <p>Utilizadores</p>
-            </a>
-        </li>
-
-        <!-- Documents -->
-        <li class="nav-item">
-            <a href="#" class="nav-link">
-                <i class="nav-icon fas fa-file-alt"></i>
-                <p>
-                    Документи
-                    <i class="right fas fa-angle-left"></i>
-                </p>
-            </a>
-            <ul class="nav nav-treeview">
-                <li class="nav-item">
-                    <a href="/pages/admin/invoice-template.html" class="nav-link">
-                        <i class="fas fa-file-invoice nav-icon"></i>
-                        <p>Orçamentos (Створити)</p>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="/pages/admin/orcamentos-list.html" class="nav-link">
-                        <i class="fas fa-list nav-icon"></i>
-                        <p>Orçamentos (Список)</p>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="/pages/admin/email-template.html" class="nav-link">
-                        <i class="fas fa-envelope nav-icon"></i>
-                        <p>Email шаблони</p>
-                    </a>
-                </li>
-            </ul>
-        </li>
-
-        <!-- Analytics -->
-        <li class="nav-item">
-            <a href="#" class="nav-link">
-                <i class="nav-icon fas fa-chart-line"></i>
-                <p>
-                    Análise
-                    <i class="right fas fa-angle-left"></i>
-                </p>
-            </a>
-            <ul class="nav nav-treeview">
-                <li class="nav-item">
-                    <a href="/pages/admin/unified-analytics.html" class="nav-link">
-                        <i class="fas fa-chart-area nav-icon"></i>
-                        <p>Unified Analytics</p>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="/pages/admin/predictive-maintenance.html" class="nav-link active">
-                        <i class="fas fa-brain nav-icon"></i>
-                        <p>Predictive Maintenance</p>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="/pages/admin/reports.html" class="nav-link">
-                        <i class="fas fa-chart-bar nav-icon"></i>
-                        <p>Звіти</p>
-                    </a>
-                </li>
-            </ul>
-        </li>
-
-        <li class="nav-item">
-            <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link">
-                <i class="nav-icon fas fa-magic"></i>
-                <p>AI Асистент</p>
-            </a>
-        </li>
-
-        <!-- Support -->
-        <li class="nav-item">
-            <a href="#" class="nav-link">
-                <i class="nav-icon fas fa-headset"></i>
-                <p>
-                    Suporte
-                    <i class="right fas fa-angle-left"></i>
-                </p>
-            </a>
-            <ul class="nav nav-treeview">
-                <li class="nav-item">
-                    <a href="/pages/admin/notifications.html" class="nav-link">
-                        <i class="fas fa-bell nav-icon"></i>
-                        <p>Сповіщення</p>
-                    </a>
-                </li>
-            </ul>
-        </li>
-
-        <!-- Settings -->
-        <li class="nav-item">
-            <a href="/pages/admin/settings.html" class="nav-link">
-                <i class="nav-icon fas fa-cogs"></i>
-                <p>Configurações</p>
-            </a>
-        </li>
-    </ul>
-</nav>
+    <div class="sidebar">
+        <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+            <div class="image">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Ccircle cx='80' cy='80' r='80' fill='%23667eea'/%3E%3Ccircle cx='80' cy='62' r='30' fill='white'/%3E%3Cellipse cx='80' cy='135' rx='52' ry='40' fill='white'/%3E%3C/svg%3E" class="img-circle elevation-2" alt="User Image">
+            </div>
+            <div class="info">
+                <a href="/pages/admin/profile.html" class="d-block" id="sidebarFullName">Адміністратор</a>
+                <small class="text-success">Адміністратор</small>
+            </div>
         </div>
-    </aside>
+
+        <nav class="mt-2">
+            <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+
+                <!-- Дашборд -->
+                <li class="nav-item">
+                    <a href="/pages/admin/admin-dashboard.html" class="nav-link" id="nav-dashboard">
+                        <i class="nav-icon fas fa-tachometer-alt"></i>
+                        <p>Дашборд</p>
+                    </a>
+                </li>
+
+                <!-- QR Система -->
+                <li class="nav-item" id="group-qr">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-qrcode"></i>
+                        <p>QR Система<i class="right fas fa-angle-left"></i></p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/pages/admin/qr-management.html" class="nav-link" id="nav-qr-management">
+                                <i class="fas fa-cog nav-icon"></i>
+                                <p>Управління QR</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/admin/qr-analytics.html" class="nav-link" id="nav-qr-analytics">
+                                <i class="fas fa-chart-line nav-icon"></i>
+                                <p>Аналітика QR</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/admin/qr-history.html" class="nav-link" id="nav-qr-history">
+                                <i class="fas fa-history nav-icon"></i>
+                                <p>Історія сканувань</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Ліфти -->
+                <li class="nav-item" id="group-lifts">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-elevator"></i>
+                        <p>Ліфти<i class="right fas fa-angle-left"></i></p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/pages/admin/lifts.html" class="nav-link" id="nav-lifts">
+                                <i class="fas fa-list nav-icon"></i>
+                                <p>Управління ліфтами</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/admin/requests.html" class="nav-link" id="nav-requests">
+                                <i class="fas fa-clipboard-list nav-icon"></i>
+                                <p>Заявки</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/admin/maps.html" class="nav-link" id="nav-maps">
+                                <i class="fas fa-map-marked-alt nav-icon"></i>
+                                <p>Мапа ліфтів</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Користувачі -->
+                <li class="nav-item">
+                    <a href="/pages/admin/users.html" class="nav-link" id="nav-users">
+                        <i class="nav-icon fas fa-users"></i>
+                        <p>Користувачі</p>
+                    </a>
+                </li>
+
+                <!-- Документи -->
+                <li class="nav-item" id="group-docs">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-file-alt"></i>
+                        <p>Документи<i class="right fas fa-angle-left"></i></p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/pages/admin/invoice-template.html" class="nav-link" id="nav-invoice-template">
+                                <i class="fas fa-file-invoice nav-icon"></i>
+                                <p>Кошторис (Створити)</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/admin/orcamentos-list.html" class="nav-link" id="nav-orcamentos-list">
+                                <i class="fas fa-list-alt nav-icon"></i>
+                                <p>Кошторис (Список)</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/admin/email-template.html" class="nav-link" id="nav-email-template">
+                                <i class="fas fa-envelope nav-icon"></i>
+                                <p>Email шаблони</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/admin/inspection-template.html" class="nav-link" id="nav-inspection-template">
+                                <i class="fas fa-clipboard-check nav-icon"></i>
+                                <p>Інспекції</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/admin/report-template.html" class="nav-link" id="nav-report-template">
+                                <i class="fas fa-file-pdf nav-icon"></i>
+                                <p>Шаблони звітів</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Аналітика -->
+                <li class="nav-item" id="group-analytics">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-chart-line"></i>
+                        <p>Аналітика<i class="right fas fa-angle-left"></i></p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/pages/admin/unified-analytics.html" class="nav-link" id="nav-unified-analytics">
+                                <i class="fas fa-chart-area nav-icon"></i>
+                                <p>Зведена аналітика</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/admin/predictive-maintenance.html" class="nav-link" id="nav-predictive-maintenance">
+                                <i class="fas fa-brain nav-icon"></i>
+                                <p>AI Прогнозування</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/admin/reports.html" class="nav-link" id="nav-reports">
+                                <i class="fas fa-chart-bar nav-icon"></i>
+                                <p>Звіти</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- AI Асистент -->
+                <li class="nav-item">
+                    <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link" id="nav-ai-assistant">
+                        <i class="nav-icon fas fa-magic"></i>
+                        <p>AI Асистент</p>
+                    </a>
+                </li>
+
+                <!-- Підтримка -->
+                <li class="nav-item" id="group-support">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-headset"></i>
+                        <p>Підтримка<i class="right fas fa-angle-left"></i></p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="/pages/admin/support.html" class="nav-link" id="nav-support">
+                                <i class="fas fa-life-ring nav-icon"></i>
+                                <p>Технічна підтримка</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/pages/admin/notifications.html" class="nav-link" id="nav-notifications">
+                                <i class="fas fa-bell nav-icon"></i>
+                                <p>Сповіщення</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Налаштування -->
+                <li class="nav-item">
+                    <a href="/pages/admin/settings.html" class="nav-link" id="nav-settings">
+                        <i class="nav-icon fas fa-cogs"></i>
+                        <p>Налаштування</p>
+                    </a>
+                </li>
+
+                <!-- Профіль -->
+                <li class="nav-item">
+                    <a href="/pages/admin/profile.html" class="nav-link" id="nav-profile">
+                        <i class="nav-icon fas fa-user-circle"></i>
+                        <p>Профіль</p>
+                    </a>
+                </li>
+
+                <!-- Вийти -->
+                <li class="nav-item">
+                    <a href="#" onclick="if(typeof AuthManager!=='undefined'){AuthManager.logout();}else{localStorage.clear();sessionStorage.clear();window.location.replace('/pages/auth/login.html');}" class="nav-link">
+                        <i class="nav-icon fas fa-sign-out-alt text-danger"></i>
+                        <p>Вийти</p>
+                    </a>
+                </li>
+
+            </ul>
+        </nav>
+    </div>
+</aside>
+<script>
+/* Sidebar auto-activate based on current page */
+(function () {
+    var page = window.location.pathname.split('/').pop().replace('.html', '');
+    var map = {
+        'admin-dashboard':        'nav-dashboard',
+        'qr-management':          'nav-qr-management',
+        'qr-analytics':           'nav-qr-analytics',
+        'qr-history':             'nav-qr-history',
+        'qr-batch':               'nav-qr-management',
+        'qr-generator':           'nav-qr-management',
+        'lifts':                  'nav-lifts',
+        'requests':               'nav-requests',
+        'maps':                   'nav-maps',
+        'users':                  'nav-users',
+        'role-manager':           'nav-users',
+        'invoice-template':       'nav-invoice-template',
+        'orcamentos-list':        'nav-orcamentos-list',
+        'email-template':         'nav-email-template',
+        'inspection-template':    'nav-inspection-template',
+        'report-template':        'nav-report-template',
+        'unified-analytics':      'nav-unified-analytics',
+        'analytics':              'nav-unified-analytics',
+        'analytics-dashboard':    'nav-unified-analytics',
+        'predictive-maintenance': 'nav-predictive-maintenance',
+        'reports':                'nav-reports',
+        'ai-assistant':           'nav-ai-assistant',
+        'ai-assistant-full':      'nav-ai-assistant',
+        'ai-diagnostics-full':    'nav-ai-assistant',
+        'support':                'nav-support',
+        'notifications':          'nav-notifications',
+        'settings':               'nav-settings',
+        'profile':                'nav-profile',
+        'audit-log':              'nav-settings',
+        'import-checklists':      'nav-inspection-template'
+    };
+    var groups = {
+        'nav-qr-management':          'group-qr',
+        'nav-qr-analytics':           'group-qr',
+        'nav-qr-history':             'group-qr',
+        'nav-lifts':                  'group-lifts',
+        'nav-requests':               'group-lifts',
+        'nav-maps':                   'group-lifts',
+        'nav-invoice-template':       'group-docs',
+        'nav-orcamentos-list':        'group-docs',
+        'nav-email-template':         'group-docs',
+        'nav-inspection-template':    'group-docs',
+        'nav-report-template':        'group-docs',
+        'nav-unified-analytics':      'group-analytics',
+        'nav-predictive-maintenance': 'group-analytics',
+        'nav-reports':                'group-analytics',
+        'nav-support':                'group-support',
+        'nav-notifications':          'group-support'
+    };
+    var navId = map[page];
+    if (navId) {
+        var el = document.getElementById(navId);
+        if (el) {
+            el.classList.add('active');
+            var groupId = groups[navId];
+            if (groupId) {
+                var grp = document.getElementById(groupId);
+                if (grp) {
+                    grp.classList.add('menu-open');
+                    var parentLink = grp.querySelector('a.nav-link');
+                    if (parentLink) parentLink.classList.add('active');
+                }
+            }
+        }
+    }
+    /* Load admin name into sidebar */
+    try {
+        var jwt = localStorage.getItem('liftmanager_jwt') || sessionStorage.getItem('liftmanager_jwt');
+        if (jwt) {
+            var payload = JSON.parse(atob(jwt.split('.')[1]));
+            var nameEl = document.getElementById('sidebarFullName');
+            if (nameEl && payload.name) nameEl.textContent = payload.name;
+            var shortEl = document.getElementById('sidebarName');
+            if (shortEl && payload.name) shortEl.textContent = payload.name;
+        }
+    } catch (e) {}
+}());
+</script>
 
     <!-- Content Wrapper -->
     <div class="content-wrapper">

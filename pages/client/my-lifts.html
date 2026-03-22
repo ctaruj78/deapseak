@@ -381,15 +381,6 @@
                     </a>
                 </li>
                 
-                <!-- Налаштування (окремо внизу) -->
-                <li class="nav-header">НАЛАШТУВАННЯ</li>
-                <li class="nav-item">
-                    <a href="/pages/client/settings.html" class="nav-link" id="nav-settings">
-                        <i class="nav-icon fas fa-cog"></i>
-                        <p>Налаштування</p>
-                    </a>
-                </li>
-                
                 <!-- Вихід -->
                 <li class="nav-item">
                     <a href="#" onclick="logout()" class="nav-link">
@@ -421,9 +412,7 @@
         'ai-assistant': 'nav-ai-assistant',
         'notifications': 'nav-notifications',
         'support': 'nav-support',
-        'profile': 'nav-profile',
-        'settings': 'nav-settings'
-    };
+        'profile': 'nav-profile',    };
     
     // Підсвітити активний пункт
     const activeNav = pageMap[currentPage];
@@ -822,7 +811,7 @@
           }
           const map = L.map('liftsMap').setView([38.7223, -9.1393], 10);
           window._liftsPageMap = map;
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
             attribution: 'Map data © OpenStreetMap contributors'
           }).addTo(map);
 

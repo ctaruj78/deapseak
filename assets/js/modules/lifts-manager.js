@@ -368,7 +368,7 @@ class LiftsManager {
                     window._clientLiftMap = null;
                 }
                 window._clientLiftMap = L.map('clientLiftMap').setView([lat, lng], 15);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
                     attribution: '© OpenStreetMap contributors'
                 }).addTo(window._clientLiftMap);
                 L.marker([lat, lng])

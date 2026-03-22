@@ -532,9 +532,15 @@
     <script>
         function logout() {
             if (confirm('Ви впевнені, що хочете вийти з системи?')) {
-                localStorage.removeItem('authToken');
-                localStorage.removeItem('userData');
-                window.location.replace('/pages/auth/login.html');
+                if (typeof AuthManager !== 'undefined') {
+                    AuthManager.logout();
+                } else {
+                    ['token','liftmanager_jwt','authToken','liftmanager_user','userData'].forEach(k => {
+                        localStorage.removeItem(k);
+                        sessionStorage.removeItem(k);
+                    });
+                    window.location.replace('/pages/auth/login.html');
+                }
             }
         }
 
@@ -586,14 +592,7 @@
             });
         });
     </script>
-<!-- jQuery -->
-<script src="../../plugins/jquery/jquery.min.js"></script>
-<!-- Bootstrap -->
-<script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
-<!-- AdminLTE -->
-<script src="../../plugins/adminlte/adminlte.min.js"></script>
-
-<!-- Sidebar Init (MUST be before other scripts) -->
+<!-- Sidebar Init -->
 <script src="../../assets/js/sidebar-init.js"></script>
 
 <!-- API Configuration -->
@@ -602,24 +601,13 @@
 <!-- Auth System -->
 <script src="../../assets/js/auth.js?v=20241206"></script>
 
-<!-- DataTables (if needed) -->
+<!-- DataTables -->
 <script src="../../plugins/datatables/js/jquery.dataTables.min.js"></script>
 <script src="../../plugins/datatables/js/dataTables.bootstrap4.min.js"></script>
 
 <!-- SweetAlert2 -->
 <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        if (typeof loadSidebarWithInit === "function") {
-            loadSidebarWithInit("includes/sidebar.html");
-        }
-    });
-</script>
-</body>
-</html>
-
-<!-- Ініціалізація динамічного сайдбару -->
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         if (typeof loadSidebarWithInit === "function") {

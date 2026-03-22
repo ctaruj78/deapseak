@@ -45,8 +45,8 @@ class HistoryManager {
             }
         }
 
-        this.applyFilters();
         this.setupCharts();
+        this.applyFilters();
     }
 
     createSampleEvents() {
@@ -201,7 +201,7 @@ class HistoryManager {
         }
 
         // Пошук за текстом
-        const searchTerm = $('#searchInput').val().toLowerCase();
+        const searchTerm = ($('#searchInput').val() || '').toLowerCase();
         if (searchTerm) {
             filteredEvents = filteredEvents.filter(event =>
                 (event.description || '').toLowerCase().includes(searchTerm) ||
@@ -352,6 +352,18 @@ class HistoryManager {
     }
 
     setupCharts() {
+        // Знищити будь-які існуючі екземпляри Chart.js на цих canvas через глобальний реєстр
+        ['eventTypeChart', 'frequencyChart', 'ratingsChart', 'costsChart'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                const existing = Chart.getChart(el);
+                if (existing) existing.destroy();
+            }
+        });
+        // Також знищити збережені посилання (на випадок розбіжності)
+        Object.values(this.charts).forEach(chart => {
+            try { if (chart) chart.destroy(); } catch {}
+        });
         this.charts = {
             eventType: this.createEventTypeChart(),
             frequency: this.createFrequencyChart(),
@@ -488,6 +500,8 @@ class HistoryManager {
     }
 
     updateCharts(events) {
+        if (!this.charts.eventType) return;
+
         this.charts.eventType.data.datasets[0].data = this.calculateEventTypeData(events);
         this.charts.eventType.update();
 

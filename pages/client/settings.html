@@ -2,8 +2,11 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Клієнт — Configurações</title>
+    <title>Redirect</title>
+    <script>window.location.replace('/pages/client/profile.html#settings');</script>
+</head>
+<body></body>
+</html>
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
 </head>
@@ -287,14 +290,139 @@
             </div>
             <section class="content">
                 <div class="container-fluid">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">Configurações клієнта</h3>
-                        </div>
-                        <div class="card-body">
-                            <p>Тут буде налаштування для клієнта.</p>
+
+                    <!-- Аватар -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-user-circle mr-2"></i>Фото профілю</h3>
+                                </div>
+                                <div class="card-body d-flex align-items-center" style="gap:24px;">
+                                    <img id="avatarPreview" src="../../assets/img/avatar-placeholder.png"
+                                         onerror="this.src='https://ui-avatars.com/api/?name=Client&background=28a745&color=fff&size=96'"
+                                         style="width:96px;height:96px;border-radius:50%;object-fit:cover;border:3px solid #28a745;">
+                                    <div>
+                                        <p class="mb-2 text-muted">JPG або PNG, не більше 2 МБ</p>
+                                        <label class="btn btn-outline-primary mb-0" style="cursor:pointer;">
+                                            <i class="fas fa-upload mr-2"></i>Завантажити фото
+                                            <input type="file" id="avatarInput" accept="image/jpeg,image/png" style="display:none;">
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
+
+                    <!-- Зміна пароля -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-lock mr-2"></i>Зміна пароля</h3>
+                                </div>
+                                <div class="card-body">
+                                    <form id="changePasswordForm">
+                                        <div class="form-group">
+                                            <label for="currentPassword">Поточний пароль</label>
+                                            <input type="password" class="form-control" id="currentPassword" required placeholder="Введіть поточний пароль">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="newPassword">Новий пароль</label>
+                                            <input type="password" class="form-control" id="newPassword" required placeholder="Мінімум 8 символів">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="confirmPassword">Підтвердження нового пароля</label>
+                                            <input type="password" class="form-control" id="confirmPassword" required placeholder="Повторіть новий пароль">
+                                        </div>
+                                        <button type="submit" class="btn btn-primary" id="changePwdBtn">
+                                            <i class="fas fa-key mr-2"></i>Змінити пароль
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Сповіщення -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-bell mr-2"></i>Канали сповіщень</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="form-group d-flex justify-content-between align-items-center">
+                                        <label for="notifyEmail" class="mb-0"><i class="fas fa-envelope mr-2 text-primary"></i>Email</label>
+                                        <div class="custom-control custom-switch">
+                                            <input type="checkbox" class="custom-control-input" id="notifyEmail">
+                                            <label class="custom-control-label" for="notifyEmail"></label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group d-flex justify-content-between align-items-center">
+                                        <label for="notifyPush" class="mb-0"><i class="fas fa-mobile-alt mr-2 text-success"></i>Push-сповіщення</label>
+                                        <div class="custom-control custom-switch">
+                                            <input type="checkbox" class="custom-control-input" id="notifyPush">
+                                            <label class="custom-control-label" for="notifyPush"></label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group d-flex justify-content-between align-items-center mb-0">
+                                        <label for="notifySMS" class="mb-0"><i class="fas fa-sms mr-2 text-warning"></i>SMS</label>
+                                        <div class="custom-control custom-switch">
+                                            <input type="checkbox" class="custom-control-input" id="notifySMS">
+                                            <label class="custom-control-label" for="notifySMS"></label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-filter mr-2"></i>Типи подій</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="form-group d-flex justify-content-between align-items-center">
+                                        <label for="notifyMaintenance" class="mb-0"><i class="fas fa-tools mr-2 text-info"></i>Технічне обслуговування</label>
+                                        <div class="custom-control custom-switch">
+                                            <input type="checkbox" class="custom-control-input" id="notifyMaintenance">
+                                            <label class="custom-control-label" for="notifyMaintenance"></label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group d-flex justify-content-between align-items-center">
+                                        <label for="notifyEmergency" class="mb-0"><i class="fas fa-exclamation-triangle mr-2 text-danger"></i>Аварійні ситуації</label>
+                                        <div class="custom-control custom-switch">
+                                            <input type="checkbox" class="custom-control-input" id="notifyEmergency">
+                                            <label class="custom-control-label" for="notifyEmergency"></label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group d-flex justify-content-between align-items-center">
+                                        <label for="notifyInvoice" class="mb-0"><i class="fas fa-file-invoice-dollar mr-2 text-success"></i>Нові рахунки</label>
+                                        <div class="custom-control custom-switch">
+                                            <input type="checkbox" class="custom-control-input" id="notifyInvoice">
+                                            <label class="custom-control-label" for="notifyInvoice"></label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group d-flex justify-content-between align-items-center mb-0">
+                                        <label for="notifyStatus" class="mb-0"><i class="fas fa-sync mr-2 text-secondary"></i>Зміна статусів заявок</label>
+                                        <div class="custom-control custom-switch">
+                                            <input type="checkbox" class="custom-control-input" id="notifyStatus">
+                                            <label class="custom-control-label" for="notifyStatus"></label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <button class="btn btn-success" id="saveNotifications">
+                                <i class="fas fa-save mr-2"></i>Зберегти налаштування сповіщень
+                            </button>
+                        </div>
+                    </div>
+
                 </div>
             </section>
         </div>
@@ -309,8 +437,152 @@
     <script src="../../plugins/jquery/jquery.min.js"></script>
     <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
     <script src="../../plugins/adminlte/adminlte.min.js"></script>
-</body>
+    <script src="../../assets/js/modules/auth-manager.js"></script>
+    <script src="../../assets/js/modules/client-profile-loader.js"></script>
+    <script>
+    function logout() {
+        if (confirm('Ви впевнені, що хочете вийти?')) {
+            if (typeof AuthManager !== 'undefined') {
+                AuthManager.logout();
+            } else {
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.replace('/pages/auth/login.html');
+            }
+        }
+    }
 
-    
+    function getToken() {
+        return sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('token');
+    }
+
+    // ── Завантаження збережених налаштувань сповіщень ──────────────────────
+    function loadNotificationSettings() {
+        const saved = JSON.parse(localStorage.getItem('client_notification_settings') || '{}');
+        const defaults = {
+            notifyEmail: true,
+            notifyPush: true,
+            notifySMS: false,
+            notifyMaintenance: true,
+            notifyEmergency: true,
+            notifyInvoice: true,
+            notifyStatus: true
+        };
+        const cfg = Object.assign({}, defaults, saved);
+        Object.keys(cfg).forEach(key => {
+            const el = document.getElementById(key);
+            if (el) el.checked = cfg[key];
+        });
+    }
+
+    // ── Збереження налаштувань сповіщень ──────────────────────────────────
+    $('#saveNotifications').on('click', function() {
+        const settings = {};
+        ['notifyEmail','notifyPush','notifySMS','notifyMaintenance','notifyEmergency','notifyInvoice','notifyStatus'].forEach(k => {
+            settings[k] = document.getElementById(k).checked;
+        });
+        localStorage.setItem('client_notification_settings', JSON.stringify(settings));
+        showToast('Налаштування сповіщень збережено', 'success');
+    });
+
+    // ── Зміна пароля ──────────────────────────────────────────────────────
+    $('#changePasswordForm').on('submit', async function(e) {
+        e.preventDefault();
+        const currentPwd = $('#currentPassword').val();
+        const newPwd = $('#newPassword').val();
+        const confirmPwd = $('#confirmPassword').val();
+
+        if (newPwd.length < 8) {
+            showToast('Новий пароль має бути не менше 8 символів', 'error');
+            return;
+        }
+        if (newPwd !== confirmPwd) {
+            showToast('Паролі не співпадають', 'error');
+            return;
+        }
+
+        const btn = $('#changePwdBtn');
+        btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i>Збереження...');
+
+        try {
+            const token = getToken();
+            const res = await fetch('/api/users/change-password', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ currentPassword: currentPwd, newPassword: newPwd })
+            });
+
+            if (res.ok) {
+                showToast('Пароль успішно змінено', 'success');
+                $('#changePasswordForm')[0].reset();
+            } else {
+                const data = await res.json();
+                showToast(data.message || 'Помилка зміни пароля', 'error');
+            }
+        } catch (err) {
+            showToast('Помилка з\'єднання з сервером', 'error');
+        } finally {
+            btn.prop('disabled', false).html('<i class="fas fa-key mr-2"></i>Змінити пароль');
+        }
+    });
+
+    // ── Завантаження аватара ───────────────────────────────────────────────
+    $('#avatarInput').on('change', async function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (file.size > 2 * 1024 * 1024) {
+            showToast('Файл занадто великий (максимум 2 МБ)', 'error');
+            return;
+        }
+
+        // Показати прев'ю
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            $('#avatarPreview').attr('src', ev.target.result);
+        };
+        reader.readAsDataURL(file);
+
+        // Завантажити на сервер
+        const formData = new FormData();
+        formData.append('avatar', file);
+
+        try {
+            const token = getToken();
+            const res = await fetch('/api/users/avatar', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+            if (res.ok) {
+                showToast('Аватар оновлено', 'success');
+            } else {
+                showToast('Не вдалося завантажити аватар', 'error');
+            }
+        } catch {
+            // Якщо API недоступне — зберегти локально
+            localStorage.setItem('client_avatar', $('#avatarPreview').attr('src'));
+            showToast('Аватар збережено локально', 'success');
+        }
+    });
+
+    // ── Утиліта: toast ─────────────────────────────────────────────────────
+    function showToast(message, type) {
+        const color = type === 'success' ? '#28a745' : '#dc3545';
+        const icon  = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+        const toast = $(`<div style="position:fixed;bottom:20px;right:20px;z-index:9999;background:${color};color:#fff;padding:12px 20px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.2);display:flex;align-items:center;gap:10px;font-size:14px;"><i class="fas ${icon}"></i>${message}</div>`);
+        $('body').append(toast);
+        setTimeout(() => toast.fadeOut(400, () => toast.remove()), 3000);
+    }
+
+    $(document).ready(function() {
+        loadNotificationSettings();
+        // Відновити збережений аватар
+        const savedAvatar = localStorage.getItem('client_avatar');
+        if (savedAvatar) $('#avatarPreview').attr('src', savedAvatar);
+    });
+    </script>
+</body>
 </html>
-</body> -->

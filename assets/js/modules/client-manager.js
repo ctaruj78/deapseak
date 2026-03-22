@@ -22,9 +22,10 @@ class ClientManager {
     async loadClients() {
         try {
             console.log('🔄 Завантаження клієнтів з API...');
+            const _token = localStorage.getItem('token') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || '';
             const response = await fetch('/api/users?role=client', {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    'Authorization': `Bearer ${_token}`
                 }
             });
             
@@ -40,7 +41,7 @@ class ClientManager {
                 let allRequests = [];
                 try {
                     const reqRes = await fetch('/api/requests', {
-                        headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+                        headers: { 'Authorization': `Bearer ${_token}` }
                     });
                     if (reqRes.ok) {
                         const reqData = await reqRes.json();
@@ -97,12 +98,16 @@ class ClientManager {
                 
                 this.requests = allRequests.map(req => ({
                     id: req._id,
+                    requestNumber: req.requestNumber || null,
                     clientId: req.client?._id || req.clientId,
-                    clientName: req.client ? `${req.client.firstName || ''} ${req.client.lastName || ''}`.trim() : 'Невідомо',
+                    clientName: req.client
+                        ? (`${req.client.firstName || ''} ${req.client.lastName || ''}`.trim() || req.client.companyName || req.client.username || req.client.email || 'Невідомо')
+                        : (req.clientName || 'Невідомо'),
                     title: req.title || req.description?.substring(0, 50) || 'Без назви',
                     priority: req.priority || 'medium',
                     status: req.status || 'new',
-                    date: new Date(req.createdAt).toLocaleString('uk-UA')
+                    _rawDate: req.createdAt || null,
+                    date: req.createdAt ? new Date(req.createdAt).toLocaleString('uk-UA') : '—'
                 }));
                 
                 console.log('✅ Клієнтів оброблено:', this.clients.length);
@@ -222,29 +227,32 @@ class ClientManager {
 
     // Завантаження заявок клієнтів
     async loadClientRequests() {
+        const _tok = localStorage.getItem('token') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || '';
         try {
             const response = await fetch('/api/requests', {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    'Authorization': `Bearer ${_tok}`
                 }
             });
             
             if (response.ok) {
                 const result = await response.json();
-                // API повертає {success: true, data: {requests: [...]}}
+                // API повертає {success: true, data: [...]}
                 const apiRequests = result.success && result.data ? 
-                    (result.data.requests || result.data || []) : [];
+                    (Array.isArray(result.data) ? result.data : (result.data.requests || result.data || [])) : [];
                 
                 this.requests = apiRequests.map(req => ({
                     id: req._id,
+                    requestNumber: req.requestNumber || null,
                     clientId: req.client?._id || req.clientId,
-                    clientName: req.client ? 
-                        `${req.client.firstName} ${req.client.lastName}` : 
-                        'Невідомо',
+                    clientName: req.client
+                        ? (`${req.client.firstName || ''} ${req.client.lastName || ''}`.trim() || req.client.companyName || req.client.username || req.client.email || 'Невідомо')
+                        : (req.clientName || 'Невідомо'),
                     title: req.title || req.description?.substring(0, 50) || 'Без назви',
                     priority: req.priority || 'medium',
                     status: req.status || 'new',
-                    date: new Date(req.createdAt).toLocaleString('uk-UA')
+                    _rawDate: req.createdAt || null,
+                    date: req.createdAt ? new Date(req.createdAt).toLocaleString('uk-UA') : '—'
                 }));
                 
                 this.renderRecentRequests();
@@ -514,7 +522,7 @@ class ClientManager {
         
         // Сортування за датою (новіші зверху)
         const recentRequests = [...this.requests]
-            .sort((a, b) => new Date(b.date) - new Date(a.date))
+            .sort((a, b) => new Date(b._rawDate || 0) - new Date(a._rawDate || 0))
             .slice(0, 5);
         
         recentRequests.forEach(request => {
@@ -562,8 +570,9 @@ class ClientManager {
                     break;
             }
             
+            const reqLabel = request.requestNumber || ('#' + String(request.id).slice(-6));
             tr.innerHTML = `
-                <td><strong>#${request.id}</strong></td>
+                <td><strong>${reqLabel}</strong></td>
                 <td>${request.clientName}</td>
                 <td>${request.title}</td>
                 <td><span class="priority-badge ${priorityClass}">${priorityText}</span></td>
@@ -1358,7 +1367,7 @@ class ClientManager {
             modal.tabIndex = -1;
             modal.role = 'dialog';
             modal.innerHTML = `
-                <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
                     <div class="modal-content">
                         ${content}
                     </div>
@@ -1367,6 +1376,9 @@ class ClientManager {
             document.body.appendChild(modal);
         } else {
             modal.querySelector('.modal-content').innerHTML = content;
+            // Ensure scrollable class is present
+            const dlg = modal.querySelector('.modal-dialog');
+            if (dlg) dlg.classList.add('modal-dialog-scrollable');
         }
         
         $(modal).modal('show');

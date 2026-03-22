@@ -53,8 +53,15 @@ class MessengerClient {
   }
   fetchMessages() {
     fetch(this.apiUrl)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          if (this.pollInterval) { clearInterval(this.pollInterval); this.pollInterval = null; }
+          return [];
+        }
+        return res.json();
+      })
       .then(msgs => {
+        if (!Array.isArray(msgs)) return;
         // Якщо роль не передана — визначаємо за поточним користувачем
         this.messages = msgs.map(m => {
           if (!m.role) {
@@ -64,7 +71,8 @@ class MessengerClient {
           return m;
         });
         this.updateChat();
-      });
+      })
+      .catch(() => {});
   }
 }
 

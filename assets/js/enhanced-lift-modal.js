@@ -43,7 +43,7 @@ class EnhancedLiftModal {
         });
         
         // Скидання форми при відкритті модалки (тільки для нових ліфтів)
-        $('#enhancedLiftModal').off('show.bs.modal').on('show.bs.modal', () => {
+        $('#enhancedLiftModal').off('show.bs.modal.enhanced').on('show.bs.modal.enhanced', () => {
             console.log('📝 Enhanced modal opening...');
             console.log('🔍 Current lift ID:', this.currentLiftId);
             console.log('🔍 Municipal number field:', $('#enhancedMunicipalNumber').val());
@@ -103,7 +103,7 @@ class EnhancedLiftModal {
             this.map = L.map('enhancedLiftMap').setView([38.7223, -9.1393], 12); // Lisboa по дефолту
             
             // Додаємо тайли OpenStreetMap
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
                 attribution: '© OpenStreetMap contributors'
             }).addTo(this.map);
 

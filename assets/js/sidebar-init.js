@@ -162,3 +162,21 @@ if (document.readyState === 'loading') {
 window.initSidebarTreeview = initSidebarTreeview;
 window.loadSidebarWithInit = loadSidebarWithInit;
 window.updateSidebarUserName = updateSidebarUserName;
+
+// Global logout fallback — used by pages that don't define their own logout()
+// Pages with their own logout() function override this automatically
+if (typeof window.logout !== 'function') {
+    window.logout = function() {
+        if (!confirm('Ви впевнені, що хочете вийти з системи?')) return;
+        if (typeof AuthManager !== 'undefined') {
+            AuthManager.logout();
+        } else {
+            ['token','liftmanager_jwt','authToken','liftmanager_user','userData','user'].forEach(function(k) {
+                localStorage.removeItem(k);
+                sessionStorage.removeItem(k);
+            });
+            document.cookie = 'auth_token=; path=/; max-age=0';
+            window.location.replace('/pages/auth/login.html');
+        }
+    };
+}

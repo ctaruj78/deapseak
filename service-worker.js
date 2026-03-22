@@ -51,7 +51,19 @@ self.addEventListener('fetch', event => {
   // Кешуємо тільки статичні ресурси того самого походження (JS, CSS, зображення тощо)
   event.respondWith(
     caches.match(event.request)
-      .then(response => response || fetch(event.request).catch(() => new Response('', { status: 408, statusText: 'Offline' })))
+      .then(response => response || fetch(event.request).catch(() => {
+        const url = event.request.url;
+        // Для JS — порожній модуль, щоб не ламати парсинг
+        if (url.endsWith('.js')) {
+          return new Response('/* offline */', { status: 200, headers: { 'Content-Type': 'application/javascript' } });
+        }
+        // Для CSS — порожній рядок
+        if (url.endsWith('.css')) {
+          return new Response('', { status: 200, headers: { 'Content-Type': 'text/css' } });
+        }
+        // Для решти — прозора 204 без тіла
+        return new Response(null, { status: 204 });
+      }))
   );
 });
 

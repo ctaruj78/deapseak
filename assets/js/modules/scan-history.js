@@ -126,7 +126,7 @@ const scanHistory = (function() {
         // Initialize Leaflet map
         const map = L.map('scanMap').setView([38.7167, -9.1395], 11); // Lisboa center
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 

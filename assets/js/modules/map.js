@@ -59,7 +59,7 @@ class MapManager {
         this.map = L.map(this.containerId).setView(this.options.center, this.options.zoom);
 
         // Додавання тайлів OpenStreetMap
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
             attribution: '© OpenStreetMap contributors',
             maxZoom: 19
         }).addTo(this.map);

@@ -61,6 +61,21 @@ class DispatcherDashboardReal {
                 this.loadStatistics()
             ]);
             
+            // ✅ Перерахунок завдань техніків після завантаження заявок
+            // (Promise.all виконується паралельно, тому при нормалізації техніків
+            //  заявки могли бути ще не завантажені → activeRequests = 0 у всіх)
+            this.technicians = this.technicians.map(tech => {
+                const activeRequests = this.requests.filter(r =>
+                    (r.technicianId === tech.id || r.technicianId?.toString() === tech.id?.toString()) &&
+                    (r.status === 'assigned' || r.status === 'in_progress')
+                ).length;
+                return {
+                    ...tech,
+                    currentAssignments: activeRequests,
+                    status: this.determineTechStatus(activeRequests)
+                };
+            });
+            
             console.log('✅ Всі дані завантажено:', {
                 requests: this.requests.length,
                 technicians: this.technicians.length,
@@ -122,7 +137,7 @@ class DispatcherDashboardReal {
      */
     async loadTechnicians() {
         try {
-            const response = await fetch(`${this.API_BASE}/api/users?role=technician`, {
+            const response = await fetch(`${this.API_BASE}/api/technicians`, {
                 headers: {
                     'Authorization': `Bearer ${this.token}`,
                     'Content-Type': 'application/json'
@@ -135,8 +150,10 @@ class DispatcherDashboardReal {
             
             const data = await response.json();
             
-            if (data.success && data.data) {
-                this.technicians = data.data.map(tech => this.normalizeTechnician(tech));
+            // /api/technicians повертає масив напряму
+            const techArray = Array.isArray(data) ? data : (data.data || []);
+            if (techArray.length > 0) {
+                this.technicians = techArray.map(tech => this.normalizeTechnician(tech));
                 console.log('✅ Завантажено техніків:', this.technicians.length);
             } else {
                 console.warn('⚠️ Техніків не знайдено');
@@ -222,6 +239,7 @@ class DispatcherDashboardReal {
     normalizeRequest(req) {
         return {
             id: req._id || req.id,
+            requestNumber: req.requestNumber || null,
             title: req.title || req.description || 'Заявка без назви',
             client: this.getClientName(req.clientId || req.client),
             clientId: req.clientId || req.client,
@@ -406,47 +424,49 @@ class DispatcherDashboardReal {
         const priorityBadge = this.getPriorityBadge(request.priority);
         const statusBadge = this.getStatusBadge(request.status);
         
+        const reqLabel = request.requestNumber || ('#' + request.id.toString().slice(-6));
+        const clientShort = (request.client || '—').length > 18 ? request.client.slice(0, 16) + '…' : (request.client || '—');
+        const techShort = request.assignedTo
+            ? ((request.assignedTo.length > 16 ? request.assignedTo.slice(0, 14) + '…' : request.assignedTo))
+            : null;
+
         tr.innerHTML = `
-            <td class="text-center">
+            <td class="text-center align-middle" style="width:30px">
                 <input type="checkbox" class="request-select" data-id="${request.id}">
             </td>
-            <td>
-                <strong>#${request.id.toString().slice(-4)}</strong>
-                <br>
-                <small class="text-muted">${request.date}</small>
+            <td class="align-middle" style="width:110px">
+                <span class="badge badge-secondary font-weight-normal" style="font-size:11px">${reqLabel}</span>
+                <div class="text-muted" style="font-size:11px;white-space:nowrap">${request.date}</div>
             </td>
-            <td>
-                <strong>${request.title}</strong>
-                <br>
-                <small class="text-muted">
-                    <i class="fas fa-map-marker-alt"></i> ${request.location}
-                </small>
+            <td class="align-middle">
+                <div class="font-weight-bold" style="font-size:13px;line-height:1.2">${request.title}</div>
+                <div class="text-muted" style="font-size:11px">
+                    <i class="fas fa-map-marker-alt mr-1"></i>${request.location}
+                </div>
             </td>
-            <td>
-                <i class="fas fa-user"></i> ${request.client}
+            <td class="align-middle" style="font-size:12px">
+                <i class="fas fa-user text-muted mr-1"></i>${clientShort}
             </td>
-            <td class="text-center">
-                ${priorityBadge}
-            </td>
-            <td class="text-center">
-                ${statusBadge}
-            </td>
-            <td>
-                ${request.assignedTo ? 
-                    `<i class="fas fa-user-check text-success"></i> ${request.assignedTo}` : 
-                    '<span class="text-muted">Не призначено</span>'
+            <td class="text-center align-middle" style="width:80px">${priorityBadge}</td>
+            <td class="text-center align-middle" style="width:90px">${statusBadge}</td>
+            <td class="align-middle" style="font-size:12px">
+                ${techShort
+                    ? `<i class="fas fa-user-check text-success mr-1"></i>${techShort}`
+                    : '<span class="text-muted">—</span>'
                 }
             </td>
-            <td class="text-right">
-                <button class="btn btn-sm btn-info btn-action" data-action="view" data-id="${request.id}">
-                    <i class="fas fa-eye"></i>
-                </button>
-                <button class="btn btn-sm btn-success btn-action" data-action="assign" data-id="${request.id}">
-                    <i class="fas fa-user-plus"></i>
-                </button>
-                <button class="btn btn-sm btn-warning btn-action" data-action="edit" data-id="${request.id}">
-                    <i class="fas fa-edit"></i>
-                </button>
+            <td class="text-center align-middle" style="width:80px">
+                <div class="btn-group btn-group-sm" role="group">
+                    <button class="btn btn-outline-info btn-action" data-action="view" data-id="${request.id}" title="Переглянути">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn btn-outline-success btn-action" data-action="assign" data-id="${request.id}" title="Призначити">
+                        <i class="fas fa-user-plus"></i>
+                    </button>
+                    <button class="btn btn-outline-warning btn-action" data-action="edit" data-id="${request.id}" title="Редагувати">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                </div>
             </td>
         `;
         
@@ -616,7 +636,11 @@ class DispatcherDashboardReal {
      * 📊 Оновлення статистики в UI
      */
     updateStats() {
-        const stats = this.statistics.total ? this.statistics : this.calculateLocalStatistics();
+        // Якщо API не повернув потрібні поля, розраховуємо локально
+        if (!this.statistics || !this.statistics.total) {
+            this.calculateLocalStatistics();
+        }
+        const stats = this.statistics;
         
         // Оновлення карток
         this.updateStatCard('totalRequests', stats.total || 0);
@@ -624,13 +648,30 @@ class DispatcherDashboardReal {
         this.updateStatCard('inProgressRequests', stats.inProgress || 0);
         this.updateStatCard('completedToday', stats.completed || 0);
         
+        // Вільні техніки
+        const availableTechsCount = this.technicians.filter(t => t.status === 'online').length;
+        this.updateStatCard('availableTechs', availableTechsCount);
+        
+        // Термінові / високопріоритетні заявки
+        const urgentCount = this.requests.filter(r =>
+            (r.urgent || r.priority === 'high') &&
+            (r.status === 'pending' || r.status === 'assigned' || r.status === 'in_progress')
+        ).length;
+        this.updateStatCard('urgentRequests', urgentCount);
+        
+        // Оновлення badge онлайн техніків
+        const onlineTechsEl = document.getElementById('onlineTechs');
+        if (onlineTechsEl) {
+            onlineTechsEl.textContent = `${availableTechsCount} онлайн`;
+        }
+        
         // Оновлення прогрес-барів (якщо є)
         if (stats.total > 0) {
             const completionRate = Math.round((stats.completed / stats.total) * 100);
             this.updateProgressBar('completionRate', completionRate);
         }
         
-        console.log('✅ Статистика оновлена:', stats);
+        console.log('✅ Статистика оновлена:', stats, 'Техніків вільних:', availableTechsCount, 'Термінових:', urgentCount);
     }
     
     /**
@@ -848,6 +889,19 @@ class DispatcherDashboardReal {
                 this.loadTechnicians(),
                 this.loadStatistics()
             ]);
+            
+            // ✅ Перерахунок завдань після паралельного завантаження
+            this.technicians = this.technicians.map(tech => {
+                const activeRequests = this.requests.filter(r =>
+                    (r.technicianId === tech.id || r.technicianId?.toString() === tech.id?.toString()) &&
+                    (r.status === 'assigned' || r.status === 'in_progress')
+                ).length;
+                return {
+                    ...tech,
+                    currentAssignments: activeRequests,
+                    status: this.determineTechStatus(activeRequests)
+                };
+            });
             
             this.renderRequests();
             this.renderTechnicians();

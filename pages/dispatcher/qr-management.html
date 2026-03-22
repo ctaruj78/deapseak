@@ -182,6 +182,28 @@
             }
         }
 
+        /* View toggle */
+        #listViewBtn.active, #gridViewBtn.active {
+            background: #007bff !important;
+            border-color: #007bff !important;
+            color: #fff !important;
+        }
+        #listViewBtn:not(.active), #gridViewBtn:not(.active) {
+            background: transparent;
+            color: #6c757d;
+        }
+
+        /* Grid view cards */
+        #qrGridContainer .qr-card {
+            transition: box-shadow 0.2s;
+        }
+        #qrGridContainer .qr-card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.13) !important;
+        }
+        #qrGridContainer .card-footer {
+            background: #f8f9fa;
+        }
+
         /* Нотифікації */
         .alert-notification {
             position: fixed;
@@ -546,10 +568,16 @@
                                         <i class="fas fa-sync"></i> Скинути фільтри
                                     </button>
                                     <button class="btn btn-info ml-2" id="exportCSVBtn">
-                                        <i class="fas fa-file-excel"></i> Exportar в Excel
+                                        <i class="fas fa-file-excel"></i> Exportar CSV
+                                    </button>
+                                    <button class="btn btn-secondary ml-2" id="exportJSONBtn">
+                                        <i class="fas fa-file-code"></i> JSON
                                     </button>
                                     <button class="btn btn-success ml-2" id="printSelectedBtn">
                                         <i class="fas fa-print"></i> Друкувати вибрані
+                                    </button>
+                                    <button class="btn btn-warning ml-2" id="printAllBtn" onclick="qrManager.printAll()">
+                                        <i class="fas fa-print"></i> Друкувати всі
                                     </button>
                                 </div>
                             </div>
@@ -560,16 +588,30 @@
                     <div class="row">
                         <div class="col-12">
                             <div class="card">
-                                <div class="card-header">
-                                    <h3 class="card-title">Список QR-кодів</h3>
-                                    <div class="card-tools">
-                                        <div class="btn-group">
-                                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                                <i class="fas fa-minus"></i>
+                                <div class="card-header d-flex align-items-center flex-wrap" style="gap:6px;">
+                                    <h3 class="card-title mb-0" id="qrListTitle">Список QR-кодів</h3>
+                                    <div class="ml-auto d-flex align-items-center" style="gap:6px;">
+                                        <!-- View toggle -->
+                                        <div class="btn-group btn-group-sm" role="group" aria-label="Режим перегляду">
+                                            <button type="button" class="btn btn-secondary active" id="listViewBtn" onclick="qrManager.toggleView('list')" title="Вигляд таблиці">
+                                                <i class="fas fa-list"></i>
                                             </button>
-                                            <button type="button" class="btn btn-tool" data-card-widget="maximize">
-                                                <i class="fas fa-expand"></i>
+                                            <button type="button" class="btn btn-outline-secondary" id="gridViewBtn" onclick="qrManager.toggleView('grid')" title="Вигляд сітки">
+                                                <i class="fas fa-th"></i>
                                             </button>
+                                        </div>
+                                        <!-- Grid cols selector -->
+                                        <div id="gridColsSelectorWrapper" style="display:none;">
+                                            <select id="gridColsSelector" class="form-control form-control-sm" style="width:80px;" title="Кількість колонок">
+                                                <option value="2">2 кол.</option>
+                                                <option value="3" selected>3 кол.</option>
+                                                <option value="4">4 кол.</option>
+                                            </select>
+                                        </div>
+                                        <!-- Collapse/expand -->
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                                            <button type="button" class="btn btn-tool" data-card-widget="maximize"><i class="fas fa-expand"></i></button>
                                         </div>
                                     </div>
                                 </div>
@@ -584,6 +626,7 @@
                                             <button class="btn btn-info btn-sm ml-2" id="bulkExportBtn" title="Exportarувати" aria-label="Exportarувати"><i class="fas fa-download"></i> Exportarувати</button>
                                         </div>
                                     </div>
+                                    <div id="qrGridContainer" style="display:none;" class="p-2"></div>
                                     <div class="table-responsive">
                                         <table id="qrCodesTable" class="table table-bordered table-striped table-hover custom-table">
                                             <thead>
@@ -1062,28 +1105,14 @@
     
     // Обробники кнопок експорту
     $(document).ready(function() {
-        // Exportar CSV
-        $('#exportCSVBtn').on('click', function() {
-            console.log('Exportar CSV...');
-            showNotification('Exportar у CSV тимчасово недоступний', 'info');
-        });
-        
-        // Exportar PDF
-        $('#exportPDFBtn').on('click', function() {
-            console.log('Exportar PDF...');
-            showNotification('Exportar у PDF тимчасово недоступний', 'info');
-        });
-        
-        // Exportar XLSX
-        $('#exportXLSXBtn').on('click', function() {
-            console.log('Exportar XLSX...');
-            showNotification('Exportar у XLSX тимчасово недоступний', 'info');
-        });
-        
-        // Exportar JSON
+        // Export JSON button
         $('#exportJSONBtn').on('click', function() {
-            console.log('Exportar JSON...');
-            showNotification('Exportar у JSON тимчасово недоступний', 'info');
+            if (typeof qrManager !== 'undefined' && qrManager.exportJSON) qrManager.exportJSON();
+        });
+        
+        // Print all button
+        $('#printAllBtn').on('click', function() {
+            if (typeof qrManager !== 'undefined') qrManager.printAll();
         });
         
         // Масові дії - видалення
@@ -1177,6 +1206,11 @@
         // Друк QR-коду
         $('#printQRBtn').on('click', function() {
             window.print();
+        });
+
+        // Print selected via qrManager
+        $('#printSelectedBtn').off('click').on('click', function() {
+            if (typeof qrManager !== 'undefined') qrManager.printSelected();
         });
         
         // Функція показу сповіщень

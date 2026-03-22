@@ -36,6 +36,7 @@ class MonitoringManager {
         try {
             console.log('🔧 Ініціалізація Monitoring Manager...');
             
+            this.initMap();
             await this.loadData();
             this.setupEventListeners();
             this.setupWebSocket();
@@ -57,7 +58,7 @@ class MonitoringManager {
      */
     async loadData() {
         try {
-            const token = localStorage.getItem('authToken');
+            const token = localStorage.getItem('token') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken');
             const headers = {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -72,14 +73,13 @@ class MonitoringManager {
                 this.lifts = [];
             }
 
-            // Завантаження техніків (403 для non-admin = demo дані)
+            // Завантаження техніків (спеціальний endpoint, завжди повертає тільки техніків)
             try {
-                const techsRes = await fetch(`${this.apiUrl}/users?role=tech`, { headers });
+                const techsRes = await fetch(`${this.apiUrl}/technicians`, { headers });
                 if (techsRes.ok) {
                     const techData = await techsRes.json();
                     this.technicians = Array.isArray(techData) ? techData : (techData.data || []);
-                } else if (techsRes.status === 403) {
-                    // Fallback для non-admin користувачів
+                } else {
                     this.technicians = this.getDefaultTechnicians();
                 }
             } catch (err) {
@@ -339,6 +339,9 @@ class MonitoringManager {
         this.updateDashboard();
         this.updateLiftsGrid();
         this.updateAlertsPanel();
+        this.renderTechnicians();
+        this.renderActiveTasks();
+        this.updateMapMarkers();
         this.updateMetrics();
         this.updateCharts();
         this.updateConnectionStatus();
@@ -565,6 +568,185 @@ class MonitoringManager {
     }
 
     /**
+     * Ініціалізація карти Leaflet
+     */
+    initMap() {
+        if (typeof L === 'undefined') {
+            console.warn('⚠️ Leaflet не завантажено');
+            return;
+        }
+        const mapEl = document.getElementById('techMap');
+        if (!mapEl) return;
+
+        // Видаляємо placeholder перед ініціалізацією
+        const placeholder = mapEl.querySelector('.map-placeholder');
+        if (placeholder) placeholder.remove();
+
+        // Координати Лісабона (столиця Португалії)
+        const defaultCenter = [38.7223, -9.1393];
+
+        try {
+            this.map = L.map('techMap').setView(defaultCenter, 12);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                attribution: '© <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
+                maxZoom: 19
+            }).addTo(this.map);
+            this.techMarkers = {};
+            console.log('🗺️ Карта Leaflet ініціалізована');
+        } catch (err) {
+            console.error('❌ Помилка ініціалізації карти:', err);
+        }
+    }
+
+    /**
+     * Оновлення маркерів техніків на карті
+     */
+    updateMapMarkers() {
+        if (!this.map || typeof L === 'undefined') return;
+
+        const statusColors = {
+            online: '#28a745',
+            active: '#28a745',
+            busy: '#ffc107',
+            offline: '#6c757d'
+        };
+
+        this.technicians.forEach(tech => {
+            const lat = tech.location?.lat || tech.lat;
+            const lng = tech.location?.lng || tech.lng;
+            if (!lat || !lng) return;
+
+            const color = statusColors[tech.status] || '#6c757d';
+            const name = `${tech.firstName || ''} ${tech.lastName || ''}`.trim() || tech.email || 'Технік';
+            const iconHtml = `<div style="background:${color};width:14px;height:14px;border-radius:50%;border:2px solid white;box-shadow:0 0 4px rgba(0,0,0,.4)"></div>`;
+            const icon = L.divIcon({ html: iconHtml, className: '', iconSize: [14, 14], iconAnchor: [7, 7] });
+
+            if (this.techMarkers[tech._id]) {
+                this.techMarkers[tech._id].setLatLng([lat, lng]);
+            } else {
+                this.techMarkers[tech._id] = L.marker([lat, lng], { icon })
+                    .bindPopup(`<strong>${name}</strong><br>Статус: ${tech.status || '—'}`)
+                    .addTo(this.map);
+            }
+        });
+    }
+
+    /**
+     * Рендер списку техніків у #techStatusContainer
+     */
+    renderTechnicians(filter) {
+        const container = document.getElementById('techStatusContainer');
+        if (!container) return;
+
+        let techs = this.technicians;
+        if (filter) {
+            const q = filter.toLowerCase();
+            techs = techs.filter(t =>
+                (`${t.firstName} ${t.lastName}`.toLowerCase().includes(q)) ||
+                (t.email || '').toLowerCase().includes(q)
+            );
+        }
+
+        if (!techs.length) {
+            container.innerHTML = '<p class="text-muted text-center p-3">Техніки не знайдені</p>';
+            return;
+        }
+
+        const statusBadge = s => {
+            const map = { online: 'success', active: 'success', busy: 'warning', offline: 'secondary' };
+            const cls = map[s] || 'secondary';
+            const lbl = { online: 'Онлайн', active: 'Активний', busy: 'Зайнятий', offline: 'Офлайн' }[s] || s || '—';
+            return `<span class="badge badge-${cls}">${lbl}</span>`;
+        };
+
+        const html = techs.map(tech => {
+            const name = `${tech.firstName || ''} ${tech.lastName || ''}`.trim() || tech.email || 'Технік';
+            const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+            // Кількість активних завдань для цього техніка
+            const techId = String(tech._id);
+            const taskCount = this.assignments.filter(a => {
+                const assigned = a.assignedTo?._id || a.assignedTo || a.technicianId;
+                return String(assigned) === techId;
+            }).length;
+
+            return `
+                <div class="d-flex align-items-center p-2 border-bottom tech-item" style="gap:10px">
+                    <div style="width:36px;height:36px;border-radius:50%;background:#007bff;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:bold;font-size:13px;flex-shrink:0">
+                        ${initials}
+                    </div>
+                    <div class="flex-grow-1 overflow-hidden">
+                        <div class="font-weight-bold text-truncate small">${name}</div>
+                        <div class="text-muted" style="font-size:11px">${tech.email || ''}</div>
+                    </div>
+                    <div class="text-right" style="flex-shrink:0">
+                        ${statusBadge(tech.status)}
+                        ${taskCount > 0 ? `<br><small class="text-info">${taskCount} завд.</small>` : ''}
+                    </div>
+                </div>`;
+        }).join('');
+
+        container.innerHTML = html;
+    }
+
+    /**
+     * Пошукова фільтрація техніків (викликається з HTML)
+     */
+    filterTechnicians(query) {
+        this.renderTechnicians(query);
+    }
+
+    /**
+     * Рендер активних завдань у #activeTasksContainer
+     */
+    renderActiveTasks() {
+        const container = document.getElementById('activeTasksContainer');
+        if (!container) return;
+
+        if (!this.assignments.length) {
+            container.innerHTML = '<p class="text-muted text-center p-3">Активних завдань немає</p>';
+            return;
+        }
+
+        const priorityLabel = p => {
+            const m = { high: ['danger', 'Висока'], critical: ['danger', 'Критична'], medium: ['warning', 'Середня'], low: ['secondary', 'Низька'] };
+            const [cls, lbl] = m[p] || ['secondary', p || '—'];
+            return `<span class="badge badge-${cls}">${lbl}</span>`;
+        };
+
+        const html = this.assignments.map(task => {
+            const liftAddr = this.getLiftAddress(task.liftId || task.lift);
+            const assigned = task.assignedTo;
+            let techName = '—';
+            if (assigned) {
+                if (typeof assigned === 'object') {
+                    techName = `${assigned.firstName || ''} ${assigned.lastName || ''}`.trim() || assigned.email || '—';
+                } else {
+                    const t = this.technicians.find(x => String(x._id) === String(assigned));
+                    if (t) techName = `${t.firstName || ''} ${t.lastName || ''}`.trim() || t.email || '—';
+                }
+            }
+            const created = task.createdAt ? new Date(task.createdAt).toLocaleDateString('uk') : '—';
+
+            return `
+                <div class="d-flex align-items-start p-2 border-bottom" style="gap:10px">
+                    <div class="flex-grow-1 overflow-hidden">
+                        <div class="font-weight-bold text-truncate small">${task.title || task.description || 'Завдання'}</div>
+                        <div class="text-muted" style="font-size:11px">
+                            <i class="fas fa-map-marker-alt mr-1"></i>${liftAddr} &nbsp;
+                            <i class="fas fa-user mr-1"></i>${techName}
+                        </div>
+                    </div>
+                    <div class="text-right" style="flex-shrink:0">
+                        ${priorityLabel(task.priority)}
+                        <br><small class="text-muted">${created}</small>
+                    </div>
+                </div>`;
+        }).join('');
+
+        container.innerHTML = html;
+    }
+
+    /**
      * WebSocket підключення для реального часу
      */
     setupWebSocket() {
@@ -782,6 +964,14 @@ class MonitoringManager {
                 this.loadData();
             });
         }
+
+        // Пошук техніків
+        const techSearch = document.getElementById('techSearch');
+        if (techSearch) {
+            techSearch.addEventListener('input', (e) => {
+                this.filterTechnicians(e.target.value);
+            });
+        }
     }
 
     /**
@@ -837,7 +1027,7 @@ class MonitoringManager {
                 this.updateAlertsPanel();
                 
                 // API виклик
-                const token = localStorage.getItem('authToken');
+                const token = localStorage.getItem('token') || localStorage.getItem('authToken');
                 await fetch(`${this.apiUrl}/monitoring/alerts/${alertId}/acknowledge`, {
                     method: 'PUT',
                     headers: {
@@ -863,7 +1053,7 @@ class MonitoringManager {
                 this.updateAlertsPanel();
                 
                 // API виклик
-                const token = localStorage.getItem('authToken');
+                const token = localStorage.getItem('token') || localStorage.getItem('authToken');
                 await fetch(`${this.apiUrl}/monitoring/alerts/${alertId}/resolve`, {
                     method: 'PUT',
                     headers: {
@@ -1403,9 +1593,8 @@ class MonitoringManager {
      * Центрування карти
      */
     centerMap() {
-        const map = document.getElementById('techMap');
-        if (map) {
-            map.querySelectorAll('.tech-marker').forEach(m => m.style.opacity = '1');
+        if (this.map) {
+            this.map.setView([38.7223, -9.1393], 12);
         }
         console.log('🗺️ Карту центровано');
     }
@@ -1414,9 +1603,10 @@ class MonitoringManager {
      * Перемикання теплової карти
      */
     toggleHeatmap() {
-        const map = document.getElementById('techMap');
-        if (!map) return;
-        const isActive = map.classList.toggle('heatmap-active');
+        const mapEl = document.getElementById('techMap');
+        if (!mapEl) return;
+        const isActive = mapEl.classList.toggle('heatmap-active');
+        // Якщо підключено leaflet.heat плагін — можна ввімкнути тут
         console.log(isActive ? '🔥 Теплова карта увімкнена' : '🗺️ Теплова карта вимкнена');
     }
 

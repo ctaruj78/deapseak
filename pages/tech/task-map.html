@@ -136,7 +136,7 @@
                 // Створити мапу
                 map = L.map('map').setView([userLocation.lat, userLocation.lng], 13);
                 
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
                     attribution: '© OpenStreetMap contributors',
                     maxZoom: 19
                 }).addTo(map);
@@ -216,7 +216,7 @@
                 const liftLng = lift.location?.coordinates?.[0] || 30.5234;
                 
                 map = L.map('map').setView([liftLat, liftLng], 15);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
                     attribution: '© OpenStreetMap contributors',
                     maxZoom: 19
                 }).addTo(map);

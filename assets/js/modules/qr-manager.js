@@ -15,14 +15,34 @@ const qrManager = (function() {
         city: '',
         search: ''
     };
+    // View mode: 'list' | 'grid'
+    let currentView = localStorage.getItem('qrManagerView') || 'list';
+    let currentGridCols = parseInt(localStorage.getItem('qrManagerGridCols') || '3', 10);
 
     // Initialize
     function init() {
         console.log('✅ QR Manager initialized');
         loadInitialData();
         setupEventListeners();
+        applyViewToggleState();
         renderQRTable();
         updateStatistics();
+    }
+
+    // Apply active state to view toggle buttons
+    function applyViewToggleState() {
+        $('#listViewBtn').toggleClass('active btn-secondary', currentView === 'list').toggleClass('btn-outline-secondary', currentView !== 'list');
+        $('#gridViewBtn').toggleClass('active btn-secondary', currentView === 'grid').toggleClass('btn-outline-secondary', currentView !== 'grid');
+        if ($('#gridColsSelector').length) {
+            $('#gridColsSelector').val(String(currentGridCols));
+        }
+        if (currentView === 'grid') {
+            $('#gridColsSelectorWrapper').show();
+            $('#qrListTitle').text('Сітка QR-кодів');
+        } else {
+            $('#gridColsSelectorWrapper').hide();
+            $('#qrListTitle').text('Список QR-кодів');
+        }
     }
 
     // Load data from API
@@ -145,12 +165,37 @@ const qrManager = (function() {
         // Filters
         $('#statusFilter').on('change', applyFilters);
         $('#cityFilter').on('input', debounce(applyFilters, 300));
+
+        // Grid columns selector
+        $(document).on('change', '#gridColsSelector', function() {
+            currentGridCols = parseInt($(this).val(), 10);
+            localStorage.setItem('qrManagerGridCols', currentGridCols);
+            if (currentView === 'grid') renderQRTable();
+        });
         
         console.log('✅ Event listeners встановлено');
     }
 
-    // Render table
+    // Render dispatcher - routes to list or grid
     function renderQRTable() {
+        if (currentView === 'grid') {
+            renderGridView();
+        } else {
+            renderListView();
+        }
+        // Update count display
+        const filtered = filterQRData();
+        const start = (currentPage - 1) * itemsPerPage;
+        const end = Math.min(start + itemsPerPage, filtered.length);
+        $('#showingCount').text(filtered.length > 0 ? `${start + 1}–${Math.min(end, filtered.length)}` : '0');
+        $('#totalCount').text(filtered.length);
+    }
+
+    // Render LIST view (original table)
+    function renderListView() {
+        $('#qrGridContainer').hide();
+        $('#qrCodesTable').closest('.table-responsive').show();
+        
         const tbody = $('#qrCodesTable tbody');
         tbody.empty();
 
@@ -160,7 +205,8 @@ const qrManager = (function() {
         const page = filtered.slice(start, end);
 
         if (page.length === 0) {
-            tbody.html('<tr><td colspan="10" class="text-center">Немає даних</td></tr>');
+            tbody.html('<tr><td colspan="10" class="text-center text-muted py-4"><i class="fas fa-search fa-2x d-block mb-2"></i>Немає даних для відображення</td></tr>');
+            renderPagination(0);
             return;
         }
 
@@ -184,12 +230,107 @@ const qrManager = (function() {
                         <button class="btn btn-sm btn-primary" onclick="qrManager.viewQR('${qr.id}')" title="Переглянути">
                             <i class="fas fa-eye"></i>
                         </button>
+                        <button class="btn btn-sm btn-outline-secondary ml-1" onclick="qrManager.printSingleById('${qr.id}')" title="Друкувати">
+                            <i class="fas fa-print"></i>
+                        </button>
                     </td>
                 </tr>
             `);
         });
 
         renderPagination(Math.ceil(filtered.length / itemsPerPage));
+    }
+
+    // Render GRID view
+    function renderGridView() {
+        $('#qrCodesTable').closest('.table-responsive').hide();
+        let container = $('#qrGridContainer');
+        if (!container.length) {
+            $('#qrCodesTable').closest('.table-responsive').after('<div id="qrGridContainer"></div>');
+            container = $('#qrGridContainer');
+        }
+        container.show().empty();
+
+        const filtered = filterQRData();
+        const start = (currentPage - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        const page = filtered.slice(start, end);
+
+        if (page.length === 0) {
+            container.html('<div class="col-12 text-center text-muted py-5"><i class="fas fa-search fa-2x d-block mb-2"></i>Немає даних для відображення</div>');
+            renderPagination(0);
+            return;
+        }
+
+        // Determine Bootstrap col class
+        const colMap = { 2: 'col-md-6', 3: 'col-md-4', 4: 'col-md-3' };
+        const colClass = colMap[currentGridCols] || 'col-md-4';
+
+        const row = $('<div class="row" id="qrGridRow"></div>');
+        container.append(row);
+
+        page.forEach(qr => {
+            const statusColor = qr.status === 'active' ? 'success' : 'secondary';
+            const statusLabel = qr.status === 'active' ? 'Активний' : 'Неактивний';
+            const liftType = qr.liftType === 'cargo' ? '<i class="fas fa-dolly"></i> Вантажний' : '<i class="fas fa-user"></i> Пасажирський';
+
+            row.append(`
+                <div class="${colClass} col-sm-6 mb-3">
+                    <div class="card qr-card h-100 shadow-sm">
+                        <div class="card-header d-flex align-items-center py-2 px-3" style="background:#f8f9fa;">
+                            <input type="checkbox" class="qr-checkbox mr-2" data-id="${qr.id}" style="cursor:pointer;">
+                            <span class="font-weight-bold text-primary flex-grow-1 text-truncate" title="${qr.code}">${qr.code}</span>
+                            <span class="badge badge-${statusColor} ml-1">${statusLabel}</span>
+                        </div>
+                        <div class="card-body text-center py-2 px-2">
+                            <div id="qr-canvas-${qr.id}" class="d-inline-block mb-2" style="background:#fff;padding:6px;border-radius:4px;"></div>
+                            <div class="text-muted small text-truncate mb-1" title="${qr.name}"><i class="fas fa-map-marker-alt"></i> ${qr.name}</div>
+                            <div class="text-muted small">${liftType} &bull; ${qr.location}</div>
+                        </div>
+                        <div class="card-footer d-flex justify-content-center gap-1 py-2 px-2" style="gap:4px;">
+                            <button class="btn btn-sm btn-primary flex-grow-1" onclick="qrManager.viewQR('${qr.id}')" title="Переглянути деталі">
+                                <i class="fas fa-eye"></i> Деталі
+                            </button>
+                            <button class="btn btn-sm btn-outline-info" onclick="qrManager.printSingleById('${qr.id}')" title="Друкувати QR">
+                                <i class="fas fa-print"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-success" onclick="qrManager.downloadById('${qr.id}')" title="Завантажити QR">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `);
+        });
+
+        renderPagination(Math.ceil(filtered.length / itemsPerPage));
+
+        // Generate QR codes after DOM is ready
+        setTimeout(() => {
+            page.forEach(qr => {
+                const el = document.getElementById(`qr-canvas-${qr.id}`);
+                if (el && typeof QRCode !== 'undefined') {
+                    el.innerHTML = '';
+                    new QRCode(el, {
+                        text: qr.code,
+                        width: 110,
+                        height: 110,
+                        colorDark: '#000000',
+                        colorLight: '#ffffff',
+                        correctLevel: QRCode.CorrectLevel.M
+                    });
+                }
+            });
+        }, 50);
+    }
+
+    // Toggle view mode
+    function toggleView(mode) {
+        currentView = mode;
+        localStorage.setItem('qrManagerView', mode);
+        currentPage = 1;
+        applyViewToggleState();
+        renderQRTable();
     }
 
     // Filter data
@@ -461,21 +602,133 @@ const qrManager = (function() {
         showNotification('Фільтри скинуто', 'success');
     }
 
-    // Export functions (stubs)
+    // Export functions
     function exportToCSV() {
-        showNotification('Експорт CSV...', 'info');
+        const data = filterQRData();
+        if (data.length === 0) {
+            showNotification('Немає даних для експорту', 'warning');
+            return;
+        }
+        const headers = ['Код QR', 'ID', 'Тип', 'Адреса', 'Місто', 'Статус', 'Дата створення'];
+        const rows = data.map(qr => [
+            qr.code,
+            qr.id,
+            qr.liftType === 'cargo' ? 'Вантажний' : 'Пасажирський',
+            `"${qr.name.replace(/"/g, '""')}"`,
+            qr.location,
+            qr.status === 'active' ? 'Активний' : 'Неактивний',
+            qr.created ? new Date(qr.created).toLocaleDateString('uk-UA') : '-'
+        ]);
+        const csv = [headers.join(';'), ...rows.map(r => r.join(';'))].join('\n');
+        const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `QR-codes-${new Date().toISOString().slice(0, 10)}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showNotification(`Експортовано ${data.length} записів у CSV`, 'success');
     }
 
     function exportToPDF() {
-        showNotification('Експорт PDF...', 'info');
+        showNotification('Для PDF використовуйте "Друкувати всі" → PrintPDF', 'info');
     }
 
     function exportToXLSX() {
-        showNotification('Експорт XLSX...', 'info');
+        showNotification('Експорт XLSX - використовуйте CSV з відкриттям у Excel', 'info');
     }
 
     function exportToJSON() {
-        showNotification('Експорт JSON...', 'info');
+        const data = filterQRData();
+        if (data.length === 0) {
+            showNotification('Немає даних для експорту', 'warning');
+            return;
+        }
+        const json = JSON.stringify(data.map(qr => ({
+            code: qr.code,
+            id: qr.id,
+            type: qr.liftType,
+            address: qr.name,
+            city: qr.location,
+            status: qr.status,
+            created: qr.created
+        })), null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `QR-codes-${new Date().toISOString().slice(0, 10)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showNotification(`Експортовано ${data.length} записів у JSON`, 'success');
+    }
+
+    // Build print HTML for an array of QR objects
+    function buildPrintHtml(qrs, title) {
+        const qrScriptSrc = document.querySelector('script[src*="qrcode"]')?.src || '/plugins/qrcode/js/qrcode.min.js';
+        const items = qrs.map(qr => `
+            <div class="qr-item">
+                <div class="qr-canvas" id="p-${qr.id}"></div>
+                <div class="qr-code-text">${qr.code}</div>
+                <div class="qr-address">${qr.name}</div>
+                <div class="qr-city">${qr.location}</div>
+                <div class="qr-status ${qr.status === 'active' ? 'status-active' : 'status-inactive'}">${qr.status === 'active' ? '● Активний' : '○ Неактивний'}</div>
+            </div>
+        `).join('');
+
+        const qrInits = qrs.map(qr => `
+            try { new QRCode(document.getElementById('p-${qr.id}'), { text: '${qr.code.replace(/'/g, "\\'")}', width: 140, height: 140, correctLevel: QRCode.CorrectLevel.M }); } catch(e) {}
+        `).join('\n');
+
+        return `<!DOCTYPE html><html><head>
+        <meta charset="UTF-8">
+        <title>${title}</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 0; padding: 15px; }
+            h2 { text-align: center; margin-bottom: 15px; font-size: 16px; }
+            .qr-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+            .qr-item { border: 1px solid #ccc; border-radius: 6px; padding: 12px; text-align: center; page-break-inside: avoid; }
+            .qr-canvas { margin: 0 auto 6px auto; display: inline-block; }
+            .qr-code-text { font-weight: bold; font-size: 11px; color: #0057b8; margin-bottom: 3px; }
+            .qr-address { font-size: 10px; color: #333; margin-bottom: 2px; word-break: break-word; }
+            .qr-city { font-size: 10px; color: #666; margin-bottom: 3px; }
+            .qr-status { font-size: 10px; }
+            .status-active { color: #28a745; }
+            .status-inactive { color: #6c757d; }
+            .print-meta { text-align: center; font-size: 10px; color: #aaa; margin-top: 10px; }
+            .no-print { text-align: center; margin-bottom: 12px; }
+            .no-print button { padding: 8px 20px; font-size: 14px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; }
+            @media print { .no-print { display: none; } h2 small { display: none; } }
+            @page { margin: 15mm; }
+        </style>
+        </head><body>
+        <div class="no-print">
+            <button onclick="window.print()"><i>🖨</i> Друкувати (${qrs.length} QR кодів)</button>
+        </div>
+        <h2>QR Коди ліфтів &mdash; FestLift <small style="font-weight:normal;font-size:12px;">${new Date().toLocaleDateString('uk-UA')}</small></h2>
+        <div class="qr-grid">${items}</div>
+        <div class="print-meta">Роздруковано: ${new Date().toLocaleString('uk-UA')} | FestLift Sistema de Gestão</div>
+        <script src="${qrScriptSrc}"><\/script>
+        <script>
+        window.onload = function() {
+            ${qrInits}
+            setTimeout(() => { window.print(); window.onafterprint = () => window.close(); }, 800);
+        };
+        <\/script>
+        </body></html>`;
+    }
+
+    // Print ALL currently filtered QR codes
+    function printAll() {
+        const data = filterQRData();
+        if (data.length === 0) {
+            showNotification('Немає QR кодів для друку', 'warning');
+            return;
+        }
+        showNotification(`Підготовка ${data.length} QR кодів для друку...`, 'info');
+        const win = window.open('', '_blank', 'width=900,height=700');
+        win.document.write(buildPrintHtml(data, 'Всі QR коди - FestLift'));
+        win.document.close();
     }
 
     // Print selected QR codes
@@ -490,53 +743,64 @@ const qrManager = (function() {
         }
 
         const qrs = currentQRs.filter(qr => selected.includes(qr.id));
-        
-        // Open print window
-        const printWindow = window.open('', '', 'width=800,height=600');
-        printWindow.document.write('<html><head><title>Друк QR кодів</title>');
-        printWindow.document.write('<style>');
-        printWindow.document.write('body { font-family: Arial; padding: 20px; }');
-        printWindow.document.write('.qr-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }');
-        printWindow.document.write('.qr-item { text-align: center; border: 1px solid #ddd; padding: 15px; page-break-inside: avoid; }');
-        printWindow.document.write('h3 { margin: 10px 0 5px 0; }');
-        printWindow.document.write('p { margin: 5px 0; font-size: 12px; }');
-        printWindow.document.write('@media print { .no-print { display: none; } }');
-        printWindow.document.write('</style>');
-        printWindow.document.write('</head><body>');
-        printWindow.document.write('<button class="no-print" onclick="window.print()">Друкувати</button>');
-        printWindow.document.write('<div class="qr-grid">');
-        
-        qrs.forEach(qr => {
-            printWindow.document.write(`
-                <div class="qr-item">
-                    <div class="qr-code" id="qr-${qr.id}"></div>
-                    <h3>${qr.code}</h3>
-                    <p><strong>${qr.name}</strong></p>
-                    <p>${qr.location}</p>
-                </div>
-            `);
-        });
-        
-        printWindow.document.write('</div>');
-        printWindow.document.write('<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></' + 'script>');
-        printWindow.document.write('<script>');
-        printWindow.document.write('window.onload = function() {');
-        qrs.forEach(qr => {
-            printWindow.document.write(`
-                new QRCode(document.getElementById('qr-${qr.id}'), {
-                    text: '${qr.code}',
-                    width: 150,
-                    height: 150
-                });
-            `);
-        });
-        printWindow.document.write('setTimeout(() => window.print(), 500);');
-        printWindow.document.write('};');
-        printWindow.document.write('</' + 'script>');
-        printWindow.document.write('</body></html>');
-        printWindow.document.close();
+        showNotification(`Підготовка ${qrs.length} QR кодів для друку...`, 'info');
+        const win = window.open('', '_blank', 'width=900,height=700');
+        win.document.write(buildPrintHtml(qrs, 'Вибрані QR коди - FestLift'));
+        win.document.close();
+    }
 
-        showNotification(`Підготовлено ${qrs.length} QR кодів для друку`, 'success');
+    // Print single QR by id (without opening view modal)
+    function printSingleById(id) {
+        const qr = currentQRs.find(q => q.id === id);
+        if (!qr) return;
+
+        // Use existing open modal canvas if available, otherwise build new print window
+        const canvas = document.querySelector('#qrCodeCanvas canvas');
+        if (canvas && $('#viewQRModal').hasClass('show') && $('#qrCodeText').text() === qr.code) {
+            printQRCode(qr);
+            return;
+        }
+
+        const win = window.open('', '_blank', 'width=500,height=500');
+        win.document.write(buildPrintHtml([qr], `QR ${qr.code} - FestLift`));
+        win.document.close();
+    }
+
+    // Download single QR by id (without opening modal)
+    function downloadById(id) {
+        const qr = currentQRs.find(q => q.id === id);
+        if (!qr) return;
+
+        // Create off-screen canvas
+        const div = document.createElement('div');
+        div.style.cssText = 'position:absolute;left:-9999px;top:-9999px;';
+        document.body.appendChild(div);
+
+        if (typeof QRCode === 'undefined') {
+            showNotification('QR бібліотека не завантажена', 'error');
+            document.body.removeChild(div);
+            return;
+        }
+
+        const qrObj = new QRCode(div, {
+            text: qr.code,
+            width: 256,
+            height: 256,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.H
+        });
+
+        setTimeout(() => {
+            const c = div.querySelector('canvas');
+            if (c) {
+                const a = document.createElement('a');
+                a.download = `QR_${qr.code}.png`;
+                a.href = c.toDataURL('image/png');
+                a.click();
+            }
+            document.body.removeChild(div);
+        }, 200);
     }
 
     // Utilities
@@ -565,7 +829,13 @@ const qrManager = (function() {
         searchQR: searchQR,
         resetFilters: resetFilters,
         filterByStatus: filterByStatus,
-        printSelected: printSelected
+        printSelected: printSelected,
+        printAll: printAll,
+        printSingleById: printSingleById,
+        downloadById: downloadById,
+        toggleView: toggleView,
+        exportJSON: exportToJSON,
+        exportCSV: exportToCSV
     };
 
 })();

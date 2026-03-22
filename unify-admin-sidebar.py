@@ -1,25 +1,18 @@
-<!-- Functional Report Template Page -->
-<html lang="pt">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Шаблон звіту</title>
-    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
-    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
-</head>
-<body class="hold-transition sidebar-mini layout-fixed">
-    <div class="wrapper">
-        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
-                </li>
-                <li class="nav-item d-none d-sm-inline-block">
-                    <a href="admin-dashboard.html" class="nav-link">Головна</a>
-                </li>
-            </ul>
-        </nav>
-        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+#!/usr/bin/env python3
+"""
+Унify admin sidebar across all admin HTML pages.
+Replaces the <aside> block with a canonical, fully Ukrainian version.
+Adds a JS auto-activator so no per-page active class hacks are needed.
+"""
+import re
+import os
+
+ADMIN_DIR = '/workspaces/deapseak/pages/admin'
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Canonical sidebar HTML — all labels Ukrainian, absolute paths, full feature set
+# ──────────────────────────────────────────────────────────────────────────────
+CANONICAL_SIDEBAR = '''<aside class="main-sidebar sidebar-dark-primary elevation-4">
     <a href="/pages/admin/admin-dashboard.html" class="brand-link">
         <span class="elevation-3" style="display:inline-flex;align-items:center;justify-content:center;width:33px;height:33px;border-radius:50%;background:linear-gradient(135deg,#17a2b8,#007bff);color:#fff;font-size:17px;margin-right:8px;opacity:.9;flex-shrink:0;"><i class="fas fa-shield-alt"></i></span>
         <span class="brand-text font-weight-light" style="line-height:1.4;">FestLift <small style="opacity:.7;font-size:11px;">Painel Admin</small><br><small id="sidebarName" style="opacity:.85;font-size:11px;color:#9ecfff;font-weight:400;">—</small></span>
@@ -236,7 +229,10 @@
             </ul>
         </nav>
     </div>
-</aside>
+</aside>'''
+
+# JS auto-activator (placed right after </aside>)
+AUTO_ACTIVATOR = '''
 <script>
 /* Sidebar auto-activate based on current page */
 (function () {
@@ -319,65 +315,57 @@
         }
     } catch (e) {}
 }());
-</script>
-        <div class="content-wrapper">
-            <div class="content-header">
-                <div class="container-fluid">
-                    <div class="row mb-2">
-                        <div class="col-sm-6">
-                            <h1 class="m-0">Шаблон звіту</h1>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <section class="content">
-                <div class="container-fluid">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">Форма звіту</h3>
-                        </div>
-                        <div class="card-body">
-                            <form id="reportForm">
-                                <div class="form-group">
-                                    <label for="reportTitle">Заголовок звіту</label>
-                                    <input type="text" class="form-control" id="reportTitle" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="reportDate">Дата звіту</label>
-                                    <input type="date" class="form-control" id="reportDate" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="reportContent">Зміст</label>
-                                    <textarea class="form-control" id="reportContent" rows="6" required></textarea>
-                                </div>
-                                <button type="submit" class="btn btn-warning">Guardar</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </div>
-        <footer class="main-footer">
-            <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
-            Sistema de gestão de elevadores v2.1.0.
-            <div class="float-right d-none d-sm-inline-block">
-                <b>Versão</b> 2.1.0
-            </div>
-        </footer>
-    </div>
-    <script src="../../plugins/jquery/jquery.min.js"></script>
-    <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
-    <script src="../../plugins/adminlte/adminlte.min.js"></script>
+</script>'''
 
-    <!-- Sidebar initialization script -->
-    <script src="../../assets/js/sidebar-init.js"></script>
+# Marker comment to avoid duplicate auto-activators
+ACTIVATOR_MARKER = '/* Sidebar auto-activate based on current page */'
 
-    <!-- Load sidebar dynamically -->
-    <script>
-        $(document).ready(function() {
-            loadSidebarWithInit("includes/sidebar.html");
-        });
-    </script>
-    <script src="../../assets/js/modules/report-template.js"></script>
-</body>
-</html>
+def replace_sidebar(filepath):
+    with open(filepath, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    # Find <aside class="main-sidebar"
+    aside_start = content.find('<aside class="main-sidebar')
+    if aside_start == -1:
+        return False, 'no aside found'
+
+    # Find matching </aside>
+    aside_end = content.find('</aside>', aside_start)
+    if aside_end == -1:
+        return False, '</aside> not found'
+    aside_end += len('</aside>')
+
+    new_content = content[:aside_start] + CANONICAL_SIDEBAR + content[aside_end:]
+
+    # Remove any existing auto-activator (in case script already added)
+    if ACTIVATOR_MARKER in new_content:
+        # Remove the existing <script>...</script> block containing the marker
+        script_start = new_content.rfind('<script>', 0, new_content.find(ACTIVATOR_MARKER))
+        script_end = new_content.find('</script>', new_content.find(ACTIVATOR_MARKER)) + len('</script>')
+        if script_start != -1 and script_end > script_start:
+            new_content = new_content[:script_start] + new_content[script_end:]
+
+    # Insert auto-activator right after </aside>
+    aside_close_pos = new_content.find('</aside>') + len('</aside>')
+    new_content = new_content[:aside_close_pos] + AUTO_ACTIVATOR + new_content[aside_close_pos:]
+
+    with open(filepath, 'w', encoding='utf-8') as f:
+        f.write(new_content)
+
+    return True, 'OK'
+
+
+def main():
+    files = sorted(f for f in os.listdir(ADMIN_DIR) if f.endswith('.html'))
+    results = []
+    for fname in files:
+        fpath = os.path.join(ADMIN_DIR, fname)
+        ok, msg = replace_sidebar(fpath)
+        status = '✓' if ok else '✗'
+        results.append(f'{status} {fname}: {msg}')
+        print(results[-1])
+    print(f'\nDone. {sum(1 for r in results if r.startswith("✓"))} files updated, {sum(1 for r in results if r.startswith("✗"))} skipped.')
+
+
+if __name__ == '__main__':
+    main()

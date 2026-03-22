@@ -103,7 +103,7 @@
                 map = L.map('liftsMap').setView([50.4501, 30.5234], 13);
 
                 // Add OpenStreetMap tiles
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
                     attribution: '© OpenStreetMap contributors'
                 }).addTo(map);
 

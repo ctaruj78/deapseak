@@ -183,38 +183,4 @@
     </div>
 </aside>
 
-<script>
-// Встановлення активного пункту меню
-document.addEventListener('DOMContentLoaded', function() {
-    const currentPage = window.location.pathname.split('/').pop();
-    const navLinks = document.querySelectorAll('.nav-sidebar .nav-link');
-    
-    navLinks.forEach(link => {
-        const href = link.getAttribute('href');
-        if (href && href.includes(currentPage)) {
-            link.classList.add('active');
-            
-            // Якщо це submenu - відкрити parent
-            const parentItem = link.closest('.nav-treeview')?.closest('.nav-item');
-            if (parentItem) {
-                parentItem.classList.add('menu-open');
-                parentItem.querySelector('.nav-link')?.classList.add('active');
-            }
-        }
-    });
-
-    // Завантаження імені користувача
-    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-    const userNameEl = document.getElementById('sidebarUserName');
-    if (userNameEl && userData.firstName) {
-        userNameEl.textContent = `${userData.firstName} ${userData.lastName || ''}`.trim();
-    }
-});
-
-// Функція logout
-function logout() {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userData');
-    window.location.href = '../../pages/auth/login.html';
-}
-</script>
+<!-- Active menu highlighting and logout handled by sidebar-init.js -->

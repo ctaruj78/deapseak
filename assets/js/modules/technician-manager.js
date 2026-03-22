@@ -18,7 +18,7 @@ class TechnicianManager {
             // Симуляція завантаження з API
             const response = await fetch('/api/technicians', {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken')}`
                 }
             });
             
@@ -363,7 +363,7 @@ class TechnicianManager {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken')}`
                     },
                     body: JSON.stringify(techData)
                 });
@@ -382,7 +382,7 @@ class TechnicianManager {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken')}`
                     },
                     body: JSON.stringify(techData)
                 });
@@ -414,7 +414,7 @@ class TechnicianManager {
             const response = await fetch(`/api/technicians/${techId}`, {
                 method: 'DELETE',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken')}`
                 }
             });
             

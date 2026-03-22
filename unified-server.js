@@ -1328,28 +1328,45 @@ app.get('/api/lifts', authenticateToken, async (req, res) => {
         
         // 🔄 Підтягуємо дані клієнтів для кожного ліфта
         const liftsWithClients = await Promise.all(lifts.map(async (lift) => {
+            let client = null;
+
+            // 1. Спробуємо знайти по ID
             if (lift.client) {
                 try {
-                    const client = await db.collection('users').findOne({
-                        _id: new ObjectId(lift.client)
+                    client = await db.collection('users').findOne({
+                        _id: new ObjectId(lift.client.toString())
                     });
-                    return {
-                        ...lift,
-                        client: client ? {
-                            _id: client._id,
-                            email: client.email,
-                            username: client.username,
-                            firstName: client.firstName,
-                            lastName: client.lastName,
-                            phone: client.phone
-                        } : null
-                    };
                 } catch (err) {
-                    console.error(`⚠️ Не вдалося знайти клієнта ${lift.client}:`, err.message);
-                    return lift;
+                    // некоректний ObjectId — не критично
                 }
             }
-            return lift;
+
+            // 2. Якщо по ID не знайшли — шукаємо по clientEmail (fallback для "осиротілих" ліфтів)
+            if (!client && lift.clientEmail) {
+                client = await db.collection('users').findOne({
+                    email: lift.clientEmail.toLowerCase()
+                });
+                // Якщо знайшли по email — оновлюємо поле client в БД щоб виправити зв'язок
+                if (client) {
+                    db.collection('lifts').updateOne(
+                        { _id: lift._id },
+                        { $set: { client: client._id.toString() } }
+                    ).catch(() => {});
+                    console.log(`🔗 Зв'язок ліфта ${lift._id} з клієнтом ${client.email} відновлено по email`);
+                }
+            }
+
+            return {
+                ...lift,
+                client: client ? {
+                    _id: client._id,
+                    email: client.email,
+                    username: client.username,
+                    firstName: client.firstName,
+                    lastName: client.lastName,
+                    phone: client.phone
+                } : null
+            };
         }));
         
         res.json({
@@ -2802,8 +2819,15 @@ app.get('/api/users', authenticateToken, async (req, res) => {
             });
         }
         
-        const users = await db.collection('users').find({}, {
-            projection: { password: 0 } // Не віддаємо паролі
+        // Адмін: підтримуємо фільтрацію по role query param
+        let adminFilter = {};
+        if (req.query.role) {
+            // Нормалізуємо: 'tech' -> 'technician'
+            const roleQuery = req.query.role === 'tech' ? 'technician' : req.query.role;
+            adminFilter = { role: { $in: [roleQuery, req.query.role] } };
+        }
+        const users = await db.collection('users').find(adminFilter, {
+            projection: { password: 0 }
         }).toArray();
         
         // Повертаємо в форматі { success: true, data: [...] } для сумісності

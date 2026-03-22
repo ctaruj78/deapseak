@@ -309,7 +309,7 @@ class LiftManager {
             if (!mapContainer) return;
             mapContainer.style.display = 'block';
             this.map = L.map('liftMap').setView([38.7223, -9.1393], 13); // Лісабон
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
                 attribution: '© OpenStreetMap contributors'
             }).addTo(this.map);
             // Додавання інтерактиву: клік по карті встановлює координати
