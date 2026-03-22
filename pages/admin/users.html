@@ -1036,7 +1036,8 @@
 
             updateStats() {
                 $('#totalUsers').text(this.allUsers.length);
-                $('#activeUsers').text(this.allUsers.filter(u => u.status === 'active').length);
+                // isActive - поле акаунта (true за замовчуванням); status - поле присутності (online/offline/busy)
+                $('#activeUsers').text(this.allUsers.filter(u => u.isActive !== false && u.status !== 'inactive').length);
                 $('#clientUsers').text(this.allUsers.filter(u => u.role === 'client').length);
                 $('#technicianUsers').text(this.allUsers.filter(u => u.role === 'technician' || u.role === 'tech').length);
                 $('#adminUsers').text(this.allUsers.filter(u => u.role === 'admin').length);
@@ -1099,7 +1100,9 @@
                             roleMatch = user.role === roleFilter;
                         }
                     }
-                    const statusMatch = statusFilter === 'all' || user.status === statusFilter;
+                    const statusMatch = statusFilter === 'all' ||
+                        (statusFilter === 'active'   && user.isActive !== false && user.status !== 'inactive') ||
+                        (statusFilter === 'inactive' && (user.isActive === false || user.status === 'inactive'));
                     return roleMatch && statusMatch;
                 });
 
