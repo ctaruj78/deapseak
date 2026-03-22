@@ -4467,6 +4467,29 @@
     // Alias для сумісності з lift-form-enhanced.js
     window.loadLifts = window.loadLiftsFromAPI;
 
+    // ── Збереження ліфта через API (викликається з enhanced-lift-modal.js) ──
+    window.saveLiftToAPI = async function(liftData) {
+        console.log('💾 saveLiftToAPI: збереження ліфта...', liftData);
+        const token = localStorage.getItem('authToken') || localStorage.getItem('token') || '';
+        const response = await fetch('/api/lifts', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(liftData)
+        });
+        const result = await response.json();
+        if (!response.ok || result.success === false) {
+            const msg = result.message || result.error || `HTTP ${response.status}`;
+            console.error('❌ saveLiftToAPI помилка:', msg);
+            throw new Error(msg);
+        }
+        const saved = result.data || result.lift || result;
+        console.log('✅ Ліфт збережено:', saved);
+        return saved;
+    };
+
     // 🏠 Перевірка сусідніх ліфтів при введенні адреси (диспетчер панель)
     (function setupAddressSiblingsCheck() {
         let siblingsTimer = null;
