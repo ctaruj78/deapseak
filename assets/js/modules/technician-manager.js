@@ -387,10 +387,24 @@ class TechnicianManager {
                     body: JSON.stringify(techData)
                 });
                 
+                const newTechData = await response.json();
                 if (response.ok) {
-                    const newTech = await response.json();
-                    this.technicians.push(newTech);
-                    this.showNotification('Техніка успішно додано', 'success');
+                    this.technicians.push(newTechData);
+                    const nu = newTechData.newUser;
+                    if (nu) {
+                        const emailMsg = nu.emailSent === false
+                            ? `⚠️ Email não enviado (${nu.emailError || 'SMTP não configurado'})`
+                            : '📧 Convite enviado por email';
+                        this.showNotification(
+                            `✅ Técnico criado!\n👤 ${nu.email}\n🔑 Palavra-passe: ${nu.password}\n${emailMsg}`,
+                            'success'
+                        );
+                    } else {
+                        this.showNotification('Técnico já existe — dados actualizados', 'info');
+                    }
+                } else {
+                    this.showNotification(newTechData.message || 'Erro ao guardar técnico', 'error');
+                    return;
                 }
             }
             

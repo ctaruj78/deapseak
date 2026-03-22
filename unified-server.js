@@ -2930,6 +2930,192 @@ app.get('/api/technicians', authenticateToken, async (req, res) => {
     }
 });
 
+// ─────────────────────────────────────────────────────────────
+// 🔧 Helper: create a user + send invitation email
+// role: 'client' | 'technician'
+// ─────────────────────────────────────────────────────────────
+async function createUserWithInvite(userData, role, createdBy, req) {
+    const email = (userData.email || '').trim().toLowerCase();
+    if (!email) throw new Error('Email obrigatório');
+
+    const existing = await db.collection('users').findOne({ email });
+    if (existing) {
+        return { user: existing, created: false };
+    }
+
+    const rawPassword =
+        Math.random().toString(36).slice(2, 6).toUpperCase() +
+        Math.floor(1000 + Math.random() * 9000) +
+        ['!', '@', '#', '$'][Math.floor(Math.random() * 4)];
+
+    const hashedPassword = await bcrypt.hash(rawPassword, 10);
+
+    const nameParts = (userData.firstName || userData.name || '').trim().split(/\s+/);
+    const newDoc = {
+        email,
+        username: email.split('@')[0],
+        firstName: userData.firstName || nameParts[0] || '',
+        lastName: userData.lastName || nameParts.slice(1).join(' ') || '',
+        phone: userData.phone || '',
+        password: hashedPassword,
+        role,
+        isActive: true,
+        status: 'offline',
+        specialty: userData.specialty || undefined,
+        skills: userData.skills || [],
+        notes: userData.notes || '',
+        createdAt: new Date().toISOString(),
+        createdBy
+    };
+    // Remove undefined fields
+    Object.keys(newDoc).forEach(k => newDoc[k] === undefined && delete newDoc[k]);
+
+    const inserted = await db.collection('users').insertOne(newDoc);
+    newDoc._id = inserted.insertedId;
+
+    // Send invitation email
+    const siteBase = process.env.SITE_URL || `${req.protocol}://${req.headers.host}`;
+    const roleLabel = role === 'client' ? 'cliente' : 'técnico';
+    const roleIcon  = role === 'client' ? '🏢' : '🔧';
+
+    const inviteHtml = `<!DOCTYPE html>
+<html lang="pt"><head><meta charset="UTF-8">
+<style>
+  body{font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:0}
+  .wrap{max-width:600px;margin:30px auto;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.12)}
+  .header{background:linear-gradient(135deg,#1a237e,#1565c0);padding:32px 30px;text-align:center;color:#fff}
+  .header h1{margin:0;font-size:26px}.header p{margin:6px 0 0;font-size:14px;opacity:.85}
+  .body{padding:32px 30px}.body h2{color:#1a237e;font-size:20px;margin-top:0}
+  .creds{background:#e8f0fe;border-left:4px solid #1565c0;border-radius:6px;padding:18px 22px;margin:20px 0}
+  .creds p{margin:6px 0;font-size:15px}.creds strong{color:#1a237e}
+  .creds code{background:#fff;padding:3px 8px;border-radius:4px;font-size:15px;letter-spacing:1px;border:1px solid #c5cae9}
+  .btn{display:inline-block;background:#1565c0;color:#fff!important;text-decoration:none;padding:13px 32px;border-radius:6px;font-size:15px;font-weight:bold;margin-top:20px}
+  .footer{background:#f8f9fa;padding:18px 30px;text-align:center;font-size:12px;color:#888}
+</style></head><body>
+<div class="wrap">
+  <div class="header"><h1>${roleIcon} FestLift</h1><p>Plataforma de Gestão de Elevadores</p></div>
+  <div class="body">
+    <h2>Bem-vindo(a)${newDoc.firstName ? ', ' + newDoc.firstName : ''}!</h2>
+    <p>Foi registado(a) como <strong>${roleLabel}</strong> na plataforma <strong>FestLift</strong>.</p>
+    <div class="creds">
+      <p>🔐 <strong>Os seus dados de acesso:</strong></p>
+      <p><strong>Email:</strong> <code>${email}</code></p>
+      <p><strong>Palavra-passe temporária:</strong> <code>${rawPassword}</code></p>
+    </div>
+    <p style="font-size:13px;color:#e53935;font-weight:bold">⚠️ Por razões de segurança, altere a sua palavra-passe após o primeiro login.</p>
+    <a href="${siteBase}/pages/auth/login.html" class="btn">Entrar na plataforma →</a>
+  </div>
+  <div class="footer">FestLift Portugal &bull; Email automático — não responda.</div>
+</div></body></html>`;
+
+    let emailSent = false;
+    let emailError = null;
+    try {
+        await emailService.sendEmail(email, `🏢 FestLift — Bem-vindo(a)! Dados de acesso (${roleLabel})`, inviteHtml);
+        emailSent = true;
+        console.log(`✅ Convite enviado para ${role} ${email}`);
+    } catch (e) {
+        emailError = e.message;
+        console.warn(`⚠️ Falha ao enviar convite para ${email}:`, e.message);
+    }
+
+    return { user: newDoc, created: true, rawPassword, emailSent, emailError };
+}
+
+// POST /api/clients - dispatcher cria novo cliente (User com role=client)
+app.post('/api/clients', authenticateToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
+            return res.status(403).json({ success: false, message: 'Acesso negado' });
+        }
+        const { user, created, rawPassword, emailSent, emailError } = await createUserWithInvite(
+            req.body, 'client', req.user.username, req
+        );
+        res.json({
+            success: true,
+            id: user._id,
+            _id: user._id,
+            ...user,
+            password: undefined,
+            newClient: created ? { email: user.email, password: rawPassword, emailSent, emailError } : null,
+            message: created ? 'Cliente criado com sucesso' : 'Cliente já existe'
+        });
+    } catch (error) {
+        console.error('❌ Erro ao criar cliente:', error);
+        res.status(500).json({ success: false, message: error.message || 'Erro ao criar cliente' });
+    }
+});
+
+// PUT /api/clients/:id - actualizar cliente
+app.put('/api/clients/:id', authenticateToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
+            return res.status(403).json({ success: false, message: 'Acesso negado' });
+        }
+        const { ObjectId } = require('mongodb');
+        const updateData = { ...req.body };
+        delete updateData._id; delete updateData.id; delete updateData.password;
+        updateData.updatedAt = new Date().toISOString();
+        updateData.updatedBy = req.user.username;
+
+        await db.collection('users').updateOne(
+            { _id: new ObjectId(req.params.id) },
+            { $set: updateData }
+        );
+        res.json({ success: true, message: 'Cliente actualizado' });
+    } catch (error) {
+        console.error('❌ Erro ao actualizar cliente:', error);
+        res.status(500).json({ success: false, message: 'Erro ao actualizar cliente' });
+    }
+});
+
+// POST /api/technicians - dispatcher cria novo técnico (User com role=technician)
+app.post('/api/technicians', authenticateToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
+            return res.status(403).json({ success: false, message: 'Acesso negado' });
+        }
+        const { user, created, rawPassword, emailSent, emailError } = await createUserWithInvite(
+            req.body, 'technician', req.user.username, req
+        );
+        res.json({
+            success: true,
+            id: user._id,
+            _id: user._id,
+            ...user,
+            password: undefined,
+            newUser: created ? { email: user.email, password: rawPassword, emailSent, emailError } : null,
+            message: created ? 'Técnico criado com sucesso' : 'Técnico já existe'
+        });
+    } catch (error) {
+        console.error('❌ Erro ao criar técnico:', error);
+        res.status(500).json({ success: false, message: error.message || 'Erro ao criar técnico' });
+    }
+});
+
+// PUT /api/technicians/:id - actualizar técnico
+app.put('/api/technicians/:id', authenticateToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
+            return res.status(403).json({ success: false, message: 'Acesso negado' });
+        }
+        const { ObjectId } = require('mongodb');
+        const updateData = { ...req.body };
+        delete updateData._id; delete updateData.id; delete updateData.password;
+        updateData.updatedAt = new Date().toISOString();
+        updateData.updatedBy = req.user.username;
+
+        await db.collection('users').updateOne(
+            { _id: new ObjectId(req.params.id) },
+            { $set: updateData }
+        );
+        res.json({ success: true, message: 'Técnico actualizado' });
+    } catch (error) {
+        console.error('❌ Erro ao actualizar técnico:', error);
+        res.status(500).json({ success: false, message: 'Erro ao actualizar técnico' });
+    }
+});
+
 // GET /api/users - отримання користувачів (тільки admin)
 app.get('/api/users', authenticateToken, async (req, res) => {
     try {

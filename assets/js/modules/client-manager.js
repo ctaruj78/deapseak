@@ -1047,10 +1047,24 @@ class ClientManager {
                     body: JSON.stringify(clientData)
                 });
                 
+                const newClientData = await response.json();
                 if (response.ok) {
-                    const newClient = await response.json();
-                    this.clients.push(newClient);
-                    this.showNotification('Клієнта успішно додано', 'success');
+                    this.clients.push(newClientData);
+                    const nc = newClientData.newClient;
+                    if (nc) {
+                        const emailMsg = nc.emailSent === false
+                            ? `⚠️ Email não enviado (${nc.emailError || 'SMTP não configurado'})`
+                            : '📧 Convite enviado por email';
+                        this.showNotification(
+                            `✅ Cliente criado!\n👤 ${nc.email}\n🔑 Palavra-passe: ${nc.password}\n${emailMsg}`,
+                            'success'
+                        );
+                    } else {
+                        this.showNotification('Cliente já existe — associado com sucesso', 'info');
+                    }
+                } else {
+                    this.showNotification(newClientData.message || 'Erro ao guardar cliente', 'error');
+                    return;
                 }
             }
             
