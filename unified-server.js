@@ -829,6 +829,7 @@ app.get('/api/users/me', authenticateToken, async (req, res) => {
         console.log('✅ Профіль знайдено:', user.username);
 
         // Повертаємо профіль без пароля
+        // Видаляємо пароль, але залишаємо tempPasswordHint для власного профілю
         const { password, ...userProfile } = user;
         
         res.json({
@@ -840,7 +841,7 @@ app.get('/api/users/me', authenticateToken, async (req, res) => {
         console.error('❌ Помилка завантаження профілю:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка завантаження профілю: ' + error.message
+            message: 'Помилка завантаження профілю'
         });
     }
 });
@@ -870,18 +871,36 @@ function authenticateToken(req, res, next) {
 
     jwt.verify(token, JWT_SECRET, (err, user) => {
         if (err) {
-            console.log('❌ JWT verify error:', err.message);
-            console.log('🔑 JWT_SECRET:', JWT_SECRET);
-            console.log('📝 Token:', token.substring(0, 50) + '...');
+            console.log('❌ JWT verify error:', err.message); // server-side only
             return res.status(403).json({
                 success: false,
-                message: 'Невалідний токен: ' + err.message
+                message: 'Невалідний або прострочений токен'
             });
         }
         console.log('✅ Token valid, user:', user.username);
         req.user = user;
         next();
     });
+}
+
+// 🔒 Role-gate middleware — використовуйте як requireRole('admin') або requireRole('admin','dispatcher')
+function requireRole(...roles) {
+    return (req, res, next) => {
+        if (!req.user || !roles.includes(req.user.role)) {
+            console.warn(`⛔ Access denied: ${req.user?.role || 'unknown'} tried ${req.method} ${req.path}`);
+            return res.status(403).json({
+                success: false,
+                message: 'Доступ заборонено. Недостатньо прав.'
+            });
+        }
+        next();
+    };
+}
+
+// 🔒 ObjectId validation helper
+function isValidObjectId(id) {
+    const { ObjectId } = require('mongodb');
+    return ObjectId.isValid(id) && String(new ObjectId(id)) === id;
 }
 
 // Multer configuration for PDF uploads
@@ -3193,7 +3212,7 @@ app.get('/api/users', authenticateToken, async (req, res) => {
             adminFilter = { role: { $in: [roleQuery, req.query.role] } };
         }
         const users = await db.collection('users').find(adminFilter, {
-            projection: { password: 0 }
+            projection: { password: 0, tempPasswordHint: 0 }
         }).toArray();
         
         // Повертаємо в форматі { success: true, data: [...] } для сумісності
@@ -3256,8 +3275,7 @@ app.get('/api/analytics/dashboard', authenticateToken, async (req, res) => {
         console.error('❌ Помилка отримання dashboard статистики:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка отримання статистики',
-            error: error.message
+            message: 'Помилка отримання статистики'
         });
     }
 });
@@ -3296,6 +3314,12 @@ app.post('/api/users', authenticateToken, async (req, res) => {
     try {
         const { email, password, firstName, lastName, role, status } = req.body;
 
+        // 🔒 Тільки admin та dispatcher можуть створювати юзерів
+        if (!['admin', 'dispatcher'].includes(req.user.role)) {
+            console.warn(`⛔ ${req.user.role} ${req.user.email} спробував POST /api/users`);
+            return res.status(403).json({ success: false, error: 'Доступ заборонено' });
+        }
+
         // Перевірка обов'язкових полів
         if (!email || !password || !firstName || !lastName || !role) {
             return res.status(400).json({
@@ -3304,18 +3328,16 @@ app.post('/api/users', authenticateToken, async (req, res) => {
             });
         }
 
-        // 🔒 ОБМЕЖЕННЯ ДЛЯ ДИСПЕТЧЕРА: може створювати тільки клієнтів та техніків
-        if (req.user.role === 'dispatcher') {
-            const allowedRoles = ['client', 'technician'];
-            
-            if (!allowedRoles.includes(role)) {
-                return res.status(403).json({
-                    success: false,
-                    error: `Доступ заборонено! Диспетчери можуть створювати тільки клієнтів та техніків. Спроба створити роль: ${role}`
-                });
-            }
-            
-            console.log(`👮 Диспетчер ${req.user.email} створює користувача з роллю: ${role}`);
+        // 🔒 Валідація ролі — dispatcher не може створювати admin/dispatcher
+        const validRoles = ['client', 'technician', 'admin', 'dispatcher'];
+        if (!validRoles.includes(role)) {
+            return res.status(400).json({ success: false, error: 'Недійсна роль' });
+        }
+        if (req.user.role === 'dispatcher' && !['client', 'technician'].includes(role)) {
+            return res.status(403).json({
+                success: false,
+                error: 'Диспетчери можуть створювати тільки клієнтів та техніків'
+            });
         }
 
         // Перевірка чи email вже існує
@@ -3369,21 +3391,28 @@ app.post('/api/users', authenticateToken, async (req, res) => {
 app.put('/api/users/:id', authenticateToken, async (req, res) => {
     try {
         const { ObjectId } = require('mongodb');
+
+        // 🔒 Тільки admin та dispatcher можуть оновлювати юзерів
+        if (!['admin', 'dispatcher'].includes(req.user.role)) {
+            console.warn(`⛔ ${req.user.role} ${req.user.email} спробував PUT /api/users/:id`);
+            return res.status(403).json({ success: false, error: 'Доступ заборонено' });
+        }
+
+        // 🔒 Валідація ObjectId
+        if (!isValidObjectId(req.params.id)) {
+            return res.status(400).json({ success: false, error: 'Недійсний ID' });
+        }
         const userId = new ObjectId(req.params.id);
         const { email, password, firstName, lastName, role, status } = req.body;
 
-        // 🔒 ОБМЕЖЕННЯ ДЛЯ ДИСПЕТЧЕРА: не може змінювати роль на admin або dispatcher
+        // 🔒 Диспетчер не може змінювати роль на admin/dispatcher
         if (req.user.role === 'dispatcher' && role) {
-            const allowedRoles = ['client', 'technician'];
-            
-            if (!allowedRoles.includes(role)) {
+            if (!['client', 'technician'].includes(role)) {
                 return res.status(403).json({
                     success: false,
-                    error: `Доступ заборонено! Диспетчери можуть редагувати тільки клієнтів та техніків. Спроба встановити роль: ${role}`
+                    error: 'Диспетчери можуть редагувати тільки клієнтів та техніків'
                 });
             }
-            
-            console.log(`👮 Диспетчер ${req.user.email} редагує користувача, роль: ${role}`);
         }
 
         const updateData = {
@@ -3433,6 +3462,17 @@ app.put('/api/users/:id', authenticateToken, async (req, res) => {
 app.delete('/api/users/:id', authenticateToken, async (req, res) => {
     try {
         const { ObjectId } = require('mongodb');
+
+        // 🔒 Тільки admin та dispatcher можуть видаляти юзерів
+        if (!['admin', 'dispatcher'].includes(req.user.role)) {
+            console.warn(`⛔ ${req.user.role} ${req.user.email} спробував DELETE /api/users/:id`);
+            return res.status(403).json({ success: false, message: 'Доступ заборонено' });
+        }
+
+        // 🔒 Валідація ObjectId
+        if (!isValidObjectId(req.params.id)) {
+            return res.status(400).json({ success: false, message: 'Недійсний ID' });
+        }
         const userId = new ObjectId(req.params.id);
         
         // Перевіряємо що користувач не видаляє сам себе
@@ -3493,12 +3533,25 @@ app.delete('/api/users/:id', authenticateToken, async (req, res) => {
 app.get('/api/users/:id', authenticateToken, async (req, res) => {
     try {
         const { ObjectId } = require('mongodb');
+
+        // 🔒 Тільки admin/dispatcher або сам юзер (власний профіль)
+        const isSelf = (req.user.id || req.user.userId) === req.params.id;
+        if (!['admin', 'dispatcher'].includes(req.user.role) && !isSelf) {
+            return res.status(403).json({ success: false, message: 'Доступ заборонено' });
+        }
+
+        // 🔒 Валідація ObjectId
+        if (!isValidObjectId(req.params.id)) {
+            return res.status(400).json({ success: false, message: 'Недійсний ID' });
+        }
         const userId = new ObjectId(req.params.id);
         
-        const user = await db.collection('users').findOne(
-            { _id: userId },
-            { projection: { password: 0 } }
-        );
+        // tempPasswordHint видаємо тільки самому юзеру, не адміну/диспетчеру
+        const projection = isSelf
+            ? { password: 0 }
+            : { password: 0, tempPasswordHint: 0 };
+
+        const user = await db.collection('users').findOne({ _id: userId }, { projection });
         
         if (!user) {
             return res.status(404).json({
@@ -7836,14 +7889,14 @@ io.on('connection', (socket) => {
     // Аутентифікація через JWT
     socket.on('authenticate', (token) => {
         try {
-            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'deapseak-secret-key-2024');
+            const decoded = jwt.verify(token, JWT_SECRET); // Використовуємо той самий JWT_SECRET що і в authenticateToken
             socket.userData = decoded;
             socket.join(`role_${decoded.role}`); // Приєднати до кімнати за роллю
             socket.join(`user_${decoded.id}`);   // Приєднати до персональної кімнати
             console.log(`✅ WebSocket автентифіковано: ${decoded.email} (${decoded.role})`);
             socket.emit('authenticated', { success: true, user: decoded });
         } catch (error) {
-            console.error('❌ WebSocket auth failed:', error.message);
+            console.error('❌ WebSocket auth failed');
             socket.emit('authenticated', { success: false, error: 'Invalid token' });
         }
     });
