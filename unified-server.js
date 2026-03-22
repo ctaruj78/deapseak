@@ -221,6 +221,40 @@ app.get('/api/health', async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
+// 🌍 GEOCODING PROXY — сервер звертається до Nominatim
+//    (уникає CORS та проблем з User-Agent у браузері)
+// ═══════════════════════════════════════════════════════════
+app.get('/api/geocode', async (req, res) => {
+    const q = (req.query.q || '').trim();
+    if (!q) return res.status(400).json({ success: false, message: 'Параметр q обовʼязковий' });
+
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=3&countrycodes=pt`;
+    try {
+        const response = await fetch(url, {
+            headers: {
+                'User-Agent': 'FestLift-LiftManagement/2.0 (info@festlift.pt)',
+                'Accept-Language': 'pt,en'
+            }
+        });
+        if (!response.ok) throw new Error(`Nominatim HTTP ${response.status}`);
+        const data = await response.json();
+        if (!data || data.length === 0) {
+            return res.json({ success: false, message: 'Адресу не знайдено' });
+        }
+        const best = data[0];
+        return res.json({
+            success: true,
+            lat: parseFloat(best.lat),
+            lng: parseFloat(best.lon),
+            display: best.display_name
+        });
+    } catch (err) {
+        console.error('❌ /api/geocode error:', err.message);
+        return res.status(502).json({ success: false, message: 'Помилка геокодування: ' + err.message });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════
 // 🔐 AUTH ENDPOINTS - ВИДАЛЕНО, використовуємо backend/routes/authRoutes.js
 // ═══════════════════════════════════════════════════════════
 // ПРИМІТКА: Всі auth endpoints (login, register, profile, logout, refresh)

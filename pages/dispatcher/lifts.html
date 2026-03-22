@@ -4282,99 +4282,79 @@
     // ГЕОКОДУВАННЯ АДРЕСИ
     // ========================================================================
     
-    // Додаємо обробник для кнопки геокодування
-    $(document).ready(function() {
-        // Кнопка геокодування
-        $('#enhancedBtnGeocode').on('click', async function() {
-            console.log('🌍 Геокодування адреси...');
-            
-            const address = $('#enhancedLiftAddress').val();
-            const postcode = $('#enhancedLiftPostcode').val();
-            
-            if (!address || address.trim() === '') {
-                alert('Будь ласка, введіть адресу');
+    // ── Геокодування через серверний проксі /api/geocode ──────────────────
+    async function runGeocode(silent = false) {
+        const address  = ($('#enhancedLiftAddress').val() || '').trim();
+        const postcode = ($('#enhancedLiftPostcode').val() || '').trim();
+        if (!address) {
+            if (!silent) alert('Будь ласка, введіть адресу');
+            return;
+        }
+        const q = postcode ? `${address}, ${postcode}, Portugal` : `${address}, Portugal`;
+        console.log('📍 Геокодування (проксі):', q);
+
+        const btn = document.getElementById('enhancedBtnGeocode');
+        const origHtml = btn ? btn.innerHTML : '';
+        if (btn) { btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; btn.disabled = true; }
+
+        try {
+            const resp = await fetch(`/api/geocode?q=${encodeURIComponent(q)}`);
+            const data = await resp.json();
+
+            if (!data.success) {
+                if (!silent) alert('Адресу не знайдено. Уточніть назву вулиці та номер будинку.');
+                console.warn('⚠️ Geocode не знайдено:', q);
                 return;
             }
-            
-            // Формуємо повну адресу
-            const fullAddress = postcode ? `${address}, ${postcode}, Portugal` : `${address}, Portugal`;
-            
-            console.log('📍 Геокодування:', fullAddress);
-            
-            // Показуємо індикатор завантаження
-            const btn = $(this);
-            const originalHtml = btn.html();
-            btn.html('<i class="fas fa-spinner fa-spin"></i>').prop('disabled', true);
-            
-            try {
-                // Використовуємо Nominatim API
-                const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(fullAddress)}&format=json&limit=1`;
-                
-                const response = await fetch(url, {
-                    headers: {
-                        'User-Agent': 'FestLift-LiftManagement/2.0'
+
+            const { lat, lng } = data;
+            console.log('✅ Геокодовано:', { lat, lng, display: data.display });
+
+            $('#enhancedLiftLat').val(lat.toFixed(6));
+            $('#enhancedLiftLng').val(lng.toFixed(6));
+
+            if (window.editMapInstance) {
+                window.editMapInstance.setView([lat, lng], 17);
+                Object.values(window.editMapInstance._layers || {}).forEach(layer => {
+                    if (layer instanceof L.Marker) {
+                        layer.setLatLng([lat, lng]);
+                        layer.bindPopup(`<strong>${address}</strong><br><small>Перетягніть маркер для точнішого позиціонування</small>`).openPopup();
                     }
                 });
-                
-                const results = await response.json();
-                
-                if (results && results.length > 0) {
-                    const lat = parseFloat(results[0].lat);
-                    const lon = parseFloat(results[0].lon);
-                    
-                    console.log('✅ Геокодовано:', { lat, lon });
-                    
-                    // Оновлюємо поля координат
-                    $('#enhancedLiftLat').val(lat.toFixed(6));
-                    $('#enhancedLiftLng').val(lon.toFixed(6));
-                    
-                    // Оновлюємо карту
-                    if (window.editMapInstance) {
-                        window.editMapInstance.setView([lat, lon], 15);
-                        
-                        // Оновлюємо маркер
-                        if (window.editMapInstance._layers) {
-                            Object.values(window.editMapInstance._layers).forEach(layer => {
-                                if (layer instanceof L.Marker) {
-                                    layer.setLatLng([lat, lon]);
-                                    layer.bindPopup(`<strong>${address}</strong><br><small>Перетягніть маркер для зміни позиції</small>`).openPopup();
-                                }
-                            });
-                        }
-                        
-                        // ВИПРАВЛЕННЯ: Оновлюємо розмір карти після геокодування
-                        setTimeout(() => {
-                            window.editMapInstance.invalidateSize();
-                            console.log('✅ Карта оновлена після геокодування');
-                        }, 200);
-                    } else {
-                        // Ініціалізуємо карту якщо її ще немає
-                        initEditMap(lat, lon, address);
-                    }
-                    
-                    // Показуємо повідомлення (toastr може бути недоступний)
-                    if (typeof toastr !== 'undefined') {
-                        toastr.success('Координати знайдено!', 'Геокодування');
-                    } else {
-                        btn.html('<i class="fas fa-check text-success"></i> Знайдено!');
-                        setTimeout(() => btn.html(originalHtml).prop('disabled', false), 1500);
-                        return; // skip finally restore
-                    }
-                } else {
-                    console.warn('⚠️ Адреса не знайдена');
-                    alert('Не вдалося знайти координати для цієї адреси. Спробуйте ввести більш детальну адресу.');
-                }
-                
-            } catch (error) {
-                console.error('❌ Помилка геокодування:', error);
-                alert('Помилка геокодування адреси. Перевірте інтернет-з\'єднання.');
-            } finally {
-                // Повертаємо кнопку
-                btn.html(originalHtml).prop('disabled', false);
+                setTimeout(() => window.editMapInstance.invalidateSize(), 200);
+            } else {
+                initEditMap(lat, lng, address);
+            }
+
+            if (typeof toastr !== 'undefined') {
+                toastr.success('Координати визначено!', 'Геокодування');
+            }
+        } catch (err) {
+            console.error('❌ Помилка геокодування:', err);
+            if (!silent) alert('Помилка геокодування. Перевірте з\'єднання.');
+        } finally {
+            if (btn) { btn.innerHTML = origHtml; btn.disabled = false; }
+        }
+    }
+
+    // Додаємо обробник для кнопки геокодування
+    $(document).ready(function() {
+        // Кнопка — ручний запуск
+        $(document).on('click', '#enhancedBtnGeocode', function() { runGeocode(false); });
+
+        // Авто-геокодування при заповненні адреси + поштового коду (debounce 900 мс)
+        let _geoTimer = null;
+        $(document).on('input', '#enhancedLiftAddress, #enhancedLiftPostcode', function() {
+            clearTimeout(_geoTimer);
+            const addr = ($('#enhancedLiftAddress').val() || '').trim();
+            const zip  = ($('#enhancedLiftPostcode').val() || '').trim();
+            // Запускаємо тільки якщо є мінімально вулиця + номер будинку (є пробіл/цифра)
+            if (addr.length >= 6 && /\d/.test(addr)) {
+                _geoTimer = setTimeout(() => runGeocode(true), 900);
             }
         });
-        
-        console.log('✅ Обробник геокодування підключено');
+
+        console.log('✅ Обробник геокодування підключено (проксі + авто)');
     });
 
     // 🔧 ВИДАЛЕНО: Старий обробник submit - тепер використовується EnhancedLiftModal
