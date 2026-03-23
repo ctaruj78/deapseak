@@ -4,11 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Звіти - FestLift</title>
-    <meta http-equiv="refresh" content="0; url=unified-analytics.html#reports-analytics">
-    <script>
-        // JavaScript редирект як backup
-        window.location.href = 'unified-analytics.html#reports-analytics';
-    </script>
     
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
@@ -576,7 +571,7 @@
                         <div class="col-12">
                             <div class="card filter-card">
                                 <div class="card-header">
-                                    <h3 class="card-title">Filtroи</h3>
+                                    <h3 class="card-title">Фільтри</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
@@ -596,9 +591,9 @@
                                                 <label for="statusFilter">Статус</label>
                                                 <select id="statusFilter" class="form-control">
                                                     <option value="all">Всі статуси</option>
-                                                    <option value="completed">Concluído</option>
-                                                    <option value="pending">В очікуванні</option>
-                                                    <option value="in-progress">Em progresso</option>
+                                                    <option value="completed">Виконано</option>
+                                                    <option value="pending">Очікується</option>
+                                                    <option value="in-progress">В роботі</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -624,17 +619,14 @@
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-body text-center">
-                                    <button class="btn btn-primary mr-2" onclick="reportsManager.generateReport()">
-                                        <i class="fas fa-file-alt mr-1"></i> Згенерувати звіт
+                                    <button class="btn btn-primary mr-2" id="btn-generate-report">
+                                        <i class="fas fa-file-alt mr-1"></i> Створити звіт
                                     </button>
-                                    <button class="btn btn-success mr-2" onclick="reportsManager.exportToPDF()">
-                                        <i class="fas fa-file-pdf mr-1"></i> Exportar в PDF
+                                    <button class="btn btn-success mr-2" id="btn-export-pdf" disabled>
+                                        <i class="fas fa-file-pdf mr-1"></i> Експорт PDF
                                     </button>
-                                    <button class="btn btn-info mr-2" onclick="reportsManager.exportToExcel()">
-                                        <i class="fas fa-file-excel mr-1"></i> Exportar в Excel
-                                    </button>
-                                    <button class="btn btn-warning" onclick="reportsManager.scheduleReport()">
-                                        <i class="fas fa-clock mr-1"></i> Запланувати звіт
+                                    <button class="btn btn-info mr-2" id="btn-export-excel" disabled>
+                                        <i class="fas fa-file-excel mr-1"></i> Експорт Excel
                                     </button>
                                 </div>
                             </div>
@@ -673,8 +665,8 @@
                                             <div class="info-box bg-gradient-success">
                                                 <span class="info-box-icon"><i class="fas fa-check-circle"></i></span>
                                                 <div class="info-box-content">
-                                                    <span class="info-box-text">Concluído</span>
-                                                    <span class="info-box-number">38</span>
+                                                    <span class="info-box-text">Виконано</span>
+                                                    <span class="info-box-number" id="result-completed">—</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -682,8 +674,8 @@
                                             <div class="info-box bg-gradient-warning">
                                                 <span class="info-box-icon"><i class="fas fa-spinner"></i></span>
                                                 <div class="info-box-content">
-                                                    <span class="info-box-text">Em progresso</span>
-                                                    <span class="info-box-number">5</span>
+                                                    <span class="info-box-text">В роботі</span>
+                                                    <span class="info-box-number" id="result-in-progress">—</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -711,29 +703,8 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <tr>
-                                                    <td>#12345</td>
-                                                    <td>Otis Gen2 - Rua Центральна, 12</td>
-                                                    <td>Іван Петренко</td>
-                                                    <td><span class="status-badge status-completed">Concluído</span></td>
-                                                    <td>15.01.2024</td>
-                                                    <td>16.01.2024</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>#12346</td>
-                                                    <td>Schindler 3300 - пр. Перемоги, 45</td>
-                                                    <td>Марія Коваленко</td>
-                                                    <td><span class="status-badge status-in-progress">Em progresso</span></td>
-                                                    <td>16.01.2024</td>
-                                                    <td>-</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>#12347</td>
-                                                    <td>Kone MonoSpace - Rua Шевченка, 78</td>
-                                                    <td>Олексій Сидоренко</td>
-                                                    <td><span class="status-badge status-pending">В очікуванні</span></td>
-                                                    <td>17.01.2024</td>
-                                                    <td>-</td>
+                                                <tr id="report-result-placeholder">
+                                                    <td colspan="6" class="text-center text-muted">Натисніть «Створити звіт» для генерації</td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -751,45 +722,8 @@
                                     <h3 class="card-title">Заплановані звіти</h3>
                                 </div>
                                 <div class="card-body">
-                                    <div class="scheduled-list">
-                                        <div class="scheduled-item card mb-2">
-                                            <div class="card-body">
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <div>
-                                                        <h5 class="mb-1">Щотижневий звіт ТО</h5>
-                                                        <p class="mb-1 text-muted">Щопонеділка, 09:00</p>
-                                                        <span class="report-type-badge">Технічне обслуговування</span>
-                                                    </div>
-                                                    <div class="scheduled-actions">
-                                                        <button class="btn btn-sm btn-primary mr-1">
-                                                            <i class="fas fa-edit"></i>
-                                                        </button>
-                                                        <button class="btn btn-sm btn-danger">
-                                                            <i class="fas fa-trash"></i>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="scheduled-item card mb-2">
-                                            <div class="card-body">
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <div>
-                                                        <h5 class="mb-1">Місячний фінансовий звіт</h5>
-                                                        <p class="mb-1 text-muted">Перше число місяця, 10:00</p>
-                                                        <span class="report-type-badge">Фінансовий</span>
-                                                    </div>
-                                                    <div class="scheduled-actions">
-                                                        <button class="btn btn-sm btn-primary mr-1">
-                                                            <i class="fas fa-edit"></i>
-                                                        </button>
-                                                        <button class="btn btn-sm btn-danger">
-                                                            <i class="fas fa-trash"></i>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                    <div id="scheduled-list">
+                                        <p class="text-center text-muted" id="scheduled-empty">Заплановані звіти відсутні</p>
                                     </div>
                                 </div>
                             </div>
@@ -802,9 +736,9 @@
         <!-- Main Footer -->
         <footer class="main-footer">
             <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
-            Sistema de gestão de elevadores v2.1.0.
+            Система управління ліфтами v2.1.0.
             <div class="float-right d-none d-sm-inline-block">
-                <b>Versão</b> 2.1.0
+                <b>Версія</b> 2.1.0
             </div>
         </footer>
     </div>
@@ -827,40 +761,30 @@
     <!-- 🌍 Система багатомовності -->
     <script src="../../assets/js/i18n.js"></script>
 
-    <!-- Reports Manager Script -->
-    <script src="../../assets/js/modules/reports-manager.js"></script>
-
     <!-- Navigation Manager -->
     <script src="../../assets/js/modules/navigation-manager.js"></script>
 
     <script>
         $(document).ready(function() {
-            // Ініціалізація навігаційного менеджера
+            // Ініціалізація навігаційного менеджера (об'єкт, не клас)
             if (typeof NavigationManager !== 'undefined') {
-                window.navigationManager = new NavigationManager();
-            }
-
-            // Ініціалізація менеджера звітів
-            if (typeof ReportsManager !== 'undefined') {
-                window.reportsManager = new ReportsManager();
+                window.navigationManager = NavigationManager;
             }
 
             // Обробка вибору типу звіту
             $('.report-type-card').on('click', function() {
                 $('.report-type-card').removeClass('active');
                 $(this).addClass('active');
-                const reportType = $(this).data('report-type');
-                if (window.reportsManager) {
-                    window.reportsManager.selectReportType(reportType);
-                }
             });
 
             // Швидкий вибір періоду
             $('.quick-periods .btn').on('click', function() {
-                const days = $(this).data('days');
-                if (window.reportsManager) {
-                    window.reportsManager.setQuickPeriod(days);
-                }
+                const days = parseInt($(this).data('days'));
+                const today = new Date();
+                const start = new Date();
+                start.setDate(today.getDate() - days + 1);
+                $('#startDate').val(start.toISOString().split('T')[0]);
+                $('#endDate').val(today.toISOString().split('T')[0]);
             });
 
             // Встановлення дат за замовчуванням
@@ -873,6 +797,79 @@
 
             function formatDateForInput(date) {
                 return date.toISOString().split('T')[0];
+            }
+
+            // Генерація звіту
+            $('#btn-generate-report').on('click', function() {
+                const reportType = $('.report-type-card.active').data('report-type') || 'maintenance';
+                const startDate = $('#startDate').val();
+                const endDate = $('#endDate').val();
+                const technicianId = $('#technicianFilter').val();
+                const status = $('#statusFilter').val();
+
+                if (!startDate || !endDate) {
+                    alert('Оберіть початкову та кінцеву дати');
+                    return;
+                }
+
+                const $btn = $(this);
+                $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Генерація...');
+
+                const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token');
+                $.ajax({
+                    url: '/api/reports/generate',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    headers: token ? { 'Authorization': 'Bearer ' + token } : {},
+                    data: JSON.stringify({ type: reportType, startDate, endDate, technicianId: technicianId || undefined, status: status || undefined }),
+                    success: function(data) {
+                        $('#reportResult').show();
+                        const items = Array.isArray(data.items) ? data.items : [];
+                        const tbody = items.map(function(r) {
+                            return '<tr><td>' + (r.id || r._id || '—') + '</td><td>' + (r.lift || '—') + '</td><td>' + (r.technician || '—') + '</td><td>' + (r.status || '—') + '</td><td>' + (r.createdAt ? new Date(r.createdAt).toLocaleDateString('uk-UA') : '—') + '</td><td>' + (r.completedAt ? new Date(r.completedAt).toLocaleDateString('uk-UA') : '—') + '</td></tr>';
+                        }).join('') || '<tr><td colspan="6" class="text-center">Немає даних за обраний період</td></tr>';
+                        $('#report-result-placeholder').closest('tbody').html(tbody);
+                        if (data.stats) {
+                            $('#result-completed').text(data.stats.completed || 0);
+                            $('#result-in-progress').text(data.stats.inProgress || 0);
+                        }
+                        $('#btn-export-pdf, #btn-export-excel').prop('disabled', false).data('report-id', data.id);
+                    },
+                    error: function(xhr) {
+                        const msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Помилка генерації звіту';
+                        alert(msg);
+                    },
+                    complete: function() {
+                        $btn.prop('disabled', false).html('<i class="fas fa-file-alt mr-1"></i> Створити звіт');
+                    }
+                });
+            });
+
+            // Експорт PDF
+            $('#btn-export-pdf').on('click', function() {
+                const reportId = $(this).data('report-id');
+                if (reportId) window.open('/api/reports/' + reportId + '/pdf', '_blank');
+            });
+
+            // Експорт Excel
+            $('#btn-export-excel').on('click', function() {
+                const reportId = $(this).data('report-id');
+                if (reportId) window.open('/api/reports/' + reportId + '/excel', '_blank');
+            });
+
+            // Завантаження списку технікiв
+            const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token');
+            if (token) {
+                $.ajax({
+                    url: '/api/users?role=technician',
+                    headers: { 'Authorization': 'Bearer ' + token },
+                    success: function(data) {
+                        const users = Array.isArray(data) ? data : (data.users || []);
+                        users.forEach(function(u) {
+                            $('#technicianFilter').append('<option value="' + u._id + '">' + u.name + '</option>');
+                        });
+                    }
+                });
             }
         });
     </script>

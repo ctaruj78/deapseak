@@ -1,5 +1,5 @@
 $(function(){
-    if (!roleManager.hasPermission('inspections:create')) {
+    if (typeof roleManager !== 'undefined' && !roleManager.hasPermission('inspections:create')) {
         $('#inspectionForm :input').prop('disabled', true);
         CommonUtils.showNotification('Недостатньо прав для створення інспекції', 'error');
         if (window.notificationManager) notificationManager.showNotification('Недостатньо прав для створення інспекції', 'error');

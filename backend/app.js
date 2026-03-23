@@ -11,6 +11,7 @@ const settingsRoutes = require('./routes/settingsRoutes');
 const emailRoutes = require('./routes/emailRoutes');
 const orcamentosRoutes = require('./routes/orcamentos');
 const technicianRoutes = require('./routes/technician');
+const reportsRoutes = require('./routes/reportsRoutes');
 const websocketService = require('./services/websocketService');
 
 const app = express();
@@ -85,6 +86,7 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api', emailRoutes);
 app.use('/api/orcamentos', orcamentosRoutes);
 app.use('/api/technicians', technicianRoutes);
+app.use('/api/reports', reportsRoutes);
 
 app.get('/', (req, res) => {
     res.json({

@@ -2432,6 +2432,159 @@ app.post('/api/lifts/send-municipality-form', authenticateToken, async (req, res
     }
 });
 
+// POST /api/lifts/:id/request-deletion - диспетчер подає заявку на видалення
+app.post('/api/lifts/:id/request-deletion', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const liftId = new ObjectId(req.params.id);
+
+        // Тільки dispatcher може подавати заявку
+        if (!['dispatcher', 'admin'].includes(req.user.role)) {
+            return res.status(403).json({ success: false, message: 'Недостатньо прав' });
+        }
+
+        // Знайти ліфт
+        const lift = await db.collection('lifts').findOne({ _id: liftId });
+        if (!lift) {
+            return res.status(404).json({ success: false, message: 'Ліфт не знайдено' });
+        }
+
+        // Позначити ліфт як "очікує видалення"
+        await db.collection('lifts').updateOne(
+            { _id: liftId },
+            { $set: { pendingDeletion: true, deletionRequestedBy: req.user.id, deletionRequestedAt: new Date() } }
+        );
+
+        // Знайти всіх адмінів для сповіщення
+        const admins = await db.collection('users').find({ role: 'admin' }).toArray();
+
+        // Створити сповіщення для кожного адміна
+        for (const admin of admins) {
+            await db.collection('notifications').insertOne({
+                userId: admin._id.toString(),
+                type: 'lift_delete_request',
+                title: 'Запит на видалення ліфта',
+                message: `Диспетчер ${req.user.firstName || req.user.username} запитує видалення ліфта: ${lift.name || lift.address || liftId}`,
+                liftId: liftId.toString(),
+                requestedBy: req.user.id,
+                requestedByName: req.user.firstName ? `${req.user.firstName} ${req.user.lastName || ''}`.trim() : req.user.username,
+                icon: 'fas fa-trash-alt',
+                priority: 'high',
+                status: 'unread',
+                timestamp: new Date(),
+                createdAt: new Date()
+            });
+        }
+
+        res.json({ success: true, message: 'Запит на видалення відправлено адміністратору' });
+    } catch (error) {
+        console.error('❌ Помилка запиту на видалення:', error);
+        res.status(500).json({ success: false, message: 'Помилка сервера' });
+    }
+});
+
+// POST /api/lifts/:id/approve-deletion - адмін підтверджує видалення
+app.post('/api/lifts/:id/approve-deletion', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const liftId = new ObjectId(req.params.id);
+
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: 'Тільки адміністратор може підтверджувати видалення' });
+        }
+
+        const lift = await db.collection('lifts').findOne({ _id: liftId });
+        if (!lift) {
+            return res.status(404).json({ success: false, message: 'Ліфт не знайдено' });
+        }
+
+        // Видалити ліфт
+        await db.collection('lifts').deleteOne({ _id: liftId });
+
+        // Сповістити диспетчера що запит підтверджено
+        if (lift.deletionRequestedBy) {
+            await db.collection('notifications').insertOne({
+                userId: lift.deletionRequestedBy.toString(),
+                type: 'system',
+                title: 'Видалення ліфта підтверджено',
+                message: `Адміністратор підтвердив видалення ліфта: ${lift.name || lift.address || liftId}`,
+                icon: 'fas fa-check-circle',
+                priority: 'normal',
+                status: 'unread',
+                timestamp: new Date(),
+                createdAt: new Date()
+            });
+        }
+
+        // Відмітити пов'язані notifications як оброблені
+        const { notificationId } = req.body;
+        if (notificationId) {
+            await db.collection('notifications').updateOne(
+                { _id: new ObjectId(notificationId) },
+                { $set: { status: 'resolved', resolvedAt: new Date(), resolvedBy: req.user.id } }
+            );
+        }
+
+        res.json({ success: true, message: 'Ліфт успішно видалено' });
+    } catch (error) {
+        console.error('❌ Помилка підтвердження видалення:', error);
+        res.status(500).json({ success: false, message: 'Помилка сервера' });
+    }
+});
+
+// POST /api/lifts/:id/reject-deletion - адмін відхиляє видалення
+app.post('/api/lifts/:id/reject-deletion', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const liftId = new ObjectId(req.params.id);
+
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: 'Тільки адміністратор може відхиляти запити' });
+        }
+
+        const lift = await db.collection('lifts').findOne({ _id: liftId });
+        if (!lift) {
+            return res.status(404).json({ success: false, message: 'Ліфт не знайдено' });
+        }
+
+        // Зняти мітку "очікує видалення"
+        await db.collection('lifts').updateOne(
+            { _id: liftId },
+            { $unset: { pendingDeletion: '', deletionRequestedBy: '', deletionRequestedAt: '' } }
+        );
+
+        // Сповістити диспетчера що запит відхилено
+        if (lift.deletionRequestedBy) {
+            const { reason } = req.body;
+            await db.collection('notifications').insertOne({
+                userId: lift.deletionRequestedBy.toString(),
+                type: 'system',
+                title: 'Запит на видалення відхилено',
+                message: `Адміністратор відхилив видалення ліфта: ${lift.name || lift.address || liftId}${reason ? '. Причина: ' + reason : ''}`,
+                icon: 'fas fa-times-circle',
+                priority: 'normal',
+                status: 'unread',
+                timestamp: new Date(),
+                createdAt: new Date()
+            });
+        }
+
+        // Відмітити notification як оброблене
+        const { notificationId } = req.body;
+        if (notificationId) {
+            await db.collection('notifications').updateOne(
+                { _id: new ObjectId(notificationId) },
+                { $set: { status: 'rejected', resolvedAt: new Date(), resolvedBy: req.user.id } }
+            );
+        }
+
+        res.json({ success: true, message: 'Запит на видалення відхилено' });
+    } catch (error) {
+        console.error('❌ Помилка відхилення запиту:', error);
+        res.status(500).json({ success: false, message: 'Помилка сервера' });
+    }
+});
+
 // DELETE /api/lifts/:id - видалення ліфта
 app.delete('/api/lifts/:id', authenticateToken, async (req, res) => {
     try {
@@ -7865,6 +8018,112 @@ app.get('/api/regulations/last-check', authenticateToken, async (req, res) => {
             message: 'Помилка при отриманні звіту'
         });
     }
+});
+
+// ═══════════════════════════════════════════════════════════
+// REPORTS API
+// ═══════════════════════════════════════════════════════════
+
+// In-memory store for generated reports (session-scoped)
+const generatedReportsStore = new Map();
+
+// GET /api/reports - список згенерованих звітів
+app.get('/api/reports', authenticateToken, async (req, res) => {
+    try {
+        const list = Array.from(generatedReportsStore.values())
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+            .slice(0, 50);
+        res.json({ reports: list, total: list.length });
+    } catch (error) {
+        res.status(500).json({ message: 'Помилка отримання звітів' });
+    }
+});
+
+// POST /api/reports/generate - генерація звіту
+app.post('/api/reports/generate', authenticateToken, async (req, res) => {
+    try {
+        const { type = 'maintenance', startDate, endDate, technicianId, status } = req.body;
+
+        if (!startDate || !endDate) {
+            return res.status(400).json({ message: 'Вкажіть startDate та endDate' });
+        }
+
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+
+        if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+            return res.status(400).json({ message: 'Невірний формат дати' });
+        }
+
+        const query = {
+            createdAt: { $gte: start, $lte: end }
+        };
+        if (status) query.status = status;
+        if (technicianId) {
+            try { query.assignedTo = new ObjectId(technicianId); } catch (e) { /* ignore invalid id */ }
+        }
+
+        const requests = await db.collection('requests').find(query).toArray();
+
+        // Підтягуємо дані ліфтів та технікiв
+        const liftIds = [...new Set(requests.map(r => r.liftId || r.lift).filter(Boolean))];
+        const techIds = [...new Set(requests.map(r => r.assignedTo).filter(Boolean))];
+
+        const [lifts, techs] = await Promise.all([
+            liftIds.length ? db.collection('lifts').find({ _id: { $in: liftIds.map(id => { try { return new ObjectId(id); } catch(e){ return id; } }) } }).toArray() : [],
+            techIds.length ? db.collection('users').find({ _id: { $in: techIds.map(id => { try { return new ObjectId(id); } catch(e){ return id; } }) } }).toArray() : []
+        ]);
+
+        const liftsMap = Object.fromEntries(lifts.map(l => [l._id.toString(), l]));
+        const techsMap = Object.fromEntries(techs.map(u => [u._id.toString(), u]));
+
+        const items = requests.map(r => {
+            const lift = liftsMap[(r.liftId || r.lift || '').toString()];
+            const tech = techsMap[(r.assignedTo || '').toString()];
+            return {
+                id: r._id,
+                title: r.title || r.type || '—',
+                lift: lift ? `${lift.model || ''} - ${lift.address || lift.serialNumber || ''}`.trim() : '—',
+                technician: tech ? (tech.name || tech.username) : '—',
+                status: r.status || '—',
+                priority: r.priority || '—',
+                createdAt: r.createdAt,
+                completedAt: r.completedAt || null,
+            };
+        });
+
+        const stats = {
+            total: items.length,
+            completed: items.filter(r => r.status === 'completed').length,
+            inProgress: items.filter(r => r.status === 'in_progress').length,
+            pending: items.filter(r => ['new', 'assigned'].includes(r.status)).length,
+        };
+
+        const reportId = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+        const report = { id: reportId, type, startDate, endDate, createdAt: new Date().toISOString(), stats, items };
+
+        generatedReportsStore.set(reportId, { id: reportId, type, startDate, endDate, createdAt: report.createdAt, stats });
+
+        res.json(report);
+    } catch (error) {
+        console.error('❌ Reports generate error:', error);
+        res.status(500).json({ message: 'Помилка генерації звіту', error: error.message });
+    }
+});
+
+// GET /api/reports/:id/pdf - заглушка PDF
+app.get('/api/reports/:id/pdf', authenticateToken, (req, res) => {
+    const report = generatedReportsStore.get(req.params.id);
+    if (!report) return res.status(404).json({ message: 'Звіт не знайдено' });
+    res.json({ message: 'PDF export не реалізовано', report });
+});
+
+// GET /api/reports/:id/excel - заглушка Excel
+app.get('/api/reports/:id/excel', authenticateToken, (req, res) => {
+    const report = generatedReportsStore.get(req.params.id);
+    if (!report) return res.status(404).json({ message: 'Звіт не знайдено' });
+    res.json({ message: 'Excel export не реалізовано', report });
 });
 
 // ═══════════════════════════════════════════════════════════

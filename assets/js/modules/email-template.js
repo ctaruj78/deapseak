@@ -1,6 +1,6 @@
 $(function(){
     // Перевірка прав доступу
-    if (!roleManager.hasPermission('emails:create')) {
+    if (typeof roleManager !== 'undefined' && !roleManager.hasPermission('emails:create')) {
         $('#emailForm :input').prop('disabled', true);
         CommonUtils.showNotification('Недостатньо прав для надсилання email', 'error');
         if (window.notificationManager) notificationManager.showNotification('Недостатньо прав для надсилання email', 'error');

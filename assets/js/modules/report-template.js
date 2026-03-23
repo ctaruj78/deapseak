@@ -1,5 +1,5 @@
 $(function(){
-    if (!roleManager.hasPermission('reports:create')) {
+    if (typeof roleManager !== 'undefined' && !roleManager.hasPermission('reports:create')) {
         $('#reportForm :input').prop('disabled', true);
         CommonUtils.showNotification('Недостатньо прав для створення звіту', 'error');
         if (window.notificationManager) notificationManager.showNotification('Недостатньо прав для створення звіту', 'error');

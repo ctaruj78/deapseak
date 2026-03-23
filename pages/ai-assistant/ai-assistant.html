@@ -708,6 +708,32 @@
         let lastResponse = '';
         let speechRecognition = null;
         let isSpeaking = false;
+
+        // Зупинити TTS при переході на іншу сторінку
+        window.addEventListener('pagehide', () => {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+        });
+        window.addEventListener('beforeunload', () => {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+        });
+
+        // При поверненні на сторінку — синхронізувати стан TTS з UI
+        window.addEventListener('pageshow', () => {
+            if ('speechSynthesis' in window && window.speechSynthesis.speaking) {
+                // TTS ще говорить, але JS-стан скинувся — зупиняємо
+                window.speechSynthesis.cancel();
+                isSpeaking = false;
+                const speakBtn = document.getElementById('speakBtn');
+                if (speakBtn) {
+                    speakBtn.classList.remove('speaking');
+                    speakBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                }
+            }
+        });
         
         // Ініціалізація Web Speech API
         if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -801,8 +827,13 @@
                     !voice.name.toLowerCase().includes('brasil')
                 );
                 
-                // Тепер шукаємо pt-PT серед НЕ-бразильських
-                const portugueseVoice = nonBrazilianVoices.find(voice => 
+                // Спочатку шукаємо Joana Neural (пріоритет)
+                const joanaVoice = nonBrazilianVoices.find(voice =>
+                    voice.name.toLowerCase().includes('joana')
+                );
+                
+                // Якщо Joana не знайдена — шукаємо будь-який pt-PT
+                const portugueseVoice = joanaVoice || nonBrazilianVoices.find(voice => 
                     voice.lang === 'pt-PT' || 
                     (voice.lang.startsWith('pt') && voice.name.toLowerCase().includes('portugal'))
                 );
@@ -1091,13 +1122,21 @@
                 </div>
             `;
             
+            const regStatusMap = {
+                'vigente': { color: 'success', text: 'Діючий' },
+                'vigente_obrigatoria': { color: 'danger', text: "Обов'язковий" },
+                'vigente_obrigatória': { color: 'danger', text: "Обов'язковий" },
+                'vigente_obrigatória_condicional': { color: 'warning', text: "Обов'язковий (умовно)" },
+                'vigente_obrigatória_modernização': { color: 'info', text: 'Модернізація (обов.)' },
+                'vigente_parcial': { color: 'warning', text: 'Частково діючий' },
+                'vigente_opcional': { color: 'secondary', text: "Необов'язковий" },
+                'revogado': { color: 'dark', text: 'Скасований' },
+            };
+
             regulations.forEach(reg => {
-                const statusColor = reg.status === 'vigente' ? 'success' : 
-                                  reg.status === 'vigente_obrigatoria' ? 'danger' : 
-                                  reg.status === 'vigente_parcial' ? 'warning' : 'secondary';
-                const statusText = reg.status === 'vigente' ? 'Діючий' : 
-                                 reg.status === 'vigente_obrigatoria' ? "Обов'язковий" : 
-                                 reg.status === 'vigente_parcial' ? 'Частково діючий' : reg.status;
+                const regStatusInfo = regStatusMap[reg.status] || { color: 'secondary', text: reg.status || 'Невідомий' };
+                const statusColor = regStatusInfo.color;
+                const statusText = regStatusInfo.text;
                 
                 html += `
                     <div class="card mb-3 shadow-sm">
@@ -1106,7 +1145,7 @@
                                 <i class="fas fa-gavel"></i> ${reg.title}
                             </h5>
                             <small style="color: #ffeb3b; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">
-                                <strong>${reg.number}</strong> від ${reg.date}
+                                <strong>${reg.number}</strong>${reg.date ? ` від ${reg.date}` : ''}
                                 <span class="badge badge-${statusColor} float-right">${statusText}</span>
                             </small>
                         </div>
@@ -1143,12 +1182,19 @@
         function showRegulationDetails(regulation) {
             const resultsDiv = document.getElementById('regulationsResults');
             
-            const statusColor = regulation.status === 'vigente' ? 'success' : 
-                              regulation.status === 'vigente_obrigatoria' ? 'danger' : 
-                              regulation.status === 'vigente_parcial' ? 'warning' : 'secondary';
-            const statusText = regulation.status === 'vigente' ? 'Діючий' : 
-                             regulation.status === 'vigente_obrigatoria' ? "Обов'язковий" : 
-                             regulation.status === 'vigente_parcial' ? 'Частково діючий' : regulation.status;
+            const statusMap = {
+                'vigente': { color: 'success', text: 'Діючий' },
+                'vigente_obrigatoria': { color: 'danger', text: "Обов'язковий" },
+                'vigente_obrigatória': { color: 'danger', text: "Обов'язковий" },
+                'vigente_obrigatória_condicional': { color: 'warning', text: "Обов'язковий (умовно)" },
+                'vigente_obrigatória_modernização': { color: 'info', text: 'Модернізація (обов.)' },
+                'vigente_parcial': { color: 'warning', text: 'Частково діючий' },
+                'vigente_opcional': { color: 'secondary', text: 'Необов\'язковий' },
+                'revogado': { color: 'dark', text: 'Скасований' },
+            };
+            const statusInfo = statusMap[regulation.status] || { color: 'secondary', text: regulation.status || 'Невідомий' };
+            const statusColor = statusInfo.color;
+            const statusText = statusInfo.text;
             
             let html = `
                 <button class="btn btn-link mb-3" onclick="loadAllRegulations()">
@@ -1159,7 +1205,7 @@
                     <div class="card-header bg-gradient-primary">
                         <h4 class="mb-1"><i class="fas fa-gavel"></i> ${regulation.title}</h4>
                         <p class="mb-0" style="color: #ffeb3b; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">
-                            <strong>${regulation.number}</strong> від ${regulation.date}
+                            <strong>${regulation.number}</strong>${regulation.date ? ` від ${regulation.date}` : ''}
                             <span class="badge badge-${statusColor} ml-2">${statusText}</span>
                         </p>
                     </div>
@@ -1192,10 +1238,10 @@
                         ${regulation.inspection_points && regulation.inspection_points.length > 0 ? `
                             <div class="mt-4">
                                 <h5 class="text-primary"><i class="fas fa-clipboard-check"></i> Пункти інспекції (${regulation.inspection_points.length})</h5>
-                                ${regulation.inspection_points.map(point => `
+                                ${regulation.inspection_points.map((point, idx) => `
                                     <div class="card mb-3">
                                         <div class="card-header bg-light">
-                                            <strong>${point.article}</strong> - ${point.requirement}
+                                            ${point.article || point.requirement ? `<strong>${point.article || ''}</strong>${point.requirement ? ` - ${point.requirement}` : ''}` : `<strong>Пункт ${idx + 1}</strong>`}
                                         </div>
                                         <div class="card-body">
                                             ${point.client_explanation ? `
@@ -1206,11 +1252,14 @@
                                                 <p><strong>Опис:</strong><br>
                                                 ${point.description}</p>
                                             ` : ''}
-                                            ${point.common_violations && point.common_violations.length > 0 ? `
+                                            ${point.common_violations && point.common_violations.filter(v => v != null && v !== '').length > 0 ? `
                                                 <p><strong>Типові порушення:</strong></p>
                                                 <ul>
-                                                    ${point.common_violations.map(v => `<li>${v}</li>`).join('')}
+                                                    ${point.common_violations.filter(v => v != null && v !== '').map(v => `<li>${v}</li>`).join('')}
                                                 </ul>
+                                            ` : ''}
+                                            ${point.penalty ? `
+                                                <p class="mb-0"><small class="text-muted"><i class="fas fa-gavel"></i> <strong>Sanção:</strong> ${point.penalty}</small></p>
                                             ` : ''}
                                         </div>
                                     </div>
@@ -1221,7 +1270,11 @@
                         ${regulation.penalties ? `
                             <div class="alert alert-warning mt-4">
                                 <h6><i class="fas fa-exclamation-triangle"></i> Санкції</h6>
-                                <p class="mb-0">${regulation.penalties}</p>
+                                ${typeof regulation.penalties === 'object' ? `
+                                    <ul class="mb-0">
+                                        ${Object.entries(regulation.penalties).map(([k, v]) => `<li><strong>${k.replace(/_/g, ' ')}:</strong> ${v}</li>`).join('')}
+                                    </ul>
+                                ` : `<p class="mb-0">${regulation.penalties}</p>`}
                             </div>
                         ` : ''}
                         
@@ -1753,9 +1806,11 @@
                         const ptVoices = voices.filter(v => v.lang.startsWith('pt'));
                         console.log('🔊 Доступні португальські голоси:', ptVoices.map(v => `${v.name} (${v.lang})`));
                         
-                        const ptPT = voices.find(v => v.lang === 'pt-PT');
+                        // Пріоритет: Joana Neural → будь-який pt-PT
+                        const joana = voices.find(v => v.name.toLowerCase().includes('joana'));
+                        const ptPT = joana || voices.find(v => v.lang === 'pt-PT');
                         if (ptPT) {
-                            console.log('✅ Знайдено європейський португальський голос:', ptPT.name);
+                            console.log('✅ Знайдено голос pt-PT:', ptPT.name);
                         } else {
                             console.warn('⚠️ pt-PT голос не знайдено. Доступні:', ptVoices.map(v => v.lang).join(', '));
                         }

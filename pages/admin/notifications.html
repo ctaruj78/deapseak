@@ -641,7 +641,13 @@
                 }
 
                 const data = await response.json();
-                notifications = data.notifications || data.data || (Array.isArray(data) ? data : []);
+                const rawNotifications = data.notifications || data.data || (Array.isArray(data) ? data : []);
+                // Нормалізуємо _id → id та додаємо fallback для timestamp
+                notifications = rawNotifications.map(n => ({
+                    ...n,
+                    id: n.id || (n._id ? n._id.toString() : null),
+                    timestamp: n.timestamp || n.createdAt
+                }));
                 filteredNotifications = [...notifications];
                 
                 console.log('✅ Notifications loaded from API:', notifications.length);
@@ -703,6 +709,22 @@
                                         <i class="fas fa-clock mr-1"></i>${timeAgo} •
                                         <span class="badge badge-${getTypeBadgeColor(notification.type)}">${getTypeLabel(notification.type)}</span>
                                     </small>
+                                    ${(notification.type === 'lift_delete_request' || notification.type === 'deletion_request') && notification.status !== 'resolved' && notification.status !== 'rejected' ? `
+                                    <div class="mt-2">
+                                        <button class="btn btn-sm btn-success approve-deletion mr-1"
+                                            data-lift-id="${notification.liftId}"
+                                            data-notification-id="${notification.id}">
+                                            <i class="fas fa-check mr-1"></i>Підтвердити видалення
+                                        </button>
+                                        <button class="btn btn-sm btn-warning reject-deletion"
+                                            data-lift-id="${notification.liftId}"
+                                            data-notification-id="${notification.id}">
+                                            <i class="fas fa-times mr-1"></i>Відхилити
+                                        </button>
+                                    </div>
+                                    ` : ''}
+                                    ${notification.status === 'resolved' ? `<span class="badge badge-success mt-1"><i class="fas fa-check"></i> Видалено</span>` : ''}
+                                    ${notification.status === 'rejected' ? `<span class="badge badge-secondary mt-1"><i class="fas fa-times"></i> Відхилено</span>` : ''}
                                 </div>
                                 <div class="notification-actions">
                                     <div class="btn-group">
@@ -739,7 +761,9 @@
                 system: 'Система',
                 user: 'Користувач',
                 security: 'Безпека',
-                maintenance: 'Обслуговування'
+                maintenance: 'Обслуговування',
+                lift_delete_request: 'Заявка на видалення',
+                deletion_request: 'Заявка на видалення'
             };
             return labels[type] || type;
         }
@@ -749,7 +773,9 @@
                 system: 'primary',
                 user: 'success',
                 security: 'danger',
-                maintenance: 'warning'
+                maintenance: 'warning',
+                lift_delete_request: 'danger',
+                deletion_request: 'danger'
             };
             return colors[type] || 'secondary';
         }
@@ -840,7 +866,7 @@
         function bulkMarkAsRead() {
             const selectedIds = getSelectedNotificationIds();
             selectedIds.forEach(id => {
-                const notification = notifications.find(n => n.id === id);
+                const notification = notifications.find(n => n.id == id);
                 if (notification) notification.status = 'read';
             });
             updateStats();
@@ -853,7 +879,7 @@
 
             const selectedIds = getSelectedNotificationIds();
             selectedIds.forEach(id => {
-                const index = notifications.findIndex(n => n.id === id);
+                const index = notifications.findIndex(n => n.id == id);
                 if (index !== -1) notifications.splice(index, 1);
             });
             updateStats();
@@ -863,7 +889,7 @@
 
         function getSelectedNotificationIds() {
             return $('.notification-checkbox:checked').map(function() {
-                return parseInt($(this).data('id'));
+                return $(this).data('id');
             }).get();
         }
 
@@ -879,8 +905,8 @@
 
         // Event delegation for dynamic elements
         $(document).on('click', '.mark-read', function() {
-            const id = parseInt($(this).data('id'));
-            const notification = notifications.find(n => n.id === id);
+            const id = $(this).data('id');
+            const notification = notifications.find(n => n.id == id);
             if (notification) {
                 notification.status = 'read';
                 updateStats();
@@ -891,8 +917,8 @@
         $(document).on('click', '.delete-notification', function() {
             if (!confirm('Ви впевнені, що хочете видалити це сповіщення?')) return;
 
-            const id = parseInt($(this).data('id'));
-            const index = notifications.findIndex(n => n.id === id);
+            const id = $(this).data('id');
+            const index = notifications.findIndex(n => n.id == id);
             if (index !== -1) {
                 notifications.splice(index, 1);
                 updateStats();
@@ -901,6 +927,63 @@
         });
 
         $(document).on('change', '.notification-checkbox', toggleBulkActions);
+
+        // Підтвердити видалення ліфта
+        $(document).on('click', '.approve-deletion', async function() {
+            const liftId = $(this).data('lift-id');
+            const notificationId = $(this).data('notification-id');
+            if (!confirm('Ви впевнені, що хочете видалити цей ліфт? Цю дію не можна скасувати.')) return;
+
+            try {
+                const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token');
+                const resp = await fetch(`/api/lifts/${liftId}/approve-deletion`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ notificationId })
+                });
+                const result = await resp.json();
+                if (result.success) {
+                    toastr.success('Ліфт успішно видалено');
+                    // Оновити статус у локальному масиві
+                    const n = notifications.find(n => n.id == notificationId || n._id == notificationId);
+                    if (n) n.status = 'resolved';
+                    loadNotifications();
+                    updateStats();
+                } else {
+                    toastr.error('Помилка: ' + (result.message || 'Спробуйте знову'));
+                }
+            } catch (e) {
+                toastr.error('Помилка підключення');
+            }
+        });
+
+        // Відхилити видалення ліфта
+        $(document).on('click', '.reject-deletion', async function() {
+            const liftId = $(this).data('lift-id');
+            const notificationId = $(this).data('notification-id');
+            const reason = prompt('Причина відхилення (необов,язково):') ;
+
+            try {
+                const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token');
+                const resp = await fetch(`/api/lifts/${liftId}/reject-deletion`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ notificationId, reason })
+                });
+                const result = await resp.json();
+                if (result.success) {
+                    toastr.info('Запит на видалення відхилено');
+                    const n = notifications.find(n => n.id == notificationId || n._id == notificationId);
+                    if (n) n.status = 'rejected';
+                    loadNotifications();
+                    updateStats();
+                } else {
+                    toastr.error('Помилка: ' + (result.message || 'Спробуйте знову'));
+                }
+            } catch (e) {
+                toastr.error('Помилка підключення');
+            }
+        });
     </script>
 </body>
 </html>
