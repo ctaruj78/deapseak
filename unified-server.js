@@ -846,6 +846,28 @@ app.get('/api/users/me', authenticateToken, async (req, res) => {
     }
 });
 
+// PUT /api/users/me - клієнт оновлює власний профіль
+app.put('/api/users/me', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const userId = new ObjectId(req.user.id);
+
+        const allowed = ['firstName', 'lastName', 'phone', 'company', 'address', 'city', 'region', 'zip'];
+        const updateData = { updatedAt: new Date() };
+        for (const field of allowed) {
+            if (req.body[field] !== undefined) updateData[field] = req.body[field];
+        }
+
+        await db.collection('users').updateOne({ _id: userId }, { $set: updateData });
+        const updated = await db.collection('users').findOne({ _id: userId }, { projection: { password: 0 } });
+        console.log('✅ Профіль оновлено:', req.user.email);
+        res.json({ ...updated, id: updated._id.toString() });
+    } catch (error) {
+        console.error('❌ Помилка оновлення профілю:', error);
+        res.status(500).json({ success: false, message: 'Помилка оновлення профілю' });
+    }
+});
+
 // Middleware для перевірки токена
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
@@ -3356,12 +3378,16 @@ app.post('/api/users', authenticateToken, async (req, res) => {
         // Генеруємо username з email (до @)
         const username = email.split('@')[0];
 
+        const { phone, company, address } = req.body;
         const newUser = {
             email,
             username,
             password: hashedPassword,
             firstName,
             lastName,
+            phone: phone || '',
+            company: company || '',
+            address: address || '',
             role,
             status: status || 'active',
             createdAt: new Date(),
@@ -3403,7 +3429,7 @@ app.put('/api/users/:id', authenticateToken, async (req, res) => {
             return res.status(400).json({ success: false, error: 'Недійсний ID' });
         }
         const userId = new ObjectId(req.params.id);
-        const { email, password, firstName, lastName, role, status } = req.body;
+        const { email, password, firstName, lastName, role, status, phone, company, address } = req.body;
 
         // 🔒 Диспетчер не може змінювати роль на admin/dispatcher
         if (req.user.role === 'dispatcher' && role) {
@@ -3424,6 +3450,9 @@ app.put('/api/users/:id', authenticateToken, async (req, res) => {
         if (lastName) updateData.lastName = lastName;
         if (role) updateData.role = role;
         if (status) updateData.status = status;
+        if (phone !== undefined) updateData.phone = phone;
+        if (company !== undefined) updateData.company = company;
+        if (address !== undefined) updateData.address = address;
 
         // Якщо є новий пароль - хешуємо
         if (password) {

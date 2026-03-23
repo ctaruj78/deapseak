@@ -616,9 +616,33 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label for="userEmail">Email *</label>
-                                <input type="email" id="userEmail" class="form-control" required>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="userEmail">Email *</label>
+                                        <input type="email" id="userEmail" class="form-control" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="userPhone">Телефон</label>
+                                        <input type="tel" id="userPhone" class="form-control" placeholder="+351 912 000 000">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="userCompany">Empresa / Condomínio</label>
+                                        <input type="text" id="userCompany" class="form-control" placeholder="Nome da empresa ou condomínio">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="userAddress">Morada</label>
+                                        <input type="text" id="userAddress" class="form-control" placeholder="Rua, número, código postal">
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -1146,6 +1170,9 @@
                     $('#userFirstName').val(user.firstName);
                     $('#userLastName').val(user.lastName);
                     $('#userEmail').val(user.email);
+                    $('#userPhone').val(user.phone || '');
+                    $('#userCompany').val(user.company || '');
+                    $('#userAddress').val(user.address || '');
                     $('#userRole').val(user.role);
                     $('#userStatus').val(user.status);
                     $('#userPassword').val('')
@@ -1160,6 +1187,9 @@
             resetForm() {
                 $('#userForm')[0].reset();
                 $('#userId').val('');
+                $('#userPhone').val('');
+                $('#userCompany').val('');
+                $('#userAddress').val('');
                 
                 // Автоматично генерувати пароль для нового користувача
                 const newPassword = this.generateSecurePassword();
@@ -1178,6 +1208,9 @@
                         firstName: $('#userFirstName').val(),
                         lastName: $('#userLastName').val(),
                         email: $('#userEmail').val(),
+                        phone: $('#userPhone').val() || '',
+                        company: $('#userCompany').val() || '',
+                        address: $('#userAddress').val() || '',
                         role: $('#userRole').val(),
                         status: $('#userStatus').val()
                     };

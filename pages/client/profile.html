@@ -1278,20 +1278,10 @@
                     const userData = await response.json();
                     console.log('✅ User profile loaded from API');
                     
-                    // Оновлюємо UI
-                    if (userData.firstName) {
-                        $('#clientName').text(userData.firstName);
-                        $('#sidebarName').text(userData.firstName);
-                    }
-                    if (userData.email) {
-                        $('#userEmail').text(userData.email);
-                    }
-                    if (userData.phone) {
-                        $('#userPhone').text(userData.phone);
-                    }
-                    
                     // Зберігаємо в localStorage для кешування
                     localStorage.setItem('userData', JSON.stringify(userData));
+
+                    fillProfileUI(userData);
 
                     // 🔑 Показуємо тимчасовий пароль якщо ще не змінено
                     if (userData.mustChangePassword && userData.tempPasswordHint) {
@@ -1300,24 +1290,54 @@
                     }
                 } else {
                     console.warn('⚠️ API /api/users/me failed, using localStorage fallback');
-                    
-                    // Fallback до localStorage
                     const userData = JSON.parse(localStorage.getItem('userData')) || {};
-                    if (userData.firstName) {
-                        $('#clientName').text(userData.firstName);
-                        $('#sidebarName').text(userData.firstName);
-                    }
+                    fillProfileUI(userData);
                 }
             } catch (error) {
                 console.error('❌ Error loading user profile:', error);
-                
-                // Fallback до localStorage
                 const userData = JSON.parse(localStorage.getItem('userData')) || {};
-                if (userData.firstName) {
-                    $('#clientName').text(userData.firstName);
-                    $('#sidebarName').text(userData.firstName);
-                }
+                fillProfileUI(userData);
             }
+        }
+
+        function fillProfileUI(userData) {
+            const fullName = [userData.firstName, userData.lastName].filter(Boolean).join(' ') || '—';
+            
+            // Sidebar / header
+            if (userData.firstName) {
+                $('#clientName').text(userData.firstName);
+                $('#sidebarName').text(userData.firstName);
+            }
+
+            // Profile header card
+            $('#profileName').text(fullName);
+            $('#profileEmail').text(userData.email || '—');
+
+            // Вкладка "Особиста інформація"
+            $('#infoFullName').text(fullName);
+            $('#infoEmail').text(userData.email || '—');
+            $('#infoPhone').text(userData.phone || '—');
+            $('#infoCompany').text(userData.company || '—');
+
+            // Адреса
+            if (userData.address) {
+                $('#infoAddress').text(userData.address);
+            } else {
+                $('#infoAddress').text('—');
+            }
+            $('#infoCity').text(userData.city || '—');
+            $('#infoRegion').text(userData.region || '—');
+            $('#infoZip').text(userData.zip || userData.zipCode || '—');
+
+            // Пре-заповнення форми редагування
+            $('#editFirstName').val(userData.firstName || '');
+            $('#editLastName').val(userData.lastName || '');
+            $('#editEmail').val(userData.email || '');
+            $('#editPhone').val(userData.phone || '');
+            $('#editCompany').val(userData.company || '');
+            $('#editAddress').val(userData.address || '');
+            $('#editCity').val(userData.city || '');
+            $('#editZip').val(userData.zip || userData.zipCode || '');
         }
 
         $(document).ready(function() {
@@ -1367,9 +1387,35 @@
                     }
                 }
                 
-                saveProfile() {
-                    alert('Perfil збережено');
-                    $('#profileModal').modal('hide');
+                async saveProfile() {
+                    const token = sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('token');
+                    const body = {
+                        firstName: $('#editFirstName').val().trim(),
+                        lastName:  $('#editLastName').val().trim(),
+                        phone:     $('#editPhone').val().trim(),
+                        company:   $('#editCompany').val().trim(),
+                        address:   $('#editAddress').val().trim(),
+                        city:      $('#editCity').val().trim(),
+                        zip:       $('#editZip').val().trim()
+                    };
+                    try {
+                        const res = await fetch('/api/users/me', {
+                            method: 'PUT',
+                            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                            body: JSON.stringify(body)
+                        });
+                        if (res.ok) {
+                            const updated = await res.json();
+                            localStorage.setItem('userData', JSON.stringify(updated));
+                            fillProfileUI(updated);
+                            $('#editProfileModal').modal('hide');
+                            alert('✅ Perfil guardado com sucesso!');
+                        } else {
+                            alert('❌ Erro ao guardar o perfil.');
+                        }
+                    } catch (e) {
+                        alert('❌ Erro de conexão.');
+                    }
                 }
                 
                 handleAvatarUpload(file) {

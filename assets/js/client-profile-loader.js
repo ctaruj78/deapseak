@@ -93,6 +93,12 @@
             $('#infoCompany').text(user.company || user.companyName);
         }
         
+        // Адреса
+        $('#infoAddress').text(user.address || '—');
+        $('#infoCity').text(user.city || '—');
+        $('#infoRegion').text(user.region || '—');
+        $('#infoZip').text(user.zip || user.zipCode || '—');
+        
         // Username в sidebar
         $('#clientName').text(user.firstName || user.username);
         $('#sidebarName').text(user.firstName || user.username);
