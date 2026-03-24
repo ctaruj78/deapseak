@@ -320,8 +320,8 @@
                                                     <input type="text" class="form-control" id="liftModel" placeholder="Fabricante e modelo">
                                                 </div>
                                                 <div class="form-group">
-                                                    <label for="liftSerial">Número de Série</label>
-                                                    <input type="text" class="form-control" id="liftSerial" placeholder="Número de série do ascensor">
+                                                    <label for="clientEmail">Email do Cliente <small class="text-muted">(para envio do relatório)</small></label>
+                                                    <input type="email" class="form-control" id="clientEmail" placeholder="cliente@email.pt">
                                                 </div>
                                             </div>
                                         </div>
@@ -840,7 +840,8 @@
                                         <!-- Report header -->
                                         <div class="text-center mb-4">
                                             <h2>RELATÓRIO DE MANUTENÇÃO MENSAL</h2>
-                                            <p><strong>FestLift - Serviço de Manutenção de Ascensores</strong></p>
+                                            <p><strong>FestLift - Elevadores e Serviços, Lda.</strong></p>
+                                            <p><small>☎ +351 214 190 863 | +351 926 380 243/244 | info@festlift.pt</small></p>
                                         </div>
 
                                         <!-- Report info -->
@@ -856,7 +857,7 @@
                                                 <table class="table table-sm">
                                                     <tr><td><strong>Localização:</strong></td><td id="reportLiftLocation"></td></tr>
                                                     <tr><td><strong>Modelo do Ascensor:</strong></td><td id="reportLiftModel"></td></tr>
-                                                    <tr><td><strong>Número de Série:</strong></td><td id="reportLiftSerial"></td></tr>
+                                                    <tr><td><strong>Email do Cliente:</strong></td><td id="reportClientEmail"></td></tr>
                                                 </table>
                                             </div>
                                         </div>
@@ -894,6 +895,42 @@
                         </div>
                     </div>
                 </div>
+
+                    <!-- Histórico de Inspecções Guardadas -->
+                    <div class="row no-print mt-3">
+                        <div class="col-12">
+                            <div class="card card-outline card-primary">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-database mr-1"></i> Relatórios Guardados na Base de Dados</h3>
+                                    <div class="card-tools">
+                                        <button class="btn btn-default btn-sm" onclick="loadInspectionHistory()">
+                                            <i class="fas fa-sync-alt"></i> Actualizar
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div id="inspectionHistoryLoading" class="p-3 text-muted" style="display:none"><i class="fas fa-spinner fa-spin"></i> A carregar...</div>
+                                    <table class="table table-sm table-hover mb-0" id="inspectionHistoryTable">
+                                        <thead class="bg-light">
+                                            <tr>
+                                                <th>Número</th>
+                                                <th>Data</th>
+                                                <th>Técnico</th>
+                                                <th>Localização</th>
+                                                <th>Estado</th>
+                                                <th class="text-right">Acções</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="inspectionHistoryBody">
+                                            <tr><td colspan="6" class="text-center text-muted p-3">Clique em "Actualizar" para carregar.</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
             </section>
         </div>
 
@@ -913,9 +950,15 @@
     <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
     <!-- AdminLTE -->
     <script src="../../plugins/adminlte/adminlte.min.js"></script>
+    <!-- Sidebar navigation fix -->
+    <script src="../../assets/js/sidebar-init.js"></script>
 
-    <!-- Sidebar вже вбудований в HTML, не потрібно динамічно завантажувати -->
+    <!-- Sidebar вже вбудований в HTML, não é necessário carregar dinamicamente -->
     <!-- REMOVED: jQuery .load() який знищував CANONICAL TECH SIDEBAR -->
+
+    <script>
+        $(document).ready(function() { initSidebarTreeview(); });
+    </script>
 
     <script>
         // 🔥 SMART WORKFLOW: Автозавантаження даних ліфта з QR-коду
@@ -966,7 +1009,7 @@
                 // Заповнення форми даними ліфта
                 $('#liftLocation').val(lift.location || lift.address || '');
                 $('#liftModel').val(lift.model || '');
-                $('#liftSerial').val(lift.municipalNumber || lift.serialNumber || '');
+                $('#clientEmail').val(lift.clientEmail || lift.ownerEmail || '');
                 
                 // Встановлення типу візиту
                 if (visitType) {
@@ -1063,7 +1106,7 @@
                 $('#reportInspector').text($('#inspector').val());
                 $('#reportLiftLocation').text($('#liftLocation').val());
                 $('#reportLiftModel').text($('#liftModel').val());
-                $('#reportLiftSerial').text($('#liftSerial').val());
+                $('#reportClientEmail').text($('#clientEmail').val() || '—');
                 $('#reportGeneralComments').text($('#generalComments').val() || 'Sem observações');
                 $('#reportRecommendations').text($('#recommendations').val() || 'Sem recomendações');
 
@@ -1159,26 +1202,63 @@
                 });
             },
 
-            saveInspection() {
+            async saveInspection() {
+                const numero = $('#inspectionNumber').val();
+                const inspector = $('#inspector').val();
+                const liftLocation = $('#liftLocation').val();
+
+                if (!inspector || !liftLocation) {
+                    alert('⚠️ Preencha o técnico responsável e a localização.');
+                    return;
+                }
+
                 const inspectionData = {
-                    number: $('#inspectionNumber').val(),
-                    date: $('#inspectionDate').val(),
-                    inspector: $('#inspector').val(),
-                    liftLocation: $('#liftLocation').val(),
+                    numero: numero,
+                    data: $('#inspectionDate').val(),
+                    inspector: inspector,
+                    liftLocation: liftLocation,
                     liftModel: $('#liftModel').val(),
-                    liftSerial: $('#liftSerial').val(),
+                    clientEmail: $('#clientEmail').val(),
                     checklist: this.getChecklistData(),
                     generalComments: $('#generalComments').val(),
-                    recommendations: $('#recommendations').val(),
-                    timestamp: new Date().toISOString()
+                    recommendations: $('#recommendations').val()
                 };
 
-                // Save to localStorage (in production, this would be sent to server)
-                const saved = JSON.parse(localStorage.getItem('inspections') || '[]');
-                saved.push(inspectionData);
-                localStorage.setItem('inspections', JSON.stringify(saved));
+                // Guardar na base de dados
+                try {
+                    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                    const response = await fetch('/api/inspections', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                        },
+                        body: JSON.stringify(inspectionData)
+                    });
+                    const result = await response.json();
 
-                alert('Manutenção guardada com sucesso!');
+                    if (result.success) {
+                        // Actualizar número se foi gerado automaticamente
+                        if (result.inspection.numero && !numero) {
+                            $('#inspectionNumber').val(result.inspection.numero);
+                        }
+                        // Guardar também em localStorage como cache local
+                        const saved = JSON.parse(localStorage.getItem('inspections') || '[]');
+                        saved.unshift({ ...inspectionData, _id: result.inspection._id, numero: result.inspection.numero });
+                        localStorage.setItem('inspections', JSON.stringify(saved.slice(0, 50)));
+
+                        alert(`✅ Manutenção ${result.inspection.numero} guardada com sucesso na base de dados!`);
+                    } else {
+                        throw new Error(result.message || 'Erro desconhecido');
+                    }
+                } catch (error) {
+                    console.error('❌ Erro ao guardar na BD, usando localStorage:', error);
+                    // Fallback: guardar só em localStorage
+                    const saved = JSON.parse(localStorage.getItem('inspections') || '[]');
+                    saved.unshift({ ...inspectionData, timestamp: new Date().toISOString() });
+                    localStorage.setItem('inspections', JSON.stringify(saved.slice(0, 50)));
+                    alert('⚠️ Guardado localmente (sem ligação ao servidor). Sincronize quando online.');
+                }
             },
 
             getChecklistData() {
@@ -1197,7 +1277,7 @@
                 $('#inspector').val('João Silva');
                 $('#liftLocation').val('Rua Principal, 123, Entrada A');
                 $('#liftModel').val('OTIS Gen2');
-                $('#liftSerial').val('OT123456789');
+                $('#clientEmail').val('cliente@exemplo.pt');
                 $('#generalComments').val('Realizada manutenção periódica conforme normas de segurança.');
                 $('#recommendations').val('Recomenda-se a substituição de componentes desgastados no prazo de 30 dias.');
                 
@@ -1205,47 +1285,124 @@
             },
 
             printReport() {
-                window.print();
+                // Compatibilidade macOS Safari: usar iframe em vez de window.print() directo
+                const reportEl = document.getElementById('inspectionReport');
+                if (!reportEl) { window.print(); return; }
+
+                const printFrame = document.createElement('iframe');
+                printFrame.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:0;height:0;border:0;';
+                document.body.appendChild(printFrame);
+
+                const pw = printFrame.contentWindow || printFrame.contentDocument;
+                const pdoc = pw.document || pw;
+                pdoc.open();
+                pdoc.write(`<!DOCTYPE html><html lang="pt"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Relatório de Manutenção</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; color: #222; }
+  h2 { color: #1a3a6b; } h3, h4, h5 { color: #1a3a6b; }
+  table { width:100%; border-collapse:collapse; margin-bottom:12px; }
+  td, th { border:1px solid #ccc; padding:6px 10px; font-size:12px; }
+  th { background:#1a3a6b; color:#fff; }
+  .text-center { text-align:center; }
+  .text-success { color:#28a745; } .text-warning { color:#e67e00; }
+  .text-danger { color:#dc3545; } .text-muted { color:#888; }
+  @media print { @page { size: A4; margin: 15mm; } }
+</style>
+</head><body>${reportEl.innerHTML}</body></html>`);
+                pdoc.close();
+
+                printFrame.onload = () => {
+                    setTimeout(() => {
+                        pw.focus();
+                        pw.print();
+                        setTimeout(() => document.body.removeChild(printFrame), 1000);
+                    }, 300);
+                };
             },
 
             async downloadPDF() {
+                const token = localStorage.getItem('liftmanager_jwt') ||
+                              localStorage.getItem('authToken') ||
+                              localStorage.getItem('token');
+                if (!token) {
+                    alert('Sessão expirada. Por favor, faça login novamente.');
+                    return;
+                }
+
+                const btn = document.querySelector('[onclick="downloadPDF()"]');
+                const origHtml = btn ? btn.innerHTML : '';
+                if (btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A gerar...';
+
                 try {
-                    // Отримуємо HTML прев'ю звіту
-                    const reportContent = document.querySelector('#reportPreview .card-body').cloneNode(true);
-                    
-                    // Створюємо тимчасовий контейнер
-                    const printWindow = window.open('', '', 'height=600,width=800');
-                    printWindow.document.write('<html><head><title>Relatório de Manutenção</title>');
-                    printWindow.document.write('<link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">');
-                    printWindow.document.write('<link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">');
-                    printWindow.document.write('<style>body { padding: 20px; } @media print { .no-print { display: none; } }</style>');
-                    printWindow.document.write('</head><body>');
-                    printWindow.document.write(reportContent.innerHTML);
-                    printWindow.document.write('</body></html>');
-                    printWindow.document.close();
-                    
-                    // Зачекаємо поки стилі завантажаться
-                    setTimeout(() => {
-                        printWindow.print();
-                        printWindow.close();
-                    }, 500);
-                    
+                    const reportData = {
+                        inspectionNumber: $('#inspectionNumber').val(),
+                        inspectionDate: $('#inspectionDate').val(),
+                        inspector: $('#inspector').val(),
+                        liftLocation: $('#liftLocation').val(),
+                        liftModel: $('#liftModel').val(),
+                        clientEmail: $('#clientEmail').val(),
+                        checklist: this.getChecklistData(),
+                        generalComments: $('#generalComments').val(),
+                        recommendations: $('#recommendations').val()
+                    };
+
+                    const response = await fetch('/api/inspections/download-pdf', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(reportData)
+                    });
+
+                    if (!response.ok) {
+                        const err = await response.json().catch(() => ({}));
+                        throw new Error(err.message || `Erro ${response.status}`);
+                    }
+
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    const num = reportData.inspectionNumber || 'MANU';
+                    const filename = `Relatorio_${num.replace(/[\\/]/g, '-')}.pdf`;
+
+                    // Funciona em iOS, Android e macOS Safari
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    a.style.display = 'none';
+                    document.body.appendChild(a);
+                    a.click();
+                    setTimeout(() => { URL.revokeObjectURL(url); document.body.removeChild(a); }, 1500);
+
                 } catch (error) {
                     console.error('Erro ao gerar PDF:', error);
-                    alert('Erro ao gerar PDF. Por favor, use o botão Imprimir.');
+                    alert('Erro ao gerar PDF: ' + error.message);
+                } finally {
+                    if (btn) btn.innerHTML = origHtml;
                 }
             },
 
             async sendReport() {
-                const email = prompt('Digite o email para enviar o relatório:');
-                if (!email) return;
-                
-                // Валідація email
+                // Usar email do cliente preenchido no formulário, ou pedir se estiver vazio
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (!emailRegex.test(email)) {
-                    alert('Email inválido. Por favor, tente novamente.');
-                    return;
+                let email = $('#clientEmail').val().trim();
+                if (!email || !emailRegex.test(email)) {
+                    email = prompt('Email do cliente não preenchido. Digite o email para enviar o relatório:');
+                    if (!email) return;
+                    if (!emailRegex.test(email)) {
+                        alert('Email inválido. Por favor, tente novamente.');
+                        return;
+                    }
+                    // Preenche o campo para ficar guardado
+                    $('#clientEmail').val(email);
+                    inspectionManager.updateReportPreview();
                 }
+                
+                const confirmed = confirm(`Enviar relatório para: ${email}?`);
+                if (!confirmed) return;
                 
                 try {
                     // Збираємо дані звіту
@@ -1255,7 +1412,7 @@
                         inspector: $('#inspector').val(),
                         liftLocation: $('#liftLocation').val(),
                         liftModel: $('#liftModel').val(),
-                        liftSerial: $('#liftSerial').val(),
+                        clientEmail: email,
                         checklist: this.getChecklistData(),
                         generalComments: $('#generalComments').val(),
                         recommendations: $('#recommendations').val(),
@@ -1286,8 +1443,8 @@
         };
 
         // Global functions
-        function saveInspection() {
-            inspectionManager.saveInspection();
+        async function saveInspection() {
+            await inspectionManager.saveInspection();
         }
 
         function loadTemplate() {
@@ -1306,9 +1463,67 @@
             inspectionManager.sendReport();
         }
 
+        async function loadInspectionHistory() {
+            const tbody = document.getElementById('inspectionHistoryBody');
+            const loading = document.getElementById('inspectionHistoryLoading');
+            if (loading) loading.style.display = 'block';
+            if (tbody) tbody.innerHTML = '';
+
+            try {
+                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                const response = await fetch('/api/inspections?limit=20', {
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                });
+                const data = await response.json();
+
+                if (loading) loading.style.display = 'none';
+
+                if (data.success && data.inspections.length > 0) {
+                    const statusLabels = { rascunho: 'warning', finalizado: 'success', enviado: 'info', arquivado: 'secondary' };
+                    tbody.innerHTML = data.inspections.map(insp => {
+                        const dt = insp.data ? new Date(insp.data).toLocaleDateString('pt-PT') : '—';
+                        const badge = statusLabels[insp.status] || 'secondary';
+                        return `<tr>
+                            <td><strong>${insp.numero}</strong></td>
+                            <td>${dt}</td>
+                            <td>${insp.inspector}</td>
+                            <td>${insp.liftLocation}</td>
+                            <td><span class="badge badge-${badge}">${insp.status}</span></td>
+                            <td class="text-right">
+                                <button class="btn btn-xs btn-danger" onclick="deleteInspectionDB('${insp._id}','${insp.numero}')" title="Apagar"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>`;
+                    }).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted p-3">Nenhum relatório guardado ainda.</td></tr>';
+                }
+            } catch (err) {
+                if (loading) loading.style.display = 'none';
+                if (tbody) tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger p-3">Erro ao carregar. Verifique a ligação.</td></tr>';
+                console.error('Erro ao carregar histórico:', err);
+            }
+        }
+
+        async function deleteInspectionDB(id, numero) {
+            if (!confirm(`Apagar o relatório ${numero}?`)) return;
+            try {
+                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                const response = await fetch(`/api/inspections/${id}`, {
+                    method: 'DELETE',
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                });
+                const data = await response.json();
+                if (data.success) { loadInspectionHistory(); }
+                else alert('Erro: ' + data.message);
+            } catch (err) {
+                alert('Erro ao apagar: ' + err.message);
+            }
+        }
+
         // Initialize when document is ready
         $(document).ready(function() {
             inspectionManager.init();
+            loadInspectionHistory();
         });
     </script>
 </body>
