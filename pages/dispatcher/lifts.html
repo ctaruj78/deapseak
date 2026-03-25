@@ -561,6 +561,13 @@
             <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
+                    <!-- Client filter banner -->
+                    <div id="activeFilterBanner" style="display:none;" class="alert alert-info alert-dismissible mb-3">
+                        <strong><i class="fas fa-filter"></i> Активний фільтр:</strong> <span id="filterDescription"></span>
+                        <button type="button" class="close" onclick="clearClientFilter()">
+                            <span>&times;</span>
+                        </button>
+                    </div>
                     <!-- Statistics Row -->
                     <div class="row mb-4">
                         <div class="col-lg-3 col-6">
@@ -4406,9 +4413,14 @@
     // Глобальна функція завантаження ліфтів з API
     window.loadLiftsFromAPI = async function() {
         console.log('🔄 Завантаження ліфтів з API...');
-        
+
+        const _urlParams = new URLSearchParams(window.location.search);
+        const _clientId = _urlParams.get('clientId');
+        const _endpoint = _clientId ? `/api/lifts?clientId=${encodeURIComponent(_clientId)}` : '/api/lifts';
+        if (_clientId) showClientFilterBanner(_clientId);
+
         try {
-            const result = await apiCall('/api/lifts');
+            const result = await apiCall(_endpoint);
             
             if (result.success && result.data) {
                 // API v2 повертає: { success: true, data: { lifts: [...] } }
@@ -4466,6 +4478,30 @@
     
     // Alias для сумісності з lift-form-enhanced.js
     window.loadLifts = window.loadLiftsFromAPI;
+
+    async function showClientFilterBanner(clientId) {
+        try {
+            const token = localStorage.getItem('authToken') || localStorage.getItem('token') || '';
+            const res = await fetch(`/api/users/${encodeURIComponent(clientId)}`, {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
+            if (res.ok) {
+                const result = await res.json();
+                const c = result.data || result;
+                const name = c.companyName || `${c.firstName || ''} ${c.lastName || ''}`.trim() || c.email || clientId;
+                document.getElementById('filterDescription').textContent = `Ліфти клієнта "${name}"`;
+            } else {
+                document.getElementById('filterDescription').textContent = 'Ліфти клієнта (фільтр активний)';
+            }
+        } catch (e) {
+            document.getElementById('filterDescription').textContent = 'Ліфти клієнта (фільтр активний)';
+        }
+        document.getElementById('activeFilterBanner').style.display = 'block';
+    }
+
+    window.clearClientFilter = function() {
+        window.location.href = window.location.pathname;
+    };
 
     // ── Збереження ліфта через API (викликається з enhanced-lift-modal.js) ──
     window.saveLiftToAPI = async function(liftData) {
