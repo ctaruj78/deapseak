@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const auth = require('../middleware/auth');
+const { authenticate: auth } = require('../middleware/auth');
 const nodemailer = require('nodemailer');
 const PDFDocument = require('pdfkit');
 const Inspection = require('../../models/Inspection');

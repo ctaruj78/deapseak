@@ -1538,7 +1538,7 @@
 
                 if (loading) loading.style.display = 'none';
 
-                if (data.success && data.inspections.length > 0) {
+                if (data.success && data.inspections?.length > 0) {
                     const statusLabels = { rascunho: 'warning', finalizado: 'success', enviado: 'info', arquivado: 'secondary' };
                     tbody.innerHTML = data.inspections.map(insp => {
                         const dt = insp.data ? new Date(insp.data).toLocaleDateString('pt-PT') : '—';

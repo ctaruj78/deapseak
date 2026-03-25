@@ -41,6 +41,22 @@
             font-weight: bold;
             font-size: 18px;
         }
+        /* Responsive table for mobile */
+        .invoice-table-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .invoice-table {
+            min-width: 480px;
+        }
+        @media (max-width: 576px) {
+            .invoice-preview {
+                padding: 15px;
+            }
+            .invoice-total {
+                font-size: 14px;
+            }
+        }
         @media print {
             .no-print { display: none !important; }
         }
@@ -576,6 +592,7 @@
                                             </div>
                                         </div>
 
+                                        <div class="invoice-table-wrapper">
                                         <table class="invoice-table">
                                             <thead>
                                                 <tr>
@@ -596,6 +613,7 @@
                                                 </tr>
                                             </tbody>
                                         </table>
+                                        </div><!-- /.invoice-table-wrapper -->
 
                                         <div class="row mt-4">
                                             <div class="col-md-6">
@@ -624,10 +642,18 @@
                                         <!-- Bank Details -->
                                         <div class="alert alert-info mt-4">
                                             <h5 class="mb-2"><i class="fas fa-university"></i> Dados Bancários para Pagamento</h5>
-                                            <p class="mb-1"><strong>Banco BPI</strong></p>
-                                            <p class="mb-0" style="font-family: 'Courier New', monospace; font-size: 14px;">
-                                                IBAN: <strong>PT50 0010 0000 5854 8320 0015 4</strong>
-                                            </p>
+                                            <div class="row">
+                                                <div class="col-sm-6">
+                                                    <p class="mb-1"><strong>Banco:</strong> Banco BPI</p>
+                                                    <p class="mb-1" style="font-family: 'Courier New', monospace; font-size: 13px;">
+                                                        <strong>IBAN:</strong> PT50 0010 0000 5854 8320 0015 4
+                                                    </p>
+                                                </div>
+                                                <div class="col-sm-6">
+                                                    <p class="mb-1"><strong>BIC/SWIFT:</strong> BBPIPTPL</p>
+                                                    <p class="mb-1"><strong>Titular:</strong> FestLift - Elevadores e Serviços, Lda.</p>
+                                                </div>
+                                            </div>
                                         </div>
 
                                         <div class="text-center mt-4">
@@ -900,22 +926,28 @@
                     // ═══════════════════════════════════════════════════════════
                     
                     const servicos = [];
-                    $('#servicesTable tbody tr').each(function(index) {
-                        const descricao = $(this).find('input[type="text"]').val() || 'Servico';
-                        const quantidade = $(this).find('.qty').val() || '0';
+                    let rowIndex = 0;
+                    $('#servicesTable tbody tr').each(function() {
+                        const rawDesc = $(this).find('input[type="text"]').val();
+                        const descricao = rawDesc ? rawDesc.trim() : '';
+                        const quantidade = parseFloat($(this).find('.qty').val()) || 0;
                         const preco = parseFloat($(this).find('.price').val()) || 0;
-                        const total = (parseFloat(quantidade) * preco).toFixed(2);
-                        
-                        if (descricao && quantidade && preco) {
+                        const total = (quantidade * preco).toFixed(2);
+                        // Include row if it has a description or a price value
+                        if (descricao || preco > 0) {
+                            rowIndex++;
                             servicos.push([
-                                (index + 1).toString(),
-                                descricao,
-                                quantidade,
+                                rowIndex.toString(),
+                                descricao || 'Serviço',
+                                quantidade.toString(),
                                 preco.toFixed(2) + ' €',
                                 total + ' €'
                             ]);
                         }
                     });
+                    if (servicos.length === 0) {
+                        servicos.push(['—', 'Nenhum serviço adicionado', '—', '—', '—']);
+                    }
                     
                     doc.autoTable({
                         startY: yPos,
@@ -964,61 +996,97 @@
                     // NOTAS
                     // ═══════════════════════════════════════════════════════════
                     
+                    // ═══════════════════════════════════════════════════════════
+                    // NOTAS
+                    // ═══════════════════════════════════════════════════════════
+
                     const notes = $('#notes').val();
-                    if (notes) {
+                    let afterNotesY = finalY + 20;
+                    if (notes && notes.trim()) {
+                        doc.setFont(undefined, 'bold');
+                        doc.setFontSize(10);
+                        doc.setTextColor(0, 0, 0);
+                        doc.text('Notas:', 20, afterNotesY);
+                        afterNotesY += 6;
                         doc.setFont(undefined, 'normal');
                         doc.setFontSize(9);
-                        doc.text('Notas:', 20, finalY + 25);
-                        const splitNotes = doc.splitTextToSize(notes, 170);
-                        doc.text(splitNotes, 20, finalY + 31);
+                        const splitNotes = doc.splitTextToSize(notes.trim(), 170);
+                        doc.text(splitNotes, 20, afterNotesY);
+                        afterNotesY += splitNotes.length * 4.5 + 8;
                     }
-                    
+
                     // ═══════════════════════════════════════════════════════════
                     // DADOS BANCÁRIOS
                     // ═══════════════════════════════════════════════════════════
-                    
-                    const bankY = (notes ? finalY + 50 : finalY + 30);
-                    doc.setFillColor(230, 240, 255); // Azul claro
-                    doc.rect(20, bankY, 170, 20, 'F');
-                    
+
+                    const bankBoxHeight = 46; // mm — espaço para 4 linhas + título
+                    const footerReserve = 22;  // espaço para rodapé
+                    const pageLimit = 297 - footerReserve - bankBoxHeight;
+
+                    let bankY = afterNotesY + 5;
+                    // Se a caixa bancária não cabe na página actual, adicionar nova página
+                    if (bankY > pageLimit) {
+                        doc.addPage();
+                        bankY = 20;
+                    }
+
+                    // Caixa de fundo azul claro
+                    doc.setFillColor(232, 240, 251);
+                    doc.rect(20, bankY, 170, bankBoxHeight, 'F');
                     doc.setDrawColor(0, 102, 204);
-                    doc.setLineWidth(0.3);
-                    doc.rect(20, bankY, 170, 20);
-                    
-                    // Іконка банку (будівля з колонами)
-                    doc.setFillColor(0, 102, 204);
-                    doc.rect(24, bankY + 7, 8, 6, 'F'); // База будівлі
-                    doc.setFillColor(255, 255, 255);
-                    doc.rect(25.5, bankY + 8, 1, 4, 'F'); // Колона 1
-                    doc.rect(27, bankY + 8, 1, 4, 'F'); // Колона 2
-                    doc.rect(28.5, bankY + 8, 1, 4, 'F'); // Колона 3
-                    doc.rect(30, bankY + 8, 1, 4, 'F'); // Колона 4
-                    doc.setFillColor(0, 102, 204);
-                    doc.rect(24, bankY + 6.5, 8, 0.8, 'F'); // Дах
-                    
+                    doc.setLineWidth(0.4);
+                    doc.rect(20, bankY, 170, bankBoxHeight);
+
+                    // Título azul
                     doc.setFontSize(10);
                     doc.setFont(undefined, 'bold');
                     doc.setTextColor(0, 102, 204);
-                    doc.text('Dados Bancários para Pagamento', 33, bankY + 7);
-                    
-                    doc.setFont(undefined, 'normal');
+                    doc.text('Dados Bancários para Pagamento', 25, bankY + 8);
+
+                    // Linha separadora dentro da caixa
+                    doc.setLineWidth(0.3);
+                    doc.line(22, bankY + 11, 188, bankY + 11);
+
+                    // Conteúdo — coluna esquerda
                     doc.setFontSize(9);
-                    doc.setTextColor(60, 60, 60);
-                    doc.text('Banco BPI', 33, bankY + 13);
-                    doc.text('IBAN: PT50 0010 0000 5854 8320 0015 4', 33, bankY + 17);
-                    
+                    doc.setTextColor(40, 40, 40);
+                    const bL = 25, bR = 105; // left / right column x
+                    const bT = bankY + 17;    // primeira linha de conteúdo
+
+                    doc.setFont(undefined, 'bold');  doc.text('Banco:', bL, bT);
+                    doc.setFont(undefined, 'normal'); doc.text('Banco BPI', bL + 16, bT);
+
+                    doc.setFont(undefined, 'bold');  doc.text('IBAN:', bL, bT + 8);
+                    doc.setFont(undefined, 'normal'); doc.text('PT50 0010 0000 5854 8320 0015 4', bL + 12, bT + 8);
+
+                    // Conteúdo — coluna direita
+                    doc.setFont(undefined, 'bold');  doc.text('BIC/SWIFT:', bR, bT);
+                    doc.setFont(undefined, 'normal'); doc.text('BBPIPTPL', bR + 24, bT);
+
+                    doc.setFont(undefined, 'bold');  doc.text('Titular:', bR, bT + 8);
+                    doc.setFont(undefined, 'normal');
+                    doc.text('FestLift - Elevadores e Serviços, Lda.', bR + 18, bT + 8, { maxWidth: 70 });
+
+                    // Referência
+                    const orcRef = $('#invoiceNumber').val() || '';
+                    if (orcRef) {
+                        doc.setFont(undefined, 'bold');  doc.text('Referência:', bL, bT + 20);
+                        doc.setFont(undefined, 'normal'); doc.text(orcRef, bL + 26, bT + 20);
+                    }
+
+                    // Restaurar cor
+                    doc.setTextColor(0, 0, 0);
+
                     // ═══════════════════════════════════════════════════════════
                     // RODAPÉ
                     // ═══════════════════════════════════════════════════════════
-                    
-                    const footerY = 280;
-                    doc.setFontSize(8);
-                    doc.setTextColor(120, 120, 120);
+
+                    const footerY = bankY + bankBoxHeight + 8;
+                    doc.setFontSize(7.5);
+                    doc.setTextColor(130, 130, 130);
                     doc.setFont(undefined, 'italic');
-                    doc.text('FestLift - Elevadores e Serviços, Lda. - Conservação e Manutenção de Elevadores', 105, footerY, { align: 'center' });
-                    doc.text('Av. do Parque 84B • Rio de Mouro, Lisboa 2635-609', 105, footerY + 4, { align: 'center' });
-                    doc.text('Tel: +351 214 190 863 • Móvel: +351 926 380 243/244 • info@festlift.pt', 105, footerY + 8, { align: 'center' });
-                    doc.text('NIF: 515 924 741', 105, footerY + 12, { align: 'center' });
+                    doc.text('FestLift - Elevadores e Serviços, Lda. | NIF: 515 924 741 | info@festlift.pt', 105, footerY, { align: 'center' });
+                    doc.text('Tel: +351 214 190 863 | Móvel: +351 926 380 243/244 | Av. do Parque 84B, Rio de Mouro, Lisboa 2635-609', 105, footerY + 4.5, { align: 'center' });
                     
                     // Збереження
                     const fileName = `Orcamento_${orcamentoNum.replace(/\//g, '-')}.pdf`;

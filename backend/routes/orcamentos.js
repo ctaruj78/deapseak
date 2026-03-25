@@ -129,29 +129,76 @@ async function gerarPDFOrcamento(orcamento) {
             doc.text(`€${orcamento.total.toFixed(2)}`, col4, yPos, { width: 70, align: 'right' });
             
             // Notas
+            yPos += 35; // espaço após a linha TOTAL (fontSize 14 + gap)
             if (orcamento.notas) {
-                doc.moveDown(2);
-                doc.fontSize(10).font('Helvetica-Bold').text('Notas:', 50, doc.y);
-                doc.font('Helvetica').text(orcamento.notas, 50, doc.y + 5, { width: 500 });
+                if (yPos > 680) { doc.addPage(); yPos = 50; }
+                doc.fontSize(10).font('Helvetica-Bold').text('Notas:', 50, yPos);
+                yPos += 15;
+                doc.font('Helvetica').fontSize(9).text(orcamento.notas, 50, yPos, { width: 500 });
+                yPos = doc.y + 15;
             }
-            
-            // Dados Bancários para pagamento
-            doc.moveDown(2);
-            doc.fontSize(10).font('Helvetica-Bold').text('Dados Bancários / Pagamento:', 50, doc.y);
-            doc.moveTo(50, doc.y + 3).lineTo(380, doc.y + 3).stroke();
-            doc.moveDown(0.5);
-            doc.fontSize(9).font('Helvetica');
-            doc.text(`IBAN: ${process.env.COMPANY_IBAN || 'PT50 0010 0000 5854 8320 0015 4'}`, 50, doc.y);
-            doc.text(`BIC/SWIFT: ${process.env.COMPANY_BIC || 'BBPIPTPL'}`, 50, doc.y + 5);
-            doc.text(`Banco: ${process.env.COMPANY_BANK || 'Banco BPI'}`, 50, doc.y + 5);
-            doc.text(`Titular: ${process.env.COMPANY_ACCOUNT_HOLDER || 'FestLift - Elevadores e Serviços, Lda.'}`, 50, doc.y + 5);
 
-            // Rodapé
-            doc.fontSize(8).font('Helvetica');
-            const footerY = 750;
-            doc.text('FestLift - Elevadores e Serviços, Lda. | NIF: 515924741', 50, footerY, { align: 'center', width: 500 });
-            doc.text('NIF: 515924741 | Email: info@festlift.pt | Tel: +351 214 190 863 | Móvel: +351 926 380 243/244', 50, footerY + 12, { align: 'center', width: 500 });
-            doc.text('Av. do Parque 84B, Rio de Mouro, Lisboa 2635-609', 50, footerY + 24, { align: 'center', width: 500 });
+            // Dados Bancários para pagamento
+            // Altura necessária para a caixa bancária: ~80px
+            if (yPos > 660) { doc.addPage(); yPos = 50; }
+
+            const bankBoxX = 50;
+            const bankBoxWidth = 480;
+            const bankBoxHeight = 95;
+
+            // Caixa de fundo (azul claro)
+            doc.rect(bankBoxX, yPos, bankBoxWidth, bankBoxHeight)
+               .fill('#e8f0fb');
+
+            // Borda azul
+            doc.rect(bankBoxX, yPos, bankBoxWidth, bankBoxHeight)
+               .stroke('#1a3a6b');
+
+            // Título
+            doc.fontSize(10).font('Helvetica-Bold')
+               .fillColor('#1a3a6b')
+               .text('Dados Bancários para Pagamento', bankBoxX + 10, yPos + 10);
+
+            // Linha separadora dentro da caixa
+            doc.moveTo(bankBoxX + 10, yPos + 23)
+               .lineTo(bankBoxX + bankBoxWidth - 10, yPos + 23)
+               .strokeColor('#1a3a6b').stroke();
+
+            // Conteúdo bancário em duas colunas
+            doc.fontSize(9).font('Helvetica').fillColor('#333333');
+            const leftCol = bankBoxX + 10;
+            const rightCol = bankBoxX + 250;
+            const bankTextY = yPos + 30;
+
+            doc.font('Helvetica-Bold').text('IBAN:', leftCol, bankTextY);
+            doc.font('Helvetica').text(process.env.COMPANY_IBAN || 'PT50 0010 0000 5854 8320 0015 4', leftCol + 35, bankTextY);
+
+            doc.font('Helvetica-Bold').text('BIC/SWIFT:', leftCol, bankTextY + 14);
+            doc.font('Helvetica').text(process.env.COMPANY_BIC || 'BBPIPTPL', leftCol + 60, bankTextY + 14);
+
+            doc.font('Helvetica-Bold').text('Banco:', rightCol, bankTextY);
+            doc.font('Helvetica').text(process.env.COMPANY_BANK || 'Banco BPI', rightCol + 42, bankTextY);
+
+            doc.font('Helvetica-Bold').text('Titular:', rightCol, bankTextY + 14);
+            doc.font('Helvetica').text(
+                process.env.COMPANY_ACCOUNT_HOLDER || 'FestLift - Elevadores e Serviços, Lda.',
+                rightCol + 42, bankTextY + 14, { width: 178, lineBreak: true }
+            );
+
+            doc.font('Helvetica-Bold').text('Referência:', leftCol, bankTextY + 40);
+            doc.font('Helvetica').text(orcamento.numero, leftCol + 65, bankTextY + 40);
+
+            // Restaurar cor padrão
+            doc.fillColor('#000000');
+            yPos += bankBoxHeight + 15;
+
+            // Rodapé — sempre na última página, abaixo do conteúdo
+            const footerY = Math.max(yPos + 10, 770);
+            if (footerY > 810) { doc.addPage(); }
+            doc.fontSize(8).font('Helvetica').fillColor('#666666');
+            doc.text('FestLift - Elevadores e Serviços, Lda. | NIF: 515 924 741 | Email: info@festlift.pt', 50, footerY, { align: 'center', width: 500 });
+            doc.text('Tel: +351 214 190 863 | Móvel: +351 926 380 243/244 | Av. do Parque 84B, Rio de Mouro, Lisboa 2635-609', 50, footerY + 12, { align: 'center', width: 500 });
+            doc.fillColor('#000000');
             
             doc.end();
         } catch (error) {
