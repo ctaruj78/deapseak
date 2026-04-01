@@ -4781,7 +4781,14 @@
             } catch (e) {
                 console.warn('⚠️ Помилка видалення старої карти:', e);
             }
+            window.editMapInstance = null;
         }
+        if (window.enhancedLiftModal && window.enhancedLiftModal.map) {
+            try { window.enhancedLiftModal.map.remove(); } catch (e) {}
+            window.enhancedLiftModal.map = null;
+        }
+        mapContainer.innerHTML = '';
+        if (mapContainer._leaflet_id) delete mapContainer._leaflet_id;
         
         try {
             // Створюємо нову карту

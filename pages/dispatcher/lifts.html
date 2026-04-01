@@ -5483,17 +5483,18 @@
         if (window.editMapInstance) {
             try {
                 window.editMapInstance.remove();
-                window.editMapInstance = null;
-                console.log('✅ Стара карта редагування видалена');
-            } catch (e) {
-                console.warn('⚠️ Помилка видалення старої карти:', e);
-                window.editMapInstance = null;
-            }
+            } catch (e) { /* ignore */ }
+            window.editMapInstance = null;
         }
-        // Очищаємо _leaflet_id з контейнера (Leaflet залишає його після remove())
-        if (mapContainer._leaflet_id) {
-            delete mapContainer._leaflet_id;
+        // Також знищуємо карту enhanced-lift-modal.js якщо вона ініціалізована
+        if (window.enhancedLiftModal && window.enhancedLiftModal.map) {
+            try { window.enhancedLiftModal.map.remove(); } catch (e) { /* ignore */ }
+            window.enhancedLiftModal.map = null;
         }
+        // Повністю скидаємо контейнер — гарантовано знищує _leaflet_id та всі дочірні елементи
+        const mapInner = mapContainer.innerHTML;
+        mapContainer.innerHTML = '';
+        if (mapContainer._leaflet_id) delete mapContainer._leaflet_id;
         
         try {
             // Створюємо нову карту
