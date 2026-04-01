@@ -72,8 +72,46 @@ class EnhancedLiftModal {
         $(document).off('change', '#enhancedLiftsCountAtAddress').on('change', '#enhancedLiftsCountAtAddress', () => {
             this.handleLiftsCountChange();
         });
+
+        // Автозаповнення клієнта по email (тільки для нового ліфта)
+        $(document).off('blur', '#enhancedClientEmail').on('blur', '#enhancedClientEmail', () => {
+            if (!this.currentLiftId) {
+                this.lookupClientByEmail();
+            }
+        });
         
         console.log('✅ Enhanced event listeners set up');
+    }
+
+    async lookupClientByEmail() {
+        const email = $('#enhancedClientEmail').val().trim();
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return;
+
+        // Якщо ім'я вже заповнено — не перезаписувати
+        if ($('#enhancedClientName').val().trim()) return;
+
+        try {
+            const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token');
+            const resp = await fetch(`/api/users/by-email?email=${encodeURIComponent(email)}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!resp.ok) return;
+            const result = await resp.json();
+            const user = result.data || result.user || result;
+            if (!user || !user.email) return;
+
+            const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ');
+            if (fullName) $('#enhancedClientName').val(fullName);
+            if (user.phone) $('#enhancedClientPhone').val(user.phone);
+
+            // Маленька підказка
+            const hint = $('<small class="text-success client-lookup-hint"><i class="fas fa-check-circle mr-1"></i>Клієнта знайдено: ' + (fullName || email) + '</small>');
+            $('#enhancedClientEmail').closest('.form-group').find('.client-lookup-hint').remove();
+            $('#enhancedClientEmail').closest('.form-group').append(hint);
+            setTimeout(() => hint.fadeOut(() => hint.remove()), 3000);
+        } catch (e) {
+            // тихо ігноруємо
+        }
     }
 
     initializeMap() {
@@ -777,6 +815,7 @@ class EnhancedLiftModal {
         });
         
         // Пріоритет: loadLiftsFromAPI > liftManager.loadLifts
+        // loadLiftsFromAPI вже викликає applyAllFilters() всередині — пошук збережеться
         if (typeof window.loadLiftsFromAPI === 'function') {
             window.loadLiftsFromAPI();
             console.log('✅ Called window.loadLiftsFromAPI()');

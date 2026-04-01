@@ -126,8 +126,8 @@ class LiftManager {
                 // Заповнюємо модальне вікно деталями
                 $('#detail-municipal-number').text(lift.municipalNumber || lift.id);
                 $('#detail-id').text(lift.id);
-                $('#detail-model').text(lift.model || '-');
-                $('#detail-type').text(lift.type || '-');
+                $('#detail-model').text(this.getModelDisplay(lift));
+                $('#detail-type').text(this.getLiftTypeLabel(lift.type));
                 $('#detail-status').html(`<span class="badge ${this.getStatusBadgeClass(lift.status)}">${this.getStatusText(lift.status)}</span>`);
                 $('#detail-capacity').text(lift.capacity ? lift.capacity + ' осіб' : '-');
                 $('#detail-speed').text(lift.speed ? lift.speed + ' м/с' : '-');
@@ -392,13 +392,34 @@ class LiftManager {
             return;
         }
 
+        // Групування ліфтів за адресою для чергування кольорів
+        const _addrKey = lift => {
+            const a = lift.address;
+            if (a && typeof a === 'object') {
+                const parts = [a.street, a.city].filter(Boolean);
+                return parts.join(', ').trim().toLowerCase();
+            }
+            const locStr = (lift.location && typeof lift.location === 'string') ? lift.location : '';
+            return String(a || locStr).trim().toLowerCase();
+        };
+        const addressGroupMap = new Map();
         paginatedLifts.forEach(lift => {
+            const addrKey = _addrKey(lift);
+            if (!addressGroupMap.has(addrKey)) {
+                addressGroupMap.set(addrKey, addressGroupMap.size);
+            }
+        });
+
+        paginatedLifts.forEach(lift => {
+            const addrKey = _addrKey(lift);
+            const groupIndex = addressGroupMap.get(addrKey) ?? 0;
+            const rowClass = groupIndex % 2 === 0 ? 'address-group-even' : 'address-group-odd';
             const row = `
-                <tr>
+                <tr class="${rowClass}">
                     <td>${this.sanitizeHTML(lift.municipalNumber || lift.id)}</td>
-                    <td>${this.sanitizeHTML(lift.model || '-')}</td>
-                    <td>${this.sanitizeHTML(lift.type || '-')}</td>
-                    <td>${this.sanitizeHTML(lift.address || lift.location || '-')}</td>
+                    <td><span class="lift-model-cell" title="${this.sanitizeHTML(this.getModelDisplay(lift))}">${this.sanitizeHTML(this.getModelDisplay(lift))}</span></td>
+                    <td>${this.sanitizeHTML(this.getLiftTypeLabel(lift.type))}</td>
+                    <td>${this.sanitizeHTML(this._formatAddress(lift))}</td>
                     <td>${this.sanitizeHTML(lift.clientName || '-')}</td>
                     <td>${this.sanitizeHTML(lift.clientEmail || '-')}</td>
                     <td>
@@ -749,9 +770,43 @@ class LiftManager {
         const types = {
             'passenger': 'Пасажирський',
             'cargo': 'Вантажний',
-            'hospital': 'Лікарняний'
+            'freight': 'Вантажний',
+            'hospital': 'Лікарняний',
+            'service': 'Службовий',
+            'panoramic': 'Панорамний',
+            'escalator': 'Ескалатор',
+            'platform': 'Платформа',
+            'other': 'Інший'
         };
-        return types[type] || type;
+        return types[type] || type || '-';
+    }
+
+    _formatAddress(lift) {
+        const a = lift.address;
+        const munCity = lift.municipality && typeof lift.municipality === 'object'
+            ? lift.municipality.name
+            : (typeof lift.municipality === 'string' ? lift.municipality : '');
+        if (a && typeof a === 'object') {
+            const city = (a.city && typeof a.city === 'string' && a.city !== a.street) ? a.city : munCity;
+            return [a.street, city, a.zipCode].filter(Boolean).join(', ') || '-';
+        }
+        if (a && typeof a === 'string') return a;
+        if (munCity) return munCity;
+        const loc = lift.location;
+        if (loc && typeof loc === 'string') return loc;
+        return '-';
+    }
+
+    getModelDisplay(lift) {
+        const brandLabels = {
+            otis: 'Otis', kone: 'KONE', schindler: 'Schindler',
+            thyssen: 'ThyssenKrupp', mitsubishi: 'Mitsubishi Electric',
+            fujitec: 'Fujitec', other: ''
+        };
+        const brand = brandLabels.hasOwnProperty(lift.manufacturer)
+            ? brandLabels[lift.manufacturer]
+            : (lift.manufacturer || '');
+        return [brand, lift.model].filter(Boolean).join(' ') || '-';
     }
 
     getStatusLabel(status) {
@@ -983,13 +1038,30 @@ class LiftManager {
         } else {
             $('#no-lifts-message').hide();
             $('#lifts-table').show();
+            // Групування за адресою для чергування кольорів
+            const _addrKey2 = lift => {
+                const a = lift.address;
+                if (a && typeof a === 'object') {
+                    const parts = [a.street, a.city].filter(Boolean);
+                    return parts.join(', ').trim().toLowerCase();
+                }
+                const locStr = (lift.location && typeof lift.location === 'string') ? lift.location : '';
+                return String(a || locStr).trim().toLowerCase();
+            };
+            const addrGroupMap2 = new Map();
             filteredLifts.forEach(lift => {
+                const k = _addrKey2(lift);
+                if (!addrGroupMap2.has(k)) addrGroupMap2.set(k, addrGroupMap2.size);
+            });
+            filteredLifts.forEach(lift => {
+                const k = _addrKey2(lift);
+                const rowClass = (addrGroupMap2.get(k) ?? 0) % 2 === 0 ? 'address-group-even' : 'address-group-odd';
                 liftsTableBody.append(`
-                    <tr>
+                    <tr class="${rowClass}">
                         <td>${this.sanitizeHTML(lift.municipalNumber || lift.id)}</td>
-                        <td>${this.sanitizeHTML(lift.model || '-')}</td>
-                        <td>${this.sanitizeHTML(lift.type || '-')}</td>
-                        <td>${this.sanitizeHTML(lift.address || lift.location || '-')}</td>
+                        <td><span class="lift-model-cell" title="${this.sanitizeHTML(this.getModelDisplay(lift))}">${this.sanitizeHTML(this.getModelDisplay(lift))}</span></td>
+                        <td>${this.sanitizeHTML(this.getLiftTypeLabel(lift.type))}</td>
+                        <td>${this.sanitizeHTML(this._formatAddress(lift))}</td>
                         <td>${this.sanitizeHTML(lift.clientName || '-')}</td>
                         <td>${this.sanitizeHTML(lift.clientEmail || '-')}</td>
                         <td><span class="badge ${this.getStatusBadgeClass(lift.status)}">${this.getStatusText(lift.status)}</span></td>

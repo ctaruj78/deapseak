@@ -2494,8 +2494,19 @@ app.post('/api/lifts/:id/approve-deletion', authenticateToken, async (req, res) 
         }
 
         const lift = await db.collection('lifts').findOne({ _id: liftId });
+
+        // Відмітити пов'язані notifications як оброблені (незалежно від наявності ліфта)
+        const { notificationId } = req.body;
+        if (notificationId) {
+            await db.collection('notifications').updateOne(
+                { _id: new ObjectId(notificationId) },
+                { $set: { status: 'resolved', resolvedAt: new Date(), resolvedBy: req.user.id } }
+            );
+        }
+
         if (!lift) {
-            return res.status(404).json({ success: false, message: 'Ліфт не знайдено' });
+            // Ліфт вже був видалений — вважаємо операцію успішною
+            return res.json({ success: true, message: 'Ліфт вже видалено' });
         }
 
         // Видалити ліфт
@@ -2514,15 +2525,6 @@ app.post('/api/lifts/:id/approve-deletion', authenticateToken, async (req, res) 
                 timestamp: new Date(),
                 createdAt: new Date()
             });
-        }
-
-        // Відмітити пов'язані notifications як оброблені
-        const { notificationId } = req.body;
-        if (notificationId) {
-            await db.collection('notifications').updateOne(
-                { _id: new ObjectId(notificationId) },
-                { $set: { status: 'resolved', resolvedAt: new Date(), resolvedBy: req.user.id } }
-            );
         }
 
         res.json({ success: true, message: 'Ліфт успішно видалено' });
@@ -3068,6 +3070,25 @@ app.get('/api/users/profile', authenticateToken, async (req, res) => {
             message: 'Помилка отримання профілю',
             error: error.message
         });
+    }
+});
+
+// GET /api/users/by-email?email=... - пошук клієнта по email (для автозаповнення)
+app.get('/api/users/by-email', authenticateToken, async (req, res) => {
+    try {
+        const email = (req.query.email || '').trim().toLowerCase();
+        if (!email) return res.status(400).json({ success: false, error: 'Email не вказано' });
+
+        const user = await db.collection('users').findOne(
+            { email: { $regex: new RegExp(`^${email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } },
+            { projection: { password: 0 } }
+        );
+        if (!user) return res.status(404).json({ success: false, error: 'Користувача не знайдено' });
+
+        res.json({ success: true, data: user });
+    } catch (error) {
+        console.error('❌ Помилка пошуку по email:', error);
+        res.status(500).json({ success: false, error: 'Помилка сервера' });
     }
 });
 
@@ -3633,6 +3654,13 @@ app.put('/api/users/:id', authenticateToken, async (req, res) => {
         });
     } catch (error) {
         console.error('❌ Помилка оновлення користувача:', error);
+        // Duplicate email
+        if (error.code === 11000 || (error.message && error.message.includes('E11000'))) {
+            return res.status(409).json({
+                success: false,
+                error: 'Цей email вже використовується іншим користувачем'
+            });
+        }
         res.status(500).json({
             success: false,
             error: 'Помилка оновлення користувача'

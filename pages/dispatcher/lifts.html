@@ -32,7 +32,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <!-- Custom CSS (оптимізований, без зайвих !important) -->
-    <link rel="stylesheet" href="/assets/css/lifts.css">
+    <link rel="stylesheet" href="/assets/css/lifts.css?v=20260401j">
     <link rel="stylesheet" href="/assets/css/enhanced-lift-modal.css">
     <link rel="stylesheet" href="/assets/css/z-index-system.css">
     <link rel="stylesheet" href="/assets/css/notifications.css">
@@ -2478,7 +2478,7 @@
     <script src="../../assets/js/ar-helper.js"></script>
     <script src="../../assets/js/common.js"></script>
     <script src="../../assets/js/lift-utils.js"></script>
-    <script src="../../assets/js/lifts.js?v=20241206"></script>
+    <script src="../../assets/js/lifts.js?v=20260401j"></script>
     <script src="../../assets/js/simple-lift-modal.js?v=20241206"></script>
     <script src="../../assets/js/form-validator.js?v=20260303a"></script>
     <script src="../../assets/js/enhanced-lift-modal.js?v=20260303c"></script>
@@ -4433,14 +4433,16 @@
                 if (Array.isArray(lifts)) {
                     window.allLiftsData = lifts;
                     
-                    // Скидаємо на першу сторінку при завантаженні
-                    currentPage = 1;
-                    
-                    // Показуємо ліфти з пагінацією
-                    const startIdx = (currentPage - 1) * LIFTS_PER_PAGE;
-                    const endIdx = startIdx + LIFTS_PER_PAGE;
-                    const paginatedLifts = lifts.slice(startIdx, endIdx);
-                    displayLiftsInTable(paginatedLifts, lifts.length);
+                    // Якщо є активний пошук/фільтр — зберігаємо його, інакше скидаємо на першу сторінку
+                    if (typeof applyAllFilters === 'function') {
+                        applyAllFilters();
+                    } else {
+                        currentPage = 1;
+                        const startIdx = (currentPage - 1) * LIFTS_PER_PAGE;
+                        const endIdx = startIdx + LIFTS_PER_PAGE;
+                        const paginatedLifts = lifts.slice(startIdx, endIdx);
+                        displayLiftsInTable(paginatedLifts, lifts.length);
+                    }
                     
                     return lifts;
                 } else {
@@ -4452,26 +4454,30 @@
                 // Fallback до localStorage якщо API недоступний
                 const localLifts = JSON.parse(localStorage.getItem('lifts') || '[]');
                 window.allLiftsData = localLifts;
-                currentPage = 1;
-                
-                const startIdx = (currentPage - 1) * LIFTS_PER_PAGE;
-                const endIdx = startIdx + LIFTS_PER_PAGE;
-                const paginatedLifts = localLifts.slice(startIdx, endIdx);
-                displayLiftsInTable(paginatedLifts, localLifts.length);
-                
+                if (typeof applyAllFilters === 'function') {
+                    applyAllFilters();
+                } else {
+                    currentPage = 1;
+                    const startIdx = (currentPage - 1) * LIFTS_PER_PAGE;
+                    const endIdx = startIdx + LIFTS_PER_PAGE;
+                    const paginatedLifts = localLifts.slice(startIdx, endIdx);
+                    displayLiftsInTable(paginatedLifts, localLifts.length);
+                }
                 return localLifts;
             }
         } catch (error) {
             console.error('❌ Exception при завантаженні ліфтів:', error);
             const localLifts = JSON.parse(localStorage.getItem('lifts') || '[]');
             window.allLiftsData = localLifts;
-            currentPage = 1;
-            
-            const startIdx = (currentPage - 1) * LIFTS_PER_PAGE;
-            const endIdx = startIdx + LIFTS_PER_PAGE;
-            const paginatedLifts = localLifts.slice(startIdx, endIdx);
-            displayLiftsInTable(paginatedLifts, localLifts.length);
-            
+            if (typeof applyAllFilters === 'function') {
+                applyAllFilters();
+            } else {
+                currentPage = 1;
+                const startIdx = (currentPage - 1) * LIFTS_PER_PAGE;
+                const endIdx = startIdx + LIFTS_PER_PAGE;
+                const paginatedLifts = localLifts.slice(startIdx, endIdx);
+                displayLiftsInTable(paginatedLifts, localLifts.length);
+            }
             return localLifts;
         }
     }
@@ -4801,8 +4807,10 @@
             
             // Адреса з нового формату
             const address = lift.address || {};
-            const addressStr = address.street 
-                ? `${address.street}, ${address.city || ''}` 
+            const _munCity = lift.municipality && typeof lift.municipality === 'object' ? lift.municipality.name : (typeof lift.municipality === 'string' ? lift.municipality : '');
+            const _cityDisp = (address.city && typeof address.city === 'string' && address.city !== address.street) ? address.city : _munCity;
+            const addressStr = address.street
+                ? (_cityDisp ? `${address.street}, ${_cityDisp}` : address.street)
                 : lift.address || 'Не вказано';
             const postalCode = address.zipCode || lift.postalCode || '';
             
@@ -4822,10 +4830,27 @@
 
             const row = document.createElement('tr');
             if (hasSiblings) row.classList.add('same-address-lift');
+
+            const liftTypeLabels = {
+                passenger: 'Пасажирський', cargo: 'Вантажний', freight: 'Вантажний',
+                service: 'Службовий', panoramic: 'Панорамний', hospital: 'Лікарняний',
+                escalator: 'Ескалатор', platform: 'Платформа', other: 'Інший'
+            };
+            const liftTypeLabel = liftTypeLabels[lift.type] || lift.type || 'Не вказано';
+            const brandLabels = {
+                otis: 'Otis', kone: 'KONE', schindler: 'Schindler',
+                thyssen: 'ThyssenKrupp', mitsubishi: 'Mitsubishi Electric',
+                fujitec: 'Fujitec', other: ''
+            };
+            const brandDisplay = brandLabels.hasOwnProperty(lift.manufacturer)
+                ? brandLabels[lift.manufacturer]
+                : (lift.manufacturer || '');
+            const modelCell = [brandDisplay, lift.model].filter(Boolean).join(' ') || '-';
+
             row.innerHTML = `
                 <td><strong>${lift.municipalNumber || 'Невизначено'}</strong></td>
-                <td>${lift.manufacturer || ''} ${lift.model || 'Не вказано'}</td>
-                <td>${lift.type || 'Не вказано'}</td>
+                <td><span class="lift-model-cell" title="${modelCell}">${modelCell}</span></td>
+                <td>${liftTypeLabel}</td>
                 <td>
                     <strong>${addressStr}</strong>
                     ${postalCode ? `<br><small class="text-muted">${postalCode}</small>` : ''}
@@ -5024,11 +5049,11 @@
                 // Основна інформація
                 $('#detail-municipal-number').text(lift.municipalNumber || 'Не вказано');
                 $('#detail-id').text(lift._id || lift.id || 'Не вказано');
-                $('#detail-model').text(
-                    lift.manufacturer && lift.model 
-                        ? `${lift.manufacturer} ${lift.model}` 
-                        : lift.model || 'Не вказано'
-                );
+                $('#detail-model').text((() => {
+                    const bLabels = { otis:'Otis', kone:'KONE', schindler:'Schindler', thyssen:'ThyssenKrupp', mitsubishi:'Mitsubishi Electric', fujitec:'Fujitec', other:'' };
+                    const b = bLabels.hasOwnProperty(lift.manufacturer) ? bLabels[lift.manufacturer] : (lift.manufacturer || '');
+                    return [b, lift.model].filter(Boolean).join(' ') || 'Не вказано';
+                })());
                 $('#detail-type').text(lift.type || 'Не вказано');
                 $('#detail-status').text(getStatusText(lift.status) || 'Не вказано');
                 
@@ -5058,8 +5083,10 @@
                 
                 // Розташування з нової структури
                 const address = lift.address || {};
-                const addressStr = address.street 
-                    ? `${address.street}, ${address.city || ''}` 
+                const _munDet2 = lift.municipality && typeof lift.municipality === 'object' ? lift.municipality.name : (typeof lift.municipality === 'string' ? lift.municipality : '');
+                const _detCity = (address.city && typeof address.city === 'string' && address.city !== address.street) ? address.city : _munDet2;
+                const addressStr = address.street
+                    ? (_detCity ? `${address.street}, ${_detCity}` : address.street)
                     : lift.address || 'Не вказано';
                 const postalCode = address.zipCode || lift.postalCode || 'Не вказано';
                 
@@ -5786,8 +5813,19 @@
                 lifts[liftIndex].status = 'maintenance';
                 localStorage.setItem('lifts', JSON.stringify(lifts));
                 
-                // Перезавантажити таблицю
-                displayLiftsInTable(lifts);
+                // Оновити allLiftsData і зберегти поточний пошук/фільтри
+                if (window.allLiftsData) {
+                    const globalIdx = window.allLiftsData.findIndex(l => (l._id || l.id)?.toString() === liftId?.toString());
+                    if (globalIdx !== -1) {
+                        window.allLiftsData[globalIdx].nextMaintenance = maintenanceDate;
+                        window.allLiftsData[globalIdx].status = 'maintenance';
+                    }
+                }
+                if (typeof applyAllFilters === 'function') {
+                    applyAllFilters();
+                } else {
+                    displayLiftsInTable(lifts);
+                }
             }
         }
     }
@@ -5844,8 +5882,19 @@
             console.warn('⚠️ Помилка видалення з API, але локальні дані оновлено');
         }
         
-        // Оновити таблицю
-        displayLiftsInTable(lifts);
+        // Оновити window.allLiftsData щоб видалений ліфт не з'являвся в пошуку
+        if (window.allLiftsData) {
+            window.allLiftsData = window.allLiftsData.filter(
+                l => (l._id || l.id)?.toString() !== liftId?.toString()
+            );
+        }
+        
+        // Оновити таблицю — зберегти поточний пошук/фільтри
+        if (typeof applyAllFilters === 'function') {
+            applyAllFilters();
+        } else {
+            displayLiftsInTable(lifts);
+        }
         
         alert('Ліфт успішно видалено');
     }

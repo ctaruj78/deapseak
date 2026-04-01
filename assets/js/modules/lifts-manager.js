@@ -157,13 +157,35 @@ class LiftsManager {
             return;
         }
 
+        // Групування за адресою для чергування кольорів між адресами
+        const addressGroupMap = new Map();
         lifts.forEach(lift => {
-            const card = this.createLiftCard(lift);
+            const key = this._normalizeAddressKey(lift);
+            if (!addressGroupMap.has(key)) {
+                addressGroupMap.set(key, addressGroupMap.size);
+            }
+        });
+
+        lifts.forEach(lift => {
+            const key = this._normalizeAddressKey(lift);
+            const groupIndex = addressGroupMap.get(key) ?? 0;
+            const colorClass = groupIndex % 2 === 0 ? 'lift-card-group-even' : 'lift-card-group-odd';
+            const card = this.createLiftCard(lift, colorClass);
             grid.append(card);
         });
     }
 
-    createLiftCard(lift) {
+    _normalizeAddressKey(lift) {
+        const a = lift.address;
+        if (a && typeof a === 'object') {
+            const parts = [a.street, a.city].filter(Boolean);
+            return parts.join(', ').trim().toLowerCase();
+        }
+        const locStr = (lift.location && typeof lift.location === 'string') ? lift.location : '';
+        return String(a || locStr).trim().toLowerCase();
+    }
+
+    createLiftCard(lift, colorClass = 'lift-card-group-even') {
         const statusClass = this.getStatusBadgeClass(lift.status);
         const statusText = this.getStatusText(lift.status);
         const typeText = this.getTypeText(lift.type);
@@ -172,7 +194,7 @@ class LiftsManager {
         const location = this.formatLocation(lift);
         
         return $(`
-            <div class="col-lg-4 col-md-6">
+            <div class="col-lg-4 col-md-6 ${colorClass}">
                 <div class="card lift-card">
                     <div class="card-header">
                         <h3 class="card-title">${lift.model || lift.name || 'Ліфт'}</h3>

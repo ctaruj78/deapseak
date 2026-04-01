@@ -121,6 +121,43 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
+/* ===== Address Group Alternating Colors ===== */
+/* Table rows grouped by address */
+tr.address-group-even > td {
+    background-color: #ffffff;
+}
+
+tr.address-group-odd > td {
+    background-color: #e0f4ff;
+}
+
+tr.address-group-even:hover > td {
+    background-color: #f0f8ff !important;
+}
+
+tr.address-group-odd:hover > td {
+    background-color: #c6e9fa !important;
+}
+
+/* Grid cards grouped by address */
+.lift-card-group-even .card {
+    background-color: #ffffff;
+    border-left: 4px solid #dee2e6;
+}
+
+.lift-card-group-odd .card {
+    background-color: #e0f4ff;
+    border-left: 4px solid #90cef4;
+}
+
+.lift-card-group-odd .card .card-header {
+    background-color: #c6e9fa;
+}
+
+.lift-card-group-odd .card:hover {
+    box-shadow: 0 4px 12px rgba(100, 180, 240, 0.35);
+}
+
 /* ===== Map Styles ===== */
 #liftMap {
     height: 400px;
@@ -236,7 +273,31 @@
     padding: 0.25rem 0.5rem;
 }
 
-/* ===== Print Styles ===== */
+/* ===== Lifts Table Column Layout ===== */
+#liftsTable tbody td,
+#lifts-table-body td {
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+/* Address/Location column (4th): allow wrapping, has guaranteed minimum width */
+#liftsTable td:nth-child(4),
+#lifts-table-body td:nth-child(4) {
+    white-space: normal;
+    min-width: 200px;
+    max-width: 300px;
+}
+
+/* Model cell: caps width and shows ellipsis so address column isn't squeezed */
+.lift-model-cell {
+    display: block;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ===== Print Styles =====
 @media print {
     .sidebar,
     .navbar,
