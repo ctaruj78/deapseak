@@ -1,71 +1,79 @@
-const brevo = require('@getbrevo/brevo');
+const nodemailer = require('nodemailer');
 
 class EmailService {
     constructor() {
-        // 📧 Brevo API v3 Configuration (FestLift Professional Email)
-        // 300 emails/day FREE, 99%+ deliverability, tracking included
-        if (!process.env.BREVO_API_KEY) {
-            console.warn('⚠️  BREVO_API_KEY não configurado - emails não serão enviados');
-            this.apiInstance = null;
-            this.from = { email: 'noreply@deapseak.com', name: 'DeapSeaK System' };
-            return;
+        // 📧 SMTP Configuration (Brevo SMTP relay — стабільніший ніж API key)
+        // Credentials: smtp-relay.brevo.com / SMTP_USER / SMTP_PASS
+        this.smtpConfigured = !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
+
+        if (!this.smtpConfigured) {
+            console.warn('⚠️  SMTP não configurado — emails não serão enviados (definir SMTP_HOST, SMTP_USER, SMTP_PASS no .env)');
         }
 
-        this.apiInstance = new brevo.TransactionalEmailsApi();
-        this.apiInstance.setApiKey(
-            brevo.TransactionalEmailsApiApiKeys.apiKey,
-            process.env.BREVO_API_KEY
-        );
-        
         // Professional sender identity
-        const fromMatch = (process.env.EMAIL_FROM || 'DeapSeaK System <noreply@deapseak.com>').match(/^(.+?)\s*<(.+?)>$/);
-        if (fromMatch) {
-            this.from = { name: fromMatch[1].trim(), email: fromMatch[2].trim() };
-        } else {
-            this.from = { email: process.env.EMAIL_FROM || 'noreply@deapseak.com', name: 'DeapSeaK System' };
+        const fromRaw = process.env.SMTP_FROM || process.env.EMAIL_FROM || '"DeapSeaK System" <noreply@deapseak.com>';
+        this.from = fromRaw;
+
+        if (this.smtpConfigured) {
+            this.transporter = nodemailer.createTransport({
+                host: process.env.SMTP_HOST,
+                port: parseInt(process.env.SMTP_PORT) || 587,
+                secure: process.env.SMTP_SECURE === 'true',
+                auth: {
+                    user: process.env.SMTP_USER,
+                    pass: process.env.SMTP_PASS
+                },
+                tls: { rejectUnauthorized: false }
+            });
+            console.log(`✅ Email Service initialized — SMTP: ${process.env.SMTP_HOST}:${process.env.SMTP_PORT || 587}`);
         }
-        
-        console.log('✅ Email Service initialized with Brevo API v3');
     }
 
-    // Helper method to send email via Brevo API
+    // Helper method to send email via SMTP
     async _sendEmail(to, subject, htmlContent, attachments = []) {
-        if (!this.apiInstance) {
-            console.warn('⚠️  Email não enviado - BREVO_API_KEY não configurado');
+        if (!this.smtpConfigured) {
+            console.warn(`⚠️  Email não enviado para ${to} — SMTP não configurado`);
             return;
         }
 
-        const sendSmtpEmail = new brevo.SendSmtpEmail();
-        sendSmtpEmail.sender = this.from;
-        
-        // Обробка різних форматів to
+        // Normalize 'to' to string or array of strings
+        let toField;
         if (typeof to === 'string') {
-            sendSmtpEmail.to = [{ email: to }];
+            toField = to;
         } else if (Array.isArray(to)) {
-            sendSmtpEmail.to = to;
+            toField = to.map(t => (typeof t === 'string' ? t : (t.name ? `${t.name} <${t.email}>` : t.email))).join(', ');
+        } else if (to && to.email) {
+            toField = to.name ? `${to.name} <${to.email}>` : to.email;
         } else {
-            sendSmtpEmail.to = [to];
+            console.warn('⚠️  Email não enviado — destinatário inválido:', to);
+            return;
         }
-        
-        sendSmtpEmail.subject = subject;
-        sendSmtpEmail.htmlContent = htmlContent;
 
-        // Додаємо attachments якщо є
+        const mailOptions = {
+            from: this.from,
+            to: toField,
+            subject,
+            html: htmlContent
+        };
+
+        // Inline attachments (logos etc.)
         if (attachments && attachments.length > 0) {
-            sendSmtpEmail.attachment = attachments;
+            mailOptions.attachments = attachments.map(a => ({
+                filename: a.name,
+                content: Buffer.from(a.content, 'base64'),
+                cid: a.contentId || undefined,
+                encoding: 'base64'
+            }));
         }
 
         try {
-            await this.apiInstance.sendTransacEmail(sendSmtpEmail);
-        } catch (brevoError) {
-            const msg = brevoError.response?.body?.message || brevoError.response?.text || brevoError.message;
-            const code = brevoError.response?.body?.code || String(brevoError.status || '');
-            console.error(`❌ Brevo API [${code}]: ${msg}`);
-            if (String(brevoError.status) === '401' || code === 'unauthorized') {
-                console.error('   ➡️ API key inválida/expirada — aceda a app.brevo.com → Settings → SMTP & API → API Keys');
-                console.error('   ➡️ Regenere a chave BREVO_API_KEY e atualize o ficheiro .env');
-            }
-            throw brevoError;
+            const info = await this.transporter.sendMail(mailOptions);
+            console.log(`✅ Email enviado: ${info.messageId} → ${toField}`);
+            return info;
+        } catch (error) {
+            const msg = error.responseCode ? `[${error.responseCode}] ${error.response}` : error.message;
+            console.error(`❌ SMTP error: ${msg}`);
+            throw error;
         }
     }
 
@@ -76,11 +84,6 @@ class EmailService {
 
     // Відправити email про нову заявку
     async sendNewRequestNotification(request, client) {
-        if (!this.apiInstance) {
-            console.warn('⚠️  Email não enviado - BREVO_API_KEY não configurado');
-            return;
-        }
-
         try {
             await this._sendEmail(
                 [{ email: client.email, name: `${client.firstName} ${client.lastName}` }],

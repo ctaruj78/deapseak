@@ -3458,7 +3458,7 @@ app.get('/api/analytics/dashboard', authenticateToken, async (req, res) => {
 // GET /api/ai/health - Перевірка AI системи
 app.get('/api/ai/health', authenticateToken, async (req, res) => {
     try {
-        const hasApiKey = !!process.env.GOOGLE_AI_API_KEY;
+        const hasApiKey = !!process.env.GEMINI_API_KEY;
         const hasModel = !!process.env.GOOGLE_AI_MODEL;
         
         res.json({
@@ -6990,57 +6990,19 @@ app.post('/api/send-email', authenticateToken, async (req, res) => {
         console.log('📋 Subject:', subject);
         console.log('👤 Requested by:', req.user.email);
 
-        // Перевірка чи налаштовано Brevo API
-        if (!process.env.BREVO_API_KEY) {
-            console.warn('⚠️ BREVO_API_KEY не налаштовано');
-            return res.status(503).json({
-                success: false,
-                error: 'Email service не налаштовано. Зверніться до адміністратора.'
-            });
-        }
-
-        // Використовуємо Brevo API замість SMTP (надійніше)
+        // Відправляємо через emailService (SMTP)
         try {
             await emailService.sendEmail(to, subject, html);
-            
-            console.log('✅ Email successfully sent via Brevo API to:', to);
-
+            console.log('✅ Email successfully sent via SMTP to:', to);
             return res.json({
                 success: true,
                 message: 'Email успішно надіслано'
             });
-        } catch (apiError) {
-            console.error('❌ Brevo API error:', apiError);
-            
-            // Якщо Brevo API не спрацював, спробуємо з nodemailer SMTP як fallback
-            console.log('🔄 Спроба відправки через SMTP fallback...');
-            
-            const nodemailer = require('nodemailer');
-            const transporter = nodemailer.createTransport({
-                host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
-                port: parseInt(process.env.SMTP_PORT) || 587,
-                secure: false, // TLS
-                auth: {
-                    user: process.env.SMTP_USER,
-                    pass: process.env.SMTP_PASS
-                }
-            });
-
-            const mailOptions = {
-                from: process.env.EMAIL_FROM || '"LiftMaster Pro" <info@festlift.pt>',
-                to,
-                subject,
-                html
-            };
-
-            const result = await transporter.sendMail(mailOptions);
-            
-            console.log('✅ Email sent via SMTP fallback:', result.messageId);
-
-            return res.json({
-                success: true,
-                message: 'Email успішно надіслано (SMTP)',
-                messageId: result.messageId
+        } catch (smtpError) {
+            console.error('❌ SMTP error:', smtpError);
+            return res.status(500).json({
+                success: false,
+                error: 'Помилка SMTP: ' + smtpError.message
             });
         }
 
@@ -7313,20 +7275,13 @@ app.post('/api/email/send-orcamento', authenticateToken, async (req, res) => {
             });
         }
 
-        // ✅ Usar Brevo API замість SMTP
-        if (!process.env.BREVO_API_KEY) {
+        // ✅ Відправка через SMTP (nodemailer)
+        if (!process.env.SMTP_USER) {
             return res.status(500).json({
                 success: false,
-                error: 'BREVO_API_KEY não configurado'
+                error: 'SMTP não configurado — definir SMTP_HOST, SMTP_USER, SMTP_PASS no .env'
             });
         }
-
-        const brevo = require('@getbrevo/brevo');
-        const apiInstance = new brevo.TransactionalEmailsApi();
-        apiInstance.setApiKey(
-            brevo.TransactionalEmailsApiApiKeys.apiKey,
-            process.env.BREVO_API_KEY
-        );
 
         // Gerar HTML do orçamento
         let servicosHTML = '<table style="width: 100%; border-collapse: collapse;"><tr><th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Descrição</th><th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Quantidade</th><th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Preço Unit.</th><th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Total</th></tr>';
@@ -7468,17 +7423,8 @@ app.post('/api/email/send-orcamento', authenticateToken, async (req, res) => {
             `
         };
 
-        // Відправити через Brevo API
-        const sendSmtpEmail = new brevo.SendSmtpEmail();
-        sendSmtpEmail.sender = { 
-            name: "FestLift", 
-            email: process.env.EMAIL_FROM || "info@festlift.pt"
-        };
-        sendSmtpEmail.to = [{ email: clientEmail }];
-        sendSmtpEmail.subject = mailOptions.subject;
-        sendSmtpEmail.htmlContent = mailOptions.html;
-
-        await apiInstance.sendTransacEmail(sendSmtpEmail);
+        // Відправити через emailService (SMTP)
+        await emailService.sendEmail(clientEmail, mailOptions.subject, mailOptions.html);
         
         // Atualizar orçamento com tracking
         await db.collection('orcamentos').updateOne(
