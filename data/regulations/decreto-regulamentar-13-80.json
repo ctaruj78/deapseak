@@ -2,12 +2,12 @@
   "id": "DEC_REG_13_1980",
   "type": "decreto_regulamentar",
   "number": "13/80",
-  "date": "1980-05-16",
+  "date": "180 dias após publicação",
   "promulgation_date": "1980-04-30",
   "effective_date": "180 dias após publicação",
   "title_pt": "Decreto Regulamentar n.º 13/80",
   "title_ua": "Регуляторний декрет № 13/80",
-  "status": "vigente",
+  "status": "active",
   "summary_pt": "Alterações ao Regulamento de Segurança de Elevadores Eléctricos (Decreto 513/70), introduzindo novas disposições sobre vedação da caixa, encravamento de portas, iluminação e aplicação a elevadores existentes.",
   "summary_ua": "Зміни до Регламенту безпеки електричних ліфтів (Decreto 513/70), що вводять нові положення про огородження шахти, блокування дверей, освітлення та застосування до існуючих ліфтів.",
   "modifications_to": "Decreto n.º 513/70 (1970-10-30)",
@@ -27,9 +27,25 @@
     "Aplicação gradual baseada na data de instalação"
   ],
   "articles_modified": [
-    "2.º", "3.º", "24.º", "32.º", "39.º", "40.º", "42.º", "63.º", 
-    "86.º", "87.º", "88.º", "89.º", "90.º", "93.º", "94.º", "95.º", 
-    "102.º", "103.º", "111.º"
+    "2.º",
+    "3.º",
+    "24.º",
+    "32.º",
+    "39.º",
+    "40.º",
+    "42.º",
+    "63.º",
+    "86.º",
+    "87.º",
+    "88.º",
+    "89.º",
+    "90.º",
+    "93.º",
+    "94.º",
+    "95.º",
+    "102.º",
+    "103.º",
+    "111.º"
   ],
   "articles_added": [
     "113.º"
@@ -42,7 +58,12 @@
       "change_summary_pt": "Esclarece aplicabilidade, exclusões (elevadores hidráulicos, nora, cremalheira, teatrais, obras, minas, navios, monta-cargas ≤10kg) e autorização de variantes pela fiscalização.",
       "change_summary_ua": "Уточнює застосування, виключення (гідравлічні, безперервної дії, зубчасті, театральні, будівельні, шахтні, корабельні, вантажопідйомники ≤10кг) та дозволи на варіації від інспекції.",
       "safety_impact": "Definição clara de escopo previne aplicação incorreta do regulamento",
-      "technical_terms": ["elevadores hidráulicos", "elevadores tipo nora", "cremalheira", "monta-cargas"]
+      "technical_terms": [
+        "elevadores hidráulicos",
+        "elevadores tipo nora",
+        "cremalheira",
+        "monta-cargas"
+      ]
     },
     {
       "article": "3.º",
@@ -189,15 +210,25 @@
       "special_cases": {
         "monta_camas_750_1650kg": {
           "max_area": "3,64m²",
-          "conditions": ["Dispositivo anti-sobrecarga", "Sinalização visual e acústica"]
+          "conditions": [
+            "Dispositivo anti-sobrecarga",
+            "Sinalização visual e acústica"
+          ]
         },
         "cargo_lifts": {
           "condition": "Área > tabela permitida",
-          "requirements": ["Anti-sobrecarga", "Responsável por carregamento", "Sinalização visual+acústica"]
+          "requirements": [
+            "Anti-sobrecarga",
+            "Responsável por carregamento",
+            "Sinalização visual+acústica"
+          ]
         },
         "patient_transport": {
           "max_area": "1,30m²",
-          "requirements": ["Anti-sobrecarga", "Sinalização"]
+          "requirements": [
+            "Anti-sobrecarga",
+            "Sinalização"
+          ]
         }
       },
       "violations": [
@@ -695,5 +726,160 @@
       "Encravamento obrigatório elevadores antigos?",
       "Diferença zona desencravamento automático vs manual?"
     ]
-  }
+  },
+  "title": "Decreto Regulamentar n.º 13/80",
+  "articles": [
+    {
+      "number": "2.º",
+      "title": "Campo de aplicação",
+      "text": "Esclarece aplicabilidade, exclusões (elevadores hidráulicos, nora, cremalheira, teatrais, obras, minas, navios, monta-cargas ≤10kg) e autorização de variantes pela fiscalização.",
+      "original_text": "",
+      "change_type": "",
+      "classifications": []
+    },
+    {
+      "number": "3.º",
+      "title": "Definições",
+      "text": "Adiciona/atualiza 30 definições técnicas essenciais: cabina, caixa, carga nominal, encravamento, pára-quedas, zona de desencravamento, etc.",
+      "original_text": "",
+      "change_type": "",
+      "classifications": []
+    },
+    {
+      "number": "24.º",
+      "title": "Dimensões mínimas da casa das máquinas",
+      "text": "Define altura livre mínima 1,80m circulação, 0,75m frente aparelhos, 0,30m para manobra manual. Monta-cargas sem entrada: 0,75m acesso exterior, 0,60m frente porta.",
+      "original_text": "",
+      "change_type": "",
+      "classifications": []
+    },
+    {
+      "number": "32.º",
+      "title": "Disposições gerais (Portas de patamar)",
+      "text": "Portas cheias não abrem para interior. Porta fechada não permite introdução de dedo de prova Ø10mm. Face interior conforme Art.13º. Minimizar risco entalamento vestuário.",
+      "original_text": "",
+      "change_type": "",
+      "classifications": []
+    },
+    {
+      "number": "39.º",
+      "title": "Encravamento das portas de patamar",
+      "text": "Dispositivos silenciosos, protegidos de manipulação. Todas portas encravadas exceto patamar onde cabina está. Cabina só arranca com todas encravadas. Desencravamento do destino na zona (2x30cm auto/2x17cm manual). Ferrolhos anti-gravidade. Chave emergência na casa máquinas visível.",
+      "original_text": "",
+      "change_type": "",
+      "classifications": []
+    },
+    {
+      "number": "40.º",
+      "title": "Dispositivo de 'contrôle' do encravamento e do fecho das portas de patamar",
+      "text": "Dispositivos elétricos controlam: 1) Encravamento (cabina só move se todas encravadas), 2) Fecho (cabina não move/imobiliza se porta aberta). Isolamento condutores mantido. Contactos separam mesmo se colados. Exceção: monta-cargas soleira ≥0,60m. Uma manobra anormal não suficiente para funcionamento com portas abertas.",
+      "original_text": "",
+      "change_type": "",
+      "classifications": []
+    },
+    {
+      "number": "42.º",
+      "title": "Dimensões e lotação da cabina dos ascensores",
+      "text": "Altura interior ≥2m. Lotação vs área vs carga: tabela até 20 pessoas (75kg/pessoa, área variável 0,28-2,40m²). >20: n×75kg, área=2,40+(n-20)×0,12m². Monta-camas 750-1650kg: max 3,64m² se tem anti-sobrecarga+sinal. Ascensores carga: área >tabela se anti-sobrecarga+responsável. Doentes: até 1,30m².",
+      "original_text": "",
+      "change_type": "",
+      "classifications": []
+    },
+    {
+      "number": "63.º",
+      "title": "Repartição de carga pelos cabos ou cadeias de suspensão",
+      "text": "Dispositivos igualização tensão entre cabos/cadeias. Se 2 cabos/cadeias: dispositivo elétrico imobiliza elevador em caso alongamento desigual ou afrouxamento. Exceção: monta-cargas soleira ≥0,60m e cabina+carga ≤100kg.",
+      "original_text": "",
+      "change_type": "",
+      "classifications": []
+    },
+    {
+      "number": "86.º - 90.º",
+      "title": "Instalação elétrica (artigos múltiplos)",
+      "text": "Art.86: Baixa tensão, comando ≤250V, motores+contactores adequados, defeitos terra não provocam marcha/inoperância segurança, cabo comando flexível especial. Art.87: Proteção motores sobrecarga+fase, curto-circuito. Art.88: Quadro casa máquinas com corte omnipolar. Art.89: Circuito iluminação+tomadas cabina. Art.90: Iluminação casa máquinas/rodas desvio de circuitos técnicos/comuns, tomadas do quadro Art.88.",
+      "original_text": "",
+      "change_type": "",
+      "classifications": []
+    },
+    {
+      "number": "93.º",
+      "title": "Dispositivo de paragem na cabina dos ascensores",
+      "text": "Ascensores cabina sem portas: botão/interruptor VERMELHO acima dos outros, designação 'Stop'/'Parar'/'Paragem' visível, permite paragem emergência. Restabelecimento marcha só por intervenção pessoa dentro cabina. Recomendação: indicações no espelho botoneira, não no botão.",
+      "original_text": "",
+      "change_type": "",
+      "classifications": []
+    },
+    {
+      "number": "94.º",
+      "title": "Dispositivos de alarme dos ascensores",
+      "text": "Comando na cabina, 'Alarme' ou sino figurativo visível. Sinal sonoro audível local encarregado/átrio entrada/habitação porteiro. Se elétrico: acumulador permanente recarregável, capacidade várias horas sem rede. Botão alarme pode estar ao nível do Stop Art.93.",
+      "original_text": "",
+      "change_type": "",
+      "classifications": []
+    },
+    {
+      "number": "95.º",
+      "title": "Disposições gerais (Avisos e instruções)",
+      "text": "Avisos indeléveis, material durável, bem visíveis, caracteres legíveis, cor contrastante. Recomendação: maiúsculas/números 10mm, minúsculas 7mm.",
+      "original_text": "",
+      "change_type": "",
+      "classifications": []
+    },
+    {
+      "number": "102.º",
+      "title": "Inscrição no limitador de velocidade",
+      "text": "Placa no limitador com: diâmetro cabo, tipo cabo, material cabo, velocidade actuação. Tipo pode ser indicado via constituição+carga rotura.",
+      "original_text": "",
+      "change_type": "",
+      "classifications": []
+    },
+    {
+      "number": "103.º",
+      "title": "Identificação dos circuitos",
+      "text": "Circuitos saída quadro casa máquinas (Art.88 n.º1) devidamente identificados.",
+      "original_text": "",
+      "change_type": "",
+      "classifications": []
+    },
+    {
+      "number": "111.º",
+      "title": "Disposições aplicáveis aos elevadores existentes",
+      "text": "Elevadores sob Decreto 26591/1936 devem aplicar: a) Encravamento portas+contrôle, b) Avisos+instruções, c) Conservação. Caixa aberta: vedar altura total via paredes Art.9/13, rede metálica Ø≥3mm malha ≤75x75mm, ou material similar anterior. Fiscalização pode dispensar vedação se segurança mantida.",
+      "original_text": "",
+      "change_type": "",
+      "classifications": []
+    },
+    {
+      "number": "113.º",
+      "title": "Estabelecimento de elevadores em prédios antigos (NOVO)",
+      "text": "Em prédios antigos (com ou sem elevadores), fiscalização pode dispensar cumprimento de disposições que não coloquem em causa segurança pessoas ou instalação.",
+      "original_text": "",
+      "change_type": "",
+      "classifications": []
+    },
+    {
+      "number": "39.º n.º2",
+      "title": "Zona desencravamento",
+      "text": "Medir: ≤2x30cm (auto) ou ≤2x17cm (manual)",
+      "classification": ""
+    },
+    {
+      "number": "32.º n.º1",
+      "title": "Portas não abrem para caixa",
+      "text": "Verificar dobradiças - porta abre para fora ou lateralmente",
+      "classification": ""
+    },
+    {
+      "number": "87.º",
+      "title": "Proteção motor",
+      "text": "Verificar proteção sobrecarga + falta fase + curto-circuito",
+      "classification": ""
+    },
+    {
+      "number": "111.º n.º2",
+      "title": "Vedação caixa (elevadores antigos)",
+      "text": "Caixa vedada paredes ou rede Ø≥3mm malha ≤75x75mm",
+      "classification": ""
+    }
+  ]
 }

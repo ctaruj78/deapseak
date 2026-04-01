@@ -26,14 +26,26 @@
           "number": 1,
           "title": "Objecto e âmbito",
           "text": "1 - O presente diploma estabelece as disposições aplicáveis à manutenção e inspecção de ascensores, monta-cargas, escadas mecânicas e tapetes rolantes, de agora em adiante designados abreviadamente por instalações, após a sua entrada em serviço, bem como as condições de acesso às actividades de manutenção e de inspecção.\n2 - Excluem-se do âmbito de aplicação do presente diploma as instalações identificadas no n.º 2 do artigo 2.º do Decreto-Lei n.º 295/98, de 22 de Setembro, bem como os monta-cargas de carga nominal inferior a 100 kg.",
-          "keywords": ["âmbito", "manutenção", "inspecção", "entrada em serviço", "instalações"],
+          "keywords": [
+            "âmbito",
+            "manutenção",
+            "inspecção",
+            "entrada em serviço",
+            "instalações"
+          ],
           "relatedViolations": []
         },
         {
           "number": 2,
           "title": "Definições",
           "text": "Para efeitos do presente diploma, entende-se por:\na) Entrada em serviço ou entrada em funcionamento o momento em que a instalação é colocada à disposição dos utilizadores;\nb) Manutenção o conjunto de operações de verificação, conservação e reparação efectuadas com a finalidade de manter uma instalação em boas condições de segurança e funcionamento;\nc) Inspecção o conjunto de exames e ensaios efectuados a uma instalação, de carácter geral ou incidindo sobre aspectos específicos, para comprovar o cumprimento dos requisitos regulamentares;\nd) Empresa de manutenção de ascensores (EMA) a entidade que efectua e é responsável pela manutenção das instalações;\ne) Entidade inspectora (EI) a empresa habilitada a efectuar inspecções a instalações, bem como a realizar inquéritos, peritagens, relatórios e pareceres.",
-          "keywords": ["definições", "EMA", "EI", "manutenção", "inspecção"],
+          "keywords": [
+            "definições",
+            "EMA",
+            "EI",
+            "manutenção",
+            "inspecção"
+          ],
           "relatedViolations": []
         }
       ]
@@ -46,29 +58,59 @@
           "number": 3,
           "title": "Obrigação de manutenção",
           "text": "1 - As instalações abrangidas pelo presente diploma ficam, obrigatoriamente, sujeitas a manutenção regular, a qual é assegurada por uma EMA, que assumirá a responsabilidade, criminal e civil, pelos acidentes causados pela deficiente manutenção das instalações ou pelo incumprimento das normas aplicáveis.\n2 - O proprietário da instalação é responsável solidariamente, nos termos do número anterior, sem prejuízo da transferência da responsabilidade para uma entidade seguradora.\n5 - Caso seja detectada situação de grave risco para o funcionamento da instalação, a EMA deve proceder à sua imediata imobilização, dando disso conhecimento, por escrito, ao proprietário e à câmara municipal respectiva, no prazo de quarenta e oito horas.",
-          "keywords": ["obrigação", "manutenção regular", "EMA", "responsabilidade", "imobilização"],
-          "relatedViolations": ["C1", "C2"]
+          "keywords": [
+            "obrigação",
+            "manutenção regular",
+            "EMA",
+            "responsabilidade",
+            "imobilização"
+          ],
+          "relatedViolations": [
+            "C1",
+            "C2"
+          ]
         },
         {
           "number": 4,
           "title": "Contrato de manutenção",
           "text": "1 - O proprietário de uma instalação em serviço é obrigado a celebrar um contrato de manutenção com uma EMA.\n2 - O contrato de manutenção, no caso de instalações novas, deverá iniciar a sua vigência no momento da entrada em serviço da instalação.\n3 - Durante o primeiro ano de funcionamento da instalação, a entidade instaladora fica obrigada, directamente ou através de uma EMA, a assegurar a sua manutenção, salvo se o proprietário a desobrigar, através da celebração de um contrato de manutenção com uma EMA.",
-          "keywords": ["contrato", "obrigatoriedade", "proprietário", "instalador"],
-          "relatedViolations": ["C2"]
+          "keywords": [
+            "contrato",
+            "obrigatoriedade",
+            "proprietário",
+            "instalador"
+          ],
+          "relatedViolations": [
+            "C2"
+          ]
         },
         {
           "number": 5,
           "title": "Tipos de contrato de manutenção",
           "text": "1 - O contrato de manutenção pode corresponder a um dos seguintes tipos:\na) Contrato de manutenção simples, destinado a manter a instalação em boas condições de segurança e funcionamento, sem incluir substituição ou reparação de componentes;\nb) Contrato de manutenção completa, destinado a manter a instalação em boas condições de segurança e funcionamento, incluindo a substituição ou reparação de componentes, sempre que se justificar.\n3 - Na instalação, designadamente na cabina do ascensor, devem ser afixados, de forma bem visível e legível, a identificação da EMA, os respectivos contactos e o tipo de contrato de manutenção celebrado.",
-          "keywords": ["contrato simples", "contrato completo", "identificação", "afixação"],
-          "relatedViolations": ["C3"]
+          "keywords": [
+            "contrato simples",
+            "contrato completo",
+            "identificação",
+            "afixação"
+          ],
+          "relatedViolations": [
+            "C3"
+          ]
         },
         {
           "number": 6,
           "title": "Actividade de manutenção",
           "text": "1 - Só podem exercer a actividade de manutenção as entidades inscritas na Direcção-Geral da Energia (DGE), em registo próprio.\n2 - Podem ser registadas as entidades que satisfaçam os requisitos do Estatuto das Empresas de Manutenção de Ascensores, definidos no anexo I ao presente diploma.",
-          "keywords": ["registo", "DGE", "requisitos", "Estatuto EMA"],
-          "relatedViolations": ["C1"]
+          "keywords": [
+            "registo",
+            "DGE",
+            "requisitos",
+            "Estatuto EMA"
+          ],
+          "relatedViolations": [
+            "C1"
+          ]
         }
       ]
     },
@@ -80,43 +122,86 @@
           "number": 7,
           "title": "Competências das câmaras municipais",
           "text": "1 - As câmaras municipais são competentes para:\na) Efectuar inspecções periódicas e reinspecções às instalações;\nb) Efectuar inspecções extraordinárias, sempre que o considerem necessário, ou a pedido fundamentado dos interessados;\nc) Realizar inquéritos a acidentes decorrentes da utilização ou das operações de manutenção das instalações.\n3 - Para o exercício das competências a que se refere o n.º 1, as câmaras municipais podem recorrer às entidades inspectoras (EI).",
-          "keywords": ["câmaras municipais", "inspecções periódicas", "reinspecções", "acidentes", "EI"],
+          "keywords": [
+            "câmaras municipais",
+            "inspecções periódicas",
+            "reinspecções",
+            "acidentes",
+            "EI"
+          ],
           "relatedViolations": []
         },
         {
           "number": 8,
           "title": "Realização das inspecções",
           "text": "1 - As instalações devem ser sujeitas a inspecção com a seguinte periodicidade:\na) Ascensores:\ni) Dois anos, quando situados em edifícios comerciais ou de prestação de serviços, abertos ao público;\nii) Quatro anos, quando situados em edifícios mistos;\niii) Quatro anos, quando situados em edifícios habitacionais com mais de 32 fogos ou mais de oito pisos;\niv) Seis anos, quando situados em edifícios habitacionais não incluídos no número anterior;\nv) Seis anos, quando situados em estabelecimentos industriais;\nb) Escadas mecânicas e tapetes rolantes, dois anos;\nc) Monta-cargas, seis anos.\n3 - Sem prejuízo de menor prazo que resulte da aplicação do disposto no n.º 1, decorridas que sejam duas inspecções periódicas, as mesmas passarão a ter periodicidade bienal.",
-          "keywords": ["periodicidade", "inspecções", "2 anos", "4 anos", "6 anos", "bienal"],
-          "relatedViolations": ["C2"]
+          "keywords": [
+            "periodicidade",
+            "inspecções",
+            "2 anos",
+            "4 anos",
+            "6 anos",
+            "bienal"
+          ],
+          "relatedViolations": [
+            "C2"
+          ]
         },
         {
           "number": 9,
           "title": "Acidentes",
           "text": "1 - As EMA e os proprietários das instalações são obrigados a participar à câmara municipal respectiva todos os acidentes ocorridos nas instalações, no prazo máximo de três dias após a ocorrência, devendo essa comunicação ser imediata no caso de haver vítimas mortais.\n2 - Sempre que dos acidentes resultem mortes, ferimentos graves ou prejuízos materiais importantes deve a instalação ser imobilizada e selada, até ser feita uma inspecção.\n3 - Os inquéritos visando o apuramento das causas e das condições em que ocorreu um acidente devem ser instruídos com o relatório técnico.",
-          "keywords": ["acidentes", "participação obrigatória", "3 dias", "vítimas mortais", "imobilização", "selagem"],
-          "relatedViolations": ["C1"]
+          "keywords": [
+            "acidentes",
+            "participação obrigatória",
+            "3 dias",
+            "vítimas mortais",
+            "imobilização",
+            "selagem"
+          ],
+          "relatedViolations": [
+            "C1"
+          ]
         },
         {
           "number": 10,
           "title": "Entidades inspectoras",
           "text": "1 - As acções de inspecção, inquéritos, peritagens, relatórios e pareceres podem ser efectuadas por entidades inspectoras (EI), reconhecidas pela DGE.\n3 - O Estatuto das Entidades Inspectoras consta do anexo IV do presente diploma.",
-          "keywords": ["EI", "reconhecimento", "DGE", "Estatuto"],
+          "keywords": [
+            "EI",
+            "reconhecimento",
+            "DGE",
+            "Estatuto"
+          ],
           "relatedViolations": []
         },
         {
           "number": 11,
           "title": "Selagem das instalações",
           "text": "1 - Sempre que as instalações não ofereçam as necessárias condições de segurança, compete às câmaras municipais proceder à respectiva selagem.\n2 - A selagem será feita por meio de selos de chumbo e fios metálicos ou outro material adequado.\n3 - Após a selagem das instalações, estas não podem ser postas em serviço sem inspecção prévia que verifique as condições de segurança.",
-          "keywords": ["selagem", "condições de segurança", "selos de chumbo", "inspecção prévia"],
-          "relatedViolations": ["C1"]
+          "keywords": [
+            "selagem",
+            "condições de segurança",
+            "selos de chumbo",
+            "inspecção prévia"
+          ],
+          "relatedViolations": [
+            "C1"
+          ]
         },
         {
           "number": 12,
           "title": "Presença de um técnico de manutenção",
           "text": "1 - No acto da realização de inspecção, inquérito ou peritagem, é obrigatória a presença de um técnico da EMA responsável pela manutenção, o qual deverá providenciar os meios para a realização dos ensaios ou testes que seja necessário efectuar.",
-          "keywords": ["presença obrigatória", "técnico", "inspecção", "ensaios"],
-          "relatedViolations": ["C3"]
+          "keywords": [
+            "presença obrigatória",
+            "técnico",
+            "inspecção",
+            "ensaios"
+          ],
+          "relatedViolations": [
+            "C3"
+          ]
         }
       ]
     },
@@ -128,8 +213,17 @@
           "number": 13,
           "title": "Contra-ordenações",
           "text": "1 - Constitui contra-ordenação punível com coima:\na) De €250 a €1000, a falta da presença do técnico responsável;\nb) De €250 a €5000, o não requerimento da realização de inspecção nos prazos previstos;\nc) De €1000 a €5000, o funcionamento sem contrato de manutenção;\nd) De €2500 a €7500, a não apresentação de listagens;\ne) De €3750 a €30000, o exercício sem quadro mínimo de pessoal;\nf) De €7500 a €37500, a falta de apólice de seguro;\ng) De €7500 a €37500, o exercício de actividade sem inscrição na DGE.",
-          "keywords": ["contra-ordenações", "coimas", "multas", "penalidades"],
-          "relatedViolations": ["C1", "C2", "C3"]
+          "keywords": [
+            "contra-ordenações",
+            "coimas",
+            "multas",
+            "penalidades"
+          ],
+          "relatedViolations": [
+            "C1",
+            "C2",
+            "C3"
+          ]
         }
       ]
     },
@@ -141,8 +235,16 @@
           "number": 17,
           "title": "Ascensores com cabina sem porta ou sem controlo de carga",
           "text": "1 - Os ascensores com cabina sem porta devem, no prazo de cinco anos a contar da data da publicação do presente diploma, ser remodelados por forma a serem dotados de cabina com porta.\n2 - O disposto no número anterior não é aplicável aos ascensores instalados em edifícios exclusivamente habitacionais.\n5 - Os ascensores que não possuam controlo de carga devem ser dotados desse dispositivo no prazo máximo de três anos.",
-          "keywords": ["cabina sem porta", "5 anos", "controlo de carga", "3 anos", "remodelação"],
-          "relatedViolations": ["C2"]
+          "keywords": [
+            "cabina sem porta",
+            "5 anos",
+            "controlo de carga",
+            "3 anos",
+            "remodelação"
+          ],
+          "relatedViolations": [
+            "C2"
+          ]
         }
       ]
     }
@@ -273,5 +375,125 @@
     "sem_seguro": "€7500 a €37500",
     "exercicio_sem_registo_DGE": "€7500 a €37500",
     "pessoa_singular_maximo": "€3750"
-  }
+  },
+  "id": "decreto-lei-320-2002",
+  "title": "Decreto-Lei n.º 320/2002",
+  "subtitle": "Manutenção e Inspecção de Ascensores, Monta-cargas, Escadas Mecânicas e Tapetes Rolantes",
+  "type": "decree-law",
+  "date": "28 de Dezembro de 2002",
+  "status": "active",
+  "articles": [
+    {
+      "number": 1,
+      "title": "Objecto e âmbito",
+      "text": "1 - O presente diploma estabelece as disposições aplicáveis à manutenção e inspecção de ascensores, monta-cargas, escadas mecânicas e tapetes rolantes, de agora em adiante designados abreviadamente por instalações, após a sua entrada em serviço, bem como as condições de acesso às actividades de manutenção e de inspecção.\n2 - Excluem-se do âmbito de aplicação do presente diploma as instalações identificadas no n.º 2 do artigo 2.º do Decreto-Lei n.º 295/98, de 22 de Setembro, bem como os monta-cargas de carga nominal inferior a 100 kg.",
+      "chapter": "Disposições gerais",
+      "keyPoints": [],
+      "classifications": []
+    },
+    {
+      "number": 2,
+      "title": "Definições",
+      "text": "Para efeitos do presente diploma, entende-se por:\na) Entrada em serviço ou entrada em funcionamento o momento em que a instalação é colocada à disposição dos utilizadores;\nb) Manutenção o conjunto de operações de verificação, conservação e reparação efectuadas com a finalidade de manter uma instalação em boas condições de segurança e funcionamento;\nc) Inspecção o conjunto de exames e ensaios efectuados a uma instalação, de carácter geral ou incidindo sobre aspectos específicos, para comprovar o cumprimento dos requisitos regulamentares;\nd) Empresa de manutenção de ascensores (EMA) a entidade que efectua e é responsável pela manutenção das instalações;\ne) Entidade inspectora (EI) a empresa habilitada a efectuar inspecções a instalações, bem como a realizar inquéritos, peritagens, relatórios e pareceres.",
+      "chapter": "Disposições gerais",
+      "keyPoints": [],
+      "classifications": []
+    },
+    {
+      "number": 3,
+      "title": "Obrigação de manutenção",
+      "text": "1 - As instalações abrangidas pelo presente diploma ficam, obrigatoriamente, sujeitas a manutenção regular, a qual é assegurada por uma EMA, que assumirá a responsabilidade, criminal e civil, pelos acidentes causados pela deficiente manutenção das instalações ou pelo incumprimento das normas aplicáveis.\n2 - O proprietário da instalação é responsável solidariamente, nos termos do número anterior, sem prejuízo da transferência da responsabilidade para uma entidade seguradora.\n5 - Caso seja detectada situação de grave risco para o funcionamento da instalação, a EMA deve proceder à sua imediata imobilização, dando disso conhecimento, por escrito, ao proprietário e à câmara municipal respectiva, no prazo de quarenta e oito horas.",
+      "chapter": "Manutenção",
+      "keyPoints": [],
+      "classifications": []
+    },
+    {
+      "number": 4,
+      "title": "Contrato de manutenção",
+      "text": "1 - O proprietário de uma instalação em serviço é obrigado a celebrar um contrato de manutenção com uma EMA.\n2 - O contrato de manutenção, no caso de instalações novas, deverá iniciar a sua vigência no momento da entrada em serviço da instalação.\n3 - Durante o primeiro ano de funcionamento da instalação, a entidade instaladora fica obrigada, directamente ou através de uma EMA, a assegurar a sua manutenção, salvo se o proprietário a desobrigar, através da celebração de um contrato de manutenção com uma EMA.",
+      "chapter": "Manutenção",
+      "keyPoints": [],
+      "classifications": []
+    },
+    {
+      "number": 5,
+      "title": "Tipos de contrato de manutenção",
+      "text": "1 - O contrato de manutenção pode corresponder a um dos seguintes tipos:\na) Contrato de manutenção simples, destinado a manter a instalação em boas condições de segurança e funcionamento, sem incluir substituição ou reparação de componentes;\nb) Contrato de manutenção completa, destinado a manter a instalação em boas condições de segurança e funcionamento, incluindo a substituição ou reparação de componentes, sempre que se justificar.\n3 - Na instalação, designadamente na cabina do ascensor, devem ser afixados, de forma bem visível e legível, a identificação da EMA, os respectivos contactos e o tipo de contrato de manutenção celebrado.",
+      "chapter": "Manutenção",
+      "keyPoints": [],
+      "classifications": []
+    },
+    {
+      "number": 6,
+      "title": "Actividade de manutenção",
+      "text": "1 - Só podem exercer a actividade de manutenção as entidades inscritas na Direcção-Geral da Energia (DGE), em registo próprio.\n2 - Podem ser registadas as entidades que satisfaçam os requisitos do Estatuto das Empresas de Manutenção de Ascensores, definidos no anexo I ao presente diploma.",
+      "chapter": "Manutenção",
+      "keyPoints": [],
+      "classifications": []
+    },
+    {
+      "number": 7,
+      "title": "Competências das câmaras municipais",
+      "text": "1 - As câmaras municipais são competentes para:\na) Efectuar inspecções periódicas e reinspecções às instalações;\nb) Efectuar inspecções extraordinárias, sempre que o considerem necessário, ou a pedido fundamentado dos interessados;\nc) Realizar inquéritos a acidentes decorrentes da utilização ou das operações de manutenção das instalações.\n3 - Para o exercício das competências a que se refere o n.º 1, as câmaras municipais podem recorrer às entidades inspectoras (EI).",
+      "chapter": "Inspecção",
+      "keyPoints": [],
+      "classifications": []
+    },
+    {
+      "number": 8,
+      "title": "Realização das inspecções",
+      "text": "1 - As instalações devem ser sujeitas a inspecção com a seguinte periodicidade:\na) Ascensores:\ni) Dois anos, quando situados em edifícios comerciais ou de prestação de serviços, abertos ao público;\nii) Quatro anos, quando situados em edifícios mistos;\niii) Quatro anos, quando situados em edifícios habitacionais com mais de 32 fogos ou mais de oito pisos;\niv) Seis anos, quando situados em edifícios habitacionais não incluídos no número anterior;\nv) Seis anos, quando situados em estabelecimentos industriais;\nb) Escadas mecânicas e tapetes rolantes, dois anos;\nc) Monta-cargas, seis anos.\n3 - Sem prejuízo de menor prazo que resulte da aplicação do disposto no n.º 1, decorridas que sejam duas inspecções periódicas, as mesmas passarão a ter periodicidade bienal.",
+      "chapter": "Inspecção",
+      "keyPoints": [],
+      "classifications": []
+    },
+    {
+      "number": 9,
+      "title": "Acidentes",
+      "text": "1 - As EMA e os proprietários das instalações são obrigados a participar à câmara municipal respectiva todos os acidentes ocorridos nas instalações, no prazo máximo de três dias após a ocorrência, devendo essa comunicação ser imediata no caso de haver vítimas mortais.\n2 - Sempre que dos acidentes resultem mortes, ferimentos graves ou prejuízos materiais importantes deve a instalação ser imobilizada e selada, até ser feita uma inspecção.\n3 - Os inquéritos visando o apuramento das causas e das condições em que ocorreu um acidente devem ser instruídos com o relatório técnico.",
+      "chapter": "Inspecção",
+      "keyPoints": [],
+      "classifications": []
+    },
+    {
+      "number": 10,
+      "title": "Entidades inspectoras",
+      "text": "1 - As acções de inspecção, inquéritos, peritagens, relatórios e pareceres podem ser efectuadas por entidades inspectoras (EI), reconhecidas pela DGE.\n3 - O Estatuto das Entidades Inspectoras consta do anexo IV do presente diploma.",
+      "chapter": "Inspecção",
+      "keyPoints": [],
+      "classifications": []
+    },
+    {
+      "number": 11,
+      "title": "Selagem das instalações",
+      "text": "1 - Sempre que as instalações não ofereçam as necessárias condições de segurança, compete às câmaras municipais proceder à respectiva selagem.\n2 - A selagem será feita por meio de selos de chumbo e fios metálicos ou outro material adequado.\n3 - Após a selagem das instalações, estas não podem ser postas em serviço sem inspecção prévia que verifique as condições de segurança.",
+      "chapter": "Inspecção",
+      "keyPoints": [],
+      "classifications": []
+    },
+    {
+      "number": 12,
+      "title": "Presença de um técnico de manutenção",
+      "text": "1 - No acto da realização de inspecção, inquérito ou peritagem, é obrigatória a presença de um técnico da EMA responsável pela manutenção, o qual deverá providenciar os meios para a realização dos ensaios ou testes que seja necessário efectuar.",
+      "chapter": "Inspecção",
+      "keyPoints": [],
+      "classifications": []
+    },
+    {
+      "number": 13,
+      "title": "Contra-ordenações",
+      "text": "1 - Constitui contra-ordenação punível com coima:\na) De €250 a €1000, a falta da presença do técnico responsável;\nb) De €250 a €5000, o não requerimento da realização de inspecção nos prazos previstos;\nc) De €1000 a €5000, o funcionamento sem contrato de manutenção;\nd) De €2500 a €7500, a não apresentação de listagens;\ne) De €3750 a €30000, o exercício sem quadro mínimo de pessoal;\nf) De €7500 a €37500, a falta de apólice de seguro;\ng) De €7500 a €37500, o exercício de actividade sem inscrição na DGE.",
+      "chapter": "Sanções",
+      "keyPoints": [],
+      "classifications": []
+    },
+    {
+      "number": 17,
+      "title": "Ascensores com cabina sem porta ou sem controlo de carga",
+      "text": "1 - Os ascensores com cabina sem porta devem, no prazo de cinco anos a contar da data da publicação do presente diploma, ser remodelados por forma a serem dotados de cabina com porta.\n2 - O disposto no número anterior não é aplicável aos ascensores instalados em edifícios exclusivamente habitacionais.\n5 - Os ascensores que não possuam controlo de carga devem ser dotados desse dispositivo no prazo máximo de três anos.",
+      "chapter": "Disposições transitórias",
+      "keyPoints": [],
+      "classifications": []
+    }
+  ]
 }

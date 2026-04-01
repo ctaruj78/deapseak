@@ -3961,7 +3961,7 @@
             // Адреса з нового формату
             const address = lift.address || {};
             const addressStr = address.street 
-                ? `${address.street}, ${address.city || ''}` 
+                ? `${address.street}, ${address.municipality || address.city || ''}` 
                 : lift.address || 'Не вказано';
             const postalCode = address.zipCode || lift.postalCode || '';
             
@@ -4206,7 +4206,7 @@
                 // Розташування з нової структури
                 const address = lift.address || {};
                 const addressStr = address.street 
-                    ? `${address.street}, ${address.city || ''}` 
+                    ? `${address.street}, ${address.municipality || address.city || ''}` 
                     : lift.address || 'Не вказано';
                 const postalCode = address.zipCode || lift.postalCode || 'Не вказано';
                 
@@ -4324,7 +4324,7 @@
                         
                         setTimeout(() => {
                             const addressStr = lift.address?.street 
-                                ? `${lift.address.street}, ${lift.address.city}` 
+                                ? `${lift.address.street}, ${lift.address.municipality || lift.address.city}` 
                                 : lift.address || '';
                             initDetailsMap(latitude, longitude, addressStr);
                         }, 200);
@@ -4707,7 +4707,7 @@
                 // Новий формат: address = { street, city, zipCode, country }
                 const parts = [];
                 if (address.street) parts.push(address.street);
-                if (address.city) parts.push(address.city);
+                if (address.municipality || address.city) parts.push(address.municipality || address.city);
                 addressStr = parts.join(', ') || 'Адреса не вказана';
             } else if (typeof address === 'string' && address) {
                 // Старий формат: address = "Rua Хрещатик, 1"
@@ -5758,7 +5758,7 @@
                     // Адреса з об'єкта
                     let addressStr = '';
                     if (typeof lift.address === 'object' && lift.address) {
-                        addressStr = `${lift.address.street || ''} ${lift.address.city || ''}`.toLowerCase();
+                        addressStr = `${lift.address.street || ''} ${lift.address.municipality || lift.address.city || ''}`.toLowerCase();
                     } else if (typeof lift.address === 'string') {
                         addressStr = lift.address.toLowerCase();
                     }
@@ -5817,7 +5817,7 @@
                     
                     let addressStr = '';
                     if (typeof lift.address === 'object' && lift.address) {
-                        addressStr = `${lift.address.street || ''} ${lift.address.city || ''}`.toLowerCase();
+                        addressStr = `${lift.address.street || ''} ${lift.address.municipality || lift.address.city || ''}`.toLowerCase();
                     } else if (typeof lift.address === 'string') {
                         addressStr = lift.address.toLowerCase();
                     }
@@ -5932,8 +5932,8 @@
                         
                         // Правильне витягування міста
                         let cityStr = '';
-                        if (lift.address && lift.address.city) {
-                            cityStr = lift.address.city;
+                        if (lift.address && lift.address.municipality || lift.address.city) {
+                            cityStr = lift.address.municipality || lift.address.city;
                         } else if (lift.city) {
                             cityStr = lift.city;
                         }
@@ -6066,7 +6066,7 @@
                     // Новий формат - адреса як об'єкт
                     const parts = [];
                     if (lift.address.street) parts.push(lift.address.street);
-                    if (lift.address.city) parts.push(lift.address.city);
+                    if (lift.address.municipality || lift.address.city) parts.push(lift.address.municipality || lift.address.city);
                     if (lift.address.country && lift.address.country !== 'Ukraine') parts.push(lift.address.country);
                     
                     addressStr = parts.length > 0 ? parts.join(', ') : 'Не вказано';
@@ -6221,7 +6221,7 @@
                         // Новий формат - адреса як об'єкт
                         const parts = [];
                         if (lift.address.street) parts.push(lift.address.street);
-                        if (lift.address.city) parts.push(lift.address.city);
+                        if (lift.address.municipality || lift.address.city) parts.push(lift.address.municipality || lift.address.city);
                         if (lift.address.country && lift.address.country !== 'Ukraine') parts.push(lift.address.country);
                         
                         addressStr = parts.length > 0 ? parts.join(', ') : 'Não especificado';

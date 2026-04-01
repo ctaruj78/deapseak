@@ -474,5 +474,126 @@
     "language": "pt-PT",
     "jurisdiction": "European Union",
     "legal_force": "Revogada em 2016 pela Directiva 2014/33/UE, mas base histórica para legislação portuguesa vigente"
-  }
+  },
+  "articles": [
+    {
+      "number": 1,
+      "title": "Âmbito de aplicação",
+      "text": "A presente directiva aplica-se aos ascensores utilizados de forma permanente em edifícios e construções. Aplica-se igualmente aos componentes de segurança utilizados nesses ascensores, cuja lista consta do anexo IV.",
+      "chapter": "CAPÍTULO I - Âmbito de aplicação, colocação no mercado e livre circulação",
+      "keyPoints": []
+    },
+    {
+      "number": 2,
+      "title": "Obrigações dos Estados-Membros",
+      "text": "Os Estados-membros tomarão todas as medidas úteis para que os ascensores só possam ser colocados no mercado e entrar em serviço se não comprometerem a segurança e a saúde das pessoas quando convenientemente instalados, sujeitos a manutenção e utilizados de acordo com o fim a que se destinam.",
+      "chapter": "CAPÍTULO I - Âmbito de aplicação, colocação no mercado e livre circulação",
+      "keyPoints": []
+    },
+    {
+      "number": 3,
+      "title": "Requisitos essenciais",
+      "text": "Os ascensores abrangidos pela presente directiva devem satisfazer os requisitos essenciais de segurança e de saúde referidos no anexo I.",
+      "chapter": "CAPÍTULO I - Âmbito de aplicação, colocação no mercado e livre circulação",
+      "keyPoints": []
+    },
+    {
+      "number": 4,
+      "title": "Livre circulação",
+      "text": "Os Estados-membros não podem proibir, restringir ou entravar a colocação no mercado e a entrada em serviço de ascensores e/ou componentes de segurança que satisfaçam os requisitos da presente directiva.",
+      "chapter": "CAPÍTULO I - Âmbito de aplicação, colocação no mercado e livre circulação",
+      "keyPoints": []
+    },
+    {
+      "number": 5,
+      "title": "Presunção de conformidade",
+      "text": "Os Estados-membros considerarão conformes com a totalidade das disposições os ascensores e componentes de segurança que ostentem a marcação CE e sejam acompanhados da declaração CE de conformidade.",
+      "chapter": "CAPÍTULO I - Âmbito de aplicação, colocação no mercado e livre circulação",
+      "keyPoints": []
+    },
+    {
+      "number": 6,
+      "title": "Comité permanente",
+      "text": "A Comissão será assistida por um Comité permanente composto por representantes dos Estados-membros. O comité pode analisar qualquer questão relativa à aplicação da directiva.",
+      "chapter": "CAPÍTULO I - Âmbito de aplicação, colocação no mercado e livre circulação",
+      "keyPoints": []
+    },
+    {
+      "number": 7,
+      "title": "Cláusula de salvaguarda",
+      "text": "Se um Estado-membro verificar que um ascensor com marcação CE pode comprometer a segurança, tomará medidas para retirá-lo do mercado e informará imediatamente a Comissão.",
+      "chapter": "CAPÍTULO I - Âmbito de aplicação, colocação no mercado e livre circulação",
+      "keyPoints": []
+    },
+    {
+      "number": 8,
+      "title": "Procedimentos de avaliação",
+      "text": "Define os procedimentos que fabricantes e instaladores devem seguir antes da colocação no mercado.",
+      "chapter": "CAPÍTULO II - Processo de avaliação da conformidade",
+      "keyPoints": []
+    },
+    {
+      "number": 9,
+      "title": "Organismos notificados",
+      "text": "Os Estados-membros devem notificar a Comissão dos organismos designados para executar os procedimentos de avaliação. Os organismos devem satisfazer os critérios do Anexo VII.",
+      "chapter": "CAPÍTULO II - Processo de avaliação da conformidade",
+      "keyPoints": []
+    },
+    {
+      "number": 10,
+      "title": "Marcação CE de conformidade",
+      "text": "A marcação CE é constituída pela sigla CE. Deve ser aposta em cada cabina de ascensor de forma clara e visível, e em cada componente de segurança.",
+      "chapter": "CAPÍTULO III - Marcação CE",
+      "keyPoints": []
+    },
+    {
+      "number": 11,
+      "title": "Decisões fundamentadas",
+      "text": "Qualquer decisão que conduza a restringir colocação no mercado ou utilização deve ser fundamentada de forma precisa e notificada ao interessado com indicação das vias de recurso.",
+      "chapter": "CAPÍTULO IV - Disposições finais",
+      "keyPoints": []
+    },
+    {
+      "number": 12,
+      "title": "Disponibilização de dados",
+      "text": "A Comissão tomará medidas para tornar disponíveis dados que enumeram todas as decisões pertinentes relativas à aplicação da directiva.",
+      "chapter": "CAPÍTULO IV - Disposições finais",
+      "keyPoints": []
+    },
+    {
+      "number": 13,
+      "title": "Revogação",
+      "text": "São revogadas, com efeitos a partir de 1 de Julho de 1999, as Directivas 84/528/CEE e 84/529/CEE.",
+      "chapter": "CAPÍTULO IV - Disposições finais",
+      "keyPoints": []
+    },
+    {
+      "number": 14,
+      "title": "Relação com Directiva 89/106/CEE",
+      "text": "A presente directiva é uma directiva na acepção do nº 3 do artigo 2º da Directiva 89/106/CEE (produtos de construção), no que respeita aos aspectos ligados à instalação de ascensores.",
+      "chapter": "CAPÍTULO IV - Disposições finais",
+      "keyPoints": []
+    },
+    {
+      "number": 15,
+      "title": "Transposição",
+      "text": "Os Estados-membros adoptarão e publicarão antes de 1 de Janeiro de 1997 as disposições necessárias para dar cumprimento à presente directiva. Aplicação a partir de 1 de Julho de 1997.",
+      "chapter": "CAPÍTULO IV - Disposições finais",
+      "keyPoints": []
+    },
+    {
+      "number": 16,
+      "title": "Reanálise",
+      "text": "O mais tardar em 1 de Julho de 2002, a Comissão reanalisará o funcionamento dos procedimentos previstos pela directiva.",
+      "chapter": "CAPÍTULO IV - Disposições finais",
+      "keyPoints": []
+    },
+    {
+      "number": 17,
+      "title": "Destinatários",
+      "text": "Os Estados-membros são os destinatários da presente directiva. Feito em Bruxelas, em 29 de Junho de 1995.",
+      "chapter": "CAPÍTULO IV - Disposições finais",
+      "keyPoints": []
+    }
+  ]
 }

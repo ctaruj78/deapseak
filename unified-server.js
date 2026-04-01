@@ -191,6 +191,14 @@ mongoose.connect(mongooseURI).then(() => {
 });
 
 // JWT secret
+if (!process.env.JWT_SECRET) {
+    if (process.env.NODE_ENV === 'production') {
+        console.error('❌ FATAL: JWT_SECRET не встановлений у .env! Сервер зупиниться.');
+        process.exit(1);
+    } else {
+        console.warn('⚠️  УВАГА: JWT_SECRET не встановлений у .env! Використовується небезпечний fallback. НЕ для production!');
+    }
+}
 const JWT_SECRET = process.env.JWT_SECRET || 'deapseak_secret_key_2024';
 
 // API маршрути

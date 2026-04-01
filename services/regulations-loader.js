@@ -2,7 +2,7 @@
  * Regulations Loader - Завантажувач Португальських Законів
  * ===========================================================
  * 
- * Завантажує всі 14 законів з data/regulations/ для AI асистента
+ * Завантажує всі 26 законів з data/regulations/ для AI асистента
  * 
  * Закони:
  * 1. Decreto 513/70 - Base segurança
@@ -65,7 +65,10 @@ class RegulationsLoader {
             'en-81-72-2020.json',            // 🆕 Elevadores de bombeiros
             'en-81-73-2020.json',            // 🆕 Comportamento em incêndio
             'en-81-77-2020.json',            // 🆕 Condições sísmicas
-            'en-81-80-2020.json'             // 🆕 Elevadores existentes — melhoria segurança
+            'en-81-80-2020.json',            // 🆕 Elevadores existentes — melhoria segurança
+            'decreto-lei-58-2017.json',      // 🆕 Regulação EMA — Empresas de Manutenção
+            'lei-65-2013.json',              // 🆕 Lei Segurança de Elevadores
+            'nota-explicativa-dgeg-2024-12.json' // 🆕 CRÍTICO: Nota DGEG — Modificações Importantes
         ];
 
         let loadedCount = 0;
@@ -78,6 +81,20 @@ class RegulationsLoader {
                 if (fs.existsSync(filePath)) {
                     const content = fs.readFileSync(filePath, 'utf8');
                     const regulation = JSON.parse(content);
+                    
+                    // Normalize: support both top-level and nested metadata formats
+                    if (!regulation.id && regulation.metadata && regulation.metadata.id) {
+                        regulation.id = regulation.metadata.id;
+                    }
+                    if (!regulation.title && regulation.metadata && regulation.metadata.title) {
+                        regulation.title = regulation.metadata.title;
+                    }
+                    if (!regulation.id) {
+                        regulation.id = filename.replace('.json', '');
+                    }
+                    if (!regulation.title) {
+                        regulation.title = regulation.id;
+                    }
                     
                     this.regulations[regulation.id] = regulation;
                     
