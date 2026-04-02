@@ -374,6 +374,10 @@ class EnhancedLiftModal {
             capacity: parseInt($('#enhancedLiftCapacity').val()) || 8,
             speed: parseFloat($('#enhancedLiftSpeed').val()) || 1.0,
             installationYear: parseInt($('#enhancedInstallationYear').val()) || new Date().getFullYear(),
+            manufactureYear: parseInt($('#enhancedManufactureYear').val()) || null,
+            installYear: parseInt($('#enhancedInstallYear').val()) || null,
+            driveType: $('#enhancedDriveType').val() || '',
+            doorType: $('#enhancedDoorType').val() || '',
             address: $('#enhancedLiftAddress').val() || '',
             postcode: $('#enhancedLiftPostcode').val() || '',
             liftsCountAtAddress: parseInt($('#enhancedLiftsCountAtAddress').val()) || 1,
@@ -385,6 +389,7 @@ class EnhancedLiftModal {
             clientName: $('#enhancedClientName').val() || 'Невказано',
             clientEmail: $('#enhancedClientEmail').val() || '',
             clientPhone: $('#enhancedClientPhone').val() || '',
+            sendAccessEmail: $('#enhancedSendAccessEmail').is(':checked'),
             contactPerson: $('#enhancedContactPerson').val() || '',
             accessCode: $('#enhancedAccessCode').val() || '',
             tech: $('#enhancedAssignedTechnician').val() || 'auto',
@@ -394,8 +399,14 @@ class EnhancedLiftModal {
             nextMaintenance: $('#nextMaintenance').val() || null,
             inspectionFrequency: parseInt($('#enhancedInspectionFrequency').val()) || 24,
             maintenanceNotes: $('#enhancedMaintenanceNotes').val() || '',
+            // Поля договору
+            contractType: $('#editContractType').val() || '',
+            contractNumber: $('#editContractNumber').val() || '',
+            contractPrice: parseFloat($('#editContractPrice').val()) || null,
+            contractStart: $('#editContractStart').val() || null,
+            contractAutoRenew: $('#editContractAutoRenew').is(':checked'),
             // Додаткові поля за замовчуванням
-            floorsCount: parseInt($('#enhancedFloorsCount').val()) || 5,
+            floorsCount: parseInt($('#enhancedFloorsCount').val()) || null,
             doorsCount: 2,
             buildingName: '',
             floorLocation: 'ground',
@@ -641,6 +652,11 @@ class EnhancedLiftModal {
                 capacity: liftData.capacity,
                 speed: liftData.speed,
                 floors: liftData.floorsCount || 5,
+                floorsCount: liftData.floorsCount || null,
+                driveType: liftData.driveType || null,
+                doorType: liftData.doorType || null,
+                manufactureYear: liftData.manufactureYear || null,
+                installYear: liftData.installYear || null,
                 installationDate: liftData.installationYear ? `${liftData.installationYear}-01-01` : null,
                 address: addressObj, // ✅ Правильний формат об'єкта
                 postalCode: liftData.postcode, // 📮 Поштовий індекс для визначення муніципалітету
@@ -648,13 +664,20 @@ class EnhancedLiftModal {
                 clientName: liftData.clientName,
                 clientEmail: liftData.clientEmail,
                 clientPhone: liftData.clientPhone,
+                sendAccessEmail: liftData.sendAccessEmail,
                 contactPerson: liftData.contactPerson,
                 intercomCode: liftData.accessCode,
                 status: liftData.status || 'operational',
                 lastInspectionDate: liftData.lastMaintenance,
                 nextInspectionDate: liftData.nextMaintenance,
                 inspectionFrequency: liftData.inspectionFrequency,
-                maintenanceNotes: liftData.maintenanceNotes
+                maintenanceNotes: liftData.maintenanceNotes,
+                // Поля договору (зберігаються прямо в об'єкті ліфта)
+                contractType: liftData.contractType || null,
+                contractNumber: liftData.contractNumber || null,
+                contractPrice: liftData.contractPrice || null,
+                contractStart: liftData.contractStart || null,
+                contractAutoRenew: liftData.contractAutoRenew,
             };
             
             // ✅ Додаємо координати ТІЛЬКИ якщо користувач ввів їх вручну
@@ -714,9 +737,14 @@ class EnhancedLiftModal {
                 // 👤 Якщо автоматично створено нового клієнта — показати сповіщення
                 const nc = window.__lastNewClient;
                 if (nc && nc.created) {
-                    const emailStatus = nc.emailSent === false
-                        ? `⚠️ Email не відправлено (${nc.emailError || 'SMTP не налаштовано'})`
-                        : '📧 Запрошення відправлено на email';
+                    let emailStatus;
+                    if (nc.emailSkipped) {
+                        emailStatus = '📭 Email не надіслано (опцію не обрано). Відправте вручну коли будете готові.';
+                    } else if (nc.emailSent === false) {
+                        emailStatus = `⚠️ Email не відправлено (${nc.emailError || 'SMTP не налаштовано'})`;
+                    } else {
+                        emailStatus = '📧 Запрошення відправлено на email';
+                    }
                     this.showMessage(
                         `✅ Ліфт збережено! 👤 Новий клієнт створено автоматично:<br>` +
                         `<strong>${nc.email}</strong><br>` +
@@ -896,6 +924,11 @@ class EnhancedLiftModal {
         $('#enhancedLiftCapacity').val(liftData.capacity || '');
         $('#enhancedLiftSpeed').val(liftData.speed || '');
         $('#enhancedInstallationYear').val(liftData.installationYear || '');
+        $('#enhancedManufactureYear').val(liftData.manufactureYear || '');
+        $('#enhancedInstallYear').val(liftData.installYear || '');
+        $('#enhancedDriveType').val(liftData.driveType || '');
+        $('#enhancedDoorType').val(liftData.doorType || '');
+        $('#enhancedFloorsCount').val(liftData.floorsCount || liftData.floors || '');
         $('#enhancedLiftAddress').val(liftData.address || '');
         $('#enhancedLiftPostcode').val(liftData.postcode || '');
         $('#enhancedLiftsCountAtAddress').val(liftData.liftsCountAtAddress || 1);

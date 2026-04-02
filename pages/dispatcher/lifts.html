@@ -274,12 +274,18 @@
             white-space: nowrap;
         }
         
-        /* Ліфти по одній адресі — блакитне підсвічування */
-        #lifts-table-body tr.same-address-lift td {
-            background-color: #e8f4fd !important;
+        /* Ліфти по адресі — чергування кольорів по групах адреси */
+        #lifts-table-body tr.addr-group-even td {
+            background-color: #eaf4fb !important;
         }
-        #lifts-table-body tr.same-address-lift td:first-child {
+        #lifts-table-body tr.addr-group-even td:first-child {
             border-left: 3px solid #17a2b8;
+        }
+        #lifts-table-body tr.addr-group-odd td {
+            background-color: #eaf5ea !important;
+        }
+        #lifts-table-body tr.addr-group-odd td:first-child {
+            border-left: 3px solid #28a745;
         }
         .address-siblings-badge {
             display: inline-block;
@@ -4764,6 +4770,18 @@
                 : (typeof lift.address === 'string' ? lift.address : '').toLowerCase().trim();
             if (addr) addressCount[addr] = (addressCount[addr] || 0) + 1;
         });
+
+        // 🎨 Порядковий індекс кожної унікальної адреси (для чергування кольорів)
+        const addressGroupIndex = {};
+        let groupCounter = 0;
+        lifts.forEach(lift => {
+            const addr = lift.address && lift.address.street
+                ? (lift.address.street + ',' + (lift.address.city || '')).toLowerCase().trim()
+                : (typeof lift.address === 'string' ? lift.address : '').toLowerCase().trim();
+            if (addr && addressGroupIndex[addr] === undefined) {
+                addressGroupIndex[addr] = groupCounter++;
+            }
+        });
         
         // ⚠️ НЕ перезаписуємо window.allLiftsData - це має бути тільки повний список!
         // window.allLiftsData встановлюється тільки при завантаженні з API
@@ -4830,6 +4848,10 @@
 
             const row = document.createElement('tr');
             if (hasSiblings) row.classList.add('same-address-lift');
+            const addrGroupIdx = addrKey ? addressGroupIndex[addrKey] : undefined;
+            if (addrGroupIdx !== undefined) {
+                row.classList.add(addrGroupIdx % 2 === 0 ? 'addr-group-even' : 'addr-group-odd');
+            }
 
             const liftTypeLabels = {
                 passenger: 'Пасажирський', cargo: 'Вантажний', freight: 'Вантажний',
@@ -5667,28 +5689,33 @@
             const container = document.getElementById('qrcode-container');
             container.innerHTML = '<div id="qrcode"></div>';
             
-            // Генеруємо ТІЛЬКИ URL для QR коду (щоб не переповнити)
-            // QR код містить лише посилання, всі дані завантажуються при переході
-            const qrUrl = `${window.location.origin}/lift-info.html?id=${lift._id || lift.id}`;
+            // 📌 Єдиний формат QR коду — збігається з адміном та QR системою
+            const storedQR = lift.qrCode || null;
+            const qrText = typeof storedQR === 'object' && storedQR?.code
+                ? storedQR.code
+                : (typeof storedQR === 'string' && storedQR
+                    ? storedQR
+                    : (municipalNumber
+                        ? `LIFT-${municipalNumber.toUpperCase().replace(/\s+/g, '-')}`
+                        : `LIFT-${(lift._id || lift.id || '').slice(-6).toUpperCase()}`));
             
-            console.log('📄 QR URL:', qrUrl);
+            console.log('📄 QR Text (unified):', qrText);
             
-            // Створюємо QR код з мінімальними даними
+            // Створюємо QR код — однакові параметри як в адмін панелі
             new QRCode(document.getElementById('qrcode'), {
-                text: qrUrl,  // Тільки URL, не весь об'єкт!
+                text: qrText,
                 width: 256,
                 height: 256,
                 colorDark: '#000000',
                 colorLight: '#ffffff',
-                correctLevel: QRCode.CorrectLevel.M  // Знижуємо рівень корекції (H->M) для менших кодів
+                correctLevel: QRCode.CorrectLevel.M
             });
-            
             
             // Зберігаємо дані для завантаження/друку
             window.currentQRData = {
                 lift: lift,
-                qrUrl: qrUrl,  // Зберігаємо URL для QR коду
-                addressStr: addressStr  // Зберігаємо відформатовану адресу
+                qrUrl: qrText,
+                addressStr: addressStr
             };
             
             // Показуємо модальне вікно

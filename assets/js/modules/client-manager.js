@@ -54,8 +54,8 @@ class ClientManager {
                     // Генеруємо аватар з першої літери імені
                     const avatar = user.firstName ? user.firstName.charAt(0).toUpperCase() : 'K';
                     
-                    // Визначаємо тип клієнта
-                    const type = user.clientType || user.companyName ? 'business' : 'individual';
+                    // Визначаємо тип клієнта: спочатку явне поле type/clientType з БД
+                    const type = user.type || user.clientType || (user.companyName ? 'business' : 'individual');
                     
                     // Формуємо повне ім'я
                     const fullName = user.companyName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Без імені';
@@ -988,7 +988,16 @@ class ClientManager {
         if (notesEl) notesEl.value = client.notes || '';
         
         if (typeof $ !== 'undefined' && $('#clientModal').length) {
-            $('#clientModal').modal('show');
+            // Закриваємо кастомне вікно перегляду (якщо відкрите) перед відкриттям форми редагування
+            const customModal = document.getElementById('customModal');
+            if (customModal && $(customModal).hasClass('show')) {
+                $(customModal).modal('hide');
+                $(customModal).one('hidden.bs.modal', function () {
+                    $('#clientModal').modal('show');
+                });
+            } else {
+                $('#clientModal').modal('show');
+            }
         }
     }
 
@@ -1029,10 +1038,13 @@ class ClientManager {
                 });
                 
                 if (response.ok) {
-                    const updatedClient = await response.json();
-                    const index = this.clients.findIndex(c => c.id === updatedClient.id);
+                    // Бекенд повертає { success, message } без клієнта — оновлюємо локально
+                    const index = this.clients.findIndex(c =>
+                        (c.id && c.id === clientData.id) ||
+                        (c._id && c._id === clientData.id)
+                    );
                     if (index !== -1) {
-                        this.clients[index] = updatedClient;
+                        this.clients[index] = { ...this.clients[index], ...clientData };
                     }
                     this.showNotification('Клієнта успішно оновлено', 'success');
                 }

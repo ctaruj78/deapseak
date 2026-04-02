@@ -106,10 +106,21 @@ exports.login = async (req, res, next) => {
         // Пошук користувача (email або username)
         const user = await User.findOne({
             $or: [{ email: loginValue }, { username: loginValue }]
-        }).select('+password'); // Явно включаємо пароль
+        }).select('+password +loginAttempts +lockUntil'); // Включаємо пароль та lockout поля
 
         if (!user) {
+            // Однакова відповідь щоб не дати можливість розрізнити існування email
             throw new AppError('Невірний email/username або пароль', 401);
+        }
+
+        // 🔐 Перевірка account lockout
+        if (user.lockUntil && user.lockUntil > new Date()) {
+            const remainingMs = user.lockUntil - new Date();
+            const remainingMin = Math.ceil(remainingMs / 60000);
+            throw new AppError(
+                `Акаунт тимчасово заблоковано через надмірну кількість невдалих спроб. Спробуйте через ${remainingMin} хв.`,
+                429
+            );
         }
 
         // Перевірка статусу акаунту
@@ -120,8 +131,13 @@ exports.login = async (req, res, next) => {
         // Перевірка пароля
         const isPasswordValid = await user.comparePassword(password);
         if (!isPasswordValid) {
+            // Збільшуємо лічильник невдалих спроб
+            await user.incrementLoginAttempts();
             throw new AppError('Невірний email/username або пароль', 401);
         }
+
+        // ✅ Успішний вхід - скидаємо лічильник
+        await user.resetLoginAttempts();
 
         // Оновлення lastLogin (через updateOne щоб не запускати валідацію Mongoose)
         await user.constructor.updateOne({ _id: user._id }, { $set: { lastLogin: new Date() } });

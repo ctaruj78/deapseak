@@ -81,11 +81,19 @@ async function geocodeAddress(address) {
                         const lat = parseFloat(results[0].lat);
                         const lon = parseFloat(results[0].lon);
                         
-                        console.log(`✅ Geocoded: ${searchAddress} → [${lon}, ${lat}]`);
+                        // 🏙️ Витягуємо назву міста з Nominatim address даних
+                        let cityName = '';
+                        if (results[0].address) {
+                            const nom = results[0].address;
+                            cityName = nom.city || nom.town || nom.village || nom.municipality || nom.county || '';
+                        }
+                        
+                        console.log(`✅ Geocoded: ${searchAddress} → [${lon}, ${lat}] city: ${cityName}`);
                         
                         resolve({
                             type: 'Point',
-                            coordinates: [lon, lat] // GeoJSON формат: [longitude, latitude]
+                            coordinates: [lon, lat], // GeoJSON формат: [longitude, latitude]
+                            city: cityName           // 🏙️ Місто для автозаповнення address.city
                         });
                     } else {
                         console.warn('⚠️ Geocoding: адреса не знайдена:', searchAddress);
@@ -117,10 +125,11 @@ app.use(helmet({
 // 🔐 Rate Limiting
 const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 хвилин
-    max: 20,                   // max 20 спроб входу за 15 хв
+    max: 5,                    // max 5 спроб входу за 15 хв (захист від брутфорсу)
     message: { success: false, message: 'Забагато спроб входу. Спробуйте через 15 хвилин.' },
     standardHeaders: true,
-    legacyHeaders: false
+    legacyHeaders: false,
+    skipSuccessfulRequests: true, // Рахуємо тільки невдалі спроби
 });
 const aiLimiter = rateLimit({
     windowMs: 60 * 1000, // 1 хвилина
@@ -323,32 +332,48 @@ app.get('/api/qr/codes', authenticateToken, async (req, res) => {
         if (!db) {
             return res.status(503).json({ success: false, message: 'База даних недоступна' });
         }
-        
-        const { page = 1, limit = 20, type, status, createdFrom, createdTo } = req.query;
+
+        const { page = 1, limit = 20, status } = req.query;
         const skip = (parseInt(page) - 1) * parseInt(limit);
-        
-        // Build filter
-        const filter = {};
-        if (type) filter.type = type;
-        if (status) filter.status = status;
-        if (createdFrom || createdTo) {
-            filter.createdAt = {};
-            if (createdFrom) filter.createdAt.$gte = new Date(createdFrom);
-            if (createdTo) filter.createdAt.$lte = new Date(createdTo);
-        }
-        
-        // Get QR codes (використовуємо історію сканувань як основу)
-        const qrCodes = await db.collection('qr_scans')
-            .find(filter)
-            .sort({ scannedAt: -1 })
-            .skip(skip)
-            .limit(parseInt(limit))
-            .toArray();
-        
-        const total = await db.collection('qr_scans').countDocuments(filter);
-        
-        res.json({ 
-            success: true, 
+
+        // QR коди генеруємо з ліфтів — кожен ліфт має рівно один QR код
+        const liftFilter = {};
+        if (status === 'inactive') liftFilter.status = { $ne: 'operational' };
+        else if (status === 'active') liftFilter.status = 'operational';
+
+        const lifts = await db.collection('lifts').find(liftFilter).toArray();
+        const total = lifts.length;
+
+        // Будуємо унікальний код ліфта — єдиний формат для всіх панелей
+        const qrCodes = lifts.slice(skip, skip + parseInt(limit)).map(lift => {
+            const munNum = lift.municipalNumber || '';
+            const storedQR = lift.qrCode || null;
+            const code = typeof storedQR === 'object' && storedQR?.code
+                ? storedQR.code
+                : (typeof storedQR === 'string' && storedQR
+                    ? storedQR
+                    : (munNum
+                        ? `LIFT-${munNum.toUpperCase().replace(/\s+/g, '-')}`
+                        : `LIFT-${lift._id.toString().slice(-6).toUpperCase()}`));
+            const addr = lift.address;
+            const addrStr = typeof addr === 'object' && addr
+                ? [addr.street, addr.city].filter(Boolean).join(', ')
+                : (typeof addr === 'string' ? addr : '');
+            return {
+                id: lift._id.toString(),
+                liftId: lift._id.toString(),
+                code,
+                address: addrStr,
+                municipalNumber: munNum,
+                liftType: lift.type || 'passenger',
+                status: lift.status === 'operational' ? 'active' : 'inactive',
+                created: lift.createdAt || lift._id.getTimestamp?.() || null,
+                name: lift.name || addrStr
+            };
+        });
+
+        res.json({
+            success: true,
             data: qrCodes,
             pagination: {
                 page: parseInt(page),
@@ -517,22 +542,22 @@ app.get('/api/qr/stats', authenticateToken, async (req, res) => {
         const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
         
         // Загальна кількість QR кодів
-        const total = await db.collection('qr_scans').countDocuments({});
-        
-        // Статус QR кодів
-        const active = await db.collection('qr_scans').countDocuments({ status: 'active' });
-        const inactive = await db.collection('qr_scans').countDocuments({ status: 'inactive' });
-        const expired = await db.collection('qr_scans').countDocuments({ status: 'expired' });
-        
-        // Скани за період
+        const total = await db.collection('lifts').countDocuments({});
+
+        // Статус QR кодів — з ліфтів
+        const active   = await db.collection('lifts').countDocuments({ status: 'operational' });
+        const inactive = total - active;
+        const expired  = 0;
+
+        // Скани за період (залишається реальна статистика)
         const scansToday = await db.collection('qr_scans').countDocuments({
             scannedAt: { $gte: today }
         });
-        
+
         const scansLastMonth = await db.collection('qr_scans').countDocuments({
             scannedAt: { $gte: lastMonth }
         });
-        
+
         const stats = {
             total,
             status: {
@@ -1627,6 +1652,21 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
             delete liftData.postalCode;
         }
         
+        // 🏙️ Якщо city порожній — заповнюємо з геокодування або муніципалітету
+        if (liftData.address && typeof liftData.address === 'object' && !liftData.address.city) {
+            if (locationData && locationData.city) {
+                liftData.address.city = locationData.city;
+                console.log('🏙️ City from geocoding:', locationData.city);
+            } else if (municipalityData && municipalityData.name) {
+                liftData.address.city = municipalityData.name;
+                console.log('🏙️ City from municipality:', municipalityData.name);
+            }
+        }
+        // Прибираємо city з locationData (це GeoJSON, там не потрібно)
+        if (locationData && locationData.city) {
+            locationData = { type: locationData.type, coordinates: locationData.coordinates };
+        }
+        
         // 🔍 ПЕРЕВІРКА: чи існує ліфт з таким municipalNumber?
         const { ObjectId } = require('mongodb');
         
@@ -1642,11 +1682,16 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
             // ♻️ ОНОВЛЕННЯ існуючого ліфта
             console.log('♻️ Оновлення існуючого ліфта:', existingLift._id);
             
+            // Зберігаємо city якщо він вже є і новий порожній
+            if (existingLift.address?.city && liftData.address && !liftData.address.city) {
+                liftData.address.city = existingLift.address.city;
+            }
+            
             const updateData = {
                 ...liftData,
                 qrCode: existingLift.qrCode || qrCode, // Зберігаємо старий QR або створюємо новий
                 location: locationData,
-                municipality: municipalityData,
+                municipality: municipalityData || existingLift.municipality,
                 createdAt: existingLift.createdAt, // Зберігаємо оригінальну дату створення
                 createdBy: existingLift.createdBy, // Зберігаємо оригінального автора
                 updatedAt: new Date().toISOString(),
@@ -1740,11 +1785,32 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
 
                 console.log(`👤 Новий клієнт створено автоматично: ${clientEmail} / пароль: ${rawPassword}`);
 
-                // 📧 Відправляємо запрошення
-                const siteBase = process.env.SITE_URL ||
-                    `${req.protocol}://${req.headers.host}`;
+                // 📧 Відправляємо запрошення ТІЛЬКИ якщо адмін увімкнув цю опцію
+                const shouldSendEmail = liftData.sendAccessEmail === true;
 
-                const inviteHtml = `<!DOCTYPE html>
+                if (shouldSendEmail) {
+                    const siteBase = process.env.SITE_URL ||
+                        `${req.protocol}://${req.headers.host}`;
+
+                    // Знаходимо всі ліфти цього клієнта (включаючи щойно доданий)
+                    const clientLifts = await db.collection('lifts').find({
+                        $or: [
+                            { clientEmail: clientEmail },
+                            { 'clientEmail': clientEmail },
+                            { client: insertedClient.insertedId }
+                        ]
+                    }).toArray();
+
+                    const liftListHtml = clientLifts.length > 0
+                        ? clientLifts.map(l => {
+                            const addr = typeof l.address === 'object'
+                                ? [l.address.street, l.address.zipCode, l.address.city].filter(Boolean).join(', ')
+                                : (l.address || '—');
+                            return `<div class="lift-box">🛗 <strong>Elevador:</strong> ${l.municipalNumber || '—'}<br>📍 <strong>Morada:</strong> ${addr}</div>`;
+                          }).join('\n')
+                        : `<div class="lift-box">🛗 <strong>Elevador registado:</strong> ${liftData.municipalNumber || '—'}<br>📍 <strong>Morada:</strong> ${typeof liftData.address === 'object' ? [liftData.address.street, liftData.address.zipCode, liftData.address.city].filter(Boolean).join(', ') : (liftData.address || '—')}</div>`;
+
+                    const inviteHtml = `<!DOCTYPE html>
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
@@ -1763,7 +1829,7 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
   .creds code{background:#fff;padding:3px 8px;border-radius:4px;font-size:15px;letter-spacing:1px;border:1px solid #c5cae9}
   .btn{display:inline-block;background:#1565c0;color:#fff!important;text-decoration:none;padding:13px 32px;border-radius:6px;font-size:15px;font-weight:bold;margin-top:20px}
   .footer{background:#f8f9fa;padding:18px 30px;text-align:center;font-size:12px;color:#888}
-  .lift-box{background:#f0f4ff;border:1px solid #c5cae9;border-radius:6px;padding:14px 18px;margin:16px 0;font-size:14px}
+  .lift-box{background:#f0f4ff;border:1px solid #c5cae9;border-radius:6px;padding:14px 18px;margin:10px 0;font-size:14px}
 </style>
 </head>
 <body>
@@ -1777,12 +1843,7 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
     <p>A sua empresa foi registada na plataforma <strong>FestLift</strong> como cliente de manutenção de elevadores.</p>
     <p>O seu acesso à plataforma foi criado automaticamente. Pode acompanhar o estado dos seus elevadores, consultar relatórios e criar pedidos de serviço.</p>
 
-    <div class="lift-box">
-      🛗 <strong>Elevador registado:</strong> ${liftData.municipalNumber || '—'}<br>
-      📍 <strong>Morada:</strong> ${typeof liftData.address === 'object'
-        ? [liftData.address.street, liftData.address.zipCode, liftData.address.city].filter(Boolean).join(', ')
-        : (liftData.address || '—')}
-    </div>
+    ${liftListHtml}
 
     <div class="creds">
       <p>🔐 <strong>Os seus dados de acesso:</strong></p>
@@ -1801,18 +1862,23 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
 </body>
 </html>`;
 
-                try {
-                    await emailService.sendEmail(
-                        clientEmail,
-                        '🏢 FestLift — Bem-vindo(a)! Os seus dados de acesso',
-                        inviteHtml
-                    );
-                    console.log(`✅ Convite enviado para: ${clientEmail}`);
-                    newClientInfo.emailSent = true;
-                } catch (emailErr) {
-                    console.warn(`⚠️ Falha ao enviar convite para ${clientEmail}:`, emailErr.message);
+                    try {
+                        await emailService.sendEmail(
+                            clientEmail,
+                            '🏢 FestLift — Bem-vindo(a)! Os seus dados de acesso',
+                            inviteHtml
+                        );
+                        console.log(`✅ Convite enviado para: ${clientEmail}`);
+                        newClientInfo.emailSent = true;
+                    } catch (emailErr) {
+                        console.warn(`⚠️ Falha ao enviar convite para ${clientEmail}:`, emailErr.message);
+                        newClientInfo.emailSent = false;
+                        newClientInfo.emailError = emailErr.message;
+                    }
+                } else {
+                    console.log(`📭 Convite NÃO enviado para ${clientEmail} (sendAccessEmail=false)`);
                     newClientInfo.emailSent = false;
-                    newClientInfo.emailError = emailErr.message;
+                    newClientInfo.emailSkipped = true;
                 }
             } else {
                 // Utilizador já existe — só garante que o lift.client aponta para ele
@@ -2275,12 +2341,24 @@ app.post('/api/lifts/:id/inspection-report', authenticateToken, upload.single('p
             console.log('📎 PDF attached:', fileUrl);
         }
 
+        // Визначаємо статус на основі клауз, якщо він не вказаний явно
+        // Пріоритет: явний status з форми → але якщо є c1Count/c2Count передані — перевіряємо
+        let resolvedStatus = req.body.status || 'passed';
+        const c1Count = parseInt(req.body.c1Count) || 0;
+        const c2Count = parseInt(req.body.c2Count) || 0;
+        // Якщо є C1 клаузи → failed; якщо C2 але немає C1 → conditional; інакше → passed
+        if (c1Count > 0) resolvedStatus = 'failed';
+        else if (c2Count > 0) resolvedStatus = 'conditional';
+
         const reportData = {
             date: req.body.inspectionDate || new Date().toISOString(),
             type: req.body.inspectionType || 'routine',
             inspector: req.user.username,
             notes: req.body.comments || req.body.findings || '',
-            status: req.body.status || 'passed',
+            status: resolvedStatus,
+            c1Count: c1Count,
+            c2Count: c2Count,
+            c3Count: parseInt(req.body.c3Count) || 0,
             photos: [],
             reportFile: fileUrl,
             fileUrl: fileUrl,
@@ -2288,12 +2366,17 @@ app.post('/api/lifts/:id/inspection-report', authenticateToken, upload.single('p
         };
         
         // Розрахунок наступної дати інспекції
+        // C1 (crítico) = failed → +90 днів для виправлення
+        // C2 (moderado) = conditional → +180 днів для виправлення
+        // C3 або без клауз (passou) = +2 роки
         const calcNextInspection = () => {
             const d = new Date(reportData.date);
             if (reportData.status === 'failed') {
-                d.setDate(d.getDate() + 180); // 180 днів для виправлення клауз
+                d.setDate(d.getDate() + 90);   // C1: 90 днів для усунення
+            } else if (reportData.status === 'conditional') {
+                d.setDate(d.getDate() + 180);  // C2: 180 днів для виправлення
             } else {
-                d.setMonth(d.getMonth() + 24); // 2 роки для успішно пройденої інспекції
+                d.setMonth(d.getMonth() + 24); // passed/C3: 2 роки до наступної
             }
             return d.toISOString();
         };
@@ -2305,7 +2388,7 @@ app.post('/api/lifts/:id/inspection-report', authenticateToken, upload.single('p
                 $set: { 
                     lastInspectionDate: reportData.date,
                     nextInspectionDate: calcNextInspection(),
-                    inspectionStatus: reportData.status === 'passed' ? 'active' : (reportData.status === 'failed' ? 'needs_attention' : 'active'),
+                    inspectionStatus: reportData.status === 'passed' ? 'active' : 'needs_attention',
                     updatedAt: new Date().toISOString()
                 }
             }
@@ -3280,6 +3363,8 @@ app.put('/api/clients/:id', authenticateToken, async (req, res) => {
         const { ObjectId } = require('mongodb');
         const updateData = { ...req.body };
         delete updateData._id; delete updateData.id; delete updateData.password;
+        // Синхронізуємо clientType з type щоб обидва поля були актуальні
+        if (updateData.type) updateData.clientType = updateData.type;
         updateData.updatedAt = new Date().toISOString();
         updateData.updatedBy = req.user.username;
 
@@ -5503,6 +5588,139 @@ async function callGeminiAI(message, role, username, regulationsContext = null, 
              'Tente novamente ou reformule sua pergunta.';
     }
 }
+
+// ─── AI GUEST ENDPOINT (без авторизації, IP-ліміт 2 аналізи + 20 чат/добу) ──
+const _guestAiUsage = new Map(); // ip → { reports, chat, resetAt }
+const _GUEST_REPORT_LIMIT = 2;
+const _GUEST_CHAT_LIMIT   = 20;
+
+function _getGuestUsage(ip) {
+    const entry = _guestAiUsage.get(ip);
+    const now = Date.now();
+    if (!entry || entry.resetAt < now) {
+        return { reports: 0, chat: 0, resetAt: now + 24 * 60 * 60 * 1000 };
+    }
+    return entry;
+}
+
+// Helper: call Gemini with fallback model on 503
+async function _callGuestGemini(prompt) {
+    const models = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-latest'];
+    let lastErr;
+    for (const modelName of models) {
+        try {
+            const m = genAI.getGenerativeModel({ model: modelName });
+            const result = await m.generateContent(prompt);
+            return result.response.text();
+        } catch (err) {
+            lastErr = err;
+            if (!err.message.includes('503') && !err.message.includes('429') && !err.message.includes('overloaded') && !err.message.includes('high demand')) throw err;
+            console.warn(`⚠️ Model ${modelName} unavailable, trying next...`);
+        }
+    }
+    throw lastErr;
+}
+
+// POST /api/ai/guest-analyze — аналіз звіту (ліміт 2/добу)
+app.post('/api/ai/guest-analyze', async (req, res) => {
+    try {
+        const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress || 'unknown';
+        const usage = _getGuestUsage(ip);
+
+        if (usage.reports >= _GUEST_REPORT_LIMIT) {
+            return res.status(429).json({
+                success: false, limitReached: true,
+                message: `Limite gratuito atingido (${_GUEST_REPORT_LIMIT} análises/dia). Registe-se para acesso ilimitado.`
+            });
+        }
+
+        const { reportText } = req.body;
+        if (!reportText || reportText.trim().length < 30) {
+            return res.status(400).json({ success: false, message: 'Forneça pelo menos 30 caracteres para análise.' });
+        }
+
+        usage.reports += 1;
+        _guestAiUsage.set(ip, usage);
+
+        if (!process.env.GEMINI_API_KEY) {
+            return res.json({ success: true, data: {
+                response: '⚠️ Serviço de IA temporariamente indisponível. Contacte o administrador.',
+                usedReports: usage.reports, remainingReports: Math.max(0, _GUEST_REPORT_LIMIT - usage.reports)
+            }});
+        }
+
+        const prompt = `És um especialista em manutenção de elevadores para a FestLift (Portugal).
+Analisa o seguinte relatório de inspeção/manutenção de elevador e fornece:
+1. Resumo das principais conclusões
+2. Problemas de segurança detectados (se existirem)
+3. Ações recomendadas com prioridade
+
+Responde sempre em Português Europeu (pt-PT), de forma clara e estruturada. Máximo 350 palavras.
+
+RELATÓRIO:
+---
+${reportText.substring(0, 6000)}
+---`;
+
+        const text = await _callGuestGemini(prompt);
+        res.json({ success: true, data: {
+            response: text,
+            usedReports: usage.reports,
+            remainingReports: Math.max(0, _GUEST_REPORT_LIMIT - usage.reports)
+        }});
+    } catch (error) {
+        console.error('❌ Guest AI analyze error:', error.message);
+        res.status(500).json({ success: false, message: 'Erro ao analisar. Tente novamente mais tarde.' });
+    }
+});
+
+// POST /api/ai/guest-chat — chat para convidados (ліміт 20 msg/добу)
+app.post('/api/ai/guest-chat', async (req, res) => {
+    try {
+        const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress || 'unknown';
+        const usage = _getGuestUsage(ip);
+
+        if (usage.chat >= _GUEST_CHAT_LIMIT) {
+            return res.status(429).json({
+                success: false, limitReached: true,
+                message: `Limite de ${_GUEST_CHAT_LIMIT} mensagens gratuitas atingido. Registe-se para acesso ilimitado.`
+            });
+        }
+
+        const { message } = req.body;
+        if (!message || message.trim().length < 2) {
+            return res.status(400).json({ success: false, message: 'Mensagem inválida.' });
+        }
+
+        usage.chat += 1;
+        _guestAiUsage.set(ip, usage);
+
+        if (!process.env.GEMINI_API_KEY) {
+            return res.json({ success: true, data: {
+                response: '⚠️ Serviço de IA temporariamente indisponível.',
+                usedChat: usage.chat, remainingChat: Math.max(0, _GUEST_CHAT_LIMIT - usage.chat)
+            }});
+        }
+
+        const prompt = `És o assistente de IA da FestLift, especialista em elevadores em Portugal.
+Conheces as normas portuguesas: DL 295/98, NP EN 81, IPAC, regulamentos de inspeção.
+Responde sempre em Português Europeu (pt-PT), de forma clara e útil. Máximo 200 palavras por resposta.
+Nota: Este utilizador é um visitante (modo demonstração) — podes responder a perguntas gerais sobre elevadores, manutenção, normas e como o sistema FestLift funciona.
+
+PERGUNTA: ${message.substring(0, 1000)}`;
+
+        const text = await _callGuestGemini(prompt);
+        res.json({ success: true, data: {
+            response: text,
+            usedChat: usage.chat, remainingChat: Math.max(0, _GUEST_CHAT_LIMIT - usage.chat)
+        }});
+    } catch (error) {
+        console.error('❌ Guest AI chat error:', error.message);
+        res.status(500).json({ success: false, message: 'Erro no serviço de IA. Tente novamente.' });
+    }
+});
+
+
 
 // AI Chat endpoint
 app.post('/api/ai/chat', authenticateToken, aiLimiter, async (req, res) => {

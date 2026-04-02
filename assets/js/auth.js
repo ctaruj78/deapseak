@@ -206,8 +206,10 @@ class AuthManager {
             'demo.html',
             'crm-demo.html',
             'ai-demo.html',
+            'ai-guest.html',
             'qr-scanner.html',
             'qr-generator.html',
+            'pages/public/',
             'test-',
             'debug-'
         ];

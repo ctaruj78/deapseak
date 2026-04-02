@@ -125,6 +125,16 @@ const userSchema = new mongoose.Schema({
         type: Date,
         select: false
     },
+    // 🔐 Захист від брутфорсу - лічильник невдалих спроб входу
+    loginAttempts: {
+        type: Number,
+        default: 0
+    },
+    lockUntil: {
+        type: Date,
+        default: null
+    },
+
     // Для technician - workload tracking
     currentAssignments: {
         type: Number,
@@ -171,6 +181,35 @@ userSchema.pre('save', async function(next) {
 // Метод: Перевірка паролю
 userSchema.methods.comparePassword = async function(candidatePassword) {
     return await bcrypt.compare(candidatePassword, this.password);
+};
+
+// Метод: Збільшити лічильник невдалих спроб і встановити lockout при потребі
+userSchema.methods.incrementLoginAttempts = async function() {
+    const MAX_ATTEMPTS = 5;
+    const LOCK_DURATION_MS = 15 * 60 * 1000; // 15 хвилин
+
+    // Якщо блокування вже скінчилося — скидаємо лічильник
+    if (this.lockUntil && this.lockUntil < new Date()) {
+        return this.constructor.updateOne(
+            { _id: this._id },
+            { $set: { loginAttempts: 1, lockUntil: null } }
+        );
+    }
+
+    const updates = { $inc: { loginAttempts: 1 } };
+    // Якщо досягнуто максимуму — заблокувати на 15 хвилин
+    if (this.loginAttempts + 1 >= MAX_ATTEMPTS) {
+        updates.$set = { lockUntil: new Date(Date.now() + LOCK_DURATION_MS) };
+    }
+    return this.constructor.updateOne({ _id: this._id }, updates);
+};
+
+// Метод: Скинути лічильник після успішного входу
+userSchema.methods.resetLoginAttempts = async function() {
+    return this.constructor.updateOne(
+        { _id: this._id },
+        { $set: { loginAttempts: 0, lockUntil: null } }
+    );
 };
 
 // Метод: Видалення конфіденційних даних

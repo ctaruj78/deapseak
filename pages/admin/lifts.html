@@ -245,9 +245,18 @@
             white-space: nowrap;
         }
         
-        /* Стилі для ліфтів за однією адресою */
-        #lifts-table-body tr.same-address-lift td:first-child {
+        /* Стилі для ліфтів за однією адресою — чергування кольорів */
+        #lifts-table-body tr.addr-group-even td {
+            background-color: #eaf4fb !important;
+        }
+        #lifts-table-body tr.addr-group-even td:first-child {
             border-left: 3px solid #17a2b8;
+        }
+        #lifts-table-body tr.addr-group-odd td {
+            background-color: #eaf5ea !important;
+        }
+        #lifts-table-body tr.addr-group-odd td:first-child {
+            border-left: 3px solid #28a745;
         }
         .address-siblings-badge {
             display: inline-block;
@@ -1306,6 +1315,19 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <div class="form-group mb-0">
+                                                    <div class="custom-control custom-switch">
+                                                        <input type="checkbox" class="custom-control-input" id="enhancedSendAccessEmail" name="sendAccessEmail">
+                                                        <label class="custom-control-label" for="enhancedSendAccessEmail">
+                                                            <i class="fas fa-envelope mr-1"></i> Надіслати клієнту email з кодом доступу
+                                                            <small class="text-muted d-block">Тільки якщо для цього email ще не існує облікового запису</small>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -1349,7 +1371,7 @@
                                             <div class="col-md-6">
                                                 <div class="form-group">
                                                     <label>Номер договору</label>
-                                                    <input type="text" id="editContractNumber" name="contractNumber" class="form-control" placeholder="CT-2024-0001">
+                                                    <input type="text" id="editContractNumber" name="contractNumber" class="form-control" placeholder="1/2026">
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
@@ -1420,21 +1442,21 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label>Рік виготовлення</label>
-                                                    <input type="number" name="manufactureYear" class="form-control"
+                                                    <input type="number" id="enhancedManufactureYear" name="manufactureYear" class="form-control"
                                                            placeholder="2015" min="1950" max="2030">
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label>Рік встановлення</label>
-                                                    <input type="number" name="installYear" class="form-control"
+                                                    <input type="number" id="enhancedInstallYear" name="installYear" class="form-control"
                                                            placeholder="2016" min="1950" max="2030">
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label>Серійний номер</label>
-                                                    <input type="text" name="serialNumber" class="form-control" placeholder="SN-XXXXX">
+                                                    <input type="text" id="enhancedSerialNumber" name="serialNumber" class="form-control" placeholder="SN-XXXXX">
                                                 </div>
                                             </div>
                                         </div>
@@ -1482,7 +1504,7 @@
                                                 <div class="form-group">
                                                     <label>Кількість поверхів</label>
                                                     <div class="input-group">
-                                                        <input type="number" name="floorsCount" class="form-control"
+                                                        <input type="number" id="enhancedFloorsCount" name="floorsCount" class="form-control"
                                                                placeholder="5" min="2" max="80">
                                                         <div class="input-group-append">
                                                             <span class="input-group-text">пов.</span>
@@ -1495,7 +1517,7 @@
                                             <div class="col-md-6">
                                                 <div class="form-group">
                                                     <label>Тип приводу</label>
-                                                    <select name="driveType" class="form-control">
+                                                    <select id="enhancedDriveType" name="driveType" class="form-control">
                                                         <option value="">— Оберіть —</option>
                                                         <option>Гідравлічний</option>
                                                         <option>Канатний (MRL)</option>
@@ -1507,7 +1529,7 @@
                                             <div class="col-md-6">
                                                 <div class="form-group">
                                                     <label>Тип дверей</label>
-                                                    <select name="doorType" class="form-control">
+                                                    <select id="enhancedDoorType" name="doorType" class="form-control">
                                                         <option value="">— Оберіть —</option>
                                                         <option>Автоматичні (2-стулкові)</option>
                                                         <option>Автоматичні (4-стулкові)</option>
@@ -1868,7 +1890,26 @@
                                     <td><strong>Швидкість:</strong></td>
                                     <td id="detail-speed">-</td>
                                 </tr>
-
+                                <tr>
+                                    <td><strong>Кількість поверхів:</strong></td>
+                                    <td id="detail-floors">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Тип приводу:</strong></td>
+                                    <td id="detail-drive-type">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Тип дверей:</strong></td>
+                                    <td id="detail-door-type">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Рік виготовлення:</strong></td>
+                                    <td id="detail-manufacture-year">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Рік встановлення:</strong></td>
+                                    <td id="detail-install-year">-</td>
+                                </tr>
                                 <tr>
                                     <td><strong>Частота інспекцій:</strong></td>
                                     <td id="detail-frequency">-</td>
@@ -1908,6 +1949,14 @@
                                 <tr>
                                     <td><strong>Код домофону:</strong></td>
                                     <td id="detail-access-code">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Номер договору:</strong></td>
+                                    <td id="detail-contract-number">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Вартість обслуг. (€/міс):</strong></td>
+                                    <td id="detail-contract-price">-</td>
                                 </tr>
                                 <tr>
                                     <td><strong>Останнє ТО:</strong></td>
@@ -3980,6 +4029,61 @@
                     const nums = siblings.map(s => s.municipalNumber || 'N/A').join(', ');
                     textEl.textContent = `За цією адресою вже зареєстровано ${siblings.length} ліфт${siblings.length > 1 ? 'а' : ''} (№ ${nums}). Цей ліфт буде додано до цієї групи.`;
                     infoEl.style.display = '';
+
+                    // ── Авто-заповнення ціни та даних договору з сусіднього ліфта ──
+                    const sibling = siblings[0];
+                    const siblingContract = sibling.contractPrice || sibling.contract?.contractPrice;
+                    const siblingContractNumber = sibling.contractNumber || sibling.contract?.contractNumber;
+                    const siblingContractType = sibling.contractType || sibling.contract?.contractType;
+
+                    // Пропонуємо копіювати ціну тільки якщо поле порожнє
+                    if (siblingContract && !$('#editContractPrice').val()) {
+                        $('#editContractPrice').val(siblingContract);
+                        infoEl.innerHTML = infoEl.innerHTML.replace(
+                            '<strong><i class="fas fa-layer-group mr-1"></i>Увага:</strong>',
+                            '<strong><i class="fas fa-layer-group mr-1"></i>Увага:</strong>'
+                        );
+                        const priceHint = document.getElementById('admin-siblings-price-hint');
+                        if (!priceHint) {
+                            const hint = document.createElement('small');
+                            hint.id = 'admin-siblings-price-hint';
+                            hint.className = 'text-success d-block mt-1';
+                            hint.innerHTML = `<i class="fas fa-tag mr-1"></i>Ціна ${siblingContract} €/міс підтягнута з сусіднього ліфта. Можна змінити вручну.`;
+                            infoEl.appendChild(hint);
+                        }
+                    }
+                    if (siblingContractType && !$('#editContractType').val()) {
+                        $('#editContractType').val(siblingContractType);
+                    }
+                    // Підтягуємо тип приводу від сусіднього ліфта
+                    const siblingDriveType = sibling.driveType;
+                    if (siblingDriveType && !$('#enhancedDriveType').val()) {
+                        $('#enhancedDriveType').val(siblingDriveType);
+                        if (!document.getElementById('admin-siblings-drive-hint')) {
+                            const hint = document.createElement('small');
+                            hint.id = 'admin-siblings-drive-hint';
+                            hint.className = 'text-info d-block mt-1';
+                            hint.innerHTML = `<i class="fas fa-cog mr-1"></i>Тип приводу підтягнуто з сусіднього ліфта. Можна змінити вручну.`;
+                            infoEl.appendChild(hint);
+                        }
+                    }
+                    // Підтягуємо тип дверей від сусіднього ліфта
+                    const siblingDoorType = sibling.doorType;
+                    if (siblingDoorType && !$('#enhancedDoorType').val()) {
+                        $('#enhancedDoorType').val(siblingDoorType);
+                        if (!document.getElementById('admin-siblings-door-hint')) {
+                            const hint = document.createElement('small');
+                            hint.id = 'admin-siblings-door-hint';
+                            hint.className = 'text-info d-block mt-1';
+                            hint.innerHTML = `<i class="fas fa-door-open mr-1"></i>Тип дверей підтягнуто з сусіднього ліфта. Можна змінити вручну.`;
+                            infoEl.appendChild(hint);
+                        }
+                    }
+                    // Підтягуємо швидкість від сусіднього ліфта
+                    const siblingSpeed = sibling.speed;
+                    if (siblingSpeed && !$('#enhancedLiftSpeed').val()) {
+                        $('#enhancedLiftSpeed').val(siblingSpeed);
+                    }
                 } else {
                     infoEl.style.display = 'none';
                 }
@@ -3987,8 +4091,24 @@
         });
 
         // Приховуємо повідомлення при відкритті модального вікна
+        // і авто-генеруємо номер договору при НОВОМУ ліфті
         $(document).on('show.bs.modal', '#enhancedLiftModal', function() {
             $('#admin-siblings-info').hide();
+            $('#admin-siblings-price-hint').remove();
+            $('#admin-siblings-drive-hint').remove();
+            $('#admin-siblings-door-hint').remove();
+            // Авто-генеруємо номер договору тільки для нового ліфта (editContractNumber порожній)
+            const isNew = !$('#enhancedLiftId').val();
+            if (isNew && !$('#editContractNumber').val()) {
+                const year = new Date().getFullYear();
+                // Рахуємо кількість існуючих договорів щоб визначити наступний порядковий номер
+                const existingContracts = (window.allLiftsData || []).filter(l => {
+                    const cn = l.contractNumber || (l.contract && l.contract.contractNumber) || '';
+                    return cn.endsWith('/' + year);
+                });
+                const nextNum = existingContracts.length + 1;
+                $('#editContractNumber').val(`${nextNum}/${year}`);
+            }
         });
 
         // ── Draggable + Maximize modal ───────────────────────────────────────
@@ -4062,6 +4182,18 @@
                 ? (lift.address.street + ',' + (lift.address.city || '')).toLowerCase().trim()
                 : (typeof lift.address === 'string' ? lift.address : '').toLowerCase().trim();
             if (addr) addressCount[addr] = (addressCount[addr] || 0) + 1;
+        });
+
+        // 🎨 Порядковий індекс кожної унікальної адреси (для чергування кольорів)
+        const addressGroupIndex = {};
+        let groupCounter = 0;
+        lifts.forEach(lift => {
+            const addr = lift.address && lift.address.street
+                ? (lift.address.street + ',' + (lift.address.city || '')).toLowerCase().trim()
+                : (typeof lift.address === 'string' ? lift.address : '').toLowerCase().trim();
+            if (addr && addressGroupIndex[addr] === undefined) {
+                addressGroupIndex[addr] = groupCounter++;
+            }
         });
         
         // ⚠️ НЕ перезаписуємо window.allLiftsData - це має бути тільки повний список!
@@ -4151,6 +4283,10 @@
 
             const row = document.createElement('tr');
             if (hasSiblings) row.classList.add('same-address-lift');
+            const addrGroupIdx = addrKey ? addressGroupIndex[addrKey] : undefined;
+            if (addrGroupIdx !== undefined) {
+                row.classList.add(addrGroupIdx % 2 === 0 ? 'addr-group-even' : 'addr-group-odd');
+            }
             row.innerHTML = `
                 <td><strong>${lift.municipalNumber || 'Невизначено'}</strong></td>
                 <td><span class="lift-model-cell" title="${modelCell}">${modelCell}</span></td>
@@ -4377,6 +4513,17 @@
                 // Швидкість
                 $('#detail-speed').text(lift.speed ? `${lift.speed} м/с` : 'Не вказано');
                 
+                // Кількість поверхів
+                $('#detail-floors').text(lift.floors ? `${lift.floors} пов.` : (lift.floorsCount ? `${lift.floorsCount} пов.` : 'Не вказано'));
+                
+                // Тип приводу та дверей
+                $('#detail-drive-type').text(lift.driveType || 'Не вказано');
+                $('#detail-door-type').text(lift.doorType || 'Не вказано');
+                
+                // Роки
+                $('#detail-manufacture-year').text(lift.manufactureYear || 'Не вказано');
+                $('#detail-install-year').text(lift.installYear || lift.installationYear || 'Не вказано');
+                
                 // Частота інспекцій - тільки якщо вказана
                 $('#detail-frequency').text(
                     lift.inspectionFrequency ? (lift.inspectionFrequency === 24 ? '2 роки' : lift.inspectionFrequency === 12 ? '1 рік' : `${lift.inspectionFrequency} міс.`) : 'Не вказано'
@@ -4427,6 +4574,12 @@
                 $('#detail-client').text(clientName);
                 $('#detail-email').text(clientEmail);
                 $('#detail-access-code').text(lift.intercomCode || lift.accessCode || 'Не вказано');
+                
+                // Договір
+                const cn = lift.contractNumber || lift.maintenanceContract?.contractNumber || '';
+                const cp = lift.contractPrice || lift.maintenanceContract?.contractPrice || '';
+                $('#detail-contract-number').text(cn || 'Не вказано');
+                $('#detail-contract-price').text(cp ? `${cp} €` : 'Не вказано');
                 
                 // Дати обслуговування
                 $('#detail-last-maintenance').text(
@@ -4699,13 +4852,13 @@
             $('#enhancedContactPerson').val(lift.contactPerson || '');
             $('#enhancedAccessCode').val(lift.intercomCode || lift.accessCode || '');
 
-            // Контракт
+            // Контракт — спочатку з maintenanceContract, потім з прямих полів ліфта
             const contract = lift.maintenanceContract || null;
             if (contract) {
-                $('#editContractType').val(contract.contractType || '');
+                $('#editContractType').val(contract.contractType || lift.contractType || '');
                 if (contract.startDate) $('#editContractStart').val(new Date(contract.startDate).toISOString().split('T')[0]);
-                $('#editContractNumber').val(contract.contractNumber || '');
-                $('#editContractPrice').val(contract.contractPrice || '');
+                $('#editContractNumber').val(contract.contractNumber || lift.contractNumber || '');
+                $('#editContractPrice').val(contract.contractPrice || lift.contractPrice || '');
                 $('#editContractAutoRenew').prop('checked', !contract.endDate);
                 const banner = document.getElementById('edit-contract-file-banner');
                 if (banner) {
@@ -4730,17 +4883,22 @@
                     }
                 }
             } else {
-                $('#editContractType').val('');
-                $('#editContractStart').val('');
-                $('#editContractNumber').val('');
-                $('#editContractPrice').val('');
-                $('#editContractAutoRenew').prop('checked', true);
+                $('#editContractType').val(lift.contractType || '');
+                if (lift.contractStart) $('#editContractStart').val(new Date(lift.contractStart).toISOString().split('T')[0]);
+                $('#editContractNumber').val(lift.contractNumber || '');
+                $('#editContractPrice').val(lift.contractPrice || '');
+                $('#editContractAutoRenew').prop('checked', lift.contractAutoRenew !== false);
                 const banner = document.getElementById('edit-contract-file-banner');
                 if (banner) banner.innerHTML = `<div class="alert alert-light py-2 mb-0 text-muted"><i class="fas fa-info-circle"></i> Контракт ще не завантажено</div>`;
             }
             
             // Технічні дані
             $('#enhancedLiftStatus').val(lift.status || 'operational');
+            $('#enhancedFloorsCount').val(lift.floorsCount || lift.floors || '');
+            $('#enhancedDriveType').val(lift.driveType || '');
+            $('#enhancedDoorType').val(lift.doorType || '');
+            $('#enhancedManufactureYear').val(lift.manufactureYear || '');
+            $('#enhancedInstallYear').val(lift.installYear || '');
             
             // Технік
             const technician = lift.technician || {};
@@ -4956,40 +5114,45 @@
                 addressStr = address;
             }
             
-            const municipalNumber = lift.municipalNumber || 'Без номера';
+            const municipalNumber = lift.municipalNumber || '';
             
             console.log('📍 Відформатовані дані:', { municipalNumber, addressStr });
             
             // Заповнюємо інформацію про ліфт
-            $('#qr-municipal-number').text(municipalNumber);
+            $('#qr-municipal-number').text(municipalNumber || 'Без номера');
             $('#qr-address').text(addressStr);
             
             // Очищуємо контейнер QR коду
             const container = document.getElementById('qrcode-container');
             container.innerHTML = '<div id="qrcode"></div>';
             
-            // Генеруємо ТІЛЬКИ URL для QR коду (щоб не переповнити)
-            // QR код містить лише посилання, всі дані завантажуються при переході
-            const qrUrl = `${window.location.origin}/lift-info.html?id=${lift._id || lift.id}`;
+            // 📌 Використовуємо QR код збережений в БД (LIFT-{municipalNumber})
+            const storedQR = lift.qrCode || null;
+            const qrText = typeof storedQR === 'object' && storedQR?.code
+                ? storedQR.code  // { code: 'LIFT-xxx', ... }
+                : (typeof storedQR === 'string' && storedQR
+                    ? storedQR   // 'LIFT-xxx'
+                    : (municipalNumber
+                        ? `LIFT-${municipalNumber.toUpperCase().replace(/\s+/g, '-')}`
+                        : `LIFT-${(lift._id || lift.id || '').slice(-6).toUpperCase()}`));
             
-            console.log('📄 QR URL:', qrUrl);
+            console.log('📄 QR Text (unified):', qrText);
             
-            // Створюємо QR код з мінімальними даними
+            // Створюємо QR код з єдиним форматом
             new QRCode(document.getElementById('qrcode'), {
-                text: qrUrl,  // Тільки URL, не весь об'єкт!
+                text: qrText,
                 width: 256,
                 height: 256,
                 colorDark: '#000000',
                 colorLight: '#ffffff',
-                correctLevel: QRCode.CorrectLevel.M  // Знижуємо рівень корекції (H->M) для менших кодів
+                correctLevel: QRCode.CorrectLevel.M
             });
-            
             
             // Зберігаємо дані для завантаження/друку
             window.currentQRData = {
                 lift: lift,
-                qrUrl: qrUrl,  // Зберігаємо URL для QR коду
-                addressStr: addressStr  // Зберігаємо відформатовану адресу
+                qrUrl: qrText,       // Єдиний формат коду
+                addressStr: addressStr
             };
             
             // Показуємо модальне вікно
@@ -5428,6 +5591,12 @@
             }
             const pdfFile = fileInput && fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
 
+            // Беремо clauses статистику з розпарсеного PDF (якщо є)
+            const parsedData = window.currentParsedInspectionData;
+            const c1Count = parsedData ? (parsedData.clauseStats.C1 || 0) : 0;
+            const c2Count = parsedData ? (parsedData.clauseStats.C2 || 0) : 0;
+            const c3Count = parsedData ? (parsedData.clauseStats.C3 || 0) : 0;
+
             let result;
             if (pdfFile) {
                 // Якщо є PDF — надсилаємо через FormData
@@ -5438,6 +5607,9 @@
                 formData.append('status', status);
                 formData.append('comments', description || '');
                 formData.append('findings', description || '');
+                formData.append('c1Count', c1Count);
+                formData.append('c2Count', c2Count);
+                formData.append('c3Count', c3Count);
                 formData.append('pdfFile', pdfFile);
 
                 console.log('📤 Відправка з PDF файлом:', pdfFile.name);
@@ -5454,7 +5626,10 @@
                     inspectionDate: date,
                     status: status,
                     comments: description || '',
-                    findings: description || ''
+                    findings: description || '',
+                    c1Count: c1Count,
+                    c2Count: c2Count,
+                    c3Count: c3Count
                 };
                 console.log('📤 Дані звіту (JSON):', reportData);
                 result = await apiCall(`/api/lifts/${encodeURIComponent(liftId)}/inspection-report`, 'POST', reportData);

@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configurações - Sistema de gestão</title>
+    <script src="../../assets/js/auth.js"></script>
+
     <script src="../../assets/js/global-settings.js"></script>
     
     <!-- AdminLTE CSS -->
@@ -45,32 +47,8 @@
             font-weight: 600;
         }
         
-        .admin-only {
-            border-left: 4px solid #dc3545;
-        }
-        
         .dispatcher-only {
             border-left: 4px solid #007bff;
-        }
-        
-        .system-card {
-            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-        }
-        
-        .user-card {
-            background: linear-gradient(135deg, #ffffff, #f8f9fa);
-        }
-        
-        .notification-card {
-            background: linear-gradient(135deg, #ffffff, #f0f8ff);
-        }
-        
-        .security-card {
-            background: linear-gradient(135deg, #ffffff, #fff5f5);
-        }
-        
-        .backup-card {
-            background: linear-gradient(135deg, #ffffff, #f0fff4);
         }
         
         .stats-box {
@@ -411,186 +389,6 @@
                         </div>
                     </div>
 
-                    <!-- Configurações для адміністратора (тільки для адмінів) -->
-                    <div class="row mt-4" id="adminSettingsSection">
-                        <div class="col-12">
-                            <div class="card admin-only">
-                                <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-lock mr-2"></i>Адміністративні налаштування</h3>
-                                    <span class="badge badge-danger">Тільки для адміністраторів</span>
-                                </div>
-                                <div class="card-body">
-                                    <div class="alert alert-warning">
-                                        <i class="fas fa-exclamation-triangle mr-2"></i>
-                                        Цей розділ доступний тільки для користувачів з правами адміністратора.
-                                    </div>
-                                    
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="settings-card">
-                                                <i class="settings-icon fas fa-users-cog"></i>
-                                                <h5>Gestão користувачами</h5>
-                                                <p>Додавання, редагування та видалення користувачів системи</p>
-                                                <button class="btn btn-outline-primary" onclick="settingsManager.manageUsers()">
-                                                    <i class="fas fa-users"></i> Gestão
-                                                </button>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="col-md-6">
-                                            <div class="settings-card">
-                                                <i class="settings-icon fas fa-database"></i>
-                                                <h5>Резервне копіювання</h5>
-                                                <p>Gestão резервними копіями даних системи</p>
-                                                <div class="btn-group">
-                                                    <button class="btn btn-outline-success" onclick="settingsManager.backupData()">
-                                                        <i class="fas fa-download"></i> Створити backup
-                                                    </button>
-                                                    <button class="btn btn-outline-info" onclick="settingsManager.restoreData()">
-                                                        <i class="fas fa-upload"></i> Відновити
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="row mt-4">
-                                        <div class="col-md-6">
-                                            <div class="settings-card">
-                                                <i class="settings-icon fas fa-chart-line"></i>
-                                                <h5>Моніторинг системи</h5>
-                                                <p>Перегляд статистики та продуктивності системи</p>
-                                                <button class="btn btn-outline-warning" onclick="settingsManager.systemMonitoring()">
-                                                    <i class="fas fa-desktop"></i> Моніторинг
-                                                </button>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="col-md-6">
-                                            <div class="settings-card">
-                                                <i class="settings-icon fas fa-cogs"></i>
-                                                <h5>Роль та дозволи</h5>
-                                                <p>Gestão ролями та правами доступу</p>
-                                                
-                                                <div id="permissionsList">
-                                                    <div class="permission-item admin">
-                                                        <strong>Адміністратор</strong>
-                                                        <br>
-                                                        <small>Повний доступ до всіх функцій системи</small>
-                                                    </div>
-                                                    <div class="permission-item">
-                                                        <strong>Диспетчер</strong>
-                                                        <br>
-                                                        <small>Gestão заявками, техніками, клієнтами</small>
-                                                    </div>
-                                                    <div class="permission-item">
-                                                        <strong>Технік</strong>
-                                                        <br>
-                                                        <small>Перегляд призначених завдань, оновлення статусів</small>
-                                                    </div>
-                                                </div>
-                                                
-                                                <button class="btn btn-outline-dark mt-2" onclick="settingsManager.manageRoles()">
-                                                    <i class="fas fa-lock"></i> Gestão ролями
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Резервне копіювання та відновлення -->
-                    <div class="row mt-4">
-                        <div class="col-12">
-                            <div class="settings-card backup-card">
-                                <i class="settings-icon fas fa-database"></i>
-                                <h4>Резервне копіювання даних</h4>
-                                <p>Створення резервних копій та відновлення даних</p>
-                                
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="backupType">Тип резервної копії</label>
-                                            <select id="backupType" class="form-control">
-                                                <option value="full">Повна копія</option>
-                                                <option value="clients">Клієнти</option>
-                                                <option value="technicians">Техніки</option>
-                                                <option value="requests">Заявки</option>
-                                            </select>
-                                        </div>
-                                        
-                                        <div class="form-group">
-                                            <label for="backupSchedule">Розклад копіювання</label>
-                                            <select id="backupSchedule" class="form-control">
-                                                <option value="daily">Щоденно</option>
-                                                <option value="weekly">Щотижня</option>
-                                                <option value="monthly">Щомісяця</option>
-                                                <option value="manual">Вручну</option>
-                                            </select>
-                                        </div>
-                                        
-                                        <button class="btn btn-success" onclick="settingsManager.createBackup()">
-                                            <i class="fas fa-download"></i> Створити backup
-                                        </button>
-                                    </div>
-                                    
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="restoreFile">Відновлення з файлу</label>
-                                            <div class="custom-file">
-                                                <input type="file" class="custom-file-input" id="restoreFile">
-                                                <label class="custom-file-label" for="restoreFile">Оберіть файл backup</label>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="form-group">
-                                            <div class="custom-control custom-switch">
-                                                <input type="checkbox" class="custom-control-input" id="backupAuto">
-                                                <label class="custom-control-label" for="backupAuto">Автоматичне резервне копіювання</label>
-                                            </div>
-                                        </div>
-                                        
-                                        <button class="btn btn-warning" onclick="settingsManager.restoreBackup()">
-                                            <i class="fas fa-upload"></i> Відновити дані
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div class="mt-3">
-                                    <h6>Останні резервні копії:</h6>
-                                    <div class="table-responsive">
-                                        <table class="table table-sm">
-                                            <thead>
-                                                <tr>
-                                                    <th>Дата</th>
-                                                    <th>Тип</th>
-                                                    <th>Розмір</th>
-                                                    <th>Статус</th>
-                                                    <th>Дії</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="backupHistory">
-                                                <tr>
-                                                    <td>01.05.2024 14:30</td>
-                                                    <td>Повна</td>
-                                                    <td>2.4 MB</td>
-                                                    <td><span class="badge badge-success">Успішно</span></td>
-                                                    <td>
-                                                        <button class="btn btn-sm btn-outline-primary">
-                                                            <i class="fas fa-download"></i>
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Інформація про систему -->
                     <div class="row mt-4">
                         <div class="col-12">
@@ -622,14 +420,7 @@
                                         </div>
                                     </div>
                                     
-                                    <div class="text-center mt-3">
-                                        <button class="btn btn-outline-secondary" onclick="settingsManager.systemDiagnostics()">
-                                            <i class="fas fa-stethoscope"></i> Діагностика системи
-                                        </button>
-                                        <button class="btn btn-outline-info ml-2" onclick="settingsManager.checkUpdates()">
-                                            <i class="fas fa-sync"></i> Перевірити оновлення
-                                        </button>
-                                    </div>
+
                                 </div>
                             </div>
                         </div>

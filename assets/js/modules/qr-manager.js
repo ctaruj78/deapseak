@@ -97,12 +97,16 @@ const qrManager = (function() {
 
                 return {
                     id: lift._id,
-                    code: `LIFT-${lift.municipalNumber || lift._id.slice(-6).toUpperCase()}`,
+                    code: lift.qrCode
+                        ? (typeof lift.qrCode === 'object' ? lift.qrCode.code : lift.qrCode)
+                        : `LIFT-${lift.municipalNumber || lift._id.slice(-6).toUpperCase()}`,
                     name: addressText,
                     type: 'lift',
                     liftType: lift.type || 'passenger',
                     status: lift.status === 'operational' ? 'active' : 'inactive',
-                    location: lift.address?.city || 'Невідоме місто',
+                    location: (lift.address?.city && lift.address.city !== lift.address?.street)
+                        ? lift.address.city
+                        : (lift.municipality?.name || lift.address?.zipCode || 'Невідоме місто'),
                     created: lift.installationDate || lift.createdAt,
                     scans: 0,
                     liftData: lift
@@ -218,6 +222,9 @@ const qrManager = (function() {
             tbody.append(`
                 <tr>
                     <td><input type="checkbox" class="qr-checkbox" data-id="${qr.id}"></td>
+                    <td style="text-align:center;vertical-align:middle;">
+                        <div id="qr-list-${qr.id}" style="display:inline-block;background:#fff;padding:3px;border:1px solid #ddd;border-radius:3px;"></div>
+                    </td>
                     <td><strong>${qr.code}</strong></td>
                     <td><small class="text-muted">${qr.id.slice(-8)}</small></td>
                     <td><span class="badge badge-info">${liftType}</span></td>
@@ -239,6 +246,24 @@ const qrManager = (function() {
         });
 
         renderPagination(Math.ceil(filtered.length / itemsPerPage));
+
+        // Генеруємо QR зображення для списку після рендерингу DOM
+        setTimeout(() => {
+            page.forEach(qr => {
+                const el = document.getElementById(`qr-list-${qr.id}`);
+                if (el && typeof QRCode !== 'undefined') {
+                    el.innerHTML = '';
+                    new QRCode(el, {
+                        text: qr.code,
+                        width: 64,
+                        height: 64,
+                        colorDark: '#000000',
+                        colorLight: '#ffffff',
+                        correctLevel: QRCode.CorrectLevel.M
+                    });
+                }
+            });
+        }, 50);
     }
 
     // Render GRID view
