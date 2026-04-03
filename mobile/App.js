@@ -2,14 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, View, StyleSheet } from 'react-native';
+import { ActivityIndicator, View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import LoginScreen from './screens/LoginScreen';
 import TasksScreen from './screens/TasksScreen';
 import TaskDetailScreen from './screens/TaskDetailScreen';
 import QRScannerScreen from './screens/QRScannerScreen';
+import SettingsScreen from './screens/SettingsScreen';
 import { AuthContext } from './utils/AuthContext';
+import { loadServerUrl } from './utils/api';
 
 const Stack = createNativeStackNavigator();
 
@@ -21,17 +23,17 @@ export default function App() {
   });
 
   useEffect(() => {
-    // Перевіряємо збережений токен при запуску
-    const loadToken = async () => {
+    const init = async () => {
       try {
-        const token = await AsyncStorage.getItem('auth_token');
-        const userJSON = await AsyncStorage.getItem('auth_user');
+        // Завантажуємо збережений URL сервера + токен паралельно
+        const [token, userJSON] = await Promise.all([
+          AsyncStorage.getItem('auth_token'),
+          AsyncStorage.getItem('auth_user'),
+          loadServerUrl(), // ← завантажуємо URL з AsyncStorage
+        ]);
+
         if (token && userJSON) {
-          setAuthState({
-            token,
-            user: JSON.parse(userJSON),
-            loading: false,
-          });
+          setAuthState({ token, user: JSON.parse(userJSON), loading: false });
         } else {
           setAuthState({ token: null, user: null, loading: false });
         }
@@ -39,7 +41,7 @@ export default function App() {
         setAuthState({ token: null, user: null, loading: false });
       }
     };
-    loadToken();
+    init();
   }, []);
 
   const login = async (token, user) => {
@@ -67,10 +69,22 @@ export default function App() {
       <NavigationContainer>
         <StatusBar style="light" />
         {!authState.token ? (
+          // ─── Неавторизовані: Login + Settings (для введення URL сервера) ──────
           <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen
+              name="Settings"
+              component={SettingsScreen}
+              options={{
+                headerShown: true,
+                title: 'Налаштування сервера',
+                headerStyle: { backgroundColor: '#343a40' },
+                headerTintColor: '#fff',
+              }}
+            />
           </Stack.Navigator>
         ) : (
+          // ─── Авторизовані: всі екрани техніка ──────────────────────────────────
           <Stack.Navigator
             screenOptions={{
               headerStyle: { backgroundColor: '#007bff' },
@@ -81,7 +95,17 @@ export default function App() {
             <Stack.Screen
               name="Tasks"
               component={TasksScreen}
-              options={{ title: 'Мої завдання' }}
+              options={({ navigation }) => ({
+                title: 'Мої завдання',
+                headerRight: () => (
+                  <TouchableOpacity
+                    onPress={() => navigation.navigate('Settings')}
+                    style={{ marginRight: 4 }}
+                  >
+                    <Text style={{ color: '#fff', fontSize: 22 }}>⚙️</Text>
+                  </TouchableOpacity>
+                ),
+              })}
             />
             <Stack.Screen
               name="TaskDetail"
@@ -92,6 +116,11 @@ export default function App() {
               name="QRScanner"
               component={QRScannerScreen}
               options={{ title: 'Сканувати QR-код' }}
+            />
+            <Stack.Screen
+              name="Settings"
+              component={SettingsScreen}
+              options={{ title: 'Налаштування сервера' }}
             />
           </Stack.Navigator>
         )}

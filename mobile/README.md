@@ -1,111 +1,98 @@
 # DeapSeaK Mobile 📱
 
-Мобільний додаток для техніків системи управління ліфтами **DeapSeaK**.
+Мобільний додаток для техніків системи управління ліфтами **FestLift/DeapSeaK**.
 
 ---
 
 ## Стек технологій
 
-- **React Native** 0.74.5
-- **Expo** SDK 54
-- **@react-navigation/native** v6
-- **Expo Camera** v15 (для QR-сканера)
-- **AsyncStorage** (для збереження токену)
-- **Axios** (для API-запитів)
+- **React Native 0.74 + Expo SDK 54**
+- `@react-navigation/native` — навігація між екранами
+- `expo-camera` — сканування QR-кодів
+- `@react-native-async-storage` — збереження токену та URL сервера
+- `axios` — HTTP запити
 
 ---
 
-## Структура проекту
+## Екрани
 
-```
-mobile/
-├── App.js                    # Головний компонент (навігація + auth)
-├── app.json                  # Expo конфігурація
-├── babel.config.js
-├── package.json
-├── assets/                   # Іконки та зображення
-├── screens/
-│   ├── LoginScreen.js        # Екран входу
-│   ├── TasksScreen.js        # Список завдань техніка
-│   ├── TaskDetailScreen.js   # Деталі завдання + зміна статусу
-│   └── QRScannerScreen.js    # Сканер QR-кодів ліфтів
-└── utils/
-    ├── api.js                # Axios клієнт + всі API методи
-    ├── AuthContext.js        # React контекст для авторизації
-    └── helpers.js            # Допоміжні функції (дати, кольори статусів)
-```
+| Екран | Опис |
+|-------|------|
+| `LoginScreen` | Вхід в систему |
+| `TasksScreen` | Список завдань техніка |
+| `TaskDetailScreen` | Деталі + зміна статусу завдання |
+| `QRScannerScreen` | Сканер QR-кодів ліфтів |
+| `SettingsScreen` | **НОВИЙ** — налаштування URL сервера |
 
 ---
 
-## Налаштування та запуск
-
-### 1. Встановити залежності
+## Запуск для розробки
 
 ```bash
 cd mobile
 npm install
-```
-
-### 2. Налаштувати IP сервера
-
-Відкрийте файл `utils/api.js` та змініть `SERVER_URL`:
-
-```js
-// Знайдіть IP вашого комп'ютера у мережі:
-// Linux/Mac: ip addr | grep inet
-// Windows: ipconfig
-
-export const SERVER_URL = 'http://192.168.X.X:5000';  // ← ваш IP
-```
-
-> ⚠️ **Важливо**: `localhost` або `127.0.0.1` НЕ працює на фізичному телефоні.
-> Телефон і комп'ютер мають бути в **одній Wi-Fi мережі**.
-
-### 3. Запустити сервер DeapSeaK
-
-```bash
-# У кореневій папці проекту:
-cd /workspaces/deapseak
-node unified-server.js
-```
-
-### 4. Запустити Expo
-
-```bash
-cd mobile
 npx expo start
 ```
 
-Відкриє QR-код у терміналі → відскануйте додатком **Expo Go** на телефоні.
+Скануйте QR-код в **Expo Go** (Android/iOS app).
+
+### Налаштування сервера при розробці
+
+У додатку → ⚙️ Settings → введіть URL:
+
+```
+http://192.168.1.XXX:5000   ← IP вашого комп'ютера в мережі
+```
 
 ---
 
-## Функціональність
+## Production deployment
 
-| Екран | Функції |
-|-------|---------|
-| **Вхід** | Авторизація по логіну/email + пароль |
-| **Завдання** | Список tasks + requests, фільтрація, пошук, pull-to-refresh |
-| **Деталі** | Повна інформація, зміна статусу, завершення з описом, коментарі |
-| **QR Сканер** | Сканування QR ліфтів → деталі ліфта → пов'язані завдання |
-
----
-
-## Ролі користувачів
-
-Додаток доступний для ролей: **tech**, **technician**, **admin**.
-
----
-
-## Збірка APK (Android)
+### Варіант A — APK для Android (рекомендовано)
 
 ```bash
-# Встановіть EAS CLI
+# Встановити EAS CLI
 npm install -g eas-cli
+cd mobile
 
-# Налаштуйте проект
+# Логін в Expo
+eas login
+
+# Первинне налаштування
 eas build:configure
 
-# Зберіть APK
+# Збудувати APK (безкоштовно, ~10-15 хвилин)
 eas build -p android --profile preview
+```
+
+APK завантажиться на expo.dev → надіслати технікам через WhatsApp/email.
+
+#### Після встановлення APK:
+Технік відкриває ⚙️ → вводить `https://festlift.pt` → Перевірити → Зберегти.
+Більше ніколи не треба змінювати! Налаштування зберігаються.
+
+---
+
+### Варіант B — PWA (без установки додатку)
+
+Технік відкриває `https://festlift.pt/pages/tech/dashboard.html` у Chrome:
+`⋮ → Додати на головний екран`
+
+---
+
+## Структура файлів
+
+```
+mobile/
+├── App.js                    # Root + навігація + loadServerUrl()
+├── screens/
+│   ├── LoginScreen.js        # + кнопка ⚙️ для відкриття Settings
+│   ├── TasksScreen.js
+│   ├── TaskDetailScreen.js
+│   ├── QRScannerScreen.js
+│   └── SettingsScreen.js     # ← NEW: URL сервера + ping test
+└── utils/
+    ├── api.js                # axios + динамічний SERVER_URL
+    ├── AuthContext.js
+    └── helpers.js
 ```

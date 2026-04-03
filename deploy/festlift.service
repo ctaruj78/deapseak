@@ -1,0 +1,30 @@
+[Unit]
+Description=FestLift LiftManager Server
+Documentation=https://github.com/ctaruj78/deapseak
+After=network.target mongod.service
+Wants=mongod.service
+
+[Service]
+Type=simple
+User=festlift
+WorkingDirectory=/opt/festlift
+ExecStart=/usr/bin/node /opt/festlift/unified-server.js
+Restart=always
+RestartSec=10
+
+# Environment
+EnvironmentFile=/opt/festlift/.env
+Environment=NODE_ENV=production
+Environment=PORT=5000
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+
+# Логи (journald)
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=festlift
+
+[Install]
+WantedBy=multi-user.target

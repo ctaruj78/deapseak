@@ -2,21 +2,45 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // =====================================================================
-// НАЛАШТУВАННЯ: змініть IP на адресу вашого сервера у мережі
-// Щоб знайти IP: на комп'ютері виконайте "ipconfig" (Windows) або "ip addr" (Linux)
-// Приклад: 'http://192.168.1.100:5000'
+// SERVER URL CONFIG
+// Пріоритет: AsyncStorage (налаштовано в додатку) → дефолт
+// В production: встановити URL один раз в Settings екрані додатку
 // =====================================================================
-export const SERVER_URL = 'http://192.168.1.100:5000';
+export const DEFAULT_SERVER_URL = 'https://festlift.pt'; // production domain
+export const SERVER_URL_KEY = 'server_url';
+
+let _serverUrl = DEFAULT_SERVER_URL;
+
+// Завантажити збережений URL при старті додатку
+export const loadServerUrl = async () => {
+  try {
+    const saved = await AsyncStorage.getItem(SERVER_URL_KEY);
+    if (saved && saved.startsWith('http')) {
+      _serverUrl = saved;
+    }
+  } catch {}
+  return _serverUrl;
+};
+
+export const getServerUrl = () => _serverUrl;
+
+export const setServerUrl = async (url) => {
+  const clean = url.replace(/\/$/, ''); // прибираємо завершальний /
+  _serverUrl = clean;
+  await AsyncStorage.setItem(SERVER_URL_KEY, clean);
+  api.defaults.baseURL = clean; // оновлюємо axios одразу
+};
 
 const api = axios.create({
-  baseURL: SERVER_URL,
-  timeout: 15000,
+  baseURL: _serverUrl,
+  timeout: 20000,
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Автоматично додаємо токен до кожного запиту
+// Автоматично додаємо JWT токен до кожного запиту
 api.interceptors.request.use(
   async (config) => {
+    config.baseURL = _serverUrl; // завжди актуальний URL
     const token = await AsyncStorage.getItem('auth_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -26,21 +50,26 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Auth
+// 401 → автоматично виходимо з системи
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      await AsyncStorage.removeItem('auth_token');
+      await AsyncStorage.removeItem('auth_user');
+    }
+    return Promise.reject(error);
+  }
+);
+
+// ─── Auth ─────────────────────────────────────────────────────────────
 export const loginUser = (login, password) =>
   api.post('/api/auth/login', { login, password });
 
 export const getProfile = () =>
-  api.get('/api/users/me');
+  api.get('/api/auth/profile');
 
-// Завдання
-export const getTasks = () =>
-  api.get('/api/tasks');
-
-export const getTaskById = (id) =>
-  api.get(`/api/tasks/${id}`);
-
-// Заявки (requests)
+// ─── Заявки ───────────────────────────────────────────────────────────
 export const getRequests = (params) =>
   api.get('/api/requests', { params });
 
@@ -56,15 +85,25 @@ export const addComment = (id, text) =>
 export const completeRequest = (id, workDetails) =>
   api.post(`/api/requests/${id}/complete`, workDetails);
 
-// QR-коди
+// ─── Завдання ─────────────────────────────────────────────────────────
+export const getTasks = () =>
+  api.get('/api/tasks');
+
+export const getTaskById = (id) =>
+  api.get(`/api/tasks/${id}`);
+
+// ─── QR ───────────────────────────────────────────────────────────────
 export const scanQRCode = (qrData) =>
   api.post('/api/qr/scan', { qrData });
 
 export const getQRCodes = () =>
   api.get('/api/qr/codes');
 
-// Ліфти
+// ─── Ліфти ────────────────────────────────────────────────────────────
 export const getLiftById = (id) =>
   api.get(`/api/lifts/${id}`);
+
+export const getLiftBySerial = (serial) =>
+  api.get(`/api/lifts/serial/${serial}`);
 
 export default api;
