@@ -44,8 +44,8 @@ const generateToken = (payload, expiresIn = '7d') => {
 };
 
 // Генерація Refresh токена
-const generateRefreshToken = (payload) => {
-    return jwt.sign(payload, JWT_SECRET, { expiresIn: '30d' });
+const generateRefreshToken = (payload, expiresIn = '30d') => {
+    return jwt.sign(payload, JWT_SECRET, { expiresIn });
 };
 
 // Перевірка Refresh токена

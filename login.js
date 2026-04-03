@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
+        const rememberMe = document.getElementById('remember')?.checked || false;
         
         const apiUrl = getApiUrl();
         console.log('🌐 Використовую API URL:', apiUrl);
@@ -30,7 +31,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 body: JSON.stringify({ 
                     email: email,
-                    password: password
+                    password: password,
+                    rememberMe: rememberMe
                 })
             });
             
@@ -39,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (response.ok && data.success) {
                 // Збереження токена та користувача
                 if (window.authManager) {
-                    window.authManager.login(data.token, data.user, data.refreshToken);
+                    window.authManager.login(data.token, data.user, data.refreshToken, rememberMe);
                 } else {
                     // Fallback: зберігаємо вручну
                     localStorage.setItem('authToken', data.token);

@@ -19,7 +19,7 @@ class AuthManager {
     // ═══════════════════════════════════════════════════════════
     static _getStore() { return sessionStorage; }
 
-    static login(token, user, refreshToken = null) {
+    static login(token, user, refreshToken = null, rememberMe = false) {
         // Write to sessionStorage (this tab) + localStorage (fallback / cookie-less)
         sessionStorage.setItem(this.TOKEN_KEY, token);
         sessionStorage.setItem(this.USER_KEY, JSON.stringify(user));
@@ -31,11 +31,17 @@ class AuthManager {
         if (refreshToken) {
             localStorage.setItem(this.REFRESH_KEY, refreshToken);
         }
+        if (rememberMe) {
+            localStorage.setItem('liftmanager_remember', '1');
+        }
         
-        document.cookie = `auth_token=${token}; path=/; max-age=604800`; // 7 днів
+        // cookie: 7 днів звичайно, 365 днів якщо remember me
+        const cookieAge = rememberMe ? 31536000 : 604800;
+        document.cookie = `auth_token=${token}; path=/; max-age=${cookieAge}`;
         
         console.log('✅ Користувач увійшов в систему:', user);
         console.log('✅ userData збережено для перевірки доступу');
+        if (rememberMe) console.log('✅ Режим "Запам'ятати" активовано - сесія 365 днів');
         return true;
     }
 
