@@ -10,6 +10,7 @@
 class AuthManager {
     static TOKEN_KEY = 'liftmanager_jwt';
     static USER_KEY = 'liftmanager_user';
+    static REFRESH_KEY = 'liftmanager_refresh';
 
     // ═══════════════════════════════════════════════════════════
     // ⚡ MULTI-TAB FIX: sessionStorage is per-tab, so each browser
@@ -18,7 +19,7 @@ class AuthManager {
     // ═══════════════════════════════════════════════════════════
     static _getStore() { return sessionStorage; }
 
-    static login(token, user) {
+    static login(token, user, refreshToken = null) {
         // Write to sessionStorage (this tab) + localStorage (fallback / cookie-less)
         sessionStorage.setItem(this.TOKEN_KEY, token);
         sessionStorage.setItem(this.USER_KEY, JSON.stringify(user));
@@ -26,11 +27,50 @@ class AuthManager {
         localStorage.setItem(this.USER_KEY, JSON.stringify(user));
         localStorage.setItem('userData', JSON.stringify(user)); // Для dispatcher/admin панелей
         
-        document.cookie = `auth_token=${token}; path=/; max-age=86400`;
+        // Зберігаємо refresh token для автоматичного оновлення
+        if (refreshToken) {
+            localStorage.setItem(this.REFRESH_KEY, refreshToken);
+        }
+        
+        document.cookie = `auth_token=${token}; path=/; max-age=604800`; // 7 днів
         
         console.log('✅ Користувач увійшов в систему:', user);
         console.log('✅ userData збережено для перевірки доступу');
         return true;
+    }
+
+    // Оновлення access token через refresh token (без виходу з системи)
+    static async refreshAccessToken() {
+        const refreshToken = localStorage.getItem(this.REFRESH_KEY);
+        if (!refreshToken) return false;
+        try {
+            const resp = await fetch('/api/auth/refresh', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ refreshToken })
+            });
+            if (!resp.ok) {
+                console.warn('⚠️ Refresh token недійсний — виходимо');
+                this.logout();
+                return false;
+            }
+            const data = await resp.json();
+            if (data.success && data.data && data.data.token) {
+                // Зберігаємо нові токени
+                sessionStorage.setItem(this.TOKEN_KEY, data.data.token);
+                localStorage.setItem(this.TOKEN_KEY, data.data.token);
+                if (data.data.refreshToken) {
+                    localStorage.setItem(this.REFRESH_KEY, data.data.refreshToken);
+                }
+                document.cookie = `auth_token=${data.data.token}; path=/; max-age=604800`;
+                console.log('✅ Access token автоматично оновлено');
+                return true;
+            }
+            return false;
+        } catch (e) {
+            console.error('❌ Помилка оновлення токену:', e);
+            return false;
+        }
     }
 
     static logout() {
@@ -38,6 +78,7 @@ class AuthManager {
         const keys = [
             this.TOKEN_KEY,       // liftmanager_jwt
             this.USER_KEY,        // liftmanager_user
+            this.REFRESH_KEY,     // liftmanager_refresh
             'userData',
             'lm_session',
             'lm_user',
@@ -80,13 +121,18 @@ class AuthManager {
             
             if (payload.exp && payload.exp < now) {
                 console.warn('⚠️ Токен застарілий');
-                // НЕ викликаємо logout() тут - це створює цикл редиректів!
-                // Просто очищуємо дані
+                // Просто очищуємо дані (не logout щоб не зациклити редирект)
                 sessionStorage.removeItem(this.TOKEN_KEY);
                 sessionStorage.removeItem(this.USER_KEY);
                 localStorage.removeItem(this.TOKEN_KEY);
                 localStorage.removeItem(this.USER_KEY);
                 return false;
+            }
+            
+            // Якщо токен закінчується менш ніж через 24 години — оновлюємо заздалегідь
+            if (payload.exp && (payload.exp - now) < 86400) {
+                console.log('🔄 Токен закінчується < 24h, оновлюємо у фоні...');
+                this.refreshAccessToken().catch(() => {});
             }
             
             // Якщо токен є тільки в localStorage (стара сесія) — скопіюємо в sessionStorage
@@ -182,10 +228,28 @@ class AuthManager {
         try {
             const response = await fetch(apiUrl, config);
             
-            if (response.status === 401) {
-                console.warn('⚠️ Отримано 401 - перенаправлення на логін');
-                this.logout();
-                return null;
+            if (response.status === 401 || response.status === 403) {
+                // Спробуємо оновити токен перш ніж виходити
+                const refreshed = await this.refreshAccessToken();
+                if (refreshed) {
+                    // Повторюємо запит з новим токеном
+                    const retryConfig = {
+                        ...config,
+                        headers: { ...config.headers, 'Authorization': `Bearer ${this.getAuthToken()}` }
+                    };
+                    const retryResp = await fetch(apiUrl, retryConfig);
+                    if (retryResp.status === 401 || retryResp.status === 403) {
+                        console.warn('⚠️ Після refresh все одно 401/403 — виходимо');
+                        this.logout();
+                        return null;
+                    }
+                    return retryResp;
+                }
+                // Refresh не вдався — logout тільки на 401
+                if (response.status === 401) {
+                    this.logout();
+                    return null;
+                }
             }
             
             return response;

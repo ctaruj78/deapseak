@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (response.ok && data.success) {
                 // Збереження токена та користувача
                 if (window.authManager) {
-                    window.authManager.login(data.token, data.user);
+                    window.authManager.login(data.token, data.user, data.refreshToken);
                 } else {
                     // Fallback: зберігаємо вручну
                     localStorage.setItem('authToken', data.token);

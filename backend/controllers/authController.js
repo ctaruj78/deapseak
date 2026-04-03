@@ -1,5 +1,5 @@
 const { User } = require('../models');
-const { generateToken, generateRefreshToken } = require('../middleware/auth');
+const { generateToken, generateRefreshToken, verifyRefreshToken } = require('../middleware/auth');
 const { AppError } = require('../middleware/errorHandler');
 const crypto = require('crypto');
 
@@ -516,6 +516,45 @@ exports.resetPassword = async (req, res, next) => {
         res.json({
             success: true,
             message: 'Пароль успішно змінено'
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Оновлення access token через refresh token
+ * POST /api/auth/refresh
+ */
+exports.refreshToken = async (req, res, next) => {
+    try {
+        const { refreshToken } = req.body;
+        if (!refreshToken) {
+            return res.status(400).json({ success: false, message: 'Refresh token не надано' });
+        }
+
+        let decoded;
+        try {
+            decoded = verifyRefreshToken(refreshToken);
+        } catch (e) {
+            return res.status(403).json({ success: false, message: 'Refresh token недійсний або прострочений. Будь ласка, увійдіть знову.' });
+        }
+
+        // Перевіряємо чи користувач ще існує і активний
+        const user = await User.findById(decoded.id).select('-password');
+        if (!user || !user.isActive) {
+            return res.status(403).json({ success: false, message: 'Користувача не знайдено або заблоковано' });
+        }
+
+        // Генеруємо новий access token (7 днів)
+        const tokenPayload = { id: user._id.toString(), email: user.email, role: user.role };
+        const newToken = generateToken(tokenPayload);
+        const newRefreshToken = generateRefreshToken(tokenPayload);
+
+        res.json({
+            success: true,
+            message: 'Token оновлено',
+            data: { token: newToken, refreshToken: newRefreshToken }
         });
     } catch (error) {
         next(error);

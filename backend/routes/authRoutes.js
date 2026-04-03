@@ -55,4 +55,7 @@ router.patch('/users/:id/ban', authenticate, authorizeRoles('admin'), authContro
 // DELETE /api/auth/users/:id - Видалення користувача
 router.delete('/users/:id', authenticate, authorizeRoles('admin'), authController.deleteUser);
 
+// POST /api/auth/refresh - Оновлення access token через refresh token
+router.post('/refresh', authController.refreshToken);
+
 module.exports = router;
