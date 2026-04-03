@@ -43,7 +43,8 @@ exports.register = async (req, res, next) => {
             throw new AppError('Користувач з таким email або username вже існує', 400);
         }
 
-        // Створення користувача (пароль автоматично хешується)
+        // 🔐 SECURITY: публічна реєстрація ЗАВЖДИ створює клієнта.
+        // Роль можна змінити тільки адміністратором через /api/auth/users/:id/role
         const user = await User.create({
             username,
             email,
@@ -51,7 +52,7 @@ exports.register = async (req, res, next) => {
             firstName,
             lastName,
             phone,
-            role: role || 'client' // За замовчуванням клієнт
+            role: 'client' // ЗАВЖДИ client — роль призначає тільки admin
         });
 
         // Генерація токенів

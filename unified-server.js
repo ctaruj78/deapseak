@@ -19,6 +19,7 @@ const fs = require('fs').promises;
 const https = require('https');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const mongoSanitize = require('express-mongo-sanitize'); // 🔐 NoSQL injection protection
 
 // 🤖 Google Gemini AI
 const { GoogleGenerativeAI } = require('@google/generative-ai');
@@ -160,8 +161,9 @@ app.use(cors({
     },
     credentials: true
 }));
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '2mb' }));  // 🔐 Reduced from 10mb to limit DoS
+app.use(express.urlencoded({ extended: true, limit: '2mb' }));
+app.use(mongoSanitize()); // 🔐 Strip $ and . from user input (NoSQL injection protection)
 
 // General rate limit для всіх API запитів
 app.use('/api/', generalLimiter);
@@ -904,17 +906,12 @@ app.put('/api/users/me', authenticateToken, async (req, res) => {
 // Middleware для перевірки токена
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1] || 
-                  req.headers['x-auth-token'] || 
-                  req.cookies?.auth_token ||
-                  req.query?.token; // Додаємо підтримку токена в query параметрі (для CORS workaround)
+    // 🔐 SECURITY: query param ?token видалено — токени в URL потрапляють в логи та history
+    const token = (authHeader && authHeader.split(' ')[1]) ||
+                  req.headers['x-auth-token'] ||
+                  req.cookies?.auth_token;
 
-    console.log('🔐 Auth check:', {
-        hasAuthHeader: !!authHeader,
-        hasQueryToken: !!req.query?.token,
-        hasToken: !!token,
-        tokenPreview: token ? token.substring(0, 20) + '...' : 'none'
-    });
+    // Auth token extracted — no debug log (security)
 
     if (!token) {
         console.log('❌ Токен не надано');
