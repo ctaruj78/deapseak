@@ -7,13 +7,32 @@ import {
   Alert,
   ActivityIndicator,
   ScrollView,
+  Platform,
 } from 'react-native';
-import { CameraView, useCameraPermissions } from 'expo-camera';
+// expo-camera не підтримує web — завантажуємо тільки на native
+const CameraView = Platform.OS !== 'web' ? require('expo-camera').CameraView : null;
+const useCameraPermissions = Platform.OS !== 'web' ? require('expo-camera').useCameraPermissions : () => [null, () => {}];
 import { AuthContext } from '../utils/AuthContext';
 import { scanQRCode, getLiftById } from '../utils/api';
 
 export default function QRScannerScreen({ navigation }) {
   const { logout } = useContext(AuthContext);
+
+  // Web не підтримує камеру — показуємо заглушку
+  if (Platform.OS === 'web') {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 }}>
+        <Text style={{ fontSize: 48, marginBottom: 16 }}>📷</Text>
+        <Text style={{ fontSize: 18, fontWeight: 'bold', textAlign: 'center', marginBottom: 8 }}>
+          QR-сканер недоступний у браузері
+        </Text>
+        <Text style={{ fontSize: 14, color: '#6c757d', textAlign: 'center' }}>
+          Встановіть мобільний додаток на Android/iOS для сканування QR-кодів ліфтів
+        </Text>
+      </View>
+    );
+  }
+
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const [processing, setProcessing] = useState(false);
