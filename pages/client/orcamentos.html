@@ -325,6 +325,18 @@
 
     // ─── Carregar orçamentos ─────────────────────────────────────
     async function carregarOrcamentos() {
+        // Verificar que o utilizador autenticado é mesmo 'client' antes de chamar a API
+        try {
+            const currentUser = typeof AuthManager !== 'undefined' ? AuthManager.getCurrentUser() : null;
+            if (currentUser && currentUser.role && currentUser.role !== 'client') {
+                // Utilizador com role errado — redirecionar
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.replace('/pages/auth/login.html');
+                return;
+            }
+        } catch(e) {}
+
         document.getElementById('loadingState').style.display = 'block';
         document.getElementById('orcamentosList').style.display = 'none';
         document.getElementById('emptyState').style.display = 'none';

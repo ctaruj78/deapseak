@@ -321,7 +321,7 @@ router.get('/public/:id/pdf', async (req, res) => {
 });
 
 // GET /api/orcamentos/my - Orçamentos do cliente autenticado (por email)
-router.get('/my', authenticate, async (req, res) => {
+router.get('/my', authenticate, authorizeRoles('client'), async (req, res) => {
     try {
         const clienteEmail = req.user.email;
         // Auto-expirar os orçamentos vencidos deste cliente antes de devolver
