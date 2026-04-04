@@ -411,8 +411,8 @@ router.get('/', authenticate, authorizeRoles('admin', 'dispatcher'), async (req,
     }
 });
 
-// GET /api/orcamentos/next-number - Obter próximo número disponível
-router.get('/next-number', authenticate, async (req, res) => {
+// GET /api/orcamentos/next-number - Obter próximo número disponível (admin/dispatcher only)
+router.get('/next-number', authenticate, authorizeRoles('admin', 'dispatcher'), async (req, res) => {
     try {
         const ano = new Date().getFullYear();
         const mes = String(new Date().getMonth() + 1).padStart(2, '0');
@@ -505,30 +505,25 @@ router.get('/:id', authenticate, async (req, res) => {
     try {
         const orcamento = await Orcamento.findById(req.params.id)
             .populate('criadoPor', 'name email');
-        
+
         if (!orcamento) {
-            return res.status(404).json({
-                success: false,
-                message: 'Orçamento não encontrado'
-            });
+            return res.status(404).json({ success: false, message: 'Orçamento não encontrado' });
         }
-        
-        res.json({
-            success: true,
-            data: orcamento
-        });
+
+        // Cliente só pode ver o seu próprio orçamento
+        if (req.user.role === 'client' && orcamento.cliente.email.toLowerCase() !== req.user.email.toLowerCase()) {
+            return res.status(403).json({ success: false, message: 'Sem permissão para este orçamento' });
+        }
+
+        res.json({ success: true, data: orcamento });
     } catch (error) {
         console.error('Erro ao buscar orçamento:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erro ao buscar orçamento',
-            error: error.message
-        });
+        res.status(500).json({ success: false, message: 'Erro ao buscar orçamento', error: error.message });
     }
 });
 
-// POST /api/orcamentos - Criar novo orçamento
-router.post('/', authenticate, async (req, res) => {
+// POST /api/orcamentos - Criar novo orçamento (admin/dispatcher only)
+router.post('/', authenticate, authorizeRoles('admin', 'dispatcher'), async (req, res) => {
     try {
         const { cliente, servicos, subtotal, iva, total, notas } = req.body;
         
@@ -587,8 +582,8 @@ router.post('/', authenticate, async (req, res) => {
     }
 });
 
-// PUT /api/orcamentos/:id - Atualizar orçamento
-router.put('/:id', authenticate, async (req, res) => {
+// PUT /api/orcamentos/:id - Atualizar orçamento (admin/dispatcher only)
+router.put('/:id', authenticate, authorizeRoles('admin', 'dispatcher'), async (req, res) => {
     try {
         const orcamento = await Orcamento.findById(req.params.id);
         
@@ -637,8 +632,8 @@ router.put('/:id', authenticate, async (req, res) => {
     }
 });
 
-// DELETE /api/orcamentos/:id - Deletar orçamento
-router.delete('/:id', authenticate, async (req, res) => {
+// DELETE /api/orcamentos/:id - Deletar orçamento (admin/dispatcher only)
+router.delete('/:id', authenticate, authorizeRoles('admin', 'dispatcher'), async (req, res) => {
     try {
         const orcamento = await Orcamento.findById(req.params.id);
         
@@ -673,8 +668,8 @@ router.delete('/:id', authenticate, async (req, res) => {
     }
 });
 
-// POST /api/orcamentos/:id/enviar - Enviar orçamento por email
-router.post('/:id/enviar', authenticate, async (req, res) => {
+// POST /api/orcamentos/:id/enviar - Enviar orçamento por email (admin/dispatcher only)
+router.post('/:id/enviar', authenticate, authorizeRoles('admin', 'dispatcher'), async (req, res) => {
     console.log(`🔔 POST /:id/enviar викликано - ID: ${req.params.id}`);
     console.log(`   User: ${req.user?.email || 'UNKNOWN'}`);
     console.log(`   Body:`, req.body);
