@@ -21,9 +21,11 @@ const scanHistory = (function() {
                 scansData = localScans;
             } else {
                 // Try API
-                const token = localStorage.getItem('token');
+                const token = localStorage.getItem('liftmanager_jwt') ||
+                              sessionStorage.getItem('liftmanager_jwt') ||
+                              localStorage.getItem('token');
                 if (token) {
-                    const response = await fetch('/api/qr-scans', {
+                    const response = await fetch('/api/qr/history', {
                         headers: {
                             'Authorization': `Bearer ${token}`
                         }
@@ -31,7 +33,7 @@ const scanHistory = (function() {
                     
                     if (response.ok) {
                         const data = await response.json();
-                        scansData = data.scans || [];
+                        scansData = data.data || data.scans || [];
                         console.log(`✅ Завантажено з API: ${scansData.length} сканувань`);
                     }
                 }
