@@ -475,32 +475,60 @@ class InvoiceManager {
         const invoice = this.invoices.find(inv => inv.id === invoiceId);
         if (!invoice) return;
 
-        this.showNotification(`Підготовка рахунку ${invoice.number}...`, 'info');
-        
-        // Імітація створення PDF
+        this.showNotification(`A preparar fatura ${invoice.number}...`, 'info');
+
         setTimeout(() => {
-            const pdfContent = this.generatePDFContent(invoice);
-            const blob = new Blob([pdfContent], { type: 'application/pdf' });
-            const url = URL.createObjectURL(blob);
-            
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `рахунок-${invoice.number}.pdf`;
-            link.click();
-            
-            this.showNotification('Рахунок успішно завантажено', 'success');
-        }, 1500);
+            const printWindow = window.open('', '_blank', 'width=860,height=700');
+            if (!printWindow) {
+                this.showNotification('Active os pop-ups para descarregar a fatura.', 'warning');
+                return;
+            }
+            printWindow.document.write(this.generatePrintHTML(invoice));
+            printWindow.document.close();
+            printWindow.focus();
+            setTimeout(() => { printWindow.print(); }, 600);
+            this.showNotification('Fatura aberta — utilize Imprimir / Guardar como PDF.', 'success');
+        }, 400);
     }
 
-    generatePDFContent(invoice) {
-        // Імітація створення PDF
-        return `
-            Рахунок-фактура: ${invoice.number}
-            Дата: ${invoice.date}
-            Клієнт: ${$('#clientName').text()}
-            Сума: €${invoice.amount.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}
-            Статус: ${this.getStatusText(invoice.status)}
-        `;
+    generatePrintHTML(invoice) {
+        const clientName = $('#clientName').text() || 'Cliente';
+        const rows = invoice.items.map(item => `
+            <tr>
+                <td>${item.description || ''}</td>
+                <td>${item.lift || '—'}</td>
+                <td style="text-align:center">${item.quantity}</td>
+                <td style="text-align:right">€${(item.price ?? 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</td>
+                <td style="text-align:right">€${((item.quantity ?? 0) * (item.price ?? 0)).toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</td>
+            </tr>`).join('');
+        return `<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8">
+            <title>Fatura ${invoice.number}</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 40px; color: #333; }
+                h2 { color: #1a73e8; } table { width:100%; border-collapse:collapse; margin-top:16px; }
+                th { background:#f0f4ff; padding:8px; text-align:left; border:1px solid #ccc; }
+                td { padding:8px; border:1px solid #ccc; }
+                .totals { margin-top:16px; text-align:right; }
+                .label { color:#777; font-size:13px; } .info { margin-bottom:6px; }
+                @media print { button { display:none; } }
+            </style></head><body>
+            <h2>FestLift — Elevadores e Serviços, Lda.</h2>
+            <p class="info"><strong>Fatura N.º:</strong> ${invoice.number}</p>
+            <p class="info"><strong>Data:</strong> ${this.formatDate(invoice.date)}</p>
+            <p class="info"><strong>Prazo de pagamento:</strong> ${this.formatDate(invoice.dueDate)}</p>
+            <p class="info"><strong>Cliente:</strong> ${clientName}</p>
+            <p class="info"><strong>Estado:</strong> ${this.getStatusText(invoice.status)}</p>
+            <table><thead><tr><th>Descrição</th><th>Elevador</th><th>Qtd</th><th>Preço</th><th>Total</th></tr></thead>
+            <tbody>${rows}</tbody></table>
+            <div class="totals">
+                <p><span class="label">Subtotal: </span>€${(invoice.amount ?? 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
+                ${(invoice.tax ?? 0) > 0 ? `<p><span class="label">IVA: </span>€${invoice.tax.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>` : ''}
+                <p><strong>Total: €${(invoice.total ?? 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</strong></p>
+            </div>
+            <hr style="margin-top:30px">
+            <p style="font-size:12px;color:#555">Dados bancários: Banco BPI · IBAN PT50 0010 0000 5854 8320 0015 4 · BIC BBPIPTPL<br>
+            Titular: FestLift - Elevadores e Serviços, Lda. · info@festlift.pt</p>
+            </body></html>`;
     }
 
     payInvoice(invoiceId) {
