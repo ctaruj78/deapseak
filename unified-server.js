@@ -3426,10 +3426,18 @@ app.put('/api/technicians/:id', authenticateToken, async (req, res) => {
 // GET /api/users - отримання користувачів (тільки admin)
 app.get('/api/users', authenticateToken, async (req, res) => {
     try {
-        // Диспетчери можуть бачити клієнтів і техніків
+        // Диспетчери можуть бачити клієнтів і техніків але повинні вказати role=
         if (req.user.role === 'dispatcher') {
             const allowedRoles = ['client', 'technician', 'tech']; // додано 'tech' для сумісності
-            
+
+            // Диспетчер зобов'язаний передати ?role= (без фільтра — 403)
+            if (!req.query.role) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Доступ заборонено. Диспетчери повинні вказати параметр role.'
+                });
+            }
+
             // Якщо запитують конкретну роль - перевіряємо чи вона дозволена
             if (req.query.role && !allowedRoles.includes(req.query.role)) {
                 return res.status(403).json({
