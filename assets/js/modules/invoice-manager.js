@@ -428,12 +428,11 @@ class InvoiceManager {
                 <div class="row mt-4">
                     <div class="col-md-6">
                         <div class="bg-light p-3 rounded">
-                            <h5>Formas de Pagamento</h5>
-                            <p><i class="fas fa-university text-success"></i> <strong>Multibanco:</strong><br>
-                            Entidade: <strong>21342</strong><br>
-                            Referência: gerada no pagamento<br><br>
-                            <i class="fas fa-mobile-alt text-info"></i> <strong>MB Way:</strong><br>
-                            Nº: <strong>+351 912 345 678</strong></p>
+                            <h5>Dados Bancários</h5>
+                            <p class="mb-1"><i class="fas fa-university text-success"></i> <strong>Banco BPI</strong></p>
+                            <p class="mb-1">IBAN: <strong>PT50 0010 0000 5854 8320 0015 4</strong></p>
+                            <p class="mb-1">BIC/SWIFT: <strong>BBPIPTPL</strong></p>
+                            <p class="mb-0">Titular: <strong>FestLift - Elevadores e Serviços, Lda.</strong></p>
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -463,8 +462,8 @@ class InvoiceManager {
     getPaymentMethodText(method) {
         const methods = {
             'card': 'Cartão de Crédito/Débito',
-            'bank_transfer': 'Multibanco',
-            'multibanco': 'Multibanco',
+            'bank_transfer': 'Transferência Bancária',
+            'multibanco': 'Transferência Bancária',
             'mbway': 'MB Way',
             'credit_card': 'Cartão de Crédito/Débito',
             'mobile_payment': 'MB Way'
@@ -517,13 +516,13 @@ class InvoiceManager {
                 <h4>Pagamento da fatura ${invoice.number}</h4>
                 <p class="text-center mb-4">Total a pagar: <strong>€${invoice.total.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</strong></p>
                 
-                <div class="payment-option" onclick="invoiceManager.selectPaymentOption('card')">
+                <div class="payment-option" onclick="invoiceManager.selectPaymentOption('multibanco')">
                     <div class="form-check">
-                        <input class="form-check-input" type="radio" name="paymentMethod" id="cardPayment" value="card">
-                        <label class="form-check-label" for="cardPayment">
-                            <i class="fas fa-credit-card fa-2x text-primary"></i>
-                            <h5>Cartão de Crédito/Débito</h5>
-                            <p>Pagamento imediato online</p>
+                        <input class="form-check-input" type="radio" name="paymentMethod" id="multibancoPayment" value="multibanco">
+                        <label class="form-check-label" for="multibancoPayment">
+                            <i class="fas fa-university fa-2x text-success"></i>
+                            <h5>Transferência Bancária</h5>
+                            <p>Banco BPI — IBAN PT50...</p>
                         </label>
                     </div>
                 </div>
@@ -539,57 +538,45 @@ class InvoiceManager {
                     </div>
                 </div>
                 
-                <div class="payment-option" onclick="invoiceManager.selectPaymentOption('multibanco')">
+                <div class="payment-option" onclick="invoiceManager.selectPaymentOption('card')">
                     <div class="form-check">
-                        <input class="form-check-input" type="radio" name="paymentMethod" id="multibancoPayment" value="multibanco">
-                        <label class="form-check-label" for="multibancoPayment">
-                            <i class="fas fa-university fa-2x text-success"></i>
-                            <h5>Multibanco</h5>
-                            <p>Pagamento em caixa automático</p>
+                        <input class="form-check-input" type="radio" name="paymentMethod" id="cardPayment" value="card">
+                        <label class="form-check-label" for="cardPayment">
+                            <i class="fas fa-credit-card fa-2x text-primary"></i>
+                            <h5>Cartão de Crédito/Débito</h5>
+                            <p>Em breve disponível</p>
                         </label>
                     </div>
                 </div>
                 
                 <div class="mt-4" id="paymentDetails" style="display: none;">
-                    <!-- card fields -->
-                    <div id="cardFields" style="display:none;">
-                        <div class="form-group">
-                            <label>Número do cartão:</label>
-                            <input type="text" class="form-control" placeholder="1234 5678 9012 3456" id="cardNumber" maxlength="19">
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Validade:</label>
-                                    <input type="text" class="form-control" placeholder="MM/AA" id="cardExpiry" maxlength="5">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>CVV:</label>
-                                    <input type="text" class="form-control" placeholder="123" id="cardCvv" maxlength="4">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- MB Way fields -->
-                    <div id="mbwayFields" style="display:none;">
-                        <div class="form-group">
-                            <label>Número de telemóvel:</label>
-                            <input type="tel" class="form-control" placeholder="+351 9XX XXX XXX" id="mbwayPhone" maxlength="16">
-                            <small class="text-muted">Receberá uma notificação MB Way para confirmar o pagamento.</small>
-                        </div>
-                    </div>
-                    <!-- Multibanco info -->
+                    <!-- Transferência Bancária -->
                     <div id="multibancoFields" style="display:none;">
-                        <div class="bg-light p-3 rounded text-center">
-                            <p class="mb-1"><strong>Entidade:</strong> 21342</p>
-                            <p class="mb-1"><strong>Referência:</strong> ${String(invoice.id || '000').padStart(9, '0').replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3')}</p>
-                            <p class="mb-1"><strong>Montante:</strong> €${invoice.total.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
-                            <small class="text-muted">Referência válida por 72 horas.</small>
+                        <div class="bg-light p-3 rounded">
+                            <p class="mb-1"><strong>Banco:</strong> Banco BPI</p>
+                            <p class="mb-1"><strong>IBAN:</strong> PT50 0010 0000 5854 8320 0015 4</p>
+                            <p class="mb-1"><strong>BIC/SWIFT:</strong> BBPIPTPL</p>
+                            <p class="mb-1"><strong>Titular:</strong> FestLift - Elevadores e Serviços, Lda.</p>
+                            <p class="mb-0"><strong>Referência:</strong> Fatura ${invoice.number}</p>
+                        </div>
+                        <small class="text-muted d-block mt-2">Após efectuar a transferência, envie o comprovativo para <strong>geral@festlift.pt</strong>.</small>
+                    </div>
+                    <!-- MB Way -->
+                    <div id="mbwayFields" style="display:none;">
+                        <div class="bg-light p-3 rounded">
+                            <p class="mb-1">Para pagar por <strong>MB Way</strong>, contacte-nos para recepcionar o pedido de pagamento:</p>
+                            <p class="mb-1"><i class="fas fa-phone"></i> <strong>+351 XXX XXX XXX</strong></p>
+                            <p class="mb-0"><i class="fas fa-envelope"></i> <strong>geral@festlift.pt</strong></p>
+                        </div>
+                        <small class="text-muted d-block mt-2">Indique o número da fatura: <strong>${invoice.number}</strong></small>
+                    </div>
+                    <!-- Cartão -->
+                    <div id="cardFields" style="display:none;">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> O pagamento por cartão estará disponível em breve. Para já, utilize transferência bancária ou MB Way.
                         </div>
                     </div>
-                    <button class="btn btn-success btn-block mt-3" onclick="invoiceManager.processPayment('${invoice.id}')">
+                    <button class="btn btn-success btn-block mt-3" id="confirmPaymentBtn" onclick="invoiceManager.processPayment('${invoice.id}')">
                         <i class="fas fa-check"></i> Confirmar pagamento
                     </button>
                 </div>
@@ -701,17 +688,18 @@ class InvoiceManager {
     }
 
     showMultibancoDetails() {
-        const details = `Entidade: 21342
-Referência: gerada no momento do pagamento
-Montante: conforme fatura
-Validade: 72 horas`;
+        const details = `Banco: Banco BPI\nIBAN: PT50 0010 0000 5854 8320 0015 4\nBIC/SWIFT: BBPIPTPL\nTitular: FestLift - Elevadores e Serviços, Lda.`;
         
         $('#invoiceModalContent').html(`
             <div class="bank-details">
-                <h4>Dados Multibanco</h4>
+                <h4>Dados Bancários para Transferência</h4>
                 <div class="bg-light p-4 rounded">
-                    <pre class="mb-0">${details}</pre>
+                    <p class="mb-1"><strong>Banco:</strong> Banco BPI</p>
+                    <p class="mb-1"><strong>IBAN:</strong> PT50 0010 0000 5854 8320 0015 4</p>
+                    <p class="mb-1"><strong>BIC/SWIFT:</strong> BBPIPTPL</p>
+                    <p class="mb-0"><strong>Titular:</strong> FestLift - Elevadores e Serviços, Lda.</p>
                 </div>
+                <p class="text-muted mt-2 small">Após efectuar a transferência, envie o comprovativo para <strong>geral@festlift.pt</strong>.</p>
                 <div class="mt-3">
                     <button class="btn btn-secondary" onclick="invoiceManager.copyMultibancoDetails()">
                         <i class="fas fa-copy"></i> Copiar dados
@@ -723,7 +711,7 @@ Validade: 72 horas`;
     }
 
     copyMultibancoDetails() {
-        const details = `Entidade: 21342\nReferência: gerada no momento do pagamento\nMontante: conforme fatura`;
+        const details = `Banco: Banco BPI\nIBAN: PT50 0010 0000 5854 8320 0015 4\nBIC/SWIFT: BBPIPTPL\nTitular: FestLift - Elevadores e Serviços, Lda.`;
         
         navigator.clipboard.writeText(details).then(() => {
             this.showNotification('Dados copiados para a área de transferência', 'success');
@@ -731,7 +719,7 @@ Validade: 72 horas`;
     }
 
     setupMBWay() {
-        this.showNotification('A configurar MB Way...', 'info');
+        this.showNotification('Para MB Way, contacte-nos em geral@festlift.pt', 'info');
     }
 
     showNotification(message, type = 'success') {
