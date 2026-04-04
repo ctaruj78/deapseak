@@ -111,7 +111,24 @@ const orcamentoSchema = new mongoose.Schema({
     
     // Дата схвалення/відхилення
     dataResposta: Date,
-    
+
+    // Хто схвалив/відхилив ('cliente' | 'admin' | 'dispatcher')
+    aprovadoPor: {
+        type: String,
+        enum: ['cliente', 'admin', 'dispatcher']
+    },
+
+    // ID do utilizador que aprovou/rejeitou
+    aprovadoPorUser: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+
+    // Observação/motivo fornecido pelo cliente ou admin
+    observacao: {
+        type: String
+    },
+
     // PDF файл (якщо збережено)
     pdfPath: String,
     

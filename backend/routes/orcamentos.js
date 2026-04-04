@@ -344,7 +344,9 @@ router.post('/:id/resposta', authenticate, async (req, res) => {
 
         orcamento.status = status;
         orcamento.dataResposta = new Date();
-        if (observacao) orcamento.notas = (orcamento.notas ? orcamento.notas + '\n\n' : '') + `Resposta do cliente: ${observacao}`;
+        orcamento.aprovadoPor = 'cliente';
+        orcamento.aprovadoPorUser = req.user.id;
+        if (observacao) orcamento.observacao = observacao;
         await orcamento.save();
 
         res.json({
@@ -440,6 +442,61 @@ router.get('/next-number', authenticate, async (req, res) => {
             message: 'Erro ao gerar próximo número',
             error: error.message
         });
+    }
+});
+
+// GET /api/orcamentos/stats/dashboard - Estatísticas (deve ficar antes de /:id)
+router.get('/stats/dashboard', authenticate, authorizeRoles('admin', 'dispatcher'), async (req, res) => {
+    try {
+        const stats = await Orcamento.aggregate([
+            {
+                $group: {
+                    _id: '$status',
+                    count: { $sum: 1 },
+                    totalValor: { $sum: '$total' }
+                }
+            }
+        ]);
+
+        const totalOrcamentos = await Orcamento.countDocuments();
+        const totalValor = await Orcamento.aggregate([
+            { $group: { _id: null, total: { $sum: '$total' } } }
+        ]);
+
+        res.json({
+            success: true,
+            data: {
+                total: totalOrcamentos,
+                valorTotal: totalValor[0]?.total || 0,
+                porStatus: stats
+            }
+        });
+    } catch (error) {
+        console.error('Erro ao buscar estatísticas:', error);
+        res.status(500).json({ success: false, message: 'Erro ao buscar estatísticas', error: error.message });
+    }
+});
+
+// GET /api/orcamentos/:id/pdf - Download autenticado do PDF (admin/dispatcher/cliente)
+router.get('/:id/pdf', authenticate, async (req, res) => {
+    try {
+        const orcamento = await Orcamento.findById(req.params.id);
+        if (!orcamento) {
+            return res.status(404).json({ success: false, message: 'Orçamento não encontrado' });
+        }
+
+        // Cliente só pode descarregar o seu próprio orçamento
+        if (req.user.role === 'client' && orcamento.cliente.email.toLowerCase() !== req.user.email.toLowerCase()) {
+            return res.status(403).json({ success: false, message: 'Sem permissão para este orçamento' });
+        }
+
+        const pdfBuffer = await gerarPDFOrcamento(orcamento);
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="Orcamento_${orcamento.numero}.pdf"`);
+        res.send(pdfBuffer);
+    } catch (error) {
+        console.error('Erro ao gerar PDF autenticado:', error);
+        res.status(500).json({ success: false, message: 'Erro ao gerar PDF', error: error.message });
     }
 });
 
@@ -975,52 +1032,16 @@ router.post('/:id/enviar', authenticate, async (req, res) => {
     }
 });
 
-// GET /api/orcamentos/stats - Estatísticas
-router.get('/stats/dashboard', authenticate, async (req, res) => {
+// PATCH /api/orcamentos/:id/status - Mudar status (admin/dispatcher)
+router.patch('/:id/status', authenticate, authorizeRoles('admin', 'dispatcher'), async (req, res) => {
     try {
-        const stats = await Orcamento.aggregate([
-            {
-                $group: {
-                    _id: '$status',
-                    count: { $sum: 1 },
-                    totalValor: { $sum: '$total' }
-                }
-            }
-        ]);
-        
-        const totalOrcamentos = await Orcamento.countDocuments();
-        const totalValor = await Orcamento.aggregate([
-            { $group: { _id: null, total: { $sum: '$total' } } }
-        ]);
-        
-        res.json({
-            success: true,
-            data: {
-                total: totalOrcamentos,
-                valorTotal: totalValor[0]?.total || 0,
-                porStatus: stats
-            }
-        });
-    } catch (error) {
-        console.error('Erro ao buscar estatísticas:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erro ao buscar estatísticas',
-            error: error.message
-        });
-    }
-});
+        const { status, observacao } = req.body;
+        const allowedStatuses = ['rascunho', 'enviado', 'aprovado', 'rejeitado', 'expirado'];
 
-// PATCH /api/orcamentos/:id/status - Mudar status (aprovar / rejeitar)
-router.patch('/:id/status', authenticate, async (req, res) => {
-    try {
-        const { status } = req.body;
-        const allowedTransitions = ['aprovado', 'rejeitado'];
-
-        if (!allowedTransitions.includes(status)) {
+        if (!allowedStatuses.includes(status)) {
             return res.status(400).json({
                 success: false,
-                message: `Status inválido. Use: ${allowedTransitions.join(', ')}`
+                message: `Status inválido. Use: ${allowedStatuses.join(', ')}`
             });
         }
 
@@ -1029,22 +1050,24 @@ router.patch('/:id/status', authenticate, async (req, res) => {
             return res.status(404).json({ success: false, message: 'Orçamento não encontrado' });
         }
 
-        if (orcamento.status !== 'enviado') {
-            return res.status(400).json({
-                success: false,
-                message: `Apenas orçamentos com status 'enviado' podem ser aprovados ou rejeitados (atual: '${orcamento.status}')`
-            });
-        }
-
         orcamento.status = status;
-        orcamento.dataResposta = new Date();
+        if (['aprovado', 'rejeitado'].includes(status)) {
+            orcamento.dataResposta = new Date();
+            orcamento.aprovadoPor = req.user.role;
+            orcamento.aprovadoPorUser = req.user.id;
+        }
+        if (observacao) orcamento.observacao = observacao;
         await orcamento.save();
 
-        res.json({
-            success: true,
-            message: `Orçamento ${status} com sucesso`,
-            data: orcamento
-        });
+        const msg = {
+            aprovado:  'Orçamento aprovado com sucesso',
+            rejeitado: 'Orçamento rejeitado',
+            enviado:   'Orçamento marcado como enviado',
+            rascunho:  'Orçamento revertido para rascunho',
+            expirado:  'Orçamento marcado como expirado'
+        }[status] || `Status alterado para '${status}'`;
+
+        res.json({ success: true, message: msg, data: orcamento });
     } catch (error) {
         console.error('Erro ao atualizar status:', error);
         res.status(500).json({ success: false, message: 'Erro ao atualizar status', error: error.message });

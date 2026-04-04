@@ -173,9 +173,42 @@
     <script src="/plugins/adminlte/adminlte.min.js"></script>
     <script src="../../assets/js/config.js"></script>
 
+    <!-- Modal para mudar status com observação -->
+    <div class="modal fade" id="statusModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header" id="statusModalHeader">
+                    <h5 class="modal-title" id="statusModalTitle"></h5>
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <p id="statusModalText"></p>
+                    <div class="form-group">
+                        <label for="statusObservacaoInput">Observação (opcional):</label>
+                        <textarea id="statusObservacaoInput" class="form-control" rows="3" placeholder="Pode adicionar uma nota ou motivo..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn" id="confirmarStatusBtn" onclick="confirmarMudarStatus()">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // API_BASE_URL має бути порожнім для relative URLs (працює в GitHub Codespaces)
         const API_BASE_URL = window.API_BASE_URL || '';
+
+        // Pending action for status change modal
+        let pendingStatusAction = null;
+
+        function getToken() {
+            return localStorage.getItem('liftmanager_jwt') ||
+                   localStorage.getItem('jwt_token') ||
+                   localStorage.getItem('token') ||
+                   localStorage.getItem('lm_token');
+        }
 
         // Carregar orçamentos
         async function carregarOrcamentos(filtros = {}) {
@@ -188,10 +221,7 @@
             emptyState.style.display = 'none';
 
             try {
-                const token = localStorage.getItem('liftmanager_jwt') || 
-                             localStorage.getItem('jwt_token') ||
-                             localStorage.getItem('token') || 
-                             localStorage.getItem('lm_token');
+                const token = getToken();
 
                 if (!token) {
                     alert('Não autorizado. Faça login novamente.');
@@ -208,7 +238,7 @@
 
                 const response = await fetch(`${API_BASE_URL}/api/orcamentos?${params.toString()}`, {
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${getToken()}`
                     }
                 });
 
@@ -294,18 +324,25 @@
                             <button class="btn btn-sm btn-info" onclick="verOrcamento('${orcamento._id}'); event.stopPropagation();">
                                 <i class="fas fa-eye"></i> Ver
                             </button>
+                            <button class="btn btn-sm btn-secondary" onclick="downloadPDF('${orcamento._id}', '${orcamento.numero}'); event.stopPropagation();" title="Download PDF">
+                                <i class="fas fa-file-pdf"></i> PDF
+                            </button>
                             <button class="btn btn-sm btn-warning" onclick="editarOrcamento('${orcamento._id}'); event.stopPropagation();">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
                             <button class="btn btn-sm btn-danger" onclick="eliminarOrcamento('${orcamento._id}'); event.stopPropagation();">
                                 <i class="fas fa-trash"></i> Eliminar
                             </button>
-                            ${orcamento.status === 'enviado' ? `
-                            <button class="btn btn-sm btn-success mt-1" onclick="mudarStatus('${orcamento._id}', 'aprovado'); event.stopPropagation();">
+                            ${['rascunho', 'enviado', 'expirado'].includes(orcamento.status) ? `
+                            <button class="btn btn-sm btn-success mt-1" onclick="abrirStatusModal('${orcamento._id}', 'aprovado'); event.stopPropagation();">
                                 <i class="fas fa-check"></i> Aprovar
                             </button>
-                            <button class="btn btn-sm btn-danger mt-1" onclick="mudarStatus('${orcamento._id}', 'rejeitado'); event.stopPropagation();">
+                            <button class="btn btn-sm btn-warning mt-1" onclick="abrirStatusModal('${orcamento._id}', 'rejeitado'); event.stopPropagation();">
                                 <i class="fas fa-times"></i> Rejeitar
+                            </button>` : ''}
+                            ${orcamento.status === 'rejeitado' ? `
+                            <button class="btn btn-sm btn-info mt-1" onclick="abrirStatusModal('${orcamento._id}', 'enviado'); event.stopPropagation();">
+                                <i class="fas fa-paper-plane"></i> Reenviar
                             </button>` : ''}
                         </div>
                     </div>
@@ -330,15 +367,10 @@
             }
 
             try {
-                const token = localStorage.getItem('liftmanager_jwt') || 
-                             localStorage.getItem('jwt_token') ||
-                             localStorage.getItem('token') || 
-                             localStorage.getItem('lm_token');
-
                 const response = await fetch(`${API_BASE_URL}/api/orcamentos/${id}`, {
                     method: 'DELETE',
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${getToken()}`
                     }
                 });
 
@@ -354,35 +386,88 @@
             }
         }
 
-        // Mudar status do orçamento (aprovar / rejeitar)
-        async function mudarStatus(id, novoStatus) {
-            const labels = { aprovado: 'aprovar', rejeitado: 'rejeitar' };
-            if (!confirm(`Tem certeza que deseja ${labels[novoStatus]} este orçamento?`)) return;
+        // Download PDF autenticado
+        async function downloadPDF(id, numero) {
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/orcamentos/${id}/pdf`, {
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                });
+                if (!res.ok) throw new Error('Erro ao descarregar PDF');
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Orcamento_${numero}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } catch (err) {
+                alert('Erro ao descarregar PDF: ' + err.message);
+            }
+        }
+
+        // Abrir modal de mudança de status
+        function abrirStatusModal(id, novoStatus) {
+            pendingStatusAction = { id, novoStatus };
+            const labels = { aprovado: 'aprovar', rejeitado: 'rejeitar', enviado: 'reenviar ao cliente', rascunho: 'reverter para rascunho' };
+            const isApprove = novoStatus === 'aprovado';
+            const isReject = novoStatus === 'rejeitado';
+
+            const header = document.getElementById('statusModalHeader');
+            header.className = 'modal-header ' + (isApprove ? 'bg-success text-white' : isReject ? 'bg-danger text-white' : 'bg-primary text-white');
+            document.getElementById('statusModalTitle').textContent =
+                isApprove ? '✔ Aprovar orçamento' : isReject ? '✕ Rejeitar orçamento' : '↺ Alterar status';
+            document.getElementById('statusModalText').textContent =
+                `Confirma que deseja ${labels[novoStatus] || novoStatus} este orçamento?`;
+            document.getElementById('statusObservacaoInput').value = '';
+
+            const btn = document.getElementById('confirmarStatusBtn');
+            btn.className = 'btn ' + (isApprove ? 'btn-success' : isReject ? 'btn-danger' : 'btn-primary');
+            btn.textContent = 'Confirmar';
+
+            $('#statusModal').modal('show');
+        }
+
+        // Confirmar mudança de status via modal
+        async function confirmarMudarStatus() {
+            if (!pendingStatusAction) return;
+            const { id, novoStatus } = pendingStatusAction;
+            const observacao = document.getElementById('statusObservacaoInput').value.trim();
+
+            const btn = document.getElementById('confirmarStatusBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A processar...';
 
             try {
-                const token = localStorage.getItem('liftmanager_jwt') ||
-                             localStorage.getItem('jwt_token') ||
-                             localStorage.getItem('token') ||
-                             localStorage.getItem('lm_token');
-
                 const response = await fetch(`${API_BASE_URL}/api/orcamentos/${id}/status`, {
                     method: 'PATCH',
                     headers: {
-                        'Authorization': `Bearer ${token}`,
+                        'Authorization': `Bearer ${getToken()}`,
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ status: novoStatus })
+                    body: JSON.stringify({ status: novoStatus, observacao })
                 });
 
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.message || 'Erro ao atualizar status');
 
+                $('#statusModal').modal('hide');
+                pendingStatusAction = null;
                 alert(data.message);
                 carregarOrcamentos();
             } catch (error) {
                 console.error('Erro:', error);
                 alert('Erro: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Confirmar';
             }
+        }
+
+        // Mudar status (legacy alias)
+        function mudarStatus(id, novoStatus) {
+            abrirStatusModal(id, novoStatus);
         }
 
         // Aplicar filtros
