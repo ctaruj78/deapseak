@@ -507,7 +507,10 @@ class InvoiceManager {
         const invoice = this.invoices.find(inv => inv.id === invoiceId);
         if (!invoice) return;
 
-        this.showPaymentOptions(invoice);
+        // Close the invoice detail modal first to avoid stacked modals
+        const delay = $('#invoiceModal').hasClass('show') ? 350 : 0;
+        $('#invoiceModal').modal('hide');
+        setTimeout(() => { this.showPaymentOptions(invoice); }, delay);
     }
 
     showPaymentOptions(invoice) {
@@ -739,7 +742,4 @@ class InvoiceManager {
     }
 }
 
-// Ініціалізація
-$(document).ready(function() {
-    window.invoiceManager = new InvoiceManager();
-});
+// Ініціалізація відбувається в invoices.html
