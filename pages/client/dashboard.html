@@ -265,16 +265,6 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/pages/client/support.html" title="Підтримка">
-                        <i class="fas fa-headset"></i>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" id="darkModeToggle" title="Темна тема">
-                        <i class="fas fa-moon"></i>
-                    </a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link" href="#" onclick="logout()" title="Вийти">
                         <i class="fas fa-sign-out-alt"></i>
                     </a>
@@ -962,7 +952,8 @@
                     if (data && data.success && data.data) {
                         const userData = data.data;
                         
-                        // Зберігаємо в localStorage для офлайн доступу
+                        // Save fresh data in sessionStorage so _populateSidebarName uses correct name
+                        sessionStorage.setItem('liftmanager_user', JSON.stringify(userData));
                         localStorage.setItem('currentUser', JSON.stringify(userData));
                         
                         return userData;
@@ -971,7 +962,19 @@
                     throw new Error('Помилка завантаження профілю');
                 } catch (error) {
                     console.warn('API недоступний, використовуємо локальні дані');
-                    return JSON.parse(localStorage.getItem('currentUser')) || { firstName: 'Клієнт' };
+                    // Only use cached data if email matches JWT (avoid showing wrong user)
+                    try {
+                        const jwtUser = AuthManager.getCurrentUser();
+                        const cached = JSON.parse(localStorage.getItem('currentUser') || 'null');
+                        if (cached && jwtUser && cached.email === jwtUser.email) {
+                            return cached;
+                        }
+                        // Fallback: use JWT fields directly
+                        if (jwtUser) {
+                            return { firstName: jwtUser.email.split('@')[0], email: jwtUser.email };
+                        }
+                    } catch(e) {}
+                    return { firstName: 'Клієнт' };
                 }
             }
 

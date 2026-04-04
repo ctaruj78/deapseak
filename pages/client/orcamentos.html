@@ -71,9 +71,6 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#" id="darkModeToggle" title="Темна тема"><i class="fas fa-moon"></i></a>
-            </li>
-            <li class="nav-item">
                 <a class="nav-link" href="#" onclick="logout()" title="Вийти"><i class="fas fa-sign-out-alt"></i></a>
             </li>
         </ul>
@@ -309,8 +306,10 @@
     let pendingAction = null; // { id, status }
 
     function getToken() {
-        return localStorage.getItem('liftmanager_jwt') ||
-               localStorage.getItem('jwt_token') ||
+        // sessionStorage має пріоритет — уникаємо old токенів з localStorage
+        return sessionStorage.getItem('liftmanager_jwt') ||
+               localStorage.getItem('liftmanager_jwt') ||
+               sessionStorage.getItem('token') ||
                localStorage.getItem('token') ||
                localStorage.getItem('lm_token');
     }
@@ -325,27 +324,31 @@
 
     // ─── Carregar orçamentos ─────────────────────────────────────
     async function carregarOrcamentos() {
-        // Verificar que o utilizador autenticado é mesmo 'client' antes de chamar a API
-        try {
-            const currentUser = typeof AuthManager !== 'undefined' ? AuthManager.getCurrentUser() : null;
-            if (currentUser && currentUser.role && currentUser.role !== 'client') {
-                // Utilizador com role errado — redirecionar
-                localStorage.clear();
-                sessionStorage.clear();
-                window.location.replace('/pages/auth/login.html');
-                return;
-            }
-        } catch(e) {}
+        // Deve ser exactamente 'client' — qualquer outra role (ou ausente) → login
+        const currentUser = (typeof AuthManager !== 'undefined') ? AuthManager.getCurrentUser() : null;
+        if (!currentUser || currentUser.role !== 'client') {
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.replace('/pages/auth/login.html');
+            return;
+        }
 
         document.getElementById('loadingState').style.display = 'block';
         document.getElementById('orcamentosList').style.display = 'none';
         document.getElementById('emptyState').style.display = 'none';
 
         try {
+            const token = AuthManager.getAuthToken();
             const res = await fetch(`${API_BASE_URL}/api/orcamentos/my`, {
-                headers: { 'Authorization': `Bearer ${getToken()}` }
+                headers: { 'Authorization': `Bearer ${token}` }
             });
             const json = await res.json();
+            if (res.status === 401 || res.status === 403) {
+                // Token inválido ou role errada → logout
+                AuthManager.logout();
+                window.location.replace('/pages/auth/login.html');
+                return;
+            }
             if (!res.ok) throw new Error(json.message || 'Erro ao carregar');
 
             orcamentosData = json.data || [];
@@ -606,7 +609,7 @@
         } catch(e) {}
 
         // Tema escuro
-        document.getElementById('darkModeToggle').addEventListener('click', function() {
+        document.getElementById('darkModeToggle')?.addEventListener('click', function() {
             document.body.classList.toggle('dark-mode');
             this.querySelector('i').classList.toggle('fa-moon');
             this.querySelector('i').classList.toggle('fa-sun');

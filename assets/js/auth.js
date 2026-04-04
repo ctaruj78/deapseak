@@ -92,7 +92,8 @@ class AuthManager {
             'authToken',          // Для lifts-manager.js
             'lm_token',           // Старий формат
             'deapseak_token',     // V2 формат
-            'user'                // Головний user (login.html)
+            'user',               // Головний user (login.html)
+            'currentUser'         // Dashboard/profile cache
         ];
         keys.forEach(key => {
             localStorage.removeItem(key);
@@ -358,13 +359,33 @@ if (typeof window !== 'undefined') {
             const stored = sessionStorage.getItem('liftmanager_user') || localStorage.getItem('liftmanager_user');
             if (!stored) return;
             const u = JSON.parse(stored);
-            const name = ((u.firstName || '') + ' ' + (u.lastName || '')).trim() || u.username || u.email || '—';
+
+            // Security: verify stored user matches the current JWT — avoid showing stale data
+            try {
+                const token = sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt');
+                if (token) {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    if (payload.email && u.email && payload.email.toLowerCase() !== u.email.toLowerCase()) {
+                        // Stale user data — clear it
+                        sessionStorage.removeItem('liftmanager_user');
+                        localStorage.removeItem('liftmanager_user');
+                        localStorage.removeItem('currentUser');
+                        return;
+                    }
+                }
+            } catch(e) {}
+
+            // Support both {firstName, lastName} (admin/dispatcher) and {name} (client)
+            const fullName = u.name ||
+                ((u.firstName || '') + ' ' + (u.lastName || '')).trim() ||
+                u.username || u.email || '—';
+
             // All known sidebar name element IDs across panels
             ['sidebarName', 'sidebarUserName', 'clientName', 'techName', 'adminName'].forEach(function(id) {
                 const el = document.getElementById(id);
                 // Only set if still showing placeholder (don't override runtime-set values)
-                if (el && ['—', 'Cliente', 'Технік', 'Диспетчер', 'Адміністратор', ''].includes(el.textContent.trim())) {
-                    el.textContent = name;
+                if (el && ['—', 'Cliente', 'Технік', 'Диспетчер', 'Адміністратор', 'Адміністратор Системи', ''].includes(el.textContent.trim())) {
+                    el.textContent = fullName;
                 }
             });
         } catch (e) {}
