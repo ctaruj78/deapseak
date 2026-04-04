@@ -124,8 +124,8 @@ exports.login = async (req, res, next) => {
             );
         }
 
-        // Перевірка статусу акаунту
-        if (!user.isActive) {
+        // Перевірка статусу акаунту (явно false — старі записи без поля не блокуємо)
+        if (user.isActive === false) {
             throw new AppError('Акаунт заблоковано. Зверніться до адміністратора', 403);
         }
 
@@ -164,7 +164,8 @@ exports.login = async (req, res, next) => {
             data: {
                 user: userResponse,
                 token,
-                refreshToken
+                refreshToken,
+                mustChangePassword: !!user.mustChangePassword
             }
         });
     } catch (error) {
@@ -543,9 +544,9 @@ exports.refreshToken = async (req, res, next) => {
             return res.status(403).json({ success: false, message: 'Refresh token недійсний або прострочений. Будь ласка, увійдіть знову.' });
         }
 
-        // Перевіряємо чи користувач ще існує і активний
+        // Перевіряємо чи користувач ще існує і активний (явно false — не блокуємо undefined)
         const user = await User.findById(decoded.id).select('-password');
-        if (!user || !user.isActive) {
+        if (!user || user.isActive === false) {
             return res.status(403).json({ success: false, message: 'Користувача не знайдено або заблоковано' });
         }
 
@@ -564,3 +565,106 @@ exports.refreshToken = async (req, res, next) => {
     }
 };
 
+/**
+ * Створення користувача адміністратором (POST /api/auth/users)
+ * - генерує тимчасовий пароль якщо не переданий
+ * - встановлює mustChangePassword=true
+ * - надсилає welcome email клієнту
+ */
+exports.adminCreateUser = async (req, res, next) => {
+    try {
+        const { username, email, password, firstName, lastName, phone, role = 'client' } = req.body;
+
+        if (!email || !firstName || !lastName) {
+            throw new AppError('email, firstName та lastName є обов\'язковими', 400);
+        }
+
+        // Генерація username якщо не переданий
+        const resolvedUsername = username || email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '_') + '_' + Date.now().toString().slice(-4);
+
+        // Перевірка унікальності
+        const existing = await User.findOne({ $or: [{ email }, { username: resolvedUsername }] });
+        if (existing) {
+            throw new AppError('Користувач з таким email або username вже існує', 400);
+        }
+
+        // Якщо пароль не передано — генеруємо тимчасовий
+        let isTemporary = false;
+        let resolvedPassword = password;
+        if (!resolvedPassword) {
+            resolvedPassword = generateTemporaryPassword();
+            isTemporary = true;
+        }
+
+        const user = await User.create({
+            username: resolvedUsername,
+            email,
+            password: resolvedPassword,
+            firstName,
+            lastName,
+            phone,
+            role,
+            isActive: true,
+            mustChangePassword: isTemporary // примусова зміна тільки якщо пароль авто-згенерований
+        });
+
+        // Надсилаємо welcome email
+        try {
+            const emailService = require('../services/emailService');
+            await emailService.sendWelcomeClientEmail(user, resolvedPassword);
+        } catch (emailErr) {
+            console.warn('⚠️  Welcome email не відправлено:', emailErr.message);
+            // Не блокуємо відповідь — користувач вже створений
+        }
+
+        const userResponse = user.toObject();
+        delete userResponse.password;
+
+        res.status(201).json({
+            success: true,
+            message: 'Користувача створено' + (isTemporary ? '. Тимчасовий пароль відправлено на email.' : ''),
+            data: {
+                user: userResponse,
+                ...(isTemporary && { temporaryPassword: resolvedPassword })
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Скидання пароля клієнта адміністратором (POST /api/auth/users/:id/reset-password)
+ * - генерує новий тимчасовий пароль
+ * - надсилає email клієнту
+ */
+exports.adminResetUserPassword = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user) throw new AppError('Користувача не знайдено', 404);
+
+        const newPassword = generateTemporaryPassword();
+        user.password = newPassword;
+        user.mustChangePassword = true;
+        user.loginAttempts = 0;
+        user.lockUntil = null;
+        user.isActive = true;
+        await user.save();
+
+        // Надсилаємо email
+        try {
+            const emailService = require('../services/emailService');
+            await emailService.sendWelcomeClientEmail(user, newPassword);
+        } catch (emailErr) {
+            console.warn('⚠️  Reset email не відправлено:', emailErr.message);
+        }
+
+        res.json({
+            success: true,
+            message: 'Пароль скинуто. Тимчасовий пароль відправлено на email.',
+            data: { temporaryPassword: newPassword }
+        });
+    } catch (error) {
+        next(error);
+    }
+};

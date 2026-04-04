@@ -5,18 +5,30 @@ const exportService = require('../services/exportService');
 
 exports.createLift = async (req, res, next) => {
     try {
-        const { municipalNumber, address, location, client, technician, manufacturer, model, capacity, floors, installationDate, lastInspectionDate, nextInspectionDate, qrCode } = req.body;
+        const { municipalNumber, address, location, technician, manufacturer, model, capacity, floors, installationDate, lastInspectionDate, nextInspectionDate, qrCode } = req.body;
+        let { client, clientEmail } = req.body;
+
         const existingLift = await Lift.findOne({ municipalNumber });
         if (existingLift) throw new AppError('Lift with this number exists', 400);
-        if (client) {
+
+        // Синхронізація client ↔ clientEmail при створенні
+        if (clientEmail && !client) {
+            const clientUser = await User.findOne({ email: clientEmail.toLowerCase().trim(), role: 'client' });
+            if (clientUser) client = clientUser._id;
+        } else if (client && !clientEmail) {
+            const clientUser = await User.findById(client).select('email role');
+            if (!clientUser || clientUser.role !== 'client') throw new AppError('Invalid client', 400);
+            clientEmail = clientUser.email;
+        } else if (client) {
             const clientUser = await User.findById(client);
             if (!clientUser || clientUser.role !== 'client') throw new AppError('Invalid client', 400);
         }
+
         if (technician) {
             const techUser = await User.findById(technician);
             if (!techUser || techUser.role !== 'technician') throw new AppError('Invalid technician', 400);
         }
-        const lift = await Lift.create({ municipalNumber, address, location, client, technician, manufacturer, model, capacity, floors, installationDate, lastInspectionDate, nextInspectionDate, qrCode });
+        const lift = await Lift.create({ municipalNumber, address, location, client, clientEmail, technician, manufacturer, model, capacity, floors, installationDate, lastInspectionDate, nextInspectionDate, qrCode });
         await lift.populate(['client', 'technician']);
         res.status(201).json({ success: true, message: 'Lift created', data: { lift } });
     } catch (error) {
@@ -99,6 +111,29 @@ exports.updateLift = async (req, res, next) => {
                 updates.address.city = '';
             }
         }
+
+        // 🔄 Синхронізація client ↔ clientEmail
+        // Якщо передано clientEmail — шукаємо User і оновлюємо client ObjectId
+        if (updates.clientEmail !== undefined) {
+            if (updates.clientEmail) {
+                const clientUser = await User.findOne({ email: updates.clientEmail.toLowerCase().trim(), role: 'client' });
+                updates.client = clientUser ? clientUser._id : null;
+            } else {
+                // clientEmail очищено — знімаємо прив'язку
+                updates.client = null;
+            }
+        }
+        // Якщо передано client ObjectId — оновлюємо clientEmail з профілю User
+        else if (updates.client !== undefined) {
+            if (updates.client) {
+                const clientUser = await User.findById(updates.client).select('email role');
+                if (!clientUser || clientUser.role !== 'client') throw new AppError('Invalid client', 400);
+                updates.clientEmail = clientUser.email;
+            } else {
+                updates.clientEmail = null;
+            }
+        }
+
         const lift = await Lift.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true }).populate('client').populate('technician');
         if (!lift) throw new AppError('Lift not found', 404);
         res.json({ success: true, message: 'Lift updated', data: { lift } });

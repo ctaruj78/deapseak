@@ -43,11 +43,17 @@ router.post('/change-password', authenticate, authController.changePassword);
 // GET /api/auth/users - Отримання списку всіх користувачів
 router.get('/users', authenticate, authorizeRoles('admin'), authController.getAllUsers);
 
+// POST /api/auth/users - Створення користувача адміністратором (з тимчасовим паролем + email)
+router.post('/users', authenticate, authorizeRoles('admin'), authController.adminCreateUser);
+
 // GET /api/auth/users/:id - Отримання користувача по ID
 router.get('/users/:id', authenticate, authorizeRoles('admin'), authController.getUserById);
 
 // PUT /api/auth/users/:id/role - Оновлення ролі користувача
 router.put('/users/:id/role', authenticate, authorizeRoles('admin'), authController.updateUserRole);
+
+// POST /api/auth/users/:id/reset-password - Скидання пароля адміністратором
+router.post('/users/:id/reset-password', authenticate, authorizeRoles('admin'), authController.adminResetUserPassword);
 
 // PATCH /api/auth/users/:id/ban - Блокування/розблокування користувача
 router.patch('/users/:id/ban', authenticate, authorizeRoles('admin'), authController.toggleUserBan);

@@ -355,6 +355,52 @@ class EmailService {
         return statuses[status] || status;
     }
 
+    // Welcome email для нового клієнта з тимчасовим паролем
+    async sendWelcomeClientEmail(user, temporaryPassword) {
+        const frontendUrl = process.env.FRONTEND_URL || 'https://deapseak.com';
+        const loginUrl = `${frontendUrl}/pages/auth/login.html`;
+        const firstName = user.firstName || 'Cliente';
+        const lastName = user.lastName || '';
+
+        const html = `
+            <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#333;">
+                <div style="background:#1a1a2e;padding:24px 32px;border-radius:8px 8px 0 0;">
+                    <h1 style="color:#fff;margin:0;font-size:22px;">🛗 FestLift — Plataforma de Gestão de Elevadores</h1>
+                </div>
+                <div style="background:#fff;padding:32px;border:1px solid #e0e0e0;border-top:none;border-radius:0 0 8px 8px;">
+                    <p style="font-size:16px;">Bem-vindo(a), <strong>${firstName} ${lastName}</strong>!</p>
+                    <p>A sua empresa foi registada na plataforma <strong>FestLift</strong> como cliente de manutenção de elevadores.</p>
+                    <p>Pode acompanhar o estado dos seus elevadores, consultar relatórios e criar pedidos de serviço.</p>
+
+                    <div style="background:#f0f4ff;border-left:4px solid #4361ee;padding:20px;border-radius:6px;margin:24px 0;">
+                        <h3 style="margin-top:0;color:#4361ee;">🔐 Os seus dados de acesso:</h3>
+                        <p style="margin:6px 0;"><strong>Email:</strong> ${user.email}</p>
+                        <p style="margin:6px 0;"><strong>Palavra-passe temporária:</strong> <code style="background:#e8edff;padding:2px 8px;border-radius:4px;font-size:15px;">${temporaryPassword}</code></p>
+                    </div>
+
+                    <div style="background:#fff8e1;border-left:4px solid #ffc107;padding:16px;border-radius:6px;margin:16px 0;">
+                        <p style="margin:0;">⚠️ <strong>Por razões de segurança, altere a sua palavra-passe após o primeiro login.</strong></p>
+                    </div>
+
+                    <a href="${loginUrl}"
+                       style="display:inline-block;background:#4361ee;color:#fff;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold;margin-top:16px;">
+                        Entrar na plataforma →
+                    </a>
+
+                    <p style="color:#888;font-size:13px;margin-top:32px;">
+                        Se tiver alguma questão, contacte-nos em <a href="mailto:info@festlift.pt" style="color:#4361ee;">info@festlift.pt</a>
+                    </p>
+                </div>
+            </div>`;
+
+        try {
+            await this._sendEmail(user.email, 'Bem-vindo(a) à FestLift — Os seus dados de acesso', html);
+        } catch (error) {
+            console.error('❌ sendWelcomeClientEmail error:', error.message);
+            throw error;
+        }
+    }
+
     // Тестова відправка
     async sendTestEmail(to) {
         try {
