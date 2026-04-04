@@ -49,239 +49,225 @@ class ClientDashboard {
 
     loadDashboardData() {
         this.loadStatistics();
-        this.loadRecentActivities();
-        this.loadMaintenanceSchedule();
-        this.loadNotifications();
-        this.initCharts();
+        // Реальні дані завантажуються через initializeClientDashboard() у dashboard.html
+        // і передаються сюди через updateWithRealData()
+        this.renderActivitiesLoading();
+        this.renderMaintenanceLoading();
+        this.renderNotificationsLoading();
+        this.initCharts([]);
     }
 
     loadStatistics() {
-        // Статистика завантажується через initializeClientDashboard() з реального API
-        // Показуємо стан завантаження
         $('#totalLifts').text('...');
         $('#activeRequests').text('...');
         $('#completedThisMonth').text('...');
         $('#liftsInMaintenance').text('...');
-        // Статус-бейдж оновлюється разом з реальними даними в updateClientStats()
     }
 
-    loadRecentActivities() {
-        // Імітація останніх подій
-        const activities = [
-            {
-                id: 1,
-                event: 'Планове техобслуговування ліфта #5',
-                status: 'completed',
-                statusText: 'Завершено',
-                time: '10:30',
-                date: '2024-05-15'
-            },
-            {
-                id: 2,
-                event: 'Ремонт ліфта #2 у будівлі Б',
-                status: 'in-progress',
-                statusText: 'В роботі',
-                time: '09:15',
-                date: '2024-05-15'
-            },
-            {
-                id: 3,
-                event: 'Огляд ліфта #7',
-                status: 'pending',
-                statusText: 'Очікує',
-                time: '14:20',
-                date: '2024-05-14'
-            },
-            {
-                id: 4,
-                event: 'Заявка на ремонт ліфта #3',
-                status: 'completed',
-                statusText: 'Завершено',
-                time: '16:45',
-                date: '2024-05-14'
-            },
-            {
-                id: 5,
-                event: 'Заміна деталей ліфта #1',
-                status: 'cancelled',
-                statusText: 'Скасовано',
-                time: '11:30',
-                date: '2024-05-13'
-            }
-        ];
-
-        this.renderActivities(activities);
+    // ─── Викликається з dashboard.html після завантаження реальних даних ───
+    updateWithRealData(lifts, requests, notifications) {
+        this.renderActivities(requests || []);
+        this.renderMaintenanceSchedule(lifts || []);
+        this.renderNotifications(notifications || []);
+        this.updateChart(lifts || []);
     }
 
-    renderActivities(activities) {
-        const activitiesContainer = $('#recentActivityList');
-        activitiesContainer.empty();
+    // ─── Стани завантаження ───
+    renderActivitiesLoading() {
+        $('#recentActivityList').html(
+            '<tr><td colspan="4" class="text-center text-muted py-3"><i class="fas fa-spinner fa-spin mr-2"></i>Завантаження...</td></tr>'
+        );
+    }
 
-        activities.forEach(activity => {
-            const statusClass = this.getStatusClass(activity.status);
-            const row = `
-                <tr class="activity-item ${activity.status}">
-                    <td>${activity.event}</td>
-                    <td><span class="badge ${statusClass}">${activity.statusText}</span></td>
-                    <td>${activity.time}<br><small>${activity.date}</small></td>
+    renderMaintenanceLoading() {
+        $('#maintenanceSchedule').html(
+            '<div class="text-center text-muted py-3"><i class="fas fa-spinner fa-spin mr-2"></i>Завантаження...</div>'
+        );
+    }
+
+    renderNotificationsLoading() {
+        $('#notificationsList').html('');
+        $('#alertsCount').text('0');
+    }
+
+    // ─── Останні події — з реальних заявок ───
+    renderActivities(requests) {
+        const container = $('#recentActivityList');
+        container.empty();
+
+        if (!requests || requests.length === 0) {
+            container.html('<tr><td colspan="4" class="text-center text-muted py-3">Немає активностей</td></tr>');
+            return;
+        }
+
+        const recent = [...requests]
+            .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))
+            .slice(0, 5);
+
+        recent.forEach(req => {
+            const statusMap = {
+                open:        { cls: 'bg-primary',   text: 'Відкрита' },
+                in_progress: { cls: 'bg-info',      text: 'В роботі' },
+                assigned:    { cls: 'bg-warning',   text: 'Призначена' },
+                completed:   { cls: 'bg-success',   text: 'Завершена' },
+                cancelled:   { cls: 'bg-danger',    text: 'Скасована' }
+            };
+            const s = statusMap[req.status] || { cls: 'bg-secondary', text: req.status || '—' };
+            const dt = new Date(req.updatedAt || req.createdAt);
+            const dateStr = isNaN(dt) ? '—' : dt.toLocaleDateString('pt-PT');
+            const timeStr = isNaN(dt) ? '' : dt.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
+            const liftAddr = req.lift?.address?.street || req.lift?.municipalNumber || '—';
+
+            container.append(`
+                <tr>
+                    <td>${req.title || 'Заявка на обслуговування'}<br><small class="text-muted">${liftAddr}</small></td>
+                    <td><span class="badge ${s.cls}">${s.text}</span></td>
+                    <td>${timeStr}<br><small>${dateStr}</small></td>
                     <td>
-                        <button class="btn btn-sm btn-info" onclick="window.clientDashboard?.viewActivityDetails(${activity.id})">
+                        <a href="../client/requests.html" class="btn btn-sm btn-info">
                             <i class="fas fa-eye"></i>
-                        </button>
+                        </a>
                     </td>
                 </tr>
-            `;
-            activitiesContainer.append(row);
+            `);
         });
     }
 
     getStatusClass(status) {
         switch(status) {
             case 'completed': return 'bg-success';
-            case 'in-progress': return 'bg-info';
-            case 'pending': return 'bg-warning';
+            case 'in_progress': return 'bg-info';
+            case 'open': return 'bg-primary';
             case 'cancelled': return 'bg-danger';
             default: return 'bg-secondary';
         }
     }
 
-    loadMaintenanceSchedule() {
-        // Імітація графіка техобслуговування
-        const schedule = [
-            {
-                id: 1,
-                lift: 'Ліфт #1 - Будівля А',
-                date: '2024-05-20',
-                time: '10:00',
-                type: 'Плановий огляд',
-                priority: 'urgent'
-            },
-            {
-                id: 2,
-                lift: 'Ліфт #3 - Будівля Б',
-                date: '2024-05-22',
-                time: '14:30',
-                type: 'Технічне обслуговування',
-                priority: 'soon'
-            },
-            {
-                id: 3,
-                lift: 'Ліфт #5 - Будівля В',
-                date: '2024-05-25',
-                time: '09:00',
-                type: 'Перевірка безпеки',
-                priority: 'normal'
+    // ─── Графік обслуговування — з реальних nextInspectionDate ліфтів ───
+    renderMaintenanceSchedule(lifts) {
+        const container = $('#maintenanceSchedule');
+        container.empty();
+
+        if (!lifts || lifts.length === 0) {
+            container.html('<div class="text-center text-muted py-3">Немає ліфтів</div>');
+            $('#maintenanceCount').text('0');
+            return;
+        }
+
+        const now = new Date();
+        const upcoming = lifts
+            .filter(l => l.nextInspectionDate)
+            .map(l => {
+                const d = new Date(l.nextInspectionDate);
+                const daysLeft = Math.ceil((d - now) / 86400000);
+                return { lift: l, date: d, daysLeft };
+            })
+            .sort((a, b) => a.date - b.date)
+            .slice(0, 5);
+
+        $('#maintenanceCount').text(upcoming.length);
+
+        if (upcoming.length === 0) {
+            container.html('<div class="text-center text-muted py-3">Немає запланованих оглядів</div>');
+            return;
+        }
+
+        upcoming.forEach(({ lift, date, daysLeft }) => {
+            let priority = 'normal';
+            let priorityLabel = '';
+            if (daysLeft < 0) {
+                priority = 'urgent';
+                priorityLabel = `<span class="badge badge-danger ml-1">Прострочено (${Math.abs(daysLeft)} дн.)</span>`;
+            } else if (daysLeft <= 30) {
+                priority = 'urgent';
+                priorityLabel = `<span class="badge badge-danger ml-1">Через ${daysLeft} дн.</span>`;
+            } else if (daysLeft <= 60) {
+                priority = 'soon';
+                priorityLabel = `<span class="badge badge-warning ml-1">Через ${daysLeft} дн.</span>`;
+            } else {
+                priorityLabel = `<span class="badge badge-success ml-1">Через ${daysLeft} дн.</span>`;
             }
-        ];
 
-        this.renderMaintenanceSchedule(schedule);
-    }
+            const addr = lift.address ? `${lift.address.street || ''}, ${lift.address.city || ''}`.trim().replace(/^,|,$/, '').trim() : (lift.municipalNumber || '—');
+            const dateStr = date.toLocaleDateString('pt-PT');
 
-    renderMaintenanceSchedule(schedule) {
-        const scheduleContainer = $('#maintenanceSchedule');
-        scheduleContainer.empty();
-        
-        $('#maintenanceCount').text(schedule.length);
-
-        schedule.forEach(item => {
-            const card = `
-                <div class="schedule-card ${item.priority}">
+            container.append(`
+                <div class="schedule-card ${priority}">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h5 class="mb-1">${item.lift}</h5>
-                            <p class="mb-1">${item.type}</p>
-                            <small><i class="fas fa-calendar-alt mr-1"></i>${item.date} о ${item.time}</small>
+                            <h5 class="mb-1">${addr} ${priorityLabel}</h5>
+                            <p class="mb-1 text-muted">№ ${lift.municipalNumber || '—'}</p>
+                            <small><i class="fas fa-calendar-alt mr-1"></i>Planeado: ${dateStr}</small>
                         </div>
                         <div>
-                            <button class="btn btn-light btn-sm" onclick="window.clientDashboard?.viewMaintenanceDetails(${item.id})">
+                            <a href="../client/my-lifts.html" class="btn btn-light btn-sm">
                                 <i class="fas fa-info-circle"></i>
-                            </button>
+                            </a>
                         </div>
                     </div>
                 </div>
-            `;
-            scheduleContainer.append(card);
+            `);
         });
     }
 
-    loadNotifications() {
-        // Імітація сповіщень
-        const notifications = [
-            {
-                id: 1,
-                title: 'Заплановано техобслуговування',
-                message: 'Ліфт #1 заплановано на обслуговування 20 травня о 10:00',
-                time: '2 години тому',
-                read: false
-            },
-            {
-                id: 2,
-                title: 'Заявку завершено',
-                message: 'Вашу заявку #245 на ремонт ліфта #3 успішно завершено',
-                time: '5 годин тому',
-                read: true
-            },
-            {
-                id: 3,
-                title: 'Новий рахунок',
-                message: 'Доступний новий рахунок за техобслуговування. Термін сплати - 31 травня',
-                time: '1 день тому',
-                read: false
-            }
-        ];
-
-        this.renderNotifications(notifications);
-    }
-
+    // ─── Сповіщення — з реального API ───
     renderNotifications(notifications) {
-        const notificationsContainer = $('#notificationsList');
-        notificationsContainer.empty();
-        
-        const unreadCount = notifications.filter(n => !n.read).length;
-        $('#alertsCount').text(unreadCount);
+        const container = $('#notificationsList');
+        container.empty();
 
-        notifications.forEach(notification => {
-            const alertClass = notification.read ? 'alert-secondary' : 'alert-warning';
-            const notificationElement = `
+        const unread = (notifications || []).filter(n => !n.read).length;
+        $('#alertsCount').text(unread);
+
+        if (!notifications || notifications.length === 0) {
+            container.html('<div class="text-center text-muted py-3">Немає сповіщень</div>');
+            return;
+        }
+
+        notifications.slice(0, 5).forEach(n => {
+            const alertClass = n.read ? 'alert-secondary' : 'alert-warning';
+            const dt = n.createdAt ? new Date(n.createdAt).toLocaleString('pt-PT') : '';
+            container.append(`
                 <div class="alert ${alertClass} alert-dismissible">
-                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true" onclick="window.clientDashboard?.markAsRead(${notification.id})">×</button>
-                    <h5>${notification.title}</h5>
-                    <p>${notification.message}</p>
-                    <small>${notification.time}</small>
+                    <button type="button" class="close" data-dismiss="alert">×</button>
+                    <h5>${n.title || 'Сповіщення'}</h5>
+                    <p>${n.message || ''}</p>
+                    ${dt ? `<small class="text-muted">${dt}</small>` : ''}
                 </div>
-            `;
-            notificationsContainer.append(notificationElement);
+            `);
         });
     }
 
-    initCharts() {
-        // Знищити попередній графік через глобальний реєстр Chart.js (незалежно від екземпляру)
+    // ─── Діаграма — з реальних статусів ліфтів ───
+    initCharts(lifts) {
         const existingChart = Chart.getChart('liftsChart');
-        if (existingChart) {
-            existingChart.destroy();
-        }
-        if (this.liftsChart) {
-            this.liftsChart = null;
-        }
+        if (existingChart) existingChart.destroy();
+        if (this.liftsChart) this.liftsChart = null;
 
-        // Ініціалізація діаграми стану ліфтів
         const canvasEl = document.getElementById('liftsChart');
         if (!canvasEl) return;
+
+        const operational = (lifts || []).filter(l => l.status === 'operational').length;
+        const maintenance  = (lifts || []).filter(l => l.status === 'maintenance').length;
+        const repair       = (lifts || []).filter(l => l.status === 'repair').length;
+        const outOfService = (lifts || []).filter(l => l.status === 'out_of_service').length;
+
         const ctx = canvasEl.getContext('2d');
         this.liftsChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Працюють нормально', 'На обслуговуванні', 'Не працюють'],
+                labels: ['Працюють', 'Обслуговування', 'Ремонт', 'Не працюють'],
                 datasets: [{
-                    data: [9, 2, 1],
+                    data: [operational, maintenance, repair, outOfService],
                     backgroundColor: [
                         'rgba(40, 167, 69, 0.8)',
                         'rgba(255, 193, 7, 0.8)',
+                        'rgba(255, 133, 27, 0.8)',
                         'rgba(220, 53, 69, 0.8)'
                     ],
                     borderColor: [
                         'rgba(40, 167, 69, 1)',
                         'rgba(255, 193, 7, 1)',
+                        'rgba(255, 133, 27, 1)',
                         'rgba(220, 53, 69, 1)'
                     ],
                     borderWidth: 1
@@ -291,17 +277,17 @@ class ClientDashboard {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            font: {
-                                size: 12
-                            }
-                        }
-                    }
+                    legend: { position: 'bottom', labels: { font: { size: 12 } } }
                 }
             }
         });
+    }
+
+    // Оновити діаграму з реальними даними (викликається після API)
+    updateChart(lifts) {
+        const existingChart = Chart.getChart('liftsChart');
+        if (existingChart) existingChart.destroy();
+        this.initCharts(lifts);
     }
 
     setupEventListeners() {
@@ -323,26 +309,12 @@ class ClientDashboard {
     }
 
     refreshActivities() {
-        this.showNotification('Оновлення активностей...', 'info');
-        setTimeout(() => {
-            this.loadRecentActivities();
-            this.showNotification('Активності оновлено', 'success');
-        }, 1000);
-    }
-
-    viewActivityDetails(activityId) {
-        alert(`Перегляд деталей активності #${activityId}`);
-        // Тут буде перехід на сторінку деталей
-    }
-
-    viewMaintenanceDetails(maintenanceId) {
-        alert(`Перегляд деталей техобслуговування #${maintenanceId}`);
-        // Тут буде перехід на сторінку деталей
+        this.showNotification('Оновлення...', 'info');
+        // Реальне оновлення через initializeClientDashboard у dashboard.html
     }
 
     markAsRead(notificationId) {
         this.showNotification('Сповіщення позначено як прочитане', 'success');
-        // Тут буде оновлення статусу сповіщення
     }
 
     showNotification(message, type = 'info') {

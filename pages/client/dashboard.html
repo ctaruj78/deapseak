@@ -929,6 +929,11 @@
                     // Показуємо останні заявки
                     displayRecentRequests(myRequests);
                     
+                    // ✅ Передаємо реальні дані в ClientDashboard (замінює фальшиві)
+                    if (window.clientDashboard && typeof window.clientDashboard.updateWithRealData === 'function') {
+                        window.clientDashboard.updateWithRealData(myLifts, myRequests, notifications);
+                    }
+                    
                     // Ініціалізуємо WebSocket
                     initClientWebSocket(userData);
                     
