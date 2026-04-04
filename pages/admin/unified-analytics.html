@@ -832,32 +832,32 @@
                         <!-- Financial Analytics Tab -->
                         <div class="tab-pane fade" id="financial-analytics" role="tabpanel">
                             
-                            <!-- КПІ фінанси -->
+                            <!-- KPIs Financeiros -->
                             <div class="row mb-4">
                                 <div class="col-md-3">
                                     <div class="analytics-card">
                                         <div class="card-body text-center">
-                                            <h3 class="text-success">₴67,000</h3>
-                                            <p class="mb-0">Дохід цього місяця</p>
-                                            <small class="text-success"><i class="fas fa-arrow-up"></i> +12% до мин. місяця</small>
+                                            <h3 class="text-success">€ 67.000</h3>
+                                            <p class="mb-0">Receita deste mês</p>
+                                            <small class="text-success"><i class="fas fa-arrow-up"></i> +12% vs mês anterior</small>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="analytics-card">
                                         <div class="card-body text-center">
-                                            <h3 class="text-warning">₴35,000</h3>
-                                            <p class="mb-0">Витрати на ТО</p>
-                                            <small class="text-warning"><i class="fas fa-arrow-up"></i> +5% до мин. місяця</small>
+                                            <h3 class="text-warning">€ 35.000</h3>
+                                            <p class="mb-0">Custos de manutenção</p>
+                                            <small class="text-warning"><i class="fas fa-arrow-up"></i> +5% vs mês anterior</small>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="analytics-card">
                                         <div class="card-body text-center">
-                                            <h3 class="text-primary">₴32,000</h3>
-                                            <p class="mb-0">Чистий прибуток</p>
-                                            <small class="text-success"><i class="fas fa-arrow-up"></i> +18% до мин. місяця</small>
+                                            <h3 class="text-primary">€ 32.000</h3>
+                                            <p class="mb-0">Lucro líquido</p>
+                                            <small class="text-success"><i class="fas fa-arrow-up"></i> +18% vs mês anterior</small>
                                         </div>
                                     </div>
                                 </div>
@@ -865,19 +865,19 @@
                                     <div class="analytics-card">
                                         <div class="card-body text-center">
                                             <h3 class="text-info">47.8%</h3>
-                                            <p class="mb-0">Рентабельність</p>
-                                            <small class="text-success"><i class="fas fa-arrow-up"></i> +3.2% до мин. місяця</small>
+                                            <p class="mb-0">Rentabilidade</p>
+                                            <small class="text-success"><i class="fas fa-arrow-up"></i> +3.2% vs mês anterior</small>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Головні графіки -->
+                            <!-- Gráficos principais -->
                             <div class="row mb-4">
                                 <div class="col-md-8">
                                     <div class="analytics-card">
                                         <div class="card-header">
-                                            <h3 class="card-title">💰 Доходи та витрати по місяцях</h3>
+                                            <h3 class="card-title">💰 Receitas e despesas por mês</h3>
                                         </div>
                                         <div class="chart-container">
                                             <canvas id="financial-chart"></canvas>
@@ -887,7 +887,7 @@
                                 <div class="col-md-4">
                                     <div class="analytics-card">
                                         <div class="card-header">
-                                            <h3 class="card-title">� Структура витрат</h3>
+                                            <h3 class="card-title">📊 Estrutura de custos</h3>
                                         </div>
                                         <div class="chart-container">
                                             <canvas id="expenses-pie-chart"></canvas>
@@ -896,12 +896,12 @@
                                 </div>
                             </div>
 
-                            <!-- Деталізація -->
+                            <!-- Detalhe -->
                             <div class="row mb-4">
                                 <div class="col-md-6">
                                     <div class="analytics-card">
                                         <div class="card-header">
-                                            <h3 class="card-title">📈 Рентабельність по об'єктах</h3>
+                                            <h3 class="card-title">📈 Rentabilidade por edifício</h3>
                                         </div>
                                         <div class="chart-container">
                                             <canvas id="profitability-chart"></canvas>
@@ -911,7 +911,7 @@
                                 <div class="col-md-6">
                                     <div class="analytics-card">
                                         <div class="card-header">
-                                            <h3 class="card-title">💳 Методи оплати</h3>
+                                            <h3 class="card-title">💳 Métodos de pagamento</h3>
                                         </div>
                                         <div class="chart-container">
                                             <canvas id="payment-methods-chart"></canvas>
@@ -920,47 +920,47 @@
                                 </div>
                             </div>
 
-                            <!-- Фінансові таблиці -->
+                            <!-- Tabelas financeiras -->
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="analytics-card">
                                         <div class="card-header">
-                                            <h3 class="card-title">🏢 Найприбутковіші об'єкти</h3>
+                                            <h3 class="card-title">🏢 Edifícios mais rentáveis</h3>
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
                                                 <table class="table table-sm">
                                                     <thead>
                                                         <tr>
-                                                            <th>Об'єкт</th>
-                                                            <th>Дохід</th>
-                                                            <th>Прибуток</th>
+                                                            <th>Edifício</th>
+                                                            <th>Receita</th>
+                                                            <th>Lucro</th>
                                                             <th>%</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         <tr>
-                                                            <td>ТРЦ "Глобус"</td>
-                                                            <td>₴25,000</td>
-                                                            <td>₴15,000</td>
+                                                            <td>Centro Comercial Lisboa</td>
+                                                            <td>€ 25.000</td>
+                                                            <td>€ 15.000</td>
                                                             <td class="text-success">60%</td>
                                                         </tr>
                                                         <tr>
-                                                            <td>Офіс-центр "Пріоритет"</td>
-                                                            <td>₴18,500</td>
-                                                            <td>₴9,200</td>
+                                                            <td>Edifício Escritórios Porto</td>
+                                                            <td>€ 18.500</td>
+                                                            <td>€ 9.200</td>
                                                             <td class="text-success">49.7%</td>
                                                         </tr>
                                                         <tr>
-                                                            <td>ЖК "Сонячний"</td>
-                                                            <td>₴15,300</td>
-                                                            <td>₴5,100</td>
+                                                            <td>Condomínio Av. Parque</td>
+                                                            <td>€ 15.300</td>
+                                                            <td>€ 5.100</td>
                                                             <td class="text-warning">33.3%</td>
                                                         </tr>
                                                         <tr>
-                                                            <td>БЦ "Технопарк"</td>
-                                                            <td>₴8,200</td>
-                                                            <td>₴2,700</td>
+                                                            <td>Parque Tecnológico</td>
+                                                            <td>€ 8.200</td>
+                                                            <td>€ 2.700</td>
                                                             <td class="text-danger">32.9%</td>
                                                         </tr>
                                                     </tbody>
@@ -973,41 +973,41 @@
                                 <div class="col-md-6">
                                     <div class="analytics-card">
                                         <div class="card-header">
-                                            <h3 class="card-title">📅 Фінансовий календар</h3>
+                                            <h3 class="card-title">📅 Calendário financeiro</h3>
                                         </div>
                                         <div class="card-body">
-                                            <h6>📋 Найближчі платежі:</h6>
+                                            <h6>📋 Próximos pagamentos:</h6>
                                             <div class="timeline">
                                                 <div class="timeline-item">
-                                                    <div class="timeline-date text-primary">07.10</div>
+                                                    <div class="timeline-date text-primary">07.04</div>
                                                     <div class="timeline-content">
-                                                        <strong>ТРЦ "Глобус"</strong><br>
-                                                        <small>Щомісячний контракт - ₴25,000</small>
+                                                        <strong>Centro Comercial Lisboa</strong><br>
+                                                        <small>Contrato mensal — € 25.000</small>
                                                     </div>
                                                 </div>
                                                 <div class="timeline-item">
-                                                    <div class="timeline-date text-warning">10.10</div>
+                                                    <div class="timeline-date text-warning">10.04</div>
                                                     <div class="timeline-content">
-                                                        <strong>Оплата запчастин</strong><br>
-                                                        <small>Щомісячний закуп - ₴12,000</small>
+                                                        <strong>Pagamento de peças</strong><br>
+                                                        <small>Compra mensal — € 12.000</small>
                                                     </div>
                                                 </div>
                                                 <div class="timeline-item">
-                                                    <div class="timeline-date text-success">15.10</div>
+                                                    <div class="timeline-date text-success">15.04</div>
                                                     <div class="timeline-content">
-                                                        <strong>ЖК "Сонячний"</strong><br>
-                                                        <small>Квартальний платіж - ₴45,900</small>
+                                                        <strong>Condomínio Av. Parque</strong><br>
+                                                        <small>Pagamento trimestral — € 45.900</small>
                                                     </div>
                                                 </div>
                                             </div>
                                             
                                             <hr>
                                             
-                                            <h6>💡 Фінансові поради:</h6>
+                                            <h6>💡 Sugestões financeiras:</h6>
                                             <div class="alert alert-info small">
                                                 <i class="fas fa-lightbulb"></i>
-                                                Розгляньте можливість збільшення частоти ТО для ТРЦ "Глобус" - 
-                                                це може підвищити рентабельність до 65%.
+                                                Considere aumentar a frequência de manutenção no Centro Comercial Lisboa — 
+                                                pode elevar a rentabilidade para 65%.
                                             </div>
                                         </div>
                                     </div>
