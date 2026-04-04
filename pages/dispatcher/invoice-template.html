@@ -167,12 +167,19 @@
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <div class="form-group">
+                                                    <label for="liftSelect"><i class="fas fa-elevator mr-1 text-primary"></i>Elevador (opcional)</label>
+                                                    <select class="form-control" id="liftSelect" onchange="onLiftSelected()">
+                                                        <option value="">— Sem ligação a elevador —</option>
+                                                    </select>
+                                                    <small class="form-text text-muted" id="liftMatchHint"></small>
+                                                </div>
+                                                <div class="form-group">
                                                     <label for="clientName">Cliente</label>
                                                     <input type="text" class="form-control" id="clientName" placeholder="Nome da empresa ou pessoa" required>
                                                 </div>
                                                 <div class="form-group">
                                                     <label for="clientAddress">Morada do Cliente</label>
-                                                    <textarea class="form-control" id="clientAddress" rows="3" placeholder="Morada completa do cliente"></textarea>
+                                                    <textarea class="form-control" id="clientAddress" rows="3" placeholder="Morada completa do cliente" onblur="tryAutoMatchLift()"></textarea>
                                                 </div>
                                                 <div class="form-group">
                                                     <label for="clientEmail">Email</label>
@@ -182,7 +189,7 @@
                                             <div class="col-md-6">
                                                 <div class="form-group">
                                                     <label for="invoiceNumber">Número do Orçamento</label>
-                                                    <input type="text" class="form-control" id="invoiceNumber" placeholder="ORC-2024-001" required>
+                                                    <input type="text" class="form-control" id="invoiceNumber" placeholder="ORC-2026-04-001" required>
                                                 </div>
                                                 <div class="form-group">
                                                     <label for="invoiceDate">Data do Orçamento</label>
@@ -304,7 +311,7 @@
                                                 <div class="col-md-6 text-right">
                                                     <h3>ORÇAMENTO</h3>
                                                     <p>
-                                                        <strong>Nº:</strong> <span id="previewInvoiceNumber">ORC-2024-001</span><br>
+                                                        <strong>Nº:</strong> <span id="previewInvoiceNumber">—</span><br>
                                                         <strong>Data:</strong> <span id="previewInvoiceDate"></span><br>
                                                         <strong>Validade:</strong> <span class="text-muted">30 dias a partir da data de apresentação</span>
                                                     </p>
@@ -448,9 +455,14 @@
             async generateInvoiceNumber() {
                 try {
                     // Отримати останній номер з API
+                    const _authToken = localStorage.getItem('liftmanager_jwt') ||
+                                       localStorage.getItem('jwt_token') ||
+                                       localStorage.getItem('token') ||
+                                       localStorage.getItem('lm_token') ||
+                                       sessionStorage.getItem('liftmanager_jwt');
                     const response = await fetch('/api/orcamentos/next-number', {
                         headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('liftmanager_jwt')}`
+                            'Authorization': `Bearer ${_authToken}`
                         }
                     });
                     
@@ -461,7 +473,7 @@
                         // Fallback: генерувати локально
                         const year = new Date().getFullYear();
                         const month = String(new Date().getMonth() + 1).padStart(2, '0');
-                        $('#invoiceNumber').val(`ORC-${year}-${month}-???`);
+                        $('#invoiceNumber').val(`ORC-${year}-${month}-001`);
                         console.warn('⚠️ Не вдалося отримати номер з API, використовуйте fallback');
                     }
                 } catch (error) {
@@ -469,7 +481,10 @@
                     // Fallback
                     const year = new Date().getFullYear();
                     const month = String(new Date().getMonth() + 1).padStart(2, '0');
-                    $('#invoiceNumber').val(`ORC-${year}-${month}-???`);
+                    $('#invoiceNumber').val(`ORC-${year}-${month}-001`);
+                } finally {
+                    // Sempre atualizar o preview após carregar o número
+                    this.updatePreview();
                 }
             },
 
@@ -600,8 +615,9 @@
                     
                     doc.text(`Nº: ${orcamentoNum}`, 145, 30);
                     doc.text(`Data: ${orcamentoData}`, 145, 36);
-                    
-                    // Linha separadora
+                    doc.setFontSize(8);
+                    doc.text('Validade: 30 dias a partir da data de apresentação', 145, 42, { maxWidth: 50 });
+                    doc.setFontSize(10);
                     doc.setDrawColor(0, 102, 204);
                     doc.setLineWidth(0.5);
                     doc.line(20, 65, 190, 65);
@@ -962,6 +978,12 @@
                 total: parseFloat($('#grandTotal').text().replace(' €', '')) || 0,
                 notas: $('#notes').val() || 'Este orçamento é válido por 30 dias a partir da data de apresentação.'
             };
+
+            // Incluir ligação ao elevador se selecionado
+            const selectedLiftId = $('#liftSelect').val();
+            if (selectedLiftId) {
+                data.liftId = selectedLiftId;
+            }
             
             // При оновленні додати numero та data з форми
             if (window.currentOrcamentoId) {
@@ -1026,10 +1048,12 @@
                     const numero = orcamentoData.numero || $('#invoiceNumber').val();
                     const total = orcamentoData.total || parseFloat($('#grandTotal').text().replace(' €', ''));
                     const clienteNome = orcamentoData.cliente?.nome || $('#clientName').val();
+
+                    const liftMsg = result.liftLinked ? `\n🔗 Ligado ao elevador: ${result.liftAddress || ''}` : '';
                     
                     alert(`✅ Orçamento ${numero} ${action} com sucesso!\n\n` +
                           `Total: €${total.toFixed(2)}\n` +
-                          `Cliente: ${clienteNome}`);
+                          `Cliente: ${clienteNome}${liftMsg}`);
                     
                     // Redirecionar para lista de orçamentos
                     if (confirm(`✅ Orçamento ${action}!\n\n📋 Deseja ver a lista de orçamentos?`)) {
@@ -1079,13 +1103,124 @@
             }
             
             invoiceManager.init();
-            
+            await loadLiftOptions(token);
+
             // Перевірити чи є ID орçаменту в URL (для редагування/перегляду)
             if (orcamentoId) {
                 console.log('📋 Завантаження орçаменту:', orcamentoId, 'Режим перегляду:', viewMode);
                 await loadOrcamento(orcamentoId, viewMode);
+            } else {
+                // Пре-заповнення з параметрів ліфта (коли відкрито з модалки ліфта)
+                const pLiftId = urlParams.get('liftId');
+                const pLiftAddress = urlParams.get('liftAddress');
+                const pClientName = urlParams.get('clientName');
+                const pClientEmail = urlParams.get('clientEmail');
+
+                if (pLiftId || pClientName || pClientEmail) {
+                    if (pClientName) $('#clientName').val(pClientName);
+                    if (pClientEmail) $('#clientEmail').val(pClientEmail);
+                    if (pLiftAddress) $('#clientAddress').val(pLiftAddress);
+
+                    // Вибрати ліфт у dropdown
+                    if (pLiftId) {
+                        const sel = document.getElementById('liftSelect');
+                        if (sel) {
+                            sel.value = pLiftId;
+                            if (!sel.value) {
+                                // Опція ще не додана — очікуємо і пробуємо знову
+                                setTimeout(() => { sel.value = pLiftId; onLiftSelected(); }, 300);
+                            }
+                            onLiftSelected();
+                        }
+                    }
+
+                    // Авто-заповнення наступного номеру орçаменту
+                    try {
+                        const res = await fetch('/api/orcamentos/next-number', {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        if (res.ok) {
+                            const json = await res.json();
+                            const nextNum = json.nextNumber || json.numero || json.data?.nextNumber;
+                            if (nextNum) $('#invoiceNumber').val(nextNum);
+                        }
+                    } catch(e) { /* ігноруємо */ }
+
+                    // Сьогоднішня дата
+                    const today = new Date().toISOString().split('T')[0];
+                    if (!$('#invoiceDate').val()) $('#invoiceDate').val(today);
+                }
             }
         });
+
+        // Carregar opções de elevadores no select
+        async function loadLiftOptions(token) {
+            try {
+                const res = await fetch('/api/lifts', { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!res.ok) return;
+                const json = await res.json();
+                const lifts = (json.data || json.lifts || []);
+                window._allLifts = lifts;
+                const sel = document.getElementById('liftSelect');
+                lifts.forEach(lift => {
+                    const addr = lift.address || {};
+                    const addrStr = typeof addr === 'string' ? addr : [addr.street, addr.zipCode, addr.city].filter(Boolean).join(', ');
+                    const label = lift.municipalNumber
+                        ? `#${lift.municipalNumber} — ${addrStr || lift._id}`
+                        : (addrStr || lift._id);
+                    const opt = document.createElement('option');
+                    opt.value = lift._id;
+                    opt.dataset.address = addrStr;
+                    opt.dataset.client = lift.clientEmail || lift.email || '';
+                    opt.dataset.clientName = lift.clientName || '';
+                    opt.textContent = label;
+                    sel.appendChild(opt);
+                });
+            } catch (e) { console.warn('loadLiftOptions error:', e.message); }
+        }
+
+        function onLiftSelected() {
+            const sel = document.getElementById('liftSelect');
+            const opt = sel.options[sel.selectedIndex];
+            const hint = document.getElementById('liftMatchHint');
+            if (opt && opt.value) {
+                const addr = opt.dataset.address;
+                const clientEmail = opt.dataset.client;
+                const clientName = opt.dataset.clientName;
+                if (addr && !$('#clientAddress').val().trim()) {
+                    $('#clientAddress').val(addr);
+                }
+                if (clientName && !$('#clientName').val().trim()) {
+                    $('#clientName').val(clientName);
+                }
+                if (clientEmail && !$('#clientEmail').val().trim()) {
+                    $('#clientEmail').val(clientEmail);
+                }
+                invoiceManager.updatePreview();
+                hint.innerHTML = `<strong>${opt.textContent}</strong><br>✅ Orçamento será vinculado a este elevador`;
+                hint.className = 'form-text text-success';
+            } else {
+                hint.textContent = '';
+            }
+        }
+
+        function tryAutoMatchLift() {
+            const morada = $('#clientAddress').val().trim().toLowerCase();
+            if (!morada || !window._allLifts) return;
+            const sel = document.getElementById('liftSelect');
+            if (sel.value) return; // already selected
+            for (let i = 1; i < sel.options.length; i++) {
+                const opt = sel.options[i];
+                const addrOpt = (opt.dataset.address || '').toLowerCase();
+                if (addrOpt && (morada.includes(addrOpt.split(',')[0].trim()) || addrOpt.includes(morada.split(',')[0].trim()))) {
+                    sel.value = opt.value;
+                    const hint = document.getElementById('liftMatchHint');
+                    hint.textContent = '🔍 Elevador detetado automaticamente pela morada';
+                    hint.className = 'form-text text-info';
+                    return;
+                }
+            }
+        }
         
         // Завантажити орçаменто (публічний доступ)
         async function loadOrcamentoPublico(id, token) {
