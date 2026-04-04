@@ -365,8 +365,16 @@ if (typeof window !== 'undefined') {
                 const token = sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt');
                 if (token) {
                     const payload = JSON.parse(atob(token.split('.')[1]));
+                    // Clear if JWT email doesn't match stored user email
                     if (payload.email && u.email && payload.email.toLowerCase() !== u.email.toLowerCase()) {
-                        // Stale user data — clear it
+                        sessionStorage.removeItem('liftmanager_user');
+                        localStorage.removeItem('liftmanager_user');
+                        localStorage.removeItem('currentUser');
+                        return;
+                    }
+                    // Clear if page requires a specific role and stored user's role doesn't match
+                    const requiredRole = document.body && document.body.dataset && document.body.dataset.requiredRole;
+                    if (requiredRole && u.role && requiredRole !== u.role) {
                         sessionStorage.removeItem('liftmanager_user');
                         localStorage.removeItem('liftmanager_user');
                         localStorage.removeItem('currentUser');
