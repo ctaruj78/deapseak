@@ -559,14 +559,14 @@ class InvoiceManager {
                             <p class="mb-1"><strong>Titular:</strong> FestLift - Elevadores e Serviços, Lda.</p>
                             <p class="mb-0"><strong>Referência:</strong> Fatura ${invoice.number}</p>
                         </div>
-                        <small class="text-muted d-block mt-2">Após efectuar a transferência, envie o comprovativo para <strong>geral@festlift.pt</strong>.</small>
+                        <small class="text-muted d-block mt-2">Após efectuar a transferência, envie o comprovativo para <strong>info@festlift.pt</strong>.</small>
                     </div>
                     <!-- MB Way -->
                     <div id="mbwayFields" style="display:none;">
                         <div class="bg-light p-3 rounded">
                             <p class="mb-1">Para pagar por <strong>MB Way</strong>, contacte-nos para recepcionar o pedido de pagamento:</p>
                             <p class="mb-1"><i class="fas fa-phone"></i> <strong>+351 XXX XXX XXX</strong></p>
-                            <p class="mb-0"><i class="fas fa-envelope"></i> <strong>geral@festlift.pt</strong></p>
+                            <p class="mb-0"><i class="fas fa-envelope"></i> <strong>info@festlift.pt</strong></p>
                         </div>
                         <small class="text-muted d-block mt-2">Indique o número da fatura: <strong>${invoice.number}</strong></small>
                     </div>
@@ -699,7 +699,7 @@ class InvoiceManager {
                     <p class="mb-1"><strong>BIC/SWIFT:</strong> BBPIPTPL</p>
                     <p class="mb-0"><strong>Titular:</strong> FestLift - Elevadores e Serviços, Lda.</p>
                 </div>
-                <p class="text-muted mt-2 small">Após efectuar a transferência, envie o comprovativo para <strong>geral@festlift.pt</strong>.</p>
+                <p class="text-muted mt-2 small">Após efectuar a transferência, envie o comprovativo para <strong>info@festlift.pt</strong>.</p>
                 <div class="mt-3">
                     <button class="btn btn-secondary" onclick="invoiceManager.copyMultibancoDetails()">
                         <i class="fas fa-copy"></i> Copiar dados
@@ -719,7 +719,7 @@ class InvoiceManager {
     }
 
     setupMBWay() {
-        this.showNotification('Para MB Way, contacte-nos em geral@festlift.pt', 'info');
+        this.showNotification('Para MB Way, contacte-nos em info@festlift.pt', 'info');
     }
 
     showNotification(message, type = 'success') {
