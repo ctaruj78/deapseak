@@ -9,6 +9,27 @@ const PDFDocument = require('pdfkit');
 const path = require('path');
 const fs = require('fs');
 
+// Expirar automaticamente orçamentos 'enviado' cuja validadeAte já passou
+async function autoExpirarOrcamentos(filterExtra = {}) {
+    const now = new Date();
+    // First migrate any remaining string dates (legacy data)
+    const col = Orcamento.collection;
+    const legacyDocs = await col.find({ status: 'enviado', validadeAte: { $type: 'string' }, ...filterExtra }).toArray();
+    for (const doc of legacyDocs) {
+        if (typeof doc.validadeAte === 'string') {
+            await col.updateOne({ _id: doc._id }, { $set: { validadeAte: new Date(doc.validadeAte) } });
+        }
+    }
+    // Now expire properly-typed Date fields
+    const result = await Orcamento.updateMany(
+        { status: 'enviado', validadeAte: { $lt: now }, ...filterExtra },
+        { $set: { status: 'expirado' } }
+    );
+    if (result.modifiedCount > 0) {
+        console.log(`⏰ Auto-expirados ${result.modifiedCount} orçamento(s)`);
+    }
+}
+
 // Função para gerar PDF do orçamento
 async function gerarPDFOrcamento(orcamento) {
     return new Promise((resolve, reject) => {
@@ -303,6 +324,9 @@ router.get('/public/:id/pdf', async (req, res) => {
 router.get('/my', authenticate, async (req, res) => {
     try {
         const clienteEmail = req.user.email;
+        // Auto-expirar os orçamentos vencidos deste cliente antes de devolver
+        await autoExpirarOrcamentos({ 'cliente.email': clienteEmail.toLowerCase() });
+
         const orcamentos = await Orcamento.find({
             'cliente.email': clienteEmail.toLowerCase(),
             status: { $in: ['enviado', 'aprovado', 'rejeitado', 'expirado'] }
@@ -363,6 +387,9 @@ router.post('/:id/resposta', authenticate, async (req, res) => {
 // GET /api/orcamentos - Список всіх орçаментів
 router.get('/', authenticate, authorizeRoles('admin', 'dispatcher'), async (req, res) => {
     try {
+        // Auto-expirar todos os orçamentos vencidos antes de listar
+        await autoExpirarOrcamentos();
+
         const { status, page = 1, limit = 20, search } = req.query;
         
         const query = {};
