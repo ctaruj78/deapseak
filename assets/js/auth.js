@@ -41,7 +41,7 @@ class AuthManager {
         
         console.log('✅ Користувач увійшов в систему:', user);
         console.log('✅ userData збережено для перевірки доступу');
-        if (rememberMe) console.log('✅ Режим "Запам'ятати" активовано - сесія 365 днів');
+        if (rememberMe) console.log('✅ Режим "Запам\'ятати" активовано - сесія 365 днів');
         return true;
     }
 
