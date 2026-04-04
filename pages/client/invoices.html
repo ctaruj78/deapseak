@@ -801,7 +801,6 @@
             // Завантаження даних користувача
             const userData = JSON.parse(localStorage.getItem('userData')) || {};
             if (userData.firstName) {
-                $('#clientName').text(`${userData.firstName} ${userData.lastName || ''}`);
             }
 
             // Ініціалізація менеджера рахунків

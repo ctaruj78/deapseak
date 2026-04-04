@@ -381,19 +381,45 @@ if (typeof window !== 'undefined') {
                 u.username || u.email || '—';
 
             // All known sidebar name element IDs across panels
-            ['sidebarName', 'sidebarUserName', 'clientName', 'techName', 'adminName'].forEach(function(id) {
+            // sidebarFullName = admin user-panel link; sidebarName = brand area (admin/dispatcher)
+            const placeholders = ['—', 'Cliente', 'Технік', 'Диспетчер', 'Адміністратор', 'Адміністратор Системи', 'Адміністратор системи', ''];
+            ['sidebarFullName', 'sidebarName', 'sidebarUserName', 'clientName', 'techName', 'adminName'].forEach(function(id) {
                 const el = document.getElementById(id);
                 // Only set if still showing placeholder (don't override runtime-set values)
-                if (el && ['—', 'Cliente', 'Технік', 'Диспетчер', 'Адміністратор', 'Адміністратор Системи', ''].includes(el.textContent.trim())) {
+                if (el && placeholders.includes(el.textContent.trim())) {
                     el.textContent = fullName;
                 }
             });
         } catch (e) {}
     };
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', _populateSidebarName);
-    } else {
+
+    // Load orcamentos count badge for client sidebar (runs only when element exists)
+    const _loadOrcamentosCount = () => {
+        const badge = document.getElementById('orcamentosCount');
+        if (!badge) return;
+        const token = sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt');
+        if (!token) return;
+        fetch('/api/orcamentos/my', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        })
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(data) {
+            if (data && data.data && Array.isArray(data.data)) {
+                badge.textContent = data.data.length;
+            }
+        })
+        .catch(function() {});
+    };
+
+    const _initSidebar = () => {
         _populateSidebarName();
+        _loadOrcamentosCount();
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', _initSidebar);
+    } else {
+        _initSidebar();
     }
 }
 
