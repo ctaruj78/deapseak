@@ -267,7 +267,7 @@ class InvoiceManager {
                     <div>${invoice.items[0]?.description || 'Немає опису'}</div>
                     <small class="text-muted">${invoice.items[0]?.lift || ''}</small>
                 </td>
-                <td><strong>₴${invoice.amount.toLocaleString('uk-UA', { minimumFractionDigits: 2 })}</strong></td>
+                <td><strong>€${invoice.amount.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</strong></td>
                 <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                 <td>
                     ${this.formatDate(invoice.dueDate)}
@@ -310,7 +310,7 @@ class InvoiceManager {
     }
 
     formatDate(dateString) {
-        return new Date(dateString).toLocaleDateString('uk-UA');
+        return new Date(dateString).toLocaleDateString('pt-PT');
     }
 
     updateSummary(invoices = this.invoices) {
@@ -319,10 +319,10 @@ class InvoiceManager {
         const pendingAmount = invoices.filter(inv => inv.status === 'pending').reduce((sum, inv) => sum + inv.amount, 0);
         const overdueAmount = invoices.filter(inv => inv.status === 'overdue').reduce((sum, inv) => sum + inv.amount, 0);
 
-        $('#totalAmount').text(`₴${totalAmount.toLocaleString('uk-UA', { minimumFractionDigits: 2 })}`);
-        $('#paidAmount').text(`₴${paidAmount.toLocaleString('uk-UA', { minimumFractionDigits: 2 })}`);
-        $('#pendingAmount').text(`₴${pendingAmount.toLocaleString('uk-UA', { minimumFractionDigits: 2 })}`);
-        $('#overdueAmount').text(`₴${overdueAmount.toLocaleString('uk-UA', { minimumFractionDigits: 2 })}`);
+        $('#totalAmount').text(`€${totalAmount.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}`);
+        $('#paidAmount').text(`€${paidAmount.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}`);
+        $('#pendingAmount').text(`€${pendingAmount.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}`);
+        $('#overdueAmount').text(`€${overdueAmount.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}`);
         
         // Оновлення лічильника в сайдбарі
         $('#invoicesCount').text(invoices.filter(inv => inv.status === 'pending' || inv.status === 'overdue').length);
@@ -417,8 +417,8 @@ class InvoiceManager {
                                     <td>${item.description}</td>
                                     <td>${item.lift || 'Н/Д'}</td>
                                     <td class="text-right">${item.quantity}</td>
-                                    <td class="text-right">₴${item.price.toLocaleString('uk-UA', { minimumFractionDigits: 2 })}</td>
-                                    <td class="text-right">₴${(item.quantity * item.price).toLocaleString('uk-UA', { minimumFractionDigits: 2 })}</td>
+                                    <td class="text-right">€${item.price.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</td>
+                                    <td class="text-right">€${(item.quantity * item.price).toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</td>
                                 </tr>
                             `).join('')}
                         </tbody>
@@ -428,29 +428,30 @@ class InvoiceManager {
                 <div class="row mt-4">
                     <div class="col-md-6">
                         <div class="bg-light p-3 rounded">
-                            <h5>Інформація для оплати</h5>
-                            <p>Банк: ПриватБанк<br>
-                            Рахунок: UA123456789012345678901234567<br>
-                            Отримувач: ТОВ "Lift Management"<br>
-                            Код ЄДРПОУ: 12345678</p>
+                            <h5>Formas de Pagamento</h5>
+                            <p><i class="fas fa-university text-success"></i> <strong>Multibanco:</strong><br>
+                            Entidade: <strong>21342</strong><br>
+                            Referência: gerada no pagamento<br><br>
+                            <i class="fas fa-mobile-alt text-info"></i> <strong>MB Way:</strong><br>
+                            Nº: <strong>+351 912 345 678</strong></p>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="totals-section">
                             <div class="d-flex justify-content-between">
-                                <span>Сума:</span>
-                                <span>₴${invoice.amount.toLocaleString('uk-UA', { minimumFractionDigits: 2 })}</span>
+                                <span>Subtotal:</span>
+                                <span>€${invoice.amount.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</span>
                             </div>
                             ${invoice.tax > 0 ? `
                                 <div class="d-flex justify-content-between">
-                                    <span>ПДВ:</span>
-                                    <span>₴${invoice.tax.toLocaleString('uk-UA', { minimumFractionDigits: 2 })}</span>
+                                    <span>IVA:</span>
+                                    <span>€${invoice.tax.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</span>
                                 </div>
                             ` : ''}
                             <hr>
                             <div class="d-flex justify-content-between total-amount">
-                                <strong>До сплати:</strong>
-                                <strong>₴${invoice.total.toLocaleString('uk-UA', { minimumFractionDigits: 2 })}</strong>
+                                <strong>Total a pagar:</strong>
+                                <strong>€${invoice.total.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</strong>
                             </div>
                         </div>
                     </div>
@@ -461,9 +462,12 @@ class InvoiceManager {
 
     getPaymentMethodText(method) {
         const methods = {
-            'bank_transfer': 'Банківський переказ',
-            'credit_card': 'Кредитна картка',
-            'mobile_payment': 'Мобільний платіж'
+            'card': 'Cartão de Crédito/Débito',
+            'bank_transfer': 'Multibanco',
+            'multibanco': 'Multibanco',
+            'mbway': 'MB Way',
+            'credit_card': 'Cartão de Crédito/Débito',
+            'mobile_payment': 'MB Way'
         };
         return methods[method] || method;
     }
@@ -495,7 +499,7 @@ class InvoiceManager {
             Рахунок-фактура: ${invoice.number}
             Дата: ${invoice.date}
             Клієнт: ${$('#clientName').text()}
-            Сума: ₴${invoice.amount.toLocaleString('uk-UA', { minimumFractionDigits: 2 })}
+            Сума: €${invoice.amount.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}
             Статус: ${this.getStatusText(invoice.status)}
         `;
     }
@@ -510,63 +514,83 @@ class InvoiceManager {
     showPaymentOptions(invoice) {
         const modalContent = `
             <div class="payment-options">
-                <h4>Оплата рахунку ${invoice.number}</h4>
-                <p class="text-center mb-4">Сума до оплати: <strong>₴${invoice.total.toLocaleString('uk-UA', { minimumFractionDigits: 2 })}</strong></p>
+                <h4>Pagamento da fatura ${invoice.number}</h4>
+                <p class="text-center mb-4">Total a pagar: <strong>€${invoice.total.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</strong></p>
                 
                 <div class="payment-option" onclick="invoiceManager.selectPaymentOption('card')">
                     <div class="form-check">
                         <input class="form-check-input" type="radio" name="paymentMethod" id="cardPayment" value="card">
                         <label class="form-check-label" for="cardPayment">
                             <i class="fas fa-credit-card fa-2x text-primary"></i>
-                            <h5>Кредитна картка</h5>
-                            <p>Миттєва оплата онлайн</p>
+                            <h5>Cartão de Crédito/Débito</h5>
+                            <p>Pagamento imediato online</p>
                         </label>
                     </div>
                 </div>
                 
-                <div class="payment-option" onclick="invoiceManager.selectPaymentOption('bank')">
+                <div class="payment-option" onclick="invoiceManager.selectPaymentOption('mbway')">
                     <div class="form-check">
-                        <input class="form-check-input" type="radio" name="paymentMethod" id="bankPayment" value="bank">
-                        <label class="form-check-label" for="bankPayment">
-                            <i class="fas fa-university fa-2x text-success"></i>
-                            <h5>Банківський переказ</h5>
-                            <p>Оплата за реквізитами</p>
-                        </label>
-                    </div>
-                </div>
-                
-                <div class="payment-option" onclick="invoiceManager.selectPaymentOption('mobile')">
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="paymentMethod" id="mobilePayment" value="mobile">
-                        <label class="form-check-label" for="mobilePayment">
+                        <input class="form-check-input" type="radio" name="paymentMethod" id="mbwayPayment" value="mbway">
+                        <label class="form-check-label" for="mbwayPayment">
                             <i class="fas fa-mobile-alt fa-2x text-info"></i>
-                            <h5>Мобільний платіж</h5>
-                            <p>Google Pay/Apple Pay</p>
+                            <h5>MB Way</h5>
+                            <p>Pagamento pelo telemóvel</p>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="payment-option" onclick="invoiceManager.selectPaymentOption('multibanco')">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="paymentMethod" id="multibancoPayment" value="multibanco">
+                        <label class="form-check-label" for="multibancoPayment">
+                            <i class="fas fa-university fa-2x text-success"></i>
+                            <h5>Multibanco</h5>
+                            <p>Pagamento em caixa automático</p>
                         </label>
                     </div>
                 </div>
                 
                 <div class="mt-4" id="paymentDetails" style="display: none;">
-                    <div class="form-group">
-                        <label>Номер картки:</label>
-                        <input type="text" class="form-control" placeholder="1234 5678 9012 3456" id="cardNumber">
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Термін дії:</label>
-                                <input type="text" class="form-control" placeholder="MM/РР" id="cardExpiry">
+                    <!-- card fields -->
+                    <div id="cardFields" style="display:none;">
+                        <div class="form-group">
+                            <label>Número do cartão:</label>
+                            <input type="text" class="form-control" placeholder="1234 5678 9012 3456" id="cardNumber" maxlength="19">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Validade:</label>
+                                    <input type="text" class="form-control" placeholder="MM/AA" id="cardExpiry" maxlength="5">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>CVV:</label>
+                                    <input type="text" class="form-control" placeholder="123" id="cardCvv" maxlength="4">
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>CVV:</label>
-                                <input type="text" class="form-control" placeholder="123" id="cardCvv">
-                            </div>
+                    </div>
+                    <!-- MB Way fields -->
+                    <div id="mbwayFields" style="display:none;">
+                        <div class="form-group">
+                            <label>Número de telemóvel:</label>
+                            <input type="tel" class="form-control" placeholder="+351 9XX XXX XXX" id="mbwayPhone" maxlength="16">
+                            <small class="text-muted">Receberá uma notificação MB Way para confirmar o pagamento.</small>
                         </div>
                     </div>
-                    <button class="btn btn-success btn-block" onclick="invoiceManager.processPayment('${invoice.id}')">
-                        <i class="fas fa-check"></i> Підтвердити оплату
+                    <!-- Multibanco info -->
+                    <div id="multibancoFields" style="display:none;">
+                        <div class="bg-light p-3 rounded text-center">
+                            <p class="mb-1"><strong>Entidade:</strong> 21342</p>
+                            <p class="mb-1"><strong>Referência:</strong> ${String(invoice.id || '000').padStart(9, '0').replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3')}</p>
+                            <p class="mb-1"><strong>Montante:</strong> €${invoice.total.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
+                            <small class="text-muted">Referência válida por 72 horas.</small>
+                        </div>
+                    </div>
+                    <button class="btn btn-success btn-block mt-3" onclick="invoiceManager.processPayment('${invoice.id}')">
+                        <i class="fas fa-check"></i> Confirmar pagamento
                     </button>
                 </div>
             </div>
@@ -581,8 +605,16 @@ class InvoiceManager {
         $('.payment-option').removeClass('selected');
         $(`input[name="paymentMethod"][value="${option}"]`).closest('.payment-option').addClass('selected');
         
+        $('#cardFields, #mbwayFields, #multibancoFields').hide();
         if (option === 'card') {
             $('#paymentDetails').slideDown();
+            $('#cardFields').show();
+        } else if (option === 'mbway') {
+            $('#paymentDetails').slideDown();
+            $('#mbwayFields').show();
+        } else if (option === 'multibanco') {
+            $('#paymentDetails').slideDown();
+            $('#multibancoFields').show();
         } else {
             $('#paymentDetails').slideUp();
         }
@@ -665,29 +697,24 @@ class InvoiceManager {
     }
 
     setupCardPayment() {
-        this.showNotification('Налаштування оплати карткою...', 'info');
-        // Тут буде реальна логіка налаштування
+        this.showNotification('A configurar pagamento por cartão...', 'info');
     }
 
-    showBankDetails() {
-        const details = `
-            Банк: ПриватБанк
-            IBAN: UA123456789012345678901234567
-            Отримувач: ТОВ "Lift Management"
-            Код ЄДРПОУ: 12345678
-            МФО: 123456
-            Призначення платежу: Оплата за послуги технічного обслуговування
-        `;
+    showMultibancoDetails() {
+        const details = `Entidade: 21342
+Referência: gerada no momento do pagamento
+Montante: conforme fatura
+Validade: 72 horas`;
         
         $('#invoiceModalContent').html(`
             <div class="bank-details">
-                <h4>Банківські реквізити</h4>
+                <h4>Dados Multibanco</h4>
                 <div class="bg-light p-4 rounded">
                     <pre class="mb-0">${details}</pre>
                 </div>
                 <div class="mt-3">
-                    <button class="btn btn-secondary" onclick="invoiceManager.copyBankDetails()">
-                        <i class="fas fa-copy"></i> Копіювати реквізити
+                    <button class="btn btn-secondary" onclick="invoiceManager.copyMultibancoDetails()">
+                        <i class="fas fa-copy"></i> Copiar dados
                     </button>
                 </div>
             </div>
@@ -695,21 +722,16 @@ class InvoiceManager {
         $('#invoiceModal').modal('show');
     }
 
-    copyBankDetails() {
-        const details = `Банк: ПриватБанк
-IBAN: UA123456789012345678901234567
-Отримувач: ТОВ "Lift Management"
-Код ЄДРПОУ: 12345678
-МФО: 123456`;
+    copyMultibancoDetails() {
+        const details = `Entidade: 21342\nReferência: gerada no momento do pagamento\nMontante: conforme fatura`;
         
         navigator.clipboard.writeText(details).then(() => {
-            this.showNotification('Реквізити скопійовано в буфер обміну', 'success');
+            this.showNotification('Dados copiados para a área de transferência', 'success');
         });
     }
 
-    setupMobilePayment() {
-        this.showNotification('Підключення мобільної оплати...', 'info');
-        // Тут буде реальна логіка підключення
+    setupMBWay() {
+        this.showNotification('A configurar MB Way...', 'info');
     }
 
     showNotification(message, type = 'success') {
