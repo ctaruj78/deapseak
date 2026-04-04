@@ -1089,9 +1089,13 @@
                 }).length;
                 $('#completedThisMonth').text(completedThisMonth);
                 
-                // Elevadores на обслуговуванні
+                // Elevadores na обслуговуванні
                 const liftsInMaintenance = lifts.filter(l => l.status === 'maintenance').length;
-                $('#liftsInMaintenance').text(liftsInMaintenance);
+                $('#maintenanceLifts').text(liftsInMaintenance);
+
+                // Ліфти в нормальному стані
+                const liftsOperational = lifts.filter(l => l.status === 'operational' || !l.status).length;
+                $('#operationalLifts').text(liftsOperational);
                 
                 // Оновлення статус-бейджу
                 if (liftsInMaintenance === 0) {
