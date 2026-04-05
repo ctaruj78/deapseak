@@ -292,10 +292,10 @@ const INSPECTION_TEMPLATES = (() => {
     // ================================================================
     if (visitType === 'repair') {
       return [
-        { id: 'rep-diagnostico',  title: 'Diagnóstico da Avaria',             icon: 'search',          color: 'warning',   items: REPAIR_DIAGNOSIS },
-        { id: 'rep-trabalho',     title: 'Trabalho Realizado',                icon: 'tools',           color: 'secondary', items: REPAIR_WORK },
-        { id: 'rep-verificacao',  title: 'Verificação Pós-Reparação',         icon: 'check-double',    color: 'danger',    items: REPAIR_SAFETY_CHECK },
-        { id: 'rep-documentacao', title: 'Documentação da Reparação',         icon: 'file-signature',  color: 'info',      items: REPAIR_DOCUMENTATION },
+        { id: 'rep-diagnostico',  title: 'Diagnóstico da Avaria',             icon: 'search',          color: 'warning',   items: REPAIR_DIAGNOSIS,      binary: true },
+        { id: 'rep-trabalho',     title: 'Trabalho Realizado',                icon: 'tools',           color: 'secondary', items: REPAIR_WORK,           binary: true },
+        { id: 'rep-verificacao',  title: 'Verificação Pós-Reparação',         icon: 'check-double',    color: 'danger',    items: REPAIR_SAFETY_CHECK,   binary: true },
+        { id: 'rep-documentacao', title: 'Documentação da Reparação',         icon: 'file-signature',  color: 'info',      items: REPAIR_DOCUMENTATION,  binary: true },
       ];
     }
 
@@ -304,11 +304,11 @@ const INSPECTION_TEMPLATES = (() => {
     // ================================================================
     if (visitType === 'emergency') {
       return [
-        { id: 'emg-situacao',    title: 'Situação de Emergência / Resgate',  icon: 'exclamation-triangle', color: 'danger',   items: EMERGENCY_SITUATION },
-        { id: 'emg-diagnostico', title: 'Diagnóstico da Causa',              icon: 'search-plus',          color: 'warning',  items: EMERGENCY_DIAGNOSIS },
-        { id: 'emg-acoes',       title: 'Ações Corretivas',                  icon: 'hammer',               color: 'secondary', items: EMERGENCY_ACTIONS },
-        { id: 'emg-estado',      title: 'Estado Final do Equipamento',       icon: 'traffic-light',        color: 'success',  items: EMERGENCY_FINAL_STATUS },
-        { id: 'emg-documentacao',title: 'Documentação da Emergência',        icon: 'file-exclamation',     color: 'info',     items: EMERGENCY_DOCUMENTATION },
+        { id: 'emg-situacao',    title: 'Situação de Emergência / Resgate',  icon: 'exclamation-triangle', color: 'danger',   items: EMERGENCY_SITUATION,      binary: true },
+        { id: 'emg-diagnostico', title: 'Diagnóstico da Causa',              icon: 'search-plus',          color: 'warning',  items: EMERGENCY_DIAGNOSIS,      binary: true },
+        { id: 'emg-acoes',       title: 'Ações Corretivas',                  icon: 'hammer',               color: 'secondary', items: EMERGENCY_ACTIONS,        binary: true },
+        { id: 'emg-estado',      title: 'Estado Final do Equipamento',       icon: 'traffic-light',        color: 'success',  items: EMERGENCY_FINAL_STATUS,   binary: true },
+        { id: 'emg-documentacao',title: 'Documentação da Emergência',        icon: 'file-exclamation',     color: 'info',     items: EMERGENCY_DOCUMENTATION,  binary: true },
       ];
     }
 
@@ -568,8 +568,18 @@ const INSPECTION_TEMPLATES = (() => {
       section.items.forEach(it => {
         const critClass = it.critical ? 'border-left border-danger' : '';
         const critBadge = it.critical ? '<span class="badge badge-danger ml-1" title="Item crítico de segurança">CRIT</span>' : '';
+        const selectOptions = section.binary
+          ? `<option value="">— ? —</option>
+                  <option value="yes">✓ Sim</option>
+                  <option value="no">✗ Não</option>
+                  <option value="na">N/A</option>`
+          : `<option value="">— Estado —</option>
+                  <option value="ok">✓ Conforme</option>
+                  <option value="warning">⚠ Atenção</option>
+                  <option value="error">✗ Não conforme</option>
+                  <option value="na">N/A</option>`;
         html += `
-            <div class="checklist-item row align-items-center mx-0 py-2 border-bottom ${critClass}" data-item="${it.id}">
+            <div class="checklist-item row align-items-center mx-0 py-2 border-bottom ${critClass}" data-item="${it.id}" data-binary="${section.binary ? '1' : '0'}">
               <div class="col-12 col-md-5 d-flex align-items-center">
                 ${critBadge}
                 <span class="item-label ml-1">${it.label}</span>
@@ -578,12 +588,8 @@ const INSPECTION_TEMPLATES = (() => {
                 <small class="text-muted item-norm"><i class="fas fa-book fa-xs mr-1"></i>${it.norm}</small>
               </div>
               <div class="col-12 col-md-4 mt-1 mt-md-0 d-flex align-items-center">
-                <select class="form-control form-control-sm checklist-status mr-2" style="min-width:110px;">
-                  <option value="">— Estado —</option>
-                  <option value="ok">✓ Conforme</option>
-                  <option value="warning">⚠ Atenção</option>
-                  <option value="error">✗ Não conforme</option>
-                  <option value="na">N/A</option>
+                <select class="form-control form-control-sm checklist-status mr-2" style="min-width:100px;">
+                  ${selectOptions}
                 </select>
                 <input type="text" class="form-control form-control-sm checklist-comment" placeholder="Observação…">
               </div>
@@ -606,7 +612,9 @@ const INSPECTION_TEMPLATES = (() => {
     document.querySelectorAll('.checklist-item').forEach(row => {
       const isCrit = row.classList.contains('border-danger');
       const val = row.querySelector('.checklist-status')?.value;
-      if (isCrit && val === 'error') count++;
+      const isBinary = row.dataset.binary === '1';
+      // binary: critical when answered "Não"; standard: critical when "Não conforme"
+      if (isCrit && (isBinary ? val === 'no' : val === 'error')) count++;
     });
     return count;
   }
