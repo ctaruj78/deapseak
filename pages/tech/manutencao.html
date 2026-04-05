@@ -1126,9 +1126,9 @@
                     const norm     = $(this).find('.item-norm').text().trim();
                     if (!status && !comment) return;
                     hasItems = true;
-                    const icons = { ok: '✓', warning: '⚠', error: '✗', na: 'N/A' };
-                    const cls   = { ok: 'text-success', warning: 'text-warning', error: 'text-danger', na: 'text-muted' };
-                    const icon  = icons[status] || '—';
+                    const icons = { ok: '✓', warning: '⚠', error: '✗', na: 'N/A', yes: '✓ Sim', no: '✗ Não' };
+                    const cls   = { ok: 'text-success', warning: 'text-warning', error: 'text-danger', na: 'text-muted', yes: 'text-success', no: 'text-danger' };
+                    const icon  = icons[status] || (status || '—');
                     const cl    = cls[status] || 'text-secondary';
                     let li = `<li><span class="${cl}"><strong>${icon}</strong></span> ${itemName}`;
                     if (norm)    li += ` <small class="text-muted">[${norm}]</small>`;

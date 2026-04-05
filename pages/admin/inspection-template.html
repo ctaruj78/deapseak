@@ -786,9 +786,9 @@
                         if (!status && !comment) return;
                         hasItems = true;
                         
-                        const icons = { ok: '✓', warning: '⚠', error: '✗', na: 'N/A', '': '--' };
-                        const classes = { ok: 'text-success', warning: 'text-warning', error: 'text-danger', na: 'text-muted', '': 'text-secondary' };
-                        const icon = icons[status] || '--';
+                        const icons = { ok: '✓', warning: '⚠', error: '✗', na: 'N/A', '': '--', yes: '✓ Sim', no: '✗ Não' };
+                        const classes = { ok: 'text-success', warning: 'text-warning', error: 'text-danger', na: 'text-muted', '': 'text-secondary', yes: 'text-success', no: 'text-danger' };
+                        const icon = icons[status] || (status || '--');
                         const cls = classes[status] || 'text-secondary';
 
                         sectionItems += `<li><span class="${cls}"><strong>${icon}</strong></span> ${itemName}`;
