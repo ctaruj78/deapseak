@@ -474,9 +474,21 @@
                                     <button class="btn btn-info" onclick="assignmentManager.showCalendarView()">
                                         <i class="fas fa-calendar"></i> Календар
                                     </button>
+                                    <button class="btn btn-warning" id="archiveToggleBtn" onclick="assignmentManager.toggleArchiveView()">
+                                        <i class="fas fa-archive"></i> Архів
+                                    </button>
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Archive mode banner -->
+                    <div id="archiveModeBanner" class="alert alert-warning d-none" style="border-left:4px solid #e67e22;">
+                        <i class="fas fa-archive mr-2"></i>
+                        <strong>Режим перегляду архіву.</strong> Показуються архівовані та скасовані заявки (фальшиві виклики).
+                        <button class="btn btn-sm btn-outline-warning ml-3" onclick="assignmentManager.toggleArchiveView()">
+                            <i class="fas fa-arrow-left mr-1"></i>Повернутись до активних
+                        </button>
                     </div>
 
                     <!-- Перегляд -->
@@ -775,10 +787,13 @@
                                 <button class="btn btn-outline-secondary btn-sm mb-1 btn-cancel-work" onclick="assignmentManager.changeStatusFromModal('cancelled')">
                                     <i class="fas fa-ban mr-1"></i>Скасувати
                                 </button>
-                                <button class="btn btn-outline-warning btn-sm mb-1" onclick="assignmentManager.archiveFromModal()">
+                                <button class="btn btn-outline-warning btn-sm mb-1 btn-archive-action" onclick="assignmentManager.archiveFromModal()" id="btnArchiveModal">
                                     <i class="fas fa-archive mr-1"></i>Архівувати
                                 </button>
-                                <button class="btn btn-outline-danger btn-sm mb-1" onclick="assignmentManager.falseCallFromModal()">
+                                <button class="btn btn-success btn-sm mb-1 d-none" onclick="assignmentManager.unarchiveFromModal()" id="btnUnarchiveModal">
+                                    <i class="fas fa-box-open mr-1"></i>Відновити із архіву
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm mb-1 btn-false-call-action" onclick="assignmentManager.falseCallFromModal()" id="btnFalseCallModal">
                                     <i class="fas fa-phone-slash mr-1"></i>Фальшивий виклик
                                 </button>
                                 <button class="btn btn-outline-danger btn-sm mb-1" id="dispModalPdfBtn">
@@ -1271,7 +1286,8 @@
             // Завантажити призначення з API
             async loadAssignments() {
                 try {
-                    const response = await AuthManager.fetchWithAuth('/api/requests');
+                    const archiveParam = this._archiveMode ? '?archived=true' : '';
+                    const response = await AuthManager.fetchWithAuth('/api/requests' + archiveParam);
                     
                     if (!response || !response.ok) {
                         throw new Error('Не вдалося завантажити призначення');
@@ -1362,6 +1378,9 @@
                                 assignedTo: (techData && typeof techData === 'object') ? techData._id : techData,
                                 assignedToName: assignedToName,
                                 client: req.client || req.requester,
+                                archived: req.archived || false,
+                                archivedAt: req.archivedAt || null,
+                                falseCall: req.falseCall || false,
                                 // Зберігаємо оригінальний об'єкт для дебагу
                                 _original: req
                             };
@@ -1426,19 +1445,22 @@
                 const isOverdue = assignment.deadline && new Date(assignment.deadline) < new Date() && assignment.status !== 'completed';
                 const techName = assignment.assignedToName || assignment.technicianName || 'Не призначено';
                 const address = assignment.liftAddress || assignment.address || assignment.location || '—';
+                const archiveBadge = assignment.falseCall
+                    ? `<span class="badge badge-danger ml-1" title="Фальшивий виклик"><i class="fas fa-phone-slash mr-1"></i>Фальш. виклик</span>`
+                    : (assignment.archived ? `<span class="badge badge-warning ml-1"><i class="fas fa-archive mr-1"></i>Архів</span>` : '');
                 const closeBtn = assignment.status !== 'completed'
                     ? `<button class="btn btn-sm btn-success" onclick="dispatcherManager.closeRequest('${aid}')"><i class="fas fa-check-circle mr-1"></i>Закрити</button>` : '';
                 const reopenBtn = assignment.status === 'completed'
                     ? `<button class="btn btn-sm btn-outline-warning" onclick="dispatcherManager.reopenRequest('${aid}')"><i class="fas fa-redo mr-1"></i>Відкрити</button>` : '';
                 const extendBtn = isOverdue
                     ? `<button class="btn btn-sm btn-warning" onclick="assignmentManager.extendDeadline('${aid}')"><i class="fas fa-calendar-plus mr-1"></i>Продовжити</button>` : '';
-                return { aid, priority, pi, si, displayId, isOverdue, techName, address, closeBtn, reopenBtn, extendBtn };
+                return { aid, priority, pi, si, displayId, isOverdue, techName, address, archiveBadge, closeBtn, reopenBtn, extendBtn };
             }
 
             _renderList(container, assignments) {
                 const empty = '<div class="p-4 text-center text-muted"><i class="fas fa-inbox fa-2x mb-2 d-block"></i>Заявок не знайдено</div>';
                 const html = assignments.map(assignment => {
-                    const { aid, priority, pi, si, displayId, isOverdue, techName, address, closeBtn, reopenBtn, extendBtn } = this._buildCardHelpers(assignment);
+                    const { aid, priority, pi, si, displayId, isOverdue, techName, address, archiveBadge, closeBtn, reopenBtn, extendBtn } = this._buildCardHelpers(assignment);
                     if (!aid) return '';
                     const descText = (assignment.description || '').substring(0, 120);
                     return `
@@ -1451,6 +1473,7 @@
                               <strong class="mr-1">${displayId}</strong>
                               <span class="badge badge-pill ${si.cls}">${si.label}</span>
                               ${isOverdue ? '<span class="badge badge-pill badge-danger">Протерм.</span>' : ''}
+                              ${archiveBadge}
                             </div>
                             <div class="font-weight-bold mb-1">${assignment.title || assignment.type || 'Заявка'}</div>
                             <p class="text-muted small mb-2">${descText}${descText.length >= 120 ? '…' : ''}</p>
@@ -1475,7 +1498,7 @@
             _renderGrid(container, assignments) {
                 const empty = '<div class="p-4 text-center text-muted col-12"><i class="fas fa-inbox fa-2x mb-2 d-block"></i>Заявок не знайдено</div>';
                 const html = assignments.map(assignment => {
-                    const { aid, priority, pi, si, displayId, isOverdue, techName, address, closeBtn, reopenBtn, extendBtn } = this._buildCardHelpers(assignment);
+                    const { aid, priority, pi, si, displayId, isOverdue, techName, address, archiveBadge, closeBtn, reopenBtn, extendBtn } = this._buildCardHelpers(assignment);
                     if (!aid) return '';
                     const descText = (assignment.description || '').substring(0, 80);
                     return `
@@ -1486,6 +1509,7 @@
                           <div>
                             <strong>${displayId}</strong><br>
                             <span class="badge badge-pill ${si.cls}">${si.label}</span>
+                            ${archiveBadge}
                             ${isOverdue ? '<span class="badge badge-pill badge-danger ml-1">Протерм.</span>' : ''}
                           </div>
                         </div>
@@ -1817,6 +1841,17 @@
                 // Завантажити найближчих техніків
                 this.loadNearestTechnicians(assignment.liftAddress);
                 
+                // Показати/сховати кнопки залежно від стану архіву
+                const isArchived = assignment.archived || assignment._original?.archived;
+                const currentRole = (window.AuthManager?.currentUser?.role) || (this.currentUser?.role) || '';
+                const isAdmin = currentRole === 'admin';
+                const btnArchive  = document.getElementById('btnArchiveModal');
+                const btnUnarchive = document.getElementById('btnUnarchiveModal');
+                const btnFalseCall = document.getElementById('btnFalseCallModal');
+                if (btnArchive)   btnArchive.style.display   = isArchived ? 'none' : '';
+                if (btnUnarchive) btnUnarchive.style.display  = (isArchived && isAdmin) ? '' : 'none';
+                if (btnFalseCall) btnFalseCall.style.display  = isArchived ? 'none' : '';
+
                 // Показати модальне вікно
                 $('#viewAssignmentModal').modal('show');
             }
@@ -1905,6 +1940,41 @@
                 const address = this.currentViewingAssignment.liftAddress;
                 const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
                 window.open(mapsUrl, '_blank');
+            }
+
+            // Перемикання режиму перегляду архіву
+            toggleArchiveView() {
+                this._archiveMode = !this._archiveMode;
+                const banner = document.getElementById('archiveModeBanner');
+                const btn = document.getElementById('archiveToggleBtn');
+                if (this._archiveMode) {
+                    banner && banner.classList.remove('d-none');
+                    if (btn) { btn.classList.remove('btn-warning'); btn.classList.add('btn-secondary'); btn.innerHTML = '<i class="fas fa-times mr-1"></i>Вийти з архіву'; }
+                } else {
+                    banner && banner.classList.add('d-none');
+                    if (btn) { btn.classList.remove('btn-secondary'); btn.classList.add('btn-warning'); btn.innerHTML = '<i class="fas fa-archive mr-1"></i>Архів'; }
+                }
+                this.loadAssignments();
+            }
+
+            // Відновити заявку з архіву
+            async unarchiveFromModal() {
+                const assignment = this.currentViewingAssignment;
+                if (!assignment) return;
+                if (!confirm('Відновити заявку із архіву?')) return;
+                try {
+                    const res = await AuthManager.fetchWithAuth(`/api/requests/${assignment._id}/unarchive`, { method: 'POST' });
+                    const result = await res.json();
+                    if (result.success) {
+                        await Swal.fire({ icon: 'success', title: 'Відновлено!', text: 'Заявку повернуто до активних.', timer: 1800, showConfirmButton: false });
+                        $('#assignmentModal').modal('hide');
+                        await this.loadAssignments();
+                    } else {
+                        alert('Помилка: ' + (result.message || 'Не вдалося відновити'));
+                    }
+                } catch (err) {
+                    alert('Помилка: ' + err.message);
+                }
             }
 
             // Архівувати заявку з модального вікна

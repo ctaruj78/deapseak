@@ -686,10 +686,20 @@
                             <button class="btn btn-sm btn-outline-secondary" onclick="refreshRequests()"><i class="fas fa-sync-alt"></i> Оновити</button>
                             <div class="ml-auto d-flex" style="gap:6px">
                                 <button class="btn btn-sm btn-outline-success" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> Excel</button>
+                                <button class="btn btn-sm btn-warning" id="adminArchiveToggleBtn" onclick="serviceManager.toggleArchiveView()"><i class="fas fa-archive mr-1"></i>Архів</button>
                                 <button class="btn btn-sm btn-success" onclick="openNewRequestModal()"><i class="fas fa-plus"></i> Нова заявка</button>
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <!-- Archive mode banner -->
+                <div id="adminArchiveBanner" class="alert alert-warning d-none" style="border-left:4px solid #e67e22">
+                    <i class="fas fa-archive mr-2"></i>
+                    <strong>Режим перегляду архіву.</strong> Показуються архівовані та скасовані заявки (фальшиві виклики).
+                    <button class="btn btn-sm btn-outline-warning ml-3" onclick="serviceManager.toggleArchiveView()">
+                        <i class="fas fa-arrow-left mr-1"></i>Повернутись до активних
+                    </button>
                 </div>
 
                 <!-- Cards Container -->
@@ -972,10 +982,13 @@
                         <button class="btn btn-outline-primary btn-sm mb-1" onclick="serviceManager.editRequest(serviceManager.currentRequest?.id || serviceManager.currentRequest?._id); $('#viewRequestModal').modal('hide')">
                             <i class="fas fa-edit mr-1"></i>Редагувати
                         </button>
-                        <button class="btn btn-outline-warning btn-sm mb-1" onclick="serviceManager.archiveFromModal()">
+                        <button class="btn btn-outline-warning btn-sm mb-1" id="adminBtnArchive" onclick="serviceManager.archiveFromModal()">
                             <i class="fas fa-archive mr-1"></i>Архівувати
                         </button>
-                        <button class="btn btn-outline-danger btn-sm mb-1" onclick="serviceManager.falseCallFromModal()">
+                        <button class="btn btn-success btn-sm mb-1 d-none" id="adminBtnUnarchive" onclick="serviceManager.unarchiveFromModal()">
+                            <i class="fas fa-box-open mr-1"></i>Відновити із архіву
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm mb-1" id="adminBtnFalseCall" onclick="serviceManager.falseCallFromModal()">
                             <i class="fas fa-ban mr-1"></i>Фальшивий виклик
                         </button>
                         <button class="btn btn-outline-danger btn-sm" id="vrmPdfBtn">
@@ -1171,7 +1184,8 @@ class ServiceRequestManager {
             }
             
             // Завантажуємо заявки з API v2
-            const response = await AuthManager.fetchWithAuth('/api/requests');
+            const archiveParam = this._archiveMode ? '?archived=true' : '';
+            const response = await AuthManager.fetchWithAuth('/api/requests' + archiveParam);
             
             if (response && response.ok) {
                 const result = await response.json();
@@ -1259,6 +1273,9 @@ class ServiceRequestManager {
                                 message: c.text,
                                 user: c.user?.username || c.user?.firstName || 'Unknown'
                             })) || [],
+                            archived: req.archived || false,
+                            archivedAt: req.archivedAt || null,
+                            falseCall: req.falseCall || false,
                             rawData: req // Зберігаємо оригінальні дані
                         };
                     });
@@ -1908,6 +1925,15 @@ class ServiceRequestManager {
         $('#viewRequestModal .tab-pane').removeClass('show active');
         $('#vrmTabLoc').addClass('show active');
 
+        // Показати/сховати кнопки архіву залежно від стану заявки
+        const isArchived = request.archived || request._original?.archived;
+        const btnAr  = document.getElementById('adminBtnArchive');
+        const btnUn  = document.getElementById('adminBtnUnarchive');
+        const btnFc  = document.getElementById('adminBtnFalseCall');
+        if (btnAr)  btnAr.style.display  = isArchived ? 'none' : '';
+        if (btnUn)  btnUn.style.display  = isArchived ? '' : 'none';
+        if (btnFc)  btnFc.style.display  = isArchived ? 'none' : '';
+
         $('#viewRequestModal').modal('show');
     }
 
@@ -2183,6 +2209,49 @@ class ServiceRequestManager {
         const mongoId = this.currentRequest._id || this.currentRequest.id;
         $('#viewRequestModal').modal('hide');
         this.archiveRequest(mongoId);
+    }
+
+    // Перемикання режиму перегляду архіву (адмін)
+    toggleArchiveView() {
+        this._archiveMode = !this._archiveMode;
+        const banner = document.getElementById('adminArchiveBanner');
+        const btn = document.getElementById('adminArchiveToggleBtn');
+        if (this._archiveMode) {
+            banner && banner.classList.remove('d-none');
+            if (btn) { btn.classList.remove('btn-warning'); btn.classList.add('btn-secondary'); btn.innerHTML = '<i class="fas fa-times mr-1"></i>Вийти з архіву'; }
+        } else {
+            banner && banner.classList.add('d-none');
+            if (btn) { btn.classList.remove('btn-secondary'); btn.classList.add('btn-warning'); btn.innerHTML = '<i class="fas fa-archive mr-1"></i>Архів'; }
+        }
+        this.loadRequests();
+    }
+
+    // Відновити заявку з архіву (тільки адмін)
+    async unarchiveFromModal() {
+        const request = this.currentRequest;
+        if (!request) { toastr.error('Заявку не відкрито'); return; }
+        const mongoId = request._id || request.id;
+        const swalResult = await Swal.fire({
+            title: 'Відновити заявку?',
+            text: 'Заявку буде повернуто до активних.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            confirmButtonText: '<i class="fas fa-box-open mr-1"></i>Відновити',
+            cancelButtonText: 'Скасувати'
+        });
+        if (!swalResult.isConfirmed) return;
+        try {
+            const response = await AuthManager.fetchWithAuth(`/api/requests/${mongoId}/unarchive`, { method: 'POST' });
+            const data = response ? await response.json() : null;
+            if (!data || !data.success) throw new Error((data && data.message) || 'Помилка відновлення');
+            $('#viewRequestModal').modal('hide');
+            await this.loadRequests();
+            Swal.fire({ icon: 'success', title: 'Відновлено!', text: 'Заявку повернуто до активних.', timer: 1800, showConfirmButton: false });
+        } catch (error) {
+            console.error('❌ Помилка відновлення:', error);
+            toastr.error('Не вдалося відновити: ' + error.message);
+        }
     }
 
     async falseCallFromModal() {
