@@ -619,18 +619,18 @@ app.post('/api/knowledge-base', authenticateToken, async (req, res) => {
 // �📋 INSPECTIONS
 // ═══════════════════════════════════════════════════════════
 
-// GET all inspections
+// GET all inspections  (supports ?limit=N)
 app.get('/api/inspections', authenticateToken, async (req, res) => {
     try {
         if (!db) {
             return res.status(503).json({ success: false, message: 'База даних недоступна' });
         }
-        
-        const inspections = await db.collection('inspections')
+        const limit = parseInt(req.query.limit) || 0;
+        let cursor = db.collection('inspections')
             .find({})
-            .sort({ scheduledDate: -1 })
-            .toArray();
-        
+            .sort({ createdAt: -1 });
+        if (limit > 0) cursor = cursor.limit(limit);
+        const inspections = await cursor.toArray();
         res.json({ success: true, data: inspections || [] });
     } catch (error) {
         console.error('❌ Помилка отримання інспекцій:', error);
@@ -657,6 +657,74 @@ app.get('/api/inspections/:id', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error('❌ Помилка отримання інспекції:', error);
         res.status(500).json({ success: false, message: 'Помилка сервера' });
+    }
+});
+
+// POST /api/inspections — guardar novo relatório de inspecção / manutenção
+app.post('/api/inspections', authenticateToken, async (req, res) => {
+    try {
+        if (!db) {
+            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+        }
+        const now = new Date();
+        // Auto-generate report number if not provided
+        let numero = req.body.numero || req.body.reportNumber;
+        if (!numero) {
+            const yymm = now.toISOString().slice(0, 7).replace('-', ''); // e.g. 202604
+            const prefix = (req.body.visitType || req.body.type) === 'repair' ? 'REP' :
+                           (req.body.visitType || req.body.type) === 'emergency' ? 'EMG' : 'MNT';
+            const count = await db.collection('inspections').countDocuments();
+            numero = `${prefix}-${yymm}-${String(count + 1).padStart(3, '0')}`;
+        }
+        const doc = {
+            numero,
+            data: req.body.data || req.body.inspectionDate || req.body.scheduledDate || now,
+            inspector: req.body.inspector || req.body.technicianName || '',
+            liftLocation: req.body.liftLocation || req.body.liftAddress || req.body.address || '',
+            liftMunicipal: req.body.liftMunicipal || '',
+            liftModel: req.body.liftModel || '',
+            clientEmail: req.body.clientEmail || '',
+            clientName: req.body.clientName || '',
+            visitType: req.body.visitType || req.body.type || 'maintenance',
+            driveType: req.body.driveType || '',
+            doorType: req.body.doorType || '',
+            checklist: req.body.checklist || {},
+            generalComments: req.body.generalComments || req.body.observations || req.body.notes || '',
+            recommendations: req.body.recommendations || '',
+            // Dispatcher-specific fields
+            assignedTechnician: req.body.assignedTechnician || null,
+            scheduledDate: req.body.scheduledDate || null,
+            priority: req.body.priority || 'normal',
+            status: req.body.status || 'rascunho',
+            createdBy: req.user ? req.user.id : null,
+            createdAt: now,
+            updatedAt: now
+        };
+        const result = await db.collection('inspections').insertOne(doc);
+        console.log(`✅ Inspecção ${numero} guardada (${doc.visitType}) por ${doc.inspector}`);
+        res.status(201).json({ success: true, inspection: { ...doc, _id: result.insertedId } });
+    } catch (error) {
+        console.error('❌ Erro ao guardar inspecção:', error);
+        res.status(500).json({ success: false, message: 'Erro ao guardar inspecção', error: error.message });
+    }
+});
+
+// DELETE /api/inspections/:id — apagar relatório
+app.delete('/api/inspections/:id', authenticateToken, async (req, res) => {
+    try {
+        if (!db) {
+            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+        }
+        const { ObjectId } = require('mongodb');
+        const result = await db.collection('inspections').deleteOne({ _id: new ObjectId(req.params.id) });
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ success: false, message: 'Inspecção não encontrada' });
+        }
+        console.log(`🗑️  Inspecção ${req.params.id} apagada`);
+        res.json({ success: true, message: 'Inspecção apagada com sucesso' });
+    } catch (error) {
+        console.error('❌ Erro ao apagar inspecção:', error);
+        res.status(500).json({ success: false, message: 'Erro ao apagar inspecção', error: error.message });
     }
 });
 
