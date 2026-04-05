@@ -129,6 +129,18 @@ const orcamentoSchema = new mongoose.Schema({
         type: String
     },
 
+    // Ligação ao elevador (se detectado por morada)
+    liftId: {
+        type: mongoose.Schema.Types.ObjectId,
+        default: null
+    },
+
+    // Endereço do elevador ligado (para exibição rápida)
+    liftAddress: {
+        type: String,
+        default: null
+    },
+
     // PDF файл (якщо збережено)
     pdfPath: String,
     
@@ -152,6 +164,7 @@ orcamentoSchema.index({ 'cliente.email': 1 });
 orcamentoSchema.index({ status: 1 });
 orcamentoSchema.index({ data: -1 });
 orcamentoSchema.index({ criadoPor: 1 });
+orcamentoSchema.index({ liftId: 1 });
 
 // Метод для генерації номеру орçаменту
 orcamentoSchema.statics.gerarNumero = async function() {

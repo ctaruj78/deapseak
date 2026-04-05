@@ -34,12 +34,102 @@
             </div>
             <section class="content">
                 <div class="container-fluid">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">Інформація про диспетчера</h3>
+                    <div class="row">
+                        <!-- Аватар та основна інформація -->
+                        <div class="col-md-3">
+                            <div class="card card-primary card-outline text-center">
+                                <div class="card-body box-profile pt-4">
+                                    <div style="width:100px;height:100px;border-radius:50%;overflow:hidden;margin:0 auto 10px;background:linear-gradient(135deg,#007bff,#6f42c1);display:flex;align-items:center;justify-content:center;color:#fff;font-size:2.5rem;font-weight:700;">
+                                        <span data-user-avatar style="font-size:inherit;color:inherit;" data-user-initials></span>
+                                    </div>
+                                    <h3 class="profile-username" data-user-name>—</h3>
+                                    <p class="text-muted" data-user-role>—</p>
+                                    <span data-user-status></span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <p>Тут буде інформація про диспетчера.</p>
+
+                        <!-- Деталі профілю -->
+                        <div class="col-md-9">
+                            <div class="card">
+                                <div class="card-header p-2">
+                                    <ul class="nav nav-pills">
+                                        <li class="nav-item">
+                                            <a class="nav-link active" href="#info" data-toggle="tab">Інформація</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="#password" data-toggle="tab">Пароль</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="card-body">
+                                    <div class="tab-content">
+                                        <!-- Вкладка інформації -->
+                                        <div class="active tab-pane" id="info">
+                                            <form onsubmit="submitProfileUpdate(event)">
+                                                <div class="form-group row">
+                                                    <label class="col-sm-3 col-form-label">Ім'я</label>
+                                                    <div class="col-sm-9">
+                                                        <input type="text" class="form-control" data-user-name placeholder="Ваше ім'я">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <label class="col-sm-3 col-form-label">Email</label>
+                                                    <div class="col-sm-9">
+                                                        <input type="email" class="form-control" data-user-email placeholder="Email">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <label class="col-sm-3 col-form-label">Телефон</label>
+                                                    <div class="col-sm-9">
+                                                        <input type="tel" class="form-control" data-user-phone placeholder="Телефон">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <label class="col-sm-3 col-form-label">Дата реєстрації</label>
+                                                    <div class="col-sm-9">
+                                                        <p class="form-control-plaintext" data-user-created>—</p>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <div class="offset-sm-3 col-sm-9">
+                                                        <button type="submit" class="btn btn-primary">Зберегти зміни</button>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+
+                                        <!-- Вкладка пароля -->
+                                        <div class="tab-pane" id="password">
+                                            <form onsubmit="submitPasswordChange(event)">
+                                                <div class="form-group row">
+                                                    <label class="col-sm-3 col-form-label">Поточний пароль</label>
+                                                    <div class="col-sm-9">
+                                                        <input type="password" class="form-control" id="currentPassword" required>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <label class="col-sm-3 col-form-label">Новий пароль</label>
+                                                    <div class="col-sm-9">
+                                                        <input type="password" class="form-control" id="newPassword" required minlength="6">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <label class="col-sm-3 col-form-label">Підтвердити</label>
+                                                    <div class="col-sm-9">
+                                                        <input type="password" class="form-control" id="confirmPassword" required minlength="6">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <div class="offset-sm-3 col-sm-9">
+                                                        <button type="submit" class="btn btn-warning">Змінити пароль</button>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -53,72 +143,64 @@
             </div>
         </footer>
     </div>
+    <!-- jQuery -->
     <script src="../../plugins/jquery/jquery.min.js"></script>
+    <!-- Bootstrap -->
     <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+    <!-- AdminLTE -->
     <script src="../../plugins/adminlte/adminlte.min.js"></script>
 
-<!-- 👤 Завантажувач профілю з API -->
-<script src="../../assets/js/profile-loader.js"></script>
-<!-- jQuery -->
-<script src="../../plugins/jquery/jquery.min.js"></script>
-<!-- Bootstrap -->
-<script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
-<!-- AdminLTE -->
-<script src="../../plugins/adminlte/adminlte.min.js"></script>
+    <!-- Sidebar Init (MUST be before other scripts) -->
+    <script src="../../assets/js/sidebar-init.js"></script>
 
-<!-- Sidebar Init (MUST be before other scripts) -->
-<script src="../../assets/js/sidebar-init.js"></script>
+    <!-- API Configuration -->
+    <script src="../../assets/js/config.js?v=20241116"></script>
 
-<!-- API Configuration -->
-<script src="../../assets/js/config.js?v=20241116"></script>
+    <!-- Auth System -->
+    <script src="../../assets/js/auth.js?v=20241206"></script>
 
-<!-- Auth System -->
-<script src="../../assets/js/auth.js?v=20241206"></script>
+    <!-- 👤 Завантажувач профілю з API -->
+    <script src="../../assets/js/profile-loader.js"></script>
 
-<!-- DataTables (if needed) -->
-<script src="../../plugins/datatables/jquery.dataTables.min.js"></script>
-<script src="../../plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+    <!-- DataTables (if needed) -->
+    <script src="../../plugins/datatables/js/jquery.dataTables.min.js"></script>
+    <script src="../../plugins/datatables/js/dataTables.bootstrap4.min.js"></script>
 
-<!-- SweetAlert2 -->
-<script src="../../plugins/sweetalert2/sweetalert2.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        if (typeof loadSidebarWithInit === "function") {
-            loadSidebarWithInit("includes/sidebar.html");
+    <script>
+        function submitProfileUpdate(e) {
+            e.preventDefault();
+            const nameEl  = document.querySelector('input[data-user-name]');
+            const emailEl = document.querySelector('input[data-user-email]');
+            const phoneEl = document.querySelector('input[data-user-phone]');
+            if (window.ProfileLoader) {
+                window.updateUserProfile({
+                    name:  nameEl  ? nameEl.value  : undefined,
+                    email: emailEl ? emailEl.value : undefined,
+                    phone: phoneEl ? phoneEl.value : undefined
+                });
+            }
         }
-    });
-</script>
+
+        function submitPasswordChange(e) {
+            e.preventDefault();
+            const current  = document.getElementById('currentPassword').value;
+            const newPass  = document.getElementById('newPassword').value;
+            const confirm  = document.getElementById('confirmPassword').value;
+            if (newPass !== confirm) { alert('Паролі не співпадають'); return; }
+            if (window.changeUserPassword) {
+                window.changeUserPassword(current, newPass);
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            if (typeof loadSidebarWithInit === "function") {
+                loadSidebarWithInit("includes/sidebar.html");
+            }
+        });
+    </script>
 </body>
 </html>
-<!-- jQuery -->
-<script src="../../plugins/jquery/jquery.min.js"></script>
-<!-- Bootstrap -->
-<script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
-<!-- AdminLTE -->
-<script src="../../plugins/adminlte/adminlte.min.js"></script>
-
-<!-- Sidebar Init (MUST be before other scripts) -->
-<script src="../../assets/js/sidebar-init.js"></script>
-
-<!-- API Configuration -->
-<script src="../../assets/js/config.js?v=20241116"></script>
-
-<!-- Auth System -->
-<script src="../../assets/js/auth.js?v=20241206"></script>
-
-<!-- DataTables (if needed) -->
-<script src="../../plugins/datatables/jquery.dataTables.min.js"></script>
-<script src="../../plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
-
-<!-- SweetAlert2 -->
-<script src="../../plugins/sweetalert2/sweetalert2.min.js"></script>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        if (typeof loadSidebarWithInit === "function") {
-            loadSidebarWithInit("includes/sidebar.html");
-        }
-    });
-</script>
 </body> -->

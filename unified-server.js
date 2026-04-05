@@ -2848,6 +2848,23 @@ app.post('/api/lifts/:id/documents', authenticateToken, uploadLiftDoc.single('do
     }
 });
 
+// GET /api/lifts/:id/orcamentos - Orçamentos vinculados a este lift
+app.get('/api/lifts/:id/orcamentos', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const Orcamento = require('./models/Orcamento');
+        const liftId = new ObjectId(req.params.id);
+        const orcamentos = await Orcamento.find({ liftId })
+            .sort({ data: -1 })
+            .select('-emailsEnviados -pdfPath')
+            .lean();
+        res.json({ success: true, data: orcamentos });
+    } catch (error) {
+        console.error('❌ Erro ao buscar orçamentos do lift:', error);
+        res.status(500).json({ success: false, message: 'Erro ao buscar orçamentos' });
+    }
+});
+
 // GET /api/lifts/:id/documents - отримання всіх документів ліфта
 app.get('/api/lifts/:id/documents', authenticateToken, async (req, res) => {
     try {
@@ -4005,6 +4022,16 @@ app.get('/api/requests', authenticateToken, async (req, res) => {
         if (req.query.status) query.status = req.query.status;
         if (req.query.priority) query.priority = req.query.priority;
 
+        // За замовчуванням — не показуємо архівовані заявки.
+        // Якщо явно передано ?archived=true — показуємо тільки архів.
+        if (req.query.archived === 'true') {
+            query.archived = true;
+        } else if (req.query.archived === 'all') {
+            // не фільтруємо
+        } else {
+            query.archived = { $ne: true };
+        }
+
         // Filter by clientId: find the client's lifts first, then filter requests by liftId
         if (req.query.clientId) {
             const { ObjectId: OID } = require('mongodb');
@@ -4130,7 +4157,11 @@ function buildRequestQuery(id) {
     if (/^REQ-/i.test(id)) {
         return { requestNumber: id };
     }
-    try { return { _id: new ObjectId(id) }; }
+    try {
+        const oid = new ObjectId(id);
+        // Match either ObjectId _id or string _id (for legacy docs created with string _ids)
+        return { $or: [{ _id: oid }, { _id: id }] };
+    }
     catch (_) { return { requestNumber: id }; }
 }
 
@@ -4713,6 +4744,129 @@ app.delete('/api/requests/:id', authenticateToken, async (req, res) => {
             success: false,
             message: 'Помилка видалення заявки'
         });
+    }
+});
+
+// POST /api/requests/:id/archive - м'яке видалення (диспетчер + адмін)
+app.post('/api/requests/:id/archive', authenticateToken, async (req, res) => {
+    try {
+        const role = req.user.role;
+        if (!['admin', 'dispatcher'].includes(role)) {
+            return res.status(403).json({ success: false, message: 'Недостатньо прав для архівування' });
+        }
+        const requestQuery = buildRequestQuery(req.params.id);
+        const result = await db.collection('requests').updateOne(requestQuery, {
+            $set: {
+                archived: true,
+                archivedAt: new Date().toISOString(),
+                archivedBy: req.user.username,
+                updatedAt: new Date().toISOString()
+            }
+        });
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ success: false, message: 'Заявку не знайдено' });
+        }
+        res.json({ success: true, message: 'Заявку переміщено до архіву' });
+    } catch (error) {
+        console.error('❌ Помилка архівування заявки:', error);
+        res.status(500).json({ success: false, message: 'Помилка архівування' });
+    }
+});
+
+// POST /api/requests/:id/unarchive - відновлення з архіву (тільки адмін)
+app.post('/api/requests/:id/unarchive', authenticateToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: 'Відновлення з архіву — тільки для адміністратора' });
+        }
+        const requestQuery = buildRequestQuery(req.params.id);
+        const result = await db.collection('requests').updateOne(requestQuery, {
+            $unset: { archived: '', archivedAt: '', archivedBy: '' },
+            $set: { updatedAt: new Date().toISOString() }
+        });
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ success: false, message: 'Заявку не знайдено' });
+        }
+        res.json({ success: true, message: 'Заявку відновлено з архіву' });
+    } catch (error) {
+        console.error('❌ Помилка відновлення:', error);
+        res.status(500).json({ success: false, message: 'Помилка відновлення' });
+    }
+});
+
+// POST /api/requests/:id/false-call - позначити як фальшивий виклик (диспетчер + адмін)
+app.post('/api/requests/:id/false-call', authenticateToken, async (req, res) => {
+    try {
+        const role = req.user.role;
+        if (!['admin', 'dispatcher'].includes(role)) {
+            return res.status(403).json({ success: false, message: 'Недостатньо прав' });
+        }
+        const requestQuery = buildRequestQuery(req.params.id);
+        const result = await db.collection('requests').updateOne(requestQuery, {
+            $set: {
+                status: 'cancelled',
+                falseCall: true,
+                falseCallAt: new Date().toISOString(),
+                falseCallBy: req.user.username,
+                archived: true,
+                archivedAt: new Date().toISOString(),
+                archivedBy: req.user.username,
+                updatedAt: new Date().toISOString()
+            }
+        });
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ success: false, message: 'Заявку не знайдено' });
+        }
+        res.json({ success: true, message: 'Заявку позначено як фальшивий виклик і архівовано' });
+    } catch (error) {
+        console.error('❌ Помилка позначення фальшивого виклику:', error);
+        res.status(500).json({ success: false, message: 'Помилка операції' });
+    }
+});
+
+// POST /api/requests/:id/cancel - клієнт скасовує свою заявку (тільки pending/assigned)
+app.post('/api/requests/:id/cancel', authenticateToken, async (req, res) => {
+    try {
+        const role = req.user.role;
+        const userId = (req.user.userId || req.user.id || '').toString();
+
+        const requestQuery = buildRequestQuery(req.params.id);
+        const request = await db.collection('requests').findOne(requestQuery);
+
+        if (!request) {
+            return res.status(404).json({ success: false, message: 'Заявку не знайдено' });
+        }
+
+        // Клієнт може скасувати тільки свою заявку і тільки в статусі pending/assigned
+        if (role === 'client') {
+            const liftDoc = await db.collection('lifts').findOne({ _id: request.liftId });
+            const liftOwnerId = liftDoc ? (liftDoc.client || liftDoc.clientId || '').toString() : '';
+            if (liftOwnerId !== userId) {
+                return res.status(403).json({ success: false, message: 'Ви не можете скасувати чужу заявку' });
+            }
+            if (!['pending', 'assigned', 'new'].includes(request.status)) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Заявку можна скасувати лише до початку виконання'
+                });
+            }
+        } else if (!['admin', 'dispatcher'].includes(role)) {
+            return res.status(403).json({ success: false, message: 'Недостатньо прав' });
+        }
+
+        const result = await db.collection('requests').updateOne(requestQuery, {
+            $set: {
+                status: 'cancelled',
+                cancelledAt: new Date().toISOString(),
+                cancelledBy: req.user.username,
+                updatedAt: new Date().toISOString()
+            }
+        });
+
+        res.json({ success: true, message: 'Заявку скасовано' });
+    } catch (error) {
+        console.error('❌ Помилка скасування заявки:', error);
+        res.status(500).json({ success: false, message: 'Помилка скасування' });
     }
 });
 
@@ -7717,6 +7871,182 @@ app.post('/api/email/send-orcamento', authenticateToken, async (req, res) => {
 // 🔧 INSPECTIONS API - Relatórios de Manutenção
 // ═══════════════════════════════════════════════════════════
 
+/**
+ * Gera PDF de Relatório de Manutenção usando pdfkit.
+ * @param {object} data - { inspectionNumber, inspectionDate, inspector, liftLocation, liftModel, liftSerial, visitType, driveType, doorType, checklist, generalComments, recommendations }
+ * @returns {Promise<Buffer>}
+ */
+async function gerarPDFRelatorio(data) {
+    const PDFDocument = require('pdfkit');
+    const { inspectionNumber, inspectionDate, inspector, liftLocation, liftModel, liftSerial,
+            visitType, driveType, doorType, checklist, generalComments, recommendations } = data;
+
+    return new Promise((resolve, reject) => {
+        try {
+            const doc = new PDFDocument({ margin: 50, size: 'A4' });
+            const chunks = [];
+            doc.on('data', c => chunks.push(c));
+            doc.on('end', () => resolve(Buffer.concat(chunks)));
+            doc.on('error', reject);
+
+            const logoPath = path.join(__dirname, 'assets/img/logo.png');
+            if (require('fs').existsSync(logoPath)) {
+                doc.rect(40, 35, 185, 80).fill('#1a3a6b');
+                doc.image(logoPath, 50, 45, { width: 160 });
+                doc.y = 130;
+            } else {
+                doc.fontSize(20).font('Helvetica-Bold').fillColor('#1a3a6b')
+                   .text('FestLift - Elevadores e Serviços, Lda.', { align: 'center' });
+                doc.moveDown(0.5);
+            }
+
+            doc.fontSize(9).font('Helvetica').fillColor('#444444');
+            doc.text('Av. do Parque 84B, Rio de Mouro, Lisboa 2635-609  |  Tel: +351 214 190 863', { align: 'center' });
+            doc.text('Email: info@festlift.pt  |  NIF: 515 924 741', { align: 'center' });
+            doc.moveDown(0.5);
+            doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#1a3a6b').stroke();
+            doc.moveDown(0.5);
+
+            // Title
+            const visitLabels = {
+                maintenance: 'RELATÓRIO DE MANUTENÇÃO MENSAL',
+                quarterly: 'RELATÓRIO DE REVISÃO TRIMESTRAL',
+                annual: 'RELATÓRIO DE REVISÃO ANUAL',
+                pre_inspection: 'RELATÓRIO DE PREPARAÇÃO OI',
+                repair: 'RELATÓRIO DE REPARAÇÃO',
+                emergency: 'RELATÓRIO DE INTERVENÇÃO DE EMERGÊNCIA',
+            };
+            const title = visitLabels[visitType] || 'RELATÓRIO DE MANUTENÇÃO';
+            doc.fontSize(15).font('Helvetica-Bold').fillColor('#1a3a6b')
+               .text(title, { align: 'center' });
+            doc.moveDown(0.8);
+
+            // Info table
+            const dataFormatted = inspectionDate
+                ? new Date(inspectionDate).toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                : '—';
+
+            const infoRows = [
+                ['Nº do Relatório', inspectionNumber || '—'],
+                ['Data', dataFormatted],
+                ['Técnico Responsável', inspector || '—'],
+                ['Localização do Ascensor', liftLocation || '—'],
+                ['Fabricante / Modelo', liftModel || '—'],
+            ];
+            if (liftSerial) infoRows.push(['Número de Série', liftSerial]);
+
+            const tL = 50, tR = 545, col1w = 180;
+            let y = doc.y;
+            doc.fontSize(9).font('Helvetica');
+            infoRows.forEach((row, i) => {
+                const bg = i % 2 === 0 ? '#f0f4ff' : '#ffffff';
+                doc.rect(tL, y, tR - tL, 18).fill(bg).stroke('#dddddd');
+                doc.fillColor('#333333').font('Helvetica-Bold').text(row[0], tL + 6, y + 4, { width: col1w - 6 });
+                doc.font('Helvetica').text(row[1], tL + col1w + 4, y + 4, { width: tR - tL - col1w - 10 });
+                y += 18;
+            });
+            doc.y = y + 12;
+
+            // Checklist results
+            if (checklist && typeof checklist === 'object') {
+                const items = Object.entries(checklist).filter(([, v]) => v.status && v.status !== '');
+                if (items.length > 0) {
+                    doc.fontSize(11).font('Helvetica-Bold').fillColor('#1a3a6b')
+                       .text('Resultados da Verificação', 50, doc.y);
+                    doc.moveDown(0.4);
+
+                    // Table header
+                    const hY = doc.y;
+                    doc.rect(50, hY, 495, 16).fill('#1a3a6b');
+                    doc.fontSize(8.5).font('Helvetica-Bold').fillColor('#ffffff');
+                    doc.text('Item', 56, hY + 3, { width: 260 });
+                    doc.text('Estado', 318, hY + 3, { width: 70, align: 'center' });
+                    doc.text('Observação', 390, hY + 3, { width: 155 });
+                    y = hY + 16;
+
+                    const statusIcon = { ok: '✓ Conforme', warning: '⚠ Atenção', error: '✗ Não conforme', na: 'N/A' };
+                    const statusColor = { ok: '#28a745', warning: '#e67e00', error: '#dc3545', na: '#6c757d' };
+
+                    items.forEach(([key, val], i) => {
+                        if (y > 760) { doc.addPage(); y = 50; }
+                        const label = key.replace(/-/g, ' ').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        const rowH = 18;
+                        const bg = i % 2 === 0 ? '#f8f9fa' : '#ffffff';
+                        doc.rect(50, y, 495, rowH).fill(bg).stroke('#e0e0e0');
+                        doc.fillColor('#333333').font('Helvetica').fontSize(8).text(label, 56, y + 4, { width: 258 });
+                        const sc = statusColor[val.status] || '#333333';
+                        const si = statusIcon[val.status] || val.status;
+                        doc.fillColor(sc).font('Helvetica-Bold').text(si, 318, y + 4, { width: 68, align: 'center' });
+                        doc.fillColor('#555555').font('Helvetica').text(val.comment || '', 390, y + 4, { width: 152 });
+                        y += rowH;
+                    });
+                    doc.y = y + 10;
+                }
+            }
+
+            // Observations
+            if (generalComments && generalComments.trim()) {
+                if (doc.y > 720) doc.addPage();
+                doc.moveDown(0.5);
+                doc.fontSize(11).font('Helvetica-Bold').fillColor('#1a3a6b').text('Observações Gerais');
+                doc.moveDown(0.3);
+                doc.rect(50, doc.y, 495, 2).fill('#1a3a6b');
+                doc.moveDown(0.2);
+                doc.fontSize(9).font('Helvetica').fillColor('#333333').text(generalComments, 50, doc.y, { width: 495 });
+                doc.moveDown(0.5);
+            }
+
+            // Recommendations
+            if (recommendations && recommendations.trim()) {
+                if (doc.y > 700) doc.addPage();
+                doc.moveDown(0.5);
+                doc.fontSize(11).font('Helvetica-Bold').fillColor('#1a3a6b').text('Recomendações');
+                doc.moveDown(0.3);
+                doc.rect(50, doc.y, 495, 2).fill('#ffc107');
+                doc.moveDown(0.2);
+                doc.fontSize(9).font('Helvetica').fillColor('#333333').text(recommendations, 50, doc.y, { width: 495 });
+                doc.moveDown(0.5);
+            }
+
+            // Signature line
+            if (doc.y > 720) doc.addPage();
+            const sigY = Math.max(doc.y + 20, 700);
+            doc.moveTo(50, sigY).lineTo(260, sigY).strokeColor('#999999').stroke();
+            doc.fontSize(8).font('Helvetica').fillColor('#666666').text('Técnico Responsável', 50, sigY + 3);
+            doc.moveTo(300, sigY).lineTo(510, sigY).strokeColor('#999999').stroke();
+            doc.text('Cliente / Condomínio', 300, sigY + 3);
+
+            // Footer
+            doc.fontSize(7.5).font('Helvetica').fillColor('#888888')
+               .text(
+                   'FestLift - Elevadores e Serviços, Lda.  |  NIF: 515 924 741  |  info@festlift.pt  |  +351 214 190 863',
+                   50, 820, { align: 'center', width: 495 }
+               );
+
+            doc.end();
+        } catch (err) { reject(err); }
+    });
+}
+
+// POST /api/inspections/download-pdf - Descarregar PDF do relatório
+app.post('/api/inspections/download-pdf', authenticateToken, async (req, res) => {
+    try {
+        const { inspectionNumber } = req.body;
+        if (!inspectionNumber) {
+            return res.status(400).json({ success: false, message: 'inspectionNumber é obrigatório' });
+        }
+        const pdfBuffer = await gerarPDFRelatorio(req.body);
+        const filename = `Relatorio_${String(inspectionNumber).replace(/[/\\]/g, '-')}.pdf`;
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        res.setHeader('Content-Length', pdfBuffer.length);
+        res.send(pdfBuffer);
+    } catch (err) {
+        console.error('❌ Erro ao gerar PDF do relatório:', err);
+        res.status(500).json({ success: false, message: 'Erro ao gerar PDF', error: err.message });
+    }
+});
+
 // POST /api/inspections/send-report - Enviar relatório por email
 app.post('/api/inspections/send-report', authenticateToken, async (req, res) => {
     try {
@@ -7725,11 +8055,7 @@ app.post('/api/inspections/send-report', authenticateToken, async (req, res) => 
             inspectionDate,
             inspector,
             liftLocation,
-            liftModel,
-            liftSerial,
-            checklist,
-            generalComments,
-            recommendations,
+            clientName,
             recipientEmail
         } = req.body;
 
@@ -7739,6 +8065,18 @@ app.post('/api/inspections/send-report', authenticateToken, async (req, res) => 
                 message: 'Email e número da manutenção são obrigatórios'
             });
         }
+
+        // Gerar PDF com todo o conteúdo do relatório.
+        // NOTA: O corpo do email é intencionalmente simples (carta de apresentação).
+        // Os detalhes completos constam APENAS no PDF em anexo.
+        // Isto evita que clientes com Apple Mail / macOS vejam o conteúdo duplicado
+        // (o macOS Mail renderiza o HTML inline E mostra o PDF em anexo em simultâneo).
+        const pdfBuffer = await gerarPDFRelatorio(req.body);
+        const numSafe = String(inspectionNumber).replace(/[/\\]/g, '-');
+
+        const dataFormatted = inspectionDate
+            ? new Date(inspectionDate).toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' })
+            : 'Não especificada';
 
         const nodemailer = require('nodemailer');
         const transporter = nodemailer.createTransport({
@@ -7751,93 +8089,59 @@ app.post('/api/inspections/send-report', authenticateToken, async (req, res) => 
             }
         });
 
-        // Gerar HTML do checklist
-        let checklistHTML = '';
-        if (checklist && typeof checklist === 'object') {
-            checklistHTML = '<table style="width: 100%; border-collapse: collapse; margin-top: 15px;">';
-            checklistHTML += '<tr><th style="padding: 8px; border: 1px solid #ddd; background: #f8f9fa; text-align: left;">Item</th><th style="padding: 8px; border: 1px solid #ddd; background: #f8f9fa; text-align: left;">Observações</th></tr>';
-            
-            Object.entries(checklist).forEach(([key, value]) => {
-                if (value.status && value.status !== '') {
-                    let itemName = key.replace(/-/g, ' ').replace(/_/g, ' ');
-                    itemName = itemName.charAt(0).toUpperCase() + itemName.slice(1);
-                    
-                    let statusIcon = '';
-                    let statusColor = '';
-                    
-                    switch(value.status) {
-                        case 'ok': statusIcon = '✓'; statusColor = '#28a745'; break;
-                        case 'warning': statusIcon = '⚠'; statusColor = '#ffc107'; break;
-                        case 'error': statusIcon = '✗'; statusColor = '#dc3545'; break;
-                        case 'na': statusIcon = 'N/A'; statusColor = '#6c757d'; break;
-                    }
-                    
-                    checklistHTML += `
-                        <tr>
-                            <td style="padding: 8px; border: 1px solid #ddd;">
-                                <span style="color: ${statusColor}; font-weight: bold;">${statusIcon}</span> ${itemName}
-                            </td>
-                            <td style="padding: 8px; border: 1px solid #ddd;">${value.comment || '-'}</td>
-                        </tr>
-                    `;
-                }
-            });
-            checklistHTML += '</table>';
-        } else {
-            checklistHTML = '<p style="color: #666;"><em>Nenhum item verificado</em></p>';
-        }
-
-        const dataFormatted = inspectionDate ? new Date(inspectionDate).toLocaleDateString('pt-PT', {
-            day: '2-digit', month: '2-digit', year: 'numeric'
-        }) : 'Não especificada';
-
         const mailOptions = {
             from: process.env.EMAIL_FROM || 'FestLift <info@festlift.pt>',
             to: recipientEmail,
-            subject: `Relatório de Manutenção ${inspectionNumber} - FESTLIFT`,
+            subject: `Relatório de Manutenção ${inspectionNumber} — FestLift`,
+            // Texto simples (fallback)
+            text: `Exmo(a). Sr(a.)${clientName ? ' ' + clientName : ''},\n\nEm anexo encontra o Relatório de Manutenção ${inspectionNumber} relativo ao ascensor em ${liftLocation || '—'}, realizado em ${dataFormatted} pelo técnico ${inspector || '—'}.\n\nPara qualquer esclarecimento estamos ao dispor.\n\nCom os melhores cumprimentos,\nFestLift — Elevadores e Serviços, Lda.\ninfo@festlift.pt | +351 214 190 863`,
+            // HTML: carta de apresentação simples, sem checklist inline
             html: `
-                <div style="font-family: Arial, sans-serif; max-width: 700px; margin: 0 auto; border: 1px solid #ddd;">
-                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center;">
-                        <h1 style="margin: 0; font-size: 28px;">FestLift - Elevadores e Serviços, Lda.</h1>
-                        <p style="margin: 5px 0 0 0; font-size: 14px;">Manutenção de Elevadores</p>
+                <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;border:1px solid #dde0e8;border-radius:10px;overflow:hidden;">
+                    <div style="background:linear-gradient(135deg,#1a3a6b 0%,#2d5fa8 100%);color:#fff;padding:28px 30px;text-align:center;">
+                        <h1 style="margin:0;font-size:22px;letter-spacing:1px;">FestLift</h1>
+                        <p style="margin:5px 0 0;font-size:12px;opacity:.85;">Elevadores e Serviços, Lda.</p>
                     </div>
-                    
-                    <div style="padding: 30px;">
-                        <h2 style="color: #333; border-bottom: 2px solid #667eea; padding-bottom: 10px;">
-                            📋 Relatório de Manutenção Mensal
-                        </h2>
-                        
-                        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                            <table style="width: 100%; border-collapse: collapse;">
-                                <tr><td style="padding: 8px 0; font-weight: bold; width: 40%;">Nº da Manutenção:</td><td style="padding: 8px 0;">${inspectionNumber}</td></tr>
-                                <tr><td style="padding: 8px 0; font-weight: bold;">Data:</td><td style="padding: 8px 0;">${dataFormatted}</td></tr>
-                                <tr><td style="padding: 8px 0; font-weight: bold;">Técnico Responsável:</td><td style="padding: 8px 0;">${inspector || 'Não especificado'}</td></tr>
-                                <tr><td style="padding: 8px 0; font-weight: bold;">Localização:</td><td style="padding: 8px 0;">${liftLocation || 'Não especificada'}</td></tr>
-                                <tr><td style="padding: 8px 0; font-weight: bold;">Modelo:</td><td style="padding: 8px 0;">${liftModel || 'Não especificado'}</td></tr>
-                                <tr><td style="padding: 8px 0; font-weight: bold;">Número de Série:</td><td style="padding: 8px 0;">${liftSerial || 'Não especificado'}</td></tr>
-                            </table>
+                    <div style="padding:30px 32px;">
+                        <p style="font-size:15px;color:#333;margin:0 0 14px;">
+                            Exmo(a). Sr(a.)${clientName ? ' <strong>' + clientName + '</strong>' : ''},
+                        </p>
+                        <p style="font-size:15px;color:#333;line-height:1.65;margin:0 0 16px;">
+                            Em anexo encontra o <strong>Relatório de Manutenção ${inspectionNumber}</strong>
+                            relativo ao ascensor em <strong>${liftLocation || '—'}</strong>,
+                            realizado em <strong>${dataFormatted}</strong>
+                            pelo técnico <strong>${inspector || '—'}</strong>.
+                        </p>
+                        <div style="background:#f0f4ff;border-left:4px solid #1a3a6b;padding:12px 16px;border-radius:0 6px 6px 0;margin-bottom:24px;">
+                            <p style="margin:0;font-size:13px;color:#555;">
+                                📎 O relatório completo — incluindo todos os itens verificados, observações e recomendações — encontra-se no ficheiro <strong>PDF em anexo</strong>.
+                            </p>
                         </div>
-
-                        <h3 style="color: #333; margin-top: 30px; border-bottom: 1px solid #ddd; padding-bottom: 8px;">Resultados da Verificação</h3>
-                        ${checklistHTML}
-
-                        ${generalComments ? `<h3 style="color: #333; margin-top: 30px; border-bottom: 1px solid #ddd; padding-bottom: 8px;">Observações Gerais</h3>
-                        <p style="background: #f8f9fa; padding: 15px; border-left: 4px solid #667eea; margin: 10px 0;">${generalComments}</p>` : ''}
-
-                        ${recommendations ? `<h3 style="color: #333; margin-top: 30px; border-bottom: 1px solid #ddd; padding-bottom: 8px;">Recomendações</h3>
-                        <p style="background: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin: 10px 0;">${recommendations}</p>` : ''}
+                        <p style="font-size:15px;color:#333;margin:0 0 4px;">
+                            Para qualquer esclarecimento estamos ao dispor.
+                        </p>
+                        <p style="font-size:15px;color:#333;margin:0;">
+                            Com os melhores cumprimentos,<br>
+                            <strong>FestLift — Elevadores e Serviços, Lda.</strong>
+                        </p>
                     </div>
-
-                    <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #ddd;">
-                        <p style="margin: 0; font-size: 12px; color: #666;">Este é um email automático gerado pelo sistema FESTLIFT.<br>Para mais informações, contacte-nos através do nosso sistema.</p>
-                        <p style="margin: 10px 0 0 0; font-size: 11px; color: #999;">© ${new Date().getFullYear()} FestLift - Elevadores e Serviços, Lda. - Todos os direitos reservados</p>
+                    <div style="background:#f8f9fa;padding:16px 30px;text-align:center;border-top:1px solid #e0e4ee;">
+                        <p style="margin:0;font-size:11px;color:#999;">
+                            info@festlift.pt &nbsp;|&nbsp; +351 214 190 863<br>
+                            <small>Email gerado automaticamente — por favor não responda diretamente.</small>
+                        </p>
                     </div>
-                </div>
-            `
+                </div>`,
+            // PDF em anexo (conteúdo completo do relatório)
+            attachments: [{
+                filename: `Relatorio_${numSafe}.pdf`,
+                content: pdfBuffer,
+                contentType: 'application/pdf'
+            }]
         };
 
         await transporter.sendMail(mailOptions);
-        console.log(`✅ Relatório ${inspectionNumber} enviado para ${recipientEmail}`);
+        console.log(`✅ Relatório ${inspectionNumber} enviado para ${recipientEmail} (PDF em anexo)`);
 
         res.json({
             success: true,

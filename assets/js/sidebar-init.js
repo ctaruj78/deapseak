@@ -5,6 +5,16 @@
  * КРИТИЧНО: Цей файл повинен завантажуватися ПІСЛЯ sidebar.html
  */
 
+/**
+ * Прибирає anti-FOUC приховання, щоб сторінка стала видимою.
+ * Безпечно викликати багатократно.
+ */
+function revealPage() {
+    var s = document.getElementById('__no_fouc');
+    if (s) s.remove();
+    if (document.body) document.body.style.opacity = '1';
+}
+
 function initSidebarTreeview() {
     console.log('🔧 Initializing sidebar treeview...');
     
@@ -85,6 +95,7 @@ function loadSidebarWithInit(sidebarPath = 'includes/sidebar.html') {
     
     if ($container.length === 0) {
         console.error('❌ Sidebar container not found! Need either #sidebar-placeholder or .main-sidebar');
+        revealPage();
         return Promise.resolve(); // Завершуємо без помилки
     }
     
@@ -94,6 +105,7 @@ function loadSidebarWithInit(sidebarPath = 'includes/sidebar.html') {
         // Timeout для запобігання зависанню
         const timeoutId = setTimeout(() => {
             console.warn('⚠️ Sidebar load timeout after 5s, continuing anyway...');
+            revealPage();
             resolve(); // Продовжуємо навіть при timeout
         }, 5000);
         
@@ -103,6 +115,7 @@ function loadSidebarWithInit(sidebarPath = 'includes/sidebar.html') {
             if (status === "error") {
                 console.error('❌ Sidebar load failed:', xhr.status, xhr.statusText);
                 // Не блокуємо завантаження сторінки через помилку sidebar
+                revealPage();
                 resolve();
                 return;
             }
@@ -112,6 +125,7 @@ function loadSidebarWithInit(sidebarPath = 'includes/sidebar.html') {
             // Initialize treeview after sidebar is loaded
             setTimeout(function() {
                 initSidebarTreeview();
+                revealPage();
                 resolve();
             }, 100);
         });

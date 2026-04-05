@@ -195,16 +195,16 @@ class TechnicianManager {
                 </div>
                 
                 <div class="action-buttons">
-                    <button class="btn btn-sm btn-primary" onclick="technicianManager.viewTechnician(${tech.id})">
+                    <button class="btn btn-sm btn-primary" onclick="technicianManager.viewTechnician('${tech.id}')">
                         <i class="fas fa-eye"></i>
                     </button>
-                    <button class="btn btn-sm btn-info" onclick="technicianManager.messageTechnician(${tech.id})">
+                    <button class="btn btn-sm btn-info" onclick="technicianManager.messageTechnician('${tech.id}')">
                         <i class="fas fa-comment"></i>
                     </button>
-                    <button class="btn btn-sm btn-warning" onclick="technicianManager.editTechnician(${tech.id})">
+                    <button class="btn btn-sm btn-warning" onclick="technicianManager.editTechnician('${tech.id}')">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-sm btn-danger" onclick="technicianManager.deleteTechnician(${tech.id})">
+                    <button class="btn btn-sm btn-danger" onclick="technicianManager.deleteTechnician('${tech.id}')">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
@@ -216,7 +216,7 @@ class TechnicianManager {
 
     // Перегляд деталей техніка
     viewTechnician(techId) {
-        const tech = this.technicians.find(t => t.id === techId);
+        const tech = this.technicians.find(t => String(t.id) === String(techId));
         if (!tech) return;
         
         this.currentTechnician = tech;
@@ -311,7 +311,7 @@ class TechnicianManager {
     // Редагування техніка
     editTechnician(techId) {
         if (techId) {
-            const tech = this.technicians.find(t => t.id === techId);
+            const tech = this.technicians.find(t => String(t.id) === String(techId));
             if (!tech) return;
             
             this.currentTechnician = tech;
@@ -370,7 +370,7 @@ class TechnicianManager {
                 
                 if (response.ok) {
                     const updatedTech = await response.json();
-                    const index = this.technicians.findIndex(t => t.id === updatedTech.id);
+                    const index = this.technicians.findIndex(t => String(t.id) === String(updatedTech.id));
                     if (index !== -1) {
                         this.technicians[index] = updatedTech;
                     }
@@ -448,7 +448,7 @@ class TechnicianManager {
 
     // Надіслати повідомлення техніку
     messageTechnician(techId) {
-        const tech = this.technicians.find(t => t.id === techId);
+        const tech = this.technicians.find(t => String(t.id) === String(techId));
         if (!tech) return;
         
         const message = prompt(`Написати повідомлення для ${tech.firstName} ${tech.lastName}:`);

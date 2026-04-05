@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Orcamento = require('../../models/Orcamento');
+const mongoose = require('mongoose');
 require('../models/User'); // ensure User schema is registered for populate()
 const { authenticate } = require('../middleware/auth');
 const { authorizeRoles } = require('../middleware/roleAuth');
@@ -8,6 +9,30 @@ const crypto = require('crypto');
 const PDFDocument = require('pdfkit');
 const path = require('path');
 const fs = require('fs');
+
+// Tentar encontrar lift pela morada do cliente
+async function detectarLiftPorMorada(morada) {
+    if (!morada) return null;
+    try {
+        const db = mongoose.connection.db;
+        const moradaNorm = morada.toLowerCase().trim();
+        const lifts = await db.collection('lifts').find({}).toArray();
+        for (const lift of lifts) {
+            const addr = lift.address || {};
+            const parts = [addr.street, addr.zipCode, addr.city].filter(Boolean);
+            const addrStr = (typeof addr === 'string' ? addr : parts.join(', ')).toLowerCase();
+            if (addrStr && moradaNorm.includes(addrStr.split(',')[0].trim()) || addrStr.includes(moradaNorm.split(',')[0].trim())) {
+                return {
+                    liftId: lift._id,
+                    liftAddress: typeof addr === 'string' ? addr : parts.join(', ')
+                };
+            }
+        }
+    } catch (e) {
+        console.warn('⚠️ detectarLiftPorMorada error:', e.message);
+    }
+    return null;
+}
 
 // Expirar automaticamente orçamentos 'enviado' cuja validadeAte já passou
 async function autoExpirarOrcamentos(filterExtra = {}) {
@@ -552,7 +577,7 @@ router.get('/:id', authenticate, async (req, res) => {
 // POST /api/orcamentos - Criar novo orçamento (admin/dispatcher only)
 router.post('/', authenticate, authorizeRoles('admin', 'dispatcher'), async (req, res) => {
     try {
-        const { cliente, servicos, subtotal, iva, total, notas } = req.body;
+        const { cliente, servicos, subtotal, iva, total, notas, liftId: bodyLiftId } = req.body;
         
         // Validação básica
         if (!cliente || !cliente.nome || !cliente.email || !cliente.morada) {
@@ -576,6 +601,29 @@ router.post('/', authenticate, authorizeRoles('admin', 'dispatcher'), async (req
         const dataAtual = new Date();
         const validadeAte = new Date(dataAtual);
         validadeAte.setDate(validadeAte.getDate() + 30);
+
+        // Detectar ligação ao elevador
+        let liftId = null;
+        let liftAddress = null;
+        if (bodyLiftId) {
+            liftId = bodyLiftId;
+            // Buscar endereço do lift pelo id
+            try {
+                const db = mongoose.connection.db;
+                const { ObjectId } = mongoose.Types;
+                const lift = await db.collection('lifts').findOne({ _id: new ObjectId(bodyLiftId) });
+                if (lift) {
+                    const addr = lift.address || {};
+                    liftAddress = typeof addr === 'string' ? addr : [addr.street, addr.zipCode, addr.city].filter(Boolean).join(', ');
+                }
+            } catch (e) { /* ignore invalid id */ }
+        } else {
+            const detected = await detectarLiftPorMorada(cliente.morada);
+            if (detected) {
+                liftId = detected.liftId;
+                liftAddress = detected.liftAddress;
+            }
+        }
         
         // Criar orçamento
         const orcamento = new Orcamento({
@@ -589,15 +637,21 @@ router.post('/', authenticate, authorizeRoles('admin', 'dispatcher'), async (req
             total,
             notas,
             criadoPor: req.user.id,
-            status: 'rascunho'
+            status: 'rascunho',
+            liftId: liftId || null,
+            liftAddress: liftAddress || null
         });
         
         await orcamento.save();
         
+        console.log(`✅ Orçamento criado: ${numero}${liftId ? ` → lift ${liftId}` : ''}`);
+
         res.status(201).json({
             success: true,
             message: 'Orçamento criado com sucesso',
-            data: orcamento
+            data: orcamento,
+            liftLinked: !!liftId,
+            liftAddress: liftAddress || null
         });
     } catch (error) {
         console.error('Erro ao criar orçamento:', error);

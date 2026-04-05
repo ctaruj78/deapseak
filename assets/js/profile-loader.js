@@ -7,10 +7,13 @@
     'use strict';
 
     // Перевірка токену при завантаженні
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('liftmanager_jwt')
+               || localStorage.getItem('liftmanager_jwt')
+               || sessionStorage.getItem('authToken')
+               || localStorage.getItem('authToken');
     if (!token) {
         console.warn('⚠️ Токен відсутній, перенаправлення на логін');
-        window.location.href = '/login.html';
+        window.location.href = '/pages/auth/login.html';
         return;
     }
 
@@ -30,9 +33,9 @@
 
             if (response.status === 401 || response.status === 403) {
                 console.error('❌ Токен недійсний, перенаправлення на логін');
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                window.location.href = '/login.html';
+                sessionStorage.removeItem('liftmanager_jwt');
+                localStorage.removeItem('liftmanager_jwt');
+                window.location.href = '/pages/auth/login.html';
                 return;
             }
 

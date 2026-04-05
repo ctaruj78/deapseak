@@ -269,7 +269,7 @@ class HistoryManager {
                         <p><strong><i class="fas fa-map-marker-alt"></i> Локація:</strong> ${event.location}</p>
                         <p><strong><i class="fas fa-user-cog"></i> Технік:</strong> ${event.technician}</p>
                         <p><strong><i class="fas fa-clock"></i> Тривалість:</strong> ${event.duration} хв</p>
-                        <p><strong><i class="fas fa-money-bill-wave"></i> Вартість:</strong> ₴${event.cost.toLocaleString()}</p>
+                        <p><strong><i class="fas fa-money-bill-wave"></i> Вартість:</strong> €${(event.cost ?? 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
                         <p><strong><i class="fas fa-star"></i> Оцінка:</strong> ${this.getRatingStars(event.rating)}</p>
                         <span class="${statusClass}">${statusText}</span>
                         <div class="mt-3">
@@ -584,7 +584,7 @@ class HistoryManager {
                     </div>
                     <div class="col-md-6">
                         <p><strong><i class="fas fa-clock"></i> Тривалість:</strong> ${event.duration} хвилин</p>
-                        <p><strong><i class="fas fa-money-bill-wave"></i> Вартість:</strong> ₴${event.cost.toLocaleString()}</p>
+                        <p><strong><i class="fas fa-money-bill-wave"></i> Вартість:</strong> €${(event.cost ?? 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
                         <p><strong><i class="fas fa-star"></i> Оцінка:</strong> ${this.getRatingStars(event.rating)}</p>
                         <p><strong><i class="fas fa-check-circle"></i> Статус:</strong> 
                             <span class="${this.getStatusClass(event.status)}">${this.getStatusText(event.status)}</span>
@@ -657,7 +657,7 @@ class HistoryManager {
                 Дата: ${this.formatDate(event.date)}
                 Час: ${this.formatTime(event.date)}
                 Тривалість: ${event.duration} хвилин
-                Вартість: ₴${event.cost.toLocaleString()}
+                Вартість: €${(event.cost ?? 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 })}
                 Оцінка: ${event.rating}/5
                 Статус: ${this.getStatusText(event.status)}
                 
@@ -713,7 +713,7 @@ class HistoryManager {
                 ${filteredEvents.map(event => `
                 ${this.formatDate(event.date)} - ${event.description}
                 Ліфт: ${event.lift}, Технік: ${event.technician}
-                Вартість: ₴${event.cost.toLocaleString()}, Оцінка: ${event.rating}/5
+                Вартість: €${(event.cost ?? 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 })}, Оцінка: ${event.rating}/5
                 `).join('\n')}
                 
                 ================================

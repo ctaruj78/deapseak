@@ -7,6 +7,24 @@
     'use strict';
     
     console.log('🌍 Global Settings Loader initialized');
+
+    // ─── Anti-FOUC ──────────────────────────────────────────────────────────
+    // Ховаємо сторінку до завантаження sidebar, щоб уникнути миготіння.
+    // Тільки для захищених сторінок (не login/register/index тощо).
+    (function injectNoFouc() {
+        var pathname = window.location.pathname;
+        var publicPages = ['login.html', 'register.html', 'forgot-password.html',
+                           'index.html', 'demo.html', '404.html', 'offline.html'];
+        var isPublic = publicPages.some(function(p) { return pathname.includes(p); })
+                    || pathname === '/' || pathname === '';
+        if (isPublic) return;
+
+        var s = document.createElement('style');
+        s.id = '__no_fouc';
+        s.textContent = 'body{opacity:0!important;transition:opacity .18s ease!important}';
+        document.head.appendChild(s);
+    }());
+    // ────────────────────────────────────────────────────────────────────────
     
     // Отримати збережені налаштування з localStorage
     function getStoredSettings() {

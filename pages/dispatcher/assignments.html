@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
     <!-- SweetAlert2 CSS -->
     <link rel="stylesheet" href="../../plugins/sweetalert2/css/sweetalert2.min.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="../../plugins/leaflet/leaflet.css">
     
     <!-- Auth Manager -->
     <script src="../../assets/js/auth.js"></script>
@@ -687,8 +689,8 @@
                                         <span class="text-muted mr-1">ID ліфта:</span>
                                         <code id="modalLiftId"></code>
                                     </div>
-                                    <div id="assignmentMap" style="width:100%;height:220px;border-radius:8px;overflow:hidden;background:#f0f0f0;display:flex;align-items:center;justify-content:center;margin-top:12px">
-                                        <iframe id="mapIframe" width="100%" height="100%" frameborder="0" style="border:0" allowfullscreen></iframe>
+                                    <div id="assignmentMap" style="width:100%;height:250px;border-radius:8px;overflow:hidden;margin-top:12px;position:relative">
+                                        <div id="leafletMap" style="width:100%;height:100%"></div>
                                     </div>
                                     <div id="nearestTechnicians" class="row mt-2"></div>
                                 </div>
@@ -772,6 +774,12 @@
                                 </button>
                                 <button class="btn btn-outline-secondary btn-sm mb-1 btn-cancel-work" onclick="assignmentManager.changeStatusFromModal('cancelled')">
                                     <i class="fas fa-ban mr-1"></i>Скасувати
+                                </button>
+                                <button class="btn btn-outline-warning btn-sm mb-1" onclick="assignmentManager.archiveFromModal()">
+                                    <i class="fas fa-archive mr-1"></i>Архівувати
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm mb-1" onclick="assignmentManager.falseCallFromModal()">
+                                    <i class="fas fa-phone-slash mr-1"></i>Фальшивий виклик
                                 </button>
                                 <button class="btn btn-outline-danger btn-sm mb-1" id="dispModalPdfBtn">
                                     <i class="fas fa-file-pdf mr-1"></i>PDF
@@ -1633,7 +1641,8 @@
                 console.log('✅ Знайдено запит:', assignment);
                 
                 // Заповнити модальне вікно даними
-                $('#modalRequestNumber').text('#' + requestId);
+                const displayId = assignment._original?.requestNumber || assignment.requestNumber || ('#' + requestId);
+                $('#modalRequestNumber').text(displayId);
                 $('#modalRequestDate').text(new Date(assignment.createdAt).toLocaleString('uk-UA'));
                 
                 // Статус з кольорами
@@ -1893,30 +1902,129 @@
             // Відкрити адресу в Google Maps
             openInMaps() {
                 if (!this.currentViewingAssignment) return;
-                
                 const address = this.currentViewingAssignment.liftAddress;
                 const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
                 window.open(mapsUrl, '_blank');
             }
-            
-            // Завантажити карту
+
+            // Архівувати заявку з модального вікна
+            async archiveFromModal() {
+                const assignment = this.currentViewingAssignment;
+                if (!assignment) return;
+                const result = await Swal.fire({
+                    title: 'Архівувати заявку?',
+                    html: `Заявку <b>#${assignment.id || assignment._id}</b> буде переміщено до архіву.<br>Вона зникне зі списку активних заявок.`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#f39c12',
+                    confirmButtonText: '<i class="fas fa-archive mr-1"></i>Архівувати',
+                    cancelButtonText: 'Скасувати'
+                });
+                if (!result.isConfirmed) return;
+                try {
+                    const res = await AuthManager.fetchWithAuth(`/api/requests/${assignment._id}/archive`, { method: 'POST' });
+                    const data = res ? await res.json() : null;
+                    if (data && data.success) {
+                        $('#viewAssignmentModal').modal('hide');
+                        Swal.fire({ icon: 'success', title: 'Архівовано', text: data.message, timer: 1800, showConfirmButton: false });
+                        await this.loadAssignments();
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Помилка', text: (data && data.message) || 'Не вдалось архівувати' });
+                    }
+                } catch (e) {
+                    Swal.fire({ icon: 'error', title: 'Помилка', text: 'Помилка з\'єднання' });
+                }
+            }
+
+            // Позначити як фальшивий виклик і архівувати
+            async falseCallFromModal() {
+                const assignment = this.currentViewingAssignment;
+                if (!assignment) return;
+                const result = await Swal.fire({
+                    title: 'Фальшивий виклик?',
+                    html: `Заявку <b>#${assignment.id || assignment._id}</b> буде позначено як <b>фальшивий виклик</b> і автоматично архівовано.`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#e74c3c',
+                    confirmButtonText: '<i class="fas fa-phone-slash mr-1"></i>Так, фальшивий виклик',
+                    cancelButtonText: 'Скасувати'
+                });
+                if (!result.isConfirmed) return;
+                try {
+                    const res = await AuthManager.fetchWithAuth(`/api/requests/${assignment._id}/false-call`, { method: 'POST' });
+                    const data = res ? await res.json() : null;
+                    if (data && data.success) {
+                        $('#viewAssignmentModal').modal('hide');
+                        Swal.fire({ icon: 'success', title: 'Позначено', text: data.message, timer: 1800, showConfirmButton: false });
+                        await this.loadAssignments();
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Помилка', text: (data && data.message) || 'Не вдалось виконати операцію' });
+                    }
+                } catch (e) {
+                    Swal.fire({ icon: 'error', title: 'Помилка', text: 'Помилка з\'єднання' });
+                }
+            }
+
+            // Завантажити карту (Leaflet + OpenStreetMap / Nominatim)
             loadMap(address) {
+                const $container = $('#assignmentMap');
+
                 if (!address || address === 'Адреса невідома') {
-                    $('#mapIframe').hide();
-                    $('#assignmentMap').html('<div class="text-center text-muted"><i class="fas fa-map-marked-alt fa-3x mb-2"></i><br>Адреса не вказана</div>');
+                    $container.html('<div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted"><i class="fas fa-map-marked-alt fa-3x mb-2"></i><span>Адреса не вказана</span></div>');
                     return;
                 }
-                
-                // Використовуємо Google Maps Embed API
-                const encodedAddress = encodeURIComponent(address);
-                const mapUrl = `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodedAddress}&zoom=15`;
-                
-                $('#mapIframe')
-                    .attr('src', mapUrl)
-                    .show();
-                
-                // Оновлюємо координати (демо)
-                $('#modalCoordinates').text(`${address.substring(0, 30)}...`);
+
+                // Відновлюємо структуру div якщо вона була замінена повідомленням
+                if (!document.getElementById('leafletMap')) {
+                    $container.html('<div id="leafletMap" style="width:100%;height:100%"></div>');
+                }
+
+                // Знищуємо попередній екземпляр мапи
+                if (this._leafletMap) {
+                    this._leafletMap.remove();
+                    this._leafletMap = null;
+                }
+
+                // Ініціалізуємо Leaflet з дефолтним центром (Лісабон)
+                const map = L.map('leafletMap', { zoomControl: true }).setView([38.7223, -9.1393], 13);
+                this._leafletMap = map;
+
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
+                    maxZoom: 19
+                }).addTo(map);
+
+                // Геокодуємо адресу через Nominatim (безкоштовно, без ключа)
+                const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
+
+                fetch(nominatimUrl, { headers: { 'Accept-Language': 'uk,pt,en' } })
+                    .then(r => r.json())
+                    .then(results => {
+                        if (results && results.length > 0) {
+                            const lat = parseFloat(results[0].lat);
+                            const lon = parseFloat(results[0].lon);
+                            map.setView([lat, lon], 16);
+                            L.marker([lat, lon])
+                                .addTo(map)
+                                .bindPopup(`<b>${address}</b>`)
+                                .openPopup();
+                            if ($('#modalCoordinates').length) {
+                                $('#modalCoordinates').text(`${lat.toFixed(5)}, ${lon.toFixed(5)}`);
+                            }
+                        } else {
+                            // Адреса не знайдена — показуємо Лісабон з повідомленням
+                            L.popup()
+                                .setLatLng([38.7223, -9.1393])
+                                .setContent(`Адресу не вдалося знайти: <b>${address}</b>`)
+                                .openOn(map);
+                        }
+                    })
+                    .catch(() => {
+                        // Fallback: показуємо карту без маркера
+                    });
+
+                // Примусово оновлюємо розмір після відображення модалу
+                setTimeout(() => map.invalidateSize(), 300);
             }
             
             // Завантажити найближчих техніків
@@ -2766,6 +2874,24 @@
                     }
                 },
                 
+                // Архівувати заявку з модального вікна
+                archiveFromModal: async function() {
+                    if (window.dispatcherManager) {
+                        await window.dispatcherManager.archiveFromModal();
+                    } else {
+                        alert('Помилка: менеджер не ініціалізовано');
+                    }
+                },
+
+                // Фальшивий виклик з модального вікна
+                falseCallFromModal: async function() {
+                    if (window.dispatcherManager) {
+                        await window.dispatcherManager.falseCallFromModal();
+                    } else {
+                        alert('Помилка: менеджер не ініціалізовано');
+                    }
+                },
+
                 // Завантажити призначення
                 loadAssignments: async function() {
                     console.log('🔄 Завантаження призначень через assignmentManager');
@@ -2788,6 +2914,8 @@
 <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
 <!-- AdminLTE -->
 <script src="../../plugins/adminlte/adminlte.min.js"></script>
+<!-- Leaflet JS -->
+<script src="../../plugins/leaflet/leaflet.js"></script>
 
 <!-- Sidebar Init (MUST be before other scripts) -->
 <script src="../../assets/js/sidebar-init.js"></script>

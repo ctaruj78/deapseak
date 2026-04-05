@@ -45,6 +45,18 @@ const liftSchema = new mongoose.Schema({
     model: { type: String, required: true },
     serialNumber: String,
     type: { type: String, default: 'passenger' },
+    // Tipo de accionamento — determina norma e checklist aplicável
+    driveType: {
+        type: String,
+        enum: ['traction', 'traction_mrl', 'hydraulic', 'goods', 'platform'],
+        default: 'traction'
+    },
+    // Tipo de porta — determina itens específicos de portas no checklist
+    doorType: {
+        type: String,
+        enum: ['automatic', 'swing', 'gate'],
+        default: 'automatic'
+    },
     capacity: { type: Number, required: true },
     speed: Number,
     floors: { type: Number, required: true },

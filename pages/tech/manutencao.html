@@ -10,6 +10,8 @@
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    <!-- Inspection template engine -->
+    <script src="../../assets/js/inspection-templates.js"></script>
     
     <style>
         .inspection-checklist {
@@ -306,52 +308,94 @@
                                     </div>
                                     
                                     <form id="inspectionForm">
-                                        <!-- Тип візиту -->
+                                        <!-- ── Linha 1: Tipo de visita + norma automática ── -->
                                         <div class="row">
-                                            <div class="col-12">
+                                            <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label for="visitType"><i class="fas fa-clipboard-list"></i> Tipo de Visita *</label>
+                                                    <label for="visitType"><i class="fas fa-clipboard-list text-primary"></i> Tipo de Visita *</label>
                                                     <select class="form-control" id="visitType" required>
-                                                        <option value="">-- Selecionar tipo --</option>
-                                                        <option value="maintenance">🗓️ Manutenção Preventiva Mensal</option>
+                                                        <option value="">— Selecionar —</option>
+                                                        <option value="maintenance" selected>🗓️ Manutenção Mensal (Obrigatória)</option>
+                                                        <option value="quarterly">🔍 Revisão Trimestral</option>
+                                                        <option value="annual">⭐ Revisão Anual / Periódica</option>
+                                                        <option value="pre_inspection">📋 Preparação para Inspeção OI</option>
                                                         <option value="repair">🔧 Reparação</option>
                                                         <option value="emergency">🚨 Intervenção de Emergência</option>
-                                                        <option value="inspection">📋 Inspeção Técnica</option>
                                                     </select>
-                                                    <small class="form-text text-muted">
-                                                        <b>Dica:</b> Escaneie o código QR no elevador para preencher automaticamente os dados!
-                                                    </small>
+                                                    <small class="form-text text-info"><i class="fas fa-info-circle"></i> Em Portugal, a manutenção mensal é obrigatória — <strong>DL 320/2002 Art. 5.º § 1</strong></small>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label for="driveType"><i class="fas fa-cogs text-secondary"></i> Tipo de Accionamento *</label>
+                                                    <select class="form-control" id="driveType" required>
+                                                        <option value="traction">⚙️ Elétrico c/ Casa das Máquinas</option>
+                                                        <option value="traction_mrl">🔌 Elétrico MRL (s/ Casa das Máquinas)</option>
+                                                        <option value="hydraulic">💧 Hidráulico</option>
+                                                        <option value="goods">📦 Monta-cargas (só bens)</option>
+                                                        <option value="platform">♿ Plataforma Elevatória</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label for="doorType"><i class="fas fa-door-open text-info"></i> Tipo de Porta *</label>
+                                                    <select class="form-control" id="doorType" required>
+                                                        <option value="automatic">🔄 Automáticas (operador)</option>
+                                                        <option value="swing">🚪 Batentes / Semi-automáticas</option>
+                                                        <option value="gate">🔲 Portões de Rede / Guilhotina</option>
+                                                    </select>
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
+                                        <!-- Normas aplicáveis (banner dinâmico) -->
+                                        <div id="normBanner" class="alert alert-light border mb-3" style="display:none;">
+                                            <div id="normBannerContent"></div>
+                                        </div>
+
+                                        <!-- ── Linha 2: Dados do técnico e ascensor ── -->
                                         <div class="row">
-                                            <div class="col-md-6">
+                                            <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label for="inspectionNumber">Nº da Manutenção</label>
-                                                    <input type="text" class="form-control" id="inspectionNumber" placeholder="MANU-2025-001" required>
+                                                    <input type="text" class="form-control" id="inspectionNumber" placeholder="MANU-2026-001" required>
                                                 </div>
                                                 <div class="form-group">
-                                                    <label for="inspectionDate">Data da Manutenção</label>
+                                                    <label for="inspectionDate">Data</label>
                                                     <input type="date" class="form-control" id="inspectionDate" required>
                                                 </div>
                                                 <div class="form-group">
                                                     <label for="inspector">Técnico Responsável</label>
-                                                    <input type="text" class="form-control" id="inspector" placeholder="Nome completo do técnico" required>
+                                                    <input type="text" class="form-control" id="inspector" placeholder="Nome completo" required>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">
+                                            <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label for="liftLocation">Localização do Ascensor</label>
-                                                    <input type="text" class="form-control" id="liftLocation" placeholder="Morada, edifício, entrada" required>
+                                                    <label for="liftLocation">Morada do Ascensor</label>
+                                                    <input type="text" class="form-control" id="liftLocation" placeholder="Rua, edifício, entrada" required>
                                                 </div>
                                                 <div class="form-group">
-                                                    <label for="liftModel">Modelo do Ascensor</label>
-                                                    <input type="text" class="form-control" id="liftModel" placeholder="Fabricante e modelo">
+                                                    <label for="liftMunicipal">Nº Municipal</label>
+                                                    <input type="text" class="form-control" id="liftMunicipal" placeholder="ELV-XXXXXX" readonly>
                                                 </div>
                                                 <div class="form-group">
-                                                    <label for="clientEmail">Email do Cliente <small class="text-muted">(para envio do relatório)</small></label>
+                                                    <label for="liftModel">Fabricante / Modelo</label>
+                                                    <input type="text" class="form-control" id="liftModel" placeholder="Ex: Otis Gen2">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label for="clientName">Cliente</label>
+                                                    <input type="text" class="form-control" id="clientName" placeholder="Nome do cliente" readonly>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="clientEmail">Email do Cliente</label>
                                                     <input type="email" class="form-control" id="clientEmail" placeholder="cliente@email.pt">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="clientPhone">Telefone</label>
+                                                    <input type="tel" class="form-control" id="clientPhone" placeholder="+351 9xx xxx xxx" readonly>
                                                 </div>
                                             </div>
                                         </div>
@@ -366,10 +410,18 @@
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h3 class="card-title">Lista de Verificação - Manutenção Mensal</h3>
+                                    <h3 class="card-title" id="checklistTitle">Lista de Verificação</h3>
+                                    <div class="card-tools">
+                                        <span id="criticalErrorBadge" class="badge badge-danger mr-2" style="display:none;"></span>
+                                        <span id="checklistProgress" class="badge badge-info mr-2">0 / 0 preenchidos</span>
+                                    </div>
                                 </div>
                                 <div class="card-body">
-                                    <div id="inspectionChecklist">
+                                    <div id="checklistPlaceholder" class="text-center text-muted py-5">
+                                        <i class="fas fa-hand-point-up fa-3x mb-3"></i>
+                                        <p>Selecione o <b>Tipo de Visita</b>, <b>Tipo de Accionamento</b> e <b>Tipo de Porta</b> acima para gerar a lista de verificação automaticamente.</p>
+                                    </div>
+                                    <div id="inspectionChecklist" style="display:none;">
                                         <!-- Safety Systems -->
                                         <div class="inspection-checklist">
                                             <h5><i class="fas fa-shield-alt text-danger"></i> Sistemas de Segurança</h5>
@@ -991,84 +1043,199 @@
     </script>
 
     <script>
-        // 🔥 SMART WORKFLOW: Автозавантаження даних ліфта з QR-коду
-        async function loadLiftDataFromURL() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const liftId = urlParams.get('liftId');
-            const visitType = urlParams.get('type');
-            
-            if (!liftId) {
-                console.log('📋 Немає liftId в URL - звичайний режим створення звіту');
+        /* ================================================================
+           CHECKLIST ENGINE — gera checklist a partir de INSPECTION_TEMPLATES
+           ================================================================ */
+        function refreshChecklist() {
+            const visitType  = $('#visitType').val();
+            const driveType  = $('#driveType').val();
+            const doorType   = $('#doorType').val();
+
+            if (!visitType || !driveType || !doorType) {
+                $('#checklistPlaceholder').show();
+                $('#inspectionChecklist').hide().html('');
+                $('#normBanner').hide();
+                updateChecklistStats();
                 return;
             }
-            
-            console.log('🔍 Завантаження даних ліфта:', liftId, 'Тип візиту:', visitType);
-            
-            // Показуємо індикатор завантаження
-            $('#liftDataLoading').show();
-            
-            try {
-                // Отримання токена
-                const token = localStorage.getItem('authToken') || localStorage.getItem('token') || localStorage.getItem('liftmanager_jwt');
-                
-                if (!token) {
-                    throw new Error('Токен не знайдено');
+
+            const html = INSPECTION_TEMPLATES.renderChecklist(driveType, doorType, visitType);
+            $('#inspectionChecklist').html(html).show();
+            $('#checklistPlaceholder').hide();
+
+            updateNormBanner(driveType, doorType, visitType);
+
+            const vm = INSPECTION_TEMPLATES.VISIT_META[visitType];
+            $('#checklistTitle').html(
+                `<i class="fas fa-${vm.icon} text-${vm.color} mr-1"></i> ${vm.label}`
+            );
+
+            $('#inspectionChecklist').off('change input').on('change input',
+                '.checklist-status, .checklist-comment', function() {
+                    updateChecklistStats();
+                    updateReportPreview();
                 }
-                
-                // Визначення API URL (Codespaces or localhost)
-                const apiUrl = window.location.hostname.includes('app.github.dev') 
-                    ? `https://${window.location.hostname.replace('5173-', '3000-')}/api/lifts/${liftId}`
-                    : `/api/lifts/${liftId}`;
-                
-                // Завантаження даних ліфта
-                const response = await fetch(apiUrl, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
+            );
+
+            updateChecklistStats();
+            updateReportPreview();
+        }
+
+        function updateNormBanner(driveType, doorType, visitType) {
+            const dm   = INSPECTION_TEMPLATES.NORMS_META[driveType];
+            const door = INSPECTION_TEMPLATES.DOOR_META[doorType];
+            const vm   = INSPECTION_TEMPLATES.VISIT_META[visitType];
+            if (!dm) return;
+            const normsHtml = dm.norms.map(n =>
+                `<span class="badge badge-secondary mr-1">${n}</span>`).join('');
+            $('#normBannerContent').html(`
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <div class="mr-3"><i class="fas fa-cog text-secondary mr-1"></i><strong>${dm.label}</strong></div>
+                    <div class="mr-3"><i class="fas fa-door-open text-info mr-1"></i><strong>${door.label}</strong> <small class="text-muted">(${door.norm})</small></div>
+                    <div class="mr-3"><span class="badge badge-${vm.color}"><i class="fas fa-${vm.icon} mr-1"></i>${vm.label}</span></div>
+                    <div>Normas: ${normsHtml}</div>
+                </div>`);
+            $('#normBanner').show();
+        }
+
+        function updateChecklistStats() {
+            const total  = $('#inspectionChecklist .checklist-status').length;
+            const filled = $('#inspectionChecklist .checklist-status').filter(function() {
+                return $(this).val() !== '';
+            }).length;
+            $('#checklistProgress').text(`${filled} / ${total} preenchidos`);
+            const critErrors = INSPECTION_TEMPLATES.countCriticalErrors();
+            if (critErrors > 0) {
+                $('#criticalErrorBadge').text(`⚠ ${critErrors} item(s) crítico(s) NÃO CONFORME`).show();
+            } else {
+                $('#criticalErrorBadge').hide();
+            }
+        }
+
+        function updateChecklistReport() {
+            const reportChecklist = $('#reportChecklist');
+            reportChecklist.empty();
+            $('#inspectionChecklist .inspection-section').each(function() {
+                const sectionTitle = $(this).find('.section-header strong').text().trim();
+                let sectionItems = '';
+                let hasItems = false;
+                $(this).find('.checklist-item').each(function() {
+                    const itemName = $(this).find('.item-label').text().trim();
+                    const status   = $(this).find('.checklist-status').val();
+                    const comment  = $(this).find('.checklist-comment').val();
+                    const norm     = $(this).find('.item-norm').text().trim();
+                    if (!status && !comment) return;
+                    hasItems = true;
+                    const icons = { ok: '✓', warning: '⚠', error: '✗', na: 'N/A' };
+                    const cls   = { ok: 'text-success', warning: 'text-warning', error: 'text-danger', na: 'text-muted' };
+                    const icon  = icons[status] || '—';
+                    const cl    = cls[status] || 'text-secondary';
+                    let li = `<li><span class="${cl}"><strong>${icon}</strong></span> ${itemName}`;
+                    if (norm)    li += ` <small class="text-muted">[${norm}]</small>`;
+                    if (comment) li += ` — <em>${comment}</em>`;
+                    li += '</li>';
+                    sectionItems += li;
                 });
-                
-                if (!response.ok) {
-                    throw new Error(`API returned ${response.status}`);
+                if (hasItems) {
+                    reportChecklist.append(`<h6 class="mt-2">${sectionTitle}</h6><ul>${sectionItems}</ul>`);
                 }
-                
-                const lift = await response.json();
-                console.log('✅ Дані ліфта завантажено:', lift);
-                
-                // Заповнення форми даними ліфта
-                $('#liftLocation').val(lift.location || lift.address || '');
-                $('#liftModel').val(lift.model || '');
-                $('#clientEmail').val(lift.clientEmail || lift.ownerEmail || '');
-                
-                // Встановлення типу візиту
-                if (visitType) {
-                    $('#visitType').val(visitType);
-                }
-                
-                // Показуємо інфо про завантажений ліфт
+            });
+            if (reportChecklist.children().length === 0) {
+                reportChecklist.html('<p class="text-muted"><em>Nenhum item verificado ainda</em></p>');
+            }
+        }
+
+        function updateReportPreview() {
+            $('#reportInspectionNumber').text($('#inspectionNumber').val());
+            $('#reportInspectionDate').text($('#inspectionDate').val());
+            $('#reportInspector').text($('#inspector').val());
+            $('#reportLiftLocation').text($('#liftLocation').val());
+            $('#reportLiftModel').text($('#liftModel').val());
+            $('#reportClientEmail').text($('#clientEmail').val() || '—');
+            $('#reportGeneralComments').text($('#generalComments').val() || 'Sem observações');
+            $('#reportRecommendations').text($('#recommendations').val() || 'Sem recomendações');
+            updateChecklistReport();
+        }
+
+        /* ================================================================
+           QR / URL: carrega dados do ascensor automaticamente
+           ================================================================ */
+        async function loadLiftDataFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const liftId    = urlParams.get('liftId');
+            const visitType = urlParams.get('type') || urlParams.get('visitType');
+
+            if (!liftId) {
+                if (visitType) { $('#visitType').val(visitType); refreshChecklist(); }
+                return;
+            }
+
+            $('#liftDataLoading').show();
+            try {
+                const token = localStorage.getItem('authToken') ||
+                              localStorage.getItem('token') ||
+                              localStorage.getItem('liftmanager_jwt');
+                if (!token) throw new Error('Token não encontrado');
+
+                const res = await fetch(`/api/lifts/${liftId}`, {
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+                });
+                if (!res.ok) throw new Error(`API ${res.status}`);
+
+                const lift = await res.json();
+
+                const addr = lift.address
+                    ? `${lift.address.street || ''}, ${lift.address.city || ''}`.replace(/^,\s*|,\s*$/g,'')
+                    : (lift.location || '');
+
+                $('#liftLocation').val(addr);
+                $('#liftMunicipal').val(lift.municipalNumber || '');
+                $('#liftModel').val(`${lift.manufacturer || ''} ${lift.model || ''}`.trim());
+                $('#clientEmail').val(lift.clientEmail || '');
+                $('#clientPhone').val(lift.clientPhone || '');
+
+                if (lift.client && lift.client.name) $('#clientName').val(lift.client.name);
+                else if (lift.clientName)            $('#clientName').val(lift.clientName);
+
+                if (lift.driveType) $('#driveType').val(lift.driveType);
+                if (lift.doorType)  $('#doorType').val(lift.doorType);
+                if (visitType)      $('#visitType').val(visitType);
+
+                refreshChecklist();
+
+                const driveM = INSPECTION_TEMPLATES.NORMS_META[lift.driveType || 'traction'];
+                const doorM  = INSPECTION_TEMPLATES.DOOR_META[lift.doorType || 'automatic'];
+                const vm     = INSPECTION_TEMPLATES.VISIT_META[visitType || 'maintenance'];
+
                 $('#liftDataLoading').hide();
                 $('#liftDataInfo').show();
                 $('#liftDataDetails').html(`
-                    <strong>📍 Localização:</strong> ${lift.location || lift.address || 'N/A'}<br>
-                    <strong>🏢 Modelo:</strong> ${lift.model || 'N/A'}<br>
-                    <strong>🔢 Número Municipal:</strong> ${lift.municipalNumber || 'N/A'}<br>
-                    <strong>📊 Status:</strong> <span class="badge badge-${lift.status === 'active' ? 'success' : 'warning'}">${lift.status || 'N/A'}</span><br>
-                    <strong>🔧 Tipo de visita:</strong> <span class="badge badge-${visitType === 'emergency' ? 'danger' : visitType === 'repair' ? 'warning' : 'success'}">${
-                        visitType === 'maintenance' ? '🗓️ Manutenção Preventiva' :
-                        visitType === 'repair' ? '🔧 Reparação' :
-                        visitType === 'emergency' ? '🚨 Emergência' :
-                        visitType === 'inspection' ? '📋 Inspeção' : 'N/A'
-                    }</span>
-                `);
-                
-                // Зберігаємо ID ліфта для подальшого використання
+                    <div class="row">
+                        <div class="col-md-6">
+                            <i class="fas fa-map-marker-alt text-danger mr-1"></i>
+                            <strong>Morada:</strong> ${addr || 'N/A'}<br>
+                            <i class="fas fa-hashtag text-secondary mr-1"></i>
+                            <strong>N.º Municipal:</strong> ${lift.municipalNumber || 'N/A'}<br>
+                            <i class="fas fa-tools text-primary mr-1"></i>
+                            <strong>Modelo:</strong> ${lift.manufacturer||''} ${lift.model||''}
+                        </div>
+                        <div class="col-md-6">
+                            <i class="fas fa-cog text-secondary mr-1"></i>
+                            <strong>Accionamento:</strong> ${driveM ? driveM.label : 'N/A'}<br>
+                            <i class="fas fa-door-open text-info mr-1"></i>
+                            <strong>Portas:</strong> ${doorM ? doorM.label : 'N/A'}<br>
+                            <i class="fas fa-clipboard-check text-success mr-1"></i>
+                            <strong>Visita:</strong>
+                            <span class="badge badge-${vm ? vm.color : 'secondary'}">${vm ? vm.label : (visitType||'N/A')}</span>
+                        </div>
+                    </div>`);
+
                 window.currentLiftId = liftId;
-                
-            } catch (error) {
-                console.error('❌ Помилка завантаження даних ліфта:', error);
+
+            } catch (err) {
+                console.error('❌ Erro ao carregar ascensor:', err);
                 $('#liftDataLoading').hide();
-                alert('Não foi possível carregar os dados do elevador. Por favor, preencha manualmente.');
+                if (visitType) { $('#visitType').val(visitType); refreshChecklist(); }
             }
         }
         
@@ -1089,33 +1256,25 @@
                 this.bindEvents();
 
                 // Update report preview
-                this.updateReportPreview();
+                updateReportPreview();
             },
 
             bindEvents() {
-                const self = this;
-                
-                // Update report on form change
+                // Checklist type selectors → re-render checklist
+                $('#visitType, #driveType, #doorType').on('change', function() {
+                    refreshChecklist();
+                });
+
+                // Form field changes → update preview
                 $('#inspectionForm input, #inspectionForm textarea').on('input change', function() {
-                    self.updateReportPreview();
+                    updateReportPreview();
                 });
-                
-                // Update on checklist changes (selects and inputs) - using checklist-status class
-                $(document).on('change', '.checklist-status', function() {
-                    console.log('Status changed:', $(this).val());
-                    self.updateReportPreview();
-                });
-                
-                $(document).on('input change', '.checklist-comment', function() {
-                    console.log('Comment changed:', $(this).val());
-                    self.updateReportPreview();
-                });
-                
                 $('#generalComments, #recommendations').on('input change', function() {
-                    self.updateReportPreview();
+                    updateReportPreview();
                 });
-                
-                // Handle photo uploads
+
+                // Photo uploads
+                const self = this;
                 $('#inspectionPhotos').on('change', function(e) {
                     self.handlePhotoUpload(e);
                 });
@@ -1127,88 +1286,6 @@
                 const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
                 const number = `INSP-${year}-${month}-${random}`;
                 $('#inspectionNumber').val(number);
-            },
-
-            updateReportPreview() {
-                // Update basic info
-                $('#reportInspectionNumber').text($('#inspectionNumber').val());
-                $('#reportInspectionDate').text($('#inspectionDate').val());
-                $('#reportInspector').text($('#inspector').val());
-                $('#reportLiftLocation').text($('#liftLocation').val());
-                $('#reportLiftModel').text($('#liftModel').val());
-                $('#reportClientEmail').text($('#clientEmail').val() || '—');
-                $('#reportGeneralComments').text($('#generalComments').val() || 'Sem observações');
-                $('#reportRecommendations').text($('#recommendations').val() || 'Sem recomendações');
-
-                // Update checklist results
-                this.updateChecklistReport();
-            },
-
-            updateChecklistReport() {
-                console.log('updateChecklistReport called');
-                const reportChecklist = $('#reportChecklist');
-                reportChecklist.empty();
-
-                $('.inspection-checklist').each(function() {
-                    const sectionTitle = $(this).find('h5').text();
-                    let sectionItems = '';
-                    let hasItems = false;
-
-                    $(this).find('.checklist-item').each(function() {
-                        const itemName = $(this).find('span').first().text();
-                        const status = $(this).find('select.checklist-status').val();
-                        const comment = $(this).find('input.checklist-comment').val();
-                        
-                        console.log('Item:', itemName, 'Status:', status, 'Comment:', comment);
-                        
-                        // Показуємо тільки якщо є статус АБО коментар
-                        if (!status && !comment) {
-                            return; // skip empty items
-                        }
-                        
-                        hasItems = true;
-                        let statusIcon = '';
-                        let statusClass = '';
-                        
-                        switch(status) {
-                            case 'ok':
-                                statusIcon = '✓';
-                                statusClass = 'text-success';
-                                break;
-                            case 'warning':
-                                statusIcon = '⚠';
-                                statusClass = 'text-warning';
-                                break;
-                            case 'error':
-                                statusIcon = '✗';
-                                statusClass = 'text-danger';
-                                break;
-                            case 'na':
-                                statusIcon = 'N/A';
-                                statusClass = 'text-muted';
-                                break;
-                            default:
-                                statusIcon = '--';
-                                statusClass = 'text-secondary';
-                        }
-
-                        sectionItems += `<li><span class="${statusClass}"><strong>${statusIcon}</strong></span> ${itemName}`;
-                        if (comment) {
-                            sectionItems += ` - <em>${comment}</em>`;
-                        }
-                        sectionItems += '</li>';
-                    });
-
-                    // Додаємо секцію тільки якщо є хоч один пункт
-                    if (hasItems) {
-                        reportChecklist.append(`<h6>${sectionTitle}</h6><ul>${sectionItems}</ul>`);
-                    }
-                });
-                
-                // Якщо немає жодного пункту, показуємо повідомлення
-                if (reportChecklist.children().length === 0) {
-                    reportChecklist.html('<p class="text-muted"><em>Nenhum item verificado ainda</em></p>');
-                }
             },
 
             handlePhotoUpload(e) {
@@ -1247,8 +1324,13 @@
                     data: $('#inspectionDate').val(),
                     inspector: inspector,
                     liftLocation: liftLocation,
+                    liftMunicipal: $('#liftMunicipal').val(),
                     liftModel: $('#liftModel').val(),
                     clientEmail: $('#clientEmail').val(),
+                    clientName: $('#clientName').val(),
+                    visitType: $('#visitType').val(),
+                    driveType: $('#driveType').val(),
+                    doorType: $('#doorType').val(),
                     checklist: this.getChecklistData(),
                     generalComments: $('#generalComments').val(),
                     recommendations: $('#recommendations').val()
@@ -1256,7 +1338,7 @@
 
                 // Guardar na base de dados
                 try {
-                    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                    const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken');
                     const response = await fetch('/api/inspections', {
                         method: 'POST',
                         headers: {
@@ -1311,7 +1393,7 @@
                 $('#generalComments').val('Realizada manutenção periódica conforme normas de segurança.');
                 $('#recommendations').val('Recomenda-se a substituição de componentes desgastados no prazo de 30 dias.');
                 
-                this.updateReportPreview();
+                updateReportPreview();
             },
 
             printReport() {
@@ -1373,7 +1455,12 @@
                         inspector: $('#inspector').val(),
                         liftLocation: $('#liftLocation').val(),
                         liftModel: $('#liftModel').val(),
+                        liftSerial: $('#liftSerial').val() || '',
+                        clientName: $('#clientName').val() || '',
                         clientEmail: $('#clientEmail').val(),
+                        visitType: $('#visitType').val() || 'maintenance',
+                        driveType: $('#driveType').val() || 'traction',
+                        doorType: $('#doorType').val() || 'automatic',
                         checklist: this.getChecklistData(),
                         generalComments: $('#generalComments').val(),
                         recommendations: $('#recommendations').val()
@@ -1428,21 +1515,26 @@
                     }
                     // Preenche o campo para ficar guardado
                     $('#clientEmail').val(email);
-                    inspectionManager.updateReportPreview();
+                    updateReportPreview();
                 }
                 
                 const confirmed = confirm(`Enviar relatório para: ${email}?`);
                 if (!confirmed) return;
                 
                 try {
-                    // Збираємо дані звіту
+                    // Збираємо дані звіту (усі поля потрібні для генерації PDF)
                     const reportData = {
                         inspectionNumber: $('#inspectionNumber').val(),
                         inspectionDate: $('#inspectionDate').val(),
                         inspector: $('#inspector').val(),
                         liftLocation: $('#liftLocation').val(),
                         liftModel: $('#liftModel').val(),
+                        liftSerial: $('#liftSerial').val() || '',
+                        clientName: $('#clientName').val() || '',
                         clientEmail: email,
+                        visitType: $('#visitType').val() || 'maintenance',
+                        driveType: $('#driveType').val() || 'traction',
+                        doorType: $('#doorType').val() || 'automatic',
                         checklist: this.getChecklistData(),
                         generalComments: $('#generalComments').val(),
                         recommendations: $('#recommendations').val(),
@@ -1454,7 +1546,7 @@
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                            'Authorization': `Bearer ${localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken')}`
                         },
                         body: JSON.stringify(reportData)
                     });
@@ -1500,7 +1592,7 @@
             if (tbody) tbody.innerHTML = '';
 
             try {
-                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken');
                 const response = await fetch('/api/inspections?limit=20', {
                     headers: token ? { 'Authorization': `Bearer ${token}` } : {}
                 });
@@ -1508,9 +1600,9 @@
 
                 if (loading) loading.style.display = 'none';
 
-                if (data.success && data.inspections.length > 0) {
+                if (data.success && data.data?.length > 0) {
                     const statusLabels = { rascunho: 'warning', finalizado: 'success', enviado: 'info', arquivado: 'secondary' };
-                    tbody.innerHTML = data.inspections.map(insp => {
+                    tbody.innerHTML = data.data.map(insp => {
                         const dt = insp.data ? new Date(insp.data).toLocaleDateString('pt-PT') : '—';
                         const badge = statusLabels[insp.status] || 'secondary';
                         return `<tr>
@@ -1537,7 +1629,7 @@
         async function deleteInspectionDB(id, numero) {
             if (!confirm(`Apagar o relatório ${numero}?`)) return;
             try {
-                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken');
                 const response = await fetch(`/api/inspections/${id}`, {
                     method: 'DELETE',
                     headers: token ? { 'Authorization': `Bearer ${token}` } : {}

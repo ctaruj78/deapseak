@@ -526,7 +526,23 @@
     <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
     <script src="../../plugins/adminlte/adminlte.min.js"></script>
 
-    <!-- Technician Management JS -->
+    <!-- Sidebar Init -->
+    <script src="../../assets/js/sidebar-init.js"></script>
+
+    <!-- API Configuration -->
+    <script src="../../assets/js/config.js?v=20241116"></script>
+
+    <!-- Auth System -->
+    <script src="../../assets/js/auth.js?v=20241206"></script>
+
+    <!-- DataTables -->
+    <script src="../../plugins/datatables/js/jquery.dataTables.min.js"></script>
+    <script src="../../plugins/datatables/js/dataTables.bootstrap4.min.js"></script>
+
+    <!-- SweetAlert2 -->
+    <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
+
+    <!-- Technician Management JS (MUST be after config.js and auth.js) -->
     <script src="../../assets/js/modules/technician-manager.js"></script>
 
     <script>
@@ -545,6 +561,13 @@
         }
 
         $(document).ready(function() {
+            // Завантаження сайдбару
+            if (typeof loadSidebarWithInit === 'function') {
+                loadSidebarWithInit('includes/sidebar.html');
+            } else {
+                console.error('❌ loadSidebarWithInit not found!');
+            }
+
             // Ініціалізація AdminLTE
             $('[data-widget="pushmenu"]').PushMenu();
             
@@ -592,30 +615,6 @@
             });
         });
     </script>
-<!-- Sidebar Init -->
-<script src="../../assets/js/sidebar-init.js"></script>
 
-<!-- API Configuration -->
-<script src="../../assets/js/config.js?v=20241116"></script>
-
-<!-- Auth System -->
-<script src="../../assets/js/auth.js?v=20241206"></script>
-
-<!-- DataTables -->
-<script src="../../plugins/datatables/js/jquery.dataTables.min.js"></script>
-<script src="../../plugins/datatables/js/dataTables.bootstrap4.min.js"></script>
-
-<!-- SweetAlert2 -->
-<script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        if (typeof loadSidebarWithInit === "function") {
-            loadSidebarWithInit("includes/sidebar.html");
-        } else {
-            console.error('❌ loadSidebarWithInit function not found!');
-        }
-    });
-</script>
 </body>
 </html>

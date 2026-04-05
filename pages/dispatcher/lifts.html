@@ -1788,6 +1788,23 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Секція орçаментів -->
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6><i class="fas fa-file-invoice-dollar text-warning mr-1"></i>Orçamentos vinculados</h6>
+                                <a id="btn-add-orcamento-for-lift" href="/pages/dispatcher/invoice-template.html" class="btn btn-sm btn-outline-warning">
+                                    <i class="fas fa-plus"></i> Novo orçamento
+                                </a>
+                            </div>
+                            <div id="lift-orcamentos-section">
+                                <div class="alert alert-light text-muted">
+                                    <i class="fas fa-spinner fa-spin"></i> Carregando...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer" style="flex-shrink: 0; border-top: 1px solid #dee2e6;">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
@@ -5199,6 +5216,16 @@
                 
                 // Завантажуємо контракт
                 loadMaintenanceContract(liftId, lift);
+
+                // Завантажуємо orçamentos vinculados та оновлюємо кнопку
+                loadLiftOrcamentos(liftId);
+                const orcBtn2 = document.getElementById('btn-add-orcamento-for-lift');
+                if (orcBtn2) {
+                    const params2 = new URLSearchParams({ liftId, liftAddress: addressStr !== 'Не вказано' ? addressStr : '' });
+                    if (clientName !== 'Не вказано') params2.set('clientName', clientName);
+                    if (clientEmail !== 'Не вказано') params2.set('clientEmail', clientEmail);
+                    orcBtn2.href = `/pages/dispatcher/invoice-template.html?${params2.toString()}`;
+                }
                 
                 // Показуємо модальне вікно
                 $('#liftDetailsModal').modal('show');
@@ -6662,7 +6689,42 @@
     // ============================================
     // Функції для роботи з контрактами
     // ============================================
-    
+
+    async function loadLiftOrcamentos(liftId) {
+        const container = document.getElementById('lift-orcamentos-section');
+        if (!container) return;
+        try {
+            const token = sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken');
+            const res = await fetch(`/api/lifts/${liftId}/orcamentos`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const json = await res.json();
+            const list = json.data || [];
+            if (!list.length) {
+                container.innerHTML = '<p class="text-muted"><i class="fas fa-info-circle"></i> Nenhum orçamento vinculado a este elevador.</p>';
+                return;
+            }
+            const statusBadge = s => {
+                const map = { rascunho:'secondary', enviado:'info', aprovado:'success', rejeitado:'danger', expirado:'warning' };
+                const labels = { rascunho:'Rascunho', enviado:'Enviado', aprovado:'Aprovado', rejeitado:'Rejeitado', expirado:'Expirado' };
+                return `<span class="badge badge-${map[s]||'secondary'}">${labels[s]||s}</span>`;
+            };
+            container.innerHTML = `<table class="table table-sm table-hover table-bordered">
+                <thead class="thead-light"><tr>
+                    <th>Número</th><th>Data</th><th>Cliente</th><th>Total</th><th>Status</th><th></th>
+                </tr></thead>
+                <tbody>${list.map(o => `<tr>
+                    <td><strong>${o.numero}</strong></td>
+                    <td>${new Date(o.data).toLocaleDateString('pt-PT')}</td>
+                    <td>${o.cliente?.nome || '—'}</td>
+                    <td>€${(o.total||0).toFixed(2)}</td>
+                    <td>${statusBadge(o.status)}</td>
+                    <td><a href="/pages/dispatcher/invoice-template.html?id=${o._id}&view=true" target="_blank" class="btn btn-xs btn-outline-info btn-sm"><i class="fas fa-eye"></i></a></td>
+                </tr>`).join('')}</tbody>
+            </table>`;
+        } catch (e) {
+            container.innerHTML = '<p class="text-danger"><i class="fas fa-exclamation-circle"></i> Erro ao carregar orçamentos.</p>';
+        }
+    }
+
     async function loadMaintenanceContract(liftId, lift) {
         const container = document.getElementById('maintenance-contract-section');
         if (!container) return;

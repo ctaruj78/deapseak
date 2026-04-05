@@ -972,6 +972,12 @@
                         <button class="btn btn-outline-primary btn-sm mb-1" onclick="serviceManager.editRequest(serviceManager.currentRequest?.id || serviceManager.currentRequest?._id); $('#viewRequestModal').modal('hide')">
                             <i class="fas fa-edit mr-1"></i>Редагувати
                         </button>
+                        <button class="btn btn-outline-warning btn-sm mb-1" onclick="serviceManager.archiveFromModal()">
+                            <i class="fas fa-archive mr-1"></i>Архівувати
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm mb-1" onclick="serviceManager.falseCallFromModal()">
+                            <i class="fas fa-ban mr-1"></i>Фальшивий виклик
+                        </button>
                         <button class="btn btn-outline-danger btn-sm" id="vrmPdfBtn">
                             <i class="fas fa-file-pdf mr-1"></i>PDF
                         </button>
@@ -1639,7 +1645,8 @@ class ServiceRequestManager {
                                 ${request.status !== 'completed' ? `<button class="btn btn-warning" onclick="openEnhancedAssignModal('${requestId}')" title="Призначити техніка"><i class="fas fa-user-plus"></i></button>` : ''}
                                 ${isOverdue ? `<button class="btn btn-warning" onclick="serviceManager.extendDeadline('${requestId}')" title="Продовжити дедлайн"><i class="fas fa-calendar-plus"></i></button>` : ''}
                                 <button class="btn btn-outline-primary" onclick="serviceManager.editRequest('${requestId}')" title="Редагувати"><i class="fas fa-edit"></i></button>
-                                <button class="btn btn-outline-danger" onclick="serviceManager.deleteRequest('${requestId}')" title="Видалити"><i class="fas fa-trash"></i></button>
+                                <button class="btn btn-outline-warning" onclick="serviceManager.archiveRequest('${requestId}')" title="Архівувати"><i class="fas fa-archive"></i></button>
+                                <button class="btn btn-outline-danger" onclick="serviceManager.deleteRequest('${requestId}')" title="Видалити назавжди"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>
                     </div>
@@ -2093,55 +2100,124 @@ class ServiceRequestManager {
 
     async deleteRequest(requestId) {
         console.log('🗑️ Видалення заявки:', requestId);
-        
-        // Знаходимо заявку - requestId може бути display ID або _id
-        const request = this.requests.find(r => 
-            r.id === requestId || 
-            r._id === requestId || 
+        const request = this.requests.find(r =>
+            r.id === requestId || r._id === requestId ||
             (r._id && r._id.toString && r._id.toString() === requestId)
         );
-        
-        if (!request) {
-            console.error('❌ Заявку не знайдено:', requestId);
-            console.log('Доступні заявки:', this.requests.map(r => ({id: r.id, _id: r._id})));
-            toastr.error('Заявку не знайдено');
+        if (!request) { toastr.error('Заявку не знайдено'); return; }
+
+        const swalResult = await Swal.fire({
+            title: 'Видалити заявку назавжди?',
+            html: `Заявку <b>#${requestId}</b> буде <b>безповоротно видалено</b>.<br><small class="text-muted">Розгляньте архівування як безпечнішу альтернативу.</small>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#e74c3c',
+            confirmButtonText: '<i class="fas fa-trash mr-1"></i>Видалити назавжди',
+            cancelButtonText: '<i class="fas fa-archive mr-1"></i>Архівувати натомість',
+            cancelButtonColor: '#f39c12'
+        });
+
+        // Якщо натиснули "Архівувати натомість"
+        if (!swalResult.isConfirmed) {
+            if (swalResult.dismiss === Swal.DismissReason.cancel) {
+                await this.archiveRequest(requestId);
+            }
             return;
         }
-        
-        if (!confirm('Ви впевнені, що хочете видалити цю заявку?')) return;
 
         try {
-            // Використовуємо реальний MongoDB _id для API
             const mongoId = request._id;
-            
-            if (!mongoId) {
-                throw new Error('Відсутній MongoDB ID заявки');
-            }
-            
-            console.log('🔄 Відправка запиту на видалення, MongoDB ID:', mongoId);
-            
-            // Видаляємо через API
-            const response = await AuthManager.fetchWithAuth(`/api/requests/${mongoId}`, {
-                method: 'DELETE'
-            });
-            
+            if (!mongoId) throw new Error('Відсутній MongoDB ID заявки');
+            const response = await AuthManager.fetchWithAuth(`/api/requests/${mongoId}`, { method: 'DELETE' });
             if (!response || !response.ok) {
                 const error = await response.json().catch(() => ({}));
                 throw new Error(error.message || 'Помилка видалення через API');
             }
-            
-            const result = await response.json();
-            console.log('✅ Відповідь API:', result);
-            
-            // Видаляємо з локального масиву
             this.requests = this.requests.filter(r => r._id !== mongoId);
             this.renderRequests();
             this.updateStatistics();
-            
-            toastr.success('Заявку видалено');
+            Swal.fire({ icon: 'success', title: 'Видалено', timer: 1500, showConfirmButton: false });
         } catch (error) {
             console.error('❌ Помилка видалення заявки:', error);
-            toastr.error('Не вдалося видалити заявку: ' + error.message);
+            toastr.error('Не вдалося видалити: ' + error.message);
+        }
+    }
+
+    async archiveRequest(requestId) {
+        console.log('📦 Архівування заявки:', requestId);
+        const request = this.requests.find(r =>
+            r.id === requestId || r._id === requestId ||
+            (r._id && r._id.toString && r._id.toString() === requestId)
+        );
+        if (!request) { toastr.error('Заявку не знайдено'); return; }
+
+        const swalResult = await Swal.fire({
+            title: 'Архівувати заявку?',
+            html: `Заявку <b>#${requestId}</b> буде переміщено до архіву.<br>Ви зможете відновити її будь-коли.`,
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonColor: '#f39c12',
+            confirmButtonText: '<i class="fas fa-archive mr-1"></i>Архівувати',
+            cancelButtonText: 'Скасувати'
+        });
+        if (!swalResult.isConfirmed) return;
+
+        try {
+            const mongoId = request._id;
+            if (!mongoId) throw new Error('Відсутній MongoDB ID заявки');
+            const response = await AuthManager.fetchWithAuth(`/api/requests/${mongoId}/archive`, { method: 'POST' });
+            const data = response ? await response.json() : null;
+            if (!data || !data.success) throw new Error((data && data.message) || 'Помилка архівування');
+            this.requests = this.requests.filter(r => r._id !== mongoId);
+            this.renderRequests();
+            this.updateStatistics();
+            Swal.fire({ icon: 'success', title: 'Архівовано', text: data.message, timer: 1800, showConfirmButton: false });
+        } catch (error) {
+            console.error('❌ Помилка архівування:', error);
+            toastr.error('Не вдалося архівувати: ' + error.message);
+        }
+    }
+
+    archiveFromModal() {
+        if (!this.currentRequest) { toastr.error('Заявку не відкрито'); return; }
+        const mongoId = this.currentRequest._id || this.currentRequest.id;
+        $('#viewRequestModal').modal('hide');
+        this.archiveRequest(mongoId);
+    }
+
+    async falseCallFromModal() {
+        if (!this.currentRequest) { toastr.error('Заявку не відкрито'); return; }
+        const mongoId = this.currentRequest._id || this.currentRequest.id;
+        const displayId = this.currentRequest.requestNumber || ('#' + mongoId);
+        $('#viewRequestModal').modal('hide');
+        await this.falseCallRequest(mongoId, displayId);
+    }
+
+    async falseCallRequest(requestId, displayId) {
+        console.log('🚫 Фальшивий виклик:', requestId);
+        displayId = displayId || requestId;
+        const swalResult = await Swal.fire({
+            title: 'Фальшивий виклик?',
+            html: `Заявку <b>${displayId}</b> буде позначено як фальшивий виклик та закрито.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#e74c3c',
+            confirmButtonText: '<i class="fas fa-ban mr-1"></i>Підтвердити',
+            cancelButtonText: 'Скасувати'
+        });
+        if (!swalResult.isConfirmed) return;
+
+        try {
+            const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/false-call`, { method: 'POST' });
+            const data = response ? await response.json() : null;
+            if (!data || !data.success) throw new Error((data && data.message) || 'Помилка');
+            this.requests = this.requests.filter(r => (r._id || r.id) != requestId);
+            this.renderRequests();
+            this.updateStatistics();
+            Swal.fire({ icon: 'success', title: 'Відмічено', text: data.message || 'Заявка позначена як фальшивий виклик', timer: 1800, showConfirmButton: false });
+        } catch (error) {
+            console.error('❌ Помилка фальшивий виклик:', error);
+            toastr.error('Не вдалося: ' + error.message);
         }
     }
 

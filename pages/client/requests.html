@@ -1007,25 +1007,35 @@
             
             // Cancelar заявку через API
             async cancelRequest(requestId) {
-                if (!confirm('Ви впевнені, що хочете скасувати цю заявку?')) {
-                    return;
-                }
+                const request = this.requests.find(r =>
+                    r.id === requestId || r._id === requestId ||
+                    (r._id && r._id.toString && r._id.toString() === requestId)
+                );
+
+                const swalResult = await Swal.fire({
+                    title: 'Скасувати заявку?',
+                    html: 'Заявку буде скасовано. Ця дія незворотна.<br><small class="text-muted">Скасування можливе лише до початку виконання.</small>',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#e74c3c',
+                    confirmButtonText: '<i class="fas fa-times mr-1"></i>Так, скасувати',
+                    cancelButtonText: 'Ні, залишити'
+                });
+                if (!swalResult.isConfirmed) return;
 
                 try {
-                    const res = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/cancel`, {
-                        method: 'POST'
-                    });
+                    const mongoId = request ? (request._id || requestId) : requestId;
+                    const res = await AuthManager.fetchWithAuth(`/api/requests/${mongoId}/cancel`, { method: 'POST' });
                     const response = res ? await res.json() : null;
-
                     if (response && response.success) {
-                        toastr.info('Заявку скасовано');
+                        Swal.fire({ icon: 'success', title: 'Скасовано', text: response.message, timer: 1800, showConfirmButton: false });
                         this.loadRequests();
                     } else {
-                        toastr.error((response && response.message) || 'Неможливо скасувати заявку в поточному статусі');
+                        Swal.fire({ icon: 'error', title: 'Неможливо скасувати', text: (response && response.message) || 'Заявку можна скасувати лише до початку виконання' });
                     }
                 } catch (error) {
                     console.error('Error cancelling request:', error);
-                    toastr.error('Помилка з\'єднання з сервером');
+                    Swal.fire({ icon: 'error', title: 'Помилка', text: 'Помилка з\'єднання з сервером' });
                 }
             }
             
@@ -1086,8 +1096,8 @@
                             <button class="btn btn-sm btn-info btn-icon" onclick="clientRequestsManager.viewRequest('${requestId}')" title="Переглянути">
                                 <i class="fas fa-eye"></i>
                             </button>
-                            ${statusNorm === 'new' ? `
-                                <button class="btn btn-sm btn-danger btn-icon" onclick="clientRequestsManager.cancelRequest('${requestId}')" title="Скасувати">
+                            ${['new', 'pending', 'assigned'].includes(statusNorm) ? `
+                                <button class="btn btn-sm btn-warning btn-icon" onclick="clientRequestsManager.cancelRequest('${requestId}')" title="Скасувати заявку">
                                     <i class="fas fa-times"></i>
                                 </button>
                             ` : ''}

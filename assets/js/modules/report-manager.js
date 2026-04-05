@@ -115,7 +115,7 @@ class ReportManager {
 
     updateAllUI() {
         this.updateMetrics();
-        this.updateCharts();
+        this.initializeCharts();
         this.updateStatsTable();
         this.updateComparisonAnalysis();
         this.updateKPIMetrics();
@@ -323,7 +323,7 @@ class ReportManager {
     updateCharts() {
         // Оновлення всіх графіків
         Object.values(this.charts).forEach(chart => {
-            if (chart) {
+            if (chart && chart.canvas && document.body.contains(chart.canvas)) {
                 chart.update();
             }
         });

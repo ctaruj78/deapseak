@@ -898,12 +898,20 @@
 
         let currentAnalysisFile = null;
         
+        // Розкрити сторінку — відміняємо __no_fouc, яку вставляє global-settings.js
+        // (ця сторінка не використовує sidebar-init.js, тому revealPage() не викликається)
+        (function() {
+            var s = document.getElementById('__no_fouc');
+            if (s) s.remove();
+            if (document.body) document.body.style.opacity = '1';
+        }());
+
         // Helper функція для отримання токена
         function getAuthToken() {
-            return localStorage.getItem('token') || 
-                   localStorage.getItem('lm_token') || 
-                   localStorage.getItem('deapseak_token') ||
-                   sessionStorage.getItem('token');
+            return sessionStorage.getItem('liftmanager_jwt') ||
+                   localStorage.getItem('liftmanager_jwt') ||
+                   sessionStorage.getItem('authToken') ||
+                   localStorage.getItem('authToken');
         }
         
         // Helper функція для headers з токеном
@@ -1848,7 +1856,7 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Перевірка...';
             
             try {
-                const token = localStorage.getItem('token');
+                const token = getAuthToken();
                 
                 const response = await fetch('/api/regulations/check-updates', {
                     method: 'POST',
@@ -1920,7 +1928,7 @@
         // Завантажити інформацію про останню перевірку при завантаженні
         async function loadLastCheckInfo() {
             try {
-                const token = localStorage.getItem('token');
+                const token = getAuthToken();
                 const response = await fetch('/api/regulations/last-check', {
                     headers: {
                         'Authorization': `Bearer ${token}`

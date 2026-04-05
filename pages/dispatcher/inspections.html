@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Диспетчер - Інспекції</title>
+    <script src="../../assets/js/global-settings.js"></script>
+
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="../../plugins/datatables/css/dataTables.bootstrap4.min.css">
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="../../plugins/sweetalert2/css/sweetalert2.min.css">
+
+    <!-- Auth Manager -->
+    <script src="../../assets/js/auth.js"></script>
+
+    <style>
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .badge-planned    { background: linear-gradient(135deg, #17a2b8, #6f42c1); color: white; }
+        .badge-in-progress{ background: linear-gradient(135deg, #ffc107, #fd7e14); color: #212529; }
+        .badge-completed  { background: linear-gradient(135deg, #28a745, #20c997); color: white; }
+        .badge-overdue    { background: linear-gradient(135deg, #dc3545, #e83e8c); color: white; }
+        .badge-cancelled  { background: #6c757d; color: white; }
+
+        .priority-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+        .priority-high   { background: linear-gradient(135deg, #dc3545, #e83e8c); color: white; }
+        .priority-medium { background: linear-gradient(135deg, #ffc107, #fd7e14); color: #212529; }
+        .priority-low    { background: linear-gradient(135deg, #28a745, #20c997); color: white; }
+
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 18px;
+            text-align: center;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+            margin-bottom: 16px;
+        }
+        .stat-number { font-size: 2rem; font-weight: 700; }
+        .stat-label  { font-size: 0.88rem; color: #6c757d; margin-top: 4px; }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed" data-required-role="dispatcher">
+<div class="wrapper">
+
+    <!-- Top Navbar -->
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-widget="pushmenu" href="#" role="button">
+                    <i class="fas fa-bars"></i>
+                </a>
+            </li>
+            <li class="nav-item d-none d-sm-inline-block">
+                <a href="dashboard.html" class="nav-link">Головна</a>
+            </li>
+            <li class="nav-item d-none d-sm-inline-block">
+                <a href="inspections.html" class="nav-link active">Інспекції</a>
+            </li>
+        </ul>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="#" onclick="logout()" title="Вийти">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Sidebar Placeholder -->
+    <div id="sidebar-placeholder"></div>
+
+    <!-- Content Wrapper -->
+    <div class="content-wrapper">
+        <section class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1><i class="fas fa-clipboard-check mr-2"></i>Інспекції</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="dashboard.html">Головна</a></li>
+                            <li class="breadcrumb-item active">Інспекції</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content">
+            <div class="container-fluid">
+
+                <!-- Статистика -->
+                <div class="row" id="statsRow">
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-number text-primary" id="statTotal">—</div>
+                            <div class="stat-label">Всього інспекцій</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-number text-success" id="statCompleted">—</div>
+                            <div class="stat-label">Завершено</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-number text-warning" id="statInProgress">—</div>
+                            <div class="stat-label">В процесі</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-number text-danger" id="statOverdue">—</div>
+                            <div class="stat-label">Прострочено</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Фільтри -->
+                <div class="card">
+                    <div class="card-body pb-1">
+                        <div class="row">
+                            <div class="col-md-3 col-sm-6">
+                                <div class="form-group">
+                                    <label>Статус</label>
+                                    <select id="filterStatus" class="form-control form-control-sm">
+                                        <option value="">Всі статуси</option>
+                                        <option value="planned">Заплановано</option>
+                                        <option value="in_progress">В процесі</option>
+                                        <option value="completed">Завершено</option>
+                                        <option value="overdue">Прострочено</option>
+                                        <option value="cancelled">Скасовано</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="form-group">
+                                    <label>Пріоритет</label>
+                                    <select id="filterPriority" class="form-control form-control-sm">
+                                        <option value="">Всі пріоритети</option>
+                                        <option value="high">Високий</option>
+                                        <option value="medium">Середній</option>
+                                        <option value="low">Низький</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="form-group">
+                                    <label>Технік</label>
+                                    <select id="filterTech" class="form-control form-control-sm">
+                                        <option value="">Всі техніки</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6 d-flex align-items-end">
+                                <div class="form-group w-100">
+                                    <button class="btn btn-sm btn-secondary btn-block" onclick="resetFilters()">
+                                        <i class="fas fa-undo mr-1"></i> Скинути
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Таблиця інспекцій -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-list mr-2"></i>Список інспекцій</h3>
+                        <div class="card-tools">
+                            <button class="btn btn-sm btn-success mr-1" onclick="openScheduleModal()">
+                                <i class="fas fa-plus"></i> Nova Manutenção
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary" onclick="loadInspections()">
+                                <i class="fas fa-sync-alt"></i> Оновити
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table id="inspectionsTable" class="table table-hover table-striped mb-0">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Тип</th>
+                                        <th>Ліфт / Адреса</th>
+                                        <th>Технік</th>
+                                        <th>Дата</th>
+                                        <th>Пріоритет</th>
+                                        <th>Статус</th>
+                                        <th>Дії</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inspectionsBody">
+                                    <tr>
+                                        <td colspan="8" class="text-center py-4">
+                                            <i class="fas fa-spinner fa-spin mr-2"></i>Завантаження...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <strong>FestLift</strong> &copy; <span id="year"></span>
+        <div class="float-right d-none d-sm-inline-block">
+            <b>Диспетчер</b>
+        </div>
+    </footer>
+
+</div><!-- /.wrapper -->
+
+<!-- Modal: Agendar Nova Manutenção (entrada manual de morada) -->
+<div class="modal fade" id="scheduleModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-clipboard-plus mr-2"></i>Agendar Nova Manutenção
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info py-2 mb-3">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    <strong>DL 320/2002 Art. 5.º § 1</strong> — Manutenção preventiva mensal obrigatória em Portugal.
+                    O técnico preencherá o checklist com leitura do QR code no local.
+                </div>
+                <form id="scheduleForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label><i class="fas fa-map-marker-alt text-danger mr-1"></i> Morada do Ascensor *</label>
+                                <input type="text" class="form-control" id="sch_address" placeholder="Rua, nº, edifício, entrada" required>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-tag text-secondary mr-1"></i> Nº Municipal / Referência</label>
+                                <input type="text" class="form-control" id="sch_municipal" placeholder="ELV-XXXXXX (opcional)">
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-clipboard-list text-primary mr-1"></i> Tipo de Visita *</label>
+                                <select class="form-control" id="sch_type" required>
+                                    <option value="maintenance" selected>🗓️ Manutenção Mensal (Obrigatória)</option>
+                                    <option value="quarterly">🔍 Revisão Trimestral</option>
+                                    <option value="annual">⭐ Revisão Anual / Periódica</option>
+                                    <option value="pre_inspection">📋 Preparação para Inspeção OI</option>
+                                    <option value="repair">🔧 Reparação</option>
+                                    <option value="emergency">🚨 Emergência</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label><i class="fas fa-calendar-alt text-success mr-1"></i> Data Agendada *</label>
+                                <input type="date" class="form-control" id="sch_date" required>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-user-hard-hat text-warning mr-1"></i> Técnico Responsável *</label>
+                                <select class="form-control" id="sch_tech" required>
+                                    <option value="">— Selecionar técnico —</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-exclamation-circle text-danger mr-1"></i> Prioridade</label>
+                                <select class="form-control" id="sch_priority">
+                                    <option value="medium" selected>Média</option>
+                                    <option value="high">Alta</option>
+                                    <option value="low">Baixa</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-comment-alt text-info mr-1"></i> Observações</label>
+                        <textarea class="form-control" id="sch_notes" rows="2" placeholder="Notas adicionais para o técnico..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" onclick="submitSchedule()">
+                    <i class="fas fa-check mr-1"></i> Agendar Manutenção
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальне вікно деталей інспекції -->
+<div class="modal fade" id="viewModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-clipboard-check mr-2"></i>Деталі інспекції</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="viewModalBody">
+                <!-- Заповнюється динамічно -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="../../plugins/jquery/jquery.min.js"></script>
+<script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="../../plugins/adminlte/adminlte.min.js"></script>
+
+<!-- Sidebar Init -->
+<script src="../../assets/js/sidebar-init.js"></script>
+
+<!-- API Configuration -->
+<script src="../../assets/js/config.js?v=20241116"></script>
+
+<!-- DataTables -->
+<script src="../../plugins/datatables/js/jquery.dataTables.min.js"></script>
+<script src="../../plugins/datatables/js/dataTables.bootstrap4.min.js"></script>
+
+<!-- SweetAlert2 -->
+<script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
+
+<script>
+    // ── Helpers ──────────────────────────────────────────────────────────────
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    const STATUS_LABELS = {
+        planned:     'Заплановано',
+        in_progress: 'В процесі',
+        completed:   'Завершено',
+        overdue:     'Прострочено',
+        cancelled:   'Скасовано'
+    };
+    const STATUS_CLASSES = {
+        planned:     'badge-planned',
+        in_progress: 'badge-in-progress',
+        completed:   'badge-completed',
+        overdue:     'badge-overdue',
+        cancelled:   'badge-cancelled'
+    };
+    const PRIORITY_LABELS  = { high: 'Високий', medium: 'Середній', low: 'Низький' };
+    const PRIORITY_CLASSES = { high: 'priority-high', medium: 'priority-medium', low: 'priority-low' };
+    const TYPE_LABELS = {
+        scheduled:  'Планова',
+        technical:  'Технічний огляд',
+        periodic:   'Периодична перевірка',
+        emergency:  'Аварійна',
+        custom:     'Інша'
+    };
+
+    let allInspections = [];
+    let dtTable = null;
+
+    // ── Auth helper ──────────────────────────────────────────────────────────
+    function getToken() {
+        return sessionStorage.getItem('liftmanager_jwt')
+            || localStorage.getItem('liftmanager_jwt')
+            || sessionStorage.getItem('authToken')
+            || localStorage.getItem('authToken');
+    }
+
+    function logout() {
+        if (confirm('Ви впевнені, що хочете вийти?')) {
+            if (typeof AuthManager !== 'undefined') {
+                AuthManager.logout();
+            } else {
+                ['liftmanager_jwt','authToken','liftmanager_user','userData'].forEach(k => {
+                    sessionStorage.removeItem(k);
+                    localStorage.removeItem(k);
+                });
+                window.location.replace('/pages/auth/login.html');
+            }
+        }
+    }
+
+    // ── Load inspections ─────────────────────────────────────────────────────
+    async function loadInspections() {
+        const token = getToken();
+        if (!token) return;
+
+        try {
+            const res = await fetch('/api/inspections', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const data = await res.json();
+            allInspections = (data.data || data || []);
+            renderTable(allInspections);
+            updateStats(allInspections);
+            populateTechFilter(allInspections);
+        } catch (err) {
+            console.error('Помилка завантаження інспекцій:', err);
+            document.getElementById('inspectionsBody').innerHTML =
+                '<tr><td colspan="8" class="text-center text-danger py-4">' +
+                '<i class="fas fa-exclamation-triangle mr-2"></i>Помилка завантаження даних</td></tr>';
+        }
+    }
+
+    // ── Render ───────────────────────────────────────────────────────────────
+    function renderTable(inspections) {
+        if (dtTable) {
+            dtTable.destroy();
+            dtTable = null;
+        }
+
+        const tbody = document.getElementById('inspectionsBody');
+
+        if (!inspections.length) {
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">Інспекцій не знайдено</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = inspections.map((ins, idx) => {
+            const id = ins._id || ins.id || '';
+            const type = TYPE_LABELS[ins.type] || ins.type || '—';
+            const lift = ins.liftAddress || ins.liftId || ins.lift || '—';
+            const tech = ins.technicianName || ins.assignedTechnicianName || (ins.technician ? ins.technician.name : '') || '—';
+            const rawDate = ins.scheduledDate || ins.date || ins.createdAt || '';
+            const date = rawDate ? new Date(rawDate).toLocaleDateString('uk-UA') : '—';
+            const status = ins.status || 'planned';
+            const priority = ins.priority || 'medium';
+
+            return `<tr>
+                <td>${idx + 1}</td>
+                <td>${escapeHtml(type)}</td>
+                <td>${escapeHtml(lift)}</td>
+                <td>${escapeHtml(tech)}</td>
+                <td>${date}</td>
+                <td><span class="priority-badge ${PRIORITY_CLASSES[priority] || ''}">${PRIORITY_LABELS[priority] || priority}</span></td>
+                <td><span class="status-badge ${STATUS_CLASSES[status] || ''}">${STATUS_LABELS[status] || status}</span></td>
+                <td>
+                    <button class="btn btn-xs btn-info" onclick="viewInspection('${escapeHtml(id)}')" title="Деталі">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </td>
+            </tr>`;
+        }).join('');
+
+        // Init DataTable
+        dtTable = $('#inspectionsTable').DataTable({
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/uk.json',
+                search: 'Пошук:',
+                lengthMenu: 'Показати _MENU_ записів',
+                info: 'Записи від _START_ до _END_ із _TOTAL_',
+                infoEmpty: 'Записів не знайдено',
+                paginate: { previous: '‹', next: '›' }
+            },
+            order: [[4, 'desc']],
+            columnDefs: [{ orderable: false, targets: 7 }],
+            pageLength: 25
+        });
+    }
+
+    // ── Stats ────────────────────────────────────────────────────────────────
+    function updateStats(inspections) {
+        document.getElementById('statTotal').textContent = inspections.length;
+        document.getElementById('statCompleted').textContent  = inspections.filter(i => i.status === 'completed').length;
+        document.getElementById('statInProgress').textContent = inspections.filter(i => i.status === 'in_progress').length;
+        document.getElementById('statOverdue').textContent    = inspections.filter(i => i.status === 'overdue').length;
+    }
+
+    // ── Tech Filter ──────────────────────────────────────────────────────────
+    function populateTechFilter(inspections) {
+        const names = [...new Set(
+            inspections
+                .map(i => i.technicianName || i.assignedTechnicianName || '')
+                .filter(Boolean)
+        )].sort();
+        const sel = document.getElementById('filterTech');
+        sel.innerHTML = '<option value="">Всі техніки</option>' +
+            names.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
+    }
+
+    // ── Filters ──────────────────────────────────────────────────────────────
+    function applyFilters() {
+        const status   = document.getElementById('filterStatus').value;
+        const priority = document.getElementById('filterPriority').value;
+        const tech     = document.getElementById('filterTech').value;
+        const filtered = allInspections.filter(i => {
+            if (status   && i.status   !== status)   return false;
+            if (priority && i.priority !== priority) return false;
+            if (tech) {
+                const name = i.technicianName || i.assignedTechnicianName || '';
+                if (name !== tech) return false;
+            }
+            return true;
+        });
+        renderTable(filtered);
+        updateStats(filtered);
+    }
+
+    function resetFilters() {
+        document.getElementById('filterStatus').value   = '';
+        document.getElementById('filterPriority').value = '';
+        document.getElementById('filterTech').value     = '';
+        renderTable(allInspections);
+        updateStats(allInspections);
+    }
+
+    // ── View detail ──────────────────────────────────────────────────────────
+    async function viewInspection(id) {
+        if (!id) return;
+        const token = getToken();
+        try {
+            const res = await fetch('/api/inspections/' + encodeURIComponent(id), {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const data = await res.json();
+            const ins = data.data || data;
+            renderViewModal(ins);
+            $('#viewModal').modal('show');
+        } catch (err) {
+            const ins = allInspections.find(i => (i._id || i.id) === id);
+            if (ins) { renderViewModal(ins); $('#viewModal').modal('show'); }
+            else Swal.fire('Помилка', 'Не вдалося завантажити деталі', 'error');
+        }
+    }
+
+    function renderViewModal(ins) {
+        const status   = ins.status   || 'planned';
+        const priority = ins.priority || 'medium';
+        const type = TYPE_LABELS[ins.type] || ins.type || '—';
+        const date = ins.scheduledDate || ins.date || ins.createdAt || '';
+        const formattedDate = date ? new Date(date).toLocaleString('uk-UA') : '—';
+
+        let checklistHtml = '';
+        if (ins.checklist && ins.checklist.length) {
+            checklistHtml = `<div class="mt-3">
+                <h6>Чек-лист</h6>
+                <ul class="list-group">
+                    ${ins.checklist.map(item => `
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            ${escapeHtml(item.label || item.text || item)}
+                            ${item.checked !== undefined
+                                ? `<span class="badge badge-${item.checked ? 'success' : 'secondary'}">${item.checked ? '✓' : '—'}</span>`
+                                : ''}
+                        </li>`).join('')}
+                </ul>
+            </div>`;
+        }
+
+        document.getElementById('viewModalBody').innerHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    <table class="table table-sm table-borderless">
+                        <tr><th width="40%">Тип</th><td>${escapeHtml(type)}</td></tr>
+                        <tr><th>Ліфт / Адреса</th><td>${escapeHtml(ins.liftAddress || ins.liftId || ins.lift || '—')}</td></tr>
+                        <tr><th>Технік</th><td>${escapeHtml(ins.technicianName || ins.assignedTechnicianName || '—')}</td></tr>
+                        <tr><th>Запланована дата</th><td>${formattedDate}</td></tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <table class="table table-sm table-borderless">
+                        <tr><th width="40%">Статус</th>
+                            <td><span class="status-badge ${STATUS_CLASSES[status] || ''}">${STATUS_LABELS[status] || status}</span></td></tr>
+                        <tr><th>Пріоритет</th>
+                            <td><span class="priority-badge ${PRIORITY_CLASSES[priority] || ''}">${PRIORITY_LABELS[priority] || priority}</span></td></tr>
+                        <tr><th>ID</th><td><small class="text-muted">${escapeHtml(String(ins._id || ins.id || '—'))}</small></td></tr>
+                    </table>
+                </div>
+            </div>
+            ${ins.description ? `<div class="alert alert-light"><strong>Опис:</strong> ${escapeHtml(ins.description)}</div>` : ''}
+            ${ins.notes ? `<div class="alert alert-light"><strong>Примітки:</strong> ${escapeHtml(ins.notes)}</div>` : ''}
+            ${checklistHtml}
+        `;
+    }
+
+    // ── XSS helper ───────────────────────────────────────────────────────────
+    function escapeHtml(str) {
+        if (str == null) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    // ── Schedule modal ───────────────────────────────────────────────────────
+    async function openScheduleModal() {
+        // Set default date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('sch_date').value = today;
+        document.getElementById('sch_address').value = '';
+        document.getElementById('sch_municipal').value = '';
+        document.getElementById('sch_notes').value = '';
+        document.getElementById('sch_type').value = 'maintenance';
+        document.getElementById('sch_priority').value = 'medium';
+
+        // Load technicians
+        await loadTechniciansIntoSelect();
+        $('#scheduleModal').modal('show');
+    }
+
+    async function loadTechniciansIntoSelect() {
+        const sel = document.getElementById('sch_tech');
+        sel.innerHTML = '<option value="">— A carregar —</option>';
+        try {
+            const token = getToken();
+            const res = await fetch('/api/users?role=technician&limit=50', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const data = await res.json();
+            const techs = data.data || data.users || data || [];
+            sel.innerHTML = '<option value="">— Selecionar técnico —</option>' +
+                techs.map(t => {
+                    const name = (t.firstName && t.lastName)
+                        ? `${t.firstName} ${t.lastName}`
+                        : (t.name || t.username || t.email || t._id);
+                    return `<option value="${escapeHtml(t._id || t.id)}" data-name="${escapeHtml(name)}">${escapeHtml(name)}</option>`;
+                }).join('');
+        } catch (err) {
+            sel.innerHTML = '<option value="">— Erro ao carregar técnicos —</option>';
+            console.error('loadTechnicians error:', err);
+        }
+    }
+
+    async function submitSchedule() {
+        const address  = document.getElementById('sch_address').value.trim();
+        const techSel  = document.getElementById('sch_tech');
+        const techId   = techSel.value;
+        const techName = techSel.options[techSel.selectedIndex]?.dataset?.name || '';
+        const date     = document.getElementById('sch_date').value;
+        const type     = document.getElementById('sch_type').value;
+
+        if (!address) { Swal.fire('Atenção', 'Preencha a morada do ascensor.', 'warning'); return; }
+        if (!techId)  { Swal.fire('Atenção', 'Selecione um técnico responsável.', 'warning'); return; }
+        if (!date)    { Swal.fire('Atenção', 'Selecione a data da manutenção.', 'warning'); return; }
+
+        const body = {
+            type,
+            liftAddress: address,
+            liftMunicipal: document.getElementById('sch_municipal').value.trim(),
+            assignedTechnician: techId,
+            technicianName: techName,
+            scheduledDate: date,
+            priority: document.getElementById('sch_priority').value,
+            notes: document.getElementById('sch_notes').value.trim(),
+            status: 'planned',
+            createdBy: 'dispatcher',
+        };
+
+        try {
+            const token = getToken();
+            const res = await fetch('/api/inspections', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || 'Erro ' + res.status);
+
+            $('#scheduleModal').modal('hide');
+            Swal.fire({
+                icon: 'success',
+                title: 'Manutenção agendada!',
+                text: `A manutenção em "${address}" foi agendada para ${date}. O técnico ${techName} será notificado.`,
+                confirmButtonColor: '#28a745'
+            });
+            loadInspections();
+        } catch (err) {
+            Swal.fire('Erro', err.message, 'error');
+        }
+    }
+
+    // ── Init ─────────────────────────────────────────────────────────────────
+    $(document).ready(function() {
+        $('[data-widget="pushmenu"]').PushMenu();
+
+        loadSidebarWithInit('includes/sidebar.html');
+        loadInspections();
+
+        $('#filterStatus, #filterPriority, #filterTech').on('change', applyFilters);
+
+        $(document).on('hide.bs.modal', '.modal', function() {
+            if (document.activeElement && this.contains(document.activeElement)) {
+                document.activeElement.blur();
+            }
+        });
+    });
+</script>
+</body>
+</html>
