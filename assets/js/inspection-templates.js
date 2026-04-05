@@ -192,10 +192,129 @@ const INSPECTION_TEMPLATES = (() => {
     item('plano-emerg',   'Plano de emergência e instrução de resgate',       'EN 81-28'),
   ];
 
+  // ================================================================
+  // REPARAÇÃO — itens focados no trabalho de reparação
+  // ================================================================
+
+  // Diagnóstico
+  const REPAIR_DIAGNOSIS = [
+    item('avaria-descrita',   'Avaria / anomalia descrita e registada',                     'DL 320/2002 Art. 12.º', true),
+    item('causa-raiz',        'Causa-raiz identificada (mecânica / elétrica / desgaste)',   'EN 81-20 / fabricante'),
+    item('historico-cons',    'Histórico de manutenção anterior consultado',                'DL 320/2002 Art. 12.º'),
+    item('equip-bloqueado',   'Equipamento mantido bloqueado durante intervenção',          'EN 81-20 § 6.5',        true),
+  ];
+
+  // Trabalho realizado
+  const REPAIR_WORK = [
+    item('comp-subst',        'Componentes substituídos — referências registadas',          'Manual fabricante'),
+    item('pecas-originais',   'Peças utilizadas: originais / equivalentes certificadas',    'EN 81-20 / EN 81-50',   true),
+    item('torque-apertos',    'Reapertamentos / torques aplicados conforme especificação',  'Manual fabricante'),
+    item('limpeza-pos',       'Limpeza da zona de trabalho após intervenção',               'DL 320/2002 Art. 8.º'),
+    item('lubrificacao-pos',  'Lubrificação dos componentes intervencionados',              'Manual fabricante'),
+  ];
+
+  // Verificação pós-reparação (itens de segurança críticos)
+  const REPAIR_SAFETY_CHECK = [
+    item('contatos-seg-rep',  'Circuito de segurança — verificação após reparação',         'EN 81-20 § 5.11',       true),
+    item('travao-rep',        'Travão / sistema de paragem — funcionamento após reparação', 'EN 81-20 § 5.9.2.2',    true),
+    item('portas-rep',        'Portas e fechaduras — correto funcionamento',                'EN 81-20 § 5.3',        true),
+    item('alarme-rep',        'Alarme de emergência e comunicação — funcional',             'EN 81-28',              true),
+    item('nivelamento-rep',   'Nivelamento nas paragens — precisão ≤ ±10 mm',              'EN 81-20 § 5.12.1'),
+    item('marcha-vazio',      'Teste em marcha com cabina vazia (3 ciclos completos)',      'EN 81-20 § 6.5',        true),
+    item('marcha-carga',      'Teste em marcha com carga nominal',                         'EN 81-20 § 6.5'),
+    item('sem-ruido-anorm',   'Ausência de ruídos ou vibrações anómalas em serviço',       'EN 81-20 § 5.9.2'),
+  ];
+
+  // Documentação de reparação
+  const REPAIR_DOCUMENTATION = [
+    item('ordem-trabalho',    'Ordem de trabalho preenchida com detalhe da reparação',     'DL 320/2002 Art. 12.º', true),
+    item('livro-rev-rep',     'Livro de revisões atualizado com registo da reparação',     'DL 320/2002 Art. 12.º', true),
+    item('garantia-pecas',    'Garantia das peças substituídas documentada',               'Manual fabricante'),
+    item('cliente-inf',       'Proprietário/gestor informado sobre a intervenção',         'DL 320/2002 Art. 7.º'),
+    item('equip-liberado',    'Equipamento libertado para serviço normal — assinado',      'DL 320/2002 Art. 12.º', true),
+  ];
+
+  // ================================================================
+  // INTERVENÇÃO DE EMERGÊNCIA — resgate + diagnóstico + ações
+  // ================================================================
+
+  // Situação de emergência
+  const EMERGENCY_SITUATION = [
+    item('passag-resgatados',  'Passageiros resgatados em segurança (confirmar nº)',        'EN 81-28 / EN 81-20 § 5.4.9.4', true),
+    item('lesoes-avaliadas',   'Avaliação de lesões — INEM/emergência contactado se necessário', 'EN 81-28',           true),
+    item('hora-ocorrencia',    'Hora e local da ocorrência registados',                     'DL 320/2002 Art. 12.º'),
+    item('alarme-atuou',       'Sistema de alarme e comunicação bidirecional atuou',        'EN 81-28',              true),
+    item('ilum-emerg-atuou',   'Iluminação de emergência da cabina funcionou',              'EN 81-20 § 5.4.11.2',   true),
+  ];
+
+  // Diagnóstico da causa
+  const EMERGENCY_DIAGNOSIS = [
+    item('causa-emerg',        'Causa da emergência identificada e registada',              'DL 320/2002 Art. 12.º', true),
+    item('avaria-elec-mec',    'Origem: elétrica / mecânica / externa (queda de tensão…)', 'EN 81-20'),
+    item('contatos-seg-emerg', 'Circuito de segurança — estado e anomalias identificadas', 'EN 81-20 § 5.11',       true),
+    item('travao-estado',      'Estado do travão / dispositivo de retenção',               'EN 81-20 § 5.9.2.2',    true),
+    item('para-quedas-emerg',  'Para-quedas — verificação de atuação indevida',            'EN 81-20 § 5.6',        true),
+    item('portas-emerg',       'Portas e fechaduras — verificação após emergência',        'EN 81-20 § 5.3',        true),
+  ];
+
+  // Ações corretivas de emergência
+  const EMERGENCY_ACTIONS = [
+    item('correcao-realizada',  'Ação corretiva imediata realizada',                       'DL 320/2002 Art. 7.º',  true),
+    item('reset-quadro',        'Reset do quadro / falha elétrica corrigida',              'EN 81-20 § 5.10'),
+    item('reparacao-temp',      'Reparação temporária efetuada (se aplicável)',            'Manual fabricante'),
+    item('componente-subst',    'Componente substituído ou bloqueado preventivamente',     'Manual fabricante',     true),
+  ];
+
+  // Estado final após emergência
+  const EMERGENCY_FINAL_STATUS = [
+    item('ensaio-funcional',   'Ensaio funcional completo após intervenção',               'EN 81-20 § 6.5',        true),
+    item('apto-servico',       'Equipamento declarado → APTO para serviço normal',         'DL 320/2002 Art. 12.º', true),
+    item('inapto-bloqueado',   'Equipamento declarado → INAPTO e bloqueado (se caso)',     'DL 320/2002 Art. 7.º',  true),
+    item('reparacao-futura',   'Reparação definitiva agendada (se reparação temp. feita)', 'DL 320/2002 Art. 12.º'),
+    item('follow-up',          'Follow-up / visita de verificação agendada',               'DL 320/2002 Art. 12.º'),
+  ];
+
+  // Documentação de emergência
+  const EMERGENCY_DOCUMENTATION = [
+    item('relatorio-emerg',    'Relatório de emergência preenchido com todos os detalhes', 'DL 320/2002 Art. 12.º', true),
+    item('livro-rev-emerg',    'Livro de revisões atualizado com registo da ocorrência',   'DL 320/2002 Art. 12.º', true),
+    item('proprietario-inf',   'Proprietário / gestor informado por escrito',              'DL 320/2002 Art. 7.º',  true),
+    item('seguradora-inf',     'Seguradora contactada se danos em pessoas ou bens',        'DL 320/2002 Art. 7.º'),
+  ];
+
   /* ------------------------------------------------------------------ */
   /* Função principal: retorna secções para a combinação pedida          */
   /* ------------------------------------------------------------------ */
   function getSections(driveType, doorType, visitType) {
+
+    // ================================================================
+    // REPARAÇÃO — checklist focado (NÃO usa o checklist de manutenção)
+    // ================================================================
+    if (visitType === 'repair') {
+      return [
+        { id: 'rep-diagnostico',  title: 'Diagnóstico da Avaria',             icon: 'search',          color: 'warning',   items: REPAIR_DIAGNOSIS },
+        { id: 'rep-trabalho',     title: 'Trabalho Realizado',                icon: 'tools',           color: 'secondary', items: REPAIR_WORK },
+        { id: 'rep-verificacao',  title: 'Verificação Pós-Reparação',         icon: 'check-double',    color: 'danger',    items: REPAIR_SAFETY_CHECK },
+        { id: 'rep-documentacao', title: 'Documentação da Reparação',         icon: 'file-signature',  color: 'info',      items: REPAIR_DOCUMENTATION },
+      ];
+    }
+
+    // ================================================================
+    // INTERVENÇÃO DE EMERGÊNCIA — checklist específico
+    // ================================================================
+    if (visitType === 'emergency') {
+      return [
+        { id: 'emg-situacao',    title: 'Situação de Emergência / Resgate',  icon: 'exclamation-triangle', color: 'danger',   items: EMERGENCY_SITUATION },
+        { id: 'emg-diagnostico', title: 'Diagnóstico da Causa',              icon: 'search-plus',          color: 'warning',  items: EMERGENCY_DIAGNOSIS },
+        { id: 'emg-acoes',       title: 'Ações Corretivas',                  icon: 'hammer',               color: 'secondary', items: EMERGENCY_ACTIONS },
+        { id: 'emg-estado',      title: 'Estado Final do Equipamento',       icon: 'traffic-light',        color: 'success',  items: EMERGENCY_FINAL_STATUS },
+        { id: 'emg-documentacao',title: 'Documentação da Emergência',        icon: 'file-exclamation',     color: 'info',     items: EMERGENCY_DOCUMENTATION },
+      ];
+    }
+
+    // ================================================================
+    // MANUTENÇÃO / REVISÃO / PRÉ-INSPEÇÃO — checklist completo
+    // ================================================================
     const sections = [];
 
     // ---- Segurança ----
@@ -418,13 +537,13 @@ const INSPECTION_TEMPLATES = (() => {
       label: 'Reparação',
       icon:  'wrench',
       color: 'secondary',
-      norm:  'DL 320/2002 Art. 12.º',
+      norm:  'DL 320/2002 Art. 12.º — registo obrigatório de todas as reparações no livro de revisões',
     },
     emergency: {
       label: 'Intervenção de Emergência',
       icon:  'exclamation-circle',
       color: 'danger',
-      norm:  'EN 81-28',
+      norm:  'EN 81-28 / DL 320/2002 Art. 7.º — obrigação de comunicação ao proprietário e registo da ocorrência',
     },
   };
 
