@@ -891,9 +891,11 @@
                 const checklist = {};
                 $('.checklist-item').each(function() {
                     const itemId = $(this).data('item');
-                    const status = $(this).find('select').val();
-                    const comment = $(this).find('input[type="text"]').val();
-                    checklist[itemId] = { status, comment };
+                    const status = $(this).find('.checklist-status').val();
+                    const comment = $(this).find('.checklist-comment').val();
+                    // Include the human-readable label so the PDF can display it correctly
+                    const label = $(this).find('.item-label').text().trim();
+                    checklist[itemId] = { status, comment, label };
                 });
                 return checklist;
             },
@@ -1146,7 +1148,11 @@
             const filled = $('#inspectionChecklist .checklist-status').filter(function() {
                 return $(this).val() !== '';
             }).length;
-            const critical = $('#inspectionChecklist .checklist-item.border-danger .checklist-status[value="error"]').length;
+            // binary (repair/emergency) critical = "no"; standard = "error"
+            const critical = $('#inspectionChecklist .checklist-item.border-danger').filter(function() {
+                const val = $(this).find('.checklist-status').val();
+                return val === 'error' || val === 'no';
+            }).length;
 
             if (total > 0) {
                 $('#checklistProgress').text(`${filled}/${total} preenchidos`);

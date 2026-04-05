@@ -7964,12 +7964,74 @@ async function gerarPDFRelatorio(data) {
                     doc.text('Observação', 390, hY + 3, { width: 155 });
                     y = hY + 16;
 
-                    const statusIcon = { ok: '✓ Conforme', warning: '⚠ Atenção', error: '✗ Não conforme', na: 'N/A' };
-                    const statusColor = { ok: '#28a745', warning: '#e67e00', error: '#dc3545', na: '#6c757d' };
+                    // standard (maintenance/quarterly/annual) + binary (repair/emergency)
+                    const statusIcon = {
+                        ok:      '✓ Conforme',
+                        warning: '⚠ Atenção',
+                        error:   '✗ Não conforme',
+                        yes:     '✓ Sim',
+                        no:      '✗ Não',
+                        na:      'N/A',
+                    };
+                    const statusColor = {
+                        ok:      '#28a745',
+                        warning: '#e67e00',
+                        error:   '#dc3545',
+                        yes:     '#28a745',
+                        no:      '#dc3545',
+                        na:      '#6c757d',
+                    };
+
+                    // Section headers map for repair / emergency (from inspection-templates structure)
+                    const sectionHeaders = {
+                        // repair
+                        'rep-diagnostico':  'Diagnóstico da Avaria',
+                        'avaria-descrita':  null, // first item of that section — header printed before it
+                        'rep-trabalho':     'Trabalho Realizado',
+                        'comp-subst':       null,
+                        'rep-verificacao':  'Verificação Pós-Reparação',
+                        'contatos-seg-rep': null,
+                        'rep-documentacao': 'Documentação da Reparação',
+                        'ordem-trabalho':   null,
+                        // emergency
+                        'emg-situacao':       'Situação de Emergência / Resgate',
+                        'passag-resgatados':  null,
+                        'emg-diagnostico':    'Diagnóstico da Causa',
+                        'causa-emerg':        null,
+                        'emg-acoes':          'Ações Corretivas',
+                        'correcao-realizada': null,
+                        'emg-estado':         'Estado Final do Equipamento',
+                        'ensaio-funcional':   null,
+                        'emg-documentacao':   'Documentação da Emergência',
+                        'relatorio-emerg':    null,
+                    };
+
+                    // IDs that are the FIRST item of each section (trigger section header)
+                    const sectionFirstItem = {
+                        'avaria-descrita':   'Diagnóstico da Avaria',
+                        'comp-subst':        'Trabalho Realizado',
+                        'contatos-seg-rep':  'Verificação Pós-Reparação',
+                        'ordem-trabalho':    'Documentação da Reparação',
+                        'passag-resgatados': 'Situação de Emergência / Resgate',
+                        'causa-emerg':       'Diagnóstico da Causa',
+                        'correcao-realizada':'Ações Corretivas',
+                        'ensaio-funcional':  'Estado Final do Equipamento',
+                        'relatorio-emerg':   'Documentação da Emergência',
+                    };
 
                     items.forEach(([key, val], i) => {
+                        // Print section header if this is the first item of a repair/emergency section
+                        if (sectionFirstItem[key]) {
+                            if (y > 740) { doc.addPage(); y = 50; }
+                            // small section heading row
+                            doc.rect(50, y, 495, 14).fill('#e8eef8').stroke('#c0ccee');
+                            doc.fillColor('#1a3a6b').font('Helvetica-Bold').fontSize(8)
+                               .text(sectionFirstItem[key], 56, y + 3, { width: 485 });
+                            y += 14;
+                        }
+
                         if (y > 760) { doc.addPage(); y = 50; }
-                        const label = key.replace(/-/g, ' ').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        const label = val.label || key.replace(/-/g, ' ').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
                         const rowH = 18;
                         const bg = i % 2 === 0 ? '#f8f9fa' : '#ffffff';
                         doc.rect(50, y, 495, rowH).fill(bg).stroke('#e0e0e0');

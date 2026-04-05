@@ -1377,9 +1377,11 @@
                 const checklist = {};
                 $('.checklist-item').each(function() {
                     const itemId = $(this).data('item');
-                    const status = $(this).find('select').val();
-                    const comment = $(this).find('input[type="text"]').val();
-                    checklist[itemId] = { status, comment };
+                    const status = $(this).find('.checklist-status').val();
+                    const comment = $(this).find('.checklist-comment').val();
+                    // Include human-readable label so the PDF displays correct Portuguese text
+                    const label = $(this).find('.item-label').text().trim();
+                    checklist[itemId] = { status, comment, label };
                 });
                 return checklist;
             },
