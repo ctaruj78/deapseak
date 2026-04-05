@@ -430,9 +430,21 @@
                                     <a href="invoice-template.html" class="btn btn-success float-right">
                                         <i class="fas fa-plus"></i> Novo Orçamento
                                     </a>
+                                    <button class="btn btn-warning float-right mr-2" id="orcArchiveToggleBtn" onclick="toggleArchiveView()">
+                                        <i class="fas fa-archive mr-1"></i> Arquivo
+                                    </button>
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Archive mode banner -->
+                    <div id="orcArchiveBanner" class="alert alert-warning d-none" style="border-left:4px solid #e67e22">
+                        <i class="fas fa-archive mr-2"></i>
+                        <strong>Modo arquivo.</strong> A mostrar orçamentos arquivados.
+                        <button class="btn btn-sm btn-outline-warning ml-3" onclick="toggleArchiveView()">
+                            <i class="fas fa-arrow-left mr-1"></i>Voltar aos ativos
+                        </button>
                     </div>
 
                     <!-- Lista de Orçamentos -->
@@ -500,6 +512,9 @@
         // API_BASE_URL має бути порожнім для relative URLs (працює в GitHub Codespaces)
         const API_BASE_URL = window.API_BASE_URL || '';
 
+        // Archive mode
+        let _archiveMode = false;
+
         // Pending action for status change modal
         let pendingStatusAction = null;
 
@@ -540,6 +555,7 @@
                 if (filtros.cliente) params.append('cliente', filtros.cliente);
                 if (filtros.dataDe) params.append('dataDe', filtros.dataDe);
                 if (filtros.dataAte) params.append('dataAte', filtros.dataAte);
+                if (_archiveMode) params.append('archived', 'true');
 
                 const response = await fetch(`${API_BASE_URL}/api/orcamentos?${params.toString()}`, {
                     headers: {
@@ -574,6 +590,8 @@
 
         // Criar card de orçamento
         function criarCardOrcamento(orcamento) {
+            const isArchived = orcamento.archived || false;
+            const headerClass = isArchived ? 'bg-secondary' : 'bg-gradient-primary';
             const statusClass = `badge-${orcamento.status || 'rascunho'}`;
             const statusText = {
                 'rascunho': 'Rascunho',
@@ -589,12 +607,16 @@
                 : 'N/A';
             const total = orcamento.total || 0;
 
+            const archiveBadge = isArchived
+                ? `<span class="badge badge-warning ml-1"><i class="fas fa-archive mr-1"></i>Arquivo</span>`
+                : '';
+
             return `
                 <div class="col-md-4 col-sm-6 mb-4">
                     <div class="card orcamento-card" onclick="verOrcamento('${orcamento._id}')">
-                        <div class="card-header bg-gradient-primary">
+                        <div class="card-header ${headerClass}">
                             <h5 class="card-title mb-0">
-                                <i class="fas fa-file-invoice"></i> ${orcamento.numero}
+                                <i class="fas fa-file-invoice"></i> ${orcamento.numero} ${archiveBadge}
                             </h5>
                             <span class="badge status-badge ${statusClass} float-right">${statusText}</span>
                         </div>
@@ -632,11 +654,15 @@
                             <button class="btn btn-sm btn-secondary" onclick="downloadPDF('${orcamento._id}', '${orcamento.numero}'); event.stopPropagation();" title="Download PDF">
                                 <i class="fas fa-file-pdf"></i> PDF
                             </button>
+                            ${!isArchived ? `
                             <button class="btn btn-sm btn-warning" onclick="editarOrcamento('${orcamento._id}'); event.stopPropagation();">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
                             <button class="btn btn-sm btn-danger" onclick="eliminarOrcamento('${orcamento._id}'); event.stopPropagation();">
                                 <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary mt-1" onclick="arquivarOrcamento('${orcamento._id}'); event.stopPropagation();">
+                                <i class="fas fa-archive"></i> Arquivar
                             </button>
                             ${['rascunho', 'enviado', 'expirado'].includes(orcamento.status) ? `
                             <button class="btn btn-sm btn-success mt-1" onclick="abrirStatusModal('${orcamento._id}', 'aprovado'); event.stopPropagation();">
@@ -649,6 +675,11 @@
                             <button class="btn btn-sm btn-info mt-1" onclick="abrirStatusModal('${orcamento._id}', 'enviado'); event.stopPropagation();">
                                 <i class="fas fa-paper-plane"></i> Reenviar
                             </button>` : ''}
+                            ` : `
+                            <button class="btn btn-sm btn-success mt-1" onclick="restaurarOrcamento('${orcamento._id}'); event.stopPropagation();">
+                                <i class="fas fa-box-open"></i> Restaurar
+                            </button>
+                            `}
                         </div>
                     </div>
                 </div>
@@ -793,6 +824,55 @@
             document.getElementById('filterDataDe').value = '';
             document.getElementById('filterDataAte').value = '';
             carregarOrcamentos();
+        }
+
+        // Toggle modo arquivo
+        function toggleArchiveView() {
+            _archiveMode = !_archiveMode;
+            const banner = document.getElementById('orcArchiveBanner');
+            const btn = document.getElementById('orcArchiveToggleBtn');
+            if (_archiveMode) {
+                banner && banner.classList.remove('d-none');
+                if (btn) { btn.classList.remove('btn-warning'); btn.classList.add('btn-secondary'); btn.innerHTML = '<i class="fas fa-times mr-1"></i>Sair do arquivo'; }
+            } else {
+                banner && banner.classList.add('d-none');
+                if (btn) { btn.classList.remove('btn-secondary'); btn.classList.add('btn-warning'); btn.innerHTML = '<i class="fas fa-archive mr-1"></i>Arquivo'; }
+            }
+            carregarOrcamentos();
+        }
+
+        // Arquivar orçamento
+        async function arquivarOrcamento(id) {
+            if (!confirm('Arquivar este orçamento? Ele deixará de aparecer na lista ativa.')) return;
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/orcamentos/${id}/archive`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message);
+                alert('✅ Orçamento arquivado.');
+                carregarOrcamentos();
+            } catch (err) {
+                alert('Erro: ' + err.message);
+            }
+        }
+
+        // Restaurar orçamento do arquivo (somente admin)
+        async function restaurarOrcamento(id) {
+            if (!confirm('Restaurar orçamento do arquivo?')) return;
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/orcamentos/${id}/unarchive`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message);
+                alert('✅ Orçamento restaurado.');
+                carregarOrcamentos();
+            } catch (err) {
+                alert('Erro: ' + err.message);
+            }
         }
 
         // Carregar ao iniciar

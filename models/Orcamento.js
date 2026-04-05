@@ -141,6 +141,11 @@ const orcamentoSchema = new mongoose.Schema({
         default: null
     },
 
+    // Архів
+    archived: { type: Boolean, default: false },
+    archivedAt: { type: Date },
+    archivedBy: { type: String },
+
     // PDF файл (якщо збережено)
     pdfPath: String,
     

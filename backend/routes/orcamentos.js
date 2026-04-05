@@ -423,6 +423,13 @@ router.get('/', authenticate, authorizeRoles('admin', 'dispatcher'), async (req,
         if (status) {
             query.status = status;
         }
+
+        // Архів: за замовчуванням не показуємо архівовані
+        if (req.query.archived === 'true') {
+            query.archived = true;
+        } else {
+            query.archived = { $ne: true };
+        }
         
         // Пошук по клієнту або номеру
         if (search) {
@@ -1147,6 +1154,38 @@ router.patch('/:id/status', authenticate, authorizeRoles('admin', 'dispatcher'),
     } catch (error) {
         console.error('Erro ao atualizar status:', error);
         res.status(500).json({ success: false, message: 'Erro ao atualizar status', error: error.message });
+    }
+});
+
+// POST /api/orcamentos/:id/archive - Arquivar orçamento (admin/dispatcher)
+router.post('/:id/archive', authenticate, authorizeRoles('admin', 'dispatcher'), async (req, res) => {
+    try {
+        const orcamento = await Orcamento.findById(req.params.id);
+        if (!orcamento) return res.status(404).json({ success: false, message: 'Orçamento não encontrado' });
+        orcamento.archived = true;
+        orcamento.archivedAt = new Date();
+        orcamento.archivedBy = req.user.username || req.user.email || req.user.id;
+        await orcamento.save();
+        res.json({ success: true, message: 'Orçamento arquivado com sucesso' });
+    } catch (error) {
+        console.error('Erro ao arquivar orçamento:', error);
+        res.status(500).json({ success: false, message: 'Erro ao arquivar', error: error.message });
+    }
+});
+
+// POST /api/orcamentos/:id/unarchive - Restaurar do arquivo (somente admin)
+router.post('/:id/unarchive', authenticate, authorizeRoles('admin'), async (req, res) => {
+    try {
+        const orcamento = await Orcamento.findById(req.params.id);
+        if (!orcamento) return res.status(404).json({ success: false, message: 'Orçamento não encontrado' });
+        orcamento.archived = false;
+        orcamento.archivedAt = undefined;
+        orcamento.archivedBy = undefined;
+        await orcamento.save();
+        res.json({ success: true, message: 'Orçamento restaurado do arquivo' });
+    } catch (error) {
+        console.error('Erro ao restaurar orçamento:', error);
+        res.status(500).json({ success: false, message: 'Erro ao restaurar', error: error.message });
     }
 });
 
