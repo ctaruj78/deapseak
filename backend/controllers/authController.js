@@ -668,3 +668,32 @@ exports.adminResetUserPassword = async (req, res, next) => {
         next(error);
     }
 };
+
+// Оновлення даних користувача (admin/dispatcher)
+exports.updateUserById = async (req, res, next) => {
+    try {
+        const allowedFields = [
+            'firstName', 'lastName', 'companyName', 'phone', 'email',
+            'clientType', 'priority', 'status', 'address',
+            'contactPerson', 'contactPosition', 'contractInfo', 'notes'
+        ];
+        const updates = {};
+        allowedFields.forEach(field => {
+            if (req.body[field] !== undefined) updates[field] = req.body[field];
+        });
+
+        const user = await User.findByIdAndUpdate(
+            req.params.id,
+            updates,
+            { new: true, runValidators: true }
+        ).select('-password -refreshToken -resetPasswordToken');
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'Користувача не знайдено' });
+        }
+
+        res.json({ success: true, message: 'Дані клієнта оновлено', data: { user } });
+    } catch (error) {
+        next(error);
+    }
+};

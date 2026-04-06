@@ -473,7 +473,7 @@ class ClientManager {
             }[client.type] || client.type;
             
             tr.innerHTML = `
-                <td>${client.id}</td>
+                <td><span class="badge badge-secondary">#${String(client.id || client._id).slice(-4).toUpperCase()}</span></td>
                 <td>
                     <strong>${client.name}</strong>
                     <br>
@@ -627,7 +627,7 @@ class ClientManager {
                         </div>
                         
                         <h6>Контактна інформація:</h6>
-                        <p><i class="fas fa-envelope mr-2 text-primary"></i> <a href="mailto:${client.email}">${client.email}</a></p>
+                        <p><i class="fas fa-envelope mr-2 text-primary"></i> ${client.email}</p>
                         <p><i class="fas fa-phone mr-2 text-success"></i> <a href="tel:${client.phone}">${client.phone}</a></p>
                         <p><i class="fas fa-map-marker-alt mr-2 text-danger"></i> ${client.address}</p>
                         
@@ -635,7 +635,7 @@ class ClientManager {
                             <button class="btn btn-sm btn-success" onclick="window.location.href='tel:${client.phone}'">
                                 <i class="fas fa-phone-alt"></i> Зателефонувати
                             </button>
-                            <button class="btn btn-sm btn-primary" onclick="window.location.href='mailto:${client.email}'">
+                            <button class="btn btn-sm btn-primary" onclick="clientManager.sendEmail('${client.id || client._id}')">
                                 <i class="fas fa-envelope"></i> Email
                             </button>
                         </div>
@@ -719,6 +719,9 @@ class ClientManager {
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                <button type="button" class="btn btn-warning" onclick="clientManager.sendPasswordToClient('${client._id || client.id}')">
+                    <i class="fas fa-key"></i> Надіслати пароль
+                </button>
                 <button type="button" class="btn btn-primary" onclick="clientManager.editClient('${client._id || client.id}')">Редагувати</button>
             </div>
         `;
@@ -781,7 +784,7 @@ class ClientManager {
                             ? [lift.address.street, lift.address.city].filter(Boolean).join(', ')
                             : (lift.address || '');
                         return `
-                        <a href="/pages/dispatcher/lifts.html?highlight=${lift._id}" class="list-group-item list-group-item-action" style="cursor: pointer;">
+                        <a href="#" onclick="event.preventDefault();clientManager._openLiftPage('${lift._id}','${this.userRole}')" class="list-group-item list-group-item-action" style="cursor: pointer;">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <strong><i class="fas fa-elevator text-primary"></i> ${lift.municipalNumber || 'Без номера'}</strong>
@@ -801,7 +804,7 @@ class ClientManager {
                     }).join('')}
                 </div>
                 <div class="mt-2">
-                    <a href="/pages/dispatcher/lifts.html?clientId=${clientId}" class="btn btn-sm btn-outline-primary">
+                    <a href="#" onclick="event.preventDefault();clientManager.viewAllClientLifts('${clientId}')" class="btn btn-sm btn-outline-primary">
                         <i class="fas fa-external-link-alt"></i> Відкрити всі ліфти
                     </a>
                 </div>
@@ -816,9 +819,17 @@ class ClientManager {
         }
     }
     
+    // Відкриття конкретного ліфта на відповідній сторінці за роллю
+    _openLiftPage(liftId, role) {
+        const base = role === 'admin' ? '/pages/admin/lifts.html' : '/pages/dispatcher/lifts.html';
+        window.location.href = `${base}?openLift=${liftId}`;
+    }
+
     // Перегляд всіх ліфтів клієнта (перехід на сторінку ліфтів з фільтром)
     viewAllClientLifts(clientId) {
-        window.location.href = `/pages/dispatcher/lifts.html?clientId=${clientId}`;
+        const role = this.userRole;
+        const base = role === 'admin' ? '/pages/admin/lifts.html' : '/pages/dispatcher/lifts.html';
+        window.location.href = `${base}?clientId=${clientId}`;
     }
 
     // Завантаження заявок клієнта для модалки
@@ -1024,58 +1035,123 @@ class ClientManager {
             notes: document.getElementById('clientNotes').value,
             avatar: document.getElementById('clientName').value.charAt(0).toUpperCase()
         };
+
+        // Визначаємо firstName/lastName та companyName
+        const nameParts = clientData.name.trim().split(/\s+/);
+        const apiPayload = {
+            companyName: (clientData.type !== 'individual') ? clientData.name : '',
+            firstName: nameParts[0] || clientData.name,
+            lastName: nameParts.slice(1).join(' ') || '',
+            clientType: clientData.type,
+            email: clientData.email,
+            phone: clientData.phone !== 'Не вказано' ? clientData.phone : '',
+            priority: clientData.priority,
+            status: clientData.status,
+            address: clientData.address !== 'Не вказано' ? clientData.address : '',
+            contactPerson: clientData.contactPerson,
+            contactPosition: clientData.contactPosition,
+            contractInfo: clientData.contractInfo,
+            notes: clientData.notes
+        };
         
         try {
             if (clientData.id) {
                 // Оновлення існуючого клієнта
-                const response = await fetch(`/api/clients/${clientData.id}`, {
+                const response = await fetch(`/api/users/${clientData.id}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     },
-                    body: JSON.stringify(clientData)
+                    body: JSON.stringify(apiPayload)
                 });
                 
                 if (response.ok) {
-                    // Бекенд повертає { success, message } без клієнта — оновлюємо локально
+                    const respData = await response.json();
+                    const updatedUser = respData.data?.user || respData.data || {};
+                    // Оновлюємо локальний масив зібраними даними
                     const index = this.clients.findIndex(c =>
                         (c.id && c.id === clientData.id) ||
                         (c._id && c._id === clientData.id)
                     );
                     if (index !== -1) {
-                        this.clients[index] = { ...this.clients[index], ...clientData };
+                        const merged = {
+                            ...this.clients[index],
+                            name: clientData.name,
+                            type: clientData.type,
+                            phone: clientData.phone,
+                            status: clientData.status,
+                            priority: clientData.priority,
+                            address: clientData.address,
+                            contactPerson: clientData.contactPerson,
+                            contactPosition: clientData.contactPosition,
+                            contractInfo: clientData.contractInfo,
+                            notes: clientData.notes,
+                            companyName: updatedUser.companyName || clientData.name,
+                            firstName: updatedUser.firstName || this.clients[index].firstName,
+                            lastName: updatedUser.lastName || this.clients[index].lastName,
+                        };
+                        this.clients[index] = merged;
                     }
                     this.showNotification('Клієнта успішно оновлено', 'success');
+                } else {
+                    const errData = await response.json().catch(() => ({}));
+                    this.showNotification(errData.message || 'Помилка збереження клієнта', 'error');
+                    return;
                 }
             } else {
                 // Додавання нового клієнта
-                const response = await fetch('/api/clients', {
+                const nameParts = (apiPayload.firstName || clientData.name || '').trim().split(/\s+/);
+                const postPayload = {
+                    email: apiPayload.email,
+                    password: Math.random().toString(36).slice(2, 8).toUpperCase() + Math.floor(1000 + Math.random() * 9000) + '!',
+                    firstName: apiPayload.firstName || nameParts[0] || 'Клієнт',
+                    lastName: apiPayload.lastName || nameParts.slice(1).join(' ') || '',
+                    role: 'client',
+                    phone: apiPayload.phone || '',
+                    address: apiPayload.address || '',
+                    company: apiPayload.companyName || '',
+                    status: 'active'
+                };
+                const response = await fetch('/api/users', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     },
-                    body: JSON.stringify(clientData)
+                    body: JSON.stringify(postPayload)
                 });
                 
                 const newClientData = await response.json();
                 if (response.ok) {
-                    this.clients.push(newClientData);
-                    const nc = newClientData.newClient;
-                    if (nc) {
-                        const emailMsg = nc.emailSent === false
-                            ? `⚠️ Email não enviado (${nc.emailError || 'SMTP não configurado'})`
-                            : '📧 Convite enviado por email';
-                        this.showNotification(
-                            `✅ Cliente criado!\n👤 ${nc.email}\n🔑 Palavra-passe: ${nc.password}\n${emailMsg}`,
-                            'success'
-                        );
-                    } else {
-                        this.showNotification('Cliente já existe — associado com sucesso', 'info');
-                    }
+                    const nc = newClientData.data || newClientData;
+                    const newEntry = {
+                        id: nc._id || nc.id,
+                        _id: nc._id || nc.id,
+                        name: clientData.name,
+                        firstName: nc.firstName,
+                        lastName: nc.lastName,
+                        companyName: nc.company || apiPayload.companyName || '',
+                        type: clientData.type,
+                        email: nc.email,
+                        phone: nc.phone || '',
+                        status: nc.status || 'active',
+                        priority: clientData.priority,
+                        address: nc.address || clientData.address || '',
+                        contactPerson: clientData.contactPerson || '',
+                        contactPosition: clientData.contactPosition || '',
+                        contractInfo: clientData.contractInfo || '',
+                        notes: clientData.notes || '',
+                        totalRequests: 0,
+                        activeRequests: 0,
+                        requestsCount: 0,
+                        liftsCount: 0,
+                        avatar: (nc.firstName || clientData.name || 'K').charAt(0).toUpperCase()
+                    };
+                    this.clients.push(newEntry);
+                    this.showNotification(`✅ Клієнта створено!\n🔑 Тимчасовий пароль: ${postPayload.password}`, 'success');
                 } else {
-                    this.showNotification(newClientData.message || 'Erro ao guardar cliente', 'error');
+                    this.showNotification(newClientData.error || newClientData.message || 'Помилка створення клієнта', 'error');
                     return;
                 }
             }
@@ -1102,7 +1178,7 @@ class ClientManager {
         if (!confirm('Ви впевнені, що хочете видалити цього клієнта?')) return;
         
         try {
-            const response = await fetch(`/api/clients/${clientId}`, {
+            const response = await fetch(`/api/users/${clientId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('authToken')}`
@@ -1158,11 +1234,33 @@ class ClientManager {
         this.renderClients();
     }
 
+    // Надіслати тимчасовий пароль клієнту
+    async sendPasswordToClient(clientId) {
+        if (!confirm('Надіслати новий тимчасовий пароль клієнту на email?')) return;
+        const token = localStorage.getItem('authToken');
+        try {
+            const res = await fetch(`/api/users/${clientId}/reset-password`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            const data = await res.json();
+            if (data.success) {
+                this.showNotification(`Пароль відправлено. Тимчасовий пароль: ${data.data.temporaryPassword}`, 'success');
+            } else {
+                this.showNotification(data.message || 'Помилка надсилання пароля', 'error');
+            }
+        } catch (e) {
+            this.showNotification('Помилка з\'єднання', 'error');
+        }
+    }
+
     // Відправка email клієнту
     sendEmail(clientId) {
         console.log('📧 Відправляємо email клієнту:', clientId);
         
-        // Шукаємо клієнта за id або _id
         const client = this.clients.find(c => 
             c.id === clientId || 
             c._id === clientId || 
@@ -1176,18 +1274,7 @@ class ClientManager {
             return;
         }
         
-        console.log('✅ Знайдено клієнта для email:', client);
-        
-        // Створюємо mailto link
-        const subject = encodeURIComponent('FestLift - Повідомлення');
-        const body = encodeURIComponent(`Шановний ${client.name},\n\n`);
-        const mailtoLink = `mailto:${client.email}?subject=${subject}&body=${body}`;
-        
-        // Відкриваємо поштовий клієнт
-        window.location.href = mailtoLink;
-        
-        // Альтернативний варіант - показати модальне вікно для написання повідомлення
-        // this.showEmailModal(client);
+        this.showEmailModal(client);
     }
 
     // Показати модальне вікно для написання email
@@ -1249,7 +1336,7 @@ class ClientManager {
                 body: JSON.stringify({
                     to: email,
                     subject: subject,
-                    body: body
+                    html: `<p>${body.replace(/\n/g, '<br>')}</p>`
                 })
             });
             

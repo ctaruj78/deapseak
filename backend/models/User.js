@@ -151,9 +151,27 @@ const userSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['online', 'offline', 'busy', 'active', 'inactive'], // Додано 'active'/'inactive' для сумісності
+        enum: ['online', 'offline', 'busy', 'active', 'inactive', 'suspended'], // Додано 'suspended' для клієнтів
         default: 'offline'
-    }
+    },
+
+    // Поля специфічні для клієнтів
+    companyName: { type: String, trim: true },
+    clientType: {
+        type: String,
+        enum: ['business', 'individual', 'government'],
+        default: 'individual'
+    },
+    priority: {
+        type: String,
+        enum: ['low', 'medium', 'high', 'vip'],
+        default: 'medium'
+    },
+    address: { type: String, trim: true },
+    contactPerson: { type: String, trim: true },
+    contactPosition: { type: String, trim: true },
+    contractInfo: { type: String, trim: true },
+    notes: { type: String, trim: true }
 }, {
     timestamps: true,
     toJSON: { virtuals: true },

@@ -617,8 +617,8 @@ class EnhancedLiftModal {
             
             console.log(`${isEdit ? '✏️ UPDATE' : '➕ CREATE'} mode, liftId:`, liftId);
             
-            // Отримуємо ID тестового клієнта (TODO: витягти з форми або з локального сховища)
-            const testClientId = '6915a14c8c41cac851f25c7e';
+            // Отримуємо ID клієнта з форми (якщо знайдено через email lookup)
+            const testClientId = null; // client буде визначено backend через clientEmail
             
             // Конвертуємо дані в формат API v2
             // 🗺️ Координати: якщо є вручну введені - використовуємо їх
@@ -660,7 +660,6 @@ class EnhancedLiftModal {
                 installationDate: liftData.installationYear ? `${liftData.installationYear}-01-01` : null,
                 address: addressObj, // ✅ Правильний формат об'єкта
                 postalCode: liftData.postcode, // 📮 Поштовий індекс для визначення муніципалітету
-                client: testClientId, // ID клієнта
                 clientName: liftData.clientName,
                 clientEmail: liftData.clientEmail,
                 clientPhone: liftData.clientPhone,

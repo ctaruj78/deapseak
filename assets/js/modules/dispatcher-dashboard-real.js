@@ -1251,31 +1251,103 @@ class DispatcherDashboardReal {
     /**
      * 🔔 Показати сповіщення
      */
-    showNotifications() {
+    async showNotifications() {
         console.log('🔔 Сповіщення');
-        
-        // TODO: Завантажити реальні сповіщення з API
-        const notifications = [
-            { id: 1, message: 'Нова заявка від клієнта', time: '5 хв тому', type: 'info' },
-            { id: 2, message: 'Технік завершив завдання', time: '15 хв тому', type: 'success' },
-            { id: 3, message: 'Термінова заявка!', time: '30 хв тому', type: 'danger' }
-        ];
-        
-        let html = '';
-        notifications.forEach(notif => {
-            html += `
-                <div class="alert alert-${notif.type}">
-                    <strong>${notif.message}</strong>
-                    <br>
-                    <small class="text-muted">${notif.time}</small>
-                </div>
-            `;
-        });
-        
-        document.getElementById('notificationsList').innerHTML = html;
+
+        const listEl = document.getElementById('notificationsList');
+        if (listEl) {
+            listEl.innerHTML = '<div class="text-center py-3"><i class="fas fa-spinner fa-spin"></i> Завантаження...</div>';
+        }
         $('#notificationsModal').modal('show');
+
+        let notifications = [];
+
+        try {
+            const response = await fetch(`${this.API_BASE}/api/notifications`, {
+                headers: {
+                    'Authorization': `Bearer ${this.token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const raw = data.data || data || [];
+                notifications = raw.map(n => ({
+                    message: n.message || '—',
+                    time: this._relativeTime(n.createdAt),
+                    type: this._notifTypeToBootstrap(n.type),
+                    read: n.read
+                }));
+            }
+        } catch (e) {
+            console.warn('⚠️ Не вдалося завантажити сповіщення з API:', e);
+        }
+
+        // Fallback: генеруємо сповіщення з кешованих заявок якщо API повернув порожній масив
+        if (notifications.length === 0 && this.requests && this.requests.length > 0) {
+            const recentRequests = [...this.requests]
+                .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+                .slice(0, 10);
+
+            notifications = recentRequests.map(req => {
+                const statusMap = {
+                    'pending':   { msg: `Нова заявка: ${req.title || req.description || 'без опису'}`, type: 'info' },
+                    'assigned':  { msg: `Призначено техніка: ${req.title || req.description || '—'}`, type: 'primary' },
+                    'in_progress': { msg: `В роботі: ${req.title || req.description || '—'}`, type: 'warning' },
+                    'completed': { msg: `Виконано: ${req.title || req.description || '—'}`, type: 'success' },
+                    'cancelled': { msg: `Скасовано: ${req.title || req.description || '—'}`, type: 'secondary' }
+                };
+                const mapped = statusMap[req.status] || { msg: req.title || req.description || '—', type: 'info' };
+                const isUrgent = req.priority === 'urgent' || req.priority === 'high';
+                return {
+                    message: (isUrgent ? '🔴 ' : '') + mapped.msg,
+                    time: this._relativeTime(req.createdAt),
+                    type: isUrgent ? 'danger' : mapped.type,
+                    read: false
+                };
+            });
+        }
+
+        let html = '';
+        if (notifications.length === 0) {
+            html = '<p class="text-center text-muted py-4"><i class="fas fa-bell-slash"></i> Немає нових сповіщень</p>';
+        } else {
+            notifications.forEach(notif => {
+                const opacity = notif.read ? ' style="opacity:0.6"' : '';
+                html += `
+                    <div class="alert alert-${notif.type} mb-2"${opacity}>
+                        <strong>${notif.message}</strong>
+                        <br>
+                        <small class="text-muted">${notif.time}</small>
+                    </div>
+                `;
+            });
+        }
+
+        if (listEl) listEl.innerHTML = html;
     }
-    
+
+    /**
+     * 🕐 Відносний час
+     */
+    _relativeTime(date) {
+        if (!date) return '';
+        const diff = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
+        if (diff < 60)  return `${diff} сек тому`;
+        if (diff < 3600) return `${Math.floor(diff / 60)} хв тому`;
+        if (diff < 86400) return `${Math.floor(diff / 3600)} год тому`;
+        return `${Math.floor(diff / 86400)} дн тому`;
+    }
+
+    /**
+     * 🎨 Тип сповіщення → Bootstrap клас
+     */
+    _notifTypeToBootstrap(type) {
+        const map = { info: 'info', success: 'success', warning: 'warning', error: 'danger', danger: 'danger', urgent: 'danger' };
+        return map[type] || 'info';
+    }
+
     /**
      * 💬 Показати повідомлення
      */
@@ -1289,8 +1361,19 @@ class DispatcherDashboardReal {
     /**
      * ✅ Позначити всі сповіщення як прочитані
      */
-    markAllAsRead() {
+    async markAllAsRead() {
         console.log('✅ Позначено всі сповіщення як прочитані');
+        try {
+            await fetch(`${this.API_BASE}/api/notifications/read-all`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${this.token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+        } catch (e) {
+            console.warn('⚠️ Не вдалося позначити як прочитані:', e);
+        }
         $('#notificationsModal').modal('hide');
         this.showNotification('Всі сповіщення прочитані', 'success');
     }

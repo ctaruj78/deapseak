@@ -2930,7 +2930,13 @@
             console.log('🚀 Завантаження ліфтів при старті сторінки...');
             setTimeout(() => {
                 if (typeof window.loadLiftsFromAPI === 'function') {
-                    window.loadLiftsFromAPI();
+                    window.loadLiftsFromAPI().then(() => {
+                        // Якщо ?openLift=ID — автоматично відкриваємо деталі після завантаження
+                        const _openId = new URLSearchParams(window.location.search).get('openLift');
+                        if (_openId && typeof showLiftDetails === 'function') {
+                            setTimeout(() => showLiftDetails(_openId), 300);
+                        }
+                    });
                 }
             }, 500);
             
@@ -4439,7 +4445,7 @@
 
         const _urlParams = new URLSearchParams(window.location.search);
         const _clientId = _urlParams.get('clientId');
-        const _endpoint = _clientId ? `/api/lifts?clientId=${encodeURIComponent(_clientId)}` : '/api/lifts';
+        const _endpoint = _clientId ? `/api/lifts?client=${encodeURIComponent(_clientId)}` : '/api/lifts';
         if (_clientId) showClientFilterBanner(_clientId);
 
         try {
@@ -4857,11 +4863,16 @@
             const postalCode = address.zipCode || lift.postalCode || '';
             
             // Клієнт з populate
+            // Пріоритет: явно збережений clientName на ліфті → ім'я облікового запису
             const client = lift.client || {};
-            const clientName = client.firstName && client.lastName
-                ? `${client.firstName} ${client.lastName}`
-                : lift.clientName || 'Не вказано';
+            const hasLinkedAccount = !!(client._id || client.email);
+            const _savedName = lift.clientName && lift.clientName !== 'Невказано' ? lift.clientName : '';
+            const _accountName = client.firstName && client.lastName ? `${client.firstName} ${client.lastName}` : '';
+            const clientName = _savedName || _accountName || 'Не вказано';
             const clientEmail = client.email || lift.clientEmail || lift.email || 'Не вказано';
+            const clientBadge = hasLinkedAccount
+                ? `<i class="fas fa-user-check text-success ml-1" title="Зареєстрований клієнт"></i>`
+                : `<i class="fas fa-user-times text-warning ml-1" title="Клієнт без акаунту"></i>`;
             
             // 🏠 Перевірка чи є інші ліфти по тій самій адресі
             const addrKey = lift.address && lift.address.street
@@ -4902,7 +4913,7 @@
                     ${postalCode ? `<br><small class="text-muted">${postalCode}</small>` : ''}
                     ${hasSiblings ? `<br><span class="address-siblings-badge"><i class="fas fa-layer-group" style="font-size:.6rem"></i> ${siblingsCount} ліфти</span>` : ''}
                 </td>
-                <td>${clientName}</td>
+                <td>${clientName} ${clientBadge}</td>
                 <td>${clientEmail}</td>
                 <td>
                     <span class="badge ${statusClass} text-white px-2 py-1">
@@ -7873,5 +7884,98 @@
         }
     });
     </script>
+    <script>
+    /* ===== ФІКС: Обробники мертвих кнопок ===== */
+    document.addEventListener('DOMContentLoaded', function() {
+
+        var searchBtn = document.getElementById('searchBtn');
+        if (searchBtn) {
+            searchBtn.addEventListener('click', function() {
+                var searchInput = document.getElementById('searchInput');
+                if (searchInput) searchInput.dispatchEvent(new Event('input'));
+            });
+        }
+
+        var copyBtn = document.getElementById('enhancedBtnCopyCoords');
+        if (copyBtn) {
+            copyBtn.addEventListener('click', function() {
+                var lat = document.getElementById('enhancedLiftLat');
+                var lng = document.getElementById('enhancedLiftLng');
+                if (lat && lng && lat.value && lng.value) {
+                    var text = lat.value + ', ' + lng.value;
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(text).then(function() {
+                            copyBtn.innerHTML = '<i class="fas fa-check text-success"></i>';
+                            setTimeout(function() { copyBtn.innerHTML = '<i class="fas fa-map-pin"></i>'; }, 1500);
+                        });
+                    } else {
+                        var tmp = document.createElement('input');
+                        tmp.value = text;
+                        document.body.appendChild(tmp);
+                        tmp.select(); document.execCommand('copy');
+                        document.body.removeChild(tmp);
+                    }
+                } else { alert('Координати не вказані'); }
+            });
+        }
+
+        var saveBtn = document.getElementById('saveInterventionBtn');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', function() {
+                var date = document.getElementById('intDate');
+                var type = document.getElementById('intType');
+                var desc = document.getElementById('intDescription');
+                if (!date||!date.value||!type||!type.value||!desc||!desc.value) {
+                    alert('Заповніть обов\'язкові поля: дата, тип, опис');
+                    return;
+                }
+                var token = localStorage.getItem('authToken')||localStorage.getItem('token')||localStorage.getItem('liftmanager_jwt');
+                var liftId = (window.enhancedLiftModal&&window.enhancedLiftModal.currentLiftId)||window.currentLiftId;
+                var body = {
+                    title: type.value==='maintenance'?'Планове ТО':type.value==='repair'?'Ремонт':'Втручання',
+                    description: desc.value, type: type.value,
+                    priority: (document.getElementById('intPriority')||{}).value||'medium',
+                    status: (document.getElementById('intStatus')||{}).value||'completed',
+                    scheduledDate: date.value,
+                    cost: parseFloat((document.getElementById('intCost')||{}).value)||0,
+                    duration: parseFloat((document.getElementById('intDuration')||{}).value)||0
+                };
+                if (liftId) body.lift = liftId;
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Збереження...';
+                fetch('/api/requests',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify(body)})
+                    .then(function(r){return r.json().then(function(d){return{ok:r.ok,data:d};});})
+                    .then(function(res){
+                        if(res.ok){
+                            if(typeof $!=='undefined') $('#interventionModal').modal('hide');
+                            if(document.getElementById('interventionForm')) document.getElementById('interventionForm').reset();
+                            if(typeof toastr!=='undefined') toastr.success('Втручання збережено!');
+                            else alert('Втручання збережено успішно!');
+                        } else { alert('Помилка: '+((res.data&&res.data.message)||'Невідома помилка')); }
+                    })
+                    .catch(function(e){alert('Помилка: '+e.message);})
+                    .finally(function(){saveBtn.disabled=false;saveBtn.innerHTML='Зберегти втручання';});
+            });
+        }
+
+        var sendChatBtn = document.getElementById('sendChatBtn');
+        if (sendChatBtn) {
+            function doSend() {
+                var inp = document.getElementById('chatInput');
+                var msgs = document.getElementById('chatMessages');
+                if (!inp||!inp.value.trim()) return;
+                var msg = inp.value.trim();
+                var t = new Date().toLocaleTimeString('uk-UA',{hour:'2-digit',minute:'2-digit'});
+                if (msgs) { msgs.innerHTML+='<div class="text-right mb-2"><span class="bg-primary text-white px-2 py-1 rounded d-inline-block">'+msg.replace(/</g,'&lt;')+'</span><br><small class="text-muted">'+t+'</small></div>'; msgs.scrollTop=msgs.scrollHeight; }
+                inp.value='';
+                if(window.wsClient){try{window.wsClient.sendChatMessage((document.getElementById('chatLiftId')||{}).value||'general',msg,Date.now().toString());}catch(e){}}
+            }
+            sendChatBtn.addEventListener('click', doSend);
+            var chatInput = document.getElementById('chatInput');
+            if (chatInput) { chatInput.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();doSend();}}); }
+        }
+    });
+    </script>
+
 </body>
 </html>

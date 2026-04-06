@@ -1,5 +1,42 @@
 const { NotificationMongo, NotificationSQL } = require('../models/Notification');
 
+// GET /api/notifications — останні сповіщення для поточного користувача
+exports.getRecentNotifications = async (req, res) => {
+  try {
+    const userId = String(req.user._id || req.user.id);
+    const role = req.user.role;
+
+    // Dispatcher/admin бачить усі сповіщення; технік — лише свої або загальні
+    const query = (role === 'admin' || role === 'dispatcher')
+      ? {}
+      : { $or: [{ recipientId: userId }, { recipientId: null }, { recipientId: '' }] };
+
+    const notifications = await NotificationMongo.find(query)
+      .sort({ createdAt: -1 })
+      .limit(20);
+
+    res.json({ success: true, data: notifications });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+// PATCH /api/notifications/read-all — позначити всі як прочитані
+exports.markAllRead = async (req, res) => {
+  try {
+    const userId = String(req.user._id || req.user.id);
+    const role = req.user.role;
+    const filter = (role === 'admin' || role === 'dispatcher')
+      ? {}
+      : { recipientId: userId };
+
+    await NotificationMongo.updateMany(filter, { $set: { read: true } });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
 // MongoDB CRUD
 exports.getAllNotificationsMongo = async (req, res) => {
   try {

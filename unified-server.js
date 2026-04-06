@@ -304,6 +304,19 @@ app.get('/api/notifications', authenticateToken, async (req, res) => {
     }
 });
 
+// Delete notification
+app.delete('/api/notifications/:id', authenticateToken, async (req, res) => {
+    try {
+        if (!db) return res.status(503).json({ success: false, message: 'База даних недоступна' });
+        const { ObjectId } = require('mongodb');
+        await db.collection('notifications').deleteOne({ _id: new ObjectId(req.params.id) });
+        res.json({ success: true, message: 'Сповіщення видалено' });
+    } catch (error) {
+        console.error('❌ Помилка видалення сповіщення:', error);
+        res.status(500).json({ success: false, message: 'Помилка сервера' });
+    }
+});
+
 // Mark notification as read
 app.patch('/api/notifications/:id/read', authenticateToken, async (req, res) => {
     try {
@@ -3811,6 +3824,16 @@ app.put('/api/users/:id', authenticateToken, async (req, res) => {
         if (company !== undefined) updateData.company = company;
         if (address !== undefined) updateData.address = address;
 
+        // Клієнтські поля
+        const { companyName, clientType, priority, contactPerson, contactPosition, contractInfo, notes } = req.body;
+        if (companyName !== undefined) updateData.companyName = companyName;
+        if (clientType !== undefined) updateData.clientType = clientType;
+        if (priority !== undefined) updateData.priority = priority;
+        if (contactPerson !== undefined) updateData.contactPerson = contactPerson;
+        if (contactPosition !== undefined) updateData.contactPosition = contactPosition;
+        if (contractInfo !== undefined) updateData.contractInfo = contractInfo;
+        if (notes !== undefined) updateData.notes = notes;
+
         // Якщо є новий пароль - хешуємо
         if (password) {
             const bcrypt = require('bcryptjs');
@@ -3963,6 +3986,48 @@ app.get('/api/users/:id', authenticateToken, async (req, res) => {
             success: false,
             message: 'Помилка отримання користувача'
         });
+    }
+});
+
+// POST /api/users/:id/reset-password — скинути пароль і надіслати email (admin + dispatcher)
+app.post('/api/users/:id/reset-password', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        if (!['admin', 'dispatcher'].includes(req.user.role)) {
+            return res.status(403).json({ success: false, error: 'Доступ заборонено' });
+        }
+        if (!isValidObjectId(req.params.id)) {
+            return res.status(400).json({ success: false, error: 'Недійсний ID' });
+        }
+        const userId = new ObjectId(req.params.id);
+        const user = await db.collection('users').findOne({ _id: userId }, { projection: { password: 0 } });
+        if (!user) return res.status(404).json({ success: false, error: 'Користувача не знайдено' });
+
+        // Генеруємо тимчасовий пароль
+        const rawPassword =
+            Math.random().toString(36).slice(2, 6).toUpperCase() +
+            Math.floor(1000 + Math.random() * 9000) +
+            ['!', '@', '#', '$'][Math.floor(Math.random() * 4)];
+        const bcrypt = require('bcryptjs');
+        const hashedPassword = await bcrypt.hash(rawPassword, 10);
+
+        await db.collection('users').updateOne(
+            { _id: userId },
+            { $set: { password: hashedPassword, mustChangePassword: true, updatedAt: new Date() } }
+        );
+
+        // Відправляємо email з новим паролем
+        try {
+            const html = `<p>Ваш тимчасовий пароль для доступу до FestLift: <strong>${rawPassword}</strong></p><p>Будь ласка, змініть його після першого входу.</p>`;
+            await emailService.sendEmail(user.email, 'FestLift — Новий тимчасовий пароль', html);
+        } catch (emailErr) {
+            console.warn('⚠️ Не вдалося надіслати email з паролем:', emailErr.message);
+        }
+
+        res.json({ success: true, message: 'Пароль скинуто', data: { temporaryPassword: rawPassword } });
+    } catch (error) {
+        console.error('❌ Помилка скидання пароля:', error);
+        res.status(500).json({ success: false, error: 'Помилка сервера' });
     }
 });
 

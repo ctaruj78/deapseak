@@ -841,7 +841,7 @@
                                     <small class="text-muted">Останній вхід: вчора</small>
                                 </div>
                             </div>
-                            <button class="btn btn-danger btn-sm mt-2">
+                            <button class="btn btn-danger btn-sm mt-2" onclick="if(confirm('Завершити всі активні сесії? Ви будете виведені з системи.')){localStorage.removeItem('authToken');localStorage.removeItem('userData');sessionStorage.clear();window.location.replace('/pages/auth/login.html');}">
                                 <i class="fas fa-sign-out-alt mr-1"></i>Завершити всі сесії
                             </button>
                         </div>
@@ -893,19 +893,19 @@
                         <div class="col-md-6">
                             <h5>Швидкі дії адміністратора</h5>
                             <div class="admin-actions">
-                                <a href="#" class="action-btn system">
+                                <a href="/pages/admin/settings.html" class="action-btn system">
                                     <i class="fas fa-cogs"></i>
                                     <span>Системні налаштування</span>
                                 </a>
-                                <a href="#" class="action-btn security">
+                                <a href="/pages/admin/settings.html" class="action-btn security">
                                     <i class="fas fa-shield-alt"></i>
                                     <span>Безпека системи</span>
                                 </a>
-                                <a href="#" class="action-btn backup">
+                                <a href="/pages/admin/settings.html" class="action-btn backup">
                                     <i class="fas fa-save"></i>
                                     <span>Резервне копіювання</span>
                                 </a>
-                                <a href="#" class="action-btn analytics">
+                                <a href="/pages/admin/analytics.html" class="action-btn analytics">
                                     <i class="fas fa-chart-bar"></i>
                                     <span>Análise</span>
                                 </a>
@@ -1014,13 +1014,13 @@
                             
                             <h5 class="mt-4">Exportar даних</h5>
                             <p class="text-muted">Exportarуйте всі ваші дані в JSON форматі</p>
-                            <button class="btn btn-outline-primary">
+                            <button class="btn btn-outline-primary" onclick="(function(){const data={user:JSON.parse(localStorage.getItem('userData')||'{}'),exported:new Date().toISOString()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='profile-export-'+Date.now()+'.json';a.click();})()">
                                 <i class="fas fa-download mr-2"></i>Exportarувати дані
                             </button>
                             
                             <h5 class="mt-4">Видалення облікового запису</h5>
                             <p class="text-danger">Цю дію неможливо скасувати. Всі ваші дані будуть видалені назавжди.</p>
-                            <button class="btn btn-outline-danger">
+                            <button class="btn btn-outline-danger" onclick="if(confirm('Видалити обліковий запис? Цю дію неможливо скасувати!')){if(confirm('Ви впевнені? Всі дані будуть видалені назавжди.')){const token=localStorage.getItem('authToken');fetch('/api/users/me',{method:'DELETE',headers:{Authorization:'Bearer '+token}}).then(()=>{localStorage.clear();sessionStorage.clear();window.location.replace('/pages/auth/login.html');}).catch(()=>{alert('Помилка видалення. Зверніться до адміністратора.');});}}">
                                 <i class="fas fa-trash mr-2"></i>Eliminar обліковий запис
                             </button>
                         </div>

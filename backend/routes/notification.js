@@ -1,6 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/notificationController');
+const { authenticate } = require('../middleware/auth');
+
+// GET /api/notifications — останні сповіщення (з авторизацією)
+router.get('/', authenticate, controller.getRecentNotifications);
+
+// PATCH /api/notifications/read-all — позначити всі як прочитані
+router.patch('/read-all', authenticate, controller.markAllRead);
 
 // MongoDB routes
 router.get('/mongo', controller.getAllNotificationsMongo);

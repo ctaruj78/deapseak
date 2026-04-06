@@ -694,12 +694,12 @@
                     <p class="mt-3">Наведіть камеру на QR-код інструменту</p>
                     <div class="form-group mt-3">
                         <label>Або введіть ID вручну:</label>
-                        <input type="text" class="form-control" placeholder="ID інструменту">
+                        <input type="text" id="scanToolIdInput" class="form-control" placeholder="ID інструменту">
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary">
+                    <button type="button" class="btn btn-primary" onclick="var id=document.getElementById('scanToolIdInput').value.trim();if(id){toolManager.viewTool(id);$('#scanToolModal').modal('hide');}else{alert('Введіть ID інструменту');}">
                         <i class="fas fa-search"></i> Знайти
                     </button>
                 </div>
@@ -772,7 +772,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary">
+                    <button type="button" class="btn btn-primary" onclick="toolManager.confirmCheckout()">
                         <i class="fas fa-check"></i> Підтвердити видачу
                     </button>
                 </div>

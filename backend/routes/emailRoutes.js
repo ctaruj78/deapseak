@@ -7,9 +7,9 @@ const { authorizeRoles } = require('../middleware/roleAuth');
 /**
  * @route   POST /api/send-email
  * @desc    Надіслати email (загальний endpoint)
- * @access  Private - Admin only
+ * @access  Private - Admin, Dispatcher
  */
-router.post('/send-email', authenticate, authorizeRoles('admin'), emailController.sendEmail);
+router.post('/send-email', authenticate, authorizeRoles('admin', 'dispatcher'), emailController.sendEmail);
 
 /**
  * @route   POST /api/send-password-email

@@ -55,8 +55,11 @@ router.put('/users/:id/role', authenticate, authorizeRoles('admin'), authControl
 // PATCH /api/auth/users/:id/role - Alias PATCH для сумісності
 router.patch('/users/:id/role', authenticate, authorizeRoles('admin'), authController.updateUserRole);
 
-// POST /api/auth/users/:id/reset-password - Скидання пароля адміністратором
-router.post('/users/:id/reset-password', authenticate, authorizeRoles('admin'), authController.adminResetUserPassword);
+// PUT /api/auth/users/:id - Оновлення даних користувача (admin + dispatcher)
+router.put('/users/:id', authenticate, authorizeRoles('admin', 'dispatcher'), authController.updateUserById);
+
+// POST /api/auth/users/:id/reset-password - Скидання пароля (admin + dispatcher)
+router.post('/users/:id/reset-password', authenticate, authorizeRoles('admin', 'dispatcher'), authController.adminResetUserPassword);
 
 // PATCH /api/auth/users/:id/ban - Блокування/розблокування користувача
 router.patch('/users/:id/ban', authenticate, authorizeRoles('admin'), authController.toggleUserBan);

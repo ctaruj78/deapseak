@@ -15,13 +15,13 @@
     
     <style>
         body { margin: 0; padding: 0; background: #f4f6f9; }
-        #map { height: calc(100vh - 120px); width: 100%; }
+        #map { height: calc(100vh - 80px); width: 100%; }
         .info-panel { 
             background: white; 
-            padding: 15px; 
-            margin: 10px; 
-            border-radius: 8px; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+            padding: 12px 15px; 
+            margin: 0;
+            border-bottom: 1px solid #dee2e6;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08); 
         }
         .loading { text-align: center; padding: 50px; }
     </style>
@@ -228,17 +228,97 @@
             }
         }
 
+        // Завантажити всі ліфти та показати загальну карту
+        async function loadAllLiftsMap() {
+            document.getElementById('taskInfo').innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-map text-primary"></i> Карта ліфтів</h5>
+                    <small class="text-muted">Натисніть на маркер для побудови маршруту</small>
+                </div>
+            `;
+
+            let lifts = [];
+            try {
+                const response = await AuthManager.fetchWithAuth('/api/lifts?limit=200');
+                if (response.ok) {
+                    const data = await response.json();
+                    lifts = data.data || data.lifts || data || [];
+                    if (!Array.isArray(lifts)) lifts = [];
+                }
+            } catch (e) {
+                console.warn('⚠️ Не вдалося завантажити ліфти:', e);
+            }
+
+            // Спробувати отримати геолокацію
+            let center = [38.7169, -9.1399]; // Лісабон за замовчуванням
+            let zoom = 12;
+            try {
+                await getUserLocation();
+                center = [userLocation.lat, userLocation.lng];
+            } catch (e) {
+                console.warn('⚠️ Геолокацію не отримано, використовується за замовчуванням');
+            }
+
+            map = L.map('map').setView(center, zoom);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
+
+            if (userLocation) {
+                L.marker([userLocation.lat, userLocation.lng], {
+                    icon: L.icon({
+                        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+                        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                        iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+                    })
+                }).addTo(map).bindPopup('📍 Ваша позиція');
+            }
+
+            const statusColor = {
+                'operational': 'green',
+                'maintenance': 'orange',
+                'out_of_service': 'red',
+                'inactive': 'grey'
+            };
+
+            lifts.forEach(lift => {
+                const lat = lift.location?.coordinates?.[1];
+                const lng = lift.location?.coordinates?.[0];
+                if (!lat || !lng) return;
+
+                const color = statusColor[lift.status] || 'grey';
+                const fullAddress = [lift.address?.street, lift.address?.city].filter(Boolean).join(', ');
+                const marker = L.marker([lat, lng], {
+                    icon: L.icon({
+                        iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
+                        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                        iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+                    })
+                }).addTo(map);
+
+                marker.bindPopup(`
+                    <b>${lift.model || 'Ліфт'} ${lift.municipalNumber ? '№' + lift.municipalNumber : ''}</b><br>
+                    ${fullAddress || ''}<br>
+                    <a href="/pages/tech/task-map.html?lift=${lift._id || lift.id}" class="btn btn-sm btn-primary mt-1" style="color:#fff">
+                        <i class="fas fa-route"></i> Маршрут
+                    </a>
+                `);
+            });
+
+            if (lifts.length > 0) {
+                console.log(`✅ Відображено ${lifts.length} ліфтів на карті`);
+            } else {
+                console.warn('⚠️ Ліфти не знайдено');
+            }
+        }
+
         // Ініціалізація
         (async function() {
             const liftId = getLiftId();
             
             if (!liftId) {
-                document.getElementById('taskInfo').innerHTML = `
-                    <div class="alert alert-danger">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        Помилка: не вказано ID ліфта
-                    </div>
-                `;
+                await loadAllLiftsMap();
                 return;
             }
 

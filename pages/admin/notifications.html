@@ -878,10 +878,19 @@
             toggleBulkActions();
         }
 
-        function bulkDelete() {
+        async function bulkDelete() {
             if (!confirm('Ви впевнені, що хочете видалити вибрані сповіщення?')) return;
 
             const selectedIds = getSelectedNotificationIds();
+            const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token');
+
+            await Promise.all(selectedIds.map(id =>
+                fetch(`/api/notifications/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }).catch(e => console.warn('Delete failed for', id, e.message))
+            ));
+
             selectedIds.forEach(id => {
                 const index = notifications.findIndex(n => n.id == id);
                 if (index !== -1) notifications.splice(index, 1);
@@ -918,10 +927,22 @@
             }
         });
 
-        $(document).on('click', '.delete-notification', function() {
+        $(document).on('click', '.delete-notification', async function() {
             if (!confirm('Ви впевнені, що хочете видалити це сповіщення?')) return;
 
             const id = $(this).data('id');
+            const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token');
+
+            try {
+                const resp = await fetch(`/api/notifications/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+            } catch (e) {
+                console.warn('API delete failed, removing locally only:', e.message);
+            }
+
             const index = notifications.findIndex(n => n.id == id);
             if (index !== -1) {
                 notifications.splice(index, 1);

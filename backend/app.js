@@ -13,6 +13,7 @@ const orcamentosRoutes = require('./routes/orcamentos');
 const technicianRoutes = require('./routes/technician');
 const reportsRoutes = require('./routes/reportsRoutes');
 const inspectionsRoutes = require('./routes/inspections');
+const notificationRoutes = require('./routes/notification');
 const websocketService = require('./services/websocketService');
 
 const app = express();
@@ -89,6 +90,7 @@ app.use('/api/orcamentos', orcamentosRoutes);
 app.use('/api/technicians', technicianRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/inspections', inspectionsRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 app.get('/', (req, res) => {
     res.json({
