@@ -3964,7 +3964,9 @@
 
     async function showClientFilterBanner(clientId) {
         try {
-            const token = localStorage.getItem('authToken') || localStorage.getItem('token') || '';
+            const token = (typeof AuthManager !== 'undefined' && AuthManager.getAuthToken())
+                || localStorage.getItem('liftmanager_jwt') || sessionStorage.getItem('liftmanager_jwt')
+                || localStorage.getItem('authToken') || localStorage.getItem('token') || '';
             const res = await fetch(`/api/users/${encodeURIComponent(clientId)}`, {
                 headers: token ? { 'Authorization': `Bearer ${token}` } : {}
             });
@@ -3989,7 +3991,11 @@
     // ── Збереження ліфта через API (викликається з enhanced-lift-modal.js) ──
     window.saveLiftToAPI = async function(liftData) {
         console.log('💾 saveLiftToAPI: збереження ліфта...', liftData);
-        const token = localStorage.getItem('authToken') || localStorage.getItem('token') || '';
+        const token = (typeof AuthManager !== 'undefined' && AuthManager.getAuthToken())
+            || localStorage.getItem('liftmanager_jwt')
+            || sessionStorage.getItem('liftmanager_jwt')
+            || localStorage.getItem('authToken')
+            || localStorage.getItem('token') || '';
         const response = await fetch('/api/lifts', {
             method: 'POST',
             headers: {
@@ -3998,7 +4004,8 @@
             },
             body: JSON.stringify(liftData)
         });
-        const result = await response.json();
+        let result = {};
+        try { result = await response.json(); } catch (_) {}
         if (!response.ok || result.success === false) {
             const msg = result.message || result.error || `HTTP ${response.status}`;
             console.error('❌ saveLiftToAPI помилка:', msg);
@@ -4263,11 +4270,12 @@
             const postalCode = address.zipCode || lift.postalCode || '';
             
             // Клієнт з populate
+            // Пріоритет: явно збережений clientName на ліфті → ім'я облікового запису
             const client = lift.client || {};
             const hasLinkedAccount = !!(client._id || client.email);
-            const clientName = client.firstName && client.lastName
-                ? `${client.firstName} ${client.lastName}`
-                : lift.clientName && lift.clientName !== 'Невказано' ? lift.clientName : 'Не вказано';
+            const _savedName = lift.clientName && lift.clientName !== 'Невказано' ? lift.clientName : '';
+            const _accountName = client.firstName && client.lastName ? `${client.firstName} ${client.lastName}` : '';
+            const clientName = _savedName || _accountName || 'Не вказано';
             const clientEmail = client.email || lift.clientEmail || lift.email || 'Не вказано';
             // Іконка-індикатор: якщо клієнт без акаунту — показуємо попередження
             const clientBadge = hasLinkedAccount
@@ -4582,10 +4590,11 @@
                 );
                 
                 // Клієнт з populate
+                // Пріоритет: явно збережене clientName → ім'я з облікового запису
                 const client = lift.client || {};
-                const clientName = client.firstName && client.lastName
-                    ? `${client.firstName} ${client.lastName}`
-                    : lift.clientName || 'Не вказано';
+                const _detailSavedName = lift.clientName && lift.clientName !== 'Невказано' ? lift.clientName : '';
+                const _detailAccountName = client.firstName && client.lastName ? `${client.firstName} ${client.lastName}` : '';
+                const clientName = _detailSavedName || _detailAccountName || 'Не вказано';
                 const clientEmail = client.email || lift.clientEmail || lift.email || 'Не вказано';
                 
                 $('#detail-client').text(clientName);
@@ -4873,12 +4882,11 @@
             $('#enhancedLiftLng').val(lng);
             
             // Клієнт
+            // Пріоритет: явно збережене clientName → ім'я з облікового запису → порожньо
             const client = lift.client || {};
-            $('#enhancedClientName').val(
-                client.firstName && client.lastName 
-                    ? `${client.firstName} ${client.lastName}` 
-                    : lift.clientName || ''
-            );
+            const savedClientName = lift.clientName && lift.clientName !== 'Невказано' ? lift.clientName : '';
+            const accountName = client.firstName && client.lastName ? `${client.firstName} ${client.lastName}` : '';
+            $('#enhancedClientName').val(savedClientName || accountName);
             $('#enhancedClientEmail').val(client.email || lift.clientEmail || lift.email || '');
             $('#enhancedClientPhone').val(client.phone || lift.clientPhone || lift.phone || '');
             $('#enhancedContactPerson').val(lift.contactPerson || '');
@@ -5353,10 +5361,11 @@
         }
         
         // Оновити таблицю — зберегти поточний пошук/фільтри
-        if (typeof applyAllFilters === 'function') {
-            applyAllFilters();
+        // window.applyAllFilters завжди доступна після DOMContentLoaded
+        if (typeof window.applyAllFilters === 'function') {
+            window.applyAllFilters();
         } else {
-            displayLiftsInTable(lifts);
+            displayLiftsInTable(window.allLiftsData || []);
         }
         
         alert('Ліфт успішно видалено');
@@ -6506,6 +6515,10 @@
             // Тільки таблиця показує відфільтровані дані
             updateLiftsStatistics(window.allLiftsData);
         }
+        
+        // ✅ Робимо applyAllFilters доступною глобально — щоб deleteLift та інші функції
+        // поза DOMContentLoaded могли викликати її напряму
+        window.applyAllFilters = applyAllFilters;
         
         if (statusFilter) {
             statusFilter.addEventListener('change', applyAllFilters);

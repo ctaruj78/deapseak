@@ -4510,7 +4510,9 @@
 
     async function showClientFilterBanner(clientId) {
         try {
-            const token = localStorage.getItem('authToken') || localStorage.getItem('token') || '';
+            const token = (typeof AuthManager !== 'undefined' && AuthManager.getAuthToken())
+                || localStorage.getItem('liftmanager_jwt') || sessionStorage.getItem('liftmanager_jwt')
+                || localStorage.getItem('authToken') || localStorage.getItem('token') || '';
             const res = await fetch(`/api/users/${encodeURIComponent(clientId)}`, {
                 headers: token ? { 'Authorization': `Bearer ${token}` } : {}
             });
@@ -4535,7 +4537,11 @@
     // ── Збереження ліфта через API (викликається з enhanced-lift-modal.js) ──
     window.saveLiftToAPI = async function(liftData) {
         console.log('💾 saveLiftToAPI: збереження ліфта...', liftData);
-        const token = localStorage.getItem('authToken') || localStorage.getItem('token') || '';
+        const token = (typeof AuthManager !== 'undefined' && AuthManager.getAuthToken())
+            || localStorage.getItem('liftmanager_jwt')
+            || sessionStorage.getItem('liftmanager_jwt')
+            || localStorage.getItem('authToken')
+            || localStorage.getItem('token') || '';
         const response = await fetch('/api/lifts', {
             method: 'POST',
             headers: {
@@ -4544,7 +4550,8 @@
             },
             body: JSON.stringify(liftData)
         });
-        const result = await response.json();
+        let result = {};
+        try { result = await response.json(); } catch (_) {}
         if (!response.ok || result.success === false) {
             const msg = result.message || result.error || `HTTP ${response.status}`;
             console.error('❌ saveLiftToAPI помилка:', msg);
