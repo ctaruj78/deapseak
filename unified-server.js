@@ -651,6 +651,37 @@ app.get('/api/inspections', authenticateToken, async (req, res) => {
     }
 });
 
+// GET next sequential inspection number
+app.get('/api/inspections/next-number', authenticateToken, async (req, res) => {
+    try {
+        if (!db) {
+            return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
+        }
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const prefix = `INSP-${yyyy}-${mm}-`;
+
+        const last = await db.collection('inspections')
+            .find({ numero: { $regex: `^${prefix}` } })
+            .sort({ numero: -1 })
+            .limit(1)
+            .toArray();
+
+        let seq = 1;
+        if (last.length > 0) {
+            const parts = last[0].numero.split('-');
+            const n = parseInt(parts[parts.length - 1], 10);
+            if (!isNaN(n)) seq = n + 1;
+        }
+        const numero = `${prefix}${String(seq).padStart(3, '0')}`;
+        res.json({ success: true, numero });
+    } catch (error) {
+        console.error('❌ Erro ao gerar número:', error);
+        res.status(500).json({ success: false, message: 'Erro ao gerar número', error: error.message });
+    }
+});
+
 // GET inspection by ID
 app.get('/api/inspections/:id', authenticateToken, async (req, res) => {
     try {
@@ -683,11 +714,24 @@ app.post('/api/inspections', authenticateToken, async (req, res) => {
         // Auto-generate report number if not provided
         let numero = req.body.numero || req.body.reportNumber;
         if (!numero) {
-            const yymm = now.toISOString().slice(0, 7).replace('-', ''); // e.g. 202604
-            const prefix = (req.body.visitType || req.body.type) === 'repair' ? 'REP' :
-                           (req.body.visitType || req.body.type) === 'emergency' ? 'EMG' : 'MNT';
-            const count = await db.collection('inspections').countDocuments();
-            numero = `${prefix}-${yymm}-${String(count + 1).padStart(3, '0')}`;
+            const yyyy = now.getFullYear();
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const visitType = req.body.visitType || req.body.type;
+            const prefixCode = visitType === 'repair' ? 'REP' :
+                               visitType === 'emergency' ? 'EMG' : 'INSP';
+            const prefix = `${prefixCode}-${yyyy}-${mm}-`;
+            const last = await db.collection('inspections')
+                .find({ numero: { $regex: `^${prefix}` } })
+                .sort({ numero: -1 })
+                .limit(1)
+                .toArray();
+            let seq = 1;
+            if (last.length > 0) {
+                const parts = last[0].numero.split('-');
+                const n = parseInt(parts[parts.length - 1], 10);
+                if (!isNaN(n)) seq = n + 1;
+            }
+            numero = `${prefix}${String(seq).padStart(3, '0')}`;
         }
         const doc = {
             numero,

@@ -51,6 +51,17 @@ router.post('/', auth, async (req, res) => {
     }
 });
 
+// GET /api/inspections/next-number — gerar próximo número sequencial
+router.get('/next-number', auth, async (req, res) => {
+    try {
+        const numero = await Inspection.gerarNumero();
+        res.json({ success: true, numero });
+    } catch (error) {
+        console.error('❌ Erro ao gerar número:', error);
+        res.status(500).json({ success: false, message: 'Erro ao gerar número', error: error.message });
+    }
+});
+
 // GET /api/inspections — listar inspecções (com filtros opcionais)
 router.get('/', auth, async (req, res) => {
     try {

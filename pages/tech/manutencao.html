@@ -1281,11 +1281,29 @@
             },
 
             generateInspectionNumber() {
-                const year = new Date().getFullYear();
-                const month = String(new Date().getMonth() + 1).padStart(2, '0');
-                const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-                const number = `INSP-${year}-${month}-${random}`;
-                $('#inspectionNumber').val(number);
+                const token = localStorage.getItem('liftmanager_jwt') ||
+                              localStorage.getItem('authToken') ||
+                              localStorage.getItem('token');
+                $.ajax({
+                    url: '/api/inspections/next-number',
+                    method: 'GET',
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+                    success: (data) => {
+                        if (data.success && data.numero) {
+                            $('#inspectionNumber').val(data.numero);
+                        } else {
+                            // fallback local sequencial por mês
+                            const year = new Date().getFullYear();
+                            const month = String(new Date().getMonth() + 1).padStart(2, '0');
+                            $('#inspectionNumber').val(`INSP-${year}-${month}-001`);
+                        }
+                    },
+                    error: () => {
+                        const year = new Date().getFullYear();
+                        const month = String(new Date().getMonth() + 1).padStart(2, '0');
+                        $('#inspectionNumber').val(`INSP-${year}-${month}-001`);
+                    }
+                });
             },
 
             handlePhotoUpload(e) {

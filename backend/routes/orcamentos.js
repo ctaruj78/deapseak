@@ -1189,4 +1189,61 @@ router.post('/:id/unarchive', authenticate, authorizeRoles('admin'), async (req,
     }
 });
 
+// PATCH /api/orcamentos/:id/link-lift - Vincular/desvincular orçamento a um elevador
+router.patch('/:id/link-lift', authenticate, authorizeRoles('admin', 'dispatcher'), async (req, res) => {
+    try {
+        const orcamento = await Orcamento.findById(req.params.id);
+        if (!orcamento) {
+            return res.status(404).json({ success: false, message: 'Orçamento não encontrado' });
+        }
+
+        const { liftId } = req.body;
+
+        if (!liftId) {
+            // Desvincular
+            orcamento.liftId = null;
+            orcamento.liftAddress = null;
+            await orcamento.save();
+            return res.json({ success: true, message: 'Orçamento desvinculado do elevador', liftId: null, liftAddress: null });
+        }
+
+        // Buscar dados do lift
+        const db = mongoose.connection.db;
+        const { ObjectId } = mongoose.Types;
+        let liftObjectId;
+        try {
+            liftObjectId = new ObjectId(liftId);
+        } catch (e) {
+            return res.status(400).json({ success: false, message: 'liftId inválido' });
+        }
+
+        const lift = await db.collection('lifts').findOne({ _id: liftObjectId });
+        if (!lift) {
+            return res.status(404).json({ success: false, message: 'Elevador não encontrado' });
+        }
+
+        const addr = lift.address || {};
+        const liftAddress = typeof addr === 'string'
+            ? addr
+            : [addr.street, addr.zipCode, addr.city].filter(Boolean).join(', ');
+
+        orcamento.liftId = liftObjectId;
+        orcamento.liftAddress = liftAddress;
+        await orcamento.save();
+
+        console.log(`🔗 Orçamento ${orcamento.numero} vinculado ao elevador ${lift.municipalNumber || liftId}`);
+
+        res.json({
+            success: true,
+            message: `Orçamento vinculado ao elevador ${lift.municipalNumber || ''}`,
+            liftId: liftObjectId,
+            liftAddress,
+            municipalNumber: lift.municipalNumber || null
+        });
+    } catch (error) {
+        console.error('Erro ao vincular orçamento a elevador:', error);
+        res.status(500).json({ success: false, message: 'Erro ao vincular', error: error.message });
+    }
+});
+
 module.exports = router;
