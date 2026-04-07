@@ -784,7 +784,7 @@ class ClientManager {
                             ? [lift.address.street, lift.address.city].filter(Boolean).join(', ')
                             : (lift.address || '');
                         return `
-                        <a href="#" onclick="event.preventDefault();clientManager._openLiftPage('${lift._id}','${this.userRole}')" class="list-group-item list-group-item-action" style="cursor: pointer;">
+                        <a href="#" onclick="event.preventDefault();clientManager._openLiftPage('${lift._id}')" class="list-group-item list-group-item-action" style="cursor: pointer;">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <strong><i class="fas fa-elevator text-primary"></i> ${lift.municipalNumber || 'Без номера'}</strong>
@@ -819,10 +819,65 @@ class ClientManager {
         }
     }
     
-    // Відкриття конкретного ліфта на відповідній сторінці за роллю
-    _openLiftPage(liftId, role) {
+    // Показати повну модалку деталей ліфта через iframe (з картою, звітами, orcamentos)
+    _openLiftPage(liftId) {
+        const role = this.userRole;
         const base = role === 'admin' ? '/pages/admin/lifts.html' : '/pages/dispatcher/lifts.html';
-        window.location.href = `${base}?openLift=${liftId}`;
+        const src = `${base}?openLift=${encodeURIComponent(liftId)}&embed=1`;
+
+        // Видаляємо попередній оверлей якщо є
+        document.getElementById('liftIframeOverlay')?.remove();
+
+        // Простий div-оверлей без Bootstrap modal — щоб не дублювати backdrop
+        // Всередині iframe Bootstrap modal (#liftDetailsModal) сам показує свій backdrop
+        const overlay = document.createElement('div');
+        overlay.id = 'liftIframeOverlay';
+        // z-index 2000: вище за всі Bootstrap modals (1050) та їхні backdrop (1040)
+        Object.assign(overlay.style, {
+            position: 'fixed',
+            top: '0', left: '0',
+            width: '100%', height: '100%',
+            zIndex: '2000',
+            background: 'rgba(0,0,0,0.55)',
+            display: 'flex',
+            alignItems: 'flex-start',
+            justifyContent: 'center',
+            overflowY: 'auto',
+            paddingTop: '20px'
+        });
+        overlay.innerHTML = `<iframe id="liftIframeContent" src="${src}"
+            style="width:96vw;max-width:1400px;height:90vh;border:none;display:block;border-radius:8px;background:#fff;"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox">
+        </iframe>`;
+        // Клік на тьмяний фон (поза iframe) закриває оверлей
+        overlay.addEventListener('click', function(e) {
+            if (e.target === overlay) {
+                overlay.remove();
+                window.removeEventListener('message', msgHandler);
+                document.removeEventListener('keydown', escHandler);
+            }
+        });
+        document.body.appendChild(overlay);
+
+        // Слухаємо postMessage від iframe — коли закрили #liftDetailsModal всередині
+        const msgHandler = (e) => {
+            if (e.data && e.data.type === 'liftModalClosed') {
+                overlay.remove();
+                window.removeEventListener('message', msgHandler);
+                document.removeEventListener('keydown', escHandler);
+            }
+        };
+        window.addEventListener('message', msgHandler);
+
+        // ESC на батьківській сторінці прибирає оверлей
+        const escHandler = (e) => {
+            if (e.key === 'Escape') {
+                overlay.remove();
+                window.removeEventListener('message', msgHandler);
+                document.removeEventListener('keydown', escHandler);
+            }
+        };
+        document.addEventListener('keydown', escHandler);
     }
 
     // Перегляд всіх ліфтів клієнта (перехід на сторінку ліфтів з фільтром)

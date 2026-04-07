@@ -2944,6 +2944,24 @@
                     }
                 },
                 
+                // Перемикання режиму перегляду архіву
+                toggleArchiveView: function() {
+                    if (window.dispatcherManager) {
+                        window.dispatcherManager.toggleArchiveView();
+                    } else {
+                        alert('Помилка: менеджер не ініціалізовано');
+                    }
+                },
+
+                // Відновити заявку з архіву
+                unarchiveFromModal: async function() {
+                    if (window.dispatcherManager) {
+                        await window.dispatcherManager.unarchiveFromModal();
+                    } else {
+                        alert('Помилка: менеджер не ініціалізовано');
+                    }
+                },
+
                 // Архівувати заявку з модального вікна
                 archiveFromModal: async function() {
                     if (window.dispatcherManager) {

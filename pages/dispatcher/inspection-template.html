@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manutenção Mensal - Диспетчер</title>
+    <script src="../../assets/js/global-settings.js"></script>
+    <script src="../../assets/js/auth.js"></script>
+    <!-- Inspection template engine -->
+    <script src="../../assets/js/inspection-templates.js"></script>
+    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    
+    <style>
+        .inspection-checklist {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .checklist-item {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        .checklist-item:last-child {
+            border-bottom: none;
+        }
+        .status-indicator {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        .status-ok { background-color: #28a745; }
+        .status-warning { background-color: #ffc107; }
+        .status-error { background-color: #dc3545; }
+        .status-na { background-color: #6c757d; }
+        
+        .inspection-photo {
+            max-width: 200px;
+            max-height: 150px;
+            object-fit: cover;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        @media print {
+            .no-print { display: none !important; }
+            .inspection-checklist { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed" data-required-role="dispatcher">
+    <div class="wrapper">
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light no-print">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="dashboard.html" class="nav-link">Головна</a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="inspection-template.html" class="nav-link active">Manutenção</a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="logout()" title="Вийти">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Sidebar Placeholder -->
+        <div id="sidebar-placeholder"></div>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <!-- Content Header -->
+            <div class="content-header no-print">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">Relatórios de Manutenção</h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="dashboard.html">Головна</a></li>
+                                <li class="breadcrumb-item active">Manutenção</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <section class="content">
+                <div class="container-fluid">
+                    <!-- Inspection Form -->
+                    <div class="row no-print">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Relatório de Manutenção Mensal</h3>
+                                    <div class="card-tools">
+                                        <button class="btn btn-success btn-sm" onclick="saveInspection()">
+                                            <i class="fas fa-save"></i> Guardar
+                                        </button>
+                                        <button class="btn btn-info btn-sm" onclick="loadTemplate()">
+                                            <i class="fas fa-file-import"></i> Carregar modelo
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <form id="inspectionForm">
+                                        <!-- ── Linha 0: Tipo de visita + tipo de ascensor (geração dinâmica de checklist) ── -->
+                                        <div class="row mb-3">
+                                            <div class="col-md-4">
+                                                <div class="form-group mb-0">
+                                                    <label for="visitType"><i class="fas fa-clipboard-list text-primary"></i> Tipo de Visita *</label>
+                                                    <select class="form-control" id="visitType" onchange="refreshChecklist()">
+                                                        <option value="maintenance" selected>🗓️ Manutenção Mensal (Obrigatória)</option>
+                                                        <option value="quarterly">🔍 Revisão Trimestral</option>
+                                                        <option value="annual">⭐ Revisão Anual / Periódica</option>
+                                                        <option value="pre_inspection">📋 Preparação para Inspeção OI</option>
+                                                        <option value="repair">🔧 Reparação</option>
+                                                        <option value="emergency">🚨 Intervenção de Emergência</option>
+                                                    </select>
+                                                    <small class="form-text text-info"><i class="fas fa-info-circle"></i> DL 320/2002 Art. 5.º — periodicidade mínima mensal obrigatória</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group mb-0">
+                                                    <label for="driveType"><i class="fas fa-cogs text-secondary"></i> Tipo de Acçionamento *</label>
+                                                    <select class="form-control" id="driveType" onchange="refreshChecklist()">
+                                                        <option value="traction">⚙️ Elétrico c/ Casa das Máquinas</option>
+                                                        <option value="traction_mrl">🔌 Elétrico MRL (s/ Casa das Máquinas)</option>
+                                                        <option value="hydraulic">💧 Hidráulico</option>
+                                                        <option value="goods">📦 Monta-cargas (só bens)</option>
+                                                        <option value="platform">♿ Plataforma Elevatória</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group mb-0">
+                                                    <label for="doorType"><i class="fas fa-door-open text-info"></i> Tipo de Porta *</label>
+                                                    <select class="form-control" id="doorType" onchange="refreshChecklist()">
+                                                        <option value="automatic">🔄 Automáticas (operador)</option>
+                                                        <option value="swing">🚪 Batentes / Semi-automáticas</option>
+                                                        <option value="gate">🔲 Portões de Rede / Guilhotina</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Normas aplicáveis (banner dinâmico) -->
+                                        <div id="normBanner" class="alert alert-light border mb-3">
+                                            <div id="normBannerContent"></div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="inspectionNumber">Nº da Manutenção</label>
+                                                    <input type="text" class="form-control" id="inspectionNumber" placeholder="MANU-2025-001" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="inspectionDate">Data da Manutenção</label>
+                                                    <input type="date" class="form-control" id="inspectionDate" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="inspector">Técnico Responsável</label>
+                                                    <input type="text" class="form-control" id="inspector" placeholder="Nome completo do técnico" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="liftLocation">Localização do Ascensor</label>
+                                                    <input type="text" class="form-control" id="liftLocation" placeholder="Morada, edifício, entrada" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="liftModel">Modelo do Ascensor</label>
+                                                    <input type="text" class="form-control" id="liftModel" placeholder="Fabricante e modelo">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="clientEmail">Email do Cliente <small class="text-muted">(para envio do relatório)</small></label>
+                                                    <input type="email" class="form-control" id="clientEmail" placeholder="cliente@email.pt">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Inspection Checklist (dynamic) -->
+                    <div class="row no-print">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title" id="checklistTitle">
+                                        <i class="fas fa-tasks text-primary mr-1"></i>
+                                        Lista de Verificação Normativa
+                                    </h3>
+                                    <span class="badge badge-danger ml-2" id="criticalErrorBadge" style="display:none;">0 CRÍTICOS</span>
+                                    <small class="text-muted ml-2" id="checklistProgress"></small>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Placeholder before type selectors chosen -->
+                                    <div id="checklistPlaceholder" class="text-center py-4 text-muted" style="display:none;">
+                                        <i class="fas fa-hand-point-up fa-2x mb-2"></i>
+                                        <p>Selecione o <strong>Tipo de Visita</strong>, <strong>Tipo de Accionamento</strong> e <strong>Tipo de Porta</strong><br>para gerar a lista normativa.</p>
+                                    </div>
+                                    <!-- Container generated by INSPECTION_TEMPLATES.renderChecklist() -->
+                                    <div id="inspectionChecklist"></div>
+
+                                    <div class="mt-4">
+                                        <h5><i class="fas fa-camera"></i> Documentação Fotográfica</h5>
+                                        <div class="form-group">
+                                            <input type="file" class="form-control-file" id="inspectionPhotos" multiple accept="image/*">
+                                            <small class="form-text text-muted">Adicione fotos para documentar a manutenção</small>
+                                        </div>
+                                        <div id="photoPreview" class="mt-3"></div>
+                                    </div>
+
+                                    <!-- General Comments -->
+                                    <div class="mt-4">
+                                        <h5><i class="fas fa-comments"></i> Observações Gerais</h5>
+                                        <textarea class="form-control" id="generalComments" rows="4" placeholder="Observações gerais, recomendações, informações adicionais..."></textarea>
+                                    </div>
+
+                                    <!-- Recommendations -->
+                                    <div class="mt-4">
+                                        <h5><i class="fas fa-exclamation-triangle text-warning"></i> Recomendações</h5>
+                                        <textarea class="form-control" id="recommendations" rows="3" placeholder="Recomendações para correção de problemas identificados..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Inspection Report Preview -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header no-print">
+                                    <h3 class="card-title">Pré-visualização do Relatório</h3>
+                                    <div class="card-tools">
+                                        <button class="btn btn-primary btn-sm" onclick="printReport()">
+                                            <i class="fas fa-print"></i> Imprimir
+                                        </button>
+                                        <button class="btn btn-success btn-sm" onclick="downloadPDF()">
+                                            <i class="fas fa-download"></i> PDF
+                                        </button>
+                                        <button class="btn btn-info btn-sm" onclick="sendReport()">
+                                            <i class="fas fa-envelope"></i> Enviar
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div id="inspectionReport">
+                                        <!-- Report header -->
+                                        <div class="text-center mb-4">
+                                            <h2>RELATÓRIO DE MANUTENÇÃO MENSAL</h2>
+                                            <p><strong>FestLift - Elevadores e Serviços, Lda.</strong></p>
+                                            <p><small>☎ +351 214 190 863 | +351 926 380 243/244 | info@festlift.pt</small></p>
+                                        </div>
+
+                                        <!-- Report info -->
+                                        <div class="row mb-4">
+                                            <div class="col-md-6">
+                                                <table class="table table-sm">
+                                                    <tr><td><strong>Nº da Manutenção:</strong></td><td id="reportInspectionNumber">MANU-2025-001</td></tr>
+                                                    <tr><td><strong>Data da Manutenção:</strong></td><td id="reportInspectionDate"></td></tr>
+                                                    <tr><td><strong>Técnico Responsável:</strong></td><td id="reportInspector"></td></tr>
+                                                </table>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <table class="table table-sm">
+                                                    <tr><td><strong>Localização:</strong></td><td id="reportLiftLocation"></td></tr>
+                                                    <tr><td><strong>Modelo do Ascensor:</strong></td><td id="reportLiftModel"></td></tr>
+                                                    <tr><td><strong>Email do Cliente:</strong></td><td id="reportClientEmail"></td></tr>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                        <!-- Checklist results -->
+                                        <div class="mb-4">
+                                            <h4>Resultados da Manutenção</h4>
+                                            <div id="reportChecklist">
+                                                <!-- Dynamic content will be inserted here -->
+                                            </div>
+                                        </div>
+
+                                        <!-- Photos -->
+                                        <div class="mb-4">
+                                            <h4>Documentação Fotográfica</h4>
+                                            <div id="reportPhotos">
+                                                <!-- Photos will be inserted here -->
+                                            </div>
+                                        </div>
+
+                                        <!-- Comments and recommendations -->
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h5>Observações Gerais</h5>
+                                                <p id="reportGeneralComments">Sem observações</p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h5>Recomendações</h5>
+                                                <p id="reportRecommendations">Sem recomendações</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Histórico de Inspecções Guardadas -->
+                    <div class="row no-print mt-3">
+                        <div class="col-12">
+                            <div class="card card-outline card-primary">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-database mr-1"></i> Relatórios Guardados na Base de Dados</h3>
+                                    <div class="card-tools">
+                                        <button class="btn btn-default btn-sm" onclick="loadInspectionHistory()">
+                                            <i class="fas fa-sync-alt"></i> Actualizar
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div id="inspectionHistoryLoading" class="p-3 text-muted" style="display:none"><i class="fas fa-spinner fa-spin"></i> A carregar...</div>
+                                    <table class="table table-sm table-hover mb-0" id="inspectionHistoryTable">
+                                        <thead class="bg-light">
+                                            <tr>
+                                                <th>Número</th>
+                                                <th>Data</th>
+                                                <th>Técnico</th>
+                                                <th>Localização</th>
+                                                <th>Estado</th>
+                                                <th class="text-right">Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="inspectionHistoryBody">
+                                            <tr><td colspan="6" class="text-center text-muted p-3">Clique em "Actualizar" para carregar.</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer class="main-footer">
+            <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
+            Sistema de gestão de elevadores v2.1.0.
+            <div class="float-right d-none d-sm-inline-block">
+                <b>Versão</b> 2.1.0
+            </div>
+        </footer>
+    </div>
+
+    <!-- jQuery -->
+    <script src="../../plugins/jquery/jquery.min.js"></script>
+    <!-- Bootstrap -->
+    <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+    <!-- AdminLTE -->
+    <script src="../../plugins/adminlte/adminlte.min.js"></script>
+
+    <script src="../../assets/js/sidebar-init.js"></script>
+
+    <!-- Initialize AdminLTE Components -->
+    <script>
+        $(document).ready(function() {
+            loadSidebarWithInit("includes/sidebar.html");
+        });
+    </script>
+
+    <script>
+        // Inspection management
+        const inspectionManager = {
+            init() {
+                // Set current date
+                const today = new Date().toISOString().split('T')[0];
+                $('#inspectionDate').val(today);
+
+                // Generate inspection number
+                this.generateInspectionNumber();
+
+                // Bind events
+                this.bindEvents();
+
+                // Generate initial checklist (maintenance + traction + automatic by default)
+                refreshChecklist();
+
+                // Update report preview
+                this.updateReportPreview();
+            },
+
+            bindEvents() {
+                const self = this;
+                
+                // Type selector dropdowns trigger dynamic checklist refresh
+                $('#visitType, #driveType, #doorType').on('change', function() {
+                    refreshChecklist();
+                });
+
+                // Update report on form change
+                $('#inspectionForm input, #inspectionForm textarea').on('input change', function() {
+                    self.updateReportPreview();
+                });
+                
+                // Update on checklist changes
+                $(document).on('change', '.checklist-status', function() {
+                    self.updateReportPreview();
+                    updateChecklistStats();
+                });
+                
+                $(document).on('input change', '.checklist-comment', function() {
+                    self.updateReportPreview();
+                });
+                
+                $('#generalComments, #recommendations').on('input change', function() {
+                    self.updateReportPreview();
+                });
+                
+                // Handle photo uploads
+                $('#inspectionPhotos').on('change', function(e) {
+                    self.handlePhotoUpload(e);
+                });
+            },
+
+            generateInspectionNumber() {
+                const year = new Date().getFullYear();
+                const month = String(new Date().getMonth() + 1).padStart(2, '0');
+                const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+                const number = `INSP-${year}-${month}-${random}`;
+                $('#inspectionNumber').val(number);
+            },
+
+            updateReportPreview() {
+                // Update basic info
+                $('#reportInspectionNumber').text($('#inspectionNumber').val());
+                $('#reportInspectionDate').text($('#inspectionDate').val());
+                $('#reportInspector').text($('#inspector').val());
+                $('#reportLiftLocation').text($('#liftLocation').val());
+                $('#reportLiftModel').text($('#liftModel').val());
+                $('#reportClientEmail').text($('#clientEmail').val() || '—');
+                $('#reportGeneralComments').text($('#generalComments').val() || 'Sem observações');
+                $('#reportRecommendations').text($('#recommendations').val() || 'Sem recomendações');
+
+                // Update checklist results
+                this.updateChecklistReport();
+            },
+
+            updateChecklistReport() {
+                const reportChecklist = $('#reportChecklist');
+                reportChecklist.empty();
+
+                // Works with dynamic .inspection-section (inspection-templates.js)
+                $('#inspectionChecklist .inspection-section').each(function() {
+                    const sectionTitle = $(this).find('.section-header strong').text().trim();
+                    let sectionItems = '';
+                    let hasItems = false;
+
+                    $(this).find('.checklist-item').each(function() {
+                        const itemName = $(this).find('.item-label').text().trim();
+                        const norm = $(this).find('.item-norm').text().trim();
+                        const status = $(this).find('.checklist-status').val();
+                        const comment = $(this).find('.checklist-comment').val();
+                        
+                        if (!status && !comment) return;
+                        hasItems = true;
+                        
+                        const icons = { ok: '✓', warning: '⚠', error: '✗', na: 'N/A', '': '--', yes: '✓ Sim', no: '✗ Não' };
+                        const classes = { ok: 'text-success', warning: 'text-warning', error: 'text-danger', na: 'text-muted', '': 'text-secondary', yes: 'text-success', no: 'text-danger' };
+                        const icon = icons[status] || (status || '--');
+                        const cls = classes[status] || 'text-secondary';
+
+                        sectionItems += `<li><span class="${cls}"><strong>${icon}</strong></span> ${itemName}`;
+                        if (norm) sectionItems += ` <small class="text-muted">(${norm})</small>`;
+                        if (comment) sectionItems += ` — <em>${comment}</em>`;
+                        sectionItems += '</li>';
+                    });
+
+                    if (hasItems) {
+                        reportChecklist.append(`<h6>${sectionTitle}</h6><ul>${sectionItems}</ul>`);
+                    }
+                });
+                
+                if (reportChecklist.children().length === 0) {
+                    reportChecklist.html('<p class="text-muted"><em>Nenhum item verificado ainda</em></p>');
+                }
+            },
+
+            handlePhotoUpload(e) {
+                const files = e.target.files;
+                const photoPreview = $('#photoPreview');
+                const reportPhotos = $('#reportPhotos');
+                
+                photoPreview.empty();
+                reportPhotos.empty();
+
+                Array.from(files).forEach((file, index) => {
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const img = `<img src="${e.target.result}" class="inspection-photo" alt="Foto de manutenção ${index + 1}">`;
+                            photoPreview.append(img);
+                            reportPhotos.append(img);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            },
+
+            async saveInspection() {
+                const numero = $('#inspectionNumber').val();
+                const inspector = $('#inspector').val();
+                const liftLocation = $('#liftLocation').val();
+
+                if (!inspector || !liftLocation) {
+                    alert('⚠️ Preencha o técnico responsável e a localização.');
+                    return;
+                }
+
+                const inspectionData = {
+                    numero: numero,
+                    data: $('#inspectionDate').val(),
+                    inspector: inspector,
+                    liftLocation: liftLocation,
+                    liftModel: $('#liftModel').val(),
+                    clientEmail: $('#clientEmail').val(),
+                    checklist: this.getChecklistData(),
+                    generalComments: $('#generalComments').val(),
+                    recommendations: $('#recommendations').val()
+                };
+
+                // Guardar na base de dados
+                try {
+                    const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken');
+                    const response = await fetch('/api/inspections', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                        },
+                        body: JSON.stringify(inspectionData)
+                    });
+                    const result = await response.json();
+
+                    if (result.success) {
+                        // Actualizar número se foi gerado automaticamente
+                        if (result.inspection.numero && !numero) {
+                            $('#inspectionNumber').val(result.inspection.numero);
+                        }
+                        // Guardar também em localStorage como cache local
+                        const saved = JSON.parse(localStorage.getItem('inspections') || '[]');
+                        saved.unshift({ ...inspectionData, _id: result.inspection._id, numero: result.inspection.numero });
+                        localStorage.setItem('inspections', JSON.stringify(saved.slice(0, 50)));
+
+                        alert(`✅ Manutenção ${result.inspection.numero} guardada com sucesso na base de dados!`);
+                    } else {
+                        throw new Error(result.message || 'Erro desconhecido');
+                    }
+                } catch (error) {
+                    console.error('❌ Erro ao guardar na BD, usando localStorage:', error);
+                    // Fallback: guardar só em localStorage
+                    const saved = JSON.parse(localStorage.getItem('inspections') || '[]');
+                    saved.unshift({ ...inspectionData, timestamp: new Date().toISOString() });
+                    localStorage.setItem('inspections', JSON.stringify(saved.slice(0, 50)));
+                    alert('⚠️ Guardado localmente (sem ligação ao servidor). Sincronize quando online.');
+                }
+            },
+
+            getChecklistData() {
+                const checklist = {};
+                $('.checklist-item').each(function() {
+                    const itemId = $(this).data('item');
+                    const status = $(this).find('.checklist-status').val();
+                    const comment = $(this).find('.checklist-comment').val();
+                    // Include the human-readable label so the PDF can display it correctly
+                    const label = $(this).find('.item-label').text().trim();
+                    checklist[itemId] = { status, comment, label };
+                });
+                return checklist;
+            },
+
+            loadTemplate() {
+                // Load a predefined inspection template
+                $('#inspector').val('João Silva');
+                $('#liftLocation').val('Rua Principal, 10, Entrada 1');
+                $('#liftModel').val('OTIS Gen2');
+                $('#clientEmail').val('cliente@exemplo.pt');
+                $('#generalComments').val('Realizada manutenção mensal do equipamento de elevação conforme requisitos de segurança. Equipamento em bom estado geral.');
+                $('#recommendations').val('Recomenda-se a substituição de componentes desgastados no prazo de 30 dias. Atenção especial ao sistema de travagem.');
+                
+                // Preencher alguns itens do checklist como exemplo
+                $('[data-item="para-quedas"] select').val('ok');
+                $('[data-item="para-quedas"] input').val('Sistema funcional, testado com sucesso');
+                
+                $('[data-item="emergency-brake"] select').val('ok');
+                $('[data-item="emergency-brake"] input').val('Travão operacional');
+                
+                $('[data-item="alarme"] select').val('warning');
+                $('[data-item="alarme"] input').val('Volume do alarme baixo - recomenda-se verificação');
+                
+                $('[data-item="door-locks"] select').val('ok');
+                
+                $('[data-item="cables"] select').val('ok');
+                $('[data-item="cables"] input').val('Cabos em bom estado, sem desgaste visível');
+                
+                $('[data-item="motor"] select').val('ok');
+                
+                $('[data-item="electric-panel"] select').val('error');
+                $('[data-item="electric-panel"] input').val('URGENTE: Contactores com sinais de sobreaquecimento - substituir imediatamente');
+                
+                this.updateReportPreview();
+            },
+
+            printReport() {
+                // Compatibilidade macOS Safari: usar iframe em vez de window.print() directo
+                const reportEl = document.getElementById('inspectionReport');
+                if (!reportEl) { window.print(); return; }
+
+                const printFrame = document.createElement('iframe');
+                printFrame.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:0;height:0;border:0;';
+                document.body.appendChild(printFrame);
+
+                const pw = printFrame.contentWindow || printFrame.contentDocument;
+                const pdoc = pw.document || pw;
+                pdoc.open();
+                pdoc.write(`<!DOCTYPE html><html lang="pt"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Relatório de Manutenção</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; color: #222; }
+  h2 { color: #1a3a6b; } h3, h4, h5 { color: #1a3a6b; }
+  table { width:100%; border-collapse:collapse; margin-bottom:12px; }
+  td, th { border:1px solid #ccc; padding:6px 10px; font-size:12px; }
+  th { background:#1a3a6b; color:#fff; }
+  .text-center { text-align:center; }
+  .text-success { color:#28a745; } .text-warning { color:#e67e00; }
+  .text-danger { color:#dc3545; } .text-muted { color:#888; }
+  @media print { @page { size: A4; margin: 15mm; } }
+</style>
+</head><body>${reportEl.innerHTML}</body></html>`);
+                pdoc.close();
+
+                printFrame.onload = () => {
+                    setTimeout(() => {
+                        pw.focus();
+                        pw.print();
+                        setTimeout(() => document.body.removeChild(printFrame), 1000);
+                    }, 300);
+                };
+            },
+
+            async downloadPDF() {
+                const token = localStorage.getItem('liftmanager_jwt') ||
+                              localStorage.getItem('authToken') ||
+                              localStorage.getItem('token');
+                if (!token) {
+                    alert('Sessão expirada. Por favor, faça login novamente.');
+                    return;
+                }
+
+                const btn = document.querySelector('[onclick="downloadPDF()"]');
+                const origHtml = btn ? btn.innerHTML : '';
+                if (btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A gerar...';
+
+                try {
+                    const reportData = {
+                        inspectionNumber: $('#inspectionNumber').val(),
+                        inspectionDate: $('#inspectionDate').val(),
+                        inspector: $('#inspector').val(),
+                        liftLocation: $('#liftLocation').val(),
+                        liftModel: $('#liftModel').val(),
+                        liftSerial: $('#liftSerial').val() || '',
+                        clientName: $('#clientName').val() || '',
+                        clientEmail: $('#clientEmail').val(),
+                        visitType: $('#visitType').val() || 'maintenance',
+                        driveType: $('#driveType').val() || 'traction',
+                        doorType: $('#doorType').val() || 'automatic',
+                        checklist: this.getChecklistData(),
+                        generalComments: $('#generalComments').val(),
+                        recommendations: $('#recommendations').val()
+                    };
+
+                    const response = await fetch('/api/inspections/download-pdf', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(reportData)
+                    });
+
+                    if (!response.ok) {
+                        const err = await response.json().catch(() => ({}));
+                        throw new Error(err.message || `Erro ${response.status}`);
+                    }
+
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    const num = reportData.inspectionNumber || 'MANU';
+                    const filename = `Relatorio_${num.replace(/[\\/]/g, '-')}.pdf`;
+
+                    // Funciona em iOS, Android e macOS Safari
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    a.style.display = 'none';
+                    document.body.appendChild(a);
+                    a.click();
+                    setTimeout(() => { URL.revokeObjectURL(url); document.body.removeChild(a); }, 1500);
+
+                } catch (error) {
+                    console.error('Erro ao gerar PDF:', error);
+                    alert('Erro ao gerar PDF: ' + error.message);
+                } finally {
+                    if (btn) btn.innerHTML = origHtml;
+                }
+            },
+
+            async sendReport() {
+                // Usar email do cliente preenchido no formulário, ou pedir se estiver vazio
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                let email = $('#clientEmail').val().trim();
+                if (!email || !emailRegex.test(email)) {
+                    email = prompt('Email do cliente não preenchido. Digite o email para enviar o relatório:');
+                    if (!email) return;
+                    if (!emailRegex.test(email)) {
+                        alert('Email inválido. Por favor, tente novamente.');
+                        return;
+                    }
+                    // Preenche o campo para ficar guardado
+                    $('#clientEmail').val(email);
+                    inspectionManager.updateReportPreview();
+                }
+                
+                const confirmed = confirm(`Enviar relatório para: ${email}?`);
+                if (!confirmed) return;
+                
+                try {
+                    // Recolher dados do relatório (todos os campos para o PDF)
+                    const reportData = {
+                        inspectionNumber: $('#inspectionNumber').val(),
+                        inspectionDate: $('#inspectionDate').val(),
+                        inspector: $('#inspector').val(),
+                        liftLocation: $('#liftLocation').val(),
+                        liftModel: $('#liftModel').val(),
+                        liftSerial: $('#liftSerial').val() || '',
+                        clientName: $('#clientName').val() || '',
+                        clientEmail: email,
+                        visitType: $('#visitType').val() || 'maintenance',
+                        driveType: $('#driveType').val() || 'traction',
+                        doorType: $('#doorType').val() || 'automatic',
+                        checklist: this.getChecklistData(),
+                        generalComments: $('#generalComments').val(),
+                        recommendations: $('#recommendations').val(),
+                        recipientEmail: email
+                    };
+                    
+                    // Enviar para o servidor
+                    const response = await fetch('/api/inspections/send-report', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken')}`
+                        },
+                        body: JSON.stringify(reportData)
+                    });
+                    
+                    if (response.ok) {
+                        alert(`✅ Relatório enviado com sucesso para ${email}`);
+                    } else {
+                        const error = await response.json();
+                        alert(`❌ Erro ao enviar: ${error.message || 'Erro desconhecido'}`);
+                    }
+                } catch (error) {
+                    console.error('Erro ao enviar relatório:', error);
+                    alert('❌ Erro ao enviar relatório. Verifique a conexão com o servidor.');
+                }
+            }
+        };
+
+        // ── Dynamic checklist functions ────────────────────────────────────────
+        function refreshChecklist() {
+            const driveType = $('#driveType').val() || 'traction';
+            const doorType  = $('#doorType').val()  || 'automatic';
+            const visitType = $('#visitType').val()  || 'maintenance';
+
+            updateNormBanner(driveType, doorType, visitType);
+
+            if (typeof INSPECTION_TEMPLATES !== 'undefined') {
+                const html = INSPECTION_TEMPLATES.renderChecklist(driveType, doorType, visitType);
+                $('#inspectionChecklist').html(html);
+                updateChecklistStats();
+                inspectionManager.updateReportPreview();
+            }
+        }
+
+        function updateNormBanner(driveType, doorType, visitType) {
+            if (typeof INSPECTION_TEMPLATES === 'undefined') return;
+            const nm = INSPECTION_TEMPLATES.NORMS_META[driveType] || {};
+            const dm = INSPECTION_TEMPLATES.DOOR_META[doorType]   || {};
+            const vm = INSPECTION_TEMPLATES.VISIT_META[visitType]  || {};
+
+            const norms = (nm.norms || []).map(n => `<span class="badge badge-secondary mr-1">${n}</span>`).join('');
+            const mandatory = vm.mandatory
+                ? `<span class="badge badge-warning ml-2"><i class="fas fa-exclamation-triangle"></i> Manutenção Mensal Obrigatória — DL 320/2002 Art. 5.º</span>`
+                : '';
+
+            $('#normBannerContent').html(`
+                <div class="d-flex flex-wrap align-items-center">
+                    <strong class="mr-2"><i class="fas fa-gavel text-primary"></i> Normas:</strong>
+                    ${norms}
+                    <span class="mx-2 text-muted">|</span>
+                    <i class="fas fa-${nm.icon || 'building'} text-${nm.color || 'primary'} mr-1"></i>
+                    <span class="mr-2">${nm.label || ''}</span>
+                    <span class="text-muted mr-2">|</span>
+                    <i class="fas fa-door-open text-info mr-1"></i>
+                    <span class="mr-2">${dm.label || ''}</span>
+                    ${mandatory}
+                </div>
+            `);
+            $('#normBanner').show();
+        }
+
+        function updateChecklistStats() {
+            const total = $('#inspectionChecklist .checklist-item').length;
+            const filled = $('#inspectionChecklist .checklist-status').filter(function() {
+                return $(this).val() !== '';
+            }).length;
+            // binary (repair/emergency) critical = "no"; standard = "error"
+            const critical = $('#inspectionChecklist .checklist-item.border-danger').filter(function() {
+                const val = $(this).find('.checklist-status').val();
+                return val === 'error' || val === 'no';
+            }).length;
+
+            if (total > 0) {
+                $('#checklistProgress').text(`${filled}/${total} preenchidos`);
+            }
+            if (critical > 0) {
+                $('#criticalErrorBadge').text(`${critical} CRÍTICOS`).show();
+            } else {
+                $('#criticalErrorBadge').hide();
+            }
+        }
+
+        // Global functions
+        async function saveInspection() {
+            await inspectionManager.saveInspection();
+        }
+
+        function loadTemplate() {
+            inspectionManager.loadTemplate();
+        }
+
+        function printReport() {
+            inspectionManager.printReport();
+        }
+
+        function downloadPDF() {
+            inspectionManager.downloadPDF();
+        }
+
+        function sendReport() {
+            inspectionManager.sendReport();
+        }
+
+        async function loadInspectionHistory() {
+            const tbody = document.getElementById('inspectionHistoryBody');
+            const loading = document.getElementById('inspectionHistoryLoading');
+            if (loading) loading.style.display = 'block';
+            if (tbody) tbody.innerHTML = '';
+
+            try {
+                const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken');
+                const response = await fetch('/api/inspections?limit=20', {
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                });
+                const data = await response.json();
+
+                if (loading) loading.style.display = 'none';
+
+                if (data.success && data.data?.length > 0) {
+                    const statusLabels = { rascunho: 'warning', finalizado: 'success', enviado: 'info', arquivado: 'secondary' };
+                    tbody.innerHTML = data.data.map(insp => {
+                        const dt = insp.data ? new Date(insp.data).toLocaleDateString('pt-PT') : '—';
+                        const badge = statusLabels[insp.status] || 'secondary';
+                        return `<tr>
+                            <td><strong>${insp.numero}</strong></td>
+                            <td>${dt}</td>
+                            <td>${insp.inspector}</td>
+                            <td>${insp.liftLocation}</td>
+                            <td><span class="badge badge-${badge}">${insp.status}</span></td>
+                            <td class="text-right">
+                                <button class="btn btn-xs btn-danger" onclick="deleteInspectionDB('${insp._id}','${insp.numero}')" title="Apagar"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>`;
+                    }).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted p-3">Nenhum relatório guardado ainda.</td></tr>';
+                }
+            } catch (err) {
+                if (loading) loading.style.display = 'none';
+                if (tbody) tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger p-3">Erro ao carregar. Verifique a ligação.</td></tr>';
+                console.error('Erro ao carregar histórico:', err);
+            }
+        }
+
+        async function deleteInspectionDB(id, numero) {
+            if (!confirm(`Apagar o relatório ${numero}?`)) return;
+            try {
+                const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken');
+                const response = await fetch(`/api/inspections/${id}`, {
+                    method: 'DELETE',
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                });
+                const data = await response.json();
+                if (data.success) { loadInspectionHistory(); }
+                else alert('Erro: ' + data.message);
+            } catch (err) {
+                alert('Erro ao apagar: ' + err.message);
+            }
+        }
+
+        // Initialize when document is ready
+        $(document).ready(function() {
+            inspectionManager.init();
+            loadInspectionHistory();
+        });
+    </script>
+</body>
+</html>

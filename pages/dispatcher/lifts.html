@@ -2995,6 +2995,67 @@
         });
     </script>
 
+    <script>
+    // ── EMBED MODE: коли сторінка завантажена в iframe з ?embed=1 ──
+    (function() {
+        const params = new URLSearchParams(window.location.search);
+        if (!params.get('embed')) return;
+
+        // Ховаємо весь layout — показуємо лише модальне вікно
+        const style = document.createElement('style');
+        style.textContent = `
+            html, body { background: white !important; margin: 0 !important; padding: 0 !important; }
+            .wrapper, .main-header, .main-sidebar, .main-footer,
+            .content-wrapper, #sidebar-placeholder,
+            .ai-chat-container, #ai-assistant-modal,
+            .control-sidebar, .main-footer { display: none !important; }
+            /* Bootstrap backdrop не потрібен — оверлей на батьківській сторінці */
+            .modal-backdrop { display: none !important; }
+            /* Модалка: займає весь простір iframe-документа */
+            body.modal-open { overflow: auto !important; padding-right: 0 !important; }
+            #liftDetailsModal {
+                display: block !important;
+                position: relative !important;
+                z-index: 1 !important;
+            }
+            #liftDetailsModal .modal-dialog {
+                max-width: 100% !important;
+                margin: 0 !important;
+                min-height: 100vh;
+            }
+            #liftDetailsModal .modal-content {
+                min-height: 100vh;
+                border-radius: 0 !important;
+                border: none !important;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Пригнічуємо alert() щоб помилки не заважали (логуються в console)
+        const _origAlert = window.alert;
+        window.alert = function(msg) { console.warn('[embed] alert suppressed:', msg); };
+
+        // Після того як модалку закрили — повідомляємо батьківський фрейм
+        document.addEventListener('DOMContentLoaded', function() {
+            // Прибираємо fade-анімацію щоб модалка показалась одразу (без fade Bootstrap не ховає її)
+            const liftModal = document.getElementById('liftDetailsModal');
+            if (liftModal) liftModal.classList.remove('fade');
+
+            // Очікуємо ініціалізацію jQuery
+            const waitJQ = setInterval(function() {
+                if (typeof $ === 'undefined') return;
+                clearInterval(waitJQ);
+                $(document).on('click', '#liftDetailsModal .btn[data-dismiss="modal"], #liftDetailsModal .close', function() {
+                    try { window.parent.postMessage({ type: 'liftModalClosed' }, '*'); } catch(e) {}
+                });
+                $(document).on('hidden.bs.modal', '#liftDetailsModal', function() {
+                    try { window.parent.postMessage({ type: 'liftModalClosed' }, '*'); } catch(e) {}
+                });
+            }, 50);
+        });
+    })();
+    </script>
+
     </div>
         </div>
         <div class="ai-chat-input">
@@ -5291,7 +5352,8 @@
             }
         } catch (error) {
             console.error('❌ Помилка завантаження деталей ліфта:', error);
-            alert('Помилка завантаження деталей ліфта');
+            // В embed-режимі не показуємо alert — він вже пригнічений window.alert заміною
+            // В звичайному режимі теж не показуємо alert, щоб не лякати юзера — достатньо console
         }
     }
     
