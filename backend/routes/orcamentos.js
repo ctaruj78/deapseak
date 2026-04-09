@@ -9,6 +9,29 @@ const crypto = require('crypto');
 const PDFDocument = require('pdfkit');
 const path = require('path');
 const fs = require('fs');
+const multer = require('multer');
+const fsPromises = require('fs').promises;
+
+// Multer para fotos de orçamentos
+const orcamentoFotoStorage = multer.diskStorage({
+    destination: async (req, file, cb) => {
+        const dir = path.join(__dirname, '../../uploads/orcamentos', req.params.id);
+        await fsPromises.mkdir(dir, { recursive: true });
+        cb(null, dir);
+    },
+    filename: (req, file, cb) => {
+        const suffix = Date.now() + '-' + Math.round(Math.random() * 1e6);
+        cb(null, suffix + path.extname(file.originalname));
+    }
+});
+const uploadOrcFoto = multer({
+    storage: orcamentoFotoStorage,
+    limits: { fileSize: 10 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        if (/^image\/(jpeg|png|webp|gif)$/.test(file.mimetype)) cb(null, true);
+        else cb(new Error('Apenas imagens JPG, PNG, WEBP, GIF são aceites'));
+    }
+});
 
 // Tentar encontrar lift pela morada do cliente
 async function detectarLiftPorMorada(morada) {
@@ -584,7 +607,7 @@ router.get('/:id', authenticate, async (req, res) => {
 // POST /api/orcamentos - Criar novo orçamento (admin/dispatcher only)
 router.post('/', authenticate, authorizeRoles('admin', 'dispatcher'), async (req, res) => {
     try {
-        const { cliente, servicos, subtotal, iva, total, notas, liftId: bodyLiftId } = req.body;
+        const { cliente, servicos, subtotal, iva, total, notas, liftId: bodyLiftId, lifts: bodyLifts, liftAddress: bodyLiftAddress } = req.body;
         
         // Validação básica
         if (!cliente || !cliente.nome || !cliente.email || !cliente.morada) {
@@ -611,24 +634,38 @@ router.post('/', authenticate, authorizeRoles('admin', 'dispatcher'), async (req
 
         // Detectar ligação ao elevador
         let liftId = null;
-        let liftAddress = null;
-        if (bodyLiftId) {
+        let liftAddress = bodyLiftAddress || null;
+        // Normalizar array de lifts vindos do frontend
+        let liftsArray = [];
+        if (Array.isArray(bodyLifts) && bodyLifts.length > 0) {
+            liftsArray = bodyLifts.filter(Boolean);
+            // Usar o primeiro como liftId principal para compatibilidade
+            liftId = liftsArray[0];
+        } else if (bodyLiftId) {
             liftId = bodyLiftId;
-            // Buscar endereço do lift pelo id
+            liftsArray = [bodyLiftId];
+        }
+
+        // Se temos liftId mas não temos liftAddress, buscar pelo id
+        if (liftId && !liftAddress) {
             try {
                 const db = mongoose.connection.db;
                 const { ObjectId } = mongoose.Types;
-                const lift = await db.collection('lifts').findOne({ _id: new ObjectId(bodyLiftId) });
+                const lift = await db.collection('lifts').findOne({ _id: new ObjectId(liftId) });
                 if (lift) {
                     const addr = lift.address || {};
                     liftAddress = typeof addr === 'string' ? addr : [addr.street, addr.zipCode, addr.city].filter(Boolean).join(', ');
                 }
             } catch (e) { /* ignore invalid id */ }
-        } else {
+        }
+
+        // Se não temos nenhum lift, tentar detectar pela morada
+        if (!liftId) {
             const detected = await detectarLiftPorMorada(cliente.morada);
             if (detected) {
                 liftId = detected.liftId;
                 liftAddress = detected.liftAddress;
+                liftsArray = [detected.liftId];
             }
         }
         
@@ -646,12 +683,13 @@ router.post('/', authenticate, authorizeRoles('admin', 'dispatcher'), async (req
             criadoPor: req.user.id,
             status: 'rascunho',
             liftId: liftId || null,
+            lifts: liftsArray,
             liftAddress: liftAddress || null
         });
         
         await orcamento.save();
         
-        console.log(`✅ Orçamento criado: ${numero}${liftId ? ` → lift ${liftId}` : ''}`);
+        console.log(`✅ Orçamento criado: ${numero}${liftsArray.length ? ` → ${liftsArray.length} lift(s)` : ''}`);
 
         res.status(201).json({
             success: true,
@@ -690,7 +728,7 @@ router.put('/:id', authenticate, authorizeRoles('admin', 'dispatcher'), async (r
             });
         }
         
-        const { cliente, servicos, subtotal, iva, total, notas, status, numero, data } = req.body;
+        const { cliente, servicos, subtotal, iva, total, notas, status, numero, data, lifts: bodyLifts, liftAddress: bodyLiftAddress } = req.body;
         
         if (cliente) orcamento.cliente = cliente;
         if (servicos) orcamento.servicos = servicos;
@@ -702,6 +740,12 @@ router.put('/:id', authenticate, authorizeRoles('admin', 'dispatcher'), async (r
         // Дозволити оновлення numero та data (хоча зазвичай не потрібно)
         if (numero) orcamento.numero = numero;
         if (data) orcamento.data = data;
+        // Оновлення масиву ліфтів
+        if (Array.isArray(bodyLifts)) {
+            orcamento.lifts = bodyLifts.filter(Boolean);
+            if (bodyLifts.length > 0) orcamento.liftId = bodyLifts[0];
+        }
+        if (bodyLiftAddress !== undefined) orcamento.liftAddress = bodyLiftAddress || null;
         
         await orcamento.save();
         
@@ -1243,6 +1287,50 @@ router.patch('/:id/link-lift', authenticate, authorizeRoles('admin', 'dispatcher
     } catch (error) {
         console.error('Erro ao vincular orçamento a elevador:', error);
         res.status(500).json({ success: false, message: 'Erro ao vincular', error: error.message });
+    }
+});
+
+// POST /api/orcamentos/:id/fotos — upload de fotos
+router.post('/:id/fotos', authenticate, authorizeRoles('admin', 'dispatcher'), uploadOrcFoto.array('fotos', 20), async (req, res) => {
+    try {
+        const orcamento = await Orcamento.findById(req.params.id);
+        if (!orcamento) return res.status(404).json({ success: false, message: 'Orçamento não encontrado' });
+        if (!req.files || req.files.length === 0) return res.status(400).json({ success: false, message: 'Nenhum ficheiro enviado' });
+
+        const novos = req.files.map(f => `/uploads/orcamentos/${req.params.id}/${f.filename}`);
+        orcamento.fotos = [...(orcamento.fotos || []), ...novos];
+        await orcamento.save();
+
+        res.json({ success: true, fotos: orcamento.fotos, novasFotos: novos });
+    } catch (error) {
+        console.error('Erro ao guardar fotos:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// DELETE /api/orcamentos/:id/fotos/:index — remover uma foto
+router.delete('/:id/fotos/:index', authenticate, authorizeRoles('admin', 'dispatcher'), async (req, res) => {
+    try {
+        const orcamento = await Orcamento.findById(req.params.id);
+        if (!orcamento) return res.status(404).json({ success: false, message: 'Orçamento não encontrado' });
+
+        const idx = parseInt(req.params.index, 10);
+        if (isNaN(idx) || idx < 0 || idx >= orcamento.fotos.length) {
+            return res.status(400).json({ success: false, message: 'Índice de foto inválido' });
+        }
+
+        const fotoPath = orcamento.fotos[idx];
+        orcamento.fotos.splice(idx, 1);
+        await orcamento.save();
+
+        // Apagar ficheiro do disco
+        const fullPath = path.join(__dirname, '../..', fotoPath);
+        fsPromises.unlink(fullPath).catch(() => {});
+
+        res.json({ success: true, fotos: orcamento.fotos });
+    } catch (error) {
+        console.error('Erro ao remover foto:', error);
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 

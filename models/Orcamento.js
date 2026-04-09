@@ -129,10 +129,16 @@ const orcamentoSchema = new mongoose.Schema({
         type: String
     },
 
-    // Ligação ao elevador (se detectado por morada)
+    // Ligação ao elevador (se detectado por morada) — mantido para compatibilidade
     liftId: {
         type: mongoose.Schema.Types.ObjectId,
         default: null
+    },
+
+    // Array de IDs de elevadores vinculados (um ou vários por morada)
+    lifts: {
+        type: [mongoose.Schema.Types.ObjectId],
+        default: []
     },
 
     // Endereço do elevador ligado (para exibição rápida)
@@ -145,6 +151,12 @@ const orcamentoSchema = new mongoose.Schema({
     archived: { type: Boolean, default: false },
     archivedAt: { type: Date },
     archivedBy: { type: String },
+
+    // Фотографії прикріплені до орçаменту
+    fotos: {
+        type: [String],
+        default: []
+    },
 
     // PDF файл (якщо збережено)
     pdfPath: String,

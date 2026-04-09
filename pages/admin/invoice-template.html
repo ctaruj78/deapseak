@@ -10,6 +10,9 @@
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    <!-- Select2 -->
+    <link rel="stylesheet" href="../../plugins/select2/css/select2.min.css">
+    <link rel="stylesheet" href="../../assets/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css">
     
     <style>
         .invoice-preview {
@@ -435,14 +438,38 @@
                                 </div>
                                 <div class="card-body">
                                     <form id="invoiceForm">
+                                        <!-- Блок пошуку по адресі / ліфту -->
                                         <div class="row">
                                             <div class="col-12">
                                                 <div class="form-group">
-                                                    <label for="liftSelect">Elevador (opcional)</label>
-                                                    <select class="form-control" id="liftSelect" onchange="onLiftSelected()">
-                                                        <option value="">— Selecione o elevador —</option>
+                                                    <label for="liftAddressSearch"><i class="fas fa-map-marker-alt text-primary"></i> Pesquisar por morada ou nº municipal</label>
+                                                    <select class="form-control" id="liftAddressSearch" style="width:100%">
+                                                        <option value=""></option>
                                                     </select>
-                                                    <small id="liftMatchHint" class="form-text text-muted"></small>
+                                                    <small class="form-text text-muted">Digite a morada ou nº municipal para encontrar todos os elevadores nesse local</small>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Painel de elevadores na morada selecionada -->
+                                        <div id="liftsAtAddressPanel" style="display:none" class="mb-3">
+                                            <div class="card card-outline card-primary">
+                                                <div class="card-header py-2">
+                                                    <h6 class="m-0">
+                                                        <i class="fas fa-building text-primary"></i>
+                                                        Elevadores na morada selecionada
+                                                        <small class="text-muted font-weight-normal" id="addressPanelLabel"></small>
+                                                    </h6>
+                                                </div>
+                                                <div class="card-body py-2" id="liftsCheckboxList">
+                                                    <!-- Dinamicamente preenchido -->
+                                                </div>
+                                                <div class="card-footer py-2 bg-light">
+                                                    <small class="text-info">
+                                                        <i class="fas fa-info-circle"></i>
+                                                        Selecione os elevadores incluídos neste orçamento.
+                                                        Para trabalhos em espaço comum (casa de máquinas, linha telefónica partilhada, etc.) pode marcar todos ou deixar sem seleção.
+                                                    </small>
                                                 </div>
                                             </div>
                                         </div>
@@ -510,6 +537,19 @@
                                                 <div class="form-group">
                                                     <label for="notes">Notas</label>
                                                     <textarea class="form-control" id="notes" rows="3" placeholder="Informação adicional ou condições"></textarea>
+                                                </div>
+
+                                                <!-- Secção de Fotografias -->
+                                                <div class="form-group">
+                                                    <label><i class="fas fa-camera text-info"></i> Fotografias do orçamento</label>
+                                                    <div id="fotosGrid" class="d-flex flex-wrap" style="gap:8px;min-height:50px;"></div>
+                                                    <div class="mt-2">
+                                                        <input type="file" id="fotosInput" accept="image/*" multiple style="display:none">
+                                                        <button type="button" class="btn btn-outline-info btn-sm" onclick="document.getElementById('fotosInput').click()">
+                                                            <i class="fas fa-plus"></i> Adicionar fotografias
+                                                        </button>
+                                                        <small class="text-muted ml-2">JPG, PNG — máx. 10 MB cada</small>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
@@ -601,6 +641,7 @@
                                                     <strong id="previewClientName">Nome do Cliente</strong><br>
                                                     <span id="previewClientAddress">Morada do Cliente</span><br>
                                                     Email: <span id="previewClientEmail">cliente@exemplo.pt</span>
+                                                    <div id="previewLiftsInfo"></div>
                                                 </div>
                                             </div>
                                         </div>
@@ -697,6 +738,8 @@
     <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
     <!-- AdminLTE -->
     <script src="../../plugins/adminlte/adminlte.min.js"></script>
+    <!-- Select2 -->
+    <script src="../../plugins/select2/js/select2.min.js"></script>
 
     <!-- Sidebar initialization script -->
     <script src="../../assets/js/sidebar-init.js"></script>
@@ -823,6 +866,15 @@
                 $('#previewClientAddress').html($('#clientAddress').val().replace(/\n/g, '<br>') || 'Morada do Cliente');
                 $('#previewClientEmail').text($('#clientEmail').val() || 'cliente@exemplo.pt');
                 $('#previewNotes').text($('#notes').val() || 'Este orçamento é válido por 30 dias a partir da data de apresentação.');
+
+                // Mostrar elevadores selecionados no preview
+                const selectedLifts = typeof getSelectedLifts === 'function' ? getSelectedLifts() : [];
+                let liftsHtml = '';
+                if (selectedLifts.length > 0) {
+                    liftsHtml = `<div class="mt-1"><small class="text-primary"><i class="fas fa-elevator"></i> <strong>Elevadores:</strong> ${selectedLifts.map(l => l.label).join(', ')}</small></div>`;
+                }
+                const liftsEl = document.getElementById('previewLiftsInfo');
+                if (liftsEl) liftsEl.innerHTML = liftsHtml;
 
                 // Update services table
                 const previewTable = $('#previewServicesTable');
@@ -1306,10 +1358,8 @@
                 iva: parseFloat($('#tax').text().replace(' €', '')) || 0,
                 total: parseFloat($('#grandTotal').text().replace(' €', '')) || 0,
                 notas: $('#notes').val() || 'Este orçamento é válido por 30 dias a partir da data de apresentação.',
-                liftId: document.getElementById('liftSelect')?.value || null,
-                liftAddress: document.getElementById('liftSelect')?.value
-                    ? (document.getElementById('liftSelect').options[document.getElementById('liftSelect').selectedIndex]?.dataset.address || null)
-                    : null
+                lifts: getSelectedLifts().map(l => l.id),
+                liftAddress: $('#liftAddressSearch').val() || null
             };
             
             // При оновленні додати numero та data з форми
@@ -1370,6 +1420,30 @@
                     
                     console.log('✅ Orçamento salvo com ID:', orcamentoId);
                     console.log('📝 Número:', orcamentoData.numero || $('#invoiceNumber').val());
+
+                    // Upload fotografias pendentes (selecionadas mas ainda não enviadas)
+                    const fotosInput = document.getElementById('fotosInput');
+                    if (fotosInput.files.length > 0 && orcamentoId) {
+                        try {
+                            const fd = new FormData();
+                            for (const f of fotosInput.files) fd.append('fotos', f);
+                            const uploadRes = await fetch(`/api/orcamentos/${orcamentoId}/fotos`, {
+                                method: 'POST',
+                                headers: { 'Authorization': `Bearer ${token}` },
+                                body: fd
+                            });
+                            const uploadResult = await uploadRes.json();
+                            if (uploadResult.success) {
+                                renderFotosGrid(uploadResult.fotos);
+                                fotosInput.value = '';
+                                console.log('📷 Fotos enviadas:', uploadResult.fotos.length);
+                            } else {
+                                console.warn('⚠️ Erro ao enviar fotos:', uploadResult.message);
+                            }
+                        } catch (fotoErr) {
+                            console.error('❌ Erro ao enviar fotos:', fotoErr);
+                        }
+                    }
                     
                     const action = isUpdate ? 'atualizado' : 'salvo';
                     const numero = orcamentoData.numero || $('#invoiceNumber').val();
@@ -1447,14 +1521,37 @@
                     if (pLiftAddress) $('#clientAddress').val(pLiftAddress);
 
                     if (pLiftId) {
-                        const sel = document.getElementById('liftSelect');
-                        if (sel) {
-                            sel.value = pLiftId;
-                            if (!sel.value) {
-                                setTimeout(() => { sel.value = pLiftId; onLiftSelected(); }, 300);
-                            }
-                            onLiftSelected();
-                        }
+                        // Завантажити ліфт за ID і показати панель з ліфтами на цій адресі
+                        const tok2 = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('jwt_token') || localStorage.getItem('token') || localStorage.getItem('lm_token');
+                        fetch(`/api/lifts/${pLiftId}`, { headers: { 'Authorization': `Bearer ${tok2}` } })
+                            .then(r => r.json()).then(json => {
+                                const lift = json.data?.lift || json.data || json.lift || json;
+                                if (!lift || !lift._id) return;
+                                const addr = lift.address || {};
+                                const addrStr = pLiftAddress || (typeof addr === 'string' ? addr : [addr.street, addr.zipCode, addr.city].filter(Boolean).join(', '));
+                                // Заповнити адресу
+                                if (addrStr && !$('#clientAddress').val().trim()) $('#clientAddress').val(addrStr);
+                                if (lift.clientName && !$('#clientName').val().trim()) $('#clientName').val(lift.clientName);
+                                if ((lift.clientEmail || lift.email) && !$('#clientEmail').val().trim()) $('#clientEmail').val(lift.clientEmail || lift.email);
+                                // Завантажити всі ліфти за адресою і показати панель
+                                const street = (typeof addr === 'object' ? addr.street : addrStr.split(',')[0]) || addrStr;
+                                fetch(`/api/lifts?search=${encodeURIComponent(street)}&limit=50`, { headers: { 'Authorization': `Bearer ${tok2}` } })
+                                    .then(r2 => r2.json()).then(json2 => {
+                                        const lifts = json2.data?.lifts || json2.data || json2.lifts || [lift];
+                                        const text = addrStr + (lifts.length > 1 ? ` (${lifts.length} elevadores)` : ` (1 elevador)`);
+                                        const opt = new Option(text, addrStr, true, true);
+                                        $('#liftAddressSearch').append(opt).trigger('change');
+                                        showLiftsAtAddress(lifts, addrStr);
+                                        // Pré-selecionar o ліфт que veio por parâmetro
+                                        setTimeout(() => {
+                                            const cb = document.getElementById(`lift_${pLiftId}`);
+                                            if (cb) cb.checked = true;
+                                            invoiceManager.updatePreview();
+                                        }, 50);
+                                    }).catch(() => {
+                                        showLiftsAtAddress([lift], addrStr);
+                                    });
+                            }).catch(() => {});
                     }
 
                     const today = new Date().toISOString().split('T')[0];
@@ -1463,72 +1560,161 @@
             }
         });
 
-        async function loadLiftOptions(token) {
-            try {
-                const res = await fetch('/api/lifts', { headers: { 'Authorization': `Bearer ${token}` } });
-                if (!res.ok) return;
-                const json = await res.json();
-                const lifts = (json.data || json.lifts || []);
-                window._allLifts = lifts;
-                const sel = document.getElementById('liftSelect');
-                lifts.forEach(lift => {
-                    const addr = lift.address || {};
-                    const addrStr = typeof addr === 'string' ? addr : [addr.street, addr.zipCode, addr.city].filter(Boolean).join(', ');
-                    const label = lift.municipalNumber
-                        ? `#${lift.municipalNumber} — ${addrStr || lift._id}`
-                        : (addrStr || lift._id);
-                    const opt = document.createElement('option');
-                    opt.value = lift._id;
-                    opt.dataset.address = addrStr;
-                    opt.dataset.client = lift.clientEmail || lift.email || '';
-                    opt.dataset.clientName = lift.clientName || '';
-                    opt.textContent = label;
-                    sel.appendChild(opt);
-                });
-            } catch (e) { console.warn('loadLiftOptions error:', e.message); }
-        }
+        function initAddressLiftSearch(token) {
+            $('#liftAddressSearch').select2({
+                theme: 'bootstrap4',
+                placeholder: '🔍 Digite a morada ou nº municipal...',
+                allowClear: true,
+                minimumInputLength: 2,
+                language: {
+                    inputTooShort: () => 'Digite pelo menos 2 caracteres para pesquisar',
+                    searching: () => 'A pesquisar...',
+                    noResults: () => 'Nenhuma morada encontrada'
+                },
+                ajax: {
+                    url: '/api/lifts',
+                    dataType: 'json',
+                    delay: 300,
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    data: params => ({ search: params.term, limit: 50 }),
+                    processResults: function(json) {
+                        try {
+                            const lifts = (json && json.data && Array.isArray(json.data))
+                                ? json.data
+                                : (json && Array.isArray(json.lifts) ? json.lifts : []);
+                            if (!lifts.length) return { results: [] };
+                            // Agrupar por morada
+                            const addressMap = {};
+                            lifts.forEach(lift => {
+                                const addr = lift.address || {};
+                                const addrStr = typeof addr === 'string'
+                                    ? addr
+                                    : [addr.street, addr.zipCode, addr.city].filter(Boolean).join(', ');
+                                const key = addrStr || String(lift._id);
+                                if (!addressMap[key]) {
+                                    addressMap[key] = { address: key, lifts: [], clientName: lift.clientName || '', clientEmail: lift.clientEmail || lift.email || '' };
+                                }
+                                if (!addressMap[key].clientName && lift.clientName) addressMap[key].clientName = lift.clientName;
+                                if (!addressMap[key].clientEmail && (lift.clientEmail || lift.email)) addressMap[key].clientEmail = lift.clientEmail || lift.email;
+                                addressMap[key].lifts.push(lift);
+                            });
+                            const groups = Object.values(addressMap);
+                            return {
+                                results: groups.map(g => ({
+                                    id: g.address,
+                                    text: g.address + (g.lifts.length > 1 ? ` (${g.lifts.length} elevadores)` : ` (1 elevador)`),
+                                    address: g.address,
+                                    lifts: g.lifts,
+                                    clientName: g.clientName,
+                                    clientEmail: g.clientEmail
+                                }))
+                            };
+                        } catch(err) {
+                            console.error('❌ processResults error:', err);
+                            return { results: [] };
+                        }
+                    }
+                }
+            });
 
-        function onLiftSelected() {
-            const sel = document.getElementById('liftSelect');
-            const opt = sel.options[sel.selectedIndex];
-            const hint = document.getElementById('liftMatchHint');
-            if (opt && opt.value) {
-                const addr = opt.dataset.address;
-                const clientEmail = opt.dataset.client;
-                const clientName = opt.dataset.clientName;
-                if (addr && !$('#clientAddress').val().trim()) {
-                    $('#clientAddress').val(addr);
+            $('#liftAddressSearch').on('select2:select', function(e) {
+                const data = e.params.data;
+                // Sempre preencher morada do cliente ao selecionar
+                if (data.address) {
+                    $('#clientAddress').val(data.address);
                 }
-                if (clientName && !$('#clientName').val().trim()) {
-                    $('#clientName').val(clientName);
+                // Preencher nome e email do cliente se ainda vazio
+                if (data.clientName && !$('#clientName').val().trim()) {
+                    $('#clientName').val(data.clientName);
                 }
-                if (clientEmail && !$('#clientEmail').val().trim()) {
-                    $('#clientEmail').val(clientEmail);
+                if (data.clientEmail && !$('#clientEmail').val().trim()) {
+                    $('#clientEmail').val(data.clientEmail);
                 }
                 invoiceManager.updatePreview();
-                hint.innerHTML = `<strong>${opt.textContent}</strong><br>✅ Orçamento será vinculado a este elevador`;
-                hint.className = 'form-text text-success';
-            } else {
-                hint.textContent = '';
-            }
+                // Mostrar painel de elevadores com checkboxes
+                showLiftsAtAddress(data.lifts || [], data.address);
+            });
+
+            $('#liftAddressSearch').on('select2:clear', function() {
+                document.getElementById('liftsAtAddressPanel').style.display = 'none';
+                document.getElementById('liftsCheckboxList').innerHTML = '';
+            });
         }
 
-        function tryAutoMatchLift() {
-            const morada = $('#clientAddress').val().trim().toLowerCase();
-            if (!morada || !window._allLifts) return;
-            const sel = document.getElementById('liftSelect');
-            if (sel.value) return;
-            for (let i = 1; i < sel.options.length; i++) {
-                const opt = sel.options[i];
-                const addrOpt = (opt.dataset.address || '').toLowerCase();
-                if (addrOpt && (morada.includes(addrOpt.split(',')[0].trim()) || addrOpt.includes(morada.split(',')[0].trim()))) {
-                    sel.value = opt.value;
-                    const hint = document.getElementById('liftMatchHint');
-                    hint.textContent = '🔍 Elevador detetado automaticamente pela morada';
-                    hint.className = 'form-text text-info';
-                    return;
-                }
+        function showLiftsAtAddress(lifts, address) {
+            const panel = document.getElementById('liftsAtAddressPanel');
+            const list = document.getElementById('liftsCheckboxList');
+            const label = document.getElementById('addressPanelLabel');
+
+            label.textContent = address ? ` — ${address}` : '';
+            list.innerHTML = '';
+
+            if (!lifts || lifts.length === 0) {
+                list.innerHTML = '<p class="text-muted mb-0 small">Nenhum elevador registado nesta morada</p>';
+            } else {
+                const row = document.createElement('div');
+                row.className = 'row';
+                lifts.forEach(lift => {
+                    const munNum = lift.municipalNumber || '—';
+                    const serial = lift.serialNumber || lift.registrationNumber || '';
+                    const liftLabel = `Elev. #${munNum}${serial ? ' · ' + serial : ''}`;
+                    const col = document.createElement('div');
+                    col.className = 'col-md-4 col-sm-6';
+                    col.innerHTML = `
+                        <div class="custom-control custom-checkbox mb-2">
+                            <input type="checkbox" class="custom-control-input lift-checkbox"
+                                id="lift_${lift._id}" value="${lift._id}"
+                                data-label="${liftLabel}" data-munnum="${munNum}">
+                            <label class="custom-control-label font-weight-bold" for="lift_${lift._id}">
+                                <i class="fas fa-elevator text-primary mr-1"></i>${liftLabel}
+                            </label>
+                        </div>`;
+                    row.appendChild(col);
+                });
+                list.appendChild(row);
+                // Atualizar preview ao mudar checkboxes
+                list.addEventListener('change', () => invoiceManager.updatePreview());
             }
+
+            panel.style.display = '';
+        }
+
+        function getSelectedLifts() {
+            const selected = [];
+            document.querySelectorAll('.lift-checkbox:checked').forEach(cb => {
+                selected.push({ id: cb.value, label: cb.dataset.label, munNum: cb.dataset.munnum });
+            });
+            return selected;
+        }
+
+        async function loadLiftOptions(token) {
+            initAddressLiftSearch(token);
+        }
+
+        function onLiftSelected() { /* compatibilidade */ }
+
+        function tryAutoMatchLift() {
+            // Pesquisa automática pela morada via API quando morada é preenchida manualmente
+            const morada = $('#clientAddress').val().trim();
+            if (!morada) return;
+            // Se já existe uma morada seleccionada no Select2, não sobrescrever
+            if ($('#liftAddressSearch').val()) return;
+            const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('jwt_token') || localStorage.getItem('token') || localStorage.getItem('lm_token');
+            fetch(`/api/lifts?search=${encodeURIComponent(morada.split(',')[0])}&limit=50`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }).then(r => r.json()).then(json => {
+                const lifts = json.data?.lifts || json.data || json.lifts || [];
+                if (!lifts.length) return;
+                // Agrupar pela morada correspondente
+                const addr = lifts[0].address || {};
+                const addrStr = typeof addr === 'string' ? addr : [addr.street, addr.zipCode, addr.city].filter(Boolean).join(', ');
+                if (!addrStr) return;
+                // Adicionar opção ao Select2 e selecionar
+                const text = addrStr + (lifts.length > 1 ? ` (${lifts.length} elevadores)` : ` (1 elevador)`);
+                const opt = new Option(text, addrStr, true, true);
+                $('#liftAddressSearch').append(opt).trigger('change');
+                showLiftsAtAddress(lifts, addrStr);
+            }).catch(() => {});
         }
 
         // Завантажити орçаменто (публічний доступ)
@@ -1597,10 +1783,71 @@
             }
         }
         
+        // ── Fotografias ──────────────────────────────────────────────
+        function renderFotosGrid(fotos) {
+            const grid = document.getElementById('fotosGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            (fotos || []).forEach((url, idx) => {
+                const wrap = document.createElement('div');
+                wrap.style.cssText = 'position:relative;display:inline-block;';
+                wrap.innerHTML = `
+                    <a href="${url}" target="_blank">
+                        <img src="${url}" style="width:90px;height:90px;object-fit:cover;border-radius:6px;border:1px solid #ddd;" title="Ver foto">
+                    </a>
+                    <button type="button" onclick="deleteFoto(${idx})"
+                        style="position:absolute;top:2px;right:2px;background:rgba(220,53,69,.85);border:none;border-radius:50%;width:20px;height:20px;color:#fff;font-size:11px;line-height:18px;text-align:center;cursor:pointer;padding:0;"
+                        title="Remover foto">&times;</button>`;
+                grid.appendChild(wrap);
+            });
+        }
+
+        async function deleteFoto(idx) {
+            if (!window.currentOrcamentoId) return alert('Guarde o orçamento antes de remover fotos.');
+            if (!confirm('Remover esta fotografia?')) return;
+            const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('jwt_token') || localStorage.getItem('token') || localStorage.getItem('lm_token');
+            try {
+                const res = await fetch(`/api/orcamentos/${window.currentOrcamentoId}/fotos/${idx}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (data.success) renderFotosGrid(data.fotos);
+                else alert('Erro ao remover: ' + data.message);
+            } catch (e) {
+                alert('Erro ao remover foto: ' + e.message);
+            }
+        }
+
+        // Preview local de novas fotos selecionadas (antes de guardar)
+        document.addEventListener('DOMContentLoaded', () => {
+            const fotosInput = document.getElementById('fotosInput');
+            if (!fotosInput) return;
+            fotosInput.addEventListener('change', () => {
+                // Recolher URLs já guardadas (links reais, não blob)
+                const savedUrls = [];
+                document.querySelectorAll('#fotosGrid a img').forEach(img => {
+                    if (!img.src.startsWith('blob:')) savedUrls.push(img.src.replace(location.origin, ''));
+                });
+                renderFotosGrid(savedUrls);
+                // Adicionar pré-visualizações dos novos ficheiros
+                Array.from(fotosInput.files).forEach(file => {
+                    const url = URL.createObjectURL(file);
+                    const wrap = document.createElement('div');
+                    wrap.style.cssText = 'position:relative;display:inline-block;';
+                    wrap.innerHTML = `
+                        <img src="${url}" style="width:90px;height:90px;object-fit:cover;border-radius:6px;border:2px dashed #17a2b8;" title="${file.name}">
+                        <span style="position:absolute;bottom:0;left:0;right:0;background:rgba(23,162,184,.75);color:#fff;font-size:9px;text-align:center;border-radius:0 0 5px 5px;padding:1px;">Novo</span>`;
+                    document.getElementById('fotosGrid').appendChild(wrap);
+                });
+            });
+        });
+        // ─────────────────────────────────────────────────────────────
+
         // Завантажити орçаменто за ID
         async function loadOrcamento(id, viewMode = false) {
             try {
-                const token = localStorage.getItem('liftmanager_jwt') || 
+                const token = localStorage.getItem('liftmanager_jwt') ||
                              localStorage.getItem('jwt_token') ||
                              localStorage.getItem('token') || 
                              localStorage.getItem('lm_token');
@@ -1629,6 +1876,9 @@
                 $('#invoiceNumber').val(orcamento.numero);
                 $('#invoiceDate').val(orcamento.data.split('T')[0]); // Конвертувати ISO date
                 $('#notes').val(orcamento.notas || '');
+
+                // Carregar fotografias
+                renderFotosGrid(orcamento.fotos || []);
                 
                 // Очистити таблицю сервісів
                 $('#servicesTable tbody').empty();
@@ -1658,6 +1908,23 @@
                     $('.card-header').prepend('<span class="badge badge-info">Modo de Visualização</span> ');
                 }
                 
+                // Відновити прив'язаний ліфт у Select2
+                if (orcamento.liftId) {
+                    fetch(`/api/lifts/${orcamento.liftId}`, { headers: { 'Authorization': `Bearer ${token}` } })
+                        .then(r => r.ok ? r.json() : null).then(json => {
+                            if (!json) return;
+                            const lift = json.data?.lift || json.data || json.lift || json;
+                            if (!lift || !lift._id) return;
+                            const addr = lift.address || {};
+                            const addrStr = typeof addr === 'string' ? addr : [addr.street, addr.zipCode, addr.city].filter(Boolean).join(', ');
+                            const label = lift.municipalNumber ? `#${lift.municipalNumber} — ${addrStr}` : (addrStr || lift._id);
+                            const opt = new Option(label, lift._id, true, true);
+                            $('#liftSelect').append(opt).trigger('change');
+                            document.getElementById('liftMatchHint').innerHTML = `<strong>${label}</strong><br>✅ Orçamento vinculado a este elevador`;
+                            document.getElementById('liftMatchHint').className = 'form-text text-success';
+                        }).catch(() => {});
+                }
+
                 // Зберегти ID для можливості оновлення та відправки email
                 window.currentOrcamentoId = id;
                 window.lastSavedOrcamentoId = id; // Додати для email функції

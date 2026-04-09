@@ -10,6 +10,9 @@
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    <!-- Select2 -->
+    <link rel="stylesheet" href="../../plugins/select2/css/select2.min.css">
+    <link rel="stylesheet" href="../../assets/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css">
     
     <style>
         .invoice-preview {
@@ -167,8 +170,8 @@
                                             <div class="col-md-6">
                                                 <div class="form-group">
                                                     <label for="liftSelect"><i class="fas fa-elevator mr-1 text-primary"></i>Elevador (opcional)</label>
-                                                    <select class="form-control" id="liftSelect" onchange="onLiftSelected()">
-                                                        <option value="">— Sem ligação a elevador —</option>
+                                                    <select class="form-control select2-lift" id="liftSelect" style="width:100%">
+                                                        <option value=""></option>
                                                     </select>
                                                     <small class="form-text text-muted" id="liftMatchHint"></small>
                                                 </div>
@@ -411,6 +414,8 @@
     <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
     <!-- AdminLTE -->
     <script src="../../plugins/adminlte/adminlte.min.js"></script>
+    <!-- Select2 -->
+    <script src="../../plugins/select2/js/select2.min.js"></script>
 
     <!-- Sidebar initialization script -->
     <script src="../../assets/js/sidebar-init.js"></script>
@@ -1122,15 +1127,23 @@
 
                     // Вибрати ліфт у dropdown
                     if (pLiftId) {
-                        const sel = document.getElementById('liftSelect');
-                        if (sel) {
-                            sel.value = pLiftId;
-                            if (!sel.value) {
-                                // Опція ще не додана — очікуємо і пробуємо знову
-                                setTimeout(() => { sel.value = pLiftId; onLiftSelected(); }, 300);
-                            }
-                            onLiftSelected();
-                        }
+                        // Завантажити ліфт за ID та додати як опцію до Select2
+                        const tok2 = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('jwt_token') || localStorage.getItem('token') || localStorage.getItem('lm_token');
+                        fetch(`/api/lifts/${pLiftId}`, { headers: { 'Authorization': `Bearer ${tok2}` } })
+                            .then(r => r.json()).then(json => {
+                                const lift = json.data?.lift || json.data || json.lift || json;
+                                if (!lift || !lift._id) return;
+                                const addr = lift.address || {};
+                                const addrStr = typeof addr === 'string' ? addr : [addr.street, addr.zipCode, addr.city].filter(Boolean).join(', ');
+                                const label = lift.municipalNumber ? `#${lift.municipalNumber} — ${addrStr}` : (addrStr || lift._id);
+                                const opt = new Option(label, lift._id, true, true);
+                                $('#liftSelect').append(opt).trigger('change');
+                                if (addrStr && !$('#clientAddress').val().trim()) $('#clientAddress').val(addrStr);
+                                if (lift.clientName && !$('#clientName').val().trim()) $('#clientName').val(lift.clientName);
+                                if ((lift.clientEmail || lift.email) && !$('#clientEmail').val().trim()) $('#clientEmail').val(lift.clientEmail || lift.email);
+                                document.getElementById('liftMatchHint').innerHTML = `<strong>${label}</strong><br>✅ Orçamento será vinculado a este elevador`;
+                                document.getElementById('liftMatchHint').className = 'form-text text-success';
+                            }).catch(() => {});
                     }
 
                     // Авто-заповнення наступного номеру орçаменту
@@ -1153,72 +1166,93 @@
         });
 
         // Carregar opções de elevadores no select
-        async function loadLiftOptions(token) {
-            try {
-                const res = await fetch('/api/lifts', { headers: { 'Authorization': `Bearer ${token}` } });
-                if (!res.ok) return;
-                const json = await res.json();
-                const lifts = (json.data || json.lifts || []);
-                window._allLifts = lifts;
-                const sel = document.getElementById('liftSelect');
-                lifts.forEach(lift => {
-                    const addr = lift.address || {};
-                    const addrStr = typeof addr === 'string' ? addr : [addr.street, addr.zipCode, addr.city].filter(Boolean).join(', ');
-                    const label = lift.municipalNumber
-                        ? `#${lift.municipalNumber} — ${addrStr || lift._id}`
-                        : (addrStr || lift._id);
-                    const opt = document.createElement('option');
-                    opt.value = lift._id;
-                    opt.dataset.address = addrStr;
-                    opt.dataset.client = lift.clientEmail || lift.email || '';
-                    opt.dataset.clientName = lift.clientName || '';
-                    opt.textContent = label;
-                    sel.appendChild(opt);
-                });
-            } catch (e) { console.warn('loadLiftOptions error:', e.message); }
-        }
+        function initLiftSelect2(token) {
+            $('#liftSelect').select2({
+                theme: 'bootstrap4',
+                placeholder: '🔍 Digite o nº municipal ou morada...',
+                allowClear: true,
+                minimumInputLength: 2,
+                language: {
+                    inputTooShort: () => 'Digite pelo menos 2 caracteres para pesquisar',
+                    searching: () => 'A pesquisar...',
+                    noResults: () => 'Nenhum elevador encontrado'
+                },
+                ajax: {
+                    url: '/api/lifts',
+                    dataType: 'json',
+                    delay: 300,
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    data: params => ({ search: params.term, limit: 15 }),
+                    processResults: json => {
+                        const lifts = json.data?.lifts || json.data || json.lifts || [];
+                        return {
+                            results: lifts.map(lift => {
+                                const addr = lift.address || {};
+                                const addrStr = typeof addr === 'string' ? addr : [addr.street, addr.zipCode, addr.city].filter(Boolean).join(', ');
+                                const label = lift.municipalNumber
+                                    ? `#${lift.municipalNumber} — ${addrStr || lift._id}`
+                                    : (addrStr || lift._id);
+                                return {
+                                    id: lift._id,
+                                    text: label,
+                                    address: addrStr,
+                                    clientEmail: lift.clientEmail || lift.email || '',
+                                    clientName: lift.clientName || ''
+                                };
+                            })
+                        };
+                    }
+                }
+            });
 
-        function onLiftSelected() {
-            const sel = document.getElementById('liftSelect');
-            const opt = sel.options[sel.selectedIndex];
-            const hint = document.getElementById('liftMatchHint');
-            if (opt && opt.value) {
-                const addr = opt.dataset.address;
-                const clientEmail = opt.dataset.client;
-                const clientName = opt.dataset.clientName;
-                if (addr && !$('#clientAddress').val().trim()) {
-                    $('#clientAddress').val(addr);
+            $('#liftSelect').on('select2:select', function(e) {
+                const data = e.params.data;
+                const hint = document.getElementById('liftMatchHint');
+                if (data.address && !$('#clientAddress').val().trim()) {
+                    $('#clientAddress').val(data.address);
                 }
-                if (clientName && !$('#clientName').val().trim()) {
-                    $('#clientName').val(clientName);
+                if (data.clientName && !$('#clientName').val().trim()) {
+                    $('#clientName').val(data.clientName);
                 }
-                if (clientEmail && !$('#clientEmail').val().trim()) {
-                    $('#clientEmail').val(clientEmail);
+                if (data.clientEmail && !$('#clientEmail').val().trim()) {
+                    $('#clientEmail').val(data.clientEmail);
                 }
                 invoiceManager.updatePreview();
-                hint.innerHTML = `<strong>${opt.textContent}</strong><br>✅ Orçamento será vinculado a este elevador`;
+                hint.innerHTML = `<strong>${data.text}</strong><br>✅ Orçamento será vinculado a este elevador`;
                 hint.className = 'form-text text-success';
-            } else {
-                hint.textContent = '';
-            }
+            });
+
+            $('#liftSelect').on('select2:clear', function() {
+                document.getElementById('liftMatchHint').textContent = '';
+            });
         }
 
+        async function loadLiftOptions(token) {
+            // Inicializar Select2 com pesquisa AJAX — sem carregar todos os elevadores
+            initLiftSelect2(token);
+        }
+
+        function onLiftSelected() { /* compatibilidade — gerido pelo select2:select */ }
+
         function tryAutoMatchLift() {
-            const morada = $('#clientAddress').val().trim().toLowerCase();
-            if (!morada || !window._allLifts) return;
-            const sel = document.getElementById('liftSelect');
-            if (sel.value) return; // already selected
-            for (let i = 1; i < sel.options.length; i++) {
-                const opt = sel.options[i];
-                const addrOpt = (opt.dataset.address || '').toLowerCase();
-                if (addrOpt && (morada.includes(addrOpt.split(',')[0].trim()) || addrOpt.includes(morada.split(',')[0].trim()))) {
-                    sel.value = opt.value;
-                    const hint = document.getElementById('liftMatchHint');
-                    hint.textContent = '🔍 Elevador detetado automaticamente pela morada';
-                    hint.className = 'form-text text-info';
-                    return;
-                }
-            }
+            const morada = $('#clientAddress').val().trim();
+            if (!morada || $('#liftSelect').val()) return;
+            const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('jwt_token') || localStorage.getItem('token') || localStorage.getItem('lm_token');
+            fetch(`/api/lifts?search=${encodeURIComponent(morada.split(',')[0])}&limit=1`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }).then(r => r.json()).then(json => {
+                const lifts = json.data?.lifts || json.data || json.lifts || [];
+                if (!lifts.length) return;
+                const lift = lifts[0];
+                const addr = lift.address || {};
+                const addrStr = typeof addr === 'string' ? addr : [addr.street, addr.zipCode, addr.city].filter(Boolean).join(', ');
+                const label = lift.municipalNumber ? `#${lift.municipalNumber} — ${addrStr}` : addrStr;
+                const opt = new Option(label, lift._id, true, true);
+                $('#liftSelect').append(opt).trigger('change');
+                const hint = document.getElementById('liftMatchHint');
+                hint.textContent = '🔍 Elevador detetado automaticamente pela morada';
+                hint.className = 'form-text text-info';
+            }).catch(() => {});
         }
         
         // Завантажити орçаменто (публічний доступ)
@@ -1348,6 +1382,23 @@
                     $('.card-header').prepend('<span class="badge badge-info">Modo de Visualização</span> ');
                 }
                 
+                // Відновити прив'язаний ліфт у Select2
+                if (orcamento.liftId) {
+                    fetch(`/api/lifts/${orcamento.liftId}`, { headers: { 'Authorization': `Bearer ${token}` } })
+                        .then(r => r.ok ? r.json() : null).then(json => {
+                            if (!json) return;
+                            const lift = json.data?.lift || json.data || json.lift || json;
+                            if (!lift || !lift._id) return;
+                            const addr = lift.address || {};
+                            const addrStr = typeof addr === 'string' ? addr : [addr.street, addr.zipCode, addr.city].filter(Boolean).join(', ');
+                            const label = lift.municipalNumber ? `#${lift.municipalNumber} — ${addrStr}` : (addrStr || lift._id);
+                            const opt = new Option(label, lift._id, true, true);
+                            $('#liftSelect').append(opt).trigger('change');
+                            document.getElementById('liftMatchHint').innerHTML = `<strong>${label}</strong><br>✅ Orçamento vinculado a este elevador`;
+                            document.getElementById('liftMatchHint').className = 'form-text text-success';
+                        }).catch(() => {});
+                }
+
                 // Зберегти ID для можливості оновлення та відправки email
                 window.currentOrcamentoId = id;
                 window.lastSavedOrcamentoId = id; // Додати для email функції

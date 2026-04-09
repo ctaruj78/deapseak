@@ -8,6 +8,7 @@ class EnhancedLiftModal {
         this.detectedCountry = null; // Для автоматичної детекції країни за поштовим кодом
         this.editAddress = {}; // Зберігає city/country при редагуванні (не відображаються в полях)
         this.editMunicipalNumber = ''; // Зберігає municipalNumber при редагуванні (DOM може бути перебудований)
+        this.coordsManuallyEdited = false; // true тільки коли користувач або geocode явно встановив координати
         this.init();
     }
 
@@ -37,8 +38,9 @@ class EnhancedLiftModal {
             this.getCurrentLocation();
         });
         
-        // Оновлення карти при зміні координат
+        // Оновлення карти при зміні координат (вручну)
         $(document).off('input', '#enhancedLiftLat, #enhancedLiftLng').on('input', '#enhancedLiftLat, #enhancedLiftLng', () => {
+            this.coordsManuallyEdited = true;
             this.updateMapFromCoords();
         });
         
@@ -163,6 +165,9 @@ class EnhancedLiftModal {
         $('#enhancedLiftLat').val(lat.toFixed(6));
         $('#enhancedLiftLng').val(lng.toFixed(6));
         
+        // Позначаємо що координати встановлені явно (geocode або геолокація)
+        this.coordsManuallyEdited = true;
+        
         // Оновлюємо маркер на карті
         this.updateMapMarker(lat, lng);
         
@@ -231,7 +236,7 @@ class EnhancedLiftModal {
     geocodeAddress() {
         const address = $('#enhancedLiftAddress').val().trim();
         const postcode = $('#enhancedLiftPostcode').val().trim();
-        
+
         if (!address) {
             this.showMessage('Введіть адресу для пошуку координат', 'warning');
             return;
@@ -241,66 +246,80 @@ class EnhancedLiftModal {
         const originalHtml = btn.html();
         btn.html('<i class="fas fa-spinner fa-spin"></i>').prop('disabled', true);
 
-        // Комбінуємо адресу з поштовим кодом для точнішого пошуку
-        let searchQuery = address;
-        if (postcode) {
-            searchQuery += ', ' + postcode;
-        }
-        
-        // Визначаємо країну та код країни за форматом поштового коду
-        let country = 'Portugal';
-        let countryCode = 'ua';
-        
-        if (postcode) {
-            const ukrainianRegex = /^[0-9]{5}$/;
-            const portugueseRegex = /^[0-9]{4}-[0-9]{3}$/;
-            
-            if (portugueseRegex.test(postcode)) {
-                country = 'Portugal';
-                countryCode = 'pt';
-            } else if (ukrainianRegex.test(postcode)) {
-                country = 'Ukraine';
-                countryCode = 'ua';
-            }
-        }
-        
-        // Використовуємо раніше визначену країну якщо є
-        if (this.detectedCountry) {
-            if (this.detectedCountry === 'Portugal') {
-                country = 'Portugal';
-                countryCode = 'pt';
-            } else if (this.detectedCountry === 'Portugal') {
-                country = 'Portugal';
-                countryCode = 'ua';
-            }
-        }
-        
-        searchQuery += ', ' + country;
-        
-        console.log('🔍 Geocoding query:', searchQuery);
-        console.log('🌍 Target country:', country, 'Code:', countryCode);
-        
-        // Використовуємо Nominatim API для геокодування
-        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=1&countrycodes=${countryCode}`;
-        
-        fetch(url)
-            .then(response => response.json())
+        const q = postcode ? `${address}, ${postcode}, Portugal` : `${address}, Portugal`;
+        console.log('🔍 Geocoding via proxy:', q);
+
+        fetch(`/api/geocode?q=${encodeURIComponent(q)}`)
+            .then(r => r.json())
             .then(data => {
-                if (data && data.length > 0) {
-                    const lat = parseFloat(data[0].lat);
-                    const lng = parseFloat(data[0].lon);
-                    this.setCoordinates(lat, lng);
-                    this.showMessage('Координати знайдені за адресою!', 'success');
-                } else {
-                    this.showMessage('Не вдалось знайти координати за цією адресою', 'warning');
-                }
                 btn.html(originalHtml).prop('disabled', false);
+                if (!data.success) {
+                    this.showMessage('Адресу не знайдено. Уточніть назву вулиці та поштовий код.', 'warning');
+                    return;
+                }
+                const results = data.results || [{ lat: data.lat, lng: data.lng, display: data.display, city: data.city, postcode: data.postcode }];
+                // Якщо є кілька результатів з різних міст — показати вибір
+                const cities = [...new Set(results.map(r => r.city).filter(Boolean))];
+                if (results.length > 1 && !postcode && cities.length > 1) {
+                    this._showGeocodeChoiceModal(results, address);
+                } else {
+                    const r = results[0];
+                    this.setCoordinates(r.lat, r.lng);
+                    if (r.postcode && !$('#enhancedLiftPostcode').val().trim()) {
+                        $('#enhancedLiftPostcode').val(r.postcode);
+                    }
+                    const cityLabel = r.city || r.display.split(',')[0];
+                    this.showMessage(`Координати визначено: ${cityLabel}`, 'success');
+                }
             })
             .catch(error => {
                 console.error('Enhanced geocoding error:', error);
-                this.showMessage('Помилка при пошуку координат: ' + error.message, 'error');
                 btn.html(originalHtml).prop('disabled', false);
+                this.showMessage('Помилка геокодування. Перевірте з\'єднання.', 'error');
             });
+    }
+
+    _showGeocodeChoiceModal(results, address) {
+        $('#enhancedGeoChoiceModal').remove();
+        const items = results.map((r, i) => `
+            <button type="button" class="list-group-item list-group-item-action enhanced-geo-choice py-2" data-idx="${i}">
+                <div class="d-flex align-items-start">
+                    <span class="badge badge-primary mr-2 mt-1" style="min-width:22px;">${i + 1}</span>
+                    <div>
+                        <div style="font-size:.9rem;font-weight:600;">${r.city ? `<span class="text-primary">${r.city}</span> · ` : ''}${r.postcode || ''}</div>
+                        <div style="font-size:.78rem;color:#555;">${r.display}</div>
+                    </div>
+                </div>
+            </button>`).join('');
+        const modal = `
+        <div class="modal fade" id="enhancedGeoChoiceModal" tabindex="-1" style="z-index:1070;">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header py-2 bg-info text-white">
+                        <h6 class="modal-title mb-0"><i class="fas fa-map-marker-alt mr-1"></i>Знайдено кілька адрес — оберіть правильну</h6>
+                        <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                    </div>
+                    <div class="modal-body p-2">
+                        <div class="list-group">${items}</div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+        $('body').append(modal);
+        const self = this;
+        $('#enhancedGeoChoiceModal').modal('show');
+        $(document).off('click.engeo').on('click.engeo', '.enhanced-geo-choice', function() {
+            const idx = parseInt($(this).data('idx'));
+            const chosen = results[idx];
+            self.setCoordinates(chosen.lat, chosen.lng);
+            if (chosen.postcode && !$('#enhancedLiftPostcode').val().trim()) {
+                $('#enhancedLiftPostcode').val(chosen.postcode);
+            }
+            const cityLabel = chosen.city || chosen.display.split(',')[0];
+            self.showMessage(`Координати встановлено: ${cityLabel}`, 'success');
+            $('#enhancedGeoChoiceModal').modal('hide');
+        });
+        $('#enhancedGeoChoiceModal').on('hidden.bs.modal', function() { $(this).remove(); });
     }
 
     handleFormSubmit() {
@@ -623,8 +642,11 @@ class EnhancedLiftModal {
             // Конвертуємо дані в формат API v2
             // 🗺️ Координати: якщо є вручну введені - використовуємо їх
             // Якщо немає - НЕ передаємо location, щоб backend геокодував адресу автоматично
-            const hasCoords = liftData.lat && liftData.lng && 
-                             !isNaN(parseFloat(liftData.lat)) && 
+            // hasCoords = true тільки якщо координати ЯВНО встановив користувач або geocode
+            // Якщо просто заповнились зі старих даних ліфта — не відправляємо, щоб backend перегеокодував
+            const hasCoords = this.coordsManuallyEdited &&
+                             liftData.lat && liftData.lng &&
+                             !isNaN(parseFloat(liftData.lat)) &&
                              !isNaN(parseFloat(liftData.lng));
             
             console.log('📍 Координати для збереження:', { 
@@ -868,6 +890,7 @@ class EnhancedLiftModal {
         this.currentCoords = null;
         this.editAddress = {};
         this.editMunicipalNumber = '';
+        this.coordsManuallyEdited = false;
         if (this.marker && this.map) {
             this.map.removeLayer(this.marker);
             this.marker = null;
@@ -933,6 +956,9 @@ class EnhancedLiftModal {
         $('#enhancedLiftsCountAtAddress').val(liftData.liftsCountAtAddress || 1);
         $('#enhancedLiftLat').val(liftData.lat || '');
         $('#enhancedLiftLng').val(liftData.lng || '');
+        // При завантаженні з БД координати НЕ вважаються "вручну встановленими" —
+        // якщо адреса зміниться, backend перегеокодує автоматично
+        this.coordsManuallyEdited = false;
         $('#enhancedClientName').val(liftData.clientName || '');
         $('#enhancedClientEmail').val(liftData.clientEmail || '');
         $('#enhancedClientPhone').val(liftData.clientPhone || '');
@@ -950,10 +976,12 @@ class EnhancedLiftModal {
         console.log('🔍 Municipal number field value:', $('#enhancedMunicipalNumber').val());
         console.log('🔍 Address field value:', $('#enhancedLiftAddress').val());
         
-        // Оновлюємо карту з координатами ліфта
+        // Оновлюємо карту з координатами ліфта (БЕЗ позначення як manual — це завантаження з БД)
         if (liftData.lat && liftData.lng) {
             setTimeout(() => {
-                this.setCoordinates(liftData.lat, liftData.lng);
+                this.updateMapMarker(liftData.lat, liftData.lng);
+                this.currentCoords = { lat: liftData.lat, lng: liftData.lng };
+                // coordsManuallyEdited залишається false — backend перегеокодує якщо адреса зміниться
             }, 500);
         }
         

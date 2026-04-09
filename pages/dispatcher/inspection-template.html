@@ -444,12 +444,31 @@
                 });
             },
 
-            generateInspectionNumber() {
+            async generateInspectionNumber() {
+                try {
+                    const token = localStorage.getItem('liftmanager_jwt') ||
+                                  localStorage.getItem('jwt_token') ||
+                                  localStorage.getItem('token') ||
+                                  localStorage.getItem('lm_token');
+                    const res = await fetch('/api/inspections/next-number', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (res.ok) {
+                        const json = await res.json();
+                        if (json.success && json.numero) {
+                            $('#inspectionNumber').val(json.numero);
+                            $('#reportInspectionNumber').text(json.numero);
+                            return;
+                        }
+                    }
+                } catch(e) { console.warn('next-number error:', e.message); }
+                // Fallback — послідовна нумерація в межах сесії
                 const year = new Date().getFullYear();
                 const month = String(new Date().getMonth() + 1).padStart(2, '0');
-                const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-                const number = `INSP-${year}-${month}-${random}`;
+                const seq = String(Date.now()).slice(-5);
+                const number = `INSP-${year}-${month}-${seq}`;
                 $('#inspectionNumber').val(number);
+                $('#reportInspectionNumber').text(number);
             },
 
             updateReportPreview() {

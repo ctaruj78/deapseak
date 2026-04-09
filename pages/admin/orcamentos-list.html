@@ -318,6 +318,18 @@
                 ? `<span class="badge badge-warning ml-1"><i class="fas fa-archive mr-1"></i>Arquivo</span>`
                 : '';
 
+            // Badge de elevadores vinculados
+            let liftsBadge = '';
+            const liftsCount = Array.isArray(orcamento.lifts) ? orcamento.lifts.length : 0;
+            const hasLiftId = orcamento.liftId;
+            if (liftsCount > 1) {
+                liftsBadge = `<p class="mb-1"><i class="fas fa-elevator text-primary"></i> <span class="badge badge-primary">${liftsCount} elevadores</span>${orcamento.liftAddress ? ` <small class="text-muted">${orcamento.liftAddress.split(',')[0]}</small>` : ''}</p>`;
+            } else if (liftsCount === 1 || hasLiftId) {
+                liftsBadge = `<p class="mb-1"><i class="fas fa-elevator text-primary"></i> <span class="badge badge-info">1 elevador</span>${orcamento.liftAddress ? ` <small class="text-muted">${orcamento.liftAddress.split(',')[0]}</small>` : ''}</p>`;
+            } else if (orcamento.liftAddress) {
+                liftsBadge = `<p class="mb-1"><i class="fas fa-map-marker-alt text-secondary"></i> <small class="text-muted">${orcamento.liftAddress.split(',')[0]}</small></p>`;
+            }
+
             return `
                 <div class="col-md-4 col-sm-6 mb-4">
                     <div class="card orcamento-card" onclick="verOrcamento('${orcamento._id}')">
@@ -341,6 +353,7 @@
                                 <i class="fas fa-map-marker-alt text-danger"></i>
                                 ${orcamento.cliente.morada.split('\n')[0]}
                             </p>` : ''}
+                            ${liftsBadge}
                             <p class="mb-2">
                                 <i class="fas fa-calendar text-success"></i>
                                 Data: ${data}

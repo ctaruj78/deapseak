@@ -3781,6 +3781,68 @@
     // ========================================================================
     
     // ── Геокодування через серверний проксі /api/geocode ──────────────────
+    function applyGeocodeResult(result, address) {
+        const { lat, lng } = result;
+        $('#enhancedLiftLat').val(lat.toFixed(6));
+        $('#enhancedLiftLng').val(lng.toFixed(6));
+        // Якщо поштовий код не заповнений і API повернув — вставляємо
+        if (result.postcode && !$('#enhancedLiftPostcode').val().trim()) {
+            $('#enhancedLiftPostcode').val(result.postcode);
+        }
+        if (window.editMapInstance) {
+            window.editMapInstance.setView([lat, lng], 17);
+            Object.values(window.editMapInstance._layers || {}).forEach(layer => {
+                if (layer instanceof L.Marker) {
+                    layer.setLatLng([lat, lng]);
+                    layer.bindPopup(`<strong>${address}</strong><br><small>Перетягніть маркер для точнішого позиціонування</small>`).openPopup();
+                }
+            });
+            setTimeout(() => window.editMapInstance.invalidateSize(), 200);
+        } else {
+            initEditMap(lat, lng, address);
+        }
+    }
+
+    function showGeocodeChoiceModal(results, address) {
+        // Видалити попередній якщо є
+        $('#geocodeChoiceModal').remove();
+        const items = results.map((r, i) => `
+            <button type="button" class="list-group-item list-group-item-action geocode-choice-btn py-2" data-idx="${i}">
+                <div class="d-flex align-items-start">
+                    <span class="badge badge-primary mr-2 mt-1" style="min-width:22px;">${i + 1}</span>
+                    <div>
+                        <div style="font-size:.9rem;font-weight:600;">${r.city ? `<span class="text-primary">${r.city}</span> · ` : ''}${r.postcode || ''}</div>
+                        <div style="font-size:.78rem;color:#555;">${r.display}</div>
+                    </div>
+                </div>
+            </button>`).join('');
+        const modal = `
+        <div class="modal fade" id="geocodeChoiceModal" tabindex="-1" style="z-index:1060;">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header py-2 bg-info text-white">
+                        <h6 class="modal-title mb-0"><i class="fas fa-map-marker-alt mr-1"></i>Знайдено кілька адрес — оберіть правильну</h6>
+                        <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                    </div>
+                    <div class="modal-body p-2">
+                        <div class="list-group">${items}</div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+        $('body').append(modal);
+        $('#geocodeChoiceModal').modal('show');
+        // Вибір варіанту
+        $(document).off('click.geochoice').on('click.geochoice', '.geocode-choice-btn', function() {
+            const idx = parseInt($(this).data('idx'));
+            const chosen = results[idx];
+            applyGeocodeResult(chosen, address);
+            $('#geocodeChoiceModal').modal('hide');
+            if (typeof toastr !== 'undefined') toastr.success(`Координати встановлено: ${chosen.city || chosen.display.split(',')[0]}`, 'Геокодування');
+        });
+        $('#geocodeChoiceModal').on('hidden.bs.modal', function() { $(this).remove(); });
+    }
+
     async function runGeocode(silent = false) {
         const address  = ($('#enhancedLiftAddress').val() || '').trim();
         const postcode = ($('#enhancedLiftPostcode').val() || '').trim();
@@ -3788,6 +3850,7 @@
             if (!silent) alert('Будь ласка, введіть адресу');
             return;
         }
+        // Якщо є поштовий код — він унікальний і достатньо точний
         const q = postcode ? `${address}, ${postcode}, Portugal` : `${address}, Portugal`;
         console.log('📍 Геокодування (проксі):', q);
 
@@ -3805,27 +3868,19 @@
                 return;
             }
 
-            const { lat, lng } = data;
-            console.log('✅ Геокодовано:', { lat, lng, display: data.display });
+            const results = data.results || [{ lat: data.lat, lng: data.lng, display: data.display, city: data.city, postcode: data.postcode }];
+            console.log('✅ Геокодовано:', results.length, 'варіантів');
 
-            $('#enhancedLiftLat').val(lat.toFixed(6));
-            $('#enhancedLiftLng').val(lng.toFixed(6));
-
-            if (window.editMapInstance) {
-                window.editMapInstance.setView([lat, lng], 17);
-                Object.values(window.editMapInstance._layers || {}).forEach(layer => {
-                    if (layer instanceof L.Marker) {
-                        layer.setLatLng([lat, lng]);
-                        layer.bindPopup(`<strong>${address}</strong><br><small>Перетягніть маркер для точнішого позиціонування</small>`).openPopup();
-                    }
-                });
-                setTimeout(() => window.editMapInstance.invalidateSize(), 200);
+            // Якщо більше одного результату і немає поштового коду — дати вибір
+            if (results.length > 1 && !postcode && !silent) {
+                showGeocodeChoiceModal(results, address);
             } else {
-                initEditMap(lat, lng, address);
-            }
-
-            if (typeof toastr !== 'undefined') {
-                toastr.success('Координати визначено!', 'Геокодування');
+                // Один результат або є поштовий код — застосовуємо перший
+                applyGeocodeResult(results[0], address);
+                if (typeof toastr !== 'undefined') {
+                    const cityLabel = results[0].city || results[0].display.split(',')[0];
+                    toastr.success(`Координати визначено: ${cityLabel}`, 'Геокодування');
+                }
             }
         } catch (err) {
             console.error('❌ Помилка геокодування:', err);

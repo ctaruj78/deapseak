@@ -59,7 +59,7 @@ async function geocodeAddress(address) {
         
         // URL для Nominatim API
         const encodedAddress = encodeURIComponent(searchAddress);
-        const url = `https://nominatim.openstreetmap.org/search?q=${encodedAddress}&format=json&limit=1`;
+        const url = `https://nominatim.openstreetmap.org/search?q=${encodedAddress}&format=json&limit=1&countrycodes=pt&addressdetails=1`;
         
         console.log('🌍 Geocoding:', searchAddress);
         
@@ -247,7 +247,7 @@ app.get('/api/geocode', async (req, res) => {
     const q = (req.query.q || '').trim();
     if (!q) return res.status(400).json({ success: false, message: 'Параметр q обовʼязковий' });
 
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=3&countrycodes=pt`;
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&countrycodes=pt&addressdetails=1`;
     try {
         const response = await fetch(url, {
             headers: {
@@ -260,12 +260,24 @@ app.get('/api/geocode', async (req, res) => {
         if (!data || data.length === 0) {
             return res.json({ success: false, message: 'Адресу не знайдено' });
         }
+        // Повертаємо перший результат + всі варіанти для вибору
         const best = data[0];
+        const results = data.map(r => ({
+            lat: parseFloat(r.lat),
+            lng: parseFloat(r.lon),
+            display: r.display_name,
+            city: r.address?.city || r.address?.town || r.address?.village || r.address?.municipality || '',
+            postcode: r.address?.postcode || '',
+            type: r.type || r.class || ''
+        }));
         return res.json({
             success: true,
             lat: parseFloat(best.lat),
             lng: parseFloat(best.lon),
-            display: best.display_name
+            display: best.display_name,
+            city: best.address?.city || best.address?.town || best.address?.village || '',
+            postcode: best.address?.postcode || '',
+            results  // всі варіанти
         });
     } catch (err) {
         console.error('❌ /api/geocode error:', err.message);
@@ -1552,9 +1564,32 @@ app.get('/api/lifts', authenticateToken, async (req, res) => {
             }
         }
         
-        const lifts = await db.collection('lifts').find(query).toArray();
+        // 🔍 Фільтр пошуку (municipalNumber, вулиця, місто, ім'я клієнта)
+        const searchTerm = (req.query.search || '').trim();
+        const limitNum = parseInt(req.query.limit) || 0;
+        if (searchTerm) {
+            const re = new RegExp(searchTerm, 'i');
+            const searchFilter = { $or: [
+                { municipalNumber: re },
+                { 'address.street': re },
+                { 'address.city': re },
+                { 'address.zipCode': re },
+                { clientName: re },
+                { clientEmail: re }
+            ] };
+            // Об'єднуємо з існуючим query (ролевий фільтр)
+            if (Object.keys(query).length > 0) {
+                query = { $and: [query, searchFilter] };
+            } else {
+                query = searchFilter;
+            }
+        }
+
+        let findCursor = db.collection('lifts').find(query);
+        if (limitNum > 0) findCursor = findCursor.limit(limitNum);
+        const lifts = await findCursor.toArray();
         
-        console.log(`✅ Знайдено ліфтів: ${lifts.length}`);
+        console.log(`✅ Знайдено ліфтів: ${lifts.length} (search: "${searchTerm}")`);
         
         // 🔄 Підтягуємо дані клієнтів для кожного ліфта
         const liftsWithClients = await Promise.all(lifts.map(async (lift) => {

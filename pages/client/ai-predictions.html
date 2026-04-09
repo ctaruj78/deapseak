@@ -73,11 +73,24 @@
             50% { opacity: 0.7; }
         }
         
-        .component-health {
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 10px;
+        .prediction-table thead th {
             background: #f8f9fa;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            color: #6c757d;
+            border-top: none;
+        }
+        .prediction-table tbody tr.prediction-row:hover td {
+            background: #f0f7ff;
+        }
+        .prediction-details-row td {
+            padding: 16px !important;
+        }
+        .btn-xs {
+            padding: 2px 6px;
+            font-size: 0.75rem;
+        }
         }
         
         .health-bar {
@@ -563,7 +576,7 @@
                 </div>
 
                 <!-- Список ліфтів з прогнозами -->
-                <div id="predictionsContainer" class="row">
+                <div id="predictionsContainer">
                     <!-- Буде заповнено динамічно -->
                 </div>
 
@@ -691,7 +704,7 @@ async function loadClientLifts() {
     }
 }
 
-// Відображення прогнозів
+    // Відображення прогнозів — компактна таблиця
 function displayPredictions() {
     if (!predictiveSystem || !predictiveSystem.maintenanceData) {
         setTimeout(displayPredictions, 1000);
@@ -733,7 +746,7 @@ function displayPredictions() {
         }
     });
     
-    // Filtroація
+    // Фільтрація
     const filterRisk = $('#filterRisk').val();
     if (filterRisk !== 'all') {
         predictions = predictions.filter(p => {
@@ -751,173 +764,149 @@ function displayPredictions() {
     // Оновлення статистики
     updateStatistics(predictions);
     
-    // Відображення карток
+    // Відображення таблиці
     if (predictions.length === 0) {
         container.html(`
-            <div class="col-12">
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle"></i> Немає даних для відображення. 
-                    Спробуйте змінити фільтри або оновити прогнози.
-                </div>
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> Немає даних для відображення.
+                Спробуйте змінити фільтри або оновити прогнози.
             </div>
         `);
         return;
     }
     
+    let rows = '';
     predictions.forEach(({ lift, prediction }) => {
-        const card = createPredictionCard(lift, prediction);
-        container.append(card);
+        rows += createPredictionRow(lift, prediction);
     });
+    
+    container.html(`
+        <div class="table-responsive">
+            <table class="table table-hover table-sm prediction-table">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Ліфт №</th>
+                        <th>Адреса</th>
+                        <th style="min-width:90px">Ризик</th>
+                        <th>Вік</th>
+                        <th>Останнє ТО</th>
+                        <th>Компоненти ⚠️</th>
+                        <th>Рек.</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+            </table>
+        </div>
+    `);
     
     // Загальні рекомендації
     displayGeneralRecommendations(predictions);
 }
 
-// Створення картки прогнозу
-function createPredictionCard(lift, prediction) {
-    // Convert MongoDB ObjectId to string
+// Компактний рядок таблиці + розгортувана панель деталей
+function createPredictionRow(lift, prediction) {
     const liftId = window.safeId ? window.safeId(lift) : ((lift._id && lift._id.toString) ? lift._id.toString() : (lift._id || lift.id || ''));
-    if (!liftId) {
-        console.error('❌ Ліфт без ID:', lift);
-        return '';
-    }
+    if (!liftId) return '';
     
     const risk = prediction.failureRisk || 0;
     const riskPercent = Math.round(risk * 100);
     const riskClass = getRiskClass(risk);
     const riskLabel = getRiskLabel(risk);
+    const age = (prediction.age || 0).toFixed(1);
+    const lastInspection = prediction.lastInspection
+        ? new Date(prediction.lastInspection).toLocaleDateString('uk-UA') : '—';
     
-    const age = prediction.age || 0;
-    const lastInspection = prediction.lastInspection ? 
-        new Date(prediction.lastInspection).toLocaleDateString('uk-UA') : 'Невідомо';
-    
-    // Компоненти
     const components = prediction.componentConditions || {};
-    let componentsHtml = '';
+    const poorComponents = Object.values(components).filter(c => (c.condition || 0.7) < 0.4).length;
+    const warnComponents = Object.values(components).filter(c => (c.condition || 0.7) >= 0.4 && (c.condition || 0.7) < 0.7).length;
+    const compBadge = poorComponents > 0
+        ? `<span class="badge badge-danger">${poorComponents} кр.</span>`
+        : warnComponents > 0
+            ? `<span class="badge badge-warning">${warnComponents} пг.</span>`
+            : `<span class="badge badge-success">✓</span>`;
+    
+    const recCount = (prediction.recommendations || []).length;
+    const recBadge = recCount > 0 ? `<span class="badge badge-info">${recCount}</span>` : `<span class="badge badge-secondary">0</span>`;
+    
+    const addr = lift.address || {};
+    const addrStr = typeof addr === 'string' ? addr : (addr.street ? `${addr.street}, ${addr.city || ''}` : '—');
+    
+    const riskBadgeClass = { low: 'success', medium: 'warning', high: 'danger', critical: 'danger' }[riskClass] || 'secondary';
+    
+    // Build details section (hidden by default)
+    const componentNameMap = { motor: 'Двигун', cables: 'Троси', brakes: 'Гальма', doors: 'Двері', control_system: 'Система керування', safety_systems: 'Системи безпеки' };
+    let compHtml = '';
     Object.entries(components).forEach(([name, data]) => {
-        const condition = (data.condition || 0.7) * 100;
-        const healthClass = condition > 70 ? 'good' : condition > 40 ? 'fair' : 'poor';
-        const componentName = {
-            'motor': 'Двигун',
-            'cables': 'Троси',
-            'brakes': 'Гальма',
-            'doors': 'Двері',
-            'control_system': 'Система керування',
-            'safety_systems': 'Системи безпеки'
-        }[name] || name;
-        
-        componentsHtml += `
-            <div class="component-health">
-                <div class="d-flex justify-content-between mb-1">
-                    <small><strong>${componentName}</strong></small>
-                    <small>${Math.round(condition)}%</small>
-                </div>
-                <div class="health-bar">
-                    <div class="health-fill health-${healthClass}" style="width: ${condition}%"></div>
-                </div>
-            </div>
-        `;
+        const pct = Math.round((data.condition || 0.7) * 100);
+        const hc = pct > 70 ? 'good' : pct > 40 ? 'fair' : 'poor';
+        compHtml += `<div class="col-md-4 col-6 mb-2">
+            <small><strong>${componentNameMap[name] || name}</strong> <span class="badge badge-${hc === 'good' ? 'success' : hc === 'fair' ? 'warning' : 'danger'}">${pct}%</span></small>
+            <div class="health-bar mt-1"><div class="health-fill health-${hc}" style="width:${pct}%"></div></div>
+        </div>`;
     });
     
-    // Рекомендації
-    const recommendations = prediction.recommendations || [];
     let recsHtml = '';
-    recommendations.slice(0, 3).forEach(rec => {
-        const urgentClass = rec.priority === 'critical' ? 'recommendation-urgent' : 
-                           rec.priority === 'high' ? 'recommendation-urgent' : 'recommendation-preventive';
-        recsHtml += `
-            <div class="recommendation-item ${urgentClass}">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <strong>${rec.description || rec.action}</strong><br>
-                        <small class="text-muted">
-                            <i class="fas fa-clock"></i> ${rec.timeframe || 'Найближчим часом'}
-                        </small>
-                    </div>
-                    <span class="badge badge-${rec.priority === 'critical' ? 'danger' : rec.priority === 'high' ? 'warning' : 'info'}">
-                        ${rec.priority === 'critical' ? 'ТЕРМІНIВО' : rec.priority === 'high' ? 'ВАЖЛИВО' : 'ПЛАНОВЕ'}
-                    </span>
-                </div>
-            </div>
-        `;
+    (prediction.recommendations || []).forEach(rec => {
+        const pr = rec.priority === 'critical' ? 'danger' : rec.priority === 'high' ? 'warning' : 'info';
+        const label = rec.priority === 'critical' ? 'ТЕРМІНОВО' : rec.priority === 'high' ? 'ВАЖЛИВО' : 'ПЛАНОВЕ';
+        recsHtml += `<div class="d-flex justify-content-between align-items-start mb-1 p-1 border-left border-${pr}" style="border-left-width:3px!important">
+            <small>${rec.description || rec.action}<br><span class="text-muted">${rec.timeframe || ''}</span></small>
+            <span class="badge badge-${pr} ml-2">${label}</span>
+        </div>`;
     });
-    
-    if (recommendations.length === 0) {
-        recsHtml = '<p class="text-muted text-center"><i class="fas fa-check-circle text-success"></i> Все в порядку</p>';
-    }
+    if (!recsHtml) recsHtml = '<small class="text-muted"><i class="fas fa-check-circle text-success"></i> Все в порядку</small>';
     
     return `
-        <div class="col-lg-6 col-md-12">
-            <div class="prediction-card card">
-                <div class="card-header bg-gradient-${riskClass === 'low' ? 'success' : riskClass === 'medium' ? 'warning' : 'danger'}">
-                    <h3 class="card-title">
-                        <i class="fas fa-building"></i> ${lift.municipalNumber || 'Ліфт'}
-                    </h3>
-                    <div class="card-tools">
-                        <span class="risk-badge risk-${riskClass}">
-                            Ризик: ${riskPercent}%
-                        </span>
+        <tr class="prediction-row" style="cursor:pointer" onclick="togglePredictionDetails('${liftId}')">
+            <td><strong>#${lift.municipalNumber || '—'}</strong></td>
+            <td><small>${addrStr}</small></td>
+            <td><span class="badge badge-${riskBadgeClass}">${riskPercent}%</span> <small class="text-muted">${riskLabel}</small></td>
+            <td><small>${age}р</small></td>
+            <td><small>${lastInspection}</small></td>
+            <td>${compBadge}</td>
+            <td>${recBadge}</td>
+            <td>
+                <button class="btn btn-xs btn-outline-secondary toggle-btn-${liftId}" title="Деталі"><i class="fas fa-chevron-down"></i></button>
+                <button class="btn btn-xs btn-success ml-1" onclick="event.stopPropagation();requestMaintenance('${liftId}')" title="Замовити ТО"><i class="fas fa-wrench"></i></button>
+            </td>
+        </tr>
+        <tr id="details-${liftId}" class="prediction-details-row" style="display:none">
+            <td colspan="8" class="p-3 bg-light">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-cogs text-primary"></i> Стан компонентів</h6>
+                        <div class="row">${compHtml || '<div class="col-12"><small class="text-muted">Немає даних</small></div>'}</div>
                     </div>
-                </div>
-                <div class="card-body">
-                    <!-- Адреса -->
-                    <p class="mb-2">
-                        <i class="fas fa-map-marker-alt text-primary"></i>
-                        <strong>${lift.address?.street || 'Адреса не вказана'}, ${lift.address?.city || ''}</strong>
-                    </p>
-                    
-                    <!-- Основна інформація -->
-                    <div class="row mb-3">
-                        <div class="col-6">
-                            <small class="text-muted">Вік ліфта:</small><br>
-                            <strong>${age.toFixed(1)} років</strong>
-                        </div>
-                        <div class="col-6">
-                            <small class="text-muted">Останнє ТО:</small><br>
-                            <strong>${lastInspection}</strong>
-                        </div>
-                    </div>
-                    
-                    <!-- Шкала ризику -->
-                    <div class="mb-3">
-                        <label><strong>Рівень ризику:</strong></label>
-                        <div class="risk-meter">
-                            <div class="risk-indicator" style="left: ${riskPercent}%"></div>
-                        </div>
-                        <div class="d-flex justify-content-between mt-1">
-                            <small class="text-success">Низький</small>
-                            <small class="text-warning">Середній</small>
-                            <small class="text-danger">Високий</small>
-                        </div>
-                    </div>
-                    
-                    <!-- Стан компонентів -->
-                    <div class="mb-3">
-                        <label><strong>Стан компонентів:</strong></label>
-                        ${componentsHtml}
-                    </div>
-                    
-                    <!-- Рекомендації -->
-                    <div class="mb-2">
-                        <label><strong>Рекомендації AI:</strong></label>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-lightbulb text-warning"></i> Рекомендації AI</h6>
                         ${recsHtml}
+                        <div class="mt-2">
+                            <button class="btn btn-sm btn-primary" onclick="viewLiftDetails('${liftId}')"><i class="fas fa-eye"></i> Перейти до ліфта</button>
+                        </div>
                     </div>
-                    
-                    ${recommendations.length > 3 ? `<small class="text-muted">...та ще ${recommendations.length - 3} рекомендацій</small>` : ''}
                 </div>
-                <div class="card-footer">
-                    <button class="btn btn-sm btn-primary" onclick="viewLiftDetails('${liftId}')">
-                        <i class="fas fa-eye"></i> Детальніше
-                    </button>
-                    <button class="btn btn-sm btn-success" onclick="requestMaintenance('${liftId}')">
-                        <i class="fas fa-wrench"></i> Замовити ТО
-                    </button>
-                </div>
-            </div>
-        </div>
+            </td>
+        </tr>
     `;
 }
 
+function togglePredictionDetails(liftId) {
+    const row = $('#details-' + liftId);
+    const btn = $('.toggle-btn-' + liftId + ' i');
+    if (row.is(':visible')) {
+        row.hide();
+        btn.removeClass('fa-chevron-up').addClass('fa-chevron-down');
+    } else {
+        row.show();
+        btn.removeClass('fa-chevron-down').addClass('fa-chevron-up');
+    }
+}
+
+// Застаріла функція — залишається для зворотної сумісності
+function createPredictionCard(lift, prediction) {
+    return '';
+}
 // Оновлення статистики
 function updateStatistics(predictions) {
     let healthy = 0, warning = 0, critical = 0, upcoming = 0;

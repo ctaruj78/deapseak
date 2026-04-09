@@ -1209,39 +1209,94 @@ class PredictiveMaintenanceDashboard {
         container.empty();
         
         if (!predictiveMaintenance.maintenanceData) return;
-        
+
+        const rows = [];
         predictiveMaintenance.maintenanceData.forEach((data, liftId) => {
             const riskClass = this.getRiskClass(data.failureRisk);
             const riskText = this.getRiskText(data.failureRisk);
-            
-            // Використовуємо municipalNumber та address з даних
+            const riskPercent = Math.round((data.failureRisk || 0) * 100);
+            const badgeClass = { low: 'success', medium: 'warning', high: 'danger', critical: 'danger' }[riskClass] || 'secondary';
             const displayName = data.municipalNumber || liftId;
-            const address = data.address || 'Адреса не вказана';
-            
-            const liftHtml = `
-                <div class="card mb-3">
-                    <div class="card-body">
+            const address = data.address || '—';
+            const age = (data.age || 0).toFixed(1);
+            const recCount = (data.recommendations || []).length;
+            const safeId = liftId.replace(/[^a-zA-Z0-9]/g, '_');
+
+            const components = data.componentConditions || {};
+            const poorComp = Object.values(components).filter(c => {
+                const v = typeof c === 'object' ? (c.condition || 0) : (c || 0);
+                return v < 0.4;
+            }).length;
+            const warnComp = Object.values(components).filter(c => {
+                const v = typeof c === 'object' ? (c.condition || 0) : (c || 0);
+                return v >= 0.4 && v < 0.7;
+            }).length;
+            const compBadge = poorComp > 0
+                ? `<span class="badge badge-danger">${poorComp} кр.</span>`
+                : warnComp > 0
+                    ? `<span class="badge badge-warning">${warnComp} пг.</span>`
+                    : `<span class="badge badge-success">✓</span>`;
+
+            // Detail row content
+            const compHtml = Object.entries(components).map(([name, d]) => {
+                const val = typeof d === 'object' ? (d.condition || 0) : (d || 0);
+                const pct = Math.round(val * 100);
+                const cls = pct > 70 ? 'success' : pct > 40 ? 'warning' : 'danger';
+                return `<div class="col-md-4 col-6 mb-1"><small><strong>${this.translateComponent(name)}</strong> <span class="badge badge-${cls}">${pct}%</span></small>
+                    <div class="progress mt-1" style="height:6px"><div class="progress-bar bg-${cls}" style="width:${pct}%"></div></div></div>`;
+            }).join('');
+
+            const recsHtml = (data.recommendations || []).map(rec => {
+                const pr = rec.priority === 'critical' ? 'danger' : rec.priority === 'high' ? 'warning' : 'info';
+                return `<div class="mb-1 pl-2 border-left border-${pr}" style="border-left-width:3px!important">
+                    <small>${rec.description || rec.action || ''}<br><span class="text-muted">${rec.timeframe || ''}</span></small></div>`;
+            }).join('') || '<small class="text-success"><i class="fas fa-check-circle"></i> Все в порядку</small>';
+
+            rows.push(`
+                <tr style="cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'table-row':'none'">
+                    <td><strong>#${displayName}</strong></td>
+                    <td><small>${address}</small></td>
+                    <td><span class="badge badge-${badgeClass}">${riskPercent}%</span> <small class="text-muted">${riskText}</small></td>
+                    <td><small>${age}р</small></td>
+                    <td>${compBadge}</td>
+                    <td><span class="badge badge-${recCount > 0 ? 'info' : 'secondary'}">${recCount}</span></td>
+                    <td><i class="fas fa-chevron-down text-muted"></i></td>
+                </tr>
+                <tr style="display:none">
+                    <td colspan="7" class="bg-light p-3">
                         <div class="row">
-                            <div class="col-md-3">
-                                <h5>Ліфт ${displayName}</h5>
-                                <p class="text-muted small mb-2">${address}</p>
-                                <span class="risk-indicator risk-${riskClass}">${riskText}</span>
-                                <p class="mt-2 mb-0">Вік: ${data.age.toFixed(1)} років</p>
+                            <div class="col-md-6">
+                                <h6 class="mb-2"><i class="fas fa-cogs text-primary"></i> Стан компонентів</h6>
+                                <div class="row">${compHtml || '<div class="col-12"><small class="text-muted">Немає даних</small></div>'}</div>
                             </div>
                             <div class="col-md-6">
-                                <h6>Стан компонентів:</h6>
-                                ${this.renderComponentStatus(data.componentConditions)}
-                            </div>
-                            <div class="col-md-3">
-                                <h6>Рекомендації:</h6>
-                                ${this.renderRecommendations(data.recommendations)}
+                                <h6 class="mb-2"><i class="fas fa-lightbulb text-warning"></i> Рекомендації AI</h6>
+                                ${recsHtml}
                             </div>
                         </div>
-                    </div>
-                </div>
-            `;
-            container.append(liftHtml);
+                    </td>
+                </tr>
+            `);
         });
+
+        container.html(`
+            <div class="table-responsive">
+                <table class="table table-hover table-sm mb-0">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Ліфт №</th>
+                            <th>Адреса</th>
+                            <th style="min-width:100px">Ризик</th>
+                            <th>Вік</th>
+                            <th>Компоненти</th>
+                            <th>Рек.</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows.join('')}</tbody>
+                </table>
+            </div>
+        `);
     }
 
     renderComponentStatus(components) {
